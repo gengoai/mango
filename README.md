@@ -1,6 +1,9 @@
 # mango
 A set of utilities, frameworks, and tools to speed up and ease programming in Java.
 
+See the [Wiki](https://github.com/dbracewell/mango/wiki) for more information!
+
+
 ## License
 Copyright 2015 David B. Bracewell
 
