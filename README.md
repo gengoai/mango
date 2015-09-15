@@ -10,7 +10,7 @@ Mango is [Apache License, Version 2.0 ](LICENSE) licensed making it free for all
 ```
  <dependency>
      <groupId>com.davidbracewell</groupId>
-     <artifactId>hermes-core</artifactId>
+     <artifactId>mango</artifactId>
      <version>0.0.1-SNAPSHOT</version>
  </dependency>
 ```
