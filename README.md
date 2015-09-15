@@ -16,6 +16,6 @@ Mango is [Apache License, Version 2.0 ](LICENSE) licensed making it free for all
 ```
 
 ## Dependencies
-* Google Guava
-* Google Gson
-* IBM ICU4J
+* [Google Guava](https://github.com/google/guava)
+* [Google Gson](https://github.com/google/gson)
+* [IBM ICU4J](http://site.icu-project.org/)
