@@ -19,51 +19,18 @@
  * under the License.
  */
 
-package com.davidbracewell.tuple;
-
-import com.davidbracewell.Copyable;
-
-import java.io.Serializable;
+package com.davidbracewell.io;
 
 /**
+ * Interface defining a method to commit, e.g. data to database, etc.
+ *
  * @author David B. Bracewell
  */
-public class Tuple0 implements Tuple, Serializable, Comparable<Tuple0>, Copyable<Tuple0> {
-  private static final long serialVersionUID = 1L;
+public interface Committable {
 
-  @Override
-  public int compareTo(Tuple0 o) {
-    return 0;
-  }
+  /**
+   * Commits
+   */
+  void commit();
 
-  @Override
-  public Tuple0 copy() {
-    return new Tuple0();
-  }
-
-  @Override
-  public int degree() {
-    return 0;
-  }
-
-  @Override
-  public Object[] array() {
-    return new Object[0];
-  }
-
-  @Override
-  public int hashCode() {
-    return 1;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    return o != null && o instanceof Tuple0;
-  }
-
-  @Override
-  public String toString() {
-    return "()";
-  }
-
-}//END OF Tuple0
+}//END OF Committable

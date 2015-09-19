@@ -19,7 +19,7 @@
  * under the License.
  */
 
-package com.davidbracewell.data;
+package com.davidbracewell.io;
 
 import java.io.IOException;
 import java.util.List;

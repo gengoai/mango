@@ -19,18 +19,37 @@
  * under the License.
  */
 
-package com.davidbracewell.data;
+package com.davidbracewell.io.serialization;
+
+import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.io.resource.Resource;
+
+import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
- * Interface defining a method to commit, e.g. data to database, etc.
- *
  * @author David B. Bracewell
  */
-public interface Committable {
+public class XMLSerializer implements Serializer {
 
-  /**
-   * Commits
-   */
-  void commit();
+  @Override
+  public void serialize(Object o, Resource resource) throws Exception {
+    try (OutputStream outputStream = resource.openOutputStream();
+         XMLEncoder encoder = new XMLEncoder(outputStream)
+    ) {
+      encoder.writeObject(o);
+    }
+  }
 
-}//END OF Committable
+  @Override
+  public <T> T deserialize(Resource resource, Class<T> clazz) throws Exception {
+    try (InputStream inputStream = resource.openInputStream();
+         XMLDecoder decoder = new XMLDecoder(inputStream);
+    ) {
+      return Cast.as(decoder.readObject(), clazz);
+    }
+  }
+
+}//END OF XMLSerializer

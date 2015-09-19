@@ -25,12 +25,24 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 /**
+ * The interface Tuple.
+ *
  * @author David B. Bracewell
  */
 public interface Tuple extends Iterable<Object> {
 
+  /**
+   * Degree int.
+   *
+   * @return the int
+   */
   int degree();
 
+  /**
+   * Array object [ ].
+   *
+   * @return the object [ ]
+   */
   Object[] array();
 
   @Override
