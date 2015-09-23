@@ -29,7 +29,6 @@ import com.google.common.base.Function;
 import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Chars;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.InputStream;
 import java.io.Reader;
@@ -53,9 +52,9 @@ import java.util.Locale;
 public class CommonTypeConverter {
 
   public static final Function<Object,Date> JAVA_DATE = new Function<Object, Date>() {
-    @Nullable
+    
     @Override
-    public Date apply(@Nullable Object input) {
+    public Date apply( Object input) {
       if( input == null ){
         return null;
       } else if( input instanceof Date){
@@ -94,9 +93,9 @@ public class CommonTypeConverter {
   };
 
   public static final Function<Object, java.sql.Date> SQL_DATE = new Function<Object, java.sql.Date>() {
-    @Nullable
+    
     @Override
-    public java.sql.Date apply(@Nullable Object input) {
+    public java.sql.Date apply( Object input) {
       if (input == null) {
         return null;
       } else if (input instanceof java.sql.Date) {
@@ -117,9 +116,9 @@ public class CommonTypeConverter {
    * Converts objects to characters
    */
   public static final Function<Object, Character> CHARACTER = new Function<Object, Character>() {
-    @Nullable
+    
     @Override
-    public Character apply(@Nullable Object input) {
+    public Character apply( Object input) {
       if (input == null) {
         return null;
       } else if (input instanceof Character) {
@@ -142,9 +141,9 @@ public class CommonTypeConverter {
    * the input is null.
    */
   public static final Function<Object, Class<?>> CLASS = new Function<Object, Class<?>>() {
-    @Nullable
+    
     @Override
-    public Class<?> apply(@Nullable Object input) {
+    public Class<?> apply( Object input) {
       if (input == null) {
         return null;
       } else if (input instanceof Class) {
@@ -162,7 +161,7 @@ public class CommonTypeConverter {
    * Identity function
    */
   public static final Function<Object, Object> OBJECT = new Function<Object, Object>() {
-    @Nullable
+    
     @Override
     public Object apply(Object input) {
       return input;
@@ -173,9 +172,9 @@ public class CommonTypeConverter {
    * InputStream, etc.)
    */
   public static final Function<Object, String> STRING = new Function<Object, String>() {
-    @Nullable
+    
     @Override
-    public String apply(@Nullable Object input) {
+    public String apply( Object input) {
       if (input == null) {
         return null;
       } else if (input instanceof CharSequence) {
@@ -213,9 +212,9 @@ public class CommonTypeConverter {
    * Converts objects to <code>StringBuilder</code>. It uses the {@link #STRING} function to convert items to Strings.
    */
   public static final Function<Object, StringBuilder> STRING_BUILDER = new Function<Object, StringBuilder>() {
-    @Nullable
+    
     @Override
-    public StringBuilder apply(@Nullable Object input) {
+    public StringBuilder apply( Object input) {
       if (input == null) {
         return null;
       } else if (input instanceof StringBuilder) {

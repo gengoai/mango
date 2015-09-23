@@ -28,7 +28,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Primitives;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -461,7 +460,7 @@ public final class ReflectionUtils {
     INSTANCE;
 
     @Override
-    public boolean apply(@Nullable Class<?> input) {
+    public boolean apply(Class<?> input) {
       return input != null && input.isInterface();
     }
   }

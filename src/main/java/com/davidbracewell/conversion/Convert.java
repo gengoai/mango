@@ -26,7 +26,6 @@ import com.davidbracewell.logging.Logger;
 import com.google.common.base.Defaults;
 import com.google.common.base.Function;
 
-import javax.annotation.Nullable;
 import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -159,7 +158,7 @@ public final class Convert {
    */
   public static <T> Function<Object, T> getConverter(final Class<T> clazz) {
     return new Function<Object, T>() {
-      @Nullable
+
       @Override
       public T apply(Object input) {
         return Convert.convert(input, clazz);
@@ -185,8 +184,8 @@ public final class Convert {
       return null;
     }
 
-    if( object instanceof Val ){
-      return convert(Cast.as(object,Val.class).get(),desiredType);
+    if (object instanceof Val) {
+      return convert(Cast.as(object, Val.class).get(), desiredType);
     }
 
     if (desiredType == null) {

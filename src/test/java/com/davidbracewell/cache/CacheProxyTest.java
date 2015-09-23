@@ -28,10 +28,9 @@ import com.google.common.base.Stopwatch;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.annotation.Nullable;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author David B. Bracewell
@@ -41,10 +40,10 @@ public class CacheProxyTest {
   @Cached(name = "com.davidbracewell.cache.globalCache")
   public static class TestFunction implements Function<String, String> {
 
-    @Nullable
+
     @Override
-    @Cached(keyMaker=KeyMaker.HashCodeKeyMaker.class)
-    public String apply(@Nullable String input) {
+    @Cached(keyMaker = KeyMaker.HashCodeKeyMaker.class)
+    public String apply(String input) {
       Threads.sleep(500);
       return input;
     }

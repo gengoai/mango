@@ -24,7 +24,6 @@ package com.davidbracewell.conversion;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 
-import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.*;
 
@@ -75,9 +74,9 @@ public final class Cast {
    */
   public static <F, T> Function<? super F, T> castingFunction() {
     return new Function<F, T>() {
-      @Nullable
+      
       @Override
-      public T apply(@Nullable F input) {
+      public T apply( F input) {
         return Cast.as(input);
       }
     };
@@ -93,9 +92,9 @@ public final class Cast {
   public static <F, T> Function<? super F, T> castingFunction(final Class<? extends T> clazz) {
     Preconditions.checkNotNull(clazz, "A class must be specified");
     return new Function<F, T>() {
-      @Nullable
+      
       @Override
-      public T apply(@Nullable F input) {
+      public T apply( F input) {
         return Cast.as(input,clazz);
       }
     };
