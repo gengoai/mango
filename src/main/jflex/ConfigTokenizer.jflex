@@ -110,8 +110,8 @@ IMPORT_SCRIPT = [^\n]+
 
 <YYINITIAL>{
      {PROPERTY} / ({WHITESPACE} {NEWLINE}*)* {START_SECTION}        {stack.push(YYINITIAL);yybegin(START_SECTION); return new ParserToken(yytext(),ConfigTokenType.SECTION_HEADER); }
-     {PROPERTY} / {WHITESPACE}* {APPEND_OPERATOR}                   {yybegin(APPENDER); return new ParserToken(yytext(),ConfigTokenType.APPEND_PROPERTY); }
-     {PROPERTY} / {WHITESPACE}* {ASSIGNMENT_OPERATOR}               {yybegin(START_VALUE); return new ParserToken(yytext(),ConfigTokenType.PROPERTY); }
+     {PROPERTY} / {WHITESPACE}* {APPEND_OPERATOR}                   {stack.push(YYINITIAL);yybegin(APPENDER); return new ParserToken(yytext(),ConfigTokenType.APPEND_PROPERTY); }
+     {PROPERTY} / {WHITESPACE}* {ASSIGNMENT_OPERATOR}               {stack.push(YYINITIAL);yybegin(START_VALUE); return new ParserToken(yytext(),ConfigTokenType.PROPERTY); }
      {SCRIPT}                                                       {yybegin(SCRIPT); return new ParserToken(yytext(),ConfigTokenType.SCRIPT); }
      {IMPORT}                                                       {yybegin(IMPORT); return new ParserToken(yytext(),ConfigTokenType.IMPORT); }
 }
@@ -127,7 +127,7 @@ IMPORT_SCRIPT = [^\n]+
 
 <VALUE>{
     {START_SECTION}     {stack.push(YYINITIAL);yybegin(SECTION_PROPERTY);}
-    {MLINEVALUE}        {yybegin(YYINITIAL);  return new ParserToken(yytext(),ConfigTokenType.VALUE); }
+    {MLINEVALUE}        {yybegin(stack.pop());  return new ParserToken(yytext(),ConfigTokenType.VALUE); }
 }
 
 <START_SECTION> {
@@ -136,8 +136,9 @@ IMPORT_SCRIPT = [^\n]+
 
 <SECTION_PROPERTY>{
     {PROPERTY} / ({WHITESPACE} {NEWLINE}*)* {START_SECTION}        {stack.push(SECTION_PROPERTY);yybegin(START_SECTION); return new ParserToken(yytext(),ConfigTokenType.SECTION_HEADER); }
-    {PROPERTY}/{WHITESPACE}*{ASSIGNMENT_OPERATOR}   {yybegin(START_SECTION_VALUE); return new ParserToken(yytext(),ConfigTokenType.PROPERTY);  }
-    {END_SECTION}                                   {yybegin(stack.pop()); return new ParserToken(yytext(),ConfigTokenType.END_SECTION); }
+    {PROPERTY}/{WHITESPACE}*{ASSIGNMENT_OPERATOR}                  {yybegin(START_SECTION_VALUE); return new ParserToken(yytext(),ConfigTokenType.PROPERTY);  }
+    {PROPERTY} / {WHITESPACE}* {APPEND_OPERATOR}                   {stack.push(SECTION_PROPERTY); yybegin(APPENDER); return new ParserToken(yytext(),ConfigTokenType.APPEND_PROPERTY); }
+    {END_SECTION}                                                  {yybegin(stack.pop()); return new ParserToken(yytext(),ConfigTokenType.END_SECTION); }
 }
 
 
