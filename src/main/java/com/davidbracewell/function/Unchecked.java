@@ -2,12 +2,15 @@ package com.davidbracewell.function;
 
 import com.google.common.base.Throwables;
 
+import java.util.function.*;
+
 /**
  * @author David B. Bracewell
  */
 public interface Unchecked {
 
-  default <T, U> SerializableBiConsumer<T, U> from(CheckedBiConsumer<T, U> checked) {
+
+  static <T, U> BiConsumer<T, U> biConsumer(CheckedBiConsumer<T, U> checked) {
     return (t, u) -> {
       try {
         checked.accept(t, u);
@@ -17,7 +20,7 @@ public interface Unchecked {
     };
   }
 
-  default <T, U, R> SerializableBiFunction<T, U, R> from(CheckedBiFunction<T, U, R> checked) {
+  static <T, U, R> BiFunction<T, U, R> biFunction(CheckedBiFunction<T, U, R> checked) {
     return (t, u) -> {
       try {
         return checked.apply(t, u);
@@ -27,7 +30,7 @@ public interface Unchecked {
     };
   }
 
-  default <T> SerializableBinaryOperator<T> from(CheckedBinaryOperator<T> checked) {
+  static <T> BinaryOperator<T> binaryOperator(CheckedBinaryOperator<T> checked) {
     return (t, u) -> {
       try {
         return checked.apply(t, u);
@@ -37,7 +40,7 @@ public interface Unchecked {
     };
   }
 
-  default <T, U> SerializableBiPredicate<T, U> from(CheckedBiPredicate<T, U> checked) {
+  static <T, U> BiPredicate<T, U> biPredicate(CheckedBiPredicate<T, U> checked) {
     return (t, u) -> {
       try {
         return checked.test(t, u);
@@ -47,7 +50,7 @@ public interface Unchecked {
     };
   }
 
-  default SerializableBooleanSupplier from(CheckedBooleanSupplier checked) {
+  static BooleanSupplier booleanSupplier(CheckedBooleanSupplier checked) {
     return () -> {
       try {
         return checked.getAsBoolean();
@@ -57,7 +60,7 @@ public interface Unchecked {
     };
   }
 
-  default <T> SerializableConsumer<T> from(CheckedConsumer<T> checked) {
+  static <T> Consumer<T> consumer(CheckedConsumer<T> checked) {
     return (t) -> {
       try {
         checked.accept(t);
@@ -67,7 +70,7 @@ public interface Unchecked {
     };
   }
 
-  default SerializableDoubleBinaryOperator from(CheckedDoubleBinaryOperator checked) {
+  static DoubleBinaryOperator doubleBinaryOperator(CheckedDoubleBinaryOperator checked) {
     return (t, u) -> {
       try {
         return checked.apply(t, u);
@@ -77,7 +80,7 @@ public interface Unchecked {
     };
   }
 
-  default SerializableDoubleConsumer from(CheckedDoubleConsumer checked) {
+  static DoubleConsumer doubleConsumer(CheckedDoubleConsumer checked) {
     return (t) -> {
       try {
         checked.apply(t);
@@ -87,7 +90,7 @@ public interface Unchecked {
     };
   }
 
-  default <R> SerializableDoubleFunction<R> from(CheckedDoubleFunction<R> checked) {
+  static <R> DoubleFunction<R> doubleFunction(CheckedDoubleFunction<R> checked) {
     return (r) -> {
       try {
         return checked.apply(r);
@@ -97,7 +100,7 @@ public interface Unchecked {
     };
   }
 
-  default SerializableDoublePredicate from(CheckedDoublePredicate checked) {
+  static DoublePredicate doublePredicate(CheckedDoublePredicate checked) {
     return (t) -> {
       try {
         return checked.test(t);
@@ -107,7 +110,7 @@ public interface Unchecked {
     };
   }
 
-  default SerializableDoubleSupplier from(CheckedDoubleSupplier checked) {
+  static DoubleSupplier doubleSupplier(CheckedDoubleSupplier checked) {
     return () -> {
       try {
         return checked.getAsDouble();
@@ -117,7 +120,7 @@ public interface Unchecked {
     };
   }
 
-  default SerializableDoubleToIntFunction from(CheckedDoubleToIntFunction checked) {
+  static DoubleToIntFunction doubleToIntFunction(CheckedDoubleToIntFunction checked) {
     return (t) -> {
       try {
         return checked.applyAsInt(t);
@@ -127,7 +130,7 @@ public interface Unchecked {
     };
   }
 
-  default SerializableDoubleToLongFunction from(CheckedDoubleToLongFunction checked) {
+  static DoubleToLongFunction doubleToLongFunction(CheckedDoubleToLongFunction checked) {
     return (t) -> {
       try {
         return checked.applyAsLong(t);
@@ -137,7 +140,7 @@ public interface Unchecked {
     };
   }
 
-  default SerializableDoubleUnaryOperator from(CheckedDoubleUnaryOperator checked) {
+  static DoubleUnaryOperator doubleUnaryOperator(CheckedDoubleUnaryOperator checked) {
     return (t) -> {
       try {
         return checked.applyAsDouble(t);
@@ -147,7 +150,7 @@ public interface Unchecked {
     };
   }
 
-  default <T, R> SerializableFunction<T, R> from(CheckedFunction<T, R> checked) {
+  static <T, R> Function<T, R> function(CheckedFunction<T, R> checked) {
     return (t) -> {
       try {
         return checked.apply(t);
@@ -157,7 +160,7 @@ public interface Unchecked {
     };
   }
 
-  default SerializableIntBinaryOperator from(CheckedIntBinaryOperator checked) {
+  static IntBinaryOperator intBinaryOperator(CheckedIntBinaryOperator checked) {
     return (t, u) -> {
       try {
         return checked.apply(t, u);
@@ -167,7 +170,7 @@ public interface Unchecked {
     };
   }
 
-  default SerializableIntConsumer from(CheckedIntConsumer checked) {
+  static IntConsumer intConsumer(CheckedIntConsumer checked) {
     return (t) -> {
       try {
         checked.apply(t);
@@ -177,7 +180,7 @@ public interface Unchecked {
     };
   }
 
-  default <R> SerializableIntFunction<R> from(CheckedIntFunction<R> checked) {
+  static <R> IntFunction<R> intFunction(CheckedIntFunction<R> checked) {
     return (r) -> {
       try {
         return checked.apply(r);
@@ -187,7 +190,7 @@ public interface Unchecked {
     };
   }
 
-  default SerializableIntPredicate from(CheckedIntPredicate checked) {
+  static IntPredicate intPredicate(CheckedIntPredicate checked) {
     return (t) -> {
       try {
         return checked.test(t);
@@ -197,7 +200,7 @@ public interface Unchecked {
     };
   }
 
-  default SerializableIntSupplier from(CheckedIntSupplier checked) {
+  static IntSupplier intSupplier(CheckedIntSupplier checked) {
     return () -> {
       try {
         return checked.getAsInt();
@@ -207,7 +210,7 @@ public interface Unchecked {
     };
   }
 
-  default SerializableIntToDoubleFunction from(CheckedIntToDoubleFunction checked) {
+  static IntToDoubleFunction intToDoubleFunction(CheckedIntToDoubleFunction checked) {
     return (t) -> {
       try {
         return checked.applyAsDouble(t);
@@ -217,7 +220,7 @@ public interface Unchecked {
     };
   }
 
-  default SerializableIntToLongFunction from(CheckedIntToLongFunction checked) {
+  static IntToLongFunction intToLongFunction(CheckedIntToLongFunction checked) {
     return (t) -> {
       try {
         return checked.applyAsLong(t);
@@ -227,7 +230,7 @@ public interface Unchecked {
     };
   }
 
-  default SerializableIntUnaryOperator from(CheckedIntUnaryOperator checked) {
+  static IntUnaryOperator intUnaryOperator(CheckedIntUnaryOperator checked) {
     return (t) -> {
       try {
         return checked.applyAsInt(t);
@@ -237,7 +240,7 @@ public interface Unchecked {
     };
   }
 
-  default SerializableLongBinaryOperator from(CheckedLongBinaryOperator checked) {
+  static LongBinaryOperator longBinaryOperator(CheckedLongBinaryOperator checked) {
     return (t, u) -> {
       try {
         return checked.apply(t, u);
@@ -247,7 +250,7 @@ public interface Unchecked {
     };
   }
 
-  default SerializableLongConsumer from(CheckedLongConsumer checked) {
+  static LongConsumer longConsumer(CheckedLongConsumer checked) {
     return (t) -> {
       try {
         checked.apply(t);
@@ -257,7 +260,7 @@ public interface Unchecked {
     };
   }
 
-  default <R> SerializableLongFunction<R> from(CheckedLongFunction<R> checked) {
+  static <R> LongFunction<R> longFunction(CheckedLongFunction<R> checked) {
     return (r) -> {
       try {
         return checked.apply(r);
@@ -267,7 +270,7 @@ public interface Unchecked {
     };
   }
 
-  default SerializableLongPredicate from(CheckedLongPredicate checked) {
+  static LongPredicate longPredicate(CheckedLongPredicate checked) {
     return (t) -> {
       try {
         return checked.test(t);
@@ -277,7 +280,7 @@ public interface Unchecked {
     };
   }
 
-  default SerializableLongSupplier from(CheckedLongSupplier checked) {
+  static LongSupplier longSupplier(CheckedLongSupplier checked) {
     return () -> {
       try {
         return checked.getAsLong();
@@ -287,7 +290,7 @@ public interface Unchecked {
     };
   }
 
-  default SerializableLongToDoubleFunction from(CheckedLongToDoubleFunction checked) {
+  static LongToDoubleFunction longToDoubleFunction(CheckedLongToDoubleFunction checked) {
     return (t) -> {
       try {
         return checked.applyAsDouble(t);
@@ -297,7 +300,7 @@ public interface Unchecked {
     };
   }
 
-  default SerializableLongToIntFunction from(CheckedLongToIntFunction checked) {
+  static LongToIntFunction longToIntFunction(CheckedLongToIntFunction checked) {
     return (t) -> {
       try {
         return checked.applyAsInt(t);
@@ -307,7 +310,7 @@ public interface Unchecked {
     };
   }
 
-  default SerializableLongUnaryOperator from(CheckedLongUnaryOperator checked) {
+  static LongUnaryOperator longUnaryOperator(CheckedLongUnaryOperator checked) {
     return (t) -> {
       try {
         return checked.applyAsLong(t);
@@ -317,7 +320,7 @@ public interface Unchecked {
     };
   }
 
-  default <T> SerializableObjDoubleConsumer<T> from(CheckedObjDoubleConsumer<T> checked) {
+  static <T> ObjDoubleConsumer<T> objDoubleConsumer(CheckedObjDoubleConsumer<T> checked) {
     return (t, value) -> {
       try {
         checked.accept(t, value);
@@ -327,7 +330,7 @@ public interface Unchecked {
     };
   }
 
-  default <T> SerializableObjIntConsumer<T> from(CheckedObjIntConsumer<T> checked) {
+  static <T> ObjIntConsumer<T> objIntConsumer(CheckedObjIntConsumer<T> checked) {
     return (t, value) -> {
       try {
         checked.accept(t, value);
@@ -337,7 +340,7 @@ public interface Unchecked {
     };
   }
 
-  default <T> SerializableObjLongConsumer<T> from(CheckedObjLongConsumer<T> checked) {
+  static <T> ObjLongConsumer<T> objLongConsumer(CheckedObjLongConsumer<T> checked) {
     return (t, value) -> {
       try {
         checked.accept(t, value);
@@ -347,7 +350,7 @@ public interface Unchecked {
     };
   }
 
-  default <T> SerializablePredicate<T> from(CheckedPredicate<T> checked) {
+  static <T> Predicate<T> predicate(CheckedPredicate<T> checked) {
     return (t) -> {
       try {
         return checked.test(t);
@@ -357,7 +360,7 @@ public interface Unchecked {
     };
   }
 
-  default <T> SerializableSupplier<T> from(CheckedSupplier<T> checked) {
+  static <T> Supplier<T> supplier(CheckedSupplier<T> checked) {
     return () -> {
       try {
         return checked.get();
@@ -367,7 +370,7 @@ public interface Unchecked {
     };
   }
 
-  default <T, U> SerializableToDoubleBiFunction<T, U> from(CheckedToDoubleBiFunction<T, U> checked) {
+  static <T, U> ToDoubleBiFunction<T, U> toDoubleBiFunction(CheckedToDoubleBiFunction<T, U> checked) {
     return (t, u) -> {
       try {
         return checked.applyAsDouble(t, u);
@@ -377,7 +380,7 @@ public interface Unchecked {
     };
   }
 
-  default <T> SerializableToDoubleFunction<T> from(CheckedToDoubleFunction<T> checked) {
+  static <T> ToDoubleFunction<T> toDoubleFunction(CheckedToDoubleFunction<T> checked) {
     return (t) -> {
       try {
         return checked.applyAsDouble(t);
@@ -387,7 +390,7 @@ public interface Unchecked {
     };
   }
 
-  default <T, U> SerializableToIntBiFunction<T, U> from(CheckedToIntBiFunction<T, U> checked) {
+  static <T, U> ToIntBiFunction<T, U> toIntBiFunction(CheckedToIntBiFunction<T, U> checked) {
     return (t, u) -> {
       try {
         return checked.applyAsInt(t, u);
@@ -397,7 +400,7 @@ public interface Unchecked {
     };
   }
 
-  default <T> SerializableToIntFunction<T> from(CheckedToIntFunction<T> checked) {
+  static <T> ToIntFunction<T> toIntFunction(CheckedToIntFunction<T> checked) {
     return (t) -> {
       try {
         return checked.applyAsInt(t);
@@ -407,7 +410,7 @@ public interface Unchecked {
     };
   }
 
-  default <T, U> SerializableToLongBiFunction<T, U> from(CheckedToLongBiFunction<T, U> checked) {
+  static  <T, U> ToLongBiFunction<T, U> toLongBiFunction(CheckedToLongBiFunction<T, U> checked) {
     return (t, u) -> {
       try {
         return checked.applyAsLong(t, u);
@@ -417,7 +420,7 @@ public interface Unchecked {
     };
   }
 
-  default <T> SerializableToLongFunction<T> from(CheckedToLongFunction<T> checked) {
+  static <T> ToLongFunction<T> toLongFunction(CheckedToLongFunction<T> checked) {
     return (t) -> {
       try {
         return checked.applyAsLong(t);
@@ -427,7 +430,7 @@ public interface Unchecked {
     };
   }
 
-  default <T> SerializableUnaryOperator<T> from(CheckedUnaryOperator<T> checked) {
+  static <T> UnaryOperator<T> unaryOperator(CheckedUnaryOperator<T> checked) {
     return (t) -> {
       try {
         return checked.apply(t);
