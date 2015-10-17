@@ -58,7 +58,7 @@ WHITESPACE = [\p{Z}\t]
 
 ALPHANUM = ([:letter:]|[:digit:])+
 
-PROPERTY = {ALPHANUM}+([".""_"]{ALPHANUM})*
+PROPERTY = ("_"|{ALPHANUM}+([".""_"]{ALPHANUM})*)
 
 ASSIGNMENT_OPERATOR = [:=]
 

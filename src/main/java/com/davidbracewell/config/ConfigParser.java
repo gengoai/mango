@@ -147,7 +147,17 @@ class ConfigParser extends Parser {
   }
 
   private void setProperty(PrefixExpression assignment, String section) {
-    String key = section + assignment.operator.text;
+    String key = section;
+
+    if( assignment.operator.text.equals("_")){
+      if( StringUtils.isNullOrBlank(section)){
+        throw new IllegalStateException("Trying to set a non-section value using the \"_\" property.");
+      }
+      key  = section.substring(0,section.length()-1);
+    } else {
+      key = section + assignment.operator.text;
+    }
+
     String value = assignment.right.as(ValueExpression.class).value;
 
     //unescape things
