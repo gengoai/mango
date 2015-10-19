@@ -25,6 +25,7 @@ import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.structured.csv.CSVReader;
+import com.davidbracewell.stream.Streams;
 import com.davidbracewell.string.StringUtils;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;

@@ -21,7 +21,6 @@
 
 package com.davidbracewell.stream;
 
-import com.davidbracewell.collection.Streams;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.SerializableBinaryOperator;
 import com.davidbracewell.function.SerializableConsumer;
@@ -93,7 +92,7 @@ public class JavaMStream<T> implements MStream<T> {
   }
 
   @Override
-  public <R, U> MPairStream<R, U> mapToPair(@NonNull Function<? super T, ? extends Map.Entry<? extends R, ? extends U>> function) {
+  public <R, U> MPairStream<R, U> mapToPair(@NonNull SerializableFunction<? super T, ? extends Map.Entry<? extends R, ? extends U>> function) {
     return new JavaMPairStream<>(stream.map(f -> Cast.<Map.Entry<R, U>>as(function.apply(f))));
   }
 
@@ -184,7 +183,7 @@ public class JavaMStream<T> implements MStream<T> {
   }
 
   @Override
-  public <U> MPairStream<U, Iterable<T>> groupBy(@NonNull Function<? super T, ? extends U> function) {
+  public <U> MPairStream<U, Iterable<T>> groupBy(@NonNull SerializableFunction<? super T, ? extends U> function) {
     return new JavaMPairStream<>(
       stream.collect(Collectors.groupingBy(function)).entrySet().stream().map(e -> Tuple2.<U, Iterable<T>>of(e.getKey(), e.getValue()))
     );

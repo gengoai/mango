@@ -21,7 +21,7 @@
 
 package com.davidbracewell.io.structured;
 
-import com.davidbracewell.collection.Streams;
+import com.davidbracewell.stream.Streams;
 import com.google.common.collect.Lists;
 import lombok.NonNull;
 

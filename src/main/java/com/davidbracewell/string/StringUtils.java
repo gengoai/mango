@@ -21,7 +21,7 @@
 
 package com.davidbracewell.string;
 
-import com.davidbracewell.collection.Streams;
+import com.davidbracewell.stream.Streams;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.structured.csv.CSVReader;
 import com.google.common.base.CharMatcher;

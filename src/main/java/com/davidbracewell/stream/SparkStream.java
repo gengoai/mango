@@ -21,24 +21,22 @@
 
 package com.davidbracewell.stream;
 
+import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.SerializableBinaryOperator;
 import com.davidbracewell.function.SerializableConsumer;
 import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.function.SerializablePredicate;
 import com.davidbracewell.string.StringUtils;
-import org.apache.spark.SparkConf;
+import com.google.common.collect.Ordering;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToLongFunction;
 import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * @author David B. Bracewell
@@ -49,6 +47,23 @@ public class SparkStream<T> implements MStream<T> {
 
   public SparkStream(JavaRDD<T> rdd) {
     this.rdd = rdd;
+  }
+
+  public static void main(String[] args) throws Exception {
+
+    Config.initialize("");
+    Config.setProperty("spark.master", "local[*]");
+
+    try (MStream<String> stream = Streams.textFile("/home/david/build.py", false)) {
+      stream.flatMap(str -> Arrays.asList(str.toLowerCase().split("[\\W\\s]+")))
+        .filter(str -> !StringUtils.isNullOrBlank(str))
+        .countByValue()
+        .entrySet()
+        .stream()
+        .sorted(Map.Entry.comparingByValue(Ordering.natural().reversed()))
+        .forEach(e -> System.out.println(e.getKey() + "\t" + e.getValue()));
+    }
+
   }
 
   @Override
@@ -71,13 +86,20 @@ public class SparkStream<T> implements MStream<T> {
   }
 
   @Override
-  public <R, U> MPairStream<R, U> mapToPair(Function<? super T, ? extends Map.Entry<? extends R, ? extends U>> function) {
-    return null;
+  public <R, U> MPairStream<R, U> mapToPair(SerializableFunction<? super T, ? extends Map.Entry<? extends R, ? extends U>> function) {
+    return new SparkPairStream<>(
+      rdd.mapToPair(t -> {
+        Map.Entry<R, U> entry = Cast.as(function.apply(t));
+        return new Tuple2<>(entry.getKey(), entry.getValue());
+      })
+    );
   }
 
   @Override
-  public <U> MPairStream<U, Iterable<T>> groupBy(Function<? super T, ? extends U> function) {
-    return null;
+  public <U> MPairStream<U, Iterable<T>> groupBy(SerializableFunction<? super T, ? extends U> function) {
+    return new SparkPairStream<>(
+      rdd.groupBy(t -> function.apply(t))
+    );
   }
 
   @Override
@@ -178,14 +200,15 @@ public class SparkStream<T> implements MStream<T> {
   @Override
   public <U> MPairStream<T, U> zip(MStream<U> other) {
     if (other instanceof SparkStream) {
-      //
+      return new SparkPairStream<>(rdd.zip(Cast.<SparkStream<U>>as(other).rdd));
     }
-    return null;
+    JavaSparkContext jsc = new JavaSparkContext(rdd.context());
+    return new SparkPairStream<>(rdd.zip(jsc.parallelize(other.collect(), rdd.partitions().size())));
   }
 
   @Override
   public MPairStream<T, Long> zipWithIndex() {
-    return null;//rdd.zipWithIndex();
+    return new SparkPairStream<>(rdd.zipWithIndex());
   }
 
   @Override
@@ -196,21 +219,6 @@ public class SparkStream<T> implements MStream<T> {
   @Override
   public MDoubleStream mapToDouble(ToDoubleFunction<? super T> function) {
     return null;
-  }
-
-
-  public static void main(String[] args) throws Exception {
-    SparkConf conf = new SparkConf();
-    conf.setAppName("Test");
-    conf.setMaster("local[*]");
-    JavaSparkContext sc = new JavaSparkContext(conf);
-
-
-    SparkStream<String> stream = new SparkStream<>(sc.parallelize(IntStream.range(0, 10000).mapToObj(i -> StringUtils.randomHexString(10)).collect(Collectors.toList()),10));
-    stream.sorted(true).limit(10).take(100).forEach(System.out::println);
-//    new JavaMStream<>(IntStream.range(0, 10000).mapToObj(i -> StringUtils.randomHexString(10)).collect(Collectors.toList()))
-//      .sorted(true).take(100).forEach(System.out::println);
-
   }
 
 }//END OF SparkStream

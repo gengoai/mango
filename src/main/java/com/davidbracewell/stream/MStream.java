@@ -28,6 +28,7 @@ import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.function.SerializablePredicate;
 import com.google.common.collect.Ordering;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
@@ -76,7 +77,7 @@ public interface MStream<T> extends AutoCloseable {
    * @param function the function
    * @return the m pair stream
    */
-  <R, U> MPairStream<R, U> mapToPair(Function<? super T, ? extends Map.Entry<? extends R, ? extends U>> function);
+  <R, U> MPairStream<R, U> mapToPair(SerializableFunction<? super T, ? extends Map.Entry<? extends R, ? extends U>> function);
 
   /**
    * Group by m pair stream.
@@ -85,7 +86,7 @@ public interface MStream<T> extends AutoCloseable {
    * @param function the function
    * @return the m pair stream
    */
-  <U> MPairStream<U, Iterable<T>> groupBy(Function<? super T, ? extends U> function);
+  <U> MPairStream<U, Iterable<T>> groupBy(SerializableFunction<? super T, ? extends U> function);
 
   /**
    * Collect r.

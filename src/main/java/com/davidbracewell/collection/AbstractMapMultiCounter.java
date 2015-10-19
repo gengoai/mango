@@ -1,6 +1,7 @@
 package com.davidbracewell.collection;
 
 import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.stream.Streams;
 import com.davidbracewell.tuple.Tuple2;
 import com.davidbracewell.tuple.Tuple3;
 import com.google.common.collect.Iterators;

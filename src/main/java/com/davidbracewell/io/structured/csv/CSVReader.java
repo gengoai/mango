@@ -21,7 +21,7 @@
 
 package com.davidbracewell.io.structured.csv;
 
-import com.davidbracewell.collection.Streams;
+import com.davidbracewell.stream.Streams;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.io.CSV;

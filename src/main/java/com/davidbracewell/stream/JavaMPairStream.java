@@ -21,6 +21,7 @@
 
 package com.davidbracewell.stream;
 
+import com.davidbracewell.function.SerializableBiConsumer;
 import lombok.NonNull;
 
 import java.util.Map;
@@ -44,7 +45,7 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U> {
   }
 
   @Override
-  public void forEach(@NonNull BiConsumer<? super T, ? super U> consumer) {
+  public void forEach(@NonNull SerializableBiConsumer<? super T, ? super U> consumer) {
     stream.forEach(e -> consumer.accept(e.getKey(), e.getValue()));
   }
 

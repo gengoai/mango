@@ -21,13 +21,13 @@
 
 package com.davidbracewell.stream;
 
-import java.util.function.BiConsumer;
+import com.davidbracewell.function.SerializableBiConsumer;
 
 /**
  * @author David B. Bracewell
  */
 public interface MPairStream<T,U> extends AutoCloseable{
 
-  void forEach(BiConsumer<? super T, ? super U> consumer);
+  void forEach(SerializableBiConsumer<? super T, ? super U> consumer);
 
 }//END OF MPairStream

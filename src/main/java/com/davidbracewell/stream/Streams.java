@@ -19,11 +19,19 @@
  * under the License.
  */
 
-package com.davidbracewell.collection;
+package com.davidbracewell.stream;
 
+import com.davidbracewell.config.Config;
+import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
+import com.google.common.base.Throwables;
 import lombok.NonNull;
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaSparkContext;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
@@ -35,6 +43,23 @@ import java.util.stream.StreamSupport;
  * @author David B. Bracewell
  */
 public interface Streams {
+
+  static MStream<String> textFile(String location, boolean distributed) {
+    if (distributed) {
+      SparkConf conf = new SparkConf();
+      if( Config.hasProperty("spark.master")) {
+        conf.setMaster(Config.get("spark.master").asString());
+      }
+      conf.setAppName(StringUtils.randomHexString(20));
+      JavaSparkContext sc = new JavaSparkContext(conf);
+      return new SparkStream<>(sc.textFile(location));
+    }
+    try {
+      return new JavaMStream<>(Files.lines(Paths.get(location)));
+    } catch (IOException e) {
+      throw Throwables.propagate(e);
+    }
+  }
 
   /**
    * From stream.
