@@ -21,13 +21,23 @@
 
 package com.davidbracewell.stream;
 
-import java.util.function.BiConsumer;
+import java.util.stream.LongStream;
 
 /**
  * @author David B. Bracewell
  */
-public interface MPairStream<T,U> extends AutoCloseable{
+public class JavaLongStream implements MLongStream {
 
-  void forEach(BiConsumer<? super T, ? super U> consumer);
+  private final LongStream stream;
 
-}//END OF MPairStream
+  public JavaLongStream(LongStream stream) {
+    this.stream = stream;
+  }
+
+
+  @Override
+  public void close() throws Exception {
+    stream.close();
+  }
+
+}//END OF JavaLongStream

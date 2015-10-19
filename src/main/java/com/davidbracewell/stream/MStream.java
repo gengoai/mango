@@ -21,49 +21,252 @@
 
 package com.davidbracewell.stream;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.BinaryOperator;
-import java.util.function.Consumer;
+import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.function.SerializableBinaryOperator;
+import com.davidbracewell.function.SerializableConsumer;
+import com.davidbracewell.function.SerializableFunction;
+import com.davidbracewell.function.SerializablePredicate;
+import com.google.common.collect.Ordering;
+
+import java.util.*;
 import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.function.ToDoubleFunction;
+import java.util.function.ToLongFunction;
 import java.util.stream.Collector;
 
 /**
+ * The interface M stream.
+ *
+ * @param <T> the type parameter
  * @author David B. Bracewell
  */
 public interface MStream<T> extends AutoCloseable {
 
+  /**
+   * Filter m stream.
+   *
+   * @param predicate the predicate
+   * @return the m stream
+   */
+  MStream<T> filter(SerializablePredicate<? super T> predicate);
 
-  MStream<T> filter(Predicate<? super T> predicate);
+  /**
+   * Map m stream.
+   *
+   * @param <R>      the type parameter
+   * @param function the function
+   * @return the m stream
+   */
+  <R> MStream<R> map(SerializableFunction<? super T, ? extends R> function);
 
-  <R> MStream<R> map(Function<? super T, ? extends R> function);
+  /**
+   * Flat map m stream.
+   *
+   * @param <R>    the type parameter
+   * @param mapper the mapper
+   * @return the m stream
+   */
+  <R> MStream<R> flatMap(SerializableFunction<? super T, ? extends Iterable<? extends R>> mapper);
 
-  <R> MStream<R> flatMap(Function<? super T, ? extends Iterable<? extends R>> mapper);
-
+  /**
+   * Map to pair m pair stream.
+   *
+   * @param <R>      the type parameter
+   * @param <U>      the type parameter
+   * @param function the function
+   * @return the m pair stream
+   */
   <R, U> MPairStream<R, U> mapToPair(Function<? super T, ? extends Map.Entry<? extends R, ? extends U>> function);
 
-  Optional<T> first();
+  /**
+   * Group by m pair stream.
+   *
+   * @param <U>      the type parameter
+   * @param function the function
+   * @return the m pair stream
+   */
+  <U> MPairStream<U, Iterable<T>> groupBy(Function<? super T, ? extends U> function);
 
-  MStream<T> sample(int number);
-
-  Optional<T> reduce(BinaryOperator<T> reducer);
-
-  long size();
-
-  MStream<T> distinct();
-
-  void forEach(Consumer<? super T> consumer);
-
+  /**
+   * Collect r.
+   *
+   * @param <R>       the type parameter
+   * @param collector the collector
+   * @return the r
+   */
   <R> R collect(Collector<? super T, T, R> collector);
 
+  /**
+   * Collect list.
+   *
+   * @return the list
+   */
+  List<T> collect();
+
+  /**
+   * Reduce optional.
+   *
+   * @param reducer the reducer
+   * @return the optional
+   */
+  Optional<T> reduce(SerializableBinaryOperator<T> reducer);
+
+  /**
+   * Fold t.
+   *
+   * @param zeroValue the zero value
+   * @param operator  the operator
+   * @return the t
+   */
+  T fold(T zeroValue, SerializableBinaryOperator<T> operator);
+
+  /**
+   * For each.
+   *
+   * @param consumer the consumer
+   */
+  void forEach(SerializableConsumer<? super T> consumer);
+
+  /**
+   * Iterator iterator.
+   *
+   * @return the iterator
+   */
+  Iterator<T> iterator();
+
+  /**
+   * First optional.
+   *
+   * @return the optional
+   */
+  Optional<T> first();
+
+  /**
+   * Sample m stream.
+   *
+   * @param number the number
+   * @return the m stream
+   */
+  MStream<T> sample(int number);
+
+  /**
+   * Size long.
+   *
+   * @return the long
+   */
+  long size();
+
+  /**
+   * Is empty boolean.
+   *
+   * @return the boolean
+   */
+  boolean isEmpty();
+
+  /**
+   * Count by value map.
+   *
+   * @return the map
+   */
+  Map<T, Long> countByValue();
+
+  /**
+   * Distinct m stream.
+   *
+   * @return the m stream
+   */
+  MStream<T> distinct();
+
+  /**
+   * Limit m stream.
+   *
+   * @param number the number
+   * @return the m stream
+   */
   MStream<T> limit(long number);
 
+  /**
+   * Take list.
+   *
+   * @param n the n
+   * @return the list
+   */
   List<T> take(int n);
 
+  /**
+   * Skip m stream.
+   *
+   * @param n the n
+   * @return the m stream
+   */
   MStream<T> skip(long n);
 
+  /**
+   * On close.
+   *
+   * @param closeHandler the close handler
+   */
   void onClose(Runnable closeHandler);
+
+  /**
+   * Max optional.
+   *
+   * @return the optional
+   */
+  default Optional<T> max() {
+    return max(Cast.as(Ordering.natural()));
+  }
+
+  /**
+   * Min optional.
+   *
+   * @return the optional
+   */
+  default Optional<T> min() {
+    return min(Cast.as(Ordering.natural()));
+  }
+
+  /**
+   * Sorted m stream.
+   *
+   * @return the m stream
+   */
+  MStream<T> sorted(boolean ascending);
+
+  /**
+   * Max optional.
+   *
+   * @param comparator the comparator
+   * @return the optional
+   */
+  Optional<T> max(Comparator<? super T> comparator);
+
+  /**
+   * Min optional.
+   *
+   * @param comparator the comparator
+   * @return the optional
+   */
+  Optional<T> min(Comparator<? super T> comparator);
+
+  /**
+   * Zip m pair stream.
+   *
+   * @param <U>   the type parameter
+   * @param other the other
+   * @return the m pair stream
+   */
+  <U> MPairStream<T, U> zip(MStream<U> other);
+
+  /**
+   * Zip with index m pair stream.
+   *
+   * @return the m pair stream
+   */
+  MPairStream<T, Long> zipWithIndex();
+
+  MLongStream mapToLong(ToLongFunction<? super T> function);
+
+  MDoubleStream mapToDouble(ToDoubleFunction<? super T> function);
 
 }//END OF MStream

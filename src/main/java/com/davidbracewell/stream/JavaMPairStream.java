@@ -21,7 +21,10 @@
 
 package com.davidbracewell.stream;
 
+import lombok.NonNull;
+
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 /**
@@ -38,6 +41,11 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U> {
   @Override
   public void close() throws Exception {
     stream.close();
+  }
+
+  @Override
+  public void forEach(@NonNull BiConsumer<? super T, ? super U> consumer) {
+    stream.forEach(e -> consumer.accept(e.getKey(), e.getValue()));
   }
 
 }//END OF JavaMPairStream

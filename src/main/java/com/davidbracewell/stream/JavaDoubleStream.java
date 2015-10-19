@@ -21,13 +21,22 @@
 
 package com.davidbracewell.stream;
 
-import java.util.function.BiConsumer;
+import java.util.stream.DoubleStream;
 
 /**
  * @author David B. Bracewell
  */
-public interface MPairStream<T,U> extends AutoCloseable{
+public class JavaDoubleStream implements MDoubleStream {
 
-  void forEach(BiConsumer<? super T, ? super U> consumer);
+  private final DoubleStream stream;
 
-}//END OF MPairStream
+  public JavaDoubleStream(DoubleStream stream) {
+    this.stream = stream;
+  }
+
+  @Override
+  public void close() throws Exception {
+    stream.close();
+  }
+
+}//END OF JavaDoubleStream

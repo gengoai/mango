@@ -22,6 +22,7 @@
 package com.davidbracewell.collection;
 
 import com.davidbracewell.tuple.Tuple2;
+import lombok.NonNull;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -38,7 +39,7 @@ public interface Streams {
   /**
    * From stream.
    *
-   * @param <T>       the type parameter
+   * @param <T>      the type parameter
    * @param iterator the iterator
    * @return the stream
    */
@@ -52,7 +53,7 @@ public interface Streams {
   /**
    * From stream.
    *
-   * @param <T>       the type parameter
+   * @param <T>      the type parameter
    * @param iterable the iterable
    * @return the stream
    */
@@ -66,7 +67,7 @@ public interface Streams {
   /**
    * Paralle from.
    *
-   * @param <T>       the type parameter
+   * @param <T>      the type parameter
    * @param iterator the iterator
    * @return the stream
    */
@@ -80,7 +81,7 @@ public interface Streams {
   /**
    * Paralle from.
    *
-   * @param <T>       the type parameter
+   * @param <T>      the type parameter
    * @param iterable the iterable
    * @return the stream
    */
@@ -95,7 +96,7 @@ public interface Streams {
   /**
    * Zip with index.
    *
-   * @param <T>  the type parameter
+   * @param <T>    the type parameter
    * @param stream the stream
    * @return the stream
    */
@@ -110,21 +111,22 @@ public interface Streams {
   /**
    * Zip stream.
    *
-   * @param <T>  the type parameter
-   * @param <U>  the type parameter
+   * @param <T>     the type parameter
+   * @param <U>     the type parameter
    * @param stream1 the stream 1
    * @param stream2 the stream 2
    * @return the stream
    */
-  static <T, U> Stream<Map.Entry<T, U>> zip(Stream<T> stream1, Stream<U> stream2) {
+  static <T, U> Stream<Map.Entry<T, U>> zip(@NonNull final Stream<T> stream1, @NonNull final Stream<U> stream2) {
     if (stream1 == null || stream2 == null) {
       return Stream.empty();
     }
+    return zip(stream1.iterator(), stream2.iterator());
+  }
 
+
+  static <T, U> Stream<Map.Entry<T, U>> zip(@NonNull final Iterator<T> iterator1, @NonNull final Iterator<U> iterator2) {
     return from(new Iterator<Map.Entry<T, U>>() {
-      final Iterator<T> iterator1 = stream1.iterator();
-      final Iterator<U> iterator2 = stream2.iterator();
-
       @Override
       public boolean hasNext() {
         return iterator1.hasNext() && iterator2.hasNext();
