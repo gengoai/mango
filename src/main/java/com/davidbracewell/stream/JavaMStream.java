@@ -92,6 +92,13 @@ public class JavaMStream<T> implements MStream<T> {
   }
 
   @Override
+  public <R, U> MPairStream<R, U> flatMapToPair(SerializableFunction<? super T, ? extends Iterable<? extends Map.Entry<? extends R, ? extends U>>> function) {
+    return new JavaMPairStream<>(
+      stream.flatMap(t -> Cast.as(function.apply(t)))
+    );
+  }
+
+  @Override
   public <R, U> MPairStream<R, U> mapToPair(@NonNull SerializableFunction<? super T, ? extends Map.Entry<? extends R, ? extends U>> function) {
     return new JavaMPairStream<>(stream.map(f -> Cast.<Map.Entry<R, U>>as(function.apply(f))));
   }
@@ -231,4 +238,8 @@ public class JavaMStream<T> implements MStream<T> {
     return new JavaLongStream(stream.mapToLong(function));
   }
 
+  @Override
+  public MStream<T> cache() {
+    return this;
+  }
 }//END OF JavaMStream

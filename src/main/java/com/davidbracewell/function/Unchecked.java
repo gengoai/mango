@@ -28,6 +28,17 @@ import java.util.function.*;
 
 public interface Unchecked {
 
+  static Runnable runnable(CheckedRunnable runnable) {
+    return (Serializable & Runnable) () -> {
+      try {
+        runnable.run();
+      } catch (Throwable e) {
+        throw Throwables.propagate(e);
+      }
+    };
+  }
+
+
   /**
    * Generates a version of DoubleToIntFunction that will capture exceptions and rethrow them as runtime exceptions
    *

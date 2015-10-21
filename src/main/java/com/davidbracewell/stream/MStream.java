@@ -70,6 +70,16 @@ public interface MStream<T> extends AutoCloseable {
   <R> MStream<R> flatMap(SerializableFunction<? super T, ? extends Iterable<? extends R>> mapper);
 
   /**
+   * Flat map to pair m pair stream.
+   *
+   * @param <R>      the type parameter
+   * @param <U>      the type parameter
+   * @param function the function
+   * @return the m pair stream
+   */
+  <R,U> MPairStream<R,U> flatMapToPair(SerializableFunction<? super T, ? extends Iterable<? extends Map.Entry<? extends R, ? extends U>>> function);
+
+  /**
    * Map to pair m pair stream.
    *
    * @param <R>      the type parameter
@@ -230,6 +240,7 @@ public interface MStream<T> extends AutoCloseable {
   /**
    * Sorted m stream.
    *
+   * @param ascending the ascending
    * @return the m stream
    */
   MStream<T> sorted(boolean ascending);
@@ -266,8 +277,27 @@ public interface MStream<T> extends AutoCloseable {
    */
   MPairStream<T, Long> zipWithIndex();
 
+  /**
+   * Map to long m long stream.
+   *
+   * @param function the function
+   * @return the m long stream
+   */
   MLongStream mapToLong(ToLongFunction<? super T> function);
 
+  /**
+   * Map to double m double stream.
+   *
+   * @param function the function
+   * @return the m double stream
+   */
   MDoubleStream mapToDouble(ToDoubleFunction<? super T> function);
+
+  /**
+   * Cache m stream.
+   *
+   * @return the m stream
+   */
+  MStream<T> cache();
 
 }//END OF MStream

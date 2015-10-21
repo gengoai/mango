@@ -44,10 +44,14 @@ import java.util.stream.StreamSupport;
  */
 public interface Streams {
 
+  static MStream<String> textFile(String location) {
+    return textFile(location, Config.get("streams.distributed").asBooleanValue(false));
+  }
+
   static MStream<String> textFile(String location, boolean distributed) {
     if (distributed) {
       SparkConf conf = new SparkConf();
-      if( Config.hasProperty("spark.master")) {
+      if (Config.hasProperty("spark.master")) {
         conf.setMaster(Config.get("spark.master").asString());
       }
       conf.setAppName(StringUtils.randomHexString(20));
@@ -59,6 +63,17 @@ public interface Streams {
     } catch (IOException e) {
       throw Throwables.propagate(e);
     }
+  }
+
+  static <K, V> MPairStream<K, V> of(Map<? extends K, ? extends V> map) {
+    return of(map, Config.get("streams.distributed").asBooleanValue(false));
+  }
+
+  static <K, V> MPairStream<K, V> of(Map<? extends K, ? extends V> map, boolean distributed) {
+    if (distributed) {
+
+    }
+    return new JavaMPairStream<>(map);
   }
 
   /**

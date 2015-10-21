@@ -21,11 +21,18 @@
 
 package com.davidbracewell.stream;
 
-import com.davidbracewell.function.SerializableBiConsumer;
+import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.function.*;
+import com.davidbracewell.tuple.Tuple2;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimaps;
 import lombok.NonNull;
 
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -33,11 +40,34 @@ import java.util.stream.Stream;
  */
 public class JavaMPairStream<T, U> implements MPairStream<T, U> {
 
-  private final Stream<? extends Map.Entry<T, U>> stream;
+  private final Stream<Map.Entry<T, U>> stream;
 
-  public JavaMPairStream(Stream<Map.Entry<T, U>> stream) {
-    this.stream = stream;
+
+  public JavaMPairStream(Map<? extends T, ? extends U> map) {
+    this(map.entrySet().stream());
   }
+
+  public JavaMPairStream(Stream<? extends Map.Entry<? extends T, ? extends U>> stream) {
+    this.stream = stream.map(Cast::as);
+  }
+
+  @Override
+  public <V> MPairStream<T, Map.Entry<U, V>> join(MPairStream<? super T, ? super V> other) {
+    Map<T, Iterable<V>> map = Cast.as(other.groupByKey().collectAsMap());
+    return new JavaMPairStream<>(stream.flatMap(e -> {
+      List<Map.Entry<T, Map.Entry<U, V>>> list = new LinkedList<>();
+      if (map.containsKey(e.getKey())) {
+        map.get(e.getKey()).forEach(v -> list.add(Tuple2.of(e.getKey(), Tuple2.of(e.getValue(), v))));
+      }
+      return list.stream();
+    }));
+  }
+
+  @Override
+  public MPairStream<T, U> reduceByKey(SerializableBinaryOperator<U> operator) {
+    return groupByKey().mapToPair((t, u) -> Tuple2.of(t, Streams.from(u).reduce(operator).orElse(null)));
+  }
+
 
   @Override
   public void close() throws Exception {
@@ -47,6 +77,52 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U> {
   @Override
   public void forEach(@NonNull SerializableBiConsumer<? super T, ? super U> consumer) {
     stream.forEach(e -> consumer.accept(e.getKey(), e.getValue()));
+  }
+
+  @Override
+  public <R> MStream<R> map(@NonNull SerializableBiFunction<? super T, ? super U, ? extends R> function) {
+    return new JavaMStream<>(stream.map(e -> function.apply(e.getKey(), e.getValue())));
+  }
+
+  @Override
+  public MPairStream<T, Iterable<U>> groupByKey() {
+    return new JavaMPairStream<>(
+      stream.collect(Collectors.groupingBy(Map.Entry::getKey))
+        .entrySet()
+        .stream()
+        .map(e -> Tuple2.of(e.getKey(), e.getValue().stream().map(Map.Entry::getValue).collect(Collectors.toList())))
+    );
+  }
+
+  @Override
+  public <R, V> MPairStream<R, V> mapToPair(SerializableBiFunction<? super T, ? super U, ? extends Map.Entry<? extends R, ? extends V>> function) {
+    return new JavaMPairStream<>(stream.map(entry -> Cast.as(function.apply(entry.getKey(), entry.getValue()))));
+  }
+
+  @Override
+  public MPairStream<T, U> filter(SerializableBiPredicate<? super T, ? super U> predicate) {
+    return new JavaMPairStream<>(stream.filter(e -> predicate.test(e.getKey(), e.getValue())));
+  }
+
+  @Override
+  public Map<T, U> collectAsMap() {
+    return stream.collect(HashMap::new, (map, e) -> map.put(e.getKey(), e.getValue()), HashMap::putAll);
+  }
+
+  @Override
+  public MPairStream<T, U> filterByKey(SerializablePredicate<T> predicate) {
+    return new JavaMPairStream<>(stream.filter(e -> predicate.test(e.getKey())));
+  }
+
+  @Override
+  public MPairStream<T, U> filterByValue(SerializablePredicate<U> predicate) {
+    return new JavaMPairStream<>(stream.filter(e -> predicate.test(e.getValue())));
+  }
+
+
+  @Override
+  public List<Map.Entry<T, U>> collectAsList() {
+    return stream.map(Cast::<Map.Entry<T, U>>as).collect(Collectors.toList());
   }
 
 }//END OF JavaMPairStream

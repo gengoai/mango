@@ -21,13 +21,95 @@
 
 package com.davidbracewell.stream;
 
-import com.davidbracewell.function.SerializableBiConsumer;
+import com.davidbracewell.function.*;
+
+import java.util.List;
+import java.util.Map;
+import java.util.function.BinaryOperator;
 
 /**
+ * The interface M pair stream.
+ *
+ * @param <T> the type parameter
+ * @param <U> the type parameter
  * @author David B. Bracewell
  */
-public interface MPairStream<T,U> extends AutoCloseable{
+public interface MPairStream<T, U> extends AutoCloseable {
 
+  /**
+   * For each.
+   *
+   * @param consumer the consumer
+   */
   void forEach(SerializableBiConsumer<? super T, ? super U> consumer);
+
+  /**
+   * Map m stream.
+   *
+   * @param <R>      the type parameter
+   * @param function the function
+   * @return the m stream
+   */
+  <R> MStream<R> map(SerializableBiFunction<? super T, ? super U, ? extends R> function);
+
+  /**
+   * Map to pair m pair stream.
+   *
+   * @param <R>      the type parameter
+   * @param <V>      the type parameter
+   * @param function the function
+   * @return the m pair stream
+   */
+  <R, V> MPairStream<R, V> mapToPair(SerializableBiFunction<? super T, ? super U, ? extends Map.Entry<? extends R, ? extends V>> function);
+
+  /**
+   * Filter m pair stream.
+   *
+   * @param predicate the predicate
+   * @return the m pair stream
+   */
+  MPairStream<T, U> filter(SerializableBiPredicate<? super T, ? super U> predicate);
+
+  /**
+   * Group by key m pair stream.
+   *
+   * @return the m pair stream
+   */
+  MPairStream<T, Iterable<U>> groupByKey();
+
+  /**
+   * Collect as map map.
+   *
+   * @return the map
+   */
+  Map<T, U> collectAsMap();
+
+  /**
+   * Collect as list list.
+   *
+   * @return the list
+   */
+  List<Map.Entry<T,U>> collectAsList();
+
+  <V> MPairStream<T, Map.Entry<U,V>> join(MPairStream<? super T, ? super V> stream);
+
+
+  MPairStream<T,U> reduceByKey(SerializableBinaryOperator<U> operator);
+
+  /**
+   * Filter by key m pair stream.
+   *
+   * @param predicate the predicate
+   * @return the m pair stream
+   */
+  MPairStream<T, U> filterByKey(SerializablePredicate<T> predicate);
+
+  /**
+   * Filter by value m pair stream.
+   *
+   * @param predicate the predicate
+   * @return the m pair stream
+   */
+  MPairStream<T, U> filterByValue(SerializablePredicate<U> predicate);
 
 }//END OF MPairStream

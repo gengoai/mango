@@ -28,7 +28,6 @@ import com.davidbracewell.function.SerializableConsumer;
 import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.function.SerializablePredicate;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.collect.Ordering;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
@@ -37,6 +36,7 @@ import java.util.*;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToLongFunction;
 import java.util.stream.Collector;
+import java.util.stream.IntStream;
 
 /**
  * @author David B. Bracewell
@@ -50,20 +50,11 @@ public class SparkStream<T> implements MStream<T> {
   }
 
   public static void main(String[] args) throws Exception {
-
     Config.initialize("");
     Config.setProperty("spark.master", "local[*]");
 
-    try (MStream<String> stream = Streams.textFile("/home/david/build.py", false)) {
-      stream.flatMap(str -> Arrays.asList(str.toLowerCase().split("[\\W\\s]+")))
-        .filter(str -> !StringUtils.isNullOrBlank(str))
-        .countByValue()
-        .entrySet()
-        .stream()
-        .sorted(Map.Entry.comparingByValue(Ordering.natural().reversed()))
-        .forEach(e -> System.out.println(e.getKey() + "\t" + e.getValue()));
-    }
-
+    Map<String,Long> m = new JavaMStream<>(IntStream.range(0,100000).parallel().mapToObj(i -> StringUtils.randomHexString(7))).countByValue();
+    System.out.println(m.entrySet().stream().filter(e -> e.getValue() > 1).count());
   }
 
   @Override
@@ -83,6 +74,11 @@ public class SparkStream<T> implements MStream<T> {
   @Override
   public <R> MStream<R> flatMap(SerializableFunction<? super T, ? extends Iterable<? extends R>> mapper) {
     return new SparkStream<>(rdd.flatMap(t -> Cast.as(mapper.apply(t))));
+  }
+
+  @Override
+  public <R, U> MPairStream<R, U> flatMapToPair(SerializableFunction<? super T, ? extends Iterable<? extends Map.Entry<? extends R, ? extends U>>> function) {
+    return null;
   }
 
   @Override
@@ -219,6 +215,11 @@ public class SparkStream<T> implements MStream<T> {
   @Override
   public MDoubleStream mapToDouble(ToDoubleFunction<? super T> function) {
     return null;
+  }
+
+  @Override
+  public MStream<T> cache() {
+    return new SparkStream<>(rdd.cache());
   }
 
 }//END OF SparkStream

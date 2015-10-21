@@ -21,9 +21,12 @@
 
 package com.davidbracewell.function;
 
+import java.io.Serializable;
 import java.util.function.*;
 
 public interface Serialized {
+
+  static Runnable runnable(SerializableRunnable runnable){ return runnable;}
 
   /**
    * Generates a serialized version of DoubleToIntFunction

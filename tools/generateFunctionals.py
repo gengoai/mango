@@ -43,7 +43,8 @@ functionals = {
     "ToIntFunction<T>": ["int", "applyAsInt", "(T t)", "(t)"],
     "ToLongBiFunction<T,U>": ["Long", "applyAsLong", "(T t, U u)", "(t, u)"],
     "ToLongFunction<T>": ["long", "applyAsLong", "(T t)", "(t)"],
-    "UnaryOperator<T>": ["T", "apply", "(T t)", "(t)"]
+    "UnaryOperator<T>": ["T", "apply", "(T t)", "(t)"],
+    "Runnable" : ["void", "run", "()", "()"]
 }
 
 for (classGeneric, methodInformation) in functionals.iteritems():
