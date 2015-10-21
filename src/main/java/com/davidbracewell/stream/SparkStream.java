@@ -28,6 +28,7 @@ import com.davidbracewell.function.SerializableConsumer;
 import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.function.SerializablePredicate;
 import com.davidbracewell.string.StringUtils;
+import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
@@ -36,6 +37,7 @@ import java.util.*;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToLongFunction;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
@@ -49,11 +51,20 @@ public class SparkStream<T> implements MStream<T> {
     this.rdd = rdd;
   }
 
+  public SparkStream(List<T> collection) {
+    SparkConf conf = new SparkConf();
+    if (Config.hasProperty("spark.master")) {
+      conf.setMaster(Config.get("spark.master").asString());
+    }
+    conf.setAppName(StringUtils.randomHexString(20));
+    JavaSparkContext sc = new JavaSparkContext(conf);
+    this.rdd = sc.parallelize(collection, Math.min(4, collection.size() / 100));
+  }
+
   public static void main(String[] args) throws Exception {
     Config.initialize("");
     Config.setProperty("spark.master", "local[*]");
-
-    Map<String,Long> m = new JavaMStream<>(IntStream.range(0,100000).parallel().mapToObj(i -> StringUtils.randomHexString(7))).countByValue();
+    Map<String, Long> m = new SparkStream<>(IntStream.range(0, 100000).parallel().mapToObj(i -> StringUtils.randomHexString(7)).collect(Collectors.toList())).countByValue();
     System.out.println(m.entrySet().stream().filter(e -> e.getValue() > 1).count());
   }
 
