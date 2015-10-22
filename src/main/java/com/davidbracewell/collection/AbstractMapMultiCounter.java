@@ -1,7 +1,6 @@
 package com.davidbracewell.collection;
 
 import com.davidbracewell.conversion.Cast;
-import com.davidbracewell.stream.Streams;
 import com.davidbracewell.tuple.Tuple2;
 import com.davidbracewell.tuple.Tuple3;
 import com.google.common.collect.Iterators;
@@ -109,7 +108,7 @@ abstract class AbstractMapMultiCounter<K, V> implements MultiCounter<K, V>, Seri
 
   @Override
   public List<Map.Entry<K, V>> itemsByCount(boolean ascending) {
-    return Streams.from(new KeyKeyValueIterator())
+    return Collect.from(new KeyKeyValueIterator())
         .sorted((c1, c2) -> (ascending ? 1 : -1) * Double.compare(c1.getV3(), c2.getV3()))
         .map(t -> Cast.<Map.Entry<K, V>>as(Tuple2.of(t.getV1(), t.getV2())))
         .collect(Collectors.toList());
@@ -118,7 +117,7 @@ abstract class AbstractMapMultiCounter<K, V> implements MultiCounter<K, V>, Seri
   @Override
   public MultiCounter<K, V> filterByValue(@NonNull DoublePredicate predicate) {
     MultiCounter<K, V> tmp = newInstance();
-    Streams.from(new KeyKeyValueIterator())
+    Collect.from(new KeyKeyValueIterator())
         .filter(t -> predicate.test(t.getV3()))
         .forEach(t -> tmp.set(t.getV1(), t.getV2(), t.getV3()));
     return tmp;
@@ -127,7 +126,7 @@ abstract class AbstractMapMultiCounter<K, V> implements MultiCounter<K, V>, Seri
   @Override
   public MultiCounter<K, V> filterByFirstKey(@NonNull Predicate<K> predicate) {
     MultiCounter<K, V> tmp = newInstance();
-    Streams.from(new KeyKeyValueIterator())
+    Collect.from(new KeyKeyValueIterator())
         .filter(t -> predicate.test(t.getV1()))
         .forEach(t -> tmp.set(t.getV1(), t.getV2(), t.getV3()));
     return tmp;
@@ -136,7 +135,7 @@ abstract class AbstractMapMultiCounter<K, V> implements MultiCounter<K, V>, Seri
   @Override
   public MultiCounter<K, V> filterBySecondKey(@NonNull Predicate<V> predicate) {
     MultiCounter<K, V> tmp = newInstance();
-    Streams.from(new KeyKeyValueIterator())
+    Collect.from(new KeyKeyValueIterator())
         .filter(t -> predicate.test(t.getV2()))
         .forEach(t -> tmp.set(t.getV1(), t.getV2(), t.getV3()));
     return tmp;

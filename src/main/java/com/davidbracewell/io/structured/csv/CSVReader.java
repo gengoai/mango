@@ -21,7 +21,7 @@
 
 package com.davidbracewell.io.structured.csv;
 
-import com.davidbracewell.stream.Streams;
+import com.davidbracewell.collection.Collect;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.io.CSV;
@@ -441,7 +441,7 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
    * @throws IOException the iO exception
    */
   public List<List<String>> readAll() throws IOException {
-    return Streams.from(this).collect(Collectors.toList());
+    return Collect.from(this).collect(Collectors.toList());
   }
 
   private void readToEndOfLine() throws IOException {

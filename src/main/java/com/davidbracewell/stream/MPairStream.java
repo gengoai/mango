@@ -25,7 +25,6 @@ import com.davidbracewell.function.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.BinaryOperator;
 
 /**
  * The interface M pair stream.
@@ -89,12 +88,25 @@ public interface MPairStream<T, U> extends AutoCloseable {
    *
    * @return the list
    */
-  List<Map.Entry<T,U>> collectAsList();
+  List<Map.Entry<T, U>> collectAsList();
 
-  <V> MPairStream<T, Map.Entry<U,V>> join(MPairStream<? super T, ? super V> stream);
+  /**
+   * Join m pair stream.
+   *
+   * @param <V>    the type parameter
+   * @param stream the stream
+   * @return the m pair stream
+   */
+  <V> MPairStream<T, Map.Entry<U, V>> join(MPairStream<? super T, ? super V> stream);
 
 
-  MPairStream<T,U> reduceByKey(SerializableBinaryOperator<U> operator);
+  /**
+   * Reduce by key m pair stream.
+   *
+   * @param operator the operator
+   * @return the m pair stream
+   */
+  MPairStream<T, U> reduceByKey(SerializableBinaryOperator<U> operator);
 
   /**
    * Filter by key m pair stream.
@@ -111,5 +123,7 @@ public interface MPairStream<T, U> extends AutoCloseable {
    * @return the m pair stream
    */
   MPairStream<T, U> filterByValue(SerializablePredicate<U> predicate);
+
+  long count();
 
 }//END OF MPairStream

@@ -21,11 +21,10 @@
 
 package com.davidbracewell.stream;
 
+import com.davidbracewell.collection.Collect;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.*;
 import com.davidbracewell.tuple.Tuple2;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimaps;
 import lombok.NonNull;
 
 import java.util.HashMap;
@@ -65,7 +64,7 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U> {
 
   @Override
   public MPairStream<T, U> reduceByKey(SerializableBinaryOperator<U> operator) {
-    return groupByKey().mapToPair((t, u) -> Tuple2.of(t, Streams.from(u).reduce(operator).orElse(null)));
+    return groupByKey().mapToPair((t, u) -> Tuple2.of(t, Collect.from(u).reduce(operator).orElse(null)));
   }
 
 
@@ -123,6 +122,11 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U> {
   @Override
   public List<Map.Entry<T, U>> collectAsList() {
     return stream.map(Cast::<Map.Entry<T, U>>as).collect(Collectors.toList());
+  }
+
+  @Override
+  public long count() {
+    return stream.count();
   }
 
 }//END OF JavaMPairStream

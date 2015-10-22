@@ -21,7 +21,7 @@
 
 package com.davidbracewell.io.structured;
 
-import com.davidbracewell.stream.Streams;
+import com.davidbracewell.collection.Collect;
 import com.google.common.collect.Lists;
 import lombok.NonNull;
 
@@ -140,7 +140,7 @@ public abstract class Element {
 
   public final Stream<Element> stream(boolean recursive) {
     if (recursive) {
-      return Streams.from(new RecursiveElementIterator());
+      return Collect.from(new RecursiveElementIterator());
     }
     return getChildren().stream();
   }

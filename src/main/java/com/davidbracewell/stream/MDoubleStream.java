@@ -24,7 +24,6 @@ package com.davidbracewell.stream;
 import com.davidbracewell.collection.EnhancedDoubleStatistics;
 import com.davidbracewell.function.*;
 
-import java.io.Serializable;
 import java.util.OptionalDouble;
 import java.util.PrimitiveIterator;
 

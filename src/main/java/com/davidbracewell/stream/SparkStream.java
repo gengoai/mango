@@ -28,7 +28,6 @@ import com.davidbracewell.function.SerializableConsumer;
 import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.function.SerializablePredicate;
 import com.davidbracewell.string.StringUtils;
-import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
@@ -41,31 +40,47 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
+ * The type Spark stream.
+ *
+ * @param <T> the type parameter
  * @author David B. Bracewell
  */
 public class SparkStream<T> implements MStream<T> {
 
   private final JavaRDD<T> rdd;
 
+  /**
+   * Instantiates a new Spark stream.
+   *
+   * @param rdd the rdd
+   */
   public SparkStream(JavaRDD<T> rdd) {
     this.rdd = rdd;
   }
 
+  /**
+   * Instantiates a new Spark stream.
+   *
+   * @param collection the collection
+   */
   public SparkStream(List<T> collection) {
-    SparkConf conf = new SparkConf();
-    if (Config.hasProperty("spark.master")) {
-      conf.setMaster(Config.get("spark.master").asString());
-    }
-    conf.setAppName(StringUtils.randomHexString(20));
-    JavaSparkContext sc = new JavaSparkContext(conf);
-    this.rdd = sc.parallelize(collection, Math.min(4, collection.size() / 100));
+    this.rdd = Spark.context().parallelize(collection, Math.min(4, collection.size() / 100));
   }
 
+  /**
+   * The entry point of application.
+   *
+   * @param args the input arguments
+   * @throws Exception the exception
+   */
   public static void main(String[] args) throws Exception {
     Config.initialize("");
+    Config.setProperty("streams.distributed", "true");
     Config.setProperty("spark.master", "local[*]");
-    Map<String, Long> m = new SparkStream<>(IntStream.range(0, 100000).parallel().mapToObj(i -> StringUtils.randomHexString(7)).collect(Collectors.toList())).countByValue();
-    System.out.println(m.entrySet().stream().filter(e -> e.getValue() > 1).count());
+
+    MStream<String> s1 = Streams.of(IntStream.range(0, 100).mapToObj(i -> StringUtils.randomHexString(1)).collect(Collectors.toList()));
+    MStream<String> s2 = Streams.of(IntStream.range(0, 100).mapToObj(i -> StringUtils.randomHexString(1)).collect(Collectors.toList()));
+    System.out.println(s1.union(s2).groupBy(s -> s).collectAsList());
   }
 
   @Override
@@ -74,7 +89,7 @@ public class SparkStream<T> implements MStream<T> {
 
   @Override
   public MStream<T> filter(SerializablePredicate<? super T> predicate) {
-    return new SparkStream<>(rdd.filter(t -> predicate.test(t)));
+    return new SparkStream<>(rdd.filter(predicate::test));
   }
 
   @Override
@@ -89,7 +104,11 @@ public class SparkStream<T> implements MStream<T> {
 
   @Override
   public <R, U> MPairStream<R, U> flatMapToPair(SerializableFunction<? super T, ? extends Iterable<? extends Map.Entry<? extends R, ? extends U>>> function) {
-    return null;
+    return new SparkPairStream<>(rdd.flatMapToPair(t -> {
+      List<Tuple2<R, U>> list = new LinkedList<>();
+      function.apply(t).forEach(e -> list.add(new Tuple2<>(e.getKey(), e.getValue())));
+      return list;
+    }));
   }
 
   @Override
@@ -105,7 +124,7 @@ public class SparkStream<T> implements MStream<T> {
   @Override
   public <U> MPairStream<U, Iterable<T>> groupBy(SerializableFunction<? super T, ? extends U> function) {
     return new SparkPairStream<>(
-      rdd.groupBy(t -> function.apply(t))
+      rdd.groupBy(function::apply)
     );
   }
 
@@ -121,12 +140,12 @@ public class SparkStream<T> implements MStream<T> {
 
   @Override
   public Optional<T> reduce(SerializableBinaryOperator<T> reducer) {
-    return Optional.of(rdd.reduce((x, y) -> reducer.apply(x, y)));
+    return Optional.of(rdd.reduce(reducer::apply));
   }
 
   @Override
   public T fold(T zeroValue, SerializableBinaryOperator<T> operator) {
-    return rdd.fold(zeroValue, (x, y) -> operator.apply(x, y));
+    return rdd.fold(zeroValue, operator::apply);
   }
 
   @Override
@@ -146,11 +165,11 @@ public class SparkStream<T> implements MStream<T> {
 
   @Override
   public MStream<T> sample(int number) {
-    return new SparkStream<>(rdd.sample(false, number / (double) size()));
+    return new SparkStream<>(rdd.sample(false, number / (double) count()));
   }
 
   @Override
-  public long size() {
+  public long count() {
     return rdd.count();
   }
 
@@ -233,4 +252,11 @@ public class SparkStream<T> implements MStream<T> {
     return new SparkStream<>(rdd.cache());
   }
 
+  @Override
+  public MStream<T> union(MStream<T> other) {
+    if (other instanceof SparkStream) {
+      return new SparkStream<>(rdd.union(Cast.<SparkStream<T>>as(other).rdd));
+    }
+    return new SparkStream<>(rdd.union(Spark.context(rdd).parallelize(other.collect())));
+  }
 }//END OF SparkStream

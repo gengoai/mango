@@ -21,6 +21,7 @@
 
 package com.davidbracewell.stream;
 
+import com.davidbracewell.collection.Collect;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.SerializableBinaryOperator;
 import com.davidbracewell.function.SerializableConsumer;
@@ -59,11 +60,11 @@ public class JavaMStream<T> implements MStream<T> {
   }
 
   public JavaMStream(@NonNull final Iterable<T> iterable) {
-    this.stream = Streams.paralleFrom(iterable);
+    this.stream = Collect.parallelFrom(iterable);
   }
 
-  public JavaMStream(@NonNull final Iterator<T> iterator) {
-    this.stream = Streams.paralleFrom(iterator);
+  public JavaMStream(@NonNull final Iterator<? extends T> iterator) {
+    this.stream = Collect.parallelFrom(Cast.<Iterator<T>>as(iterator));
   }
 
   @Override
@@ -88,7 +89,7 @@ public class JavaMStream<T> implements MStream<T> {
 
   @Override
   public <R> MStream<R> flatMap(@NonNull SerializableFunction<? super T, ? extends Iterable<? extends R>> mapper) {
-    return new JavaMStream<>(stream.flatMap(t -> Streams.from(mapper.apply(t))));
+    return new JavaMStream<>(stream.flatMap(t -> Collect.from(mapper.apply(t))));
   }
 
   @Override
@@ -131,7 +132,7 @@ public class JavaMStream<T> implements MStream<T> {
   }
 
   @Override
-  public long size() {
+  public long count() {
     return stream.count();
   }
 
@@ -198,7 +199,7 @@ public class JavaMStream<T> implements MStream<T> {
 
   @Override
   public boolean isEmpty() {
-    return size() == 0;
+    return count() == 0;
   }
 
   @Override
@@ -219,7 +220,7 @@ public class JavaMStream<T> implements MStream<T> {
 
   @Override
   public <U> MPairStream<T, U> zip(@NonNull MStream<U> other) {
-    return new JavaMPairStream<>(Streams.zip(iterator(), other.iterator()));
+    return new JavaMPairStream<>(Collect.zip(iterator(), other.iterator()));
   }
 
   @Override
@@ -241,5 +242,13 @@ public class JavaMStream<T> implements MStream<T> {
   @Override
   public MStream<T> cache() {
     return this;
+  }
+
+  @Override
+  public MStream<T> union(MStream<T> other) {
+    if (other instanceof JavaMStream) {
+      return new JavaMStream<>(Stream.concat(stream, Cast.<JavaMStream<T>>as(other).stream));
+    }
+    return other.union(this);
   }
 }//END OF JavaMStream

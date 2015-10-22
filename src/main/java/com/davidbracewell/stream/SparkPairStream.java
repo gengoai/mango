@@ -3,6 +3,7 @@ package com.davidbracewell.stream;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.*;
 import com.davidbracewell.tuple.Tuple2;
+import com.google.common.collect.Lists;
 import lombok.NonNull;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -19,6 +20,12 @@ public class SparkPairStream<T, U> implements MPairStream<T, U> {
 
   public SparkPairStream(JavaPairRDD<T, U> rdd) {
     this.rdd = rdd;
+  }
+
+  public SparkPairStream(Map<? extends T, ? extends U> map) {
+    this.rdd = Spark.context()
+      .parallelize(Lists.newArrayList(map.entrySet()))
+      .mapToPair(e -> new scala.Tuple2<T, U>(e.getKey(), e.getValue()));
   }
 
   static <K, V> Map.Entry<K, V> toMapEntry(scala.Tuple2<K, V> tuple2) {
@@ -92,4 +99,10 @@ public class SparkPairStream<T, U> implements MPairStream<T, U> {
   public List<Map.Entry<T, U>> collectAsList() {
     return rdd.map(t -> Cast.<Map.Entry<T, U>>as(Tuple2.of(t._1(), t._2()))).collect();
   }
+
+  @Override
+  public long count() {
+    return rdd.count();
+  }
+
 }// END OF SparkPairStream

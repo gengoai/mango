@@ -21,21 +21,17 @@
 
 package com.davidbracewell.stream;
 
+import com.davidbracewell.collection.Collect;
 import com.davidbracewell.config.Config;
-import com.davidbracewell.string.StringUtils;
-import com.davidbracewell.tuple.Tuple2;
+import com.davidbracewell.conversion.Cast;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
 import lombok.NonNull;
-import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaSparkContext;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 /**
  * The interface Streams.
@@ -44,19 +40,31 @@ import java.util.stream.StreamSupport;
  */
 public interface Streams {
 
+  /**
+   * The constant DISTRIBUTED.
+   */
+  String DISTRIBUTED = "streams.distributed";
+
+  /**
+   * Text file m stream.
+   *
+   * @param location the location
+   * @return the m stream
+   */
   static MStream<String> textFile(String location) {
-    return textFile(location, Config.get("streams.distributed").asBooleanValue(false));
+    return textFile(location, Config.get(DISTRIBUTED).asBooleanValue(false));
   }
 
+  /**
+   * Text file m stream.
+   *
+   * @param location    the location
+   * @param distributed the distributed
+   * @return the m stream
+   */
   static MStream<String> textFile(String location, boolean distributed) {
     if (distributed) {
-      SparkConf conf = new SparkConf();
-      if (Config.hasProperty("spark.master")) {
-        conf.setMaster(Config.get("spark.master").asString());
-      }
-      conf.setAppName(StringUtils.randomHexString(20));
-      JavaSparkContext sc = new JavaSparkContext(conf);
-      return new SparkStream<>(sc.textFile(location));
+      return new SparkStream<>(Spark.context().textFile(location));
     }
     try {
       return new JavaMStream<>(Files.lines(Paths.get(location)));
@@ -65,122 +73,147 @@ public interface Streams {
     }
   }
 
+  /**
+   * Of m pair stream.
+   *
+   * @param <K> the type parameter
+   * @param <V> the type parameter
+   * @param map the map
+   * @return the m pair stream
+   */
   static <K, V> MPairStream<K, V> of(Map<? extends K, ? extends V> map) {
-    return of(map, Config.get("streams.distributed").asBooleanValue(false));
+    return of(map, Config.get(DISTRIBUTED).asBooleanValue(false));
   }
 
+  /**
+   * Of m pair stream.
+   *
+   * @param <K>         the type parameter
+   * @param <V>         the type parameter
+   * @param map         the map
+   * @param distributed the distributed
+   * @return the m pair stream
+   */
   static <K, V> MPairStream<K, V> of(Map<? extends K, ? extends V> map, boolean distributed) {
     if (distributed) {
-
+      return new SparkPairStream<>(map);
     }
     return new JavaMPairStream<>(map);
   }
 
   /**
-   * From stream.
+   * Of m stream.
    *
-   * @param <T>      the type parameter
-   * @param iterator the iterator
-   * @return the stream
+   * @param <T>        the type parameter
+   * @param collection the collection
+   * @return the m stream
    */
-  static <T> Stream<T> from(Iterator<T> iterator) {
-    if (iterator == null) {
-      return Collections.<T>emptyList().stream();
-    }
-    return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);
+  static <T> MStream<T> of(@NonNull Collection<? extends T> collection) {
+    return of(collection, Config.get(DISTRIBUTED).asBoolean(false));
   }
 
   /**
-   * From stream.
+   * Of m stream.
+   *
+   * @param <T>         the type parameter
+   * @param collection  the collection
+   * @param distributed the distributed
+   * @return the m stream
+   */
+  static <T> MStream<T> of(@NonNull Collection<? extends T> collection, boolean distributed) {
+    if (distributed) {
+      List<T> list;
+      if (collection instanceof List) {
+        list = Cast.as(collection);
+      } else {
+        list = new LinkedList<>(collection);
+      }
+      return new SparkStream<>(list);
+    }
+    return new JavaMStream<>(Cast.cast(collection));
+  }
+
+  /**
+   * Of m stream.
    *
    * @param <T>      the type parameter
    * @param iterable the iterable
-   * @return the stream
+   * @return the m stream
    */
-  static <T> Stream<T> from(Iterable<T> iterable) {
-    if (iterable == null) {
-      return Collections.<T>emptyList().stream();
-    }
-    return StreamSupport.stream(iterable.spliterator(), false);
+  static <T> MStream<T> of(@NonNull Iterable<? extends T> iterable) {
+    return of(iterable, Config.get(DISTRIBUTED).asBoolean(false));
   }
 
   /**
-   * Paralle from.
+   * Of m stream.
+   *
+   * @param <T>         the type parameter
+   * @param iterable    the iterable
+   * @param distributed the distributed
+   * @return the m stream
+   */
+  static <T> MStream<T> of(@NonNull Iterable<? extends T> iterable, boolean distributed) {
+    if (distributed) {
+      List<T> list;
+      if (iterable instanceof List) {
+        list = Cast.as(iterable);
+      } else {
+        list = Lists.newLinkedList(iterable);
+      }
+      return new SparkStream<>(list);
+    }
+    return new JavaMStream<>(Cast.cast(iterable));
+  }
+
+  /**
+   * Of m stream.
    *
    * @param <T>      the type parameter
    * @param iterator the iterator
-   * @return the stream
+   * @return the m stream
    */
-  static <T> Stream<T> paralleFrom(Iterator<T> iterator) {
-    if (iterator == null) {
-      return Collections.<T>emptyList().stream();
-    }
-    return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), true);
+  static <T> MStream<T> of(@NonNull Iterator<? extends T> iterator) {
+    return of(iterator, Config.get(DISTRIBUTED).asBoolean(false));
   }
 
   /**
-   * Paralle from.
+   * Of m stream.
    *
-   * @param <T>      the type parameter
-   * @param iterable the iterable
-   * @return the stream
+   * @param <T>         the type parameter
+   * @param iterator    the iterator
+   * @param distributed the distributed
+   * @return the m stream
    */
-  static <T> Stream<T> paralleFrom(Iterable<T> iterable) {
-    if (iterable == null) {
-      return Collections.<T>emptyList().stream();
+  static <T> MStream<T> of(@NonNull Iterator<? extends T> iterator, boolean distributed) {
+    if (distributed) {
+      return new SparkStream<>(Lists.newLinkedList(Collect.asIterable(iterator)));
     }
-    return StreamSupport.stream(iterable.spliterator(), true);
-  }
-
-
-  /**
-   * Zip with index.
-   *
-   * @param <T>    the type parameter
-   * @param stream the stream
-   * @return the stream
-   */
-  static <T> Stream<Map.Entry<T, Integer>> zipWithIndex(Stream<T> stream) {
-    if (stream == null) {
-      return Stream.empty();
-    }
-    final AtomicInteger integer = new AtomicInteger();
-    return stream.map(t -> new Tuple2<>(t, integer.getAndIncrement()));
+    return new JavaMStream<>(iterator);
   }
 
   /**
-   * Zip stream.
+   * Of m stream.
    *
-   * @param <T>     the type parameter
-   * @param <U>     the type parameter
-   * @param stream1 the stream 1
-   * @param stream2 the stream 2
-   * @return the stream
+   * @param <T>         the type parameter
+   * @param distributed the distributed
+   * @param items       the items
+   * @return the m stream
    */
-  static <T, U> Stream<Map.Entry<T, U>> zip(@NonNull final Stream<T> stream1, @NonNull final Stream<U> stream2) {
-    if (stream1 == null || stream2 == null) {
-      return Stream.empty();
-    }
-    return zip(stream1.iterator(), stream2.iterator());
+  @SafeVarargs
+  static <T> MStream of(boolean distributed, @NonNull T... items) {
+    return of(Arrays.asList(items), distributed);
   }
 
-
-  static <T, U> Stream<Map.Entry<T, U>> zip(@NonNull final Iterator<T> iterator1, @NonNull final Iterator<U> iterator2) {
-    return from(new Iterator<Map.Entry<T, U>>() {
-      @Override
-      public boolean hasNext() {
-        return iterator1.hasNext() && iterator2.hasNext();
-      }
-
-      @Override
-      public Map.Entry<T, U> next() {
-        if (!iterator1.hasNext() || !iterator2.hasNext()) {
-          throw new NoSuchElementException();
-        }
-        return new Tuple2<>(iterator1.next(), iterator2.next());
-      }
-    });
+  /**
+   * Of m stream.
+   *
+   * @param <T>   the type parameter
+   * @param items the items
+   * @return the m stream
+   */
+  @SafeVarargs
+  static <T> MStream of(@NonNull T... items) {
+    return of(Config.get(DISTRIBUTED).asBoolean(false), items);
   }
-
 
 }//END OF Streams

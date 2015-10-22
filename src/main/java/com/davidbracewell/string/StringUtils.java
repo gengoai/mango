@@ -21,7 +21,7 @@
 
 package com.davidbracewell.string;
 
-import com.davidbracewell.stream.Streams;
+import com.davidbracewell.collection.Collect;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.structured.csv.CSVReader;
 import com.google.common.base.CharMatcher;
@@ -462,7 +462,7 @@ public class StringUtils {
    */
   public static String join(@NonNull String separator, Iterator<?> items) {
 
-    return join(separator, Streams.from(items), null);
+    return join(separator, Collect.from(items), null);
   }
 
   /**
@@ -474,7 +474,7 @@ public class StringUtils {
    * @return the string
    */
   public static String join(@NonNull String separator, Iterator<?> items, String nullString) {
-    return join(separator, Streams.from(items), nullString);
+    return join(separator, Collect.from(items), nullString);
   }
 
   /**
