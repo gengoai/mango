@@ -144,6 +144,16 @@ public final class Config implements Serializable {
   }
 
 
+  /**
+   * Gets map.
+   *
+   * @param <K>        the type parameter
+   * @param <V>        the type parameter
+   * @param prefix     the prefix
+   * @param keyClass   the key class
+   * @param valueClass the value class
+   * @return the map
+   */
   public static <K, V> Map<K, V> getMap(String prefix, Class<K> keyClass, Class<V> valueClass) {
     Map<K, V> map = new HashMap<>();
     getPropertiesMatching(StringPredicates.STARTS_WITH(prefix, true)).forEach(property -> {
@@ -377,6 +387,11 @@ public final class Config implements Serializable {
   }
 
 
+  /**
+   * Load package config.
+   *
+   * @param packageName the package name
+   */
   public static void loadPackageConfig(@NonNull String packageName) {
     loadConfig(Resources.fromClasspath(packageName.replace('.', '/') + "/default.conf"));
   }
@@ -395,7 +410,8 @@ public final class Config implements Serializable {
   /**
    * Loads a config file
    *
-   * @param resource The config file
+   * @param resource       The config file
+   * @param propertySetter the property setter
    */
   static void loadConfig(Resource resource, ConfigPropertySetter propertySetter) {
     if (resource == null || !resource.exists()) {
@@ -453,8 +469,7 @@ public final class Config implements Serializable {
    *
    * @param programName the program name
    * @param args        the command line arguments
-   * @param parser      the
-   *                    to use for parsing the arguments
+   * @param parser      the                    to use for parsing the arguments
    * @return Non config/option parameters from command line
    */
   public static synchronized String[] initialize(String programName, String[] args, CommandLineParser parser) {
@@ -594,6 +609,9 @@ public final class Config implements Serializable {
     return initialize(programName, new String[0], new CommandLineParser());
   }
 
+  /**
+   * Initialize test.
+   */
   public static void initializeTest() {
     clear();
     initialize("Test");
@@ -646,6 +664,12 @@ public final class Config implements Serializable {
     }
   }
 
+  /**
+   * Resolve variables string.
+   *
+   * @param string the string
+   * @return the string
+   */
   static String resolveVariables(String string) {
     if (string == null) {
       return null;
@@ -743,6 +767,9 @@ public final class Config implements Serializable {
      * The INSTANCE.
      */
     INSTANCE;
+    /**
+     * The Properties.
+     */
     final Map<String, Set<String>> properties = new HashMap<>();
 
     @Override

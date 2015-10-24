@@ -142,7 +142,7 @@ public class JavaMStream<T> implements MStream<T> {
 
   @Override
   public void forEach(@NonNull SerializableConsumer<? super T> consumer) {
-    stream.forEach(consumer);
+    stream.forEachOrdered(consumer);
   }
 
   @Override

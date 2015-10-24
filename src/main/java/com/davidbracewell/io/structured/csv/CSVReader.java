@@ -51,12 +51,13 @@ import java.util.stream.Collectors;
  */
 public class CSVReader extends StructuredReader implements AutoCloseable, Iterable<List<String>> {
 
+  //----- States that the reader can be in
   static final int END_OF_ROW = 2;
   static final int IN_FIELD = 3;
   static final int IN_QUOTE = 1;
   static final int OUT_QUOTE = 4;
-  //----- States that the reader can be in
   static final int START = 0;
+
   final Queue<Integer> buffer = Lists.newLinkedList();
   final int comment;
   final int delimiter;

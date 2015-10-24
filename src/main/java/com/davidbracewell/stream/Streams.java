@@ -200,7 +200,7 @@ public interface Streams {
    * @return the m stream
    */
   @SafeVarargs
-  static <T> MStream of(boolean distributed, @NonNull T... items) {
+  static <T> MStream<T> of(boolean distributed, @NonNull T... items) {
     return of(Arrays.asList(items), distributed);
   }
 
@@ -212,7 +212,8 @@ public interface Streams {
    * @return the m stream
    */
   @SafeVarargs
-  static <T> MStream of(@NonNull T... items) {
+  @SuppressWarnings("unchecked")
+  static <T> MStream<T> of(@NonNull T... items) {
     return of(Config.get(DISTRIBUTED).asBoolean(false), items);
   }
 
