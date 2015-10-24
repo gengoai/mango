@@ -44,7 +44,8 @@ functionals = {
     "ToLongBiFunction<T,U>": ["Long", "applyAsLong", "(T t, U u)", "(t, u)"],
     "ToLongFunction<T>": ["long", "applyAsLong", "(T t)", "(t)"],
     "UnaryOperator<T>": ["T", "apply", "(T t)", "(t)"],
-    "Runnable" : ["void", "run", "()", "()"]
+    "Runnable" : ["void", "run", "()", "()"],
+    "Comparator<T>" : ["int", "compare", "(T o1, T o2)", "(o1, o2)"]
 }
 
 for (classGeneric, methodInformation) in functionals.iteritems():

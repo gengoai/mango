@@ -24,6 +24,7 @@ package com.davidbracewell.stream;
 import com.davidbracewell.config.Config;
 import com.davidbracewell.string.StringUtils;
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
@@ -80,5 +81,11 @@ public final class Spark {
     return new JavaSparkContext(rdd.context());
   }
 
+  public static JavaSparkContext context(JavaPairRDD<?, ?> rdd) {
+    if (rdd == null) {
+      return context();
+    }
+    return new JavaSparkContext(rdd.context());
+  }
 
 }//END OF Spark

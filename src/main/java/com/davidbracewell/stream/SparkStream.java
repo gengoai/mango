@@ -21,23 +21,18 @@
 
 package com.davidbracewell.stream;
 
-import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.SerializableBinaryOperator;
 import com.davidbracewell.function.SerializableConsumer;
 import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.function.SerializablePredicate;
-import com.davidbracewell.string.StringUtils;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
 
 import java.util.*;
 import java.util.function.ToDoubleFunction;
-import java.util.function.ToLongFunction;
 import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * The type Spark stream.
@@ -65,22 +60,6 @@ public class SparkStream<T> implements MStream<T> {
    */
   public SparkStream(List<T> collection) {
     this.rdd = Spark.context().parallelize(collection, Math.min(4, collection.size() / 100));
-  }
-
-  /**
-   * The entry point of application.
-   *
-   * @param args the input arguments
-   * @throws Exception the exception
-   */
-  public static void main(String[] args) throws Exception {
-    Config.initialize("");
-    Config.setProperty("streams.distributed", "true");
-    Config.setProperty("spark.master", "local[*]");
-
-    MStream<String> s1 = Streams.of(IntStream.range(0, 100).mapToObj(i -> StringUtils.randomHexString(1)).collect(Collectors.toList()));
-    MStream<String> s2 = Streams.of(IntStream.range(0, 100).mapToObj(i -> StringUtils.randomHexString(1)).collect(Collectors.toList()));
-    System.out.println(s1.union(s2).groupBy(s -> s).collectAsList());
   }
 
   @Override
@@ -237,14 +216,10 @@ public class SparkStream<T> implements MStream<T> {
     return new SparkPairStream<>(rdd.zipWithIndex());
   }
 
-  @Override
-  public MLongStream mapToLong(ToLongFunction<? super T> function) {
-    return null;
-  }
 
   @Override
   public MDoubleStream mapToDouble(ToDoubleFunction<? super T> function) {
-    return null;
+    return new SparkDoubleStream(rdd.mapToDouble(function::applyAsDouble));
   }
 
   @Override

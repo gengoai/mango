@@ -21,7 +21,6 @@
 
 package com.davidbracewell.stream;
 
-import com.davidbracewell.collection.EnhancedDoubleStatistics;
 import com.davidbracewell.function.*;
 
 import java.util.OptionalDouble;
@@ -134,14 +133,6 @@ public interface MDoubleStream extends AutoCloseable {
   MDoubleStream skip(int n);
 
   /**
-   * Map to long m long stream.
-   *
-   * @param function the function
-   * @return the m long stream
-   */
-  MLongStream mapToLong(SerializableDoubleToLongFunction function);
-
-  /**
    * Map m double stream.
    *
    * @param mapper the mapper
@@ -178,13 +169,6 @@ public interface MDoubleStream extends AutoCloseable {
   double mean();
 
   /**
-   * Statistics enhanced double statistics.
-   *
-   * @return the enhanced double statistics
-   */
-  EnhancedDoubleStatistics statistics();
-
-  /**
    * Reduce optional double.
    *
    * @param operator the operator
@@ -214,14 +198,6 @@ public interface MDoubleStream extends AutoCloseable {
    * @return the double [ ]
    */
   double[] toArray();
-
-  /**
-   * Peek m double stream.
-   *
-   * @param action the action
-   * @return the m double stream
-   */
-  MDoubleStream peek(SerializableDoubleConsumer action);
 
   /**
    * Flat map m double stream.

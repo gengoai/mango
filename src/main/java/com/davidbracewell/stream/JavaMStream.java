@@ -35,7 +35,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
-import java.util.function.ToLongFunction;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -232,11 +231,6 @@ public class JavaMStream<T> implements MStream<T> {
   @Override
   public MDoubleStream mapToDouble(@NonNull ToDoubleFunction<? super T> function) {
     return new JavaDoubleStream(stream.mapToDouble(function));
-  }
-
-  @Override
-  public MLongStream mapToLong(@NonNull ToLongFunction<? super T> function) {
-    return new JavaLongStream(stream.mapToLong(function));
   }
 
   @Override

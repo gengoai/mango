@@ -30,7 +30,6 @@ import com.google.common.collect.Ordering;
 
 import java.util.*;
 import java.util.function.ToDoubleFunction;
-import java.util.function.ToLongFunction;
 import java.util.stream.Collector;
 
 /**
@@ -274,14 +273,6 @@ public interface MStream<T> extends AutoCloseable {
    * @return the m pair stream
    */
   MPairStream<T, Long> zipWithIndex();
-
-  /**
-   * Map to long m long stream.
-   *
-   * @param function the function
-   * @return the m long stream
-   */
-  MLongStream mapToLong(ToLongFunction<? super T> function);
 
   /**
    * Map to double m double stream.

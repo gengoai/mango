@@ -51,7 +51,7 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U> {
   }
 
   @Override
-  public <V> MPairStream<T, Map.Entry<U, V>> join(MPairStream<? super T, ? super V> other) {
+  public <V> MPairStream<T, Map.Entry<U, V>> join(MPairStream<? extends T, ? extends V> other) {
     Map<T, Iterable<V>> map = Cast.as(other.groupByKey().collectAsMap());
     return new JavaMPairStream<>(stream.flatMap(e -> {
       List<Map.Entry<T, Map.Entry<U, V>>> list = new LinkedList<>();
@@ -128,5 +128,29 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U> {
   public long count() {
     return stream.count();
   }
+
+  @Override
+  public MStream<T> keys() {
+    return new JavaMStream<>(stream.map(Map.Entry::getKey));
+  }
+
+  @Override
+  public MPairStream<T, U> sortByKey(SerializableComparator<T> comparator) {
+    return new JavaMPairStream<>(stream.sorted((o1, o2) -> comparator.compare(o1.getKey(), o2.getKey())));
+  }
+
+  @Override
+  public MPairStream<T, U> union(MPairStream<? extends T, ? extends U> other) {
+    if (other instanceof SparkPairStream) {
+      return Cast.as(other.union(Cast.as(this)));
+    }
+    return new JavaMPairStream<>(Stream.concat(stream, Cast.<JavaMPairStream<T, U>>as(other).stream));
+  }
+
+  @Override
+  public MStream<U> values() {
+    return new JavaMStream<>(stream.map(Map.Entry::getValue));
+  }
+
 
 }//END OF JavaMPairStream

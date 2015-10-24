@@ -71,11 +71,6 @@ public class JavaDoubleStream implements MDoubleStream {
   }
 
   @Override
-  public EnhancedDoubleStatistics statistics() {
-    return stream.collect(EnhancedDoubleStatistics::new, EnhancedDoubleStatistics::accept, EnhancedDoubleStatistics::combine);
-  }
-
-  @Override
   public OptionalDouble first() {
     return stream.findFirst();
   }
@@ -137,11 +132,6 @@ public class JavaDoubleStream implements MDoubleStream {
   }
 
   @Override
-  public MLongStream mapToLong(SerializableDoubleToLongFunction function) {
-    return new JavaLongStream(stream.mapToLong(function));
-  }
-
-  @Override
   public MDoubleStream map(SerializableDoubleUnaryOperator mapper) {
     return new JavaDoubleStream(stream.map(mapper));
   }
@@ -164,11 +154,6 @@ public class JavaDoubleStream implements MDoubleStream {
   @Override
   public double[] toArray() {
     return stream.toArray();
-  }
-
-  @Override
-  public MDoubleStream peek(SerializableDoubleConsumer action) {
-    return new JavaDoubleStream(stream.peek(action));
   }
 
   @Override

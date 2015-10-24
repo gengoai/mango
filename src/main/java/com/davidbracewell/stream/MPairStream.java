@@ -21,7 +21,9 @@
 
 package com.davidbracewell.stream;
 
+import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.*;
+import com.google.common.collect.Ordering;
 
 import java.util.List;
 import java.util.Map;
@@ -36,11 +38,79 @@ import java.util.Map;
 public interface MPairStream<T, U> extends AutoCloseable {
 
   /**
+   * Collect as list list.
+   *
+   * @return the list
+   */
+  List<Map.Entry<T, U>> collectAsList();
+
+  /**
+   * Collect as map map.
+   *
+   * @return the map
+   */
+  Map<T, U> collectAsMap();
+
+  /**
+   * Count long.
+   *
+   * @return the long
+   */
+  long count();
+
+  /**
+   * Filter m pair stream.
+   *
+   * @param predicate the predicate
+   * @return the m pair stream
+   */
+  MPairStream<T, U> filter(SerializableBiPredicate<? super T, ? super U> predicate);
+
+  /**
+   * Filter by key m pair stream.
+   *
+   * @param predicate the predicate
+   * @return the m pair stream
+   */
+  MPairStream<T, U> filterByKey(SerializablePredicate<T> predicate);
+
+  /**
+   * Filter by value m pair stream.
+   *
+   * @param predicate the predicate
+   * @return the m pair stream
+   */
+  MPairStream<T, U> filterByValue(SerializablePredicate<U> predicate);
+
+  /**
    * For each.
    *
    * @param consumer the consumer
    */
   void forEach(SerializableBiConsumer<? super T, ? super U> consumer);
+
+  /**
+   * Group by key m pair stream.
+   *
+   * @return the m pair stream
+   */
+  MPairStream<T, Iterable<U>> groupByKey();
+
+  /**
+   * Join m pair stream.
+   *
+   * @param <V>    the type parameter
+   * @param stream the stream
+   * @return the m pair stream
+   */
+  <V> MPairStream<T, Map.Entry<U, V>> join(MPairStream<? extends T, ? extends V> stream);
+
+  /**
+   * Keys m stream.
+   *
+   * @return the m stream
+   */
+  MStream<T> keys();
 
   /**
    * Map m stream.
@@ -62,45 +132,6 @@ public interface MPairStream<T, U> extends AutoCloseable {
   <R, V> MPairStream<R, V> mapToPair(SerializableBiFunction<? super T, ? super U, ? extends Map.Entry<? extends R, ? extends V>> function);
 
   /**
-   * Filter m pair stream.
-   *
-   * @param predicate the predicate
-   * @return the m pair stream
-   */
-  MPairStream<T, U> filter(SerializableBiPredicate<? super T, ? super U> predicate);
-
-  /**
-   * Group by key m pair stream.
-   *
-   * @return the m pair stream
-   */
-  MPairStream<T, Iterable<U>> groupByKey();
-
-  /**
-   * Collect as map map.
-   *
-   * @return the map
-   */
-  Map<T, U> collectAsMap();
-
-  /**
-   * Collect as list list.
-   *
-   * @return the list
-   */
-  List<Map.Entry<T, U>> collectAsList();
-
-  /**
-   * Join m pair stream.
-   *
-   * @param <V>    the type parameter
-   * @param stream the stream
-   * @return the m pair stream
-   */
-  <V> MPairStream<T, Map.Entry<U, V>> join(MPairStream<? super T, ? super V> stream);
-
-
-  /**
    * Reduce by key m pair stream.
    *
    * @param operator the operator
@@ -109,21 +140,40 @@ public interface MPairStream<T, U> extends AutoCloseable {
   MPairStream<T, U> reduceByKey(SerializableBinaryOperator<U> operator);
 
   /**
-   * Filter by key m pair stream.
+   * Sort by key m pair stream.
    *
-   * @param predicate the predicate
+   * @param ascending the ascending
    * @return the m pair stream
    */
-  MPairStream<T, U> filterByKey(SerializablePredicate<T> predicate);
+  default MPairStream<T, U> sortByKey(boolean ascending) {
+    if (ascending) {
+      return sortByKey((o1, o2) -> Ordering.natural().compare(Cast.as(o1), Cast.as(o2)));
+    }
+    return sortByKey((o1, o2) -> Ordering.natural().reversed().compare(Cast.as(o1), Cast.as(o2)));
+  }
 
   /**
-   * Filter by value m pair stream.
+   * Sort by key m pair stream.
    *
-   * @param predicate the predicate
+   * @param comparator the comparator
    * @return the m pair stream
    */
-  MPairStream<T, U> filterByValue(SerializablePredicate<U> predicate);
+  MPairStream<T, U> sortByKey(SerializableComparator<T> comparator);
 
-  long count();
+  /**
+   * Union m pair stream.
+   *
+   * @param other the other
+   * @return the m pair stream
+   */
+  MPairStream<T, U> union(MPairStream<? extends T, ? extends U> other);
+
+  /**
+   * Values m stream.
+   *
+   * @return the m stream
+   */
+  MStream<U> values();
+
 
 }//END OF MPairStream
