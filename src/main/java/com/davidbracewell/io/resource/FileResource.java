@@ -22,15 +22,19 @@
 package com.davidbracewell.io.resource;
 
 import com.davidbracewell.io.resource.spi.FileResourceProvider;
+import com.davidbracewell.stream.JavaMStream;
+import com.davidbracewell.stream.MStream;
 import com.davidbracewell.string.StringUtils;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import lombok.EqualsAndHashCode;
 
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
@@ -38,9 +42,10 @@ import java.util.regex.Pattern;
  *
  * @author David B. Bracewell
  */
-public class FileResource extends Resource {
+@EqualsAndHashCode
+public class FileResource extends BaseResource {
 
-  private static final long serialVersionUID = 430887560147494514L;
+  private static final long serialVersionUID = 1L;
   private final File file;
 
   /**
@@ -63,25 +68,30 @@ public class FileResource extends Resource {
   }
 
   @Override
-  public void append(byte[] byteArray) throws IOException {
+  public Resource append(byte[] byteArray) throws IOException {
     try (FileOutputStream outputStream = new FileOutputStream(file, true)) {
       outputStream.write(byteArray);
     }
+    return this;
   }
 
   @Override
-  public File asFile() {
-    return file.getAbsoluteFile();
+  public Optional<File> asFile() {
+    return Optional.of(file.getAbsoluteFile());
   }
 
   @Override
-  public URL asURL() throws MalformedURLException {
-    return file.toURI().toURL();
+  public Optional<URL> asURL() {
+    try {
+      return Optional.of(file.toURI().toURL());
+    } catch (MalformedURLException e) {
+      return Optional.empty();
+    }
   }
 
 
   @Override
-  public String resourceDescriptor() {
+  public String descriptor() {
     return FileResourceProvider.PROTOCOL + ":" + file.getAbsolutePath();
   }
 
@@ -110,8 +120,7 @@ public class FileResource extends Resource {
     if (relativePath == null) {
       relativePath = StringUtils.EMPTY;
     }
-    relativePath = relativePath.trim();
-    return new FileResource(new File(file, relativePath));
+    return new FileResource(new File(file, relativePath.trim()));
   }
 
   @Override
@@ -125,7 +134,12 @@ public class FileResource extends Resource {
   }
 
   @Override
-  protected List<Resource> getChildren(Pattern pattern, boolean recursive) {
+  public MStream<String> lines() throws IOException {
+    return new JavaMStream<>(Files.lines(asPath().get()));
+  }
+
+  @Override
+  public List<Resource> getChildren(Pattern pattern, boolean recursive) {
     List<Resource> rval = Lists.newArrayList();
     File[] files = file.listFiles();
     if (files != null) {
@@ -144,7 +158,11 @@ public class FileResource extends Resource {
 
   @Override
   public Resource getParent() {
-    return new FileResource(asFile().getAbsoluteFile().getParent());
+    File p = file.getAbsoluteFile().getParentFile();
+    if (p == null) {
+      return EmptyResource.INSTANCE;
+    }
+    return new FileResource(p);
   }
 
   @Override
@@ -197,22 +215,5 @@ public class FileResource extends Resource {
   public boolean mkdir() {
     return file.mkdir();
   }
-
-  @Override
-  public int hashCode() {
-    return file.hashCode();
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (obj == null) {
-      return false;
-    }
-    if (this == obj) {
-      return true;
-    }
-    return obj instanceof FileResource && Objects.equals(file, ((FileResource) obj).file);
-  }
-
 
 }// END OF FileResource

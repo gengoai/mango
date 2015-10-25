@@ -103,7 +103,7 @@ public interface MultiCounters {
    */
   static <K, V> MultiCounter<K, V> fromCsv(@NonNull Resource csv, @NonNull Class<K> keyClass, @NonNull Class<V> valueClass, @NonNull Supplier<MultiCounter<K, V>> supplier) throws IOException {
     MultiCounter<K, V> mc = supplier.get();
-    try (CSVReader reader = CSV.builder().reader(csv.openReader())) {
+    try (CSVReader reader = CSV.builder().reader(csv.reader())) {
       List<V> header = reader.nextRow().stream().skip(1).map(v -> Convert.convert(v, valueClass)).collect(Collectors.toList());
       List<String> row;
       int rowN = 1;

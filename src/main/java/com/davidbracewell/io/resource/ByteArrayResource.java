@@ -21,8 +21,10 @@
 
 package com.davidbracewell.io.resource;
 
-import com.davidbracewell.io.resource.spi.ByteArrayResourceProvider;
+import com.davidbracewell.stream.MStream;
+import com.davidbracewell.stream.Streams;
 import com.google.common.base.Preconditions;
+import lombok.EqualsAndHashCode;
 
 import java.io.*;
 
@@ -31,7 +33,8 @@ import java.io.*;
  *
  * @author David B. Bracewell
  */
-public class ByteArrayResource extends Resource {
+@EqualsAndHashCode
+public class ByteArrayResource extends BaseResource implements NonTraversableResource {
 
   private static final long serialVersionUID = 9152033221857665242L;
   private final ByteArrayOutputStream buffer;
@@ -68,6 +71,22 @@ public class ByteArrayResource extends Resource {
 
 
   @Override
+  public Resource append(byte[] byteArray) throws IOException {
+    buffer.write(byteArray);
+    return this;
+  }
+
+  @Override
+  public boolean exists() {
+    return true;
+  }
+
+  @Override
+  public MStream<String> lines() throws IOException {
+    return Streams.of(false, buffer.toString(getCharset().name()).split("\r?\n"));
+  }
+
+  @Override
   protected InputStream createInputStream() throws IOException {
     return new ByteArrayInputStream(buffer.toByteArray());
   }
@@ -76,26 +95,5 @@ public class ByteArrayResource extends Resource {
   protected OutputStream createOutputStream() throws IOException {
     return buffer;
   }
-
-  @Override
-  public boolean canRead() {
-    return true;
-  }
-
-  @Override
-  public String resourceDescriptor() {
-    return ByteArrayResourceProvider.PROTOCOL + ":";
-  }
-
-  @Override
-  public boolean canWrite() {
-    return true;
-  }
-
-  @Override
-  public boolean exists() {
-    return true;
-  }
-
 
 }//END OF ByteArrayResource

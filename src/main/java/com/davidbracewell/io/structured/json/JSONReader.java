@@ -66,7 +66,7 @@ public class JSONReader extends StructuredReader {
    */
   public JSONReader(Resource resource) throws StructuredIOException {
     try {
-      this.reader = new JsonReader(resource.openReader());
+      this.reader = new JsonReader(resource.reader());
       consume();
     } catch (IOException e) {
       throw new StructuredIOException(e);

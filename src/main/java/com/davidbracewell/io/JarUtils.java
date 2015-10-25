@@ -72,12 +72,12 @@ public class JarUtils {
   private static List<Resource> getResourcesFromDirectory(Resource resource, Predicate<? super String> stringMatcher) {
     Preconditions.checkNotNull(resource);
     Preconditions.checkNotNull(stringMatcher);
-    Preconditions.checkArgument(resource.asFile().isDirectory());
+    Preconditions.checkArgument(resource.isDirectory());
 
     List<Resource> children = new ArrayList<>();
     for (Resource child : resource.getChildren()) {
       children.add(child);
-      if (child.asFile().isDirectory()) {
+      if (child.isDirectory()) {
         children.addAll(getResourcesFromDirectory(child, stringMatcher));
       }
     }
@@ -89,7 +89,7 @@ public class JarUtils {
     JarFile jf = null;
     List<Resource> resources = new ArrayList<>();
     try {
-      jf = new JarFile(resource.asFile());
+      jf = new JarFile(resource.asFile().get());
       Enumeration<JarEntry> e = jf.entries();
       while (e.hasMoreElements()) {
         String name = e.nextElement().getName();
@@ -108,7 +108,7 @@ public class JarUtils {
   private static List<Resource> getJarContents(Resource resource, Predicate<? super String> stringMatcher) {
     Preconditions.checkNotNull(resource);
     Preconditions.checkNotNull(stringMatcher);
-    if (resource.asFile().isDirectory()) {
+    if (resource.isDirectory()) {
       return getResourcesFromDirectory(resource, stringMatcher);
     } else {
       return getResourcesFromJar(resource, stringMatcher);

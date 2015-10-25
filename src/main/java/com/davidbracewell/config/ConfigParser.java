@@ -61,7 +61,7 @@ class ConfigParser extends Parser {
     public ParserTokenStream lex(final Resource input) throws IOException {
       return new ParserTokenStream(
           new Iterator<ParserToken>() {
-            final ConfigTokenizer backing = new ConfigTokenizer(input.openReader());
+            final ConfigTokenizer backing = new ConfigTokenizer(input.reader());
             ParserToken next = null;
 
             @Override
@@ -109,7 +109,7 @@ class ConfigParser extends Parser {
   public ConfigParser(Resource config, Config.ConfigPropertySetter propertySetter) throws IOException {
     super(CONFIG_GRAMMAR, CONFIG_LEXER.lex(config));
     this.propertySetter = propertySetter;
-    this.resourceName = config.resourceDescriptor();
+    this.resourceName = config.descriptor();
   }
 
   private void importScript(String script) {

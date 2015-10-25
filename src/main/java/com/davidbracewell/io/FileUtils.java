@@ -23,8 +23,12 @@ package com.davidbracewell.io;
 
 
 import com.davidbracewell.string.StringUtils;
+import com.google.common.base.Strings;
 
+import java.io.IOException;
+import java.io.PushbackInputStream;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
 /**
  * A set of convenience methods for handling files and file names.
@@ -36,6 +40,32 @@ public class FileUtils {
   private static final char EXTENSION_SEPARATOR = '.';
   private static final char UNIX_SEPARATOR = '/';
   private static final char WINDOWS_SEPARATOR = '\\';
+
+  public static Pattern createFilePattern(String filePattern) {
+    filePattern = Strings.isNullOrEmpty(filePattern) ? "\\*" : filePattern;
+    filePattern = filePattern.replaceAll("\\.", "\\.");
+    filePattern = filePattern.replaceAll("\\*", ".*");
+    return Pattern.compile("^" + filePattern + "$");
+  }
+
+  public static boolean isCompressed(PushbackInputStream pushbackInputStream) throws IOException {
+    if (pushbackInputStream == null) {
+      return false;
+    }
+    byte[] buffer = new byte[2];
+    int read = pushbackInputStream.read(buffer);
+    boolean isCompressed = false;
+
+    if (read == 2) {
+      isCompressed = ((buffer[0] == (byte) (GZIPInputStream.GZIP_MAGIC)) && (buffer[1] == (byte) (GZIPInputStream.GZIP_MAGIC >> 8)));
+    }
+
+    if (read != -1) {
+      pushbackInputStream.unread(buffer, 0, read);
+    }
+
+    return isCompressed;
+  }
 
   private static int indexOfLastSeparator(String spec) {
     if (spec == null) {

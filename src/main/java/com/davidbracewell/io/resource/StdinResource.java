@@ -22,15 +22,13 @@
 package com.davidbracewell.io.resource;
 
 
-import com.davidbracewell.io.resource.spi.StdinResourceProvider;
-
 import java.io.IOException;
 import java.io.InputStream;
 
 /**
  * @author David B. Bracewell
  */
-public class StdinResource extends Resource {
+public class StdinResource extends BaseResource implements NonTraversableResource, ReadOnlyResource {
 
   private static final long serialVersionUID = 1373981063391575745L;
 
@@ -40,18 +38,9 @@ public class StdinResource extends Resource {
   }
 
   @Override
-  public String resourceDescriptor() {
-    return StdinResourceProvider.PROTOCOL + ":";
-  }
-
-  @Override
   public boolean exists() {
     return true;
   }
 
-  @Override
-  public boolean canRead() {
-    return true;
-  }
 
 }//END OF StdinResource

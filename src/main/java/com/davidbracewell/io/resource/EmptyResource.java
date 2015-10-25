@@ -21,32 +21,34 @@
 
 package com.davidbracewell.io.resource;
 
-import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 
 /**
  * @author David B. Bracewell
  */
-public class StdoutResource extends BaseResource implements NonTraversableResource, WriteOnlyResource {
+public class EmptyResource extends BaseResource implements NonTraversableResource {
   private static final long serialVersionUID = 1L;
 
+  public static final EmptyResource INSTANCE = new EmptyResource();
+
   @Override
-  public OutputStream createOutputStream() throws IOException {
-    return new BufferedOutputStream(System.out);
+  public Resource append(byte[] byteArray) throws IOException {
+    throw new IllegalStateException("This is resource cannot be written to.");
   }
 
   @Override
   public boolean exists() {
-    return true;
+    return false;
   }
 
   @Override
-  public Resource append(byte[] byteArray) throws IOException {
-    try (OutputStream os = createOutputStream()) {
-      os.write(byteArray);
-    }
-    return this;
+  public boolean canWrite() {
+    return false;
   }
 
-}//END OF StdoutResource
+  @Override
+  public boolean canRead() {
+    return false;
+  }
+
+}//END OF EmptyResource

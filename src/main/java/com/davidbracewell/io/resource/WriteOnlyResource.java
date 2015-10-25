@@ -19,46 +19,31 @@
  * under the License.
  */
 
-package com.davidbracewell.io;
+package com.davidbracewell.io.resource;
 
-import com.davidbracewell.cache.CacheEngine;
-import com.davidbracewell.collection.NormalizedStringMap;
+import com.davidbracewell.stream.MStream;
 
-import java.util.Map;
-import java.util.ServiceLoader;
+import java.io.IOException;
 
 /**
- * The type Cache engines.
  * @author David B. Bracewell
  */
-public abstract class CacheEngines {
+public interface WriteOnlyResource extends Resource {
 
-  private static final Map<String, CacheEngine> engines = new NormalizedStringMap<>();
+  @Override
+  default boolean canRead() {
+    return false;
+  }
 
-  static {
-    for (CacheEngine engine : ServiceLoader.load(CacheEngine.class)) {
-      engines.put(engine.name(), engine);
-    }
+  @Override
+  default boolean canWrite() {
+    return true;
+  }
+
+  @Override
+  default MStream<String> lines() throws IOException {
+    throw new IllegalStateException("This is resource cannot be read from.");
   }
 
 
-  private CacheEngines() {
-    throw new IllegalAccessError();
-  }
-
-
-  /**
-   * Get cache engine.
-   *
-   * @param name the name
-   * @return the cache engine
-   */
-  public static CacheEngine get(String name) {
-    if (!engines.containsKey(name)) {
-      throw new IllegalArgumentException(name + " is not a valid cache engine name.");
-    }
-    return engines.get(name);
-  }
-
-
-}//END OF CacheEngines
+}//END OF WriteOnlyResource
