@@ -21,10 +21,12 @@
 
 package com.davidbracewell.io.resource;
 
+import com.davidbracewell.io.FileUtils;
 import com.davidbracewell.io.QuietIO;
+import com.davidbracewell.stream.MStream;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,13 +35,15 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Optional;
 
 /**
  * <p> A <code>Resource</code> wrapper for a URL. </p>
  *
  * @author David B. Bracewell
  */
-public class URLResource extends Resource {
+@EqualsAndHashCode
+public class URLResource extends BaseResource {
 
   private static final long serialVersionUID = -5874490341557934277L;
   private URL url;
@@ -52,27 +56,25 @@ public class URLResource extends Resource {
    * @param url the url
    * @throws java.net.MalformedURLException the malformed url exception
    */
-  public URLResource(String url) throws MalformedURLException {
-    Preconditions.checkNotNull(url);
+  public URLResource(@NonNull String url) throws MalformedURLException {
     this.url = new URL(url);
   }
 
-  @Override
-  public File asFile() {
-    if (url.getProtocol().equalsIgnoreCase("file")) {
-      return new File(url.getFile());
-    }
-    return super.asFile();
+  public URLResource(@NonNull URL url) {
+    this.url = url;
   }
 
-  /**
-   * Instantiates a new uRL resource.
-   *
-   * @param url the url
-   */
-  public URLResource(URL url) {
-    Preconditions.checkNotNull(url);
-    this.url = url;
+  @Override
+  public String descriptor() {
+    return url.toString();
+  }
+
+  @Override
+  public Optional<File> asFile() {
+    if (url.getProtocol().equalsIgnoreCase("file")) {
+      return Optional.of(new File(url.getFile()));
+    }
+    return super.asFile();
   }
 
   @Override
@@ -86,14 +88,8 @@ public class URLResource extends Resource {
   }
 
   @Override
-  public String resourceDescriptor() {
-    return url.toString();
-  }
-
-
-  @Override
-  public URL asURL() throws MalformedURLException {
-    return url;
+  public Optional<URL> asURL() {
+    return Optional.of(url);
   }
 
   @Override
@@ -101,28 +97,27 @@ public class URLResource extends Resource {
     try {
       return new URLResource(new URL(url, relativePath));
     } catch (MalformedURLException e) {
-      throw Throwables.propagate(e);
+      return EmptyResource.INSTANCE;
     }
   }
 
   @Override
-  public boolean canWrite() {
-    return true;
-  }
-
-  @Override
-  public boolean canRead() {
-    return true;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (o == null) {
-      return false;
-    } else if (o instanceof URLResource) {
-      return url.equals(((URLResource) o).url);
+  public Resource getParent() {
+    try {
+      return new URLResource(FileUtils.parent(url.toString()));
+    } catch (MalformedURLException e) {
+      return EmptyResource.INSTANCE;
     }
-    return false;
+  }
+
+  @Override
+  public Resource append(String content) throws IOException {
+    throw new UnsupportedOperationException("URLResource does not support appending");
+  }
+
+  @Override
+  public Resource append(byte[] byteArray) throws IOException {
+    throw new UnsupportedOperationException("URLResource does not support appending");
   }
 
   @Override
@@ -139,6 +134,11 @@ public class URLResource extends Resource {
       QuietIO.closeQuietly(is);
     }
     return exists;
+  }
+
+  @Override
+  public MStream<String> lines() throws IOException {
+    return null;
   }
 
   @Override
@@ -163,11 +163,6 @@ public class URLResource extends Resource {
   @Override
   public OutputStream createOutputStream() throws IOException {
     return createConnection().getOutputStream();
-  }
-
-  @Override
-  public String toString() {
-    return url.toString();
   }
 
   /**

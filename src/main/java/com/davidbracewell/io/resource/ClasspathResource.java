@@ -26,15 +26,16 @@ import com.davidbracewell.io.JarUtils;
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.spi.ClasspathResourceProvider;
 import com.davidbracewell.logging.Logger;
+import com.davidbracewell.stream.MStream;
 import com.davidbracewell.string.StringUtils;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
@@ -43,7 +44,7 @@ import java.util.regex.Pattern;
  *
  * @author David B. Bracewell
  */
-public class ClasspathResource extends Resource {
+public class ClasspathResource extends BaseResource {
 
   private static final Logger log = Logger.getLogger(ClasspathResource.class);
   private static final long serialVersionUID = -1977592698953910323L;
@@ -74,35 +75,44 @@ public class ClasspathResource extends Resource {
   }
 
   @Override
-  public File asFile() {
-    try {
-      URL url = asURL();
-      if (url.getProtocol() != null && url.getProtocol().equals("file")) {
-        return new File(url.toURI());
-      }
-      return null;
-    } catch (Exception e) {
-      log.fine(e);
-      return null;
-    }
+  public Resource append(byte[] byteArray) throws IOException {
+    Preconditions.checkState(canWrite(), "Unable to write to this resource");
+    new FileResource(asFile().get()).append(byteArray);
+    return this;
   }
 
   @Override
-  public String resourceDescriptor() {
+  public Optional<File> asFile() {
+    return asURL()
+      .filter(u -> u.getProtocol() != null && u.getProtocol().equalsIgnoreCase("file"))
+      .map(u -> {
+        try {
+          return new File(u.toURI());
+        } catch (Exception e) {
+          return null;
+        }
+      })
+      .filter(Objects::nonNull);
+  }
+
+  @Override
+  public String descriptor() {
     return ClasspathResourceProvider.PROTOCOL + ":" + resource;
   }
 
   @Override
-  public URL asURL() throws MalformedURLException {
-    return classLoader.getResource(resource);
+  public Optional<URL> asURL() {
+    return Optional.ofNullable(classLoader.getResource(resource));
   }
 
   @Override
   public boolean isDirectory() {
-    if (asFile() != null) {
-      return asFile().isDirectory();
-    }
-    return (FileUtils.extension(resource) != null) || canRead();
+    return asFile().map(File::isDirectory).orElse(FileUtils.extension(resource) == null && !canRead());
+  }
+
+  @Override
+  public MStream<String> lines() throws IOException {
+    return null;
   }
 
   @Override
@@ -112,8 +122,8 @@ public class ClasspathResource extends Resource {
 
   @Override
   public String baseName() {
-    if (asFile() != null) {
-      return asFile().getName();
+    if (asFile().isPresent()) {
+      return asFile().get().getName();
     }
     String path = path();
     int index = Math.max(0, Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\')) + 1);
@@ -122,12 +132,12 @@ public class ClasspathResource extends Resource {
 
   @Override
   public boolean canWrite() {
-    return asFile() != null && asFile().canWrite();
+    return asFile().map(File::canWrite).orElse(false);
   }
 
   @Override
   public boolean canRead() {
-    return (asFile() != null && asFile().canRead()) || exists();
+    return asFile().map(f -> f.canRead() && exists()).orElse(false);
   }
 
   @Override
@@ -149,18 +159,18 @@ public class ClasspathResource extends Resource {
   }
 
   @Override
-  protected List<Resource> getChildren(Pattern filePattern, boolean recursive) {
+  public List<Resource> getChildren(Pattern filePattern, boolean recursive) {
     List<Resource> rval = Lists.newArrayList();
 
     if (!isDirectory()) {
       return rval;
     }
 
-    if( asFile() != null ){
-      return Resources.fromFile(asFile()).getChildren(filePattern,recursive);
+    if (asFile().isPresent()) {
+      return Resources.fromFile(asFile().get()).getChildren(filePattern, recursive);
     }
 
-    String matchText = (asFile() == null) ? path() : asFile().getAbsolutePath();
+    String matchText = path();
     matchText = matchText.endsWith("/") ? matchText : matchText + "/";
     String path = path() + "/";
 
@@ -178,8 +188,8 @@ public class ClasspathResource extends Resource {
   @Override
   public Resource getParent() {
     String parent = FileUtils.parent(resource);
-    if( parent == null ){
-      return this;
+    if (parent == null) {
+      return EmptyResource.INSTANCE;
     }
     return new ClasspathResource(parent);
   }
@@ -191,20 +201,18 @@ public class ClasspathResource extends Resource {
 
   @Override
   public OutputStream createOutputStream() throws IOException {
-    return new FileOutputStream(this.asFile());
+    Preconditions.checkState(canWrite(), "Unable to write to this resource");
+    return new FileOutputStream(this.asFile().get());
   }
 
   @Override
   public boolean mkdirs() {
-    File file = asFile();
-    return file != null && file.mkdirs();
+    return asFile().map(File::mkdirs).orElse(false);
   }
 
   @Override
   public boolean mkdir() {
-    File file = asFile();
-    return file != null && file.mkdir();
-
+    return asFile().map(File::mkdir).orElse(false);
   }
 
   @Override
@@ -222,12 +230,7 @@ public class ClasspathResource extends Resource {
       return false;
     ClasspathResource other = (ClasspathResource) obj;
     return Objects.equals(classLoader, other.classLoader) &&
-        Objects.equals(resource, other.resource);
-  }
-
-  @Override
-  public String toString() {
-    return "classpath:" + resource;
+      Objects.equals(resource, other.resource);
   }
 
 }// END OF ClasspathResource

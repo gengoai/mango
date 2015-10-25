@@ -19,34 +19,45 @@
  * under the License.
  */
 
-package com.davidbracewell.io.resource;
+package com.davidbracewell.cache;
 
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import com.davidbracewell.collection.NormalizedStringMap;
+
+import java.util.Map;
+import java.util.ServiceLoader;
 
 /**
+ * The type Cache engines.
  * @author David B. Bracewell
  */
-public class StdoutResource extends BaseResource implements NonTraversableResource, WriteOnlyResource {
-  private static final long serialVersionUID = 1L;
+public abstract class CacheEngines {
 
-  @Override
-  public OutputStream createOutputStream() throws IOException {
-    return new BufferedOutputStream(System.out);
-  }
+  private static final Map<String, CacheEngine> engines = new NormalizedStringMap<>();
 
-  @Override
-  public boolean exists() {
-    return true;
-  }
-
-  @Override
-  public Resource append(byte[] byteArray) throws IOException {
-    try (OutputStream os = createOutputStream()) {
-      os.write(byteArray);
+  static {
+    for (CacheEngine engine : ServiceLoader.load(CacheEngine.class)) {
+      engines.put(engine.name(), engine);
     }
-    return this;
   }
 
-}//END OF StdoutResource
+
+  private CacheEngines() {
+    throw new IllegalAccessError();
+  }
+
+
+  /**
+   * Get cache engine.
+   *
+   * @param name the name
+   * @return the cache engine
+   */
+  public static CacheEngine get(String name) {
+    if (!engines.containsKey(name)) {
+      throw new IllegalArgumentException(name + " is not a valid cache engine name.");
+    }
+    return engines.get(name);
+  }
+
+
+}//END OF CacheEngines

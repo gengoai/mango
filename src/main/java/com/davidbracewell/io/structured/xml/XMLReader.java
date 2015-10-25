@@ -90,7 +90,7 @@ public class XMLReader extends StructuredReader {
     try {
       Preconditions.checkArgument(!Strings.isNullOrEmpty(documentTag));
       this.documentTag = documentTag;
-      this.reader = XMLInputFactory.newFactory().createXMLEventReader(resource.openInputStream(), "UTF-8");
+      this.reader = XMLInputFactory.newFactory().createXMLEventReader(resource.inputStream(), "UTF-8");
       this.stack = new Stack<>();
     } catch (Exception e) {
       throw new StructuredIOException(e);

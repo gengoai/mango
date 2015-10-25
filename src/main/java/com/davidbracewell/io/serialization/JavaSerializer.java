@@ -40,7 +40,7 @@ public class JavaSerializer implements Serializer, Serializable {
   public void serialize(Object o, Resource resource) throws Exception {
     Preconditions.checkNotNull(o);
     Preconditions.checkNotNull(resource);
-    try (OutputStream os = resource.openOutputStream(); ObjectOutputStream oos = new ObjectOutputStream(os)) {
+    try (OutputStream os = resource.outputStream(); ObjectOutputStream oos = new ObjectOutputStream(os)) {
       oos.writeObject(o);
       oos.flush();
     }
@@ -49,7 +49,7 @@ public class JavaSerializer implements Serializer, Serializable {
   @Override
   public <T> T deserialize(Resource resource, Class<T> clazz) throws Exception {
     Preconditions.checkNotNull(resource);
-    try (InputStream is = resource.openInputStream(); ObjectInputStream ois = new ObjectInputStream(is);) {
+    try (InputStream is = resource.inputStream(); ObjectInputStream ois = new ObjectInputStream(is);) {
       return Cast.as(ois.readObject(), clazz);
     }
   }

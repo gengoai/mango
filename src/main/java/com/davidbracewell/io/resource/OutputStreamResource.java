@@ -27,7 +27,7 @@ import java.io.OutputStream;
 /**
  * @author David B. Bracewell
  */
-public class OutputStreamResource extends Resource {
+public class OutputStreamResource extends BaseResource implements WriteOnlyResource, NonTraversableResource {
 
   private static final long serialVersionUID = 1233692902217463488L;
   private final OutputStream outputStream;
@@ -42,11 +42,6 @@ public class OutputStreamResource extends Resource {
   }
 
   @Override
-  public String resourceDescriptor() {
-    return "";
-  }
-
-  @Override
   public boolean exists() {
     return true;
   }
@@ -57,9 +52,9 @@ public class OutputStreamResource extends Resource {
   }
 
   @Override
-  public boolean canWrite() {
-    return true;
+  public Resource append(byte[] byteArray) throws IOException {
+    outputStream.write(byteArray);
+    return this;
   }
-
 
 }//END OF OutputStreamResource

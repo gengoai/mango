@@ -36,7 +36,7 @@ public class XMLSerializer implements Serializer {
 
   @Override
   public void serialize(Object o, Resource resource) throws Exception {
-    try (OutputStream outputStream = resource.openOutputStream();
+    try (OutputStream outputStream = resource.outputStream();
          XMLEncoder encoder = new XMLEncoder(outputStream)
     ) {
       encoder.writeObject(o);
@@ -45,7 +45,7 @@ public class XMLSerializer implements Serializer {
 
   @Override
   public <T> T deserialize(Resource resource, Class<T> clazz) throws Exception {
-    try (InputStream inputStream = resource.openInputStream();
+    try (InputStream inputStream = resource.inputStream();
          XMLDecoder decoder = new XMLDecoder(inputStream);
     ) {
       return Cast.as(decoder.readObject(), clazz);

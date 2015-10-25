@@ -170,7 +170,7 @@ public class CSV implements Specification, Serializable {
    * @throws IOException the iO exception
    */
   public CSVReader reader(Resource resource) throws IOException {
-    return reader(resource.openReader());
+    return reader(resource.reader());
   }
 
   /**
@@ -191,7 +191,7 @@ public class CSV implements Specification, Serializable {
    * @throws IOException the iO exception
    */
   public CSVWriter writer(Resource resource) throws IOException {
-    return writer(resource.openWriter());
+    return writer(resource.writer());
   }
 
   /**

@@ -93,7 +93,7 @@ public class XMLDocument extends XMLElement implements StructuredDocument {
   @Override
   public void read(Resource resource) throws StructuredIOException {
     try {
-      this.document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(resource.openInputStream());
+      this.document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(resource.inputStream());
       setNode(this.document.getDocumentElement());
       setOwner(this);
     } catch (Exception e) {

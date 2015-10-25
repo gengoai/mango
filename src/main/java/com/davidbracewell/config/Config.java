@@ -56,6 +56,7 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * <p> A complete configuration class that allows for inheritance, multiline inputs, variable interpolation, and
@@ -507,15 +508,17 @@ public final class Config implements Serializable {
       }
     }
 
-    Arrays.asList(
+    Stream.of(
       new ClasspathResource(programName.replace(".", "/") + ".conf", defaultClassLoader),
       Resources.fromFile(new File(SystemInfo.USER_HOME, programName + ".conf")),
       localConfigDirectory.getChild(programName + ".conf"),
       Resources.fromFile(new File(programName + ".conf"))
-    ).stream().filter(Resource::exists).forEach(resource -> {
-      log.finest("Loading {0}.conf from :", programName);
-      loadConfig(resource, setterFunction);
-    });
+    )
+      .filter(Resource::exists)
+      .forEach(resource -> {
+        log.finest("Loading {0}.conf from :", programName);
+        loadConfig(resource, setterFunction);
+      });
 
 
     if (domain != null) {

@@ -69,7 +69,7 @@ public class JSONWriter extends StructuredWriter {
   public JSONWriter(@NonNull Resource resource, boolean isArray) throws StructuredIOException {
     this.isArray = isArray;
     try {
-      this.writer = new JsonWriter(resource.openWriter());
+      this.writer = new JsonWriter(resource.writer());
     } catch (IOException e) {
       throw new StructuredIOException(e);
     }
