@@ -23,7 +23,6 @@ package com.davidbracewell.io.resource;
 
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.SerializableConsumer;
-import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.function.Unchecked;
 import com.davidbracewell.io.CharsetDetectingReader;
 import com.davidbracewell.io.FileUtils;
@@ -336,26 +335,6 @@ public interface Resource {
       throw new IOException(e);
     }
   }
-
-  /**
-   * Map m stream.
-   *
-   * @param <T>      the type parameter
-   * @param function the function
-   * @return the m stream
-   * @throws IOException the io exception
-   */
-  default <T> MStream<T> map(@NonNull SerializableFunction<String, ? extends T> function) throws IOException {
-    Preconditions.checkState(canRead(), "This is resource cannot be read from.");
-    try (MStream<String> stream = lines()) {
-      return stream.map(function);
-    } catch (IOException ioe) {
-      throw ioe;
-    } catch (Exception e) {
-      throw new IOException(e);
-    }
-  }
-
 
   /**
    * Mkdir boolean.

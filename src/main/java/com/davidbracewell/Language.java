@@ -72,7 +72,12 @@ public enum Language {
   AFRIKAANS("AF"),
   ALBANIAN("SQ"),
   AMHARIC("AM"),
-  ARABIC("AR"),
+  ARABIC("AR") {
+    @Override
+    public boolean isRightToLeft() {
+      return true;
+    }
+  },
   ARMENIAN("HY"),
   ASSAMESE("AS"),
   AYMARA("AY"),
@@ -110,7 +115,12 @@ public enum Language {
   GUARANI("GN"),
   GUJARATI("GU"),
   HAUSA("HA"),
-  HEBREW("IW"),
+  HEBREW("IW") {
+    @Override
+    public boolean isRightToLeft() {
+      return true;
+    }
+  },
   HINDI("HI"),
   HUNGARIAN("HU"),
   ICELANDIC("IS"),
@@ -120,15 +130,30 @@ public enum Language {
   INUPIAK("IK"),
   IRISH("GA"),
   ITALIAN("IT"),
-  JAVANESE("JW"),
+  JAVANESE("JW") {
+    @Override
+    public boolean isRightToLeft() {
+      return true;
+    }
+  },
   KANNADA("KN"),
-  KASHMIRI("KS"),
+  KASHMIRI("KS") {
+    @Override
+    public boolean isRightToLeft() {
+      return true;
+    }
+  },
   KAZAKH("KK"),
   KINYARWANDA("RW"),
   KIRGHIZ("KY"),
   KIRUNDI("RN"),
   KOREAN("KO"),
-  KURDISH("KU"),
+  KURDISH("KU") {
+    @Override
+    public boolean isRightToLeft() {
+      return true;
+    }
+  },
   LAOTHIAN("LO"),
   LATIN("LA"),
   LATVIAN("LV"),
@@ -136,8 +161,18 @@ public enum Language {
   LITHUANIAN("LT"),
   MACEDONIAN("MK"),
   MALAGASY("MG"),
-  MALAY("MS"),
-  MALAYALAM("ML"),
+  MALAY("MS") {
+    @Override
+    public boolean isRightToLeft() {
+      return true;
+    }
+  },
+  MALAYALAM("ML") {
+    @Override
+    public boolean isRightToLeft() {
+      return true;
+    }
+  },
   MALTESE("MT"),
   MAORI("MI"),
   MARATHI("MR"),
@@ -149,11 +184,26 @@ public enum Language {
   OCCITAN("OC"),
   ORIYA("OR"),
   OROMO("OM"),
-  PASHTO("PS"),
-  PERSIAN("FA"),
+  PASHTO("PS") {
+    @Override
+    public boolean isRightToLeft() {
+      return true;
+    }
+  },
+  PERSIAN("FA") {
+    @Override
+    public boolean isRightToLeft() {
+      return true;
+    }
+  },
   POLISH("PL"),
   PORTUGUESE("PT"),
-  PUNJABI("PA"),
+  PUNJABI("PA") {
+    @Override
+    public boolean isRightToLeft() {
+      return true;
+    }
+  },
   QUECHUA("QU"),
   ROMANIAN("RO"),
   RUSSIAN("RU"),
@@ -165,12 +215,22 @@ public enum Language {
   SESOTHO("ST"),
   SETSWANA("TN"),
   SHONA("SN"),
-  SINDHI("SD"),
+  SINDHI("SD") {
+    @Override
+    public boolean isRightToLeft() {
+      return true;
+    }
+  },
   SINGHALESE("SI"),
   SISWATI("SS"),
   SLOVAK("SK"),
   SLOVENIAN("SL"),
-  SOMALI("SO"),
+  SOMALI("SO") {
+    @Override
+    public boolean isRightToLeft() {
+      return true;
+    }
+  },
   SPANISH("ES"),
   SUDANESE("SU"),
   SWAHILI("SW"),
@@ -186,17 +246,32 @@ public enum Language {
   TONGA("TO"),
   TSONGA("TS"),
   TURKISH("TR"),
-  TURKMEN("TK"),
+  TURKMEN("TK") {
+    @Override
+    public boolean isRightToLeft() {
+      return true;
+    }
+  },
   TWI("TW"),
   UKRAINIAN("UK"),
-  URDU("UR"),
+  URDU("UR") {
+    @Override
+    public boolean isRightToLeft() {
+      return true;
+    }
+  },
   UZBEK("UZ"),
   VIETNAMESE("VI"),
   VOLAPUK("VO"),
   WELSH("CY"),
   WOLOF("WO"),
   XHOSA("XH"),
-  YIDDISH("JI"),
+  YIDDISH("JI") {
+    @Override
+    public boolean isRightToLeft() {
+      return true;
+    }
+  },
   YORUBA("YO"),
   ZULU("ZU"),
 
