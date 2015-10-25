@@ -22,6 +22,8 @@
 package com.davidbracewell.io.resource;
 
 import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.function.SerializableConsumer;
+import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.function.Unchecked;
 import com.davidbracewell.io.CharsetDetectingReader;
 import com.davidbracewell.io.FileUtils;
@@ -30,6 +32,7 @@ import com.davidbracewell.stream.JavaMStream;
 import com.davidbracewell.stream.MStream;
 import com.google.common.base.Preconditions;
 import com.google.common.io.CharStreams;
+import lombok.NonNull;
 
 import java.io.*;
 import java.net.URI;
@@ -318,10 +321,47 @@ public interface Resource {
   }
 
   /**
+   * For each.
+   *
+   * @param consumer the consumer
+   * @throws IOException the io exception
+   */
+  default void forEach(@NonNull SerializableConsumer<String> consumer) throws IOException {
+    Preconditions.checkState(canRead(), "This is resource cannot be read from.");
+    try (MStream<String> stream = lines()) {
+      stream.forEach(consumer);
+    } catch (IOException ioe) {
+      throw ioe;
+    } catch (Exception e) {
+      throw new IOException(e);
+    }
+  }
+
+  /**
+   * Map m stream.
+   *
+   * @param <T>      the type parameter
+   * @param function the function
+   * @return the m stream
+   * @throws IOException the io exception
+   */
+  default <T> MStream<T> map(@NonNull SerializableFunction<String, ? extends T> function) throws IOException {
+    Preconditions.checkState(canRead(), "This is resource cannot be read from.");
+    try (MStream<String> stream = lines()) {
+      return stream.map(function);
+    } catch (IOException ioe) {
+      throw ioe;
+    } catch (Exception e) {
+      throw new IOException(e);
+    }
+  }
+
+
+  /**
    * Mkdir boolean.
    *
    * @return the boolean
-   * @see java.io.File#mkdir() java.io.File#mkdir()
+   * @see java.io.File#mkdir() java.io.File#mkdir()java.io.File#mkdir()java.io.File#mkdir()
    */
   default boolean mkdir() {
     return false;
@@ -331,7 +371,7 @@ public interface Resource {
    * Mkdirs boolean.
    *
    * @return the boolean
-   * @see java.io.File#mkdirs() java.io.File#mkdirs()
+   * @see java.io.File#mkdirs() java.io.File#mkdirs()java.io.File#mkdirs()java.io.File#mkdirs()
    */
   default boolean mkdirs() {
     return false;
