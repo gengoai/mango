@@ -51,7 +51,7 @@ public class DynamicEnumProcessor extends AbstractProcessor {
   @Override
   public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
     for (Element e : roundEnv.getElementsAnnotatedWith(DynamicEnumeration.class)) {
-      if (e.getKind() == ElementKind.CLASS) {
+      if (e.getKind() == ElementKind.CLASS || e.getKind() == ElementKind.INTERFACE) {
         TypeElement classElement = Cast.as(e);
 
 
@@ -67,7 +67,8 @@ public class DynamicEnumProcessor extends AbstractProcessor {
 
         try {
 
-          String cName = classElement.getSimpleName() + "Enum";
+          DynamicEnumeration de = e.getAnnotation(DynamicEnumeration.class);
+          String cName = de == null ? classElement.getSimpleName() + "Enum" : de.className();
           JavaFileObject fileObject = processingEnv.getFiler().createSourceFile(packageElement.getQualifiedName() + "." + cName);
           BufferedWriter bw = new BufferedWriter(fileObject.openWriter());
 
