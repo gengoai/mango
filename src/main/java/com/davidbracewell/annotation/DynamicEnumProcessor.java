@@ -74,17 +74,10 @@ public class DynamicEnumProcessor extends AbstractProcessor {
 
           String classFile = "import com.davidbracewell.DynamicEnum;\n" +
             "import com.davidbracewell.EnumValue;\n" +
-            "import com.davidbracewell.Language;\n" +
-            "import com.davidbracewell.config.Config;\n" +
-            "import com.davidbracewell.hermes.annotator.Annotator;\n" +
-            "import com.davidbracewell.reflection.BeanUtils;\n" +
             "import com.davidbracewell.string.StringUtils;\n" +
-            "import com.google.common.base.Preconditions;\n" +
             "\n" +
             "import java.io.ObjectStreamException;\n" +
             "import java.util.Collection;\n" +
-            "import java.util.HashSet;\n" +
-            "import java.util.Set;\n" +
             "\n" +
             "public final class $TYPE_NAME extends EnumValue {\n" +
             "\n" +
