@@ -21,62 +21,71 @@
 
 package com.davidbracewell;
 
-import java.io.Serializable;
-import java.util.Objects;
-
 /**
- * <p>A value in a {@link DynamicEnum}</p>
+ * The type Hierarchical enum value.
  *
  * @author David B. Bracewell
  */
-public abstract class EnumValue implements Tag, Serializable, Comparable<EnumValue> {
-
+public abstract class HierarchicalEnumValue extends EnumValue {
   private static final long serialVersionUID = 1L;
-  private final String name;
+
+  private volatile HierarchicalEnumValue parent = null;
 
   /**
    * Instantiates a new Enum value.
    *
    * @param name the name of the enum value
    */
-  protected EnumValue(String name) {
-    this.name = DynamicEnum.normalize(name);
+  protected HierarchicalEnumValue(String name) {
+    super(name);
   }
 
-
-  @Override
-  public String name() {
-    return name;
+  /**
+   * Instantiates a new Hierarchical enum value.
+   *
+   * @param name   the name
+   * @param parent the parent
+   */
+  protected HierarchicalEnumValue(String name, HierarchicalEnumValue parent) {
+    super(name);
+    this.parent = parent;
   }
 
-  @Override
-  public String toString() {
-    return name;
-  }
-
-  @Override
-  public int compareTo(EnumValue o) {
-    return o == null ? 1 : name.compareTo(o.name);
+  /**
+   * Gets parent.
+   *
+   * @return the parent
+   */
+  public HierarchicalEnumValue getParent() {
+    if (parent == null) {
+      synchronized (this) {
+        parent = getParentConfig();
+      }
+    }
+    return parent;
   }
 
   @Override
   public boolean isInstance(Tag value) {
-    return this.equals(value);
+    if (value == null) {
+      return false;
+    }
+    HierarchicalEnumValue hev = this;
+    while (hev != null && hev != hev.getParent()) {
+      if (hev == value) {
+        return true;
+      }
+      hev = hev.getParent();
+    }
+    return false;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (o == null) return false;
-    if (this == o) return true;
-    if (o.getClass() != this.getClass()) return false;
-    EnumValue enumValue = (EnumValue) o;
-    return Objects.equals(name, enumValue.name);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(name);
-  }
+  /**
+   * Gets parent config.
+   *
+   * @return the parent config
+   */
+  protected abstract HierarchicalEnumValue getParentConfig();
 
 
-}//END OF EnumValue
+}//END OF HierarchicalEnumValue

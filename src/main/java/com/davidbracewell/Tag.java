@@ -19,26 +19,44 @@
  * under the License.
  */
 
-package com.davidbracewell.annotation;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package com.davidbracewell;
 
 /**
  * @author David B. Bracewell
  */
-@Retention(RetentionPolicy.CLASS)
-@Target(ElementType.TYPE)
-public @interface DynamicEnumeration {
+public interface Tag {
 
-  String packageName() default "";
+  /**
+   * Determines if this tag is an instance of a given tag.
+   *
+   * @param tag The given tag
+   * @return True if this tag is an instance of the given tag
+   */
+  boolean isInstance(Tag tag);
 
-  String className() default "";
+  /**
+   * Determines if this tag is an instance of any of the given tags.
+   *
+   * @param tags the tags to check against
+   * @return True if this tag is an instance of any one of the given tags
+   */
+  default boolean isInstance(Tag... tags) {
+    if (tags != null) {
+      for (Tag other : tags) {
+        if (isInstance(other)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 
-  boolean hierarchial() default false;
+  /**
+   * The name of the enum value
+   *
+   * @return The name of the enum value
+   */
+  String name();
 
-  String configPrefix() default "";
 
-}//END OF DynamicEnumeration
+}//END OF Tag
