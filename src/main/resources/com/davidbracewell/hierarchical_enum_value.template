@@ -1,5 +1,5 @@
 import com.davidbracewell.DynamicEnum;
-import com.davidbracewell.EnumValue;
+import com.davidbracewell.HierarchicalEnumValue;
 import com.davidbracewell.config.Config;
 import com.davidbracewell.string.StringUtils;
 
@@ -11,8 +11,14 @@ public final class $TYPE_NAME extends HierarchicalEnumValue {
   private static final DynamicEnum<$TYPE_NAME> index = new DynamicEnum<>();
   private static final long serialVersionUID = 1L;
 
+  public static $TYPE_NAME ROOT = create("$TYPE_NAME_ROOT");
+
   private $TYPE_NAME(String name) {
     super(name);
+  }
+
+  private $TYPE_NAME(String name, $TYPE_NAME parent) {
+    super(name, parent);
   }
 
   /**
@@ -38,7 +44,11 @@ public final class $TYPE_NAME extends HierarchicalEnumValue {
       if (StringUtils.isNullOrBlank(name)) {
         throw new IllegalArgumentException(name + " is invalid");
       }
-      return index.register(new $TYPE_NAME(name, parent));
+      $TYPE_NAME type = index.register(new $TYPE_NAME(name, parent));
+      if( type.getParent() != parent ){
+        throw new IllegalArgumentException(name + " is already registered with different parent.");
+      }
+      return type;
     }
 
   /**
@@ -74,17 +84,20 @@ public final class $TYPE_NAME extends HierarchicalEnumValue {
     if (isDefined(name())) {
       return index.valueOf(name());
     }
-    Object o = index.register(this);
-    return o;
+    return index.register(this);
   }
 
   @Override
-  protected abstract HierarchicalEnumValue getParentConfig(){
-    return create(Config.get("$CONFIG_PREFIX." + name() + ".parent").asString());
+  protected HierarchicalEnumValue getParentConfig(){
+    if( Config.hasProperty("$CONFIG_PREFIX." + name() + ".parent") ) {
+      return create(Config.get("$CONFIG_PREFIX." + name() + ".parent").asString());
+    }
+    return ROOT;
   }
 
   @Override
   public $TYPE_NAME getParent(){
+    if( this == ROOT ){ return null; }
     return ($TYPE_NAME)super.getParent();
   }
 

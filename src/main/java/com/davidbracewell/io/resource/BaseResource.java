@@ -76,7 +76,7 @@ public abstract class BaseResource implements Resource, Serializable {
   }
 
   @Override
-  public final InputStream inputStream() throws IOException {
+  public InputStream inputStream() throws IOException {
     Preconditions.checkState(canRead(), "This is resource cannot be read from.");
     PushbackInputStream is = new PushbackInputStream(createInputStream(), 2);
     if (FileUtils.isCompressed(is)) {

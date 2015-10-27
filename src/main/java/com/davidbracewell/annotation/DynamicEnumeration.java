@@ -37,7 +37,7 @@ public @interface DynamicEnumeration {
 
   String className() default "";
 
-  boolean hierarchial() default false;
+  boolean hierarchical() default false;
 
   String configPrefix() default "";
 

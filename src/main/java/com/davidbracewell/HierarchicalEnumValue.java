@@ -29,7 +29,7 @@ package com.davidbracewell;
 public abstract class HierarchicalEnumValue extends EnumValue {
   private static final long serialVersionUID = 1L;
 
-  private volatile HierarchicalEnumValue parent = null;
+  protected volatile HierarchicalEnumValue parent = null;
 
   /**
    * Instantiates a new Enum value.
@@ -59,7 +59,9 @@ public abstract class HierarchicalEnumValue extends EnumValue {
   public HierarchicalEnumValue getParent() {
     if (parent == null) {
       synchronized (this) {
-        parent = getParentConfig();
+        if (parent == null) {
+          parent = getParentConfig();
+        }
       }
     }
     return parent;
@@ -72,7 +74,7 @@ public abstract class HierarchicalEnumValue extends EnumValue {
     }
     HierarchicalEnumValue hev = this;
     while (hev != null && hev != hev.getParent()) {
-      if (hev == value) {
+      if (hev.equals(value)) {
         return true;
       }
       hev = hev.getParent();

@@ -22,6 +22,8 @@
 package com.davidbracewell.annotation;
 
 import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.io.Resources;
+import com.davidbracewell.string.StringUtils;
 import com.google.common.base.Throwables;
 import org.kohsuke.MetaInfServices;
 
@@ -68,86 +70,53 @@ public class DynamicEnumProcessor extends AbstractProcessor {
         try {
 
           DynamicEnumeration de = e.getAnnotation(DynamicEnumeration.class);
-          String cName = de == null ? classElement.getSimpleName() + "Enum" : de.className();
-          JavaFileObject fileObject = processingEnv.getFiler().createSourceFile(packageElement.getQualifiedName() + "." + cName);
-          BufferedWriter bw = new BufferedWriter(fileObject.openWriter());
 
-          String classFile = "import com.davidbracewell.DynamicEnum;\n" +
-            "import com.davidbracewell.EnumValue;\n" +
-            "import com.davidbracewell.string.StringUtils;\n" +
-            "\n" +
-            "import java.io.ObjectStreamException;\n" +
-            "import java.util.Collection;\n" +
-            "\n" +
-            "public final class $TYPE_NAME extends EnumValue {\n" +
-            "\n" +
-            "  private static final DynamicEnum<$TYPE_NAME> index = new DynamicEnum<>();\n" +
-            "  private static final long serialVersionUID = 1L;\n" +
-            "\n" +
-            "  private $TYPE_NAME(String name) {\n" +
-            "    super(name);\n" +
-            "  }\n" +
-            "\n" +
-            "  /**\n" +
-            "   * Creates a new $TYPE_NAME Type or retrieves an already existing one for a given name\n" +
-            "   *\n" +
-            "   * @param name the name\n" +
-            "   * @return the $TYPE_NAME type\n" +
-            "   */\n" +
-            "  public static $TYPE_NAME create(String name) {\n" +
-            "    if (StringUtils.isNullOrBlank(name)) {\n" +
-            "      throw new IllegalArgumentException(name + \" is invalid\");\n" +
-            "    }\n" +
-            "    return index.register(new $TYPE_NAME(name));\n" +
-            "  }\n" +
-            "\n" +
-            "  /**\n" +
-            "   * Determine if an $TYPE_NAME exists for the given name\n" +
-            "   *\n" +
-            "   * @param name the name\n" +
-            "   * @return True if it exists, otherwise False\n" +
-            "   */\n" +
-            "  public static boolean isDefined(String name) {\n" +
-            "    return index.isDefined(name);\n" +
-            "  }\n" +
-            "\n" +
-            "  /**\n" +
-            "   * Gets the $TYPE_NAME from its name. Throws an <code>IllegalArgumentException</code> if the name is not valid.\n" +
-            "   *\n" +
-            "   * @param name the name as a string\n" +
-            "   * @return the $TYPE_NAME for the string\n" +
-            "   */\n" +
-            "  public static $TYPE_NAME valueOf(String name) {\n" +
-            "    return index.valueOf(name);\n" +
-            "  }\n" +
-            "\n" +
-            "  /**\n" +
-            "   * Returns the values for this dynamic enum\n" +
-            "   *\n" +
-            "   * @return All known $TYPE_NAME\n" +
-            "   */\n" +
-            "  public static Collection<$TYPE_NAME> values() {\n" +
-            "    return index.values();\n" +
-            "  }\n" +
-            "\n" +
-            "  private Object readResolve() throws ObjectStreamException {\n" +
-            "    if (isDefined(name())) {\n" +
-            "      return index.valueOf(name());\n" +
-            "    }\n" +
-            "    Object o = index.register(this);\n" +
-            "    return o;\n" +
-            "  }\n" +
-            "\n" +
-            "\n" +
-            "}//END OF $TYPE_NAME";
-          bw.append("package ");
-          bw.append(packageElement.getQualifiedName());
-          bw.append(";");
-          bw.newLine();
-          bw.newLine();
-          bw.append(classFile.replace("$TYPE_NAME", cName));
-          bw.newLine();
-          bw.close();
+          String cName = classElement.getSimpleName() + "Enum";
+          String pName = packageElement.getQualifiedName().toString();
+          String configPrefix = cName;
+          boolean isHierarchical = false;
+
+          if (de != null) {
+            if (!StringUtils.isNullOrBlank(de.className())) {
+              cName = de.className();
+            }
+
+            if (!StringUtils.isNullOrBlank(de.packageName())) {
+              pName = de.packageName();
+            }
+
+            isHierarchical = de.hierarchical();
+
+            if (!StringUtils.isNullOrBlank(de.configPrefix())) {
+              configPrefix = de.configPrefix();
+            } else {
+              configPrefix = cName;
+            }
+
+
+          }
+
+          JavaFileObject fileObject = processingEnv.getFiler().createSourceFile(pName + "." + cName);
+
+          try (BufferedWriter bw = new BufferedWriter(fileObject.openWriter())) {
+            String classFile;
+
+            if (isHierarchical) {
+              classFile = Resources.fromClasspath("com/davidbracewell/hierarchical_enum_value.template").readToString();
+            } else {
+              classFile = Resources.fromClasspath("com/davidbracewell/enum_value.template").readToString();
+            }
+
+            classFile = classFile.replace("$TYPE_NAME", cName).replace("$CONFIG_PREFIX", configPrefix);
+
+            bw.append("package ");
+            bw.append(pName);
+            bw.append(";");
+            bw.newLine();
+            bw.newLine();
+            bw.append(classFile);
+            bw.newLine();
+          }
 
         } catch (IOException ioe) {
           throw Throwables.propagate(ioe);

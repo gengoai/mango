@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
 /**
  * <p> A <code>Resource</code> implementation for resources that exist on the classpath. Resources are loaded either
@@ -137,7 +138,15 @@ public class ClasspathResource extends BaseResource {
 
   @Override
   public boolean canRead() {
-    return asFile().map(f -> f.canRead() && exists()).orElse(false);
+    return asFile().map(f -> f.canRead() && exists()).orElseGet(
+      () -> {
+        try (InputStream is = inputStream()) {
+          return true;
+        } catch (IOException e) {
+          return false;
+        }
+      }
+    );
   }
 
   @Override
@@ -192,6 +201,19 @@ public class ClasspathResource extends BaseResource {
       return EmptyResource.INSTANCE;
     }
     return new ClasspathResource(parent);
+  }
+
+
+  @Override
+  public InputStream inputStream() throws IOException {
+    InputStream rawis = createInputStream();
+    Preconditions.checkState(rawis != null, "This resource cannot be read from.");
+    PushbackInputStream is = new PushbackInputStream(rawis, 2);
+    if (FileUtils.isCompressed(is)) {
+      setIsCompressed(true);
+      return new GZIPInputStream(is);
+    }
+    return is;
   }
 
   @Override
