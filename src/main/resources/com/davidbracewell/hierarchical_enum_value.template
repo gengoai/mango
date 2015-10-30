@@ -6,7 +6,7 @@ import com.davidbracewell.string.StringUtils;
 import java.io.ObjectStreamException;
 import java.util.Collection;
 
-public final class $TYPE_NAME extends HierarchicalEnumValue {
+public final class $TYPE_NAME extends HierarchicalEnumValue $IMPLEMENTS {
 
   private static final DynamicEnum<$TYPE_NAME> index = new DynamicEnum<>();
   private static final long serialVersionUID = 1L;

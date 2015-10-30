@@ -23,6 +23,7 @@ package com.davidbracewell.annotation;
 
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.io.Resources;
+import com.davidbracewell.string.StringPredicates;
 import com.davidbracewell.string.StringUtils;
 import com.google.common.base.Throwables;
 import org.kohsuke.MetaInfServices;
@@ -37,6 +38,8 @@ import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author David B. Bracewell
@@ -73,6 +76,7 @@ public class DynamicEnumProcessor extends AbstractProcessor {
 
           String cName = classElement.getSimpleName() + "Enum";
           String pName = packageElement.getQualifiedName().toString();
+          String implementsClass = StringUtils.EMPTY;
           String configPrefix = cName;
           boolean isHierarchical = false;
 
@@ -94,6 +98,16 @@ public class DynamicEnumProcessor extends AbstractProcessor {
             }
 
 
+            if (de.implementsClass() != null) {
+              String s = Stream.of(de.implementsClass())
+                .filter(StringPredicates.IS_NULL_OR_BLANK.negate())
+                .collect(Collectors.joining(","));
+              if (!StringUtils.isNullOrBlank(s)) {
+                implementsClass = " implements " + s;
+              }
+            }
+
+
           }
 
           JavaFileObject fileObject = processingEnv.getFiler().createSourceFile(pName + "." + cName);
@@ -107,8 +121,9 @@ public class DynamicEnumProcessor extends AbstractProcessor {
               classFile = Resources.fromClasspath("com/davidbracewell/enum_value.template").readToString();
             }
 
-            classFile = classFile.replace("$TYPE_NAME", cName).replace("$CONFIG_PREFIX", configPrefix);
-
+            classFile = classFile.replace("$TYPE_NAME", cName)
+              .replace("$CONFIG_PREFIX", configPrefix)
+              .replace("$IMPLEMENTS", implementsClass);
             bw.append("package ");
             bw.append(pName);
             bw.append(";");

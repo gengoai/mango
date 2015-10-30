@@ -27,18 +27,49 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * The interface Dynamic enumeration.
+ *
  * @author David B. Bracewell
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)
 public @interface DynamicEnumeration {
 
+  /**
+   * The package that the enum will be in
+   *
+   * @return the package (default is same package of type with the annotation)
+   */
   String packageName() default "";
 
+  /**
+   * The class name of the enum
+   *
+   * @return the class name (default will be name of type + Enum, e.g. if annotated on Tags the enum will be TagsEnum)
+   */
   String className() default "";
 
+  /**
+   * Is this enum hierarchical?
+   *
+   * @return true if hierarchical, false otherwise
+   */
   boolean hierarchical() default false;
 
+  /**
+   * The prefix to use when accessing config values
+   *
+   * @return the config prefix (default will fully qualified class name)
+   */
   String configPrefix() default "";
+
+  /**
+   * Implements class class.
+   *
+   * @return the class
+   */
+  String[] implementsClass() default "";
+
+
 
 }//END OF DynamicEnumeration
