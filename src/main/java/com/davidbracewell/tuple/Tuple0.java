@@ -26,10 +26,15 @@ import com.davidbracewell.Copyable;
 import java.io.Serializable;
 
 /**
+ * A tuple of degree zero.
+ *
  * @author David B. Bracewell
  */
 public class Tuple0 implements Tuple, Serializable, Comparable<Tuple0>, Copyable<Tuple0> {
   private static final long serialVersionUID = 1L;
+
+  public static Tuple0 INSTANCE = new Tuple0();
+
 
   @Override
   public int compareTo(Tuple0 o) {

@@ -25,23 +25,23 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 /**
- * The interface Tuple.
+ * A tuple is a collection of values of possibly different types.
  *
  * @author David B. Bracewell
  */
 public interface Tuple extends Iterable<Object> {
 
   /**
-   * Degree int.
+   * The number of items in the tuple
    *
-   * @return the int
+   * @return the number of items in the tuple
    */
   int degree();
 
   /**
-   * Array object [ ].
+   * The tuple as an array of objects
    *
-   * @return the object [ ]
+   * @return an array representing the items in the tuple
    */
   Object[] array();
 
@@ -51,14 +51,14 @@ public interface Tuple extends Iterable<Object> {
   }
 
   /**
-   * Tuple triple.
+   * Creates a triple
    *
-   * @param <F>    the type parameter
-   * @param <S>    the type parameter
-   * @param <T>    the type parameter
-   * @param first  the first
-   * @param second the second
-   * @param third  the third
+   * @param <F>    the first type parameter
+   * @param <S>    the second type parameter
+   * @param <T>    the third type parameter
+   * @param first  the first item
+   * @param second the second item
+   * @param third  the third item
    * @return the triple
    */
   static <F, S, T> Tuple3<F, S, T> tuple(F first, S second, T third) {
@@ -66,33 +66,54 @@ public interface Tuple extends Iterable<Object> {
   }
 
   /**
-   * Tuple tuple 4.
+   * Creates a tuple with degree four.
    *
-   * @param <F>    the type parameter
-   * @param <S>    the type parameter
-   * @param <T>    the type parameter
-   * @param <D>    the type parameter
-   * @param first  the first
-   * @param second the second
-   * @param third  the third
-   * @param fourth the fourth
-   * @return the tuple 4
+   * @param <F>    the first type parameter
+   * @param <S>    the second type parameter
+   * @param <T>    the third type parameter
+   * @param <D>    the fourth type parameter
+   * @param first  the first item
+   * @param second the second item
+   * @param third  the third item
+   * @param fourth the fourth item
+   * @return the quadruple
    */
   static <F, S, T, D> Tuple4<F, S, T, D> tuple(F first, S second, T third, D fourth) {
     return Tuple4.of(first, second, third, fourth);
   }
 
   /**
-   * Tuple pair.
+   * Creates a pair.
    *
-   * @param <F>    the type parameter
-   * @param <S>    the type parameter
-   * @param first  the first
-   * @param second the second
+   * @param <F>    the first type parameter
+   * @param <S>    the second type parameter
+   * @param first  the first item
+   * @param second the second item
    * @return the pair
    */
   static <F, S> Tuple2<F, S> tuple(F first, S second) {
     return Tuple2.of(first, second);
+  }
+
+
+  /**
+   * Creates a tuple of degree zero.
+   *
+   * @return the tuple with degree zero.
+   */
+  static Tuple0 tuple() {
+    return Tuple0.INSTANCE;
+  }
+
+  /**
+   * Creates a tuple of degree one.
+   *
+   * @param <F>   the first type parameter
+   * @param first the first item
+   * @return the tuple of degree one.
+   */
+  static <F> Tuple1<F> tuple(F first) {
+    return Tuple1.of(first);
   }
 
 

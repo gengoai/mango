@@ -28,7 +28,7 @@ import lombok.NonNull;
 import java.io.Serializable;
 
 /**
- * The type Tuple 1.
+ * A tuple of degree one.
  *
  * @param <V1> the type parameter
  * @author David B. Bracewell
