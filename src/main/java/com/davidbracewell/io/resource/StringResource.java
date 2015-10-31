@@ -33,7 +33,7 @@ import java.nio.charset.StandardCharsets;
  *
  * @author David B. Bracewell
  */
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 public class StringResource extends BaseResource implements NonTraversableResource {
 
   private static final long serialVersionUID = 8750046186020559958L;

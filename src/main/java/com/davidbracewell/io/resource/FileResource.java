@@ -42,7 +42,7 @@ import java.util.regex.Pattern;
  *
  * @author David B. Bracewell
  */
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 public class FileResource extends BaseResource {
 
   private static final long serialVersionUID = 1L;

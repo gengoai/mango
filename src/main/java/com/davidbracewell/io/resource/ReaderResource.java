@@ -29,7 +29,7 @@ import java.io.Reader;
 /**
  * @author David B. Bracewell
  */
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 public class ReaderResource extends BaseResource implements ReadOnlyResource, NonTraversableResource {
 
   private static final long serialVersionUID = 6220239496470153511L;

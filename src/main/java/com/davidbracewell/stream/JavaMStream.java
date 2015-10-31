@@ -46,6 +46,7 @@ public class JavaMStream<T> implements MStream<T> {
 
   private final Stream<T> stream;
 
+  @SafeVarargs
   public JavaMStream(@NonNull final T... items) {
     this.stream = Stream.of(items);
   }

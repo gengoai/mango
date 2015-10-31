@@ -169,7 +169,7 @@ public class SparkDoubleStream implements MDoubleStream {
 
   @Override
   public double[] toArray() {
-    return Convert.convert(doubleStream.toArray(), double[].class);
+    return Convert.convert(doubleStream.collect(), double[].class);
   }
 
   @Override

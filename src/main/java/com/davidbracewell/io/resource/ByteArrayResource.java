@@ -33,7 +33,7 @@ import java.io.*;
  *
  * @author David B. Bracewell
  */
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 public class ByteArrayResource extends BaseResource implements NonTraversableResource {
 
   private static final long serialVersionUID = 9152033221857665242L;

@@ -26,7 +26,6 @@ import com.davidbracewell.io.JarUtils;
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.spi.ClasspathResourceProvider;
 import com.davidbracewell.logging.Logger;
-import com.davidbracewell.stream.MStream;
 import com.davidbracewell.string.StringUtils;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -109,11 +108,6 @@ public class ClasspathResource extends BaseResource {
   @Override
   public boolean isDirectory() {
     return asFile().map(File::isDirectory).orElse(FileUtils.extension(resource) == null && !canRead());
-  }
-
-  @Override
-  public MStream<String> lines() throws IOException {
-    return null;
   }
 
   @Override
