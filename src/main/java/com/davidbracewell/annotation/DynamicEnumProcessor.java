@@ -77,6 +77,8 @@ public class DynamicEnumProcessor extends AbstractProcessor {
           String cName = classElement.getSimpleName() + "Enum";
           String pName = packageElement.getQualifiedName().toString();
           String implementsClass = StringUtils.EMPTY;
+          String javaDoc = StringUtils.EMPTY;
+          String rootName = classElement.getSimpleName() + "_ROOT";
           String configPrefix = cName;
           boolean isHierarchical = false;
 
@@ -107,6 +109,13 @@ public class DynamicEnumProcessor extends AbstractProcessor {
               }
             }
 
+            if (!StringUtils.isNullOrBlank(de.javadoc())) {
+              javaDoc = de.javadoc();
+            }
+
+            if (!StringUtils.isNullOrBlank(de.rootName())) {
+              rootName = de.rootName();
+            }
 
           }
 
@@ -123,7 +132,9 @@ public class DynamicEnumProcessor extends AbstractProcessor {
 
             classFile = classFile.replace("$TYPE_NAME", cName)
               .replace("$CONFIG_PREFIX", configPrefix)
-              .replace("$IMPLEMENTS", implementsClass);
+              .replace("$IMPLEMENTS", implementsClass)
+              .replace("$ROOT_NAME", rootName)
+              .replace("$JAVADOC", javaDoc);
             bw.append("package ");
             bw.append(pName);
             bw.append(";");

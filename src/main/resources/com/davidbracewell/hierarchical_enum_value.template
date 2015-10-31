@@ -2,16 +2,19 @@ import com.davidbracewell.DynamicEnum;
 import com.davidbracewell.HierarchicalEnumValue;
 import com.davidbracewell.config.Config;
 import com.davidbracewell.string.StringUtils;
+import java.util.List;
+import java.util.LinkedList;
 
 import java.io.ObjectStreamException;
 import java.util.Collection;
 
+$JAVADOC
 public final class $TYPE_NAME extends HierarchicalEnumValue $IMPLEMENTS {
 
   private static final DynamicEnum<$TYPE_NAME> index = new DynamicEnum<>();
   private static final long serialVersionUID = 1L;
 
-  public static $TYPE_NAME ROOT = create("$TYPE_NAME_ROOT");
+  public static $TYPE_NAME ROOT = create("$ROOT_NAME");
 
   private $TYPE_NAME(String name) {
     super(name);
@@ -99,6 +102,17 @@ public final class $TYPE_NAME extends HierarchicalEnumValue $IMPLEMENTS {
   public $TYPE_NAME getParent(){
     if( this == ROOT ){ return null; }
     return ($TYPE_NAME)super.getParent();
+  }
+
+  @Override
+  public List<$TYPE_NAME> getChildren(){
+    List<$TYPE_NAME > children = new LinkedList<>();
+    for( $TYPE_NAME  e : values()) {
+         if( !e.isRoot() && e.getParent().equals(this)){
+             children.add(e);
+           }
+    }
+    return children;
   }
 
 }//END OF $TYPE_NAME

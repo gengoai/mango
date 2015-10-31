@@ -70,6 +70,20 @@ public @interface DynamicEnumeration {
    */
   String[] implementsClass() default "";
 
+  /**
+   * The Javadoc associated with the class
+   *
+   * @return the javadoc
+   */
+  String javadoc() default "";
+
+
+  /**
+   * The name of the root element. (Only used if hierarchical is true)
+   *
+   * @return The name of the root element
+   */
+  String rootName() default "";
 
 
 }//END OF DynamicEnumeration

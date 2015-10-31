@@ -21,6 +21,8 @@
 
 package com.davidbracewell;
 
+import java.util.List;
+
 /**
  * The type Hierarchical enum value.
  *
@@ -29,6 +31,9 @@ package com.davidbracewell;
 public abstract class HierarchicalEnumValue extends EnumValue {
   private static final long serialVersionUID = 1L;
 
+  /**
+   * The Parent.
+   */
   protected volatile HierarchicalEnumValue parent = null;
 
   /**
@@ -49,6 +54,33 @@ public abstract class HierarchicalEnumValue extends EnumValue {
   protected HierarchicalEnumValue(String name, HierarchicalEnumValue parent) {
     super(name);
     this.parent = parent;
+  }
+
+  /**
+   * Determines if this enum is the root
+   *
+   * @return True if it is the root, False otherwise
+   */
+  public boolean isRoot() {
+    return getParent() == null;
+  }
+
+
+  /**
+   * Gets children.
+   *
+   * @param <T> the type parameter
+   * @return the children
+   */
+  public abstract <T extends HierarchicalEnumValue> List<T> getChildren();
+
+  /**
+   * Is leaf boolean.
+   *
+   * @return the boolean
+   */
+  public boolean isLeaf() {
+    return getChildren().isEmpty();
   }
 
   /**
