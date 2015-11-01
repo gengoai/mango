@@ -27,6 +27,7 @@ import com.davidbracewell.function.*;
 import com.davidbracewell.tuple.Tuple2;
 import lombok.NonNull;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,7 +38,8 @@ import java.util.stream.Stream;
 /**
  * @author David B. Bracewell
  */
-public class JavaMPairStream<T, U> implements MPairStream<T, U> {
+public class JavaMPairStream<T, U> implements MPairStream<T, U>, Serializable {
+  private static final long serialVersionUID = 1L;
 
   private final Stream<Map.Entry<T, U>> stream;
 

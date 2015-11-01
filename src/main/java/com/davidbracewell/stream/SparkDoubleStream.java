@@ -27,6 +27,7 @@ import com.davidbracewell.function.*;
 import org.apache.spark.api.java.JavaDoubleRDD;
 import scala.Tuple2;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.OptionalDouble;
 import java.util.PrimitiveIterator;
@@ -34,7 +35,8 @@ import java.util.PrimitiveIterator;
 /**
  * @author David B. Bracewell
  */
-public class SparkDoubleStream implements MDoubleStream {
+public class SparkDoubleStream implements MDoubleStream, Serializable {
+  private static final long serialVersionUID = 1L;
 
   private final JavaDoubleRDD doubleStream;
 

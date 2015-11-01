@@ -31,6 +31,7 @@ import com.davidbracewell.tuple.Tuple2;
 import com.google.common.collect.Ordering;
 import lombok.NonNull;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -42,7 +43,8 @@ import java.util.stream.Stream;
 /**
  * @author David B. Bracewell
  */
-public class JavaMStream<T> implements MStream<T> {
+public class JavaMStream<T> implements MStream<T>, Serializable {
+  private static final long serialVersionUID = 1L;
 
   private final Stream<T> stream;
 

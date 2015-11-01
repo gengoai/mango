@@ -22,6 +22,7 @@
 package com.davidbracewell.stream;
 
 import com.davidbracewell.config.Config;
+import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.string.StringUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -66,6 +67,15 @@ public final class Spark {
       }
     }
     return context;
+  }
+
+  public static JavaSparkContext context(MStream<?> stream) {
+    if (stream == null) {
+      return context();
+    } else if (stream instanceof SparkStream) {
+      return context(Cast.<SparkStream>as(stream).getRDD());
+    }
+    return context();
   }
 
   /**

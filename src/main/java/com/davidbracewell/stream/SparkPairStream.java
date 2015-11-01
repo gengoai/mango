@@ -7,6 +7,7 @@ import lombok.NonNull;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,8 @@ import java.util.Map;
 /**
  * @author David B. Bracewell
  */
-public class SparkPairStream<T, U> implements MPairStream<T, U> {
+public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
+  private static final long serialVersionUID = 1L;
 
   private final JavaPairRDD<T, U> rdd;
 

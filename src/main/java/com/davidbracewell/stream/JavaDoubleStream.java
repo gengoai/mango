@@ -24,6 +24,7 @@ package com.davidbracewell.stream;
 import com.davidbracewell.collection.EnhancedDoubleStatistics;
 import com.davidbracewell.function.*;
 
+import java.io.Serializable;
 import java.util.OptionalDouble;
 import java.util.PrimitiveIterator;
 import java.util.stream.DoubleStream;
@@ -31,7 +32,8 @@ import java.util.stream.DoubleStream;
 /**
  * @author David B. Bracewell
  */
-public class JavaDoubleStream implements MDoubleStream {
+public class JavaDoubleStream implements MDoubleStream, Serializable {
+  private static final long serialVersionUID = 1L;
 
   private final DoubleStream stream;
 

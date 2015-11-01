@@ -30,6 +30,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Collector;
@@ -40,9 +41,13 @@ import java.util.stream.Collector;
  * @param <T> the type parameter
  * @author David B. Bracewell
  */
-public class SparkStream<T> implements MStream<T> {
-
+public class SparkStream<T> implements MStream<T>, Serializable {
+  private static final long serialVersionUID = 1L;
   private final JavaRDD<T> rdd;
+
+  public JavaRDD<T> getRDD(){
+    return rdd;
+  }
 
   /**
    * Instantiates a new Spark stream.
