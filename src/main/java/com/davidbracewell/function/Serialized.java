@@ -21,12 +21,98 @@
 
 package com.davidbracewell.function;
 
-import java.io.Serializable;
+import lombok.NonNull;
+
 import java.util.function.*;
 
+/**
+ * The interface Serialized.
+ */
 public interface Serialized {
 
-  static Runnable runnable(SerializableRunnable runnable){ return runnable;}
+  /**
+   * Runnable runnable.
+   *
+   * @param runnable the runnable
+   * @return the runnable
+   */
+  static Runnable runnable(SerializableRunnable runnable) {
+    return runnable;
+  }
+
+  /**
+   * And serializable predicate.
+   *
+   * @param <T> the type parameter
+   * @param p1  the p 1
+   * @param p2  the p 2
+   * @return the serializable predicate
+   */
+  static <T> SerializablePredicate<T> and(@NonNull SerializablePredicate<? super T> p1, @NonNull SerializablePredicate<? super T> p2) {
+    return t -> p1.test(t) && p2.test(t);
+  }
+
+  /**
+   * Or serializable predicate.
+   *
+   * @param <T> the type parameter
+   * @param p1  the p 1
+   * @param p2  the p 2
+   * @return the serializable predicate
+   */
+  static <T> SerializablePredicate<T> or(@NonNull SerializablePredicate<? super T> p1, @NonNull SerializablePredicate<? super T> p2) {
+    return t -> p1.test(t) || p2.test(t);
+  }
+
+  /**
+   * Negate serializable predicate.
+   *
+   * @param <T> the type parameter
+   * @param p1  the p 1
+   * @return the serializable predicate
+   */
+  static <T> SerializablePredicate<T> negate(@NonNull SerializablePredicate<? super T> p1) {
+    return t -> !p1.test(t);
+  }
+
+
+  /**
+   * And serializable bi predicate.
+   *
+   * @param <T> the type parameter
+   * @param <U> the type parameter
+   * @param p1  the p 1
+   * @param p2  the p 2
+   * @return the serializable bi predicate
+   */
+  static <T, U> SerializableBiPredicate<T, U> and(@NonNull SerializableBiPredicate<? super T, ? super U> p1, @NonNull SerializableBiPredicate<? super T, ? super U> p2) {
+    return (t, u) -> p1.test(t, u) && p2.test(t, u);
+  }
+
+  /**
+   * Or serializable bi predicate.
+   *
+   * @param <T> the type parameter
+   * @param <U> the type parameter
+   * @param p1  the p 1
+   * @param p2  the p 2
+   * @return the serializable bi predicate
+   */
+  static <T, U> SerializableBiPredicate<T, U> or(@NonNull SerializableBiPredicate<? super T, ? super U> p1, @NonNull SerializableBiPredicate<? super T, ? super U> p2) {
+    return (t, u) -> p1.test(t, u) || p2.test(t, u);
+  }
+
+  /**
+   * Negate serializable bi predicate.
+   *
+   * @param <T> the type parameter
+   * @param <U> the type parameter
+   * @param p1  the p 1
+   * @return the serializable bi predicate
+   */
+  static <T, U> SerializableBiPredicate<T, U> negate(@NonNull SerializableBiPredicate<? super T, ? super U> p1) {
+    return (t, u) -> !p1.test(t, u);
+  }
 
   /**
    * Generates a serialized version of DoubleToIntFunction
@@ -53,8 +139,8 @@ public interface Serialized {
   /**
    * Generates a serialized version of Consumer
    *
-   * @param serialized The serialized functional
    * @param <T>        Functional parameter
+   * @param serialized The serialized functional
    * @return The serialized functional.
    */
   static <T> Consumer<T> consumer(SerializableConsumer<T> serialized) {
@@ -76,8 +162,8 @@ public interface Serialized {
   /**
    * Generates a serialized version of ObjLongConsumer
    *
-   * @param serialized The serialized functional
    * @param <T>        Functional parameter
+   * @param serialized The serialized functional
    * @return The serialized functional.
    */
   static <T> ObjLongConsumer<T> objLongConsumer(SerializableObjLongConsumer<T> serialized) {
@@ -88,9 +174,9 @@ public interface Serialized {
   /**
    * Generates a serialized version of BiPredicate
    *
-   * @param serialized The serialized functional
    * @param <T>        Functional parameter
    * @param <U>        Functional parameter
+   * @param serialized The serialized functional
    * @return The serialized functional.
    */
   static <T, U> BiPredicate<T, U> biPredicate(SerializableBiPredicate<T, U> serialized) {
@@ -167,8 +253,8 @@ public interface Serialized {
   /**
    * Generates a serialized version of ObjIntConsumer
    *
-   * @param serialized The serialized functional
    * @param <T>        Functional parameter
+   * @param serialized The serialized functional
    * @return The serialized functional.
    */
   static <T> ObjIntConsumer<T> objIntConsumer(SerializableObjIntConsumer<T> serialized) {
@@ -190,8 +276,8 @@ public interface Serialized {
   /**
    * Generates a serialized version of UnaryOperator
    *
-   * @param serialized The serialized functional
    * @param <T>        Functional parameter
+   * @param serialized The serialized functional
    * @return The serialized functional.
    */
   static <T> UnaryOperator<T> unaryOperator(SerializableUnaryOperator<T> serialized) {
@@ -202,8 +288,8 @@ public interface Serialized {
   /**
    * Generates a serialized version of BinaryOperator
    *
-   * @param serialized The serialized functional
    * @param <T>        Functional parameter
+   * @param serialized The serialized functional
    * @return The serialized functional.
    */
   static <T> BinaryOperator<T> binaryOperator(SerializableBinaryOperator<T> serialized) {
@@ -214,8 +300,8 @@ public interface Serialized {
   /**
    * Generates a serialized version of Predicate
    *
-   * @param serialized The serialized functional
    * @param <T>        Functional parameter
+   * @param serialized The serialized functional
    * @return The serialized functional.
    */
   static <T> Predicate<T> predicate(SerializablePredicate<T> serialized) {
@@ -226,8 +312,8 @@ public interface Serialized {
   /**
    * Generates a serialized version of ToDoubleFunction
    *
-   * @param serialized The serialized functional
    * @param <T>        Functional parameter
+   * @param serialized The serialized functional
    * @return The serialized functional.
    */
   static <T> ToDoubleFunction<T> toDoubleFunction(SerializableToDoubleFunction<T> serialized) {
@@ -238,8 +324,8 @@ public interface Serialized {
   /**
    * Generates a serialized version of Supplier
    *
-   * @param serialized The serialized functional
    * @param <T>        Functional parameter
+   * @param serialized The serialized functional
    * @return The serialized functional.
    */
   static <T> Supplier<T> supplier(SerializableSupplier<T> serialized) {
@@ -250,9 +336,9 @@ public interface Serialized {
   /**
    * Generates a serialized version of ToDoubleBiFunction
    *
-   * @param serialized The serialized functional
    * @param <T>        Functional parameter
    * @param <U>        Functional parameter
+   * @param serialized The serialized functional
    * @return The serialized functional.
    */
   static <T, U> ToDoubleBiFunction<T, U> toDoubleBiFunction(SerializableToDoubleBiFunction<T, U> serialized) {
@@ -274,9 +360,9 @@ public interface Serialized {
   /**
    * Generates a serialized version of BiConsumer
    *
-   * @param serialized The serialized functional
    * @param <T>        Functional parameter
    * @param <U>        Functional parameter
+   * @param serialized The serialized functional
    * @return The serialized functional.
    */
   static <T, U> BiConsumer<T, U> biConsumer(SerializableBiConsumer<T, U> serialized) {
@@ -298,8 +384,8 @@ public interface Serialized {
   /**
    * Generates a serialized version of ToLongFunction
    *
-   * @param serialized The serialized functional
    * @param <T>        Functional parameter
+   * @param serialized The serialized functional
    * @return The serialized functional.
    */
   static <T> ToLongFunction<T> toLongFunction(SerializableToLongFunction<T> serialized) {
@@ -310,8 +396,8 @@ public interface Serialized {
   /**
    * Generates a serialized version of IntFunction
    *
-   * @param serialized The serialized functional
    * @param <R>        Functional parameter
+   * @param serialized The serialized functional
    * @return The serialized functional.
    */
   static <R> IntFunction<R> intFunction(SerializableIntFunction<R> serialized) {
@@ -333,10 +419,10 @@ public interface Serialized {
   /**
    * Generates a serialized version of BiFunction
    *
-   * @param serialized The serialized functional
    * @param <T>        Functional parameter
    * @param <U>        Functional parameter
    * @param <R>        Functional parameter
+   * @param serialized The serialized functional
    * @return The serialized functional.
    */
   static <T, U, R> BiFunction<T, U, R> biFunction(SerializableBiFunction<T, U, R> serialized) {
@@ -369,8 +455,8 @@ public interface Serialized {
   /**
    * Generates a serialized version of LongFunction
    *
-   * @param serialized The serialized functional
    * @param <R>        Functional parameter
+   * @param serialized The serialized functional
    * @return The serialized functional.
    */
   static <R> LongFunction<R> longFunction(SerializableLongFunction<R> serialized) {
@@ -392,9 +478,9 @@ public interface Serialized {
   /**
    * Generates a serialized version of ToLongBiFunction
    *
-   * @param serialized The serialized functional
    * @param <T>        Functional parameter
    * @param <U>        Functional parameter
+   * @param serialized The serialized functional
    * @return The serialized functional.
    */
   static <T, U> ToLongBiFunction<T, U> toLongBiFunction(SerializableToLongBiFunction<T, U> serialized) {
@@ -416,8 +502,8 @@ public interface Serialized {
   /**
    * Generates a serialized version of DoubleFunction
    *
-   * @param serialized The serialized functional
    * @param <R>        Functional parameter
+   * @param serialized The serialized functional
    * @return The serialized functional.
    */
   static <R> DoubleFunction<R> doubleFunction(SerializableDoubleFunction<R> serialized) {
@@ -439,9 +525,9 @@ public interface Serialized {
   /**
    * Generates a serialized version of Function
    *
-   * @param serialized The serialized functional
    * @param <T>        Functional parameter
    * @param <R>        Functional parameter
+   * @param serialized The serialized functional
    * @return The serialized functional.
    */
   static <T, R> Function<T, R> function(SerializableFunction<T, R> serialized) {
@@ -485,8 +571,8 @@ public interface Serialized {
   /**
    * Generates a serialized version of ToIntFunction
    *
-   * @param serialized The serialized functional
    * @param <T>        Functional parameter
+   * @param serialized The serialized functional
    * @return The serialized functional.
    */
   static <T> ToIntFunction<T> toIntFunction(SerializableToIntFunction<T> serialized) {
@@ -508,9 +594,9 @@ public interface Serialized {
   /**
    * Generates a serialized version of ToIntBiFunction
    *
-   * @param serialized The serialized functional
    * @param <T>        Functional parameter
    * @param <U>        Functional parameter
+   * @param serialized The serialized functional
    * @return The serialized functional.
    */
   static <T, U> ToIntBiFunction<T, U> toIntBiFunction(SerializableToIntBiFunction<T, U> serialized) {
@@ -521,8 +607,8 @@ public interface Serialized {
   /**
    * Generates a serialized version of ObjDoubleConsumer
    *
-   * @param serialized The serialized functional
    * @param <T>        Functional parameter
+   * @param serialized The serialized functional
    * @return The serialized functional.
    */
   static <T> ObjDoubleConsumer<T> objDoubleConsumer(SerializableObjDoubleConsumer<T> serialized) {
