@@ -26,6 +26,8 @@ import com.davidbracewell.function.SerializableBinaryOperator;
 import com.davidbracewell.function.SerializableConsumer;
 import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.function.SerializablePredicate;
+import com.davidbracewell.io.resource.Resource;
+import lombok.NonNull;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
@@ -45,7 +47,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
   private static final long serialVersionUID = 1L;
   private final JavaRDD<T> rdd;
 
-  public JavaRDD<T> getRDD(){
+  public JavaRDD<T> getRDD() {
     return rdd;
   }
 
@@ -238,5 +240,15 @@ public class SparkStream<T> implements MStream<T>, Serializable {
       return new SparkStream<>(rdd.union(Cast.<SparkStream<T>>as(other).rdd));
     }
     return new SparkStream<>(rdd.union(Spark.context(rdd).parallelize(other.collect())));
+  }
+
+  @Override
+  public void saveAsTextFile(@NonNull Resource location) {
+    rdd.saveAsTextFile(location.descriptor());
+  }
+
+  @Override
+  public void saveAsTextFile(@NonNull String location) {
+    rdd.saveAsTextFile(location);
   }
 }//END OF SparkStream

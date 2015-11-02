@@ -26,7 +26,10 @@ import com.davidbracewell.function.SerializableBinaryOperator;
 import com.davidbracewell.function.SerializableConsumer;
 import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.function.SerializablePredicate;
+import com.davidbracewell.io.Resources;
+import com.davidbracewell.io.resource.Resource;
 import com.google.common.collect.Ordering;
+import lombok.NonNull;
 
 import java.util.*;
 import java.util.function.ToDoubleFunction;
@@ -296,5 +299,19 @@ public interface MStream<T> extends AutoCloseable {
    * @return the m stream
    */
   MStream<T> union(MStream<T> other);
+
+
+  /**
+   * Save as text file.
+   *
+   * @param location the location
+   */
+  void saveAsTextFile(@NonNull Resource location);
+
+
+  default void saveAsTextFile(@NonNull String location) {
+    saveAsTextFile(Resources.from(location));
+  }
+
 
 }//END OF MStream

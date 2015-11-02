@@ -23,14 +23,15 @@ package com.davidbracewell.stream;
 
 import com.davidbracewell.collection.Collect;
 import com.davidbracewell.conversion.Cast;
-import com.davidbracewell.function.SerializableBinaryOperator;
-import com.davidbracewell.function.SerializableConsumer;
-import com.davidbracewell.function.SerializableFunction;
-import com.davidbracewell.function.SerializablePredicate;
+import com.davidbracewell.function.*;
+import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.tuple.Tuple2;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Ordering;
 import lombok.NonNull;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -248,4 +249,18 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
     }
     return other.union(this);
   }
+
+  @Override
+  public void saveAsTextFile(@NonNull Resource location) {
+    try (BufferedWriter writer = new BufferedWriter(location.writer())) {
+      stream.forEach(Unchecked.consumer(o -> {
+          writer.write(o.toString());
+          writer.newLine();
+        }
+      ));
+    } catch (IOException e) {
+      throw Throwables.propagate(e);
+    }
+  }
+
 }//END OF JavaMStream
