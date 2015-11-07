@@ -57,11 +57,14 @@ public final class DynamicEnum<E extends EnumValue> implements Serializable {
    * @param value the enum value
    */
   public final E register(E value) {
-    if (values.contains(value.name())) {
-      return values.get(value.name());
+    if (!values.contains(value)) {
+      synchronized (values) {
+        if (!values.contains(value)) {
+          values.put(value.name(), Cast.<E>as(value));
+        }
+      }
     }
-    values.put(value.name(), Cast.<E>as(value));
-    return value;
+    return values.get(value.name());
   }
 
 
