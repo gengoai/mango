@@ -57,6 +57,7 @@ public enum CommonTypes implements ParserTokenType, HasLexicalPattern {
   SINGLEQUOTE("'"),
   NEWLINE("\r?\n"),
   WHITESPACE("\\p{Zs}"),
+  TILDE("\\~"),
   PIPE("\\|");
 
   private final String pattern;

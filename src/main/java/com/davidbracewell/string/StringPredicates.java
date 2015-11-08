@@ -21,6 +21,7 @@
 
 package com.davidbracewell.string;
 
+import com.davidbracewell.function.SerializablePredicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
 
@@ -32,7 +33,7 @@ import java.util.function.Predicate;
  *
  * @author David B. Bracewell
  */
-public enum StringPredicates implements Predicate<CharSequence> {
+public enum StringPredicates implements SerializablePredicate<CharSequence> {
   /**
    * True if the input string is null
    */

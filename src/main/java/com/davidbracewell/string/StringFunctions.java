@@ -21,17 +21,17 @@
 
 package com.davidbracewell.string;
 
+import com.davidbracewell.function.SerializableFunction;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
 
 import java.text.Normalizer;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 
 /**
  * @author David B. Bracewell
  */
-public enum StringFunctions implements Function<String, String> {
+public enum StringFunctions implements SerializableFunction<String, String> {
   /**
    * Transforms a string into upper case format
    */
@@ -146,7 +146,7 @@ public enum StringFunctions implements Function<String, String> {
    * @param replacement The replacement text
    * @return The function
    */
-  public static Function<String, String> REGEX_REPLACE(String pattern, String replacement) {
+  public static SerializableFunction<String, String> REGEX_REPLACE(String pattern, String replacement) {
     return REGEX_REPLACE(
       Pattern.compile(Preconditions.checkNotNull(pattern)),
       Preconditions.checkNotNull(replacement));
@@ -160,16 +160,10 @@ public enum StringFunctions implements Function<String, String> {
    * @param replacement The replacement text
    * @return The function
    */
-  public static Function<String, String> REGEX_REPLACE(final Pattern pattern, final String replacement) {
+  public static SerializableFunction<String, String> REGEX_REPLACE(final Pattern pattern, final String replacement) {
     Preconditions.checkNotNull(pattern);
     Preconditions.checkNotNull(replacement);
-    return new Function<String, String>() {
-
-      @Override
-      public String apply(String arg0) {
-        return arg0 == null ? null : pattern.matcher(arg0).replaceAll(replacement);
-      }
-    };
+    return arg0 -> arg0 == null ? null : pattern.matcher(arg0).replaceAll(replacement);
   }
 
 

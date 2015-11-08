@@ -51,29 +51,29 @@ import java.util.Locale;
  */
 public class CommonTypeConverter {
 
-  public static final Function<Object,Date> JAVA_DATE = new Function<Object, Date>() {
-    
+  public static final Function<Object, Date> JAVA_DATE = new Function<Object, Date>() {
+
     @Override
-    public Date apply( Object input) {
-      if( input == null ){
+    public Date apply(Object input) {
+      if (input == null) {
         return null;
-      } else if( input instanceof Date){
+      } else if (input instanceof Date) {
         return Cast.as(input);
-      } else if( input instanceof Number){
-        return new Date(Cast.as(input,Number.class).longValue());
-      } else if( input instanceof Calendar){
-        return Cast.as(input,Calendar.class).getTime();
+      } else if (input instanceof Number) {
+        return new Date(Cast.as(input, Number.class).longValue());
+      } else if (input instanceof Calendar) {
+        return Cast.as(input, Calendar.class).getTime();
       }
 
       String string = STRING.apply(input);
-      if( string != null ){
+      if (string != null) {
         string = StringUtils.trim(string.replaceAll("\\p{Z}+", " "));
 
         Date date = DateUtils.parseQuietly(string, Locale.getDefault());
-        if( date != null ){
+        if (date != null) {
           return date;
         }
-        date = DateUtils.parseQuietly(string,DateUtils.ISO_8601);
+        date = DateUtils.parseQuietly(string, DateUtils.ISO_8601);
         if (date != null) {
           return date;
         }
@@ -93,9 +93,9 @@ public class CommonTypeConverter {
   };
 
   public static final Function<Object, java.sql.Date> SQL_DATE = new Function<Object, java.sql.Date>() {
-    
+
     @Override
-    public java.sql.Date apply( Object input) {
+    public java.sql.Date apply(Object input) {
       if (input == null) {
         return null;
       } else if (input instanceof java.sql.Date) {
@@ -103,7 +103,7 @@ public class CommonTypeConverter {
       }
 
       Date date = JAVA_DATE.apply(input);
-      if( date != null ){
+      if (date != null) {
         return new java.sql.Date(date.getTime());
       }
 
@@ -116,9 +116,9 @@ public class CommonTypeConverter {
    * Converts objects to characters
    */
   public static final Function<Object, Character> CHARACTER = new Function<Object, Character>() {
-    
+
     @Override
-    public Character apply( Object input) {
+    public Character apply(Object input) {
       if (input == null) {
         return null;
       } else if (input instanceof Character) {
@@ -141,9 +141,9 @@ public class CommonTypeConverter {
    * the input is null.
    */
   public static final Function<Object, Class<?>> CLASS = new Function<Object, Class<?>>() {
-    
+
     @Override
-    public Class<?> apply( Object input) {
+    public Class<?> apply(Object input) {
       if (input == null) {
         return null;
       } else if (input instanceof Class) {
@@ -161,7 +161,7 @@ public class CommonTypeConverter {
    * Identity function
    */
   public static final Function<Object, Object> OBJECT = new Function<Object, Object>() {
-    
+
     @Override
     public Object apply(Object input) {
       return input;
@@ -172,9 +172,9 @@ public class CommonTypeConverter {
    * InputStream, etc.)
    */
   public static final Function<Object, String> STRING = new Function<Object, String>() {
-    
+
     @Override
-    public String apply( Object input) {
+    public String apply(Object input) {
       if (input == null) {
         return null;
       } else if (input instanceof CharSequence) {
@@ -201,7 +201,7 @@ public class CommonTypeConverter {
           array += Convert.convert(Array.get(input, i), String.class);
         }
         return array + "]";
-      } else if( input instanceof  Date ){
+      } else if (input instanceof Date) {
         return SimpleDateFormat.getDateTimeInstance().format(input);
       }
 
@@ -212,9 +212,9 @@ public class CommonTypeConverter {
    * Converts objects to <code>StringBuilder</code>. It uses the {@link #STRING} function to convert items to Strings.
    */
   public static final Function<Object, StringBuilder> STRING_BUILDER = new Function<Object, StringBuilder>() {
-    
+
     @Override
-    public StringBuilder apply( Object input) {
+    public StringBuilder apply(Object input) {
       if (input == null) {
         return null;
       } else if (input instanceof StringBuilder) {
