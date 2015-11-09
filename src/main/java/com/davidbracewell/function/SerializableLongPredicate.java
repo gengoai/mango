@@ -21,6 +21,8 @@
 
 package com.davidbracewell.function;
 
+import lombok.NonNull;
+
 import java.io.Serializable;
 import java.util.function.LongPredicate;
 
@@ -29,5 +31,23 @@ import java.util.function.LongPredicate;
  */
 @FunctionalInterface
 public interface SerializableLongPredicate extends LongPredicate, Serializable {
+
+  @Override
+  default SerializableLongPredicate and(@NonNull LongPredicate other) {
+    return i -> this.test(i) && other.test(i);
+  }
+
+  @Override
+  default SerializableLongPredicate or(@NonNull LongPredicate other) {
+    return i -> this.test(i) || other.test(i);
+  }
+
+  default SerializableLongPredicate and(@NonNull SerializableLongPredicate other) {
+    return i -> this.test(i) && other.test(i);
+  }
+
+  default SerializableLongPredicate or(@NonNull SerializableLongPredicate other) {
+    return i -> this.test(i) || other.test(i);
+  }
 
 }//END OF SerializableLongPredicate
