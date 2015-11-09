@@ -290,7 +290,7 @@ public enum StringPredicates implements SerializablePredicate<CharSequence> {
    * @param toMatch the sequence to match
    * @return the predicate
    */
-  public static Predicate<CharSequence> MATCHES(String toMatch) {
+  public static SerializablePredicate<CharSequence> MATCHES(String toMatch) {
     return MATCHES(toMatch, true);
   }
 
@@ -302,7 +302,7 @@ public enum StringPredicates implements SerializablePredicate<CharSequence> {
    * @param caseSensitive True case sensitive match, False case insensitive
    * @return the predicate
    */
-  public static Predicate<CharSequence> MATCHES(String toMatch, boolean caseSensitive) {
+  public static SerializablePredicate<CharSequence> MATCHES(String toMatch, boolean caseSensitive) {
     return new MatchPredicate(StringFunctions.NULL_TO_EMPTY.apply(toMatch), caseSensitive);
   }
 
@@ -312,7 +312,7 @@ public enum StringPredicates implements SerializablePredicate<CharSequence> {
    * @param text The text to check for
    * @return the predicate
    */
-  public static Predicate<CharSequence> CONTAINS(String text) {
+  public static SerializablePredicate<CharSequence> CONTAINS(String text) {
     return CONTAINS(text, true);
   }
 
@@ -324,7 +324,7 @@ public enum StringPredicates implements SerializablePredicate<CharSequence> {
    * @param caseSensitive True case sensitive match, False case insensitive
    * @return the predicate
    */
-  public static Predicate<CharSequence> CONTAINS(String text, boolean caseSensitive) {
+  public static SerializablePredicate<CharSequence> CONTAINS(String text, boolean caseSensitive) {
     return new ContainsPredicate(caseSensitive, text);
   }
 
@@ -335,7 +335,7 @@ public enum StringPredicates implements SerializablePredicate<CharSequence> {
    * @param pattern the pattern to match
    * @return the predicate
    */
-  public static Predicate<CharSequence> REGEX_MATCH(String pattern) {
+  public static SerializablePredicate<CharSequence> REGEX_MATCH(String pattern) {
     return Predicates.containsPattern(pattern)::apply;
   }
 
@@ -346,7 +346,7 @@ public enum StringPredicates implements SerializablePredicate<CharSequence> {
    * @param caseSensitive True case sensitive match, False case insensitive
    * @return the predicate
    */
-  public static Predicate<CharSequence> STARTS_WITH(String toMatch, boolean caseSensitive) {
+  public static SerializablePredicate<CharSequence> STARTS_WITH(String toMatch, boolean caseSensitive) {
     return new StartsWithPredicate(StringFunctions.NULL_TO_EMPTY.apply(toMatch), caseSensitive);
   }
 
@@ -357,12 +357,12 @@ public enum StringPredicates implements SerializablePredicate<CharSequence> {
    * @param caseSensitive True case sensitive match, False case insensitive
    * @return the predicate
    */
-  public static Predicate<CharSequence> ENDS_WITH(String toMatch, boolean caseSensitive) {
+  public static SerializablePredicate<CharSequence> ENDS_WITH(String toMatch, boolean caseSensitive) {
     return new EndsWithPredicate(StringFunctions.NULL_TO_EMPTY.apply(toMatch), caseSensitive);
   }
 
 
-  private static class StartsWithPredicate implements Predicate<CharSequence>, Serializable {
+  private static class StartsWithPredicate implements SerializablePredicate<CharSequence> {
     private static final long serialVersionUID = 1L;
     private final boolean caseSensitive;
     private final String toMatch;
@@ -383,7 +383,7 @@ public enum StringPredicates implements SerializablePredicate<CharSequence> {
     }
   }
 
-  private static class EndsWithPredicate implements Predicate<CharSequence>, Serializable {
+  private static class EndsWithPredicate implements SerializablePredicate<CharSequence> {
     private static final long serialVersionUID = 1L;
     private final boolean caseSensitive;
     private final String toMatch;
@@ -404,7 +404,7 @@ public enum StringPredicates implements SerializablePredicate<CharSequence> {
     }
   }
 
-  private static class MatchPredicate implements Predicate<CharSequence>, Serializable {
+  private static class MatchPredicate implements SerializablePredicate<CharSequence> {
     private static final long serialVersionUID = 1L;
     private final boolean caseSensitive;
     private final String toMatch;
@@ -425,7 +425,7 @@ public enum StringPredicates implements SerializablePredicate<CharSequence> {
     }
   }
 
-  private static class ContainsPredicate implements Predicate<CharSequence>, Serializable {
+  private static class ContainsPredicate implements SerializablePredicate<CharSequence> {
     private static final long serialVersionUID = 1L;
     private final boolean caseSensitive;
     private final String toMatch;
