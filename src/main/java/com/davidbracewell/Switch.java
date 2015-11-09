@@ -19,8 +19,10 @@
  * under the License.
  */
 
-package com.davidbracewell.function;
+package com.davidbracewell;
 
+import com.davidbracewell.function.SerializableFunction;
+import com.davidbracewell.function.SerializablePredicate;
 import lombok.Builder;
 import lombok.Singular;
 
