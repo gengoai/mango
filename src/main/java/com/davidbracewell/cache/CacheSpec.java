@@ -106,6 +106,11 @@ public class CacheSpec<K, V> implements Specification, Serializable {
     return cacheFunction;
   }
 
+  public CacheSpec<K, V> loadingFunction(Function<K, V> loadingFunction) {
+    this.cacheFunction = loadingFunction;
+    return this;
+  }
+
   /**
    * Gets cache type.
    *

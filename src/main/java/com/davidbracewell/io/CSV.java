@@ -65,6 +65,11 @@ public class CSV implements Specification, Serializable {
     return this;
   }
 
+  public CSV hasHeader(boolean hasHeader) {
+    hasHeader = hasHeader;
+    return this;
+  }
+
   public CSV noHeader() {
     hasHeader = false;
     return this;
