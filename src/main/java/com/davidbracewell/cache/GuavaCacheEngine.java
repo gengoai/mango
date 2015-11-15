@@ -45,7 +45,7 @@ public class GuavaCacheEngine implements CacheEngine {
     if (cacheSpec.getLoadingFunction() == null) {
       return new GuavaCache<>(cacheSpec.getName(), builder);
     }
-    return null;
+    return new GuavaLoadingCache<>(cacheSpec.getName(), builder, cacheSpec.getLoadingFunction());
   }
 
   private <K, V> CacheBuilder<K, V> cacheBuilderFromSpec(CacheSpec<K, V> specification) {

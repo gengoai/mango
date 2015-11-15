@@ -108,9 +108,7 @@ public class Grammar {
    */
   public Expression parse(Parser parser, ParserToken token) throws ParseException {
     Preconditions.checkNotNull(token, "Token cannot be null");
-
-    PrefixHandler handler =
-        prefixHandlers.containsKey(token.type) ? prefixHandlers.get(token.type) : prefixSkipHandler;
+    PrefixHandler handler = prefixHandlers.containsKey(token.type) ? prefixHandlers.get(token.type) : prefixSkipHandler;
     if (handler == null) {
       throw new ParseException("No PrefixHandler registered for token type " + token.type);
     }

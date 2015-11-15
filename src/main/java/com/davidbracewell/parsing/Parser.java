@@ -104,7 +104,6 @@ public class Parser {
   public Expression next(int precedence) throws ParseException {
     ParserToken token;
     Expression result;
-
     do {
       token = tokenStream.consume();
       if (token == null) {
@@ -112,7 +111,6 @@ public class Parser {
       }
       result = grammar.parse(this, token);
     } while (result == null);
-
     while (precedence < grammar.precedence(tokenStream.lookAhead(0))) {
       token = tokenStream.consume();
       result = grammar.parse(this, result, token);

@@ -306,7 +306,7 @@ public interface MStream<T> extends AutoCloseable {
    *
    * @param location the location
    */
-  void saveAsTextFile(@NonNull Resource location);
+  void saveAsTextFile(Resource location);
 
 
   default void saveAsTextFile(@NonNull String location) {

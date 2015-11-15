@@ -115,7 +115,7 @@ public abstract class BaseResource implements Resource, Serializable {
 
   @Override
   public final String toString() {
-    return super.toString();
+    return descriptor();
   }
 
   @Override
