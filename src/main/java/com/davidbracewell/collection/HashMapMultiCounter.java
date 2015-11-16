@@ -47,6 +47,7 @@ public class HashMapMultiCounter<K, V> extends AbstractMapMultiCounter<K, V> {
    *
    * @param triples the triples
    */
+  @SafeVarargs
   public HashMapMultiCounter(Tuple3<K, V, ? extends Number>... triples) {
     super(new HashMap<>(), triples);
   }

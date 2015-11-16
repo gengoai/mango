@@ -157,13 +157,7 @@ public final class Convert {
    * @return A converter
    */
   public static <T> Function<Object, T> getConverter(final Class<T> clazz) {
-    return new Function<Object, T>() {
-
-      @Override
-      public T apply(Object input) {
-        return Convert.convert(input, clazz);
-      }
-    };
+    return object -> Convert.convert(object, clazz);
   }
 
 
@@ -175,8 +169,8 @@ public final class Convert {
    * @param desiredType the desired type
    * @return the t
    */
+  @SuppressWarnings("unchecked")
   public static <T> T convert(Object object, Class<T> desiredType) {
-    // null == null
     if (object == null) {
       if (desiredType != null && desiredType.isPrimitive()) {
         return Defaults.defaultValue(desiredType);
@@ -243,6 +237,7 @@ public final class Convert {
    * @param valueClass the value class
    * @return the mAP
    */
+  @SuppressWarnings("unchecked")
   public static <KEY, VALUE, MAP extends Map<KEY, VALUE>> MAP convert(Object object, Class<?> mapClass, Class<KEY> keyClass, Class<VALUE> valueClass) {
     return Cast.as(new MapConverter<>(getConverter(keyClass), getConverter(valueClass), mapClass).apply(object));
   }
@@ -258,6 +253,7 @@ public final class Convert {
    * @param componentClass  the component class
    * @return the c
    */
+  @SuppressWarnings("unchecked")
   public static <T, C extends Collection<T>> C convert(Object object, Class<?> collectionClass, Class<T> componentClass) {
     if (collectionClass == null || !Collection.class.isAssignableFrom(collectionClass)) {
       log.fine("{0} does not extend collection.", collectionClass);
