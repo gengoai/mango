@@ -66,7 +66,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    * @param collection the collection
    */
   public SparkStream(List<T> collection) {
-    this.rdd = Spark.context().parallelize(collection, Math.min(4, collection.size() / 100));
+    this.rdd = Spark.context().parallelize(collection, Math.max(1, collection.size() / 100));
   }
 
   @Override
