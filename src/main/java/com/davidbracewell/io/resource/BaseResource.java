@@ -45,6 +45,9 @@ public abstract class BaseResource implements Resource, Serializable {
 
   @Override
   public final Charset getCharset() {
+    if( charset == null ){
+      return StandardCharsets.UTF_8;
+    }
     return charset;
   }
 
@@ -88,7 +91,7 @@ public abstract class BaseResource implements Resource, Serializable {
 
   @Override
   public OutputStream outputStream() throws IOException {
-    Preconditions.checkState(canRead(), "This is resource cannot be read from.");
+    Preconditions.checkState(canWrite(), "This is resource cannot be written to.");
     if (isCompressed) {
       return new GZIPOutputStream(createOutputStream());
     }

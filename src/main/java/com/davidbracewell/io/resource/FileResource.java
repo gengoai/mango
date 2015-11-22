@@ -108,7 +108,7 @@ public class FileResource extends BaseResource {
 
   @Override
   public boolean canWrite() {
-    return file.canWrite();
+    return !file.exists() || file.canWrite();
   }
 
   @Override

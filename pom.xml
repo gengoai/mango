@@ -32,6 +32,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
     </properties>
 
     <scm>
@@ -204,9 +205,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <failOnError>false</failOnError>
-                </configuration>
             </plugin>
         </plugins>
     </build>

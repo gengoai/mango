@@ -28,7 +28,10 @@ import com.davidbracewell.io.structured.csv.CSVReader;
 import lombok.NonNull;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -195,11 +198,11 @@ public interface Counters {
   static <TYPE> Counter<TYPE> fromCSV(@NonNull Resource resource, @NonNull Class<TYPE> keyClass, @NonNull Supplier<Counter<TYPE>> supplier) throws IOException {
     Counter<TYPE> counter = supplier.get();
     try (CSVReader reader = CSV.builder().reader(resource)) {
-      for (List<String> row : reader) {
+      reader.forEach(row -> {
         if (row.size() >= 2) {
           counter.increment(Convert.convert(row.get(0), keyClass), Double.parseDouble(row.get(1)));
         }
-      }
+      });
     }
     return counter;
   }

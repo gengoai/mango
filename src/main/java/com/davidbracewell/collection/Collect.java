@@ -265,7 +265,7 @@ public interface Collect {
     Map<K, V> map = Maps.newHashMap();
 
     try (CSVReader reader = CSV.builder().reader(new StringReader(str))) {
-      for (List<String> row : reader) {
+      reader.forEach(row -> {
         row.forEach(cell -> {
           int ci = cell.indexOf(':');
           int ei = cell.indexOf('=');
@@ -275,7 +275,7 @@ public interface Collect {
           String value = keyValuePair.size() > 1 ? keyValuePair.get(1) : null;
           map.put(keyConverter.apply(key), valueConverter.apply(value));
         });
-      }
+      });
     } catch (IOException e) {
       throw Throwables.propagate(e);
     }

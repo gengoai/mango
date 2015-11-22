@@ -24,6 +24,7 @@ package com.davidbracewell.io.structured.csv;
 import com.davidbracewell.collection.Collect;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Val;
+import com.davidbracewell.function.Unchecked;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.structured.ElementType;
 import com.davidbracewell.io.structured.StructuredIOException;
@@ -42,7 +43,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The type CSV reader.
@@ -51,24 +54,75 @@ import java.util.stream.Collectors;
  */
 public class CSVReader extends StructuredReader implements AutoCloseable, Iterable<List<String>> {
 
-  //----- States that the reader can be in
+  /**
+   * The constant END_OF_ROW.
+   */
+//----- States that the reader can be in
   static final int END_OF_ROW = 2;
+  /**
+   * The In field.
+   */
   static final int IN_FIELD = 3;
+  /**
+   * The In quote.
+   */
   static final int IN_QUOTE = 1;
+  /**
+   * The Out quote.
+   */
   static final int OUT_QUOTE = 4;
+  /**
+   * The Start.
+   */
   static final int START = 0;
 
+  /**
+   * The Buffer.
+   */
   final Queue<Integer> buffer = Lists.newLinkedList();
+  /**
+   * The Comment.
+   */
   final int comment;
+  /**
+   * The Delimiter.
+   */
   final int delimiter;
+  /**
+   * The Escape.
+   */
   final int escape;
+  /**
+   * The Keep empty cells.
+   */
   final boolean keepEmptyCells;
+  /**
+   * The Quote.
+   */
   final int quote;
+  /**
+   * The Reader.
+   */
   final Reader reader;
+  /**
+   * The State.
+   */
   int STATE = START;
+  /**
+   * The Cell.
+   */
   StringBuilder cell = new StringBuilder();
+  /**
+   * The Row.
+   */
   List<String> row;
+  /**
+   * The Header.
+   */
   List<String> header;
+  /**
+   * The Has header.
+   */
   boolean hasHeader;
 
   private boolean documentEnd = false;
@@ -81,6 +135,7 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
    *
    * @param builder the builder
    * @param reader  the reader
+   * @throws IOException the io exception
    */
   public CSVReader(@NonNull CSV builder, @NonNull Reader reader) throws IOException {
     this.delimiter = builder.getDelimiter();
@@ -93,7 +148,6 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
     this.header = builder.getHeader() == null ? Collections.emptyList() : builder.getHeader();
     if (hasHeader && header.isEmpty()) {
       header = nextRow();
-      consume();
       rowId = 1;
     }
   }
@@ -113,6 +167,8 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
   }
 
   /**
+   * Gets header.
+   *
    * @return The header of the CSV file
    */
   public List<String> getHeader() {
@@ -261,45 +317,64 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
 
   @Override
   public Iterator<List<String>> iterator() {
-    return new Iterator<List<String>>() {
+    return new RowIterator();
+  }
 
-      List<String> row = null;
-      boolean complete = false;
 
-      private boolean advance() {
-        if (row == null) {
-          try {
-            row = nextRow();
-          } catch (IOException e) {
-            throw Throwables.propagate(e);
-          }
+  /**
+   * Stream stream.
+   *
+   * @return the stream
+   */
+  public Stream<List<String>> stream() {
+    return Collect.from(new RowIterator()).onClose(Unchecked.runnable(this::close));
+  }
+
+  /**
+   * For each.
+   *
+   * @param consumer the consumer
+   */
+  @Override
+  public void forEach(Consumer<? super List<String>> consumer) {
+    try (Stream<List<String>> stream = stream()) {
+      stream.forEach(consumer);
+    }
+  }
+
+  private class RowIterator implements Iterator<List<String>> {
+
+    /**
+     * The Row.
+     */
+    List<String> row = null;
+
+    private boolean advance() {
+      if (row == null) {
+        try {
+          row = nextRow();
+        } catch (IOException e) {
+          throw Throwables.propagate(e);
         }
-        complete = row == null;
-        return complete;
       }
+      return row != null;
+    }
 
-      @Override
-      public boolean hasNext() {
-        advance();
-        return !complete;
-      }
+    @Override
+    public boolean hasNext() {
+      return advance();
+    }
 
-      @Override
-      public List<String> next() {
-        advance();
-        if (complete) {
-          throw new NoSuchElementException();
-        }
-        List<String> c = row;
-        row = null;
-        return c;
+    @Override
+    public List<String> next() {
+      if (!advance()) {
+        throw new NoSuchElementException();
       }
+      List<String> c = row;
+      row = null;
+      return c;
+    }
 
-      @Override
-      public void remove() {
-        throw new UnsupportedOperationException();
-      }
-    };
   }
 
   @Override
@@ -442,7 +517,7 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
    * @throws IOException the iO exception
    */
   public List<List<String>> readAll() throws IOException {
-    return Collect.from(this).collect(Collectors.toList());
+    return stream().collect(Collectors.toList());
   }
 
   private void readToEndOfLine() throws IOException {

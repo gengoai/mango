@@ -197,7 +197,7 @@ public final class Resources {
   /**
    * @return A resource which is a temporary directory on disk
    */
-  public Resource temporaryDirectory() {
+  public static Resource temporaryDirectory() {
     return new FileResource(Files.createTempDir());
   }
 

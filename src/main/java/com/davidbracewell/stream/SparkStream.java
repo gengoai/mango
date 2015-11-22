@@ -47,6 +47,11 @@ public class SparkStream<T> implements MStream<T>, Serializable {
   private static final long serialVersionUID = 1L;
   private final JavaRDD<T> rdd;
 
+  /**
+   * Gets rdd.
+   *
+   * @return the rdd
+   */
   public JavaRDD<T> getRDD() {
     return rdd;
   }
@@ -67,6 +72,15 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    */
   public SparkStream(List<T> collection) {
     this.rdd = Spark.context().parallelize(collection, Math.max(1, collection.size() / 100));
+  }
+
+  /**
+   * Gets context.
+   *
+   * @return the context
+   */
+  public JavaSparkContext getContext() {
+    return Spark.context(this);
   }
 
   @Override
