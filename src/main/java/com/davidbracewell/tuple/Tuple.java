@@ -32,25 +32,6 @@ import java.util.Iterator;
 public interface Tuple extends Iterable<Object> {
 
   /**
-   * The number of items in the tuple
-   *
-   * @return the number of items in the tuple
-   */
-  int degree();
-
-  /**
-   * The tuple as an array of objects
-   *
-   * @return an array representing the items in the tuple
-   */
-  Object[] array();
-
-  @Override
-  default Iterator<Object> iterator() {
-    return Arrays.asList(array()).iterator();
-  }
-
-  /**
    * Creates a triple
    *
    * @param <F>    the first type parameter
@@ -95,7 +76,6 @@ public interface Tuple extends Iterable<Object> {
     return Tuple2.of(first, second);
   }
 
-
   /**
    * Creates a tuple of degree zero.
    *
@@ -114,6 +94,43 @@ public interface Tuple extends Iterable<Object> {
    */
   static <F> Tuple1<F> tuple(F first) {
     return Tuple1.of(first);
+  }
+
+  /**
+   * The number of items in the tuple
+   *
+   * @return the number of items in the tuple
+   */
+  int degree();
+
+  /**
+   * The tuple as an array of objects
+   *
+   * @return an array representing the items in the tuple
+   */
+  Object[] array();
+
+  @Override
+  default Iterator<Object> iterator() {
+    return Arrays.asList(array()).iterator();
+  }
+
+  default Tuple shiftLeft() {
+    if (degree() < 2) {
+      return Tuple0.INSTANCE;
+    }
+    Object[] copy = new Object[degree() - 1];
+    System.arraycopy(array(), 1, copy, 0, copy.length);
+    return NTuple.of(copy);
+  }
+
+  default Tuple shiftRight() {
+    if (degree() < 2) {
+      return Tuple0.INSTANCE;
+    }
+    Object[] copy = new Object[degree() - 1];
+    System.arraycopy(array(), 0, copy, 0, copy.length);
+    return NTuple.of(copy);
   }
 
 
