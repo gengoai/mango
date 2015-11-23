@@ -21,6 +21,7 @@
 
 package com.davidbracewell.stream;
 
+import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.SerializableBinaryOperator;
 import com.davidbracewell.function.SerializableConsumer;
@@ -71,7 +72,8 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    * @param collection the collection
    */
   public SparkStream(List<T> collection) {
-    this.rdd = Spark.context().parallelize(collection, Math.max(1, collection.size() / 100));
+    int slices = Math.max(1, collection.size() / Config.get("spark.sliceSize").asIntegerValue(100));
+    this.rdd = Spark.context().parallelize(collection, slices);
   }
 
   /**
@@ -104,7 +106,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
   @Override
   public <R, U> MPairStream<R, U> flatMapToPair(SerializableFunction<? super T, ? extends Iterable<? extends Map.Entry<? extends R, ? extends U>>> function) {
-    return new SparkPairStream<>(rdd.flatMapToPair(t -> {
+    return new SparkPairStream<R, U>(rdd.flatMapToPair(t -> {
       List<Tuple2<R, U>> list = new LinkedList<>();
       function.apply(t).forEach(e -> list.add(new Tuple2<>(e.getKey(), e.getValue())));
       return list;
