@@ -38,15 +38,6 @@ import java.util.stream.Collectors;
 public interface Counter<T> {
 
   /**
-   * Map keys counter.
-   *
-   * @param <R>      the type parameter
-   * @param function the function
-   * @return the counter
-   */
-  <R> Counter<R> mapKeys(Function<T,R> function);
-
-  /**
    * Constructs a new counter made up of counts that are adjusted using a <code>Function</code>.
    *
    * @param function The function to use to adjust the counts
@@ -152,7 +143,6 @@ public interface Counter<T> {
    */
   void divideBySum();
 
-
   /**
    * Entries set.
    *
@@ -256,6 +246,15 @@ public interface Counter<T> {
   default double magnitude() {
     return Math.sqrt(sumOfSquares());
   }
+
+  /**
+   * Map keys counter.
+   *
+   * @param <R>      the type parameter
+   * @param function the function
+   * @return the counter
+   */
+  <R> Counter<R> mapKeys(Function<T,R> function);
 
   /**
    * Max t.

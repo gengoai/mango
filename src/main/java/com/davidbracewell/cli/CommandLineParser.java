@@ -153,7 +153,6 @@ public class CommandLineParser {
           key = current.substring(0, current.length() - 1);
           value = iterator.hasNext() ? iterator.next() : null;
 
-
         } else if (current.contains(KEY_VALUE_SEPARATOR)) {
 
           int index = current.indexOf(KEY_VALUE_SEPARATOR);
@@ -171,7 +170,7 @@ public class CommandLineParser {
         }
 
         value = setValue(key, value);
-        if (value != null) {
+        if (value == null) {
           iterator.previous();
         }
 
@@ -224,25 +223,25 @@ public class CommandLineParser {
     System.err.println(applicationDescription);
     int maxArgName = optionSet.stream().map(no -> no.getName().length()).max((x, y) -> -x.compareTo(y)).orElse(10);
     optionSet.stream().map(NamedOption::getName)
-        .sorted()
-        .forEach(name -> {
-              NamedOption no = options.get(name);
-              String arg = no.getSpecification();
-              boolean insertSpace = !arg.startsWith("--");
-              System.err.printf(String.format((insertSpace ? " " : "") + "%1$-" + maxArgName + "s", arg));
-              System.err.print(" " + no.getDescription());
-              if (no.isRequired()) {
-                System.err.print("\t[REQUIRED]");
-              }
-              System.err.println();
-              for (String alias : no.getAliases()) {
-                if (!alias.equals(arg)) {
-                  insertSpace = !alias.startsWith("--");
-                  System.err.println(String.format((insertSpace ? " " : "") + "   %1$-" + maxArgName + "s   ", alias));
-                }
-              }
+      .sorted()
+      .forEach(name -> {
+          NamedOption no = options.get(name);
+          String arg = no.getSpecification();
+          boolean insertSpace = !arg.startsWith("--");
+          System.err.printf(String.format((insertSpace ? " " : "") + "%1$-" + maxArgName + "s", arg));
+          System.err.print(" " + no.getDescription());
+          if (no.isRequired()) {
+            System.err.print("\t[REQUIRED]");
+          }
+          System.err.println();
+          for (String alias : no.getAliases()) {
+            if (!alias.equals(arg)) {
+              insertSpace = !alias.startsWith("--");
+              System.err.println(String.format((insertSpace ? " " : "") + "   %1$-" + maxArgName + "s   ", alias));
             }
-        );
+          }
+        }
+      );
 
   }
 
@@ -351,9 +350,9 @@ public class CommandLineParser {
    */
   public Set<Map.Entry<String, String>> getSetEntries() {
     Set<Map.Entry<String, String>> entries = optionSet.stream()
-        .filter(this::isSet)
-        .map(no -> Tuple2.of(no.getName(), Convert.convert(no.getValue(), String.class)))
-        .collect(Collectors.toSet());
+      .filter(this::isSet)
+      .map(no -> Tuple2.of(no.getName(), Convert.convert(no.getValue(), String.class)))
+      .collect(Collectors.toSet());
     entries.addAll(unamedOptions.entrySet());
     return entries;
   }

@@ -71,7 +71,7 @@ public class ConcurrentMapCounter<TYPE> extends AbstractMapCounter<TYPE> {
   }
 
   @Override
-  protected Counter<TYPE> newInstance() {
+  protected <R> ConcurrentMapCounter<R> newInstance() {
     return new ConcurrentMapCounter<>();
   }
 

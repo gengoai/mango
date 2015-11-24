@@ -473,7 +473,7 @@ public final class Config implements Serializable {
    * @param parser      the                    to use for parsing the arguments
    * @return Non config/option parameters from command line
    */
-  public static synchronized String[] initialize(String programName, String[] args, CommandLineParser parser) {
+  public static String[] initialize(String programName, String[] args, CommandLineParser parser) {
     String[] rval = null;
     if (args != null) {
       rval = parser.parse(args);
@@ -485,9 +485,9 @@ public final class Config implements Serializable {
         ? ConfigExplainSettingFunction.INSTANCE
         : ConfigSettingFunction.INSTANCE;
 
-
     // Auto-discover the package of the calling class.
     String className = getCallingClass();
+
     if (className != null) {
       try {
         loadDefaultConf(className, setterFunction);
@@ -498,16 +498,6 @@ public final class Config implements Serializable {
 
 
     //Look for application specific properties
-
-    String domain = Config.get("DOMAIN").asString();
-
-    if (domain != null) {
-      Resource domainConf = localConfigDirectory.getChild(domain + ".conf");
-      if (domainConf.exists()) {
-        loadConfig(domainConf);
-      }
-    }
-
     Stream.of(
       new ClasspathResource(programName.replace(".", "/") + ".conf", defaultClassLoader),
       Resources.fromFile(new File(SystemInfo.USER_HOME, programName + ".conf")),
@@ -519,15 +509,6 @@ public final class Config implements Serializable {
         log.finest("Loading {0}.conf from :", programName);
         loadConfig(resource, setterFunction);
       });
-
-
-    if (domain != null) {
-      loadConfig(localConfigDirectory.getChild(domain + "_" + programName + ".conf"));
-      String corpus = Config.get("CORPUS").asString();
-      if (corpus != null) {
-        loadConfig(localConfigDirectory.getChild(domain + "_" + corpus + "_" + programName + ".conf"));
-      }
-    }
 
 
     // Store the command line arguments as a config settings.

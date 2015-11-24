@@ -47,6 +47,7 @@ public interface Counters {
    * New concurrent counter.
    *
    * @param <TYPE> the type parameter
+   * @param items  the items
    * @return the counter
    */
   @SafeVarargs
@@ -94,6 +95,7 @@ public interface Counters {
    * New hash map counter.
    *
    * @param <TYPE> the type parameter
+   * @param items  the items
    * @return the counter
    */
   @SafeVarargs
@@ -141,6 +143,7 @@ public interface Counters {
    * New tree map counter.
    *
    * @param <TYPE> the type parameter
+   * @param items  the items
    * @return the counter
    */
   @SafeVarargs
@@ -195,6 +198,16 @@ public interface Counters {
     return new UnmodifiableCounter<>(counter);
   }
 
+  /**
+   * From csv counter.
+   *
+   * @param <TYPE>   the type parameter
+   * @param resource the resource
+   * @param keyClass the key class
+   * @param supplier the supplier
+   * @return the counter
+   * @throws IOException the io exception
+   */
   static <TYPE> Counter<TYPE> fromCSV(@NonNull Resource resource, @NonNull Class<TYPE> keyClass, @NonNull Supplier<Counter<TYPE>> supplier) throws IOException {
     Counter<TYPE> counter = supplier.get();
     try (CSVReader reader = CSV.builder().reader(resource)) {
@@ -207,11 +220,21 @@ public interface Counters {
     return counter;
   }
 
-
+  /**
+   * Collector collector.
+   *
+   * @param <T> the type parameter
+   * @return the collector
+   */
   static <T> Collector<T, Counter<T>, Counter<T>> collector() {
     return new CounterCollector<>();
   }
 
+  /**
+   * The type Counter collector.
+   *
+   * @param <T> the type parameter
+   */
   class CounterCollector<T> implements Collector<T, Counter<T>, Counter<T>> {
 
     @Override

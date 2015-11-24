@@ -41,10 +41,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Array;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BinaryOperator;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -117,19 +115,6 @@ public interface Collect {
       map.put(entry.getKey(), entry.getValue());
     }
   }
-
-  static <K, V> Map<K, V> newDefaultHashMap(@NonNull Supplier<V> defaultValueSupplier) {
-    return new DefaultMap<>(new HashMap<>(), defaultValueSupplier);
-  }
-
-  static <K, V> Map<K, V> newDefaultConcurrentHashMap(@NonNull Supplier<V> defaultValueSupplier) {
-    return new DefaultMap<>(new ConcurrentHashMap<>(), defaultValueSupplier);
-  }
-
-  static <K, V> NavigableMap<K, V> newDefaultTreeMap(@NonNull Supplier<V> defaultValueSupplier) {
-    return new DefaultNavigableMap<>(new TreeMap<>(), defaultValueSupplier);
-  }
-
 
   /**
    * Wraps an <code>array</code> as an <code>Iterable</code>
