@@ -44,20 +44,22 @@ public class FileResourceTest {
   @Test
   public void testAsFile() throws Exception {
     File tempFile = Files.createTempDir();
-    assertEquals(tempFile, Resources.fromFile(tempFile).asFile());
+    assertEquals(tempFile, Resources.fromFile(tempFile).asFile().get());
   }
 
   @Test
   public void testAsURL() throws Exception {
     File tempFile = Files.createTempDir();
-    assertEquals(tempFile.toURI().toURL(), Resources.fromFile(tempFile).asURL());
+    assertEquals(tempFile.toURI().toURL(), Resources.fromFile(tempFile).asURL().get());
   }
 
   @Test
   public void testCanReadAndWrite() throws Exception {
     tempDir.delete(true);
     assertFalse(tempDir.canRead());
-    assertFalse(tempDir.canWrite());
+    assertTrue(tempDir.canWrite());
+
+
 
     tempDir.mkdirs();
     assertTrue(tempDir.canRead());

@@ -110,16 +110,17 @@ public class JSONElement extends Element {
   @Override
   public boolean hasChildren() {
     return (node.isJsonArray() && node.getAsJsonArray().size() > 0) ||
-        (node.isJsonObject() && !node.getAsJsonObject().entrySet().isEmpty());
+      (node.isJsonObject() && !node.getAsJsonObject().entrySet().isEmpty());
   }
 
   @Override
   public List<Element> getChildren() {
     if (node.isJsonObject()) {
-
       return node.getAsJsonObject().entrySet().stream()
-          .map(entry -> new JSONElement(entry.getKey(), entry.getValue(), this, owner))
-          .collect(Collectors.toList());
+        .map(entry -> {
+          return new JSONElement(entry.getKey(), entry.getValue(), this, owner);
+        })
+        .collect(Collectors.toList());
 
     } else if (node.isJsonArray()) {
       int i = 0;

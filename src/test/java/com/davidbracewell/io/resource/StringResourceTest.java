@@ -44,7 +44,6 @@ public class StringResourceTest {
 
     r.append("\nNow we are here");
     assertEquals("This is a test\nNow we are here", r.readToString().trim());
-    assertEquals("This is a test\nNow we are here", r.toString());
 
     r = new StringResource("a");
     Resource r2 = new StringResource("a");

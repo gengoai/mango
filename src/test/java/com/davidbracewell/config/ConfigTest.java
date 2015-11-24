@@ -71,7 +71,7 @@ public class ConfigTest {
     assertEquals("espresso", ScriptEnvironmentManager.getInstance().getEnvironmentForExtension("js").getObject("libraryName"));
 
 
-    assertEquals("HELLO World", Config.get("keyA").asString());
+    assertEquals("HELLO, World", Config.get("keyA").asString());
   }
 
   @Test

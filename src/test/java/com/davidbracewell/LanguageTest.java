@@ -58,8 +58,8 @@ public class LanguageTest {
 
   @Test
   public void testGetCode() throws Exception {
-    assertEquals(Language.ENGLISH.getCode(), "en");
-    assertEquals(Language.CHINESE.getCode(), "zh");
+    assertEquals(Language.ENGLISH.getCode().toLowerCase(), "en");
+    assertEquals(Language.CHINESE.getCode().toLowerCase(), "zh");
   }
 
   @Test

@@ -35,7 +35,7 @@ public class CacheManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    Config.initialize("");
+    Config.initializeTest();
   }
 
   @Test
@@ -52,7 +52,7 @@ public class CacheManagerTest {
 
   @Test
   public void testGetCache() throws Exception {
-    Config.setProperty("testCache", "maxSize=1000");
+    Config.setProperty("testCache", "maxSize:1000");
     Cache<String, String> cache = CacheManager.getInstance().get("testCache");
     cache.put("element", "value");
     assertTrue(cache.containsKey("element"));

@@ -59,7 +59,8 @@ public class BeanDescriptor implements Serializable {
     readMethods = Maps.newConcurrentMap();
     writeMethods = Maps.newConcurrentMap();
     try {
-      BeanInfo beanInfo = Introspector.getBeanInfo(clazz);
+      //TODO Custom BeanInfo
+      BeanInfo beanInfo = Introspector.getBeanInfo(clazz, Object.class,Introspector.USE_ALL_BEANINFO);
       PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
 
       if (descriptors == null || descriptors.length == 0) {
@@ -77,11 +78,12 @@ public class BeanDescriptor implements Serializable {
         if (writeMethod != null) {
           writeMethods.put(name, writeMethod);
         }
+
       }
+
     } catch (IntrospectionException e) {
       throw Throwables.propagate(e);
     }
-
 
 
   }

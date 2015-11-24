@@ -54,7 +54,7 @@ public class ByteArrayResourceTest {
 
   @Test
   public void testGetResourceName() throws Exception {
-    assertEquals("bytes:", out.descriptor());
+    assertTrue(out.descriptor().startsWith("com.davidbracewell.io.resource.ByteArrayResource@"));
   }
 
   @Test

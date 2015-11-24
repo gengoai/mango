@@ -260,6 +260,7 @@ public class StringUtils {
       case Character.INITIAL_QUOTE_PUNCTUATION:
       case Character.START_PUNCTUATION:
       case Character.OTHER_PUNCTUATION:
+      case '=':
         return true;
     }
     return false;
@@ -282,6 +283,9 @@ public class StringUtils {
    * @return the string
    */
   public static String leftTrim(CharSequence input) {
+    if (input == null) {
+      return null;
+    }
     return StringFunctions.LEFT_TRIM.apply(input.toString());
   }
 
@@ -354,6 +358,9 @@ public class StringUtils {
    * @return Resulting string without diacritic marks
    */
   public static String removeDiacritics(CharSequence input) {
+    if (input == null) {
+      return null;
+    }
     return StringFunctions.DIACRITICS_NORMALIZATION.apply(input.toString());
   }
 
@@ -364,6 +371,9 @@ public class StringUtils {
    * @return the string
    */
   public static String rightTrim(CharSequence input) {
+    if (input == null) {
+      return null;
+    }
     return StringFunctions.RIGHT_TRIM.apply(input.toString());
   }
 
@@ -398,6 +408,9 @@ public class StringUtils {
    * @return the normalized string
    */
   public static String toCanonicalForm(CharSequence input) {
+    if (input == null) {
+      return null;
+    }
     return StringFunctions.CANONICAL_NORMALIZATION.apply(input.toString());
   }
 
@@ -408,6 +421,9 @@ public class StringUtils {
    * @return The title cased version of the input
    */
   public static String toTitleCase(CharSequence input) {
+    if( input == null ){
+      return  null;
+    }
     return StringFunctions.TITLE_CASE.apply(input.toString());
   }
 
@@ -418,6 +434,9 @@ public class StringUtils {
    * @return Trimmed string or null if input was null
    */
   public static String trim(CharSequence input) {
+    if (input == null) {
+      return null;
+    }
     return StringFunctions.TRIM.apply(input.toString());
   }
 

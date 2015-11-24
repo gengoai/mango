@@ -53,6 +53,8 @@ public class ByteArrayResourceProvider implements ResourceProvider {
     } else {
       beanMap = new BeanMap(new ByteArrayResource(specification.getBytes()));
     }
+    System.err.println(properties);
+    System.err.println(beanMap.getSetters());
     beanMap.putAll(properties);
     return Cast.as(beanMap.getBean());
   }

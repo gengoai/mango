@@ -81,6 +81,7 @@ public interface Specification {
           }
         }));
       } catch (Exception e) {
+        e.printStackTrace();
         throw Throwables.propagate(e);
       }
     }

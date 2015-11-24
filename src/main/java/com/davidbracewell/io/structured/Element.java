@@ -135,7 +135,7 @@ public abstract class Element {
 
   public final Stream<Element> selectWithAttributeValue(@NonNull String attributeName, @NonNull Predicate<? super String> attributeValuePredicate, boolean recursive) {
     return stream(recursive).filter(e -> e.hasAttribute(attributeName))
-        .filter(e -> attributeValuePredicate.test(e.getAttribute(attributeName)));
+      .filter(e -> attributeValuePredicate.test(e.getAttribute(attributeName)));
   }
 
   public final Stream<Element> stream(boolean recursive) {
@@ -169,11 +169,6 @@ public abstract class Element {
       Element node = nodes.remove();
       advance(node);
       return node;
-    }
-
-    @Override
-    public void remove() {
-      throw new UnsupportedOperationException();
     }
 
   }//END OF Element$RecursiveElementIterator

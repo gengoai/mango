@@ -43,7 +43,7 @@ import java.util.regex.Pattern;
  *
  * @author David B. Bracewell
  */
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class FileResource extends BaseResource {
 
   private static final long serialVersionUID = 1L;
@@ -108,7 +108,7 @@ public class FileResource extends BaseResource {
 
   @Override
   public boolean canWrite() {
-    return !file.exists() || file.canWrite();
+    return (!file.isDirectory() && !file.exists()) || file.canWrite();
   }
 
   @Override
