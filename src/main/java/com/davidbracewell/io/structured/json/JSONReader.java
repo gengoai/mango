@@ -253,7 +253,7 @@ public class JSONReader extends StructuredReader {
 
     Gson gson = new Gson();
     String name = currentValue.getValue().asString();
-    if (!name.equals(clazz.getName())) {
+    if (!name.equals(clazz.getName()) && !name.equals(clazz.getSimpleName())) {
       throw new StructuredIOException("Expected type:" + clazz.getName() + " found:" + name);
     }
     T object = gson.fromJson(reader, clazz);

@@ -107,7 +107,7 @@ public class ClasspathResource extends BaseResource {
 
   @Override
   public boolean isDirectory() {
-    return asFile().map(File::isDirectory).orElse(FileUtils.extension(resource) == null && !canRead());
+    return asFile().map(File::isDirectory).orElse(StringUtils.isNullOrBlank(FileUtils.extension(resource)) && !canRead());
   }
 
   @Override
@@ -132,15 +132,14 @@ public class ClasspathResource extends BaseResource {
 
   @Override
   public boolean canRead() {
-    return asFile().map(f -> f.canRead() && exists()).orElseGet(
-      () -> {
-        try (InputStream is = inputStream()) {
-          return true;
-        } catch (IOException e) {
-          return false;
-        }
-      }
-    );
+    if (asFile().isPresent()) {
+      return asFile().get().canRead();
+    }
+    try (InputStream is = inputStream()) {
+      return true;
+    } catch (Exception e) {
+      return false;
+    }
   }
 
   @Override

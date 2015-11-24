@@ -140,7 +140,7 @@ public abstract class Element {
 
   public final Stream<Element> stream(boolean recursive) {
     if (recursive) {
-      return Collect.from(new RecursiveElementIterator());
+      return Collect.from(new RecursiveElementIterator(this));
     }
     return getChildren().stream();
   }
@@ -151,8 +151,12 @@ public abstract class Element {
   protected class RecursiveElementIterator implements Iterator<Element> {
     Queue<Element> nodes = Lists.newLinkedList();
 
-    private RecursiveElementIterator() {
-      nodes.add(Element.this);
+    private RecursiveElementIterator(Element element) {
+      if (element instanceof StructuredDocument) {
+        nodes.addAll(element.getChildren());
+      } else {
+        nodes.add(element);
+      }
     }
 
     private void advance(Element node) {

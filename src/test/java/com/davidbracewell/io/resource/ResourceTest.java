@@ -48,10 +48,9 @@ public class ResourceTest {
     r = Resources.from("string:Now is the world");
     assertTrue(r instanceof StringResource);
 
-
     r = Resources.from("bytes[isCompressed=true, charset=UTF-8]:");
     assertTrue(r instanceof ByteArrayResource);
-    assertTrue(r.getIsCompressed());
+    assertTrue(r.isCompressed());
     assertTrue(r.getCharset() == Charsets.UTF_8);
   }
 

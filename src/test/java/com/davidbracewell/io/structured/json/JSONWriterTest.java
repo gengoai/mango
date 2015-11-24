@@ -27,7 +27,10 @@ import com.davidbracewell.io.resource.StringResource;
 import com.davidbracewell.tuple.Tuple2;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 /**
  * @author David B. Bracewell
@@ -57,12 +60,12 @@ public class JSONWriterTest {
       writer.writeObject(Tuple2.of("String1", 34d));
       writer.endDocument();
     }
-    assertEquals("{\"com.davidbracewell.tuple.Tuple2\":{\"v1\":\"String1\",\"v2\":34.0}}", resource.readToString().trim());
+    assertEquals("{\"List\":[\"String1\",34.0]}", resource.readToString().trim());
 
 
     try (JSONReader reader = new JSONReader(resource)) {
       reader.beginDocument();
-      assertEquals(reader.nextObject(Tuple2.class), Tuple2.of("String1", 34d));
+      assertEquals(reader.nextObject(List.class), Arrays.asList("String1", 34d));
       reader.endDocument();
     }
   }

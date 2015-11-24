@@ -117,9 +117,7 @@ public class JSONElement extends Element {
   public List<Element> getChildren() {
     if (node.isJsonObject()) {
       return node.getAsJsonObject().entrySet().stream()
-        .map(entry -> {
-          return new JSONElement(entry.getKey(), entry.getValue(), this, owner);
-        })
+        .map(entry -> new JSONElement(entry.getKey(), entry.getValue(), this, owner))
         .collect(Collectors.toList());
 
     } else if (node.isJsonArray()) {

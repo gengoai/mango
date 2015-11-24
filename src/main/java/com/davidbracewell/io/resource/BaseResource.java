@@ -52,7 +52,7 @@ public abstract class BaseResource implements Resource, Serializable {
   }
 
   @Override
-  public final boolean getIsCompressed() {
+  public final boolean isCompressed() {
     return isCompressed;
   }
 

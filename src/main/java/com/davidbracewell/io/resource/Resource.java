@@ -298,7 +298,7 @@ public interface Resource {
    *
    * @return True if the resources is gzipped compressed
    */
-  boolean getIsCompressed();
+  boolean isCompressed();
 
   /**
    * Is directory.

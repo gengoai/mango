@@ -48,32 +48,29 @@ public class JSONDocumentTest {
 
   @Test
   public void testSelect() throws Exception {
-//    final Element element = Iterables.getFirst(document.select(StructuredQueries.nameMatch("person.address"), false), null);
-//    assertNotNull(element);
-//    assertTrue(element.hasAttribute("address.number"));
-//    assertFalse(element.hasAttribute("bigBox"));
-//    assertEquals("45", element.getAttribute("address.number"));
-//    assertTrue(element.hasChildren());
-//    FluentIterable.from(element.getChildren()).filter(StructuredQueries.nameMatch("address.number")).allMatch(
-//        new Predicate<Element>() {
-//          @Override
-//          public boolean apply(Element child) {
-//            assertEquals("45", child.getValue());
-//            assertEquals(element, child.getParent());
-//            return true;
-//          }
-//        }
-//    );
-//
-//    assertEquals(document, element.getDocument());
+    final Element element = document.select(element1 -> element1.getName().equals("person.address"), false).findFirst().orElse(null);
+    assertNotNull(element);
+    assertTrue(element.hasAttribute("address.number"));
+    assertFalse(element.hasAttribute("bigBox"));
+    assertEquals("45", element.getAttribute("address.number"));
+    assertTrue(element.hasChildren());
 
+    element.getChildren().stream()
+      .filter(element1 -> element1.getName().equals("address.number"))
+      .allMatch(child -> {
+        assertEquals("45", child.getValue());
+        assertEquals(element, child.getParent());
+        return true;
+      });
+
+    assertEquals(document, element.getDocument());
   }
 
   @Test
   public void testWrite() throws Exception {
     Resource str = Resources.fromString();
     document.write(str);
-    assertEquals(document.toString().trim().replaceAll("\\s+", ""), str.toString().trim().replaceAll("\\s+", ""));
+    assertEquals(document.toString().trim().replaceAll("\\s+", ""), str.readToString().trim().replaceAll("\\s+", ""));
   }
 
   @Test
@@ -87,8 +84,8 @@ public class JSONDocumentTest {
   public void testSelectRecursive() throws Exception {
     final Set<String> names = Sets.newHashSet("Fred", "Sara", "John");
     final Set<String> gathered = document.select(element -> element.getName().equals("person.name"), true)
-        .map(Element::getValue)
-        .collect(Collectors.toSet());
+      .map(Element::getValue)
+      .collect(Collectors.toSet());
 
     assertTrue(Sets.difference(names, gathered).isEmpty());
   }
