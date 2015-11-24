@@ -35,7 +35,6 @@ public class Tuple0 implements Tuple, Serializable, Comparable<Tuple0>, Copyable
 
   public static Tuple0 INSTANCE = new Tuple0();
 
-
   @Override
   public int compareTo(Tuple0 o) {
     return 0;

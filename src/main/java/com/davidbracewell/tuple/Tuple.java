@@ -21,8 +21,11 @@
 
 package com.davidbracewell.tuple;
 
+import lombok.NonNull;
+
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.function.Function;
 
 /**
  * A tuple is a collection of values of possibly different types.
@@ -30,71 +33,6 @@ import java.util.Iterator;
  * @author David B. Bracewell
  */
 public interface Tuple extends Iterable<Object> {
-
-  /**
-   * Creates a triple
-   *
-   * @param <F>    the first type parameter
-   * @param <S>    the second type parameter
-   * @param <T>    the third type parameter
-   * @param first  the first item
-   * @param second the second item
-   * @param third  the third item
-   * @return the triple
-   */
-  static <F, S, T> Tuple3<F, S, T> tuple(F first, S second, T third) {
-    return Tuple3.of(first, second, third);
-  }
-
-  /**
-   * Creates a tuple with degree four.
-   *
-   * @param <F>    the first type parameter
-   * @param <S>    the second type parameter
-   * @param <T>    the third type parameter
-   * @param <D>    the fourth type parameter
-   * @param first  the first item
-   * @param second the second item
-   * @param third  the third item
-   * @param fourth the fourth item
-   * @return the quadruple
-   */
-  static <F, S, T, D> Tuple4<F, S, T, D> tuple(F first, S second, T third, D fourth) {
-    return Tuple4.of(first, second, third, fourth);
-  }
-
-  /**
-   * Creates a pair.
-   *
-   * @param <F>    the first type parameter
-   * @param <S>    the second type parameter
-   * @param first  the first item
-   * @param second the second item
-   * @return the pair
-   */
-  static <F, S> Tuple2<F, S> tuple(F first, S second) {
-    return Tuple2.of(first, second);
-  }
-
-  /**
-   * Creates a tuple of degree zero.
-   *
-   * @return the tuple with degree zero.
-   */
-  static Tuple0 tuple() {
-    return Tuple0.INSTANCE;
-  }
-
-  /**
-   * Creates a tuple of degree one.
-   *
-   * @param <F>   the first type parameter
-   * @param first the first item
-   * @return the tuple of degree one.
-   */
-  static <F> Tuple1<F> tuple(F first) {
-    return Tuple1.of(first);
-  }
 
   /**
    * The number of items in the tuple
@@ -115,6 +53,32 @@ public interface Tuple extends Iterable<Object> {
     return Arrays.asList(array()).iterator();
   }
 
+  /**
+   * Map r.
+   *
+   * @param <R>      the type parameter
+   * @param function the function
+   * @return the r
+   */
+  default <R> R map(@NonNull Function<Tuple, R> function) {
+    return function.apply(this);
+  }
+
+  /**
+   * Get object.
+   *
+   * @param index the index
+   * @return the object
+   */
+  default Object get(int index) {
+    return array()[index];
+  }
+
+  /**
+   * Shift left tuple.
+   *
+   * @return the tuple
+   */
   default Tuple shiftLeft() {
     if (degree() < 2) {
       return Tuple0.INSTANCE;
@@ -124,12 +88,51 @@ public interface Tuple extends Iterable<Object> {
     return NTuple.of(copy);
   }
 
+  /**
+   * Shift right tuple.
+   *
+   * @return the tuple
+   */
   default Tuple shiftRight() {
     if (degree() < 2) {
       return Tuple0.INSTANCE;
     }
     Object[] copy = new Object[degree() - 1];
     System.arraycopy(array(), 0, copy, 0, copy.length);
+    return NTuple.of(copy);
+  }
+
+  /**
+   * Append right tuple.
+   *
+   * @param <T>    the type parameter
+   * @param object the object
+   * @return the tuple
+   */
+  default <T> Tuple appendRight(T object) {
+    if (degree() == 0) {
+      return Tuple1.of(object);
+    }
+    Object[] copy = new Object[degree() + 1];
+    System.arraycopy(array(), 0, copy, 0, degree());
+    copy[copy.length - 1] = object;
+    return NTuple.of(copy);
+  }
+
+  /**
+   * Append left tuple.
+   *
+   * @param <T>    the type parameter
+   * @param object the object
+   * @return the tuple
+   */
+  default <T> Tuple appendLeft(T object) {
+    if (degree() == 0) {
+      return Tuple1.of(object);
+    }
+    Object[] copy = new Object[degree() + 1];
+    System.arraycopy(array(), 0, copy, 1, degree());
+    copy[0] = object;
     return NTuple.of(copy);
   }
 

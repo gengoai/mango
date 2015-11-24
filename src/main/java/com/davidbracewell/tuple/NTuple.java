@@ -1,29 +1,38 @@
 package com.davidbracewell.tuple;
 
+import com.google.common.base.Joiner;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+
+import java.util.Arrays;
+import java.util.Iterator;
 
 /**
  * @author David B. Bracewell
  */
+@EqualsAndHashCode
 public class NTuple implements Tuple {
 
   private final Object[] array;
-
-
-  public NTuple(@NonNull Object object1, Object... others) {
-    int size = 1 + (others == null ? 0 : others.length);
-    array = new Object[size];
-    array[0] = object1;
-    System.arraycopy(others, 0, array, 1, others.length);
-  }
 
   public NTuple(@NonNull Object[] other) {
     array = new Object[other.length];
     System.arraycopy(other, 0, array, 0, other.length);
   }
 
-  public static NTuple of(@NonNull Object[] array) {
-    return new NTuple(array);
+  @SafeVarargs
+  public static <T> NTuple of(@NonNull T... items) {
+    return new NTuple(items);
+  }
+
+  @Override
+  public Object get(int index) {
+    return array[index];
+  }
+
+  @Override
+  public Iterator<Object> iterator() {
+    return Arrays.asList(array).iterator();
   }
 
   @Override
@@ -36,6 +45,11 @@ public class NTuple implements Tuple {
     Object[] copy = new Object[array.length];
     System.arraycopy(array, 0, copy, 0, array.length);
     return copy;
+  }
+
+  @Override
+  public String toString() {
+    return "(" + Joiner.on(',').join(array) + ")";
   }
 
 }// END OF NTuple

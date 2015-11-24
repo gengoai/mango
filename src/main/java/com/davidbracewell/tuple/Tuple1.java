@@ -85,50 +85,15 @@ public class Tuple1<V1> implements Tuple, Serializable, Comparable<Tuple1>, Copy
     return "(" + v1 + ")";
   }
 
-  /**
-   * Append tuple 1.
-   *
-   * @param tuple0 the tuple 0
-   * @return the tuple 1
-   */
-  public Tuple1<V1> append(@NonNull Tuple0 tuple0) {
-    return copy();
+
+  @Override
+  public <T> Tuple2<T, V1> appendLeft(T object) {
+    return Tuple2.of(object, v1);
   }
 
-  /**
-   * Append tuple 2.
-   *
-   * @param <V2>   the type parameter
-   * @param tuple1 the tuple 1
-   * @return the tuple 2
-   */
-  public <V2> Tuple2<V1, V2> append(@NonNull Tuple1<V2> tuple1) {
-    return Tuple2.of(v1, tuple1.v1);
-  }
-
-  /**
-   * Append tuple 3.
-   *
-   * @param <V2>   the type parameter
-   * @param <V3>   the type parameter
-   * @param tuple2 the tuple 2
-   * @return the tuple 3
-   */
-  public <V2, V3> Tuple3<V1, V2, V3> append(@NonNull Tuple2<V2, V3> tuple2) {
-    return Tuple3.of(v1, tuple2.v1, tuple2.v2);
-  }
-
-  /**
-   * Append tuple 4.
-   *
-   * @param <V2>   the type parameter
-   * @param <V3>   the type parameter
-   * @param <V4>   the type parameter
-   * @param tuple3 the tuple 3
-   * @return the tuple 4
-   */
-  public <V2, V3, V4> Tuple4<V1, V2, V3, V4> append(@NonNull Tuple3<V2, V3, V4> tuple3) {
-    return Tuple4.of(v1, tuple3.v1, tuple3.v2, tuple3.v3);
+  @Override
+  public <T> Tuple2<V1, T> appendRight(T object) {
+    return Tuple2.of(v1, object);
   }
 
   /**
@@ -141,5 +106,6 @@ public class Tuple1<V1> implements Tuple, Serializable, Comparable<Tuple1>, Copy
   public static <V1> Tuple1<V1> of(V1 v1) {
     return new Tuple1<>(v1);
   }
+
 
 }//END OF Tuple0

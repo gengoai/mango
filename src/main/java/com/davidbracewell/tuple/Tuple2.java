@@ -132,6 +132,25 @@ public class Tuple2<K, V> implements Serializable, Map.Entry<K, V>, Comparable<T
     return Tuple4.of(v1, v2, other.v1, other.v2);
   }
 
+  @Override
+  public <T> Tuple3<T, K, V> appendLeft(T object) {
+    return Tuple3.of(object, v1, v2);
+  }
+
+  @Override
+  public <T> Tuple3<K, V, T> appendRight(T object) {
+    return Tuple3.of(v1, v2, object);
+  }
+
+  @Override
+  public Tuple1<V> shiftLeft() {
+    return Tuple1.of(v2);
+  }
+
+  @Override
+  public Tuple1<K> shiftRight() {
+    return Tuple1.of(v1);
+  }
 
   @Override
   public String toString() {

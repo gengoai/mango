@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
@@ -37,6 +38,11 @@ import java.util.function.Predicate;
  */
 public abstract class ForwardingCounter<TYPE> implements Counter<TYPE>, Serializable {
   private static final long serialVersionUID = 1L;
+
+  @Override
+  public <R> Counter<R> mapKeys(Function<TYPE, R> function) {
+    return delegate().mapKeys(function);
+  }
 
   @Override
   public Counter<TYPE> adjustValues(DoubleUnaryOperator function) {

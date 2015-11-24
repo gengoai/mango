@@ -34,6 +34,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
@@ -265,7 +266,7 @@ abstract class AbstractMapCounter<T> implements Counter<T>, Serializable {
     sum.set(Collect.sum(map.values()));
   }
 
-  protected abstract Counter<T> newInstance();
+  protected abstract <R> Counter<R> newInstance();
 
   @Override
   public Counter<T> topN(int n) {
@@ -308,4 +309,10 @@ abstract class AbstractMapCounter<T> implements Counter<T>, Serializable {
     return sum.get();
   }
 
+  @Override
+  public <R> Counter<R> mapKeys(@NonNull Function<T, R> function) {
+    Counter<R> result = newInstance();
+    map.forEach((k, v) -> result.increment(function.apply(k), v));
+    return result;
+  }
 }//END OF AbstractMapCounter

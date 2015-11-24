@@ -25,16 +25,26 @@ package com.davidbracewell.collection;
 import java.util.*;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
  * <p> Provides double-based counts for items. </p>
  *
- * @param <T>  Type of item.
+ * @param <T> Type of item.
  * @author David B. Bracewell
  */
 public interface Counter<T> {
+
+  /**
+   * Map keys counter.
+   *
+   * @param <R>      the type parameter
+   * @param function the function
+   * @return the counter
+   */
+  <R> Counter<R> mapKeys(Function<T,R> function);
 
   /**
    * Constructs a new counter made up of counts that are adjusted using a <code>Function</code>.
@@ -107,7 +117,7 @@ public interface Counter<T> {
   /**
    * Decrements the count of the item by a given amount
    *
-   * @param item The item to increment
+   * @param item   The item to increment
    * @param amount The amount to decrement
    */
   default void decrement(T item, double amount) {
@@ -129,7 +139,7 @@ public interface Counter<T> {
    * Decrements all items in a given iterable by a given amount
    *
    * @param iterable The iterable of items to decrement
-   * @param amount The amount to decrement
+   * @param amount   The amount to decrement
    */
   default void decrementAll(Iterable<? extends T> iterable, double amount) {
     if (iterable != null) {
@@ -186,7 +196,7 @@ public interface Counter<T> {
   /**
    * Increments the count of the item by a given amount
    *
-   * @param item The item to increment
+   * @param item   The item to increment
    * @param amount The amount to increment
    */
   void increment(T item, double amount);
@@ -206,7 +216,7 @@ public interface Counter<T> {
    * Increments all items in a given iterable by a given amount
    *
    * @param iterable The iterable of items to increment
-   * @param amount The amount to increment
+   * @param amount   The amount to increment
    */
   default void incrementAll(Iterable<? extends T> iterable, double amount) {
     if (iterable != null) {
@@ -273,6 +283,7 @@ public interface Counter<T> {
    * Merges the counts in one counter with this one.
    *
    * @param other The other counter to merge.
+   * @return the counter
    */
   Counter<T> merge(Counter<? extends T> other);
 
@@ -352,7 +363,7 @@ public interface Counter<T> {
   /**
    * Sets the value of an item in the counter
    *
-   * @param item The item
+   * @param item  The item
    * @param count The count
    */
   void set(T item, double count);
