@@ -32,6 +32,7 @@ import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 
+import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -44,8 +45,8 @@ import java.util.logging.Level;
  * @param <T> the type parameter
  * @author David B. Bracewell
  */
-public class CacheProxy<T> implements InvocationHandler {
-
+public class CacheProxy<T> implements InvocationHandler, Serializable {
+  private static final long serialVersionUID = 1L;
   private static final Logger log = Logger.getLogger(CacheProxy.class);
   private final T object;
   private final Map<Method, Tuple2<Cached, KeyMaker>> cachedMethods = Maps.newHashMap();

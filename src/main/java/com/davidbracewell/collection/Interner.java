@@ -26,6 +26,8 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * <p>Mimics {@link String#intern()} with any object using heap memory.</p>
@@ -37,8 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class Interner<OBJECT> implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  private final ConcurrentHashMap<OBJECT, OBJECT> map = new ConcurrentHashMap<>();
-
+  private volatile ConcurrentHashMap<OBJECT, OBJECT> map = new ConcurrentHashMap<>();
 
   /**
    * Adds or gets the cannoical version of the incoming object.
@@ -50,9 +51,7 @@ public final class Interner<OBJECT> implements Serializable {
     if (object == null) {
       return null;
     }
-    map.putIfAbsent(object, object);
     return map.get(object);
   }
-
 
 }//END OF Interner

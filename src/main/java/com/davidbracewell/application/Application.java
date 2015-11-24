@@ -30,6 +30,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Arrays;
 
 /**
  * The interface Application.
@@ -98,7 +99,6 @@ public interface Application extends Runnable, Serializable {
     System.arraycopy(args, 0, allArgs, 0, args.length);
     setAllArguments(allArgs);
 
-
     String cliDesc = getName();
     for (Description description : this.getClass().getAnnotationsByType(Description.class)) {
       cliDesc += "\n" + description.value();
@@ -112,12 +112,15 @@ public interface Application extends Runnable, Serializable {
     }
 
     try {
+      setup();
       run();
     } catch (Exception e) {
       e.printStackTrace();
       System.exit(-1);
     }
   }
+
+  void setup() throws Exception;
 
 
   /**

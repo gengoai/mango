@@ -21,20 +21,32 @@
 
 package com.davidbracewell.cache;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Objects;
 
 /**
+ * The interface Key maker.
+ *
  * @author David B. Bracewell
  */
-public interface KeyMaker {
+public interface KeyMaker extends Serializable{
 
+  /**
+   * Make object.
+   *
+   * @param clazz  the clazz
+   * @param method the method
+   * @param args   the args
+   * @return the object
+   */
   Object make(Class<?> clazz, Method method, Object[] args);
 
   /**
    * Implementation of a <code>KeyMaker</code> that uses {@link java.util.Objects#hash(Object...)}
    */
   class HashCodeKeyMaker implements KeyMaker {
+    private static final long serialVersionUID = 1L;
     @Override
     public Object make(Class<?> clazz, Method method, Object[] args) {
       return Objects.hash(clazz, method, args);
@@ -45,6 +57,7 @@ public interface KeyMaker {
    * Default implementation that should never be used
    */
   class DefaultKeyMaker implements KeyMaker {
+    private static final long serialVersionUID = 1L;
     @Override
     public Object make(Class<?> clazz, Method method, Object[] args) {
       return null;
