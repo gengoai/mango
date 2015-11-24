@@ -64,7 +64,8 @@ import java.util.Map;
  * keys. Some methods, such as {@link #prefixMap(Object)} are suited only
  * to variable length keys.
  *
- * @version $Id: PatriciaTrie.java 1543928 2013-11-20 20:15:35Z tn $
+ * @param <E> the type parameter
+ * @version $Id : PatriciaTrie.java 1543928 2013-11-20 20:15:35Z tn $
  * @see <a href="http://en.wikipedia.org/wiki/Radix_tree">Radix Tree</a>
  * @see <a href="http://www.csse.monash.edu.au/~lloyd/tildeAlgDS/Tree/PATRICIA">PATRICIA</a>
  * @see <a href="http://www.imperialviolet.org/binary/critbit.pdf">Crit-Bit Tree</a>
@@ -74,14 +75,28 @@ public class PatriciaTrie<E> extends AbstractPatriciaTrie<String, E> {
 
   private static final long serialVersionUID = 4446367780901817838L;
 
+  /**
+   * Instantiates a new Patricia trie.
+   */
   public PatriciaTrie() {
     super(new StringKeyAnalyzer());
   }
 
+  /**
+   * Instantiates a new Patricia trie.
+   *
+   * @param m the m
+   */
   public PatriciaTrie(final Map<? extends String, ? extends E> m) {
     super(new StringKeyAnalyzer(), m);
   }
 
+  /**
+   * Instantiates a new Patricia trie.
+   *
+   * @param m      the m
+   * @param suffix the suffix
+   */
   protected PatriciaTrie(final Map<? extends String, ? extends E> m, boolean suffix) {
     super(new StringKeyAnalyzer(), m);
   }
@@ -97,10 +112,11 @@ public class PatriciaTrie<E> extends AbstractPatriciaTrie<String, E> {
   /**
    * <p>Constructs a trie from a csv file where the first column is the string and the second column is the value.</p>
    *
+   * @param <V>       the type parameter
    * @param resource  The csv resource
    * @param valueType Class information for the value
    * @return A <code>ByteTrie</code> from the csv
-   * @throws java.io.IOException Something went wrong loading the csv file
+   * @throws IOException the io exception
    */
   public static <V> PatriciaTrie<V> loadCSV(Resource resource, Class<V> valueType) throws IOException {
     return loadCSV(resource, valueType, Functions.<String>identity());
@@ -109,11 +125,12 @@ public class PatriciaTrie<E> extends AbstractPatriciaTrie<String, E> {
   /**
    * <p>Constructs a trie from a csv file where the first column is the string and the second column is the value.</p>
    *
+   * @param <V>          the type parameter
    * @param resource     The csv resource
    * @param valueType    Class information for the value
    * @param keyTransform function to transform the keys in some fashion, e.g. lower case
    * @return A <code>ByteTrie</code> from the csv
-   * @throws java.io.IOException Something went wrong loading the csv file
+   * @throws IOException the io exception
    */
   @SuppressWarnings("unchecked")
   public static <V> PatriciaTrie<V> loadCSV(Resource resource, Class<V> valueType, Function<String, String> keyTransform) throws IOException {

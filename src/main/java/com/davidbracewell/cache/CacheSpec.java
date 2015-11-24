@@ -75,6 +75,8 @@ public class CacheSpec<K, V> implements Specification, Serializable {
   /**
    * From cache spec.
    *
+   * @param <K>           the type parameter
+   * @param <V>           the type parameter
    * @param specification the specification
    * @return the cache spec
    */
@@ -85,6 +87,7 @@ public class CacheSpec<K, V> implements Specification, Serializable {
   /**
    * Sets cache type.
    *
+   * @param engine the engine
    * @return the cache type
    */
   public CacheSpec<K, V> engine(String engine) {
@@ -106,6 +109,12 @@ public class CacheSpec<K, V> implements Specification, Serializable {
     return cacheFunction;
   }
 
+  /**
+   * Loading function cache spec.
+   *
+   * @param loadingFunction the loading function
+   * @return the cache spec
+   */
   public CacheSpec<K, V> loadingFunction(Function<K, V> loadingFunction) {
     this.cacheFunction = loadingFunction;
     return this;
@@ -133,6 +142,8 @@ public class CacheSpec<K, V> implements Specification, Serializable {
   }
 
   /**
+   * Gets concurrency level.
+   *
    * @return The concurrency level
    */
   public int getConcurrencyLevel() {
@@ -140,6 +151,8 @@ public class CacheSpec<K, V> implements Specification, Serializable {
   }
 
   /**
+   * Gets initial capacity.
+   *
    * @return The initial capacity
    */
   public int getInitialCapacity() {
@@ -147,6 +160,8 @@ public class CacheSpec<K, V> implements Specification, Serializable {
   }
 
   /**
+   * Is weak values boolean.
+   *
    * @return True - uses weak values, False normal values
    */
   public boolean isWeakValues() {
@@ -154,6 +169,8 @@ public class CacheSpec<K, V> implements Specification, Serializable {
   }
 
   /**
+   * Is weak keys boolean.
+   *
    * @return True - uses weak keys, False normal keys
    */
   public boolean isWeakKeys() {
@@ -161,6 +178,8 @@ public class CacheSpec<K, V> implements Specification, Serializable {
   }
 
   /**
+   * Gets expires after access.
+   *
    * @return The time in milliseconds after access that an item is removed
    */
   public long getExpiresAfterAccess() {
@@ -168,6 +187,8 @@ public class CacheSpec<K, V> implements Specification, Serializable {
   }
 
   /**
+   * Gets expires after write.
+   *
    * @return The time in milliseconds after write that an item is removed
    */
   public long getExpiresAfterWrite() {
@@ -175,6 +196,8 @@ public class CacheSpec<K, V> implements Specification, Serializable {
   }
 
   /**
+   * Gets name.
+   *
    * @return The name of the cache
    */
   public String getName() {
@@ -182,6 +205,8 @@ public class CacheSpec<K, V> implements Specification, Serializable {
   }
 
   /**
+   * Gets removal listener.
+   *
    * @return The listener to call when an item is removed
    */
   public RemovalListener<K, V> getRemovalListener() {
@@ -202,6 +227,13 @@ public class CacheSpec<K, V> implements Specification, Serializable {
     return this;
   }
 
+  /**
+   * Concurrency level t.
+   *
+   * @param <T>              the type parameter
+   * @param concurrencyLevel the concurrency level
+   * @return the t
+   */
   public <T extends CacheSpec<K, V>> T concurrencyLevel(int concurrencyLevel) {
     Preconditions.checkArgument(concurrencyLevel > 0);
     this.concurrencyLevel = concurrencyLevel;
@@ -211,6 +243,7 @@ public class CacheSpec<K, V> implements Specification, Serializable {
   /**
    * Sets the initial capacity
    *
+   * @param <T>             the type parameter
    * @param initialCapacity The initial capacity
    * @return This Cache spec
    */
@@ -223,6 +256,7 @@ public class CacheSpec<K, V> implements Specification, Serializable {
   /**
    * Sets to use weak values
    *
+   * @param <T> the type parameter
    * @return This cache spec
    */
   public <T extends CacheSpec<K, V>> T weakValues() {
@@ -233,6 +267,7 @@ public class CacheSpec<K, V> implements Specification, Serializable {
   /**
    * Sets to use weak keys
    *
+   * @param <T> the type parameter
    * @return This cache spec
    */
   public <T extends CacheSpec<K, V>> T weakKeys() {
@@ -260,6 +295,7 @@ public class CacheSpec<K, V> implements Specification, Serializable {
   /**
    * The time in milliseconds after write that an item is removed
    *
+   * @param <T>      the type parameter
    * @param duration duration is a string in the form d+[dhms] where d is days, h is hours, m is minutes, and s is
    *                 seconds
    * @return This cache spec
@@ -272,6 +308,7 @@ public class CacheSpec<K, V> implements Specification, Serializable {
   /**
    * The time in milliseconds after access that an item is removed
    *
+   * @param <T>      the type parameter
    * @param duration duration is a string in the form d+[dhms] where d is days, h is hours, m is minutes, and s is
    *                 seconds
    * @return This cache spec
@@ -284,6 +321,7 @@ public class CacheSpec<K, V> implements Specification, Serializable {
   /**
    * Sets the name
    *
+   * @param <T>  the type parameter
    * @param name The name
    * @return This cache spec
    */
@@ -295,6 +333,7 @@ public class CacheSpec<K, V> implements Specification, Serializable {
   /**
    * Sets the removal listener
    *
+   * @param <T>      the type parameter
    * @param listener The removal listener
    * @return This cache spec
    */

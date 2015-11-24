@@ -153,6 +153,7 @@ public final class Convert {
   /**
    * Gets a converter for a given class
    *
+   * @param <T>   the type parameter
    * @param clazz The class to convert to
    * @return A converter
    */

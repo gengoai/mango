@@ -55,6 +55,7 @@ public final class DynamicEnum<E extends EnumValue> implements Serializable {
    * Registers an enum value into the enum
    *
    * @param value the enum value
+   * @return the e
    */
   public final E register(E value) {
     values.putIfAbsent(value.name(), Cast.<E>as(value));
