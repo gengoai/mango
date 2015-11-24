@@ -21,8 +21,9 @@
 
 package com.davidbracewell.conversion;
 
-import com.google.common.base.Function;
+import com.davidbracewell.function.SerializableFunction;
 import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.*;
@@ -38,7 +39,8 @@ import java.util.*;
  */
 public final class Cast {
 
-  private Cast(){}
+  private Cast() {
+  }
 
   /**
    * Casts an object in an unchecked manner.
@@ -72,14 +74,8 @@ public final class Cast {
    *
    * @return A Function for casting objects to other types
    */
-  public static <F, T> Function<? super F, T> castingFunction() {
-    return new Function<F, T>() {
-      
-      @Override
-      public T apply( F input) {
-        return Cast.as(input);
-      }
-    };
+  public static <F, T> SerializableFunction<? super F, T> castingFunction() {
+    return input -> Cast.as(input);
   }
 
 
@@ -89,15 +85,8 @@ public final class Cast {
    * @param clazz The class to cast to
    * @return A Function for casting objects to other types
    */
-  public static <F, T> Function<? super F, T> castingFunction(final Class<? extends T> clazz) {
-    Preconditions.checkNotNull(clazz, "A class must be specified");
-    return new Function<F, T>() {
-      
-      @Override
-      public T apply( F input) {
-        return Cast.as(input,clazz);
-      }
-    };
+  public static <F, T> SerializableFunction<? super F, T> castingFunction(@NonNull final Class<? extends T> clazz) {
+    return input -> Cast.as(input, clazz);
   }
 
   /**
@@ -163,7 +152,7 @@ public final class Cast {
    * @return the casted map or null if the map is null
    */
   public static <K, V> Map<K, V> cast(Map<?, ?> map) {
-    return map == null ? null : new CastingMap<K,V>(map);
+    return map == null ? null : new CastingMap<K, V>(map);
   }
 
   private static class CastingMap<K, V> extends AbstractMap<K, V> implements Serializable {
@@ -282,6 +271,5 @@ public final class Cast {
     }
 
   }//END OF Cast$CastingSet
-
 
 }//END OF Cast

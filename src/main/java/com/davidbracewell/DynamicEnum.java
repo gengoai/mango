@@ -39,7 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class DynamicEnum<E extends EnumValue> implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  private final ConcurrentHashMap<String, E> values = new ConcurrentHashMap<>();
+  private volatile ConcurrentHashMap<String, E> values = new ConcurrentHashMap<>();
 
   /**
    * Normalizes the string.
@@ -57,13 +57,7 @@ public final class DynamicEnum<E extends EnumValue> implements Serializable {
    * @param value the enum value
    */
   public final E register(E value) {
-    if (!values.contains(value)) {
-      synchronized (values) {
-        if (!values.contains(value)) {
-          values.put(value.name(), Cast.<E>as(value));
-        }
-      }
-    }
+    values.putIfAbsent(value.name(), Cast.<E>as(value));
     return values.get(value.name());
   }
 

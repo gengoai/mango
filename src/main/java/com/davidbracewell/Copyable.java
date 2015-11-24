@@ -29,7 +29,7 @@ package com.davidbracewell;
  * @param <E> The type of object that can be copied
  * @author David B. Bracewell
  */
-public interface Copyable<E> {
+public interface Copyable<E>  {
 
   /**
    * <p>

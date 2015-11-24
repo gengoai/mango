@@ -21,14 +21,16 @@
 
 package com.davidbracewell;
 
+import lombok.EqualsAndHashCode;
+
 import java.io.Serializable;
-import java.util.Objects;
 
 /**
  * <p>A value in a {@link DynamicEnum}</p>
  *
  * @author David B. Bracewell
  */
+@EqualsAndHashCode
 public abstract class EnumValue implements Tag, Serializable, Comparable<EnumValue> {
 
   private static final long serialVersionUID = 1L;
@@ -61,22 +63,7 @@ public abstract class EnumValue implements Tag, Serializable, Comparable<EnumVal
 
   @Override
   public boolean isInstance(Tag value) {
-    return this.equals(value);
+    return value != null && this.equals(value);
   }
-
-  @Override
-  public boolean equals(Object o) {
-    if (o == null) return false;
-    if (this == o) return true;
-    if (o.getClass() != this.getClass()) return false;
-    EnumValue enumValue = (EnumValue) o;
-    return Objects.equals(name, enumValue.name);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(name);
-  }
-
 
 }//END OF EnumValue
