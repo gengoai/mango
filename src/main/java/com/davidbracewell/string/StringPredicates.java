@@ -25,9 +25,6 @@ import com.davidbracewell.function.SerializablePredicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
 
-import java.io.Serializable;
-import java.util.function.Predicate;
-
 /**
  * Commonly used predicates over strings.
  *

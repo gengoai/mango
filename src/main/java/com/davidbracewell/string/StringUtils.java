@@ -224,6 +224,24 @@ public class StringUtils {
     return StringPredicates.IS_NULL_OR_BLANK.test(input);
   }
 
+
+  public static String unescape(String input, char escapeCharacter) {
+    if (input == null) {
+      return null;
+    }
+    StringBuilder builder = new StringBuilder();
+    for (int i = 0; i < input.length(); ) {
+      if (input.charAt(i) == escapeCharacter ) {
+        builder.append(input.charAt(i + 1));
+        i = i + 2;
+      } else {
+        builder.append(input.charAt(i));
+        i++;
+      }
+    }
+    return builder.toString();
+  }
+
   /**
    * Determines if a given string is only made up of punctuation characters.
    *
@@ -421,8 +439,8 @@ public class StringUtils {
    * @return The title cased version of the input
    */
   public static String toTitleCase(CharSequence input) {
-    if( input == null ){
-      return  null;
+    if (input == null) {
+      return null;
     }
     return StringFunctions.TITLE_CASE.apply(input.toString());
   }
