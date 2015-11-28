@@ -560,7 +560,7 @@ public final class Config implements Serializable {
     packageName = packageName.replaceAll("\\$[0-9]+$", "");
 
 
-    Resource defaultConf = new ClasspathResource(packageName.replaceAll("\\.", "/") + "/" + DEFAULT_CONFIG_FILE_NAME, Config.getDefaultClassLoader());
+    Resource defaultConf = new ClasspathResource((packageName.replaceAll("\\.", "/") + "/" + DEFAULT_CONFIG_FILE_NAME).trim(), Config.getDefaultClassLoader());
 
     // Go through each level of the package until we find one that
     // has a default properties file or we cannot go any further.

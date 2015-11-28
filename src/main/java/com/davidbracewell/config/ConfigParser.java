@@ -183,11 +183,11 @@ class ConfigParser extends Parser {
 
         if (exp.match(ConfigTokenizer.ConfigTokenType.IMPORT)) {
 
-          importConfig(exp.as(PrefixExpression.class).right.toString());
+          importConfig(exp.as(PrefixExpression.class).right.toString().trim());
 
         } else if (exp.match(ConfigTokenizer.ConfigTokenType.SCRIPT)) {
 
-          importScript(exp.as(PrefixExpression.class).right.toString());
+          importScript(exp.as(PrefixExpression.class).right.toString().trim());
 
         } else if (exp.match(ConfigTokenizer.ConfigTokenType.APPEND_PROPERTY)) {
 

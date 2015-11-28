@@ -125,6 +125,8 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
    */
   boolean hasHeader;
 
+  boolean wasQuoted = false;
+
   private boolean documentEnd = false;
   private int rowId = 0;
   private int valueIdx = -1;
@@ -152,7 +154,7 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
     }
   }
 
-  private void addCell() {
+  private void addCell(boolean isQuoted) {
     String cellString = cell.toString();
     if (STATE == IN_FIELD) {
       cellString = StringUtils.rightTrim(cellString);
@@ -161,9 +163,11 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
       if (cellString.length() > 0 && cellString.charAt(cellString.length() - 1) == escape) {
         cellString += " ";
       }
-      row.add(cellString.replaceAll("\\\\(.)", "$1"));
+      String cellStr = cellString.replaceAll("\\\\(.)", "$1");
+      row.add(isQuoted ? cellStr : cellStr.trim());
     }
     cell.setLength(0);
+    wasQuoted = false;
   }
 
   /**
@@ -210,9 +214,10 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
       readToEndOfLine();
       return START;
     } else if (c == quote) {
+      wasQuoted = true;
       return IN_QUOTE;
     } else if (c == delimiter) {
-      addCell();
+      addCell(wasQuoted);
       return IN_FIELD;
     } else if (c == escape) {
       cell.append((char) escape).append(escape());
@@ -297,7 +302,7 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
     } else if (c == quote && StringUtils.isNullOrBlank(cell.toString())) {
       return IN_QUOTE;
     } else if (c == delimiter && !isQuoted) {
-      addCell();
+      addCell(isQuoted);
       gobbleWhiteSpace();
       return START;
     } else if (c == escape) {
@@ -439,6 +444,7 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
           STATE = beginOfLine(c);
           break;
         case IN_QUOTE:
+          wasQuoted = true;
           STATE = inField(c, true);
           break;
         case IN_FIELD:
@@ -455,7 +461,7 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
       }
     }
     if (readCount > 0) {
-      addCell();
+      addCell(wasQuoted);
     }
     if (row.isEmpty()) {
       return null;
@@ -478,7 +484,7 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
     if (c == '\n') {
       return END_OF_ROW;
     } else if (c == delimiter) {
-      addCell();
+      addCell(true);
       gobbleWhiteSpace();
       return IN_FIELD;
     } else if (Character.isWhitespace(c)) {
