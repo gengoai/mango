@@ -27,7 +27,6 @@ import com.davidbracewell.logging.Logger;
 import com.google.common.base.Function;
 import com.google.common.primitives.Bytes;
 
-import javax.annotation.Nullable;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -53,9 +52,9 @@ public final class IOConverter {
    * Converts an object to a Charset
    */
   public static final Function<Object, Charset> CHARSET = new Function<Object, Charset>() {
-    @Nullable
+
     @Override
-    public Charset apply(@Nullable Object input) {
+    public Charset apply(Object input) {
       if (input == null) {
         return null;
       } else if (input instanceof Charset) {
@@ -78,9 +77,9 @@ public final class IOConverter {
    */
   public static final Function<Object, File> FILE = new Function<Object, File>() {
 
-    @Nullable
+
     @Override
-    public File apply(@Nullable Object input) {
+    public File apply(Object input) {
       if (input == null) {
         return null;
       } else if (input instanceof File) {
@@ -108,9 +107,9 @@ public final class IOConverter {
    * Converts an object to an InputStream
    */
   public static final Function<Object, InputStream> INPUT_STREAM = new Function<Object, InputStream>() {
-    @Nullable
+
     @Override
-    public InputStream apply(@Nullable Object input) {
+    public InputStream apply(Object input) {
       if (input == null) {
         return null;
       } else if (input instanceof InputStream) {
@@ -174,9 +173,9 @@ public final class IOConverter {
    * Converts an object to an OutputStream
    */
   public static final Function<Object, OutputStream> OUTPUT_STREAM = new Function<Object, OutputStream>() {
-    @Nullable
+
     @Override
-    public OutputStream apply(@Nullable Object input) {
+    public OutputStream apply(Object input) {
       if (input == null) {
         return null;
       } else if (input instanceof OutputStream) {
@@ -205,9 +204,9 @@ public final class IOConverter {
    */
   public static final Function<Object, Path> PATH = new Function<Object, Path>() {
 
-    @Nullable
+
     @Override
-    public Path apply(@Nullable Object input) {
+    public Path apply(Object input) {
       if (input == null) {
         return null;
       } else if (input instanceof Path) {
@@ -235,9 +234,9 @@ public final class IOConverter {
    * Converts an object to a Reader
    */
   public static final Function<Object, Reader> READER = new Function<Object, Reader>() {
-    @Nullable
+
     @Override
-    public Reader apply(@Nullable Object input) {
+    public Reader apply(Object input) {
       if (input == null) {
         return null;
       } else if (input instanceof Reader) {
@@ -252,9 +251,9 @@ public final class IOConverter {
     }
   };
   public static final Function<Object, Resource> RESOUCE = new Function<Object, Resource>() {
-    @Nullable
+
     @Override
-    public Resource apply(@Nullable Object obj) {
+    public Resource apply(Object obj) {
 
       if (obj == null) {
         return null;
@@ -310,9 +309,9 @@ public final class IOConverter {
    * Converts an object to a URI
    */
   public static final Function<Object, URI> URI = new Function<Object, java.net.URI>() {
-    @Nullable
+
     @Override
-    public URI apply(@Nullable Object input) {
+    public URI apply(Object input) {
       if (input == null) {
         return null;
       } else if (input instanceof URI) {
@@ -346,9 +345,9 @@ public final class IOConverter {
    * Converts an object to a URL
    */
   public static final Function<Object, URL> URL = new Function<Object, java.net.URL>() {
-    @Nullable
+
     @Override
-    public URL apply(@Nullable Object input) {
+    public URL apply(Object input) {
       if (input == null) {
         return null;
       } else if (input instanceof URL) {
@@ -391,9 +390,9 @@ public final class IOConverter {
    * Converts an object to a Writer
    */
   public static final Function<Object, Writer> WRITER = new Function<Object, Writer>() {
-    @Nullable
+
     @Override
-    public Writer apply(@Nullable Object input) {
+    public Writer apply(Object input) {
       if (input == null) {
         return null;
       } else if (input instanceof Writer) {

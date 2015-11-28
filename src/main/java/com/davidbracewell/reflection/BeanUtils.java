@@ -182,6 +182,7 @@ public class BeanUtils {
       }
     }
 
+
     doParametrization(beanMap, name + ".");
 
     Object bean = beanMap.getBean();

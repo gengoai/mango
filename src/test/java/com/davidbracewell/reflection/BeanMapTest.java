@@ -37,6 +37,7 @@ import static org.junit.Assert.*;
 public class BeanMapTest {
 
   @Test
+  @SuppressWarnings("unchecked")
   public void testObject() throws Exception {
     BeanMap map = new BeanMap(new Object());
 

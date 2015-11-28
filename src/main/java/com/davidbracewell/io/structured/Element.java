@@ -21,7 +21,7 @@
 
 package com.davidbracewell.io.structured;
 
-import com.davidbracewell.collection.Streams;
+import com.davidbracewell.collection.Collect;
 import com.google.common.collect.Lists;
 import lombok.NonNull;
 
@@ -135,12 +135,12 @@ public abstract class Element {
 
   public final Stream<Element> selectWithAttributeValue(@NonNull String attributeName, @NonNull Predicate<? super String> attributeValuePredicate, boolean recursive) {
     return stream(recursive).filter(e -> e.hasAttribute(attributeName))
-        .filter(e -> attributeValuePredicate.test(e.getAttribute(attributeName)));
+      .filter(e -> attributeValuePredicate.test(e.getAttribute(attributeName)));
   }
 
   public final Stream<Element> stream(boolean recursive) {
     if (recursive) {
-      return Streams.from(new RecursiveElementIterator());
+      return Collect.from(new RecursiveElementIterator(this));
     }
     return getChildren().stream();
   }
@@ -151,8 +151,12 @@ public abstract class Element {
   protected class RecursiveElementIterator implements Iterator<Element> {
     Queue<Element> nodes = Lists.newLinkedList();
 
-    private RecursiveElementIterator() {
-      nodes.add(Element.this);
+    private RecursiveElementIterator(Element element) {
+      if (element instanceof StructuredDocument) {
+        nodes.addAll(element.getChildren());
+      } else {
+        nodes.add(element);
+      }
     }
 
     private void advance(Element node) {
@@ -169,11 +173,6 @@ public abstract class Element {
       Element node = nodes.remove();
       advance(node);
       return node;
-    }
-
-    @Override
-    public void remove() {
-      throw new UnsupportedOperationException();
     }
 
   }//END OF Element$RecursiveElementIterator

@@ -22,16 +22,18 @@
 package com.davidbracewell.tuple;
 
 import com.davidbracewell.Copyable;
-import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 
 /**
+ * A tuple of degree zero.
+ *
  * @author David B. Bracewell
  */
-@EqualsAndHashCode
-public class Tuple0 implements Tuple, Serializable, Comparable<Tuple0>, Copyable<Tuple0>, Cloneable {
+public class Tuple0 implements Tuple, Serializable, Comparable<Tuple0>, Copyable<Tuple0> {
   private static final long serialVersionUID = 1L;
+
+  public static Tuple0 INSTANCE = new Tuple0();
 
   @Override
   public int compareTo(Tuple0 o) {
@@ -54,8 +56,13 @@ public class Tuple0 implements Tuple, Serializable, Comparable<Tuple0>, Copyable
   }
 
   @Override
-  protected Object clone() throws CloneNotSupportedException {
-    return new Tuple0();
+  public int hashCode() {
+    return 1;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    return o != null && o instanceof Tuple0;
   }
 
   @Override

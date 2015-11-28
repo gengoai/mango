@@ -22,13 +22,9 @@
 package com.davidbracewell.reflection;
 
 import com.davidbracewell.logging.Logger;
-import com.google.common.base.Throwables;
+import com.davidbracewell.string.StringUtils;
 import com.google.common.collect.Maps;
 
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -49,6 +45,29 @@ public class BeanDescriptor implements Serializable {
   private final Map<String, Method> writeMethods;
   private final Class<?> clazz;
 
+  private void setReadWrite(Class<?> clazz) {
+    if (clazz == null) {
+      return;
+    }
+    Reflect.onClass(clazz).getMethods().forEach(method -> {
+      String name = method.getName();
+      if (name.startsWith("get")) {
+        readMethods.put(transformName(name), method);
+      } else if (name.startsWith("set")) {
+        writeMethods.put(transformName(name), method);
+      }
+    });
+  }
+
+  private String transformName(String name) {
+    if (name.length() == 3) {
+      return StringUtils.EMPTY;
+    }
+    char[] carrry = name.substring(3, name.length()).toCharArray();
+    carrry[0] = Character.toLowerCase(carrry[0]);
+    return new String(carrry);
+  }
+
   /**
    * Default Constructor that initializes the descriptor using class information
    *
@@ -58,32 +77,14 @@ public class BeanDescriptor implements Serializable {
     this.clazz = clazz;
     readMethods = Maps.newConcurrentMap();
     writeMethods = Maps.newConcurrentMap();
-    try {
-      BeanInfo beanInfo = Introspector.getBeanInfo(clazz);
-      PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
-
-      if (descriptors == null || descriptors.length == 0) {
-        return;
+    setReadWrite(clazz.getSuperclass());
+    Class<?>[] interfaces = clazz.getInterfaces();
+    if (interfaces != null) {
+      for (Class<?> iface : interfaces) {
+        setReadWrite(iface);
       }
-
-      for (PropertyDescriptor descriptor : descriptors) {
-        String name = descriptor.getName();
-        Method readMethod = descriptor.getReadMethod();
-        Method writeMethod = descriptor.getWriteMethod();
-
-        if (readMethod != null) {
-          readMethods.put(name, readMethod);
-        }
-        if (writeMethod != null) {
-          writeMethods.put(name, writeMethod);
-        }
-      }
-    } catch (IntrospectionException e) {
-      throw Throwables.propagate(e);
     }
-
-
-
+    setReadWrite(this.clazz);
   }
 
   /**

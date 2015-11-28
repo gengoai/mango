@@ -33,7 +33,7 @@ import java.util.ListIterator;
 
 /**
  * <p> A fixed size list backed by a primitive array. The items in the array are converted through calling the {@link
- * Class#cast(Object)} method of provided Class object. </p> <p/> <p> This implementation does not support add, remove
+ * Class#cast(Object)}* method of provided Class object. </p>  <p> This implementation does not support add, remove
  * or toArray methods. A {@link UnsupportedOperationException} will be thrown if these methods are called. </p>
  *
  * @param <E> The type of element the primitive will be cast as
@@ -51,11 +51,10 @@ public class PrimitiveArrayList<E> extends AbstractList<E> implements Serializab
    * Constructs a fixed size primitive backed list.
    *
    * @param array      The primitive array
-   * @param objectType Class information for the object to convert the
-   *                   primitive to
+   * @param objectType Class information for the object to convert the                   primitive to
    * @throws NullPointerException     if either of the arguments are null
-   * @throws IllegalArgumentException if the array object is not an array or
-   *                                  the component type is not a primitive
+   * @throws IllegalArgumentException if the array object is not an array or                                  the
+   *                                  component type is not a primitive
    */
   public PrimitiveArrayList(@NonNull Object array, @NonNull Class<E> objectType) {
     Preconditions.checkArgument(array.getClass().isArray(), "The object must be an array of primitives.");

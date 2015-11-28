@@ -48,7 +48,6 @@ public class ResourceTest {
     r = Resources.from("string:Now is the world");
     assertTrue(r instanceof StringResource);
 
-
     r = Resources.from("bytes[isCompressed=true, charset=UTF-8]:");
     assertTrue(r instanceof ByteArrayResource);
     assertTrue(r.isCompressed());
@@ -59,7 +58,7 @@ public class ResourceTest {
   public void testStd() throws Exception {
 
     InputStream stdin = System.in;
-    System.setIn(new StringResource("This is not the end.").openInputStream());
+    System.setIn(new StringResource("This is not the end.").inputStream());
     Resource r = Resources.fromStdin();
     assertTrue(r.exists());
     assertEquals("This is not the end.", r.readToString().trim());
@@ -68,7 +67,7 @@ public class ResourceTest {
 
     PrintStream stdout = System.out;
     StringResource out = new StringResource();
-    System.setOut(new PrintStream(out.openOutputStream()));
+    System.setOut(new PrintStream(out.outputStream()));
     Resources.fromStdout().write("This is not the end.");
     assertTrue(Resources.fromStdout().exists());
     assertEquals("This is not the end.", out.readToString().trim());
@@ -81,12 +80,12 @@ public class ResourceTest {
   public void testStreams() throws Exception {
 
     Resource r = Resources.fromString("");
-    Resource r2 = Resources.fromOutputStream(r.openOutputStream());
+    Resource r2 = Resources.fromOutputStream(r.outputStream());
     assertTrue(r2.exists());
     r2.write("This is a test");
 
 
-    Resource r3 = Resources.fromInputStream(r.openInputStream());
+    Resource r3 = Resources.fromInputStream(r.inputStream());
     assertTrue(r3.exists());
     assertEquals("This is a test", r3.readToString().trim());
 

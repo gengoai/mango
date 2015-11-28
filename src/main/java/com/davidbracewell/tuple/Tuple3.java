@@ -99,6 +99,27 @@ public class Tuple3<A, B, C> implements Tuple, Serializable, Comparable<Tuple3<A
     return new Object[]{v1, v2, v3};
   }
 
+
+  @Override
+  public <T> Tuple4<T, A, B, C> appendRight(T object) {
+    return Tuple4.of(object, v1, v2, v3);
+  }
+
+  @Override
+  public <T> Tuple4<A, B, C, T> appendLeft(T object) {
+    return Tuple4.of(v1, v2, v3, object);
+  }
+
+  @Override
+  public Tuple2<B, C> shiftLeft() {
+    return Tuple2.of(v2, v3);
+  }
+
+  @Override
+  public Tuple2<A, B> shiftRight() {
+    return Tuple2.of(v1, v2);
+  }
+
   @Override
   public int compareTo(Tuple3<A, B, C> o) {
     if (o == null) {

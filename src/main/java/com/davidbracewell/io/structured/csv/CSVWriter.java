@@ -32,14 +32,13 @@ import com.davidbracewell.io.structured.StructuredIOException;
 import com.davidbracewell.io.structured.StructuredWriter;
 import com.davidbracewell.string.CSVFormatter;
 import com.davidbracewell.string.StringUtils;
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -93,6 +92,18 @@ public class CSVWriter extends StructuredWriter implements AutoCloseable {
     writer.write(SystemInfo.LINE_SEPARATOR);
   }
 
+  public void writeMapAsOneRow(Map<?, ?> row, char keyValueDelimiter) throws IOException {
+    if (row != null) {
+      String keyValueDelimStr = Character.toString(keyValueDelimiter);
+      Preconditions.checkArgument(!keyValueDelimStr.equals(formatter.getDelimiter()), "Key-value delimiter cannot be the same as the file delimiter.");
+      List<String> rowList = row.entrySet().stream().map(m ->
+        Convert.convert(m.getKey(), String.class).replace(keyValueDelimStr, formatter.getEscape() + keyValueDelimStr)
+        + keyValueDelimiter +
+        Convert.convert(m.getValue(), String.class).replace(keyValueDelimStr, formatter.getEscape() + keyValueDelimStr)).collect(Collectors.toCollection(LinkedList::new));
+      write(rowList);
+    }
+  }
+
   /**
    * Writes the items in the row to the resource in DSV format.
    *
@@ -103,17 +114,18 @@ public class CSVWriter extends StructuredWriter implements AutoCloseable {
     if (row != null) {
       if (header.isEmpty()) {
         for (Map.Entry<?, ?> m : row.entrySet()) {
-          writer.write(formatter.format(m.getKey(), Convert.convert(m.getValue(), String.class)));
+          writer.write(formatter.format(Convert.convert(m.getKey(), String.class), Convert.convert(m.getValue(), String.class)));
           writer.write(SystemInfo.LINE_SEPARATOR);
         }
       } else {
         writer.write(formatter.format(
-            header.asList().stream()
-                .map(h -> row.containsKey(h) ? Convert.convert(row.get(h), String.class) : StringUtils.EMPTY)
-                .collect(Collectors.toList())
+          header.asList().stream()
+            .map(h -> row.containsKey(h) ? Convert.convert(row.get(h), String.class) : StringUtils.EMPTY)
+            .collect(Collectors.toList())
         ));
         writer.write(SystemInfo.LINE_SEPARATOR);
       }
+
     }
 
   }
@@ -131,9 +143,9 @@ public class CSVWriter extends StructuredWriter implements AutoCloseable {
         writer.write(formatter.format(row, keyValueSeparator));
       } else {
         writer.write(formatter.format(
-            header.asList().stream()
-                .map(h -> row.containsKey(h) ? Convert.convert(row.get(h), String.class) : StringUtils.EMPTY)
-                .collect(Collectors.toList())
+          header.asList().stream()
+            .map(h -> row.containsKey(h) ? Convert.convert(row.get(h), String.class) : StringUtils.EMPTY)
+            .collect(Collectors.toList())
         ));
       }
     }
@@ -274,13 +286,13 @@ public class CSVWriter extends StructuredWriter implements AutoCloseable {
     try {
       if (header.isEmpty()) {
         write(row.entrySet().stream()
-                .map(e -> e.getKey().startsWith("--NON_HEADER") ? e.getValue() : e)
-                .collect(Collectors.toList())
+          .map(e -> e.getKey().startsWith("--NON_HEADER") ? e.getValue() : e)
+          .collect(Collectors.toList())
         );
       } else {
         write(header.asList().stream()
-            .map(h -> row.containsKey(h) ? Convert.convert(row.get(h), String.class) : StringUtils.EMPTY)
-            .collect(Collectors.toList()));
+          .map(h -> row.containsKey(h) ? Convert.convert(row.get(h), String.class) : StringUtils.EMPTY)
+          .collect(Collectors.toList()));
       }
     } catch (IOException e) {
       throw new StructuredIOException(e);

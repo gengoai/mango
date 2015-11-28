@@ -103,6 +103,8 @@ public class Val implements Serializable {
   /**
    * Converts the object to a collection
    *
+   * @param <E>             the type parameter
+   * @param <T>             the type parameter
    * @param collectionClass The collection to convert to
    * @param genericClass    The class of the item in the collection
    * @return The object as a collection
@@ -118,6 +120,8 @@ public class Val implements Serializable {
   /**
    * Converts the object to a map
    *
+   * @param <K>        the type parameter
+   * @param <V>        the type parameter
    * @param mapClass   The map class
    * @param keyClass   The key class
    * @param valueClass The value class
@@ -130,6 +134,8 @@ public class Val implements Serializable {
   /**
    * Converts the object to a map
    *
+   * @param <K>        the type parameter
+   * @param <V>        the type parameter
    * @param keyClass   The key class
    * @param valueClass The value class
    * @return the object as a map
@@ -187,6 +193,8 @@ public class Val implements Serializable {
   }
 
   /**
+   * Get object.
+   *
    * @return The wrapped object
    */
   public Object get() {
@@ -196,6 +204,7 @@ public class Val implements Serializable {
   /**
    * Converts the underlying object to the given class type.
    *
+   * @param <T>   the type parameter
    * @param clazz The class to convert to
    * @return This object as the given type or null if the wrapped object is null
    */
@@ -206,6 +215,7 @@ public class Val implements Serializable {
   /**
    * Converts the underlying object to the given class type.
    *
+   * @param <T>          the type parameter
    * @param clazz        The class to convert to
    * @param defaultValue The value to return if the wrapped value is null or cannot be converted
    * @return This object as the given type or null if the wrapped object is null
@@ -224,6 +234,7 @@ public class Val implements Serializable {
   /**
    * Converts the underlying object to the given class type.
    *
+   * @param <T>      the type parameter
    * @param clazz    The class to convert to
    * @param supplier The supplier to use to generate a default value
    * @return This object as the given type or null if the wrapped object is null
@@ -364,6 +375,7 @@ public class Val implements Serializable {
   /**
    * As class.
    *
+   * @param <T>          the type parameter
    * @param defaultValue the default value
    * @return The object as a class
    */
@@ -711,6 +723,7 @@ public class Val implements Serializable {
   /**
    * Converts the object to a List
    *
+   * @param <T>      the type parameter
    * @param itemType The class of the item in the List
    * @return The object as a List
    */
@@ -742,6 +755,7 @@ public class Val implements Serializable {
   /**
    * Converts the object to a Set
    *
+   * @param <T>      the type parameter
    * @param itemType The class of the item in the Set
    * @return The object as a Set
    */
@@ -771,6 +785,7 @@ public class Val implements Serializable {
   /**
    * Converts an object into an array of objects
    *
+   * @param <T>   the type parameter
    * @param clazz The type of the object to create.
    * @return An array of the object
    */

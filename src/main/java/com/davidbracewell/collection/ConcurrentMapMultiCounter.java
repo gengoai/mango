@@ -49,6 +49,7 @@ public class ConcurrentMapMultiCounter<K, V> extends AbstractMapMultiCounter<K, 
    *
    * @param triples the triples
    */
+  @SafeVarargs
   public ConcurrentMapMultiCounter(Tuple3<K, V, ? extends Number>... triples) {
     super(new ConcurrentHashMap<>(), triples);
   }

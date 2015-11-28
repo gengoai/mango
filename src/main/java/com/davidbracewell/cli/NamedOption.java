@@ -47,7 +47,7 @@ import java.util.Map;
  * <li>Name is a multiple characters: long form <code>--n</code></li>
  * </ul>
  * <code>NamedOption</code>s can be built either by passing a <code>Field</code> containing an {@link Option}
- * anntotation or by using the builder {@link NamedOption#builder()}.
+ * annotation or by using the builder {@link NamedOption#builder()}.
  * </p>
  * <p>
  * Three options are predefined and are automatically added to every command line parser:
@@ -85,15 +85,15 @@ public final class NamedOption {
 
     this.name = StringUtils.isNullOrBlank(option.name()) ? field.getName() : option.name();
     Preconditions.checkArgument(
-        !StringUtils.isNullOrBlank(this.name) && !CharMatcher.WHITESPACE.matchesAnyOf(this.name),
-        "Option name must have at least one character and must not have a space"
+      !StringUtils.isNullOrBlank(this.name) && !CharMatcher.WHITESPACE.matchesAnyOf(this.name),
+      "Option name must have at least one character and must not have a space"
     );
 
     this.type = field.getType();
 
     Preconditions.checkArgument(
-        !StringUtils.isNullOrBlank(option.description()),
-        "Description must not be blank"
+      !StringUtils.isNullOrBlank(option.description()),
+      "Description must not be blank"
     );
     this.description = option.description();
 
@@ -120,12 +120,12 @@ public final class NamedOption {
   @Builder
   protected NamedOption(@NonNull String name, @NonNull Class<?> type, @NonNull String description, Object defaultValue, @Singular Collection<String> aliases, boolean required) {
     Preconditions.checkArgument(
-        !StringUtils.isNullOrBlank(name) && !CharMatcher.WHITESPACE.matchesAnyOf(name),
-        "Option name must have at least one character and must not have a space"
+      !StringUtils.isNullOrBlank(name) && !CharMatcher.WHITESPACE.matchesAnyOf(name),
+      "Option name must have at least one character and must not have a space"
     );
     Preconditions.checkArgument(
-        !StringUtils.isNullOrBlank(description),
-        "Description must not be blank"
+      !StringUtils.isNullOrBlank(description),
+      "Description must not be blank"
     );
 
     this.name = name;
@@ -212,31 +212,31 @@ public final class NamedOption {
    * Shows help if <code>-h</code> or <code>--help</code> is given.</li>
    */
   public static final NamedOption HELP = NamedOption.builder()
-      .name("h")
-      .type(Boolean.class)
-      .description("Shows this help")
-      .alias("help")
-      .defaultValue(false)
-      .build();
+    .name("h")
+    .type(Boolean.class)
+    .description("Shows this help")
+    .alias("help")
+    .defaultValue(false)
+    .build();
 
   /**
    * Specifies a configuration resource to load when <code>--config</code> is given.
    */
   public static final NamedOption CONFIG = NamedOption.builder()
-      .name("config")
-      .type(Resource.class)
-      .description("Configuration file that can be specified on the command line.")
-      .build();
+    .name("config")
+    .type(Resource.class)
+    .description("Configuration file that can be specified on the command line.")
+    .build();
 
   /**
    * Shows how the current configuration was created with the lineage of each
    * property when <code>--config-explain</code> is given.
    */
   public static final NamedOption CONFIG_EXPLAIN = NamedOption.builder()
-      .name("config-explain")
-      .type(Boolean.class)
-      .description("Explains how the config values were set.")
-      .defaultValue(false)
-      .build();
+    .name("config-explain")
+    .type(Boolean.class)
+    .description("Explains how the config values were set.")
+    .defaultValue(false)
+    .build();
 
 }//END OF NamedOption

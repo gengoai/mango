@@ -58,16 +58,16 @@ public class URLResourceTest {
     new URLResource("arg matey");
   }
 
-  @Test(expected = RuntimeException.class)
+  @Test
   public void testGetChildURLError() throws Exception {
     URLResource r2 = new URLResource("http://www.yahoo.com");
-    r2.getChild("bad://news");
+    assertTrue(r2.getChild("bad://news") instanceof EmptyResource);
   }
 
   @Test
   public void testAsFile() throws Exception {
     URLResource url = Resources.fromUrl(new URL("file:///home/david"));
-    assertEquals(new File("/home/david"), url.asFile());
+    assertEquals(new File("/home/david"), url.asFile().get());
   }
 
 }//END OF URLResourceTest

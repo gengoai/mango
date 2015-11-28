@@ -28,7 +28,10 @@ import com.davidbracewell.io.structured.csv.CSVReader;
 import lombok.NonNull;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -44,6 +47,7 @@ public interface Counters {
    * New concurrent counter.
    *
    * @param <TYPE> the type parameter
+   * @param items  the items
    * @return the counter
    */
   @SafeVarargs
@@ -91,6 +95,7 @@ public interface Counters {
    * New hash map counter.
    *
    * @param <TYPE> the type parameter
+   * @param items  the items
    * @return the counter
    */
   @SafeVarargs
@@ -138,6 +143,7 @@ public interface Counters {
    * New tree map counter.
    *
    * @param <TYPE> the type parameter
+   * @param items  the items
    * @return the counter
    */
   @SafeVarargs
@@ -192,23 +198,43 @@ public interface Counters {
     return new UnmodifiableCounter<>(counter);
   }
 
+  /**
+   * From csv counter.
+   *
+   * @param <TYPE>   the type parameter
+   * @param resource the resource
+   * @param keyClass the key class
+   * @param supplier the supplier
+   * @return the counter
+   * @throws IOException the io exception
+   */
   static <TYPE> Counter<TYPE> fromCSV(@NonNull Resource resource, @NonNull Class<TYPE> keyClass, @NonNull Supplier<Counter<TYPE>> supplier) throws IOException {
     Counter<TYPE> counter = supplier.get();
     try (CSVReader reader = CSV.builder().reader(resource)) {
-      for (List<String> row : reader) {
+      reader.forEach(row -> {
         if (row.size() >= 2) {
           counter.increment(Convert.convert(row.get(0), keyClass), Double.parseDouble(row.get(1)));
         }
-      }
+      });
     }
     return counter;
   }
 
-
+  /**
+   * Collector collector.
+   *
+   * @param <T> the type parameter
+   * @return the collector
+   */
   static <T> Collector<T, Counter<T>, Counter<T>> collector() {
     return new CounterCollector<>();
   }
 
+  /**
+   * The type Counter collector.
+   *
+   * @param <T> the type parameter
+   */
   class CounterCollector<T> implements Collector<T, Counter<T>, Counter<T>> {
 
     @Override

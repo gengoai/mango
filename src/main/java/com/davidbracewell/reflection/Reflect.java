@@ -25,6 +25,7 @@ import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.string.StringUtils;
+import com.google.common.base.Defaults;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -163,6 +164,9 @@ public class Reflect {
   }
 
   private static Object convertValueType(Object value, Class<?> toClass) {
+    if( value == null ){
+      return Defaults.defaultValue(toClass);
+    }
     if (Val.class.isAssignableFrom(toClass)) {
       return Cast.as(value, Val.class).as(toClass);
     }
@@ -474,7 +478,7 @@ public class Reflect {
     if (accessAll) {
       Collections.addAll(fields, clazz.getDeclaredFields());
       Class<?> parent = clazz.getSuperclass();
-      while (parent != null) {
+      while (parent != null && parent != Object.class) {
         fields.addAll(Reflect.onClass(parent).allowPrivilegedAccess().getFields());
         parent = parent.getSuperclass();
       }

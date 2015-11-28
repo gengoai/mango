@@ -55,7 +55,6 @@ public abstract class CommandLineApplication implements Application, Serializabl
    * The name of the application
    */
   public final String applicationName;
-
   private String[] nonNamedArguments;
   private String[] allArgs;
   private String packageName;
@@ -143,6 +142,11 @@ public abstract class CommandLineApplication implements Application, Serializabl
   @Override
   public String getConfigPackageName() {
     return packageName;
+  }
+
+  @Override
+  public void setup() throws Exception {
+
   }
 
 }//END OF Application

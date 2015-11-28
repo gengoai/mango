@@ -21,10 +21,10 @@
 
 package com.davidbracewell.conversion;
 
-import com.google.common.base.Function;
+import com.davidbracewell.function.SerializableFunction;
 import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
-import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.*;
 
@@ -39,12 +39,14 @@ import java.util.*;
  */
 public final class Cast {
 
-  private Cast(){}
+  private Cast() {
+  }
 
   /**
    * Casts an object in an unchecked manner.
    *
-   * @param o the object
+   * @param <T> the type parameter
+   * @param o   the object
    * @return the casted object or null if the object was null
    */
   @SuppressWarnings("unchecked")
@@ -55,6 +57,7 @@ public final class Cast {
   /**
    * Casts an object in a checked manner.
    *
+   * @param <T>   the type parameter
    * @param o     the object
    * @param clazz The class to cast to
    * @return the casted object or null if the object was null or the object was not of the desired type
@@ -71,40 +74,32 @@ public final class Cast {
   /**
    * Creates a casting function that casts objects from one type to another using {@link #as(Object)}.
    *
+   * @param <F> the type parameter
+   * @param <T> the type parameter
    * @return A Function for casting objects to other types
    */
-  public static <F, T> Function<? super F, T> castingFunction() {
-    return new Function<F, T>() {
-      @Nullable
-      @Override
-      public T apply(@Nullable F input) {
-        return Cast.as(input);
-      }
-    };
+  public static <F, T> SerializableFunction<? super F, T> castingFunction() {
+    return input -> Cast.as(input);
   }
 
 
   /**
    * Creates a casting function that casts objects from one type to another using {@link #as(Object, Class)}.
    *
+   * @param <F>   the type parameter
+   * @param <T>   the type parameter
    * @param clazz The class to cast to
    * @return A Function for casting objects to other types
    */
-  public static <F, T> Function<? super F, T> castingFunction(final Class<? extends T> clazz) {
-    Preconditions.checkNotNull(clazz, "A class must be specified");
-    return new Function<F, T>() {
-      @Nullable
-      @Override
-      public T apply(@Nullable F input) {
-        return Cast.as(input,clazz);
-      }
-    };
+  public static <F, T> SerializableFunction<? super F, T> castingFunction(@NonNull final Class<? extends T> clazz) {
+    return input -> Cast.as(input, clazz);
   }
 
   /**
    * <p>Casts the elements in an iterable in a lazy fashion. Calls to remove on the iterator will be reflected in
    * iterable </p>
    *
+   * @param <T>      the type parameter
    * @param iterable the iterable
    * @return the casted iterable or null if the given iterable is null
    */
@@ -116,6 +111,7 @@ public final class Cast {
    * <p>Casts the elements in a set in a lazy fashion. Changes to the returned set are reflected in the the given
    * set.</p>
    *
+   * @param <T> the type parameter
    * @param set the set
    * @return the casted set or null if the given set is null
    */
@@ -127,6 +123,7 @@ public final class Cast {
    * <p>Casts the elements in a list in a lazy fashion. Changes to the returned list are reflected in the the given
    * list.</p>
    *
+   * @param <T>  the type parameter
    * @param list the list to cast
    * @return the casted list or null if the given list is null
    */
@@ -138,6 +135,7 @@ public final class Cast {
    * <p>Casts the elements in an iterator in a lazy fashion. Changes to the returned iterator are reflected in the the
    * given iterator.</p>
    *
+   * @param <T>      the type parameter
    * @param iterator the iterator to cast
    * @return the casted iterator or null if the given iterator was null
    */
@@ -149,6 +147,7 @@ public final class Cast {
    * <p>Casts the elements in a collection in a lazy fashion. Changes to the returned collection are reflected in the
    * the given collection.</p>
    *
+   * @param <T>        the type parameter
    * @param collection the collection to cast
    * @return the casted collection or null if the collection is null
    */
@@ -160,11 +159,13 @@ public final class Cast {
    * <p>Casts a map in a lazy fashion. Changes to the returned map are reflected in the
    * the given map.</p>
    *
+   * @param <K> the type parameter
+   * @param <V> the type parameter
    * @param map the map to cast
    * @return the casted map or null if the map is null
    */
   public static <K, V> Map<K, V> cast(Map<?, ?> map) {
-    return map == null ? null : new CastingMap<K,V>(map);
+    return map == null ? null : new CastingMap<K, V>(map);
   }
 
   private static class CastingMap<K, V> extends AbstractMap<K, V> implements Serializable {
@@ -283,6 +284,5 @@ public final class Cast {
     }
 
   }//END OF Cast$CastingSet
-
 
 }//END OF Cast

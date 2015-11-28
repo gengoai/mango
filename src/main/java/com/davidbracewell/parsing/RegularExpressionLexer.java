@@ -23,6 +23,7 @@ package com.davidbracewell.parsing;
 
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.io.resource.Resource;
+import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -71,6 +72,7 @@ public class RegularExpressionLexer extends Lexer {
   private class MatchIterator implements Iterator<ParserToken> {
     final Matcher matcher;
     final String input;
+    int lastEnd = 0;
     Boolean hasNext;
 
     private MatchIterator(String input) {
@@ -79,25 +81,33 @@ public class RegularExpressionLexer extends Lexer {
       this.input = input;
     }
 
-
-    @Override
-    public boolean hasNext() {
+    private boolean advance() {
       if (hasNext == null) {
         hasNext = matcher.find();
       }
       return hasNext;
     }
 
+
+    @Override
+    public boolean hasNext() {
+      return advance();
+    }
+
     @Override
     public ParserToken next() {
-      hasNext();
-      if (!hasNext) {
+      if (!advance()) {
         throw new NoSuchElementException();
       }
       hasNext = null;
       ParserToken token = null;
+      int endOffset = lastEnd;
+      int startOffset = 0;
+
       for (ParserTokenType type : types) {
         if (matcher.group(type.toString()) != null) {
+          endOffset = matcher.end(type.toString());
+          startOffset = matcher.start(type.toString());
           List<String> groups = Lists.newArrayList();
           for (int i = 2; i < matcher.groupCount(); i++) {
             if (matcher.group(i) != null && !matcher.group(i).equals(matcher.group())) {
@@ -108,10 +118,20 @@ public class RegularExpressionLexer extends Lexer {
           break;
         }
       }
+
       if (token == null) {
         throw new IllegalStateException("Error in parsing {" + input + "}");
       }
 
+      if (startOffset > 0) {
+        String s = input.substring(lastEnd, startOffset);
+        if (!StringUtils.isNullOrBlank(s)) {
+          throw new IllegalStateException("Error in parsing {" + input + "} unparsed region: " + s);
+        }
+      }
+
+
+      lastEnd = endOffset;
       return token;
     }
 

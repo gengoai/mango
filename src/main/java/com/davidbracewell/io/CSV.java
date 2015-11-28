@@ -65,6 +65,11 @@ public class CSV implements Specification, Serializable {
     return this;
   }
 
+  public CSV hasHeader(boolean hasHeader) {
+    hasHeader = hasHeader;
+    return this;
+  }
+
   public CSV noHeader() {
     hasHeader = false;
     return this;
@@ -170,7 +175,7 @@ public class CSV implements Specification, Serializable {
    * @throws IOException the iO exception
    */
   public CSVReader reader(Resource resource) throws IOException {
-    return reader(resource.openReader());
+    return reader(resource.reader());
   }
 
   /**
@@ -191,7 +196,7 @@ public class CSV implements Specification, Serializable {
    * @throws IOException the iO exception
    */
   public CSVWriter writer(Resource resource) throws IOException {
-    return writer(resource.openWriter());
+    return writer(resource.writer());
   }
 
   /**

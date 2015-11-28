@@ -29,7 +29,7 @@ import java.io.InputStream;
 /**
  * @author David B. Bracewell
  */
-public class InputStreamResource extends Resource {
+public class InputStreamResource extends BaseResource implements ReadOnlyResource, NonTraversableResource {
 
   private static final long serialVersionUID = -4341744444291053097L;
   private final InputStream inputStream;
@@ -44,11 +44,6 @@ public class InputStreamResource extends Resource {
   }
 
   @Override
-  public String resourceDescriptor() {
-    return "";
-  }
-
-  @Override
   public InputStream createInputStream() throws IOException {
     return inputStream;
   }
@@ -57,12 +52,5 @@ public class InputStreamResource extends Resource {
   public boolean exists() {
     return true;
   }
-
-
-  @Override
-  public boolean canRead() {
-    return true;
-  }
-
 
 }//END OF InputStreamResource

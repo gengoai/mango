@@ -104,7 +104,6 @@ public class Parser {
   public Expression next(int precedence) throws ParseException {
     ParserToken token;
     Expression result;
-
     do {
       token = tokenStream.consume();
       if (token == null) {

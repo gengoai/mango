@@ -40,14 +40,16 @@ public class GuavaCacheEngine implements CacheEngine {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public <K, V> Cache<K, V> create(@NonNull CacheSpec<K, V> cacheSpec) {
     CacheBuilder<K, V> builder = cacheBuilderFromSpec(cacheSpec);
     if (cacheSpec.getLoadingFunction() == null) {
       return new GuavaCache<>(cacheSpec.getName(), builder);
     }
-    return null;
+    return new GuavaLoadingCache<>(cacheSpec.getName(), builder, cacheSpec.getLoadingFunction());
   }
 
+  @SuppressWarnings("unchecked")
   private <K, V> CacheBuilder<K, V> cacheBuilderFromSpec(CacheSpec<K, V> specification) {
     CacheBuilder cacheBuilder = CacheBuilder.newBuilder();
     if (specification.getMaxSize() > 0) {

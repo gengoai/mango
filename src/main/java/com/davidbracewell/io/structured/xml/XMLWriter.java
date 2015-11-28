@@ -74,7 +74,7 @@ public class XMLWriter extends StructuredWriter {
       Preconditions.checkArgument(!Strings.isNullOrEmpty(documentTag));
       stack = new Stack<>();
       this.documentTag = documentTag;
-      this.os = resource.openOutputStream();
+      this.os = resource.outputStream();
       this.writer = XMLOutputFactory.newFactory().createXMLStreamWriter(os, "UTF-8");
     } catch (Exception e) {
       throw new StructuredIOException(e);

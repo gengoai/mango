@@ -26,7 +26,6 @@ import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.csv.CSVReader;
 import com.davidbracewell.string.StringUtils;
-import com.davidbracewell.tuple.Tuple3;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
@@ -65,7 +64,8 @@ import java.util.Map;
  * keys. Some methods, such as {@link #prefixMap(Object)} are suited only
  * to variable length keys.
  *
- * @version $Id: PatriciaTrie.java 1543928 2013-11-20 20:15:35Z tn $
+ * @param <E> the type parameter
+ * @version $Id : PatriciaTrie.java 1543928 2013-11-20 20:15:35Z tn $
  * @see <a href="http://en.wikipedia.org/wiki/Radix_tree">Radix Tree</a>
  * @see <a href="http://www.csse.monash.edu.au/~lloyd/tildeAlgDS/Tree/PATRICIA">PATRICIA</a>
  * @see <a href="http://www.imperialviolet.org/binary/critbit.pdf">Crit-Bit Tree</a>
@@ -75,14 +75,28 @@ public class PatriciaTrie<E> extends AbstractPatriciaTrie<String, E> {
 
   private static final long serialVersionUID = 4446367780901817838L;
 
+  /**
+   * Instantiates a new Patricia trie.
+   */
   public PatriciaTrie() {
     super(new StringKeyAnalyzer());
   }
 
+  /**
+   * Instantiates a new Patricia trie.
+   *
+   * @param m the m
+   */
   public PatriciaTrie(final Map<? extends String, ? extends E> m) {
     super(new StringKeyAnalyzer(), m);
   }
 
+  /**
+   * Instantiates a new Patricia trie.
+   *
+   * @param m      the m
+   * @param suffix the suffix
+   */
   protected PatriciaTrie(final Map<? extends String, ? extends E> m, boolean suffix) {
     super(new StringKeyAnalyzer(), m);
   }
@@ -98,10 +112,11 @@ public class PatriciaTrie<E> extends AbstractPatriciaTrie<String, E> {
   /**
    * <p>Constructs a trie from a csv file where the first column is the string and the second column is the value.</p>
    *
+   * @param <V>       the type parameter
    * @param resource  The csv resource
    * @param valueType Class information for the value
    * @return A <code>ByteTrie</code> from the csv
-   * @throws java.io.IOException Something went wrong loading the csv file
+   * @throws IOException the io exception
    */
   public static <V> PatriciaTrie<V> loadCSV(Resource resource, Class<V> valueType) throws IOException {
     return loadCSV(resource, valueType, Functions.<String>identity());
@@ -110,11 +125,12 @@ public class PatriciaTrie<E> extends AbstractPatriciaTrie<String, E> {
   /**
    * <p>Constructs a trie from a csv file where the first column is the string and the second column is the value.</p>
    *
+   * @param <V>          the type parameter
    * @param resource     The csv resource
    * @param valueType    Class information for the value
    * @param keyTransform function to transform the keys in some fashion, e.g. lower case
    * @return A <code>ByteTrie</code> from the csv
-   * @throws java.io.IOException Something went wrong loading the csv file
+   * @throws IOException the io exception
    */
   @SuppressWarnings("unchecked")
   public static <V> PatriciaTrie<V> loadCSV(Resource resource, Class<V> valueType, Function<String, String> keyTransform) throws IOException {
@@ -145,7 +161,7 @@ public class PatriciaTrie<E> extends AbstractPatriciaTrie<String, E> {
    * @param text The text to search in
    * @return A list of Tuple3s indicating <code>[start, end)</code> and the value associated with the match.
    */
-  public List<Tuple3<Integer, Integer, E>> findOccurrencesIn(String text) {
+  public List<TrieMatch<E>> findOccurrencesIn(String text) {
     return findOccurrencesIn(text, false, StringUtils.NOT_LETTER_OR_DIGIT);
   }
 
@@ -157,7 +173,7 @@ public class PatriciaTrie<E> extends AbstractPatriciaTrie<String, E> {
    * @param prefixMatch True if allow prefix matches
    * @return A list of Tuple3s indicating <code>[start, end)</code> and the value associated with the match.
    */
-  public List<Tuple3<Integer, Integer, E>> findOccurrencesIn(String text, boolean prefixMatch) {
+  public List<TrieMatch<E>> findOccurrencesIn(String text, boolean prefixMatch) {
     return findOccurrencesIn(text, prefixMatch, StringUtils.NOT_LETTER_OR_DIGIT);
   }
 
@@ -169,8 +185,8 @@ public class PatriciaTrie<E> extends AbstractPatriciaTrie<String, E> {
    * @param matcher     The character matcher to use to mark end of word
    * @return A list of Tuple3s indicating <code>[start, end)</code> and the value associated with the match.
    */
-  public List<Tuple3<Integer, Integer, E>> findOccurrencesIn(String text, boolean prefixMatch, CharMatcher matcher) {
-    List<Tuple3<Integer, Integer, E>> rval = Lists.newArrayList();
+  public List<TrieMatch<E>> findOccurrencesIn(String text, boolean prefixMatch, CharMatcher matcher) {
+    List<TrieMatch<E>> rval = Lists.newArrayList();
 
     int len = text.length();
     StringBuilder key = new StringBuilder();
@@ -201,7 +217,7 @@ public class PatriciaTrie<E> extends AbstractPatriciaTrie<String, E> {
               key.append(text.charAt(i));
             }
           }
-          rval.add(Tuple3.of(start, i + 1, value));
+          rval.add(new TrieMatch<>(start, i + 1, value));
           start = i + 1;
           continue;
         }
@@ -215,7 +231,7 @@ public class PatriciaTrie<E> extends AbstractPatriciaTrie<String, E> {
           if (nextI >= len || prefixMatch || matcher.matches(text.charAt(nextI))) {
             key = new StringBuilder(text.substring(start, nextI));
             E value = get(key.toString());
-            rval.add(Tuple3.of(start, nextI, value));
+            rval.add(new TrieMatch<>(start, nextI, value));
             i = lastMatch;
             lastMatch = -1;
           }

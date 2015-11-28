@@ -21,19 +21,20 @@
 
 package com.davidbracewell.io.resource;
 
-import com.davidbracewell.io.resource.spi.StringResourceProvider;
-import com.google.common.base.Charsets;
-import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
+import com.davidbracewell.stream.MStream;
+import com.davidbracewell.stream.Streams;
+import lombok.EqualsAndHashCode;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 /**
  * <p> A resource that wraps a String. </p>
  *
  * @author David B. Bracewell
  */
-public class StringResource extends Resource {
+@EqualsAndHashCode(callSuper = true)
+public class StringResource extends BaseResource implements NonTraversableResource {
 
   private static final long serialVersionUID = 8750046186020559958L;
   private final StringBuilder resource;
@@ -60,35 +61,14 @@ public class StringResource extends Resource {
   }
 
   @Override
-  public void append(String content) throws IOException {
-    Preconditions.checkNotNull(content);
-    this.resource.append(content);
+  public Resource append(String content) throws IOException {
+    resource.append(content);
+    return this;
   }
 
   @Override
-  public String resourceDescriptor() {
-    return StringResourceProvider.PROTOCOL + ":";
-  }
-
-  @Override
-  public boolean canWrite() {
-    return true;
-  }
-
-  @Override
-  public boolean canRead() {
-    return true;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (o == null) {
-      return false;
-    }
-    if (o == this) {
-      return true;
-    }
-    return o instanceof StringResource && Objects.equal(resource, ((StringResource) o).resource);
+  public Resource append(byte[] byteArray) throws IOException {
+    return append(byteArray == null ? null : new String(byteArray, getCharset()));
   }
 
   @Override
@@ -97,22 +77,20 @@ public class StringResource extends Resource {
   }
 
   @Override
-  public int hashCode() {
-    return resource.hashCode();
+  public MStream<String> lines() throws IOException {
+    return Streams.of(false, resource.toString().split("\r?\n"));
   }
 
   @Override
-  public InputStream createInputStream() throws IOException {
-    return new ByteArrayInputStream(resource.toString().getBytes(Charsets.UTF_8));
+  protected InputStream createInputStream() throws IOException {
+    return new ByteArrayInputStream(resource.toString().getBytes(StandardCharsets.UTF_8));
   }
 
   @Override
-  public OutputStream createOutputStream() throws IOException {
+  protected OutputStream createOutputStream() throws IOException {
     this.resource.setLength(0);
     return new OutputStream() {
-
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
 
       @Override
       public void write(int b) throws IOException {
@@ -127,11 +105,6 @@ public class StringResource extends Resource {
         baos.close();
       }
     };
-  }
-
-  @Override
-  public String toString() {
-    return resource.toString();
   }
 
 }// END OF StringResource

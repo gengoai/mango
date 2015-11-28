@@ -66,7 +66,7 @@ public class JSONReader extends StructuredReader {
    */
   public JSONReader(Resource resource) throws StructuredIOException {
     try {
-      this.reader = new JsonReader(resource.openReader());
+      this.reader = new JsonReader(resource.reader());
       consume();
     } catch (IOException e) {
       throw new StructuredIOException(e);
@@ -253,7 +253,7 @@ public class JSONReader extends StructuredReader {
 
     Gson gson = new Gson();
     String name = currentValue.getValue().asString();
-    if (!name.equals(clazz.getName())) {
+    if (!name.equals(clazz.getName()) && !name.equals(clazz.getSimpleName())) {
       throw new StructuredIOException("Expected type:" + clazz.getName() + " found:" + name);
     }
     T object = gson.fromJson(reader, clazz);

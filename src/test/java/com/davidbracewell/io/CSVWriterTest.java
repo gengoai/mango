@@ -50,12 +50,15 @@ public class CSVWriterTest {
       writer.write(Arrays.asList("4", "5", "6"));
       writer.write(Arrays.asList("7", "8", "9").iterator());
       writer.write(map);
+      writer.writeMapAsOneRow(map, ':');
     }
 
     try (CSVReader reader = CSV.builder().delimiter('\t').reader(r)) {
       assertArrayEquals(new String[]{"1\"\t", "2", "3"}, reader.nextRow().toArray(new String[3]));
       assertArrayEquals(new String[]{"4", "5", "6"}, reader.nextRow().toArray(new String[3]));
       assertArrayEquals(new String[]{"7", "8", "9"}, reader.nextRow().toArray(new String[3]));
+      assertArrayEquals(new String[]{"A", "1"}, reader.nextRow().toArray(new String[2]));
+      assertArrayEquals(new String[]{"B", "2"}, reader.nextRow().toArray(new String[2]));
       assertArrayEquals(new String[]{"A:1", "B:2"}, reader.nextRow().toArray(new String[2]));
     }
 
@@ -65,12 +68,15 @@ public class CSVWriterTest {
       writer.write(Arrays.asList("4", "5", "6"));
       writer.write(Arrays.asList("7", "8", "9").iterator());
       writer.write(map);
+      writer.writeMapAsOneRow(map, ':');
     }
 
     try (CSVReader reader = CSV.builder().reader(r)) {
       assertArrayEquals(new String[]{"1\"\t", "2", "3"}, reader.nextRow().toArray(new String[3]));
       assertArrayEquals(new String[]{"4", "5", "6"}, reader.nextRow().toArray(new String[3]));
       assertArrayEquals(new String[]{"7", "8", "9"}, reader.nextRow().toArray(new String[3]));
+      assertArrayEquals(new String[]{"A", "1"}, reader.nextRow().toArray(new String[2]));
+      assertArrayEquals(new String[]{"B", "2"}, reader.nextRow().toArray(new String[2]));
       assertArrayEquals(new String[]{"A:1", "B:2"}, reader.nextRow().toArray(new String[2]));
     }
   }

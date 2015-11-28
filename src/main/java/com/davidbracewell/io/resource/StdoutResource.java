@@ -21,8 +21,6 @@
 
 package com.davidbracewell.io.resource;
 
-import com.davidbracewell.io.resource.spi.StdoutResourceProvider;
-
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -30,19 +28,12 @@ import java.io.OutputStream;
 /**
  * @author David B. Bracewell
  */
-public class StdoutResource extends Resource {
-
-
-  private static final long serialVersionUID = -7661077345692314792L;
+public class StdoutResource extends BaseResource implements NonTraversableResource, WriteOnlyResource {
+  private static final long serialVersionUID = 1L;
 
   @Override
   public OutputStream createOutputStream() throws IOException {
     return new BufferedOutputStream(System.out);
-  }
-
-  @Override
-  public String resourceDescriptor() {
-    return StdoutResourceProvider.PROTOCOL + ":";
   }
 
   @Override
@@ -51,9 +42,11 @@ public class StdoutResource extends Resource {
   }
 
   @Override
-  public boolean canWrite() {
-    return true;
+  public Resource append(byte[] byteArray) throws IOException {
+    try (OutputStream os = createOutputStream()) {
+      os.write(byteArray);
+    }
+    return this;
   }
-
 
 }//END OF StdoutResource

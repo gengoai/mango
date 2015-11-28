@@ -24,7 +24,6 @@ package com.davidbracewell.conversion;
 import com.davidbracewell.logging.Logger;
 import com.google.common.base.Function;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -101,9 +100,9 @@ public final class NumberConverter {
    * Converts an object into a BOOLEAN
    */
   public static final Function<Object, Boolean> BOOLEAN = new Function<Object, Boolean>() {
-    @Nullable
+    
     @Override
-    public Boolean apply(@Nullable Object input) {
+    public Boolean apply( Object input) {
       if (input == null) {
         return null;
       } else if (input instanceof Boolean) {

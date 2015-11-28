@@ -49,7 +49,7 @@ public class AsyncWriterTest {
   public void testWriter() throws Exception {
     Resource string = Resources.fromString("");
     List<String> list = randomList();
-    try (final AsyncWriter writer = new AsyncWriter(string.openWriter())) {
+    try (final AsyncWriter writer = new AsyncWriter(string.writer())) {
       list.parallelStream().forEach((s -> {
         try {
           writer.write(s + "\n");

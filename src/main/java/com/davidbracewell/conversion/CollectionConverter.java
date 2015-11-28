@@ -28,7 +28,6 @@ import com.davidbracewell.logging.Logger;
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
@@ -44,9 +43,9 @@ public final class CollectionConverter {
    * Converts an object to an iterable. Will only return null if the input is null
    */
   public static final Function<Object, Iterable<?>> ITERABLE = new Function<Object, Iterable<?>>() {
-    @Nullable
+    
     @Override
-    public Iterable<?> apply(@Nullable Object object) {
+    public Iterable<?> apply( Object object) {
       if (object == null) {
         return Collections.emptyList();
       } else if (object instanceof Iterable<?>) {
@@ -88,9 +87,9 @@ public final class CollectionConverter {
    */
   public static Function<Object, Collection<?>> COLLECTION(final Class<? extends Collection> collectionType) {
     return new Function<Object, Collection<?>>() {
-      @Nullable
+      
       @Override
-      public Collection<?> apply(@Nullable Object input) {
+      public Collection<?> apply( Object input) {
         if (input == null) {
           return null;
         } else if (collectionType == null) {
@@ -128,9 +127,9 @@ public final class CollectionConverter {
    */
   public static <T> Function<Object, Collection<T>> COLLECTION(final Class<? extends Collection> collectionType, final Class<T> componentType) {
     return new Function<Object, Collection<T>>() {
-      @Nullable
+      
       @Override
-      public Collection<T> apply(@Nullable Object input) {
+      public Collection<T> apply( Object input) {
         if (input == null) {
           return null;
         } else if (collectionType == null) {

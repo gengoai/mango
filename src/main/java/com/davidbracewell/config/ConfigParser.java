@@ -61,7 +61,7 @@ class ConfigParser extends Parser {
     public ParserTokenStream lex(final Resource input) throws IOException {
       return new ParserTokenStream(
           new Iterator<ParserToken>() {
-            final ConfigTokenizer backing = new ConfigTokenizer(input.openReader());
+            final ConfigTokenizer backing = new ConfigTokenizer(input.reader());
             ParserToken next = null;
 
             @Override
@@ -109,7 +109,7 @@ class ConfigParser extends Parser {
   public ConfigParser(Resource config, Config.ConfigPropertySetter propertySetter) throws IOException {
     super(CONFIG_GRAMMAR, CONFIG_LEXER.lex(config));
     this.propertySetter = propertySetter;
-    this.resourceName = config.resourceDescriptor();
+    this.resourceName = config.descriptor();
   }
 
   private void importScript(String script) {
@@ -147,7 +147,17 @@ class ConfigParser extends Parser {
   }
 
   private void setProperty(PrefixExpression assignment, String section) {
-    String key = section + assignment.operator.text;
+    String key = section;
+
+    if( assignment.operator.text.equals("_")){
+      if( StringUtils.isNullOrBlank(section)){
+        throw new IllegalStateException("Trying to set a non-section value using the \"_\" property.");
+      }
+      key  = section.substring(0,section.length()-1);
+    } else {
+      key = section + assignment.operator.text;
+    }
+
     String value = assignment.right.as(ValueExpression.class).value;
 
     //unescape things
@@ -173,11 +183,11 @@ class ConfigParser extends Parser {
 
         if (exp.match(ConfigTokenizer.ConfigTokenType.IMPORT)) {
 
-          importConfig(exp.as(PrefixExpression.class).right.toString());
+          importConfig(exp.as(PrefixExpression.class).right.toString().trim());
 
         } else if (exp.match(ConfigTokenizer.ConfigTokenType.SCRIPT)) {
 
-          importScript(exp.as(PrefixExpression.class).right.toString());
+          importScript(exp.as(PrefixExpression.class).right.toString().trim());
 
         } else if (exp.match(ConfigTokenizer.ConfigTokenType.APPEND_PROPERTY)) {
 

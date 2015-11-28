@@ -21,16 +21,31 @@
 
 package com.davidbracewell.tuple;
 
+import lombok.NonNull;
+
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.function.Function;
 
 /**
+ * A tuple is a collection of values of possibly different types.
+ *
  * @author David B. Bracewell
  */
 public interface Tuple extends Iterable<Object> {
 
+  /**
+   * The number of items in the tuple
+   *
+   * @return the number of items in the tuple
+   */
   int degree();
 
+  /**
+   * The tuple as an array of objects
+   *
+   * @return an array representing the items in the tuple
+   */
   Object[] array();
 
   @Override
@@ -39,48 +54,86 @@ public interface Tuple extends Iterable<Object> {
   }
 
   /**
-   * Tuple triple.
+   * Map r.
    *
-   * @param <F>    the type parameter
-   * @param <S>    the type parameter
-   * @param <T>    the type parameter
-   * @param first  the first
-   * @param second the second
-   * @param third  the third
-   * @return the triple
+   * @param <R>      the type parameter
+   * @param function the function
+   * @return the r
    */
-  static <F, S, T> Tuple3<F, S, T> tuple(F first, S second, T third) {
-    return Tuple3.of(first, second, third);
+  default <R> R map(@NonNull Function<Tuple, R> function) {
+    return function.apply(this);
   }
 
   /**
-   * Tuple tuple 4.
+   * Get object.
    *
-   * @param <F>    the type parameter
-   * @param <S>    the type parameter
-   * @param <T>    the type parameter
-   * @param <D>    the type parameter
-   * @param first  the first
-   * @param second the second
-   * @param third  the third
-   * @param fourth the fourth
-   * @return the tuple 4
+   * @param index the index
+   * @return the object
    */
-  static <F, S, T, D> Tuple4<F, S, T, D> tuple(F first, S second, T third, D fourth) {
-    return Tuple4.of(first, second, third, fourth);
+  default Object get(int index) {
+    return array()[index];
   }
 
   /**
-   * Tuple pair.
+   * Shift left tuple.
    *
-   * @param <F>    the type parameter
-   * @param <S>    the type parameter
-   * @param first  the first
-   * @param second the second
-   * @return the pair
+   * @return the tuple
    */
-  static <F, S> Tuple2<F, S> tuple(F first, S second) {
-    return Tuple2.of(first, second);
+  default Tuple shiftLeft() {
+    if (degree() < 2) {
+      return Tuple0.INSTANCE;
+    }
+    Object[] copy = new Object[degree() - 1];
+    System.arraycopy(array(), 1, copy, 0, copy.length);
+    return NTuple.of(copy);
+  }
+
+  /**
+   * Shift right tuple.
+   *
+   * @return the tuple
+   */
+  default Tuple shiftRight() {
+    if (degree() < 2) {
+      return Tuple0.INSTANCE;
+    }
+    Object[] copy = new Object[degree() - 1];
+    System.arraycopy(array(), 0, copy, 0, copy.length);
+    return NTuple.of(copy);
+  }
+
+  /**
+   * Append right tuple.
+   *
+   * @param <T>    the type parameter
+   * @param object the object
+   * @return the tuple
+   */
+  default <T> Tuple appendRight(T object) {
+    if (degree() == 0) {
+      return Tuple1.of(object);
+    }
+    Object[] copy = new Object[degree() + 1];
+    System.arraycopy(array(), 0, copy, 0, degree());
+    copy[copy.length - 1] = object;
+    return NTuple.of(copy);
+  }
+
+  /**
+   * Append left tuple.
+   *
+   * @param <T>    the type parameter
+   * @param object the object
+   * @return the tuple
+   */
+  default <T> Tuple appendLeft(T object) {
+    if (degree() == 0) {
+      return Tuple1.of(object);
+    }
+    Object[] copy = new Object[degree() + 1];
+    System.arraycopy(array(), 0, copy, 1, degree());
+    copy[0] = object;
+    return NTuple.of(copy);
   }
 
 

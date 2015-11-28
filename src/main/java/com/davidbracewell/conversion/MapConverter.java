@@ -22,12 +22,12 @@
 package com.davidbracewell.conversion;
 
 import com.davidbracewell.collection.Collect;
+import com.davidbracewell.function.Serialized;
 import com.davidbracewell.logging.Logger;
 import com.davidbracewell.reflection.Reflect;
 import com.davidbracewell.reflection.ReflectionException;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -35,6 +35,7 @@ import com.google.common.collect.Iterables;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * <p> Converts an <code>Object</code> to a <code>Map</code>. </p> <p> If the object is a collection, array, iterator,
@@ -61,9 +62,7 @@ public class MapConverter<K, V, T extends Map<K, V>> implements Function<Object,
     Preconditions.checkArgument(Map.class.isAssignableFrom(mapClass), "Must specify a class that implements Map.");
     this.keyConverter = keyConverter;
     this.valueConverter = valueConverter;
-    this.mapSupplier = new Supplier<T>() {
-      @Override
-      public T get() {
+    this.mapSupplier = Serialized.<T>supplier(() -> {
         if (BiMap.class.equals(mapClass)) {
           return Cast.as(HashBiMap.create());
         } else if (Map.class.equals(mapClass)) {
@@ -75,10 +74,11 @@ public class MapConverter<K, V, T extends Map<K, V>> implements Function<Object,
           throw Throwables.propagate(e);
         }
       }
-    };
+    );
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public T apply(Object obj) {
     if (obj == null) {
       return null;
@@ -104,15 +104,15 @@ public class MapConverter<K, V, T extends Map<K, V>> implements Function<Object,
       Map.Entry<?, ?> e = Cast.as(obj);
       map.put(keyConverter.apply(e.getKey()), valueConverter.apply(e.getValue()));
       return map;
-    } else if( obj instanceof Iterable){
-        Object o = Iterables.getFirst(Cast.as(obj, Iterable.class),null);
-        if( o != null && o instanceof Map.Entry){
-          for( Object inner : Cast.as(obj,Iterable.class) ){
-            Map.Entry<?, ?> e = Cast.as(inner);
-            map.put(keyConverter.apply(e.getKey()), valueConverter.apply(e.getValue()));
-          }
-          return map;
+    } else if (obj instanceof Iterable) {
+      Object o = Iterables.getFirst(Cast.as(obj, Iterable.class), null);
+      if (o != null && o instanceof Map.Entry) {
+        for (Object inner : Cast.as(obj, Iterable.class)) {
+          Map.Entry<?, ?> e = Cast.as(inner);
+          map.put(keyConverter.apply(e.getKey()), valueConverter.apply(e.getValue()));
         }
+        return map;
+      }
     }
 
     try {

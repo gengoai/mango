@@ -24,20 +24,33 @@ package com.davidbracewell.application;
 
 import javafx.stage.Stage;
 
+import java.util.List;
+
 /**
  * The type Java fX application.
+ *
  * @author David B. Bracewell
  */
 public abstract class JavaFXApplication extends javafx.application.Application implements Application {
 
   private static final long serialVersionUID = 1L;
+  private final String applicationName;
   private String[] nonNamedArguments;
   private String[] allArgs;
   private Stage stage;
 
+  public JavaFXApplication(String applicationName) {
+    this.applicationName = applicationName;
+  }
+
   @Override
   public final String[] getOtherArguments() {
     return nonNamedArguments;
+  }
+
+  @Override
+  public final void setOtherArguments(String[] otherArguments) {
+    this.nonNamedArguments = otherArguments;
   }
 
   @Override
@@ -51,21 +64,27 @@ public abstract class JavaFXApplication extends javafx.application.Application i
   }
 
   @Override
-  public final void setOtherArguments(String[] otherArguments) {
-    this.nonNamedArguments = otherArguments;
+  public final void run(String[] args) {
+    Application.super.run(args);
   }
 
   @Override
-  public final void run(String[] args) {
-    Application.super.run(args);
+  public String getName() {
+    return applicationName;
   }
 
   @Override
   public final void start(Stage primaryStage) throws Exception {
     primaryStage.setTitle(getName());
     this.stage = primaryStage;
-    run(getParameters().getRaw().toArray(new String[1]));
+    List<String> parameters = getParameters().getRaw();
+    if (parameters == null) {
+      run(new String[0]);
+    } else {
+      run(parameters.toArray(new String[parameters.size()]));
+    }
   }
+
 
   /**
    * Gets stage.

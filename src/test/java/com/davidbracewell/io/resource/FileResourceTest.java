@@ -44,20 +44,22 @@ public class FileResourceTest {
   @Test
   public void testAsFile() throws Exception {
     File tempFile = Files.createTempDir();
-    assertEquals(tempFile,Resources.fromFile(tempFile).asFile());
+    assertEquals(tempFile, Resources.fromFile(tempFile).asFile().get());
   }
 
   @Test
   public void testAsURL() throws Exception {
     File tempFile = Files.createTempDir();
-    assertEquals(tempFile.toURI().toURL(), Resources.fromFile(tempFile).asURL());
+    assertEquals(tempFile.toURI().toURL(), Resources.fromFile(tempFile).asURL().get());
   }
 
   @Test
   public void testCanReadAndWrite() throws Exception {
     tempDir.delete(true);
     assertFalse(tempDir.canRead());
-    assertFalse(tempDir.canWrite());
+    assertTrue(tempDir.canWrite());
+
+
 
     tempDir.mkdirs();
     assertTrue(tempDir.canRead());
@@ -86,7 +88,7 @@ public class FileResourceTest {
     assertEquals("test.txt", file.baseName());
     assertEquals(Resources.fromFile("/home/test"), file.getParent());
     assertEquals("/home/test/test.txt", file.path());
-    assertEquals("file:/home/test/test.txt", file.resourceDescriptor());
+    assertEquals("file:/home/test/test.txt", file.descriptor());
   }
 
   @Test
@@ -102,15 +104,14 @@ public class FileResourceTest {
     tempFile.append("\nSecond Line");
 
     int i = 0;
-    for( String line : tempFile){
-      if(i == 0){
-        assertEquals("This is output. This a second",line);
+    for (String line : tempFile.readLines()) {
+      if (i == 0) {
+        assertEquals("This is output. This a second", line);
       } else {
         assertEquals("Second Line", line.trim());
       }
       i++;
     }
-
 
 
   }

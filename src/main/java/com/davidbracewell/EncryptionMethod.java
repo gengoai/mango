@@ -42,7 +42,6 @@ import java.util.Base64;
  * @author David B. Bracewell
  */
 public enum EncryptionMethod {
-
   AES("AES", 16),
   DES("DES", 16) {
     protected Cipher constructCipher(byte[] key, int mode) {

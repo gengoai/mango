@@ -117,5 +117,14 @@ public class Tuple4<A, B, C, D> implements Tuple, Serializable, Comparable<Tuple
     return "(" + v1 + ", " + v2 + "," + v3 + "," + v4 + ")";
   }
 
+  @Override
+  public Tuple3<B, C, D> shiftLeft() {
+    return Tuple3.of(v2, v3, v4);
+  }
+
+  @Override
+  public Tuple3<A, B, C> shiftRight() {
+    return Tuple3.of(v1, v2, v3);
+  }
 
 }//END OF Tuple2

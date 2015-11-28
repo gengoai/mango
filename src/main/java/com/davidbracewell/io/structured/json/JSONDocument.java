@@ -56,7 +56,7 @@ public class JSONDocument extends JSONElement implements StructuredDocument {
   @Override
   public void read(Resource resource) throws StructuredIOException {
     try {
-      JsonElement element = new JsonParser().parse(resource.openReader());
+      JsonElement element = new JsonParser().parse(resource.reader());
       setNode(element);
     } catch (IOException e) {
       throw new StructuredIOException(e);

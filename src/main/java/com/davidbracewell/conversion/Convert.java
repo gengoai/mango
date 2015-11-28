@@ -26,7 +26,6 @@ import com.davidbracewell.logging.Logger;
 import com.google.common.base.Defaults;
 import com.google.common.base.Function;
 
-import javax.annotation.Nullable;
 import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -154,17 +153,12 @@ public final class Convert {
   /**
    * Gets a converter for a given class
    *
+   * @param <T>   the type parameter
    * @param clazz The class to convert to
    * @return A converter
    */
   public static <T> Function<Object, T> getConverter(final Class<T> clazz) {
-    return new Function<Object, T>() {
-      @Nullable
-      @Override
-      public T apply(Object input) {
-        return Convert.convert(input, clazz);
-      }
-    };
+    return object -> Convert.convert(object, clazz);
   }
 
 
@@ -176,8 +170,8 @@ public final class Convert {
    * @param desiredType the desired type
    * @return the t
    */
+  @SuppressWarnings("unchecked")
   public static <T> T convert(Object object, Class<T> desiredType) {
-    // null == null
     if (object == null) {
       if (desiredType != null && desiredType.isPrimitive()) {
         return Defaults.defaultValue(desiredType);
@@ -185,8 +179,8 @@ public final class Convert {
       return null;
     }
 
-    if( object instanceof Val ){
-      return convert(Cast.as(object,Val.class).get(),desiredType);
+    if (object instanceof Val) {
+      return convert(Cast.as(object, Val.class).get(), desiredType);
     }
 
     if (desiredType == null) {
@@ -244,6 +238,7 @@ public final class Convert {
    * @param valueClass the value class
    * @return the mAP
    */
+  @SuppressWarnings("unchecked")
   public static <KEY, VALUE, MAP extends Map<KEY, VALUE>> MAP convert(Object object, Class<?> mapClass, Class<KEY> keyClass, Class<VALUE> valueClass) {
     return Cast.as(new MapConverter<>(getConverter(keyClass), getConverter(valueClass), mapClass).apply(object));
   }
@@ -259,6 +254,7 @@ public final class Convert {
    * @param componentClass  the component class
    * @return the c
    */
+  @SuppressWarnings("unchecked")
   public static <T, C extends Collection<T>> C convert(Object object, Class<?> collectionClass, Class<T> componentClass) {
     if (collectionClass == null || !Collection.class.isAssignableFrom(collectionClass)) {
       log.fine("{0} does not extend collection.", collectionClass);

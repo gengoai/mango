@@ -26,6 +26,7 @@ import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.structured.csv.CSVReader;
 import com.davidbracewell.string.StringUtils;
+import com.davidbracewell.tuple.Tuple2;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -40,11 +41,11 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Array;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BinaryOperator;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Static methods for working with collections and iterables.
@@ -53,24 +54,67 @@ import java.util.stream.Stream;
  */
 public interface Collect {
 
+  /**
+   * From stream.
+   *
+   * @param <T>      the type parameter
+   * @param iterator the iterator
+   * @return the stream
+   */
+  static <T> Stream<T> from(Iterator<T> iterator) {
+    if (iterator == null) {
+      return Collections.<T>emptyList().stream();
+    }
+    return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);
+  }
+
+  /**
+   * From stream.
+   *
+   * @param <T>      the type parameter
+   * @param iterable the iterable
+   * @return the stream
+   */
+  static <T> Stream<T> from(Iterable<T> iterable) {
+    if (iterable == null) {
+      return Collections.<T>emptyList().stream();
+    }
+    return StreamSupport.stream(iterable.spliterator(), false);
+  }
+
+  /**
+   * Paralle from.
+   *
+   * @param <T>      the type parameter
+   * @param iterator the iterator
+   * @return the stream
+   */
+  static <T> Stream<T> parallelFrom(Iterator<T> iterator) {
+    if (iterator == null) {
+      return Collections.<T>emptyList().stream();
+    }
+    return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), true);
+  }
+
+  /**
+   * Paralle from.
+   *
+   * @param <T>      the type parameter
+   * @param iterable the iterable
+   * @return the stream
+   */
+  static <T> Stream<T> parallelFrom(Iterable<T> iterable) {
+    if (iterable == null) {
+      return Collections.<T>emptyList().stream();
+    }
+    return StreamSupport.stream(iterable.spliterator(), true);
+  }
+
   static <K, V> void put(@NonNull Map<K, V> map, Map.Entry<K, V> entry) {
     if (entry != null) {
       map.put(entry.getKey(), entry.getValue());
     }
   }
-
-  static <K, V> Map<K, V> newDefaultHashMap(@NonNull Supplier<V> defaultValueSupplier) {
-    return new DefaultMap<>(new HashMap<>(), defaultValueSupplier);
-  }
-
-  static <K, V> Map<K, V> newDefaultConcurrentHashMap(@NonNull Supplier<V> defaultValueSupplier) {
-    return new DefaultMap<>(new ConcurrentHashMap<>(), defaultValueSupplier);
-  }
-
-  static <K, V> NavigableMap<K, V> newDefaultTreeMap(@NonNull Supplier<V> defaultValueSupplier) {
-    return new DefaultNavigableMap<>(new TreeMap<>(), defaultValueSupplier);
-  }
-
 
   /**
    * Wraps an <code>array</code> as an <code>Iterable</code>
@@ -151,7 +195,7 @@ public interface Collect {
    * @return the optional
    */
   static <T> Optional<T> first(Iterable<T> iterable) {
-    return Streams.from(iterable).findFirst();
+    return from(iterable).findFirst();
   }
 
   /**
@@ -162,7 +206,7 @@ public interface Collect {
    * @return the optional
    */
   static <T> Optional<T> first(Iterator<T> iterator) {
-    return Streams.from(iterator).findFirst();
+    return from(iterator).findFirst();
   }
 
   /**
@@ -180,8 +224,8 @@ public interface Collect {
    */
   static <K, V> Map<K, V> fromString(String input, @NonNull Class<K> keyClass, @NonNull Class<V> valueClass) {
     return fromString(input,
-        Convert.getConverter(keyClass),
-        Convert.getConverter(valueClass)
+      Convert.getConverter(keyClass),
+      Convert.getConverter(valueClass)
     );
   }
 
@@ -206,7 +250,7 @@ public interface Collect {
     Map<K, V> map = Maps.newHashMap();
 
     try (CSVReader reader = CSV.builder().reader(new StringReader(str))) {
-      for (List<String> row : reader) {
+      reader.forEach(row -> {
         row.forEach(cell -> {
           int ci = cell.indexOf(':');
           int ei = cell.indexOf('=');
@@ -216,7 +260,7 @@ public interface Collect {
           String value = keyValuePair.size() > 1 ? keyValuePair.get(1) : null;
           map.put(keyConverter.apply(key), valueConverter.apply(value));
         });
-      }
+      });
     } catch (IOException e) {
       throw Throwables.propagate(e);
     }
@@ -344,9 +388,9 @@ public interface Collect {
     if (iterable == null) {
       return new EnhancedDoubleStatistics();
     }
-    return Streams.from(iterable)
-        .mapToDouble(Number::doubleValue)
-        .collect(EnhancedDoubleStatistics::new, EnhancedDoubleStatistics::accept, EnhancedDoubleStatistics::combine);
+    return from(iterable)
+      .mapToDouble(Number::doubleValue)
+      .collect(EnhancedDoubleStatistics::new, EnhancedDoubleStatistics::accept, EnhancedDoubleStatistics::combine);
   }
 
   /**
@@ -487,10 +531,66 @@ public interface Collect {
       return Collections.emptyList();
     }
     return list.stream()
-        .filter(Objects::nonNull)
-        .flatMap(Streams::from)
-        .collect(Collectors.toList());
+      .filter(Objects::nonNull)
+      .flatMap(Collect::from)
+      .collect(Collectors.toList());
+  }
+
+  /**
+   * Zip stream.
+   *
+   * @param <T>     the type parameter
+   * @param <U>     the type parameter
+   * @param stream1 the stream 1
+   * @param stream2 the stream 2
+   * @return the stream
+   */
+  static <T, U> Stream<Map.Entry<T, U>> zip(@NonNull final Stream<T> stream1, @NonNull final Stream<U> stream2) {
+    if (stream1 == null || stream2 == null) {
+      return Stream.empty();
+    }
+    return zip(stream1.iterator(), stream2.iterator());
+  }
+
+  /**
+   * Zip stream.
+   *
+   * @param <T>       the type parameter
+   * @param <U>       the type parameter
+   * @param iterator1 the iterator 1
+   * @param iterator2 the iterator 2
+   * @return the stream
+   */
+  static <T, U> Stream<Map.Entry<T, U>> zip(@NonNull final Iterator<T> iterator1, @NonNull final Iterator<U> iterator2) {
+    return from(new Iterator<Map.Entry<T, U>>() {
+      @Override
+      public boolean hasNext() {
+        return iterator1.hasNext() && iterator2.hasNext();
+      }
+
+      @Override
+      public Map.Entry<T, U> next() {
+        if (!iterator1.hasNext() || !iterator2.hasNext()) {
+          throw new NoSuchElementException();
+        }
+        return new Tuple2<>(iterator1.next(), iterator2.next());
+      }
+    });
   }
 
 
+  /**
+   * Zip with index.
+   *
+   * @param <T>    the type parameter
+   * @param stream the stream
+   * @return the stream
+   */
+  static <T> Stream<Map.Entry<T, Integer>> zipWithIndex(Stream<T> stream) {
+    if (stream == null) {
+      return Stream.empty();
+    }
+    final AtomicInteger integer = new AtomicInteger();
+    return stream.map(t -> new Tuple2<>(t, integer.getAndIncrement()));
+  }
 }// END OF CollectionUtils

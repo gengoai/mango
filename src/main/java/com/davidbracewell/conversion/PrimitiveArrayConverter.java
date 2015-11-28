@@ -30,7 +30,6 @@ import com.google.common.io.CharStreams;
 import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Chars;
 
-import javax.annotation.Nullable;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.net.URI;
@@ -53,9 +52,9 @@ public final class PrimitiveArrayConverter {
    * The constant BOOLEAN.
    */
   public static final Function<Object, boolean[]> BOOLEAN = new Function<Object, boolean[]>() {
-    @Nullable
+    
     @Override
-    public boolean[] apply(@Nullable Object input) {
+    public boolean[] apply( Object input) {
       if (input == null) {
         return null;
       }
@@ -72,9 +71,9 @@ public final class PrimitiveArrayConverter {
    */
   public static final Function<Object, byte[]> BYTE = new Function<Object, byte[]>() {
 
-    @Nullable
+    
     @Override
-    public byte[] apply(@Nullable Object o) {
+    public byte[] apply( Object o) {
       if (o == null) {
         return null;
       }
@@ -141,9 +140,9 @@ public final class PrimitiveArrayConverter {
    */
   public static final Function<Object, char[]> CHAR = new Function<Object, char[]>() {
 
-    @Nullable
+    
     @Override
-    public char[] apply(@Nullable Object o) {
+    public char[] apply( Object o) {
       if (o == null) {
         return null;
       }
@@ -199,9 +198,9 @@ public final class PrimitiveArrayConverter {
    * The constant DOUBLE.
    */
   public static final Function<Object, double[]> DOUBLE = new Function<Object, double[]>() {
-    @Nullable
+    
     @Override
-    public double[] apply(@Nullable Object input) {
+    public double[] apply( Object input) {
       if (input == null) {
         return null;
       }
@@ -217,9 +216,9 @@ public final class PrimitiveArrayConverter {
    * The constant FLOAT.
    */
   public static final Function<Object, float[]> FLOAT = new Function<Object, float[]>() {
-    @Nullable
+    
     @Override
-    public float[] apply(@Nullable Object input) {
+    public float[] apply( Object input) {
       if (input == null) {
         return null;
       }
@@ -235,9 +234,9 @@ public final class PrimitiveArrayConverter {
    * The constant INT.
    */
   public static final Function<Object, int[]> INT = new Function<Object, int[]>() {
-    @Nullable
+    
     @Override
-    public int[] apply(@Nullable Object input) {
+    public int[] apply( Object input) {
       if (input == null) {
         return null;
       }
@@ -253,9 +252,9 @@ public final class PrimitiveArrayConverter {
    * The constant LONG.
    */
   public static final Function<Object, long[]> LONG = new Function<Object, long[]>() {
-    @Nullable
+    
     @Override
-    public long[] apply(@Nullable Object input) {
+    public long[] apply( Object input) {
       if (input == null) {
         return null;
       }
@@ -271,9 +270,9 @@ public final class PrimitiveArrayConverter {
    * The constant SHORT.
    */
   public static final Function<Object, short[]> SHORT = new Function<Object, short[]>() {
-    @Nullable
+    
     @Override
-    public short[] apply(@Nullable Object input) {
+    public short[] apply( Object input) {
       if (input == null) {
         return null;
       }
