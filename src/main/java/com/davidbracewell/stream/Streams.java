@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * The interface Streams.
@@ -215,6 +216,10 @@ public interface Streams {
   @SuppressWarnings("unchecked")
   static <T> MStream<T> of(@NonNull T... items) {
     return of(Config.get(DISTRIBUTED).asBoolean(false), items);
+  }
+
+  static <T> MStream<T> of(@NonNull Stream<T> stream) {
+    return new JavaMStream<>(stream);
   }
 
 }//END OF Streams
