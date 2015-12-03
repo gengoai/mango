@@ -86,7 +86,7 @@ public class BeanMap extends AbstractMap<String, Object> {
   @Override
   public Set<Entry<String, Object>> entrySet() {
     return this.keySet().stream()
-        .map(key -> Cast.<Map.Entry<String, Object>>as(Tuple2.<String, Object>of(key, get(key))))
+        .map(key -> Cast.<Map.Entry<String, Object>>as(Tuple2.of(key, get(key))))
         .collect(Collectors.toSet());
   }
 
@@ -154,7 +154,6 @@ public class BeanMap extends AbstractMap<String, Object> {
     }
     return null;
   }
-
 
   @Override
   public int size() {

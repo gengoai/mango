@@ -73,6 +73,10 @@ public class JSONReader extends StructuredReader {
     }
   }
 
+  public ElementType getDocumentType() {
+    return jsonTokenToStructuredElement(documentType);
+  }
+
   @Override
   public String beginArray() throws StructuredIOException {
     String name = null;
@@ -292,7 +296,7 @@ public class JSONReader extends StructuredReader {
       ElementType element = jsonTokenToStructuredElement(reader.peek());
       JsonToken token = currentValue.getKey();
       if (token == NAME &&
-          (element == ElementType.BEGIN_OBJECT || element == ElementType.BEGIN_ARRAY)) {
+        (element == ElementType.BEGIN_OBJECT || element == ElementType.BEGIN_ARRAY)) {
         reader.skipValue();
       }
       consume();

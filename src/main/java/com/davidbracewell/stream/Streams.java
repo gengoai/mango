@@ -48,6 +48,112 @@ public interface Streams {
    */
   String DISTRIBUTED = "streams.distributed";
 
+
+  /**
+   * Accumulator m accumulator.
+   *
+   * @return the m accumulator
+   */
+  static MAccumulator accumulator() {
+    return accumulator(null, Config.get(DISTRIBUTED).asBooleanValue(false));
+  }
+
+  /**
+   * Accumulator m accumulator.
+   *
+   * @param name the name
+   * @return the m accumulator
+   */
+  static MAccumulator accumulator(String name) {
+    return accumulator(name, Config.get(DISTRIBUTED).asBooleanValue(false));
+  }
+
+  /**
+   * Accumulator m accumulator.
+   *
+   * @param initialValue the initial value
+   * @return the m accumulator
+   */
+  static MAccumulator accumulator(double initialValue) {
+    return accumulator(null, initialValue, Config.get(DISTRIBUTED).asBooleanValue(false));
+  }
+
+  /**
+   * Accumulator m accumulator.
+   *
+   * @param name         the name
+   * @param initialValue the initial value
+   * @return the m accumulator
+   */
+  static MAccumulator accumulator(String name, double initialValue) {
+    return accumulator(name, initialValue, Config.get(DISTRIBUTED).asBooleanValue(false));
+  }
+
+  /**
+   * Accumulator m accumulator.
+   *
+   * @param name        the name
+   * @param distributed the distributed
+   * @return the m accumulator
+   */
+  static MAccumulator accumulator(String name, boolean distributed) {
+    return accumulator(name, 0d, distributed);
+  }
+
+  /**
+   * Accumulator m accumulator.
+   *
+   * @param initialValue the initial value
+   * @param distributed  the distributed
+   * @return the m accumulator
+   */
+  static MAccumulator accumulator(double initialValue, boolean distributed) {
+    return accumulator(null, initialValue, distributed);
+  }
+
+  /**
+   * Accumulator m accumulator.
+   *
+   * @param distributed the distributed
+   * @return the m accumulator
+   */
+  static MAccumulator accumulator(boolean distributed) {
+    return accumulator(null, 0d, distributed);
+  }
+
+  /**
+   * Accumulator m accumulator.
+   *
+   * @param name         the name
+   * @param initialValue the initial value
+   * @param distributed  the distributed
+   * @return the m accumulator
+   */
+  static MAccumulator accumulator(String name, double initialValue, boolean distributed) {
+    if (distributed) {
+      return new SparkMAccumulator(Spark.context().doubleAccumulator(initialValue, name));
+    }
+    return new JavaMAccumulator(name, initialValue);
+  }
+
+
+  /**
+   * Empty m stream.
+   *
+   * @param <T> the type parameter
+   * @return the m stream
+   */
+  static <T> MStream<T> empty() {
+    return new JavaMStream<>(Stream.empty());
+  }
+
+  /**
+   * Range m stream.
+   *
+   * @param startInclusive the start inclusive
+   * @param endExclusive   the end exclusive
+   * @return the m stream
+   */
   static MStream<Integer> range(int startInclusive, int endExclusive) {
     return new JavaMStream<>(
       IntStream.range(startInclusive, endExclusive).boxed().parallel()
@@ -226,10 +332,23 @@ public interface Streams {
     return of(Config.get(DISTRIBUTED).asBoolean(false), items);
   }
 
+  /**
+   * Of m stream.
+   *
+   * @param <T>    the type parameter
+   * @param stream the stream
+   * @return the m stream
+   */
   static <T> MStream<T> of(@NonNull Stream<T> stream) {
     return new JavaMStream<>(stream);
   }
 
+  /**
+   * Double stream m double stream.
+   *
+   * @param doubleStream the double stream
+   * @return the m double stream
+   */
   static MDoubleStream doubleStream(@NonNull DoubleStream doubleStream) {
     return new JavaDoubleStream(doubleStream);
   }
