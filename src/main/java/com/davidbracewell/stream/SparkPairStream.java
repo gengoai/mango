@@ -142,4 +142,19 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
     return new SparkPairStream<>(rdd.sortByKey(comparator));
   }
 
+  @Override
+  public MPairStream<T, U> parallel() {
+    return this;
+  }
+
+  /**
+   * Gets context.
+   *
+   * @return the context
+   */
+  public JavaSparkContext getContext() {
+    return Spark.context(rdd);
+  }
+
+
 }// END OF SparkPairStream

@@ -49,15 +49,6 @@ public class SparkStream<T> implements MStream<T>, Serializable {
   private final JavaRDD<T> rdd;
 
   /**
-   * Gets rdd.
-   *
-   * @return the rdd
-   */
-  public JavaRDD<T> getRDD() {
-    return rdd;
-  }
-
-  /**
    * Instantiates a new Spark stream.
    *
    * @param rdd the rdd
@@ -74,6 +65,15 @@ public class SparkStream<T> implements MStream<T>, Serializable {
   public SparkStream(List<T> collection) {
     int slices = Math.max(1, collection.size() / Config.get("spark.sliceSize").asIntegerValue(100));
     this.rdd = Spark.context().parallelize(collection, slices);
+  }
+
+  /**
+   * Gets rdd.
+   *
+   * @return the rdd
+   */
+  public JavaRDD<T> getRDD() {
+    return rdd;
   }
 
   /**
@@ -266,5 +266,20 @@ public class SparkStream<T> implements MStream<T>, Serializable {
   @Override
   public void saveAsTextFile(@NonNull String location) {
     rdd.saveAsTextFile(location);
+  }
+
+
+  @Override
+  public MStream<T> parallel() {
+    return this;
+  }
+
+  @Override
+  public MStream<T> shuffle() {
+    return new SparkStream<>(
+      rdd.mapToPair(t -> new Tuple2<>(Math.random(), t))
+        .sortByKey()
+        .map(Tuple2::_2)
+    );
   }
 }//END OF SparkStream

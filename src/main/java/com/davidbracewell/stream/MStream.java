@@ -44,6 +44,29 @@ import java.util.stream.Collector;
 public interface MStream<T> extends AutoCloseable {
 
   /**
+   * Accumulator m accumulator.
+   *
+   * @param name the name
+   * @return the m accumulator
+   */
+  static MAccumulator accumulator(String name, boolean distributed) {
+    return accumulator(name, 0d, distributed);
+  }
+
+  /**
+   * Accumulator m accumulator.
+   *
+   * @param name the name
+   * @return the m accumulator
+   */
+  static MAccumulator accumulator(String name, double initialValue, boolean distributed) {
+    if (distributed) {
+      return new SparkMAccumulator(Spark.context().doubleAccumulator(initialValue, name));
+    }
+    return new JavaMAccumulator(name, initialValue);
+  }
+
+  /**
    * Filter m stream.
    *
    * @param predicate the predicate
@@ -300,7 +323,6 @@ public interface MStream<T> extends AutoCloseable {
    */
   MStream<T> union(MStream<T> other);
 
-
   /**
    * Save as text file.
    *
@@ -308,10 +330,28 @@ public interface MStream<T> extends AutoCloseable {
    */
   void saveAsTextFile(Resource location);
 
-
+  /**
+   * Save as text file.
+   *
+   * @param location the location
+   */
   default void saveAsTextFile(@NonNull String location) {
     saveAsTextFile(Resources.from(location));
   }
+
+  /**
+   * Parallel m stream.
+   *
+   * @return the m stream
+   */
+  MStream<T> parallel();
+
+  /**
+   * Shuffle m stream.
+   *
+   * @return the m stream
+   */
+  MStream<T> shuffle();
 
 
 }//END OF MStream

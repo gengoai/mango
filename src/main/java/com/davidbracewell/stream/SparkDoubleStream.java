@@ -25,6 +25,7 @@ import com.davidbracewell.collection.PrimitiveArrayList;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.function.*;
 import org.apache.spark.api.java.JavaDoubleRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
 
 import java.io.Serializable;
@@ -178,4 +179,20 @@ public class SparkDoubleStream implements MDoubleStream, Serializable {
   public MDoubleStream flatMap(SerializableDoubleFunction<double[]> mapper) {
     return new SparkDoubleStream(doubleStream.flatMapToDouble(d -> new PrimitiveArrayList<>(mapper.apply(d), Double.class)));
   }
+
+  @Override
+  public MDoubleStream parallel() {
+    return this;
+  }
+
+  /**
+   * Gets context.
+   *
+   * @return the context
+   */
+  public JavaSparkContext getContext() {
+    return new JavaSparkContext(doubleStream.context());
+  }
+
+
 }//END OF SparkDoubleStream

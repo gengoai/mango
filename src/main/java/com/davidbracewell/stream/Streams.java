@@ -32,6 +32,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -45,6 +47,12 @@ public interface Streams {
    * The constant DISTRIBUTED.
    */
   String DISTRIBUTED = "streams.distributed";
+
+  static MStream<Integer> range(int startInclusive, int endExclusive) {
+    return new JavaMStream<>(
+      IntStream.range(startInclusive, endExclusive).boxed().parallel()
+    );
+  }
 
   /**
    * Text file m stream.
@@ -220,6 +228,10 @@ public interface Streams {
 
   static <T> MStream<T> of(@NonNull Stream<T> stream) {
     return new JavaMStream<>(stream);
+  }
+
+  static MDoubleStream doubleStream(@NonNull DoubleStream doubleStream) {
+    return new JavaDoubleStream(doubleStream);
   }
 
 }//END OF Streams

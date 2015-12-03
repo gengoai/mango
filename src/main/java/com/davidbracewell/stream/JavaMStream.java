@@ -42,6 +42,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
+ * The type Java m stream.
+ *
+ * @param <T> the type parameter
  * @author David B. Bracewell
  */
 public class JavaMStream<T> implements MStream<T>, Serializable {
@@ -49,23 +52,48 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
 
   private final Stream<T> stream;
 
+  /**
+   * Instantiates a new Java m stream.
+   *
+   * @param items the items
+   */
   @SafeVarargs
   public JavaMStream(@NonNull final T... items) {
     this.stream = Stream.of(items);
   }
 
+  /**
+   * Instantiates a new Java m stream.
+   *
+   * @param stream the stream
+   */
   public JavaMStream(@NonNull final Stream<T> stream) {
     this.stream = stream;
   }
 
+  /**
+   * Instantiates a new Java m stream.
+   *
+   * @param collection the collection
+   */
   public JavaMStream(@NonNull final Collection<T> collection) {
     this.stream = collection.parallelStream();
   }
 
+  /**
+   * Instantiates a new Java m stream.
+   *
+   * @param iterable the iterable
+   */
   public JavaMStream(@NonNull final Iterable<T> iterable) {
     this.stream = Collect.parallelFrom(iterable);
   }
 
+  /**
+   * Instantiates a new Java m stream.
+   *
+   * @param iterator the iterator
+   */
   public JavaMStream(@NonNull final Iterator<? extends T> iterator) {
     this.stream = Collect.parallelFrom(Cast.<Iterator<T>>as(iterator));
   }
@@ -174,6 +202,11 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
     return new JavaMStream<>(stream.skip(n));
   }
 
+  /**
+   * Stream stream.
+   *
+   * @return the stream
+   */
   public Stream<T> stream() {
     return stream;
   }
@@ -261,6 +294,20 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
     } catch (IOException e) {
       throw Throwables.propagate(e);
     }
+  }
+
+  @Override
+  public MStream<T> parallel() {
+    return new JavaMStream<>(stream.parallel());
+  }
+
+  @Override
+  public MStream<T> shuffle() {
+    return new JavaMStream<>(
+      stream.map(t -> Tuple2.of(Math.random(), t))
+        .sorted(Map.Entry.comparingByKey())
+        .map(Tuple2::getValue)
+    );
   }
 
 }//END OF JavaMStream

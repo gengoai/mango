@@ -154,5 +154,9 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U>, Serializable {
     return new JavaMStream<>(stream.map(Map.Entry::getValue));
   }
 
+  @Override
+  public MPairStream<T, U> parallel() {
+    return new JavaMPairStream<>(stream.parallel());
+  }
 
 }//END OF JavaMPairStream

@@ -176,4 +176,11 @@ public interface MPairStream<T, U> extends AutoCloseable {
   MStream<U> values();
 
 
+  /**
+   * Parallel m pair stream.
+   *
+   * @return the m pair stream
+   */
+  MPairStream<T, U> parallel();
+
 }//END OF MPairStream
