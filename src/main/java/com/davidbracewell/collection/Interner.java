@@ -26,8 +26,6 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * <p>Mimics {@link String#intern()} with any object using heap memory.</p>
@@ -51,6 +49,7 @@ public final class Interner<OBJECT> implements Serializable {
     if (object == null) {
       return null;
     }
+    map.putIfAbsent(object, object);
     return map.get(object);
   }
 
