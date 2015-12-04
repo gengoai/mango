@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * @author David B. Bracewell
@@ -156,5 +157,12 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
     return Spark.context(rdd);
   }
 
-
+  @Override
+  public MPairStream<T, U> shuffle(Random random) {
+    return new SparkPairStream<T, U>(
+      rdd.mapToPair(t -> new scala.Tuple2<>(random.nextDouble(), t))
+        .sortByKey()
+        .mapToPair(scala.Tuple2::_2)
+    );
+  }
 }// END OF SparkPairStream

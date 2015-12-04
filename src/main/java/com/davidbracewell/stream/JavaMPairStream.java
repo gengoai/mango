@@ -28,10 +28,7 @@ import com.davidbracewell.tuple.Tuple2;
 import lombok.NonNull;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -159,4 +156,12 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U>, Serializable {
     return new JavaMPairStream<>(stream.parallel());
   }
 
+  @Override
+  public MPairStream<T, U> shuffle(Random random) {
+    return new JavaMPairStream<>(
+      stream.map(t -> Tuple2.of(random.nextDouble(), t))
+        .sorted(Map.Entry.comparingByKey())
+        .map(Tuple2::getValue)
+    );
+  }
 }//END OF JavaMPairStream

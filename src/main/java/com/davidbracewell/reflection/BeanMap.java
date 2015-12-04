@@ -97,7 +97,7 @@ public class BeanMap extends AbstractMap<String, Object> {
       try {
         return m.invoke(bean);
       } catch (Exception e) {
-        log.warn(e);
+        log.finest(e);
       }
     }
     return null;
@@ -150,7 +150,7 @@ public class BeanMap extends AbstractMap<String, Object> {
         log.warn(e);
       }
     } else {
-      log.warn("{0} is not a setter on {1}.", arg0, bean.getClass());
+      log.finest("{0} is not a setter on {1}.", arg0, bean.getClass());
     }
     return null;
   }

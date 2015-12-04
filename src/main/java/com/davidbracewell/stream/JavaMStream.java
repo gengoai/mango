@@ -302,9 +302,9 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
   }
 
   @Override
-  public MStream<T> shuffle() {
+  public MStream<T> shuffle(@NonNull Random random) {
     return new JavaMStream<>(
-      stream.map(t -> Tuple2.of(Math.random(), t))
+      stream.map(t -> Tuple2.of(random.nextDouble(), t))
         .sorted(Map.Entry.comparingByKey())
         .map(Tuple2::getValue)
     );

@@ -21,6 +21,30 @@ public interface MAccumulator {
     decrement(1d);
   }
 
+  default void incrementIf(boolean result) {
+    if (result) {
+      increment(1d);
+    }
+  }
+
+  default void decrementIf(boolean result) {
+    if (result) {
+      decrement(1d);
+    }
+  }
+
+  default void incrementUnless(boolean result) {
+    if (!result) {
+      increment(1d);
+    }
+  }
+
+  default void decrementUnless(boolean result) {
+    if (!result) {
+      decrement(1d);
+    }
+  }
+
   /**
    * Increment.
    *

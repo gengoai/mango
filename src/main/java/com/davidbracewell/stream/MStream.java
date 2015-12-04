@@ -328,7 +328,11 @@ public interface MStream<T> extends AutoCloseable {
    *
    * @return the m stream
    */
-  MStream<T> shuffle();
+  default MStream<T> shuffle() {
+    return shuffle(new Random());
+  }
+
+  MStream<T> shuffle(Random random);
 
 
 }//END OF MStream

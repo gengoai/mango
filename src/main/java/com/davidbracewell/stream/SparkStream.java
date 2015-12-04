@@ -275,9 +275,9 @@ public class SparkStream<T> implements MStream<T>, Serializable {
   }
 
   @Override
-  public MStream<T> shuffle() {
+  public MStream<T> shuffle(@NonNull Random random) {
     return new SparkStream<>(
-      rdd.mapToPair(t -> new Tuple2<>(Math.random(), t))
+      rdd.mapToPair(t -> new Tuple2<>(random.nextDouble(), t))
         .sortByKey()
         .map(Tuple2::_2)
     );
