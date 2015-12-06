@@ -160,9 +160,8 @@ public interface Collect {
   }
 
   /**
-   * <p>Fills a map with an iterable converting the even elements of the iterable to the keys and the odd
-   * elements to the values using the given key and value converters. A null or empty iterable results in an empty map.
-   * </p>
+   * <p>Fills a map with an iterable converting the even elements of the iterable to the keys and the odd elements to
+   * the values using the given key and value converters. A null or empty iterable results in an empty map. </p>
    *
    * @param <K>            The key type
    * @param <V>            The value type
@@ -210,10 +209,10 @@ public interface Collect {
   }
 
   /**
-   * <p>Creates a HashMap from a string converting the keys and values using {@link Convert#getConverter(Class)}.
-   * Empty or null  strings result in an empty Map. The string format should be in csv where the commas separate the
-   * key-value pairs. Keys and values are the separated using either <code>:</code> or <code>=</code> depending on
-   * which one is present and appears first. </p>
+   * <p>Creates a HashMap from a string converting the keys and values using {@link Convert#getConverter(Class)}. Empty
+   * or null  strings result in an empty Map. The string format should be in csv where the commas separate the key-value
+   * pairs. Keys and values are the separated using either <code>:</code> or <code>=</code> depending on which one is
+   * present and appears first. </p>
    *
    * @param <K>        The key type
    * @param <V>        The value type
@@ -429,14 +428,9 @@ public interface Collect {
 
   /**
    * <p>Creates a default instance of the collection type. If the passed in class is an implementation then that
-   * implementation is created using the no-arg constructor.</p>
-   * <table>
-   * <tr><td>Set</td><td>HashSet</td></tr>
-   * <tr><td>List</td><td>ArrayList</td></tr>
-   * <tr><td>Queue</td><td>LinkedList</td></tr>
-   * <tr><td>Deque</td><td>LinkedList</td></tr>
-   * <tr><td>Stack</td><td>Stack</td></tr>
-   * </table>
+   * implementation is created using the no-arg constructor.</p> <table> <tr><td>Set</td><td>HashSet</td></tr>
+   * <tr><td>List</td><td>ArrayList</td></tr> <tr><td>Queue</td><td>LinkedList</td></tr>
+   * <tr><td>Deque</td><td>LinkedList</td></tr> <tr><td>Stack</td><td>Stack</td></tr> </table>
    *
    * @param collectionClass the collection class
    * @return t
@@ -593,4 +587,13 @@ public interface Collect {
     final AtomicInteger integer = new AtomicInteger();
     return stream.map(t -> new Tuple2<>(t, integer.getAndIncrement()));
   }
+
+
+  static <T> List<T> ensureSize(@NonNull List<T> list, int desiredSize, T defaultValue) {
+    while (list.size() <= desiredSize) {
+      list.add(defaultValue);
+    }
+    return list;
+  }
+
 }// END OF CollectionUtils

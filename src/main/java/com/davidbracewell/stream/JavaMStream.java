@@ -146,12 +146,16 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
       return new JavaMStream<>(Stream.<T>empty());
     }
     Random random = new Random();
-    List<T> sample = stream.limit(count).collect(Collectors.toList());
+    List<T> sample = new ArrayList<>();
     AtomicInteger k = new AtomicInteger(count + 1);
-    stream.skip(count).forEach(document -> {
-      int rndIndex = random.nextInt(k.getAndIncrement());
-      if (rndIndex < count) {
-        sample.set(rndIndex, document);
+    stream.forEach(document -> {
+      if (sample.size() < count) {
+        sample.add(document);
+      } else {
+        int rndIndex = random.nextInt(k.getAndIncrement());
+        if (rndIndex < count) {
+          sample.set(rndIndex, document);
+        }
       }
     });
     return new JavaMStream<>(sample.parallelStream());
