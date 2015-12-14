@@ -26,13 +26,17 @@ import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.Element;
 import com.davidbracewell.io.structured.csv.CSVReader;
+import com.davidbracewell.io.structured.csv.CSVWriter;
 import com.davidbracewell.io.structured.json.JSONDocument;
 import com.davidbracewell.tuple.Tuple3;
 import com.google.common.primitives.Doubles;
 import lombok.NonNull;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -87,6 +91,37 @@ public interface MultiCounters {
   @SafeVarargs
   static <K, V> MultiCounter<K, V> newConcurrentMapMultiCounter(Tuple3<K, V, ? extends Number>... triples) {
     return new ConcurrentMapMultiCounter<>(triples);
+  }
+
+  static <K, V> Resource toCSV(@NonNull MultiCounter<K, V> counter, @NonNull Resource resource, @NonNull CSV csv) throws IOException {
+    try (CSVWriter writer = csv.writer(resource)) {
+      Set<String> columns = new TreeSet<>(
+        counter.entries().stream()
+          .map(Tuple3::getV2)
+          .map(o -> Convert.convert(o, String.class))
+          .collect(Collectors.toSet())
+      );
+
+      List<String> header = new LinkedList<>();
+      header.add("Item");
+      header.addAll(columns);
+      writer.write(header);
+
+      for (K key : counter.items()) {
+        List<String> row = new LinkedList<>();
+        row.add(Convert.convert(key, String.class));
+
+        Counter<String> ctr = Counters.newHashMapCounter();
+        counter.get(key).asMap().entrySet().forEach(e ->
+          ctr.set(Convert.convert(e.getKey(), String.class), e.getValue())
+        );
+        row.addAll(columns.stream().map(c -> Double.toString(ctr.get(c))).collect(Collectors.toList()));
+
+        writer.write(row);
+      }
+
+    }
+    return resource;
   }
 
   /**

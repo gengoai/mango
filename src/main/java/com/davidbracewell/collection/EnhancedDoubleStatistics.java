@@ -21,9 +21,8 @@
 
 package com.davidbracewell.collection;
 
+import com.davidbracewell.function.SerializableDoubleConsumer;
 import lombok.ToString;
-
-import java.util.function.DoubleConsumer;
 
 /**
  * The type Enhanced double statistics.
@@ -31,7 +30,8 @@ import java.util.function.DoubleConsumer;
  * @author David B. Bracewell
  */
 @ToString(exclude = "sumOfSq")
-public final class EnhancedDoubleStatistics implements DoubleConsumer {
+public final class EnhancedDoubleStatistics implements SerializableDoubleConsumer {
+  private static final long serialVersionUID = 1L;
   private double min = Double.POSITIVE_INFINITY;
   private double max = Double.NEGATIVE_INFINITY;
   private double sum = 0;
@@ -45,6 +45,14 @@ public final class EnhancedDoubleStatistics implements DoubleConsumer {
     sum += value;
     sumOfSq += value * value;
     count++;
+  }
+
+  public void clear(){
+    this.min = Double.POSITIVE_INFINITY;
+    this.max = Double.NEGATIVE_INFINITY;
+    this.sum = 0;
+    this.sumOfSq = 0;
+    this.count = 0;
   }
 
   /**
