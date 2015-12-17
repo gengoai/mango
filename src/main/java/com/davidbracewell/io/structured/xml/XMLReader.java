@@ -21,12 +21,17 @@
 
 package com.davidbracewell.io.structured.xml;
 
+import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.ElementType;
+import com.davidbracewell.io.structured.Readable;
 import com.davidbracewell.io.structured.StructuredIOException;
 import com.davidbracewell.io.structured.StructuredReader;
+import com.davidbracewell.reflection.BeanMap;
+import com.davidbracewell.reflection.Reflect;
+import com.davidbracewell.reflection.ReflectionException;
 import com.davidbracewell.tuple.Tuple2;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -57,11 +62,6 @@ public class XMLReader extends StructuredReader {
   private final String documentTag;
   private final XMLEventReader reader;
   private final Stack<Tuple2<String, ElementType>> stack;
-
-  @Override
-  public <T> T nextObject() throws StructuredIOException {
-    return null;
-  }
 
   /**
    * Creates an XMLReader
@@ -101,6 +101,24 @@ public class XMLReader extends StructuredReader {
     }
   }
 
+  @Override
+  public <T> T nextObject() throws StructuredIOException {
+    beginObject();
+    Class<?> clazz = nextKeyValue("class").getV2().asClass();
+    Object o;
+    try {
+      o = Reflect.onClass(clazz).create().get();
+    } catch (ReflectionException e) {
+      throw new StructuredIOException(e);
+    }
+    if (Readable.class.isAssignableFrom(clazz)) {
+      Cast.<Readable>as(o).read(this);
+    } else {
+      new BeanMap(o).putAll(nextMap());
+    }
+    endObject();
+    return Cast.as(o);
+  }
 
   @Override
   public <T> T nextObject(Class<T> clazz) throws StructuredIOException {

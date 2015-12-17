@@ -21,10 +21,13 @@
 
 package com.davidbracewell.io.structured.xml;
 
+import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.ElementType;
 import com.davidbracewell.io.structured.StructuredIOException;
 import com.davidbracewell.io.structured.StructuredWriter;
+import com.davidbracewell.io.structured.Writeable;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
@@ -38,6 +41,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Map;
 import java.util.Stack;
 
 /**
@@ -129,14 +133,25 @@ public class XMLWriter extends StructuredWriter {
   @Override
   @SuppressWarnings("unchecked")
   public <T> StructuredWriter writeObject(String name, T object) throws StructuredIOException {
-    try {
-      JAXBElement<T> element = new JAXBElement(new QName(name), object.getClass(), object);
-      JAXBContext context = JAXBContext.newInstance(object.getClass());
-      Marshaller marshaller = context.createMarshaller();
-      marshaller.setProperty("jaxb.fragment", Boolean.TRUE);
-      marshaller.marshal(element, writer);
-    } catch (JAXBException e) {
-      throw new StructuredIOException(e);
+    if (object instanceof Writeable) {
+      beginObject(name);
+      writeKeyValue("class", object.getClass().getName());
+      Cast.<Writeable>as(object).write(this);
+      endObject();
+    } else if( object instanceof Map){
+      for( Map.Entry entry : Cast.<Map<?,?>>as(object).entrySet()){
+        writeKeyValue(Convert.convert(entry.getKey(),String.class), entry.getValue());
+      }
+    } else {
+      try {
+        JAXBElement<T> element = new JAXBElement(new QName(name), object.getClass(), object);
+        JAXBContext context = JAXBContext.newInstance(object.getClass());
+        Marshaller marshaller = context.createMarshaller();
+        marshaller.setProperty("jaxb.fragment", Boolean.TRUE);
+        marshaller.marshal(element, writer);
+      } catch (JAXBException e) {
+        throw new StructuredIOException(e);
+      }
     }
     return this;
   }

@@ -1,7 +1,5 @@
 package com.davidbracewell.io.structured;
 
-import java.io.IOException;
-
 /**
  * @author David B. Bracewell
  */
