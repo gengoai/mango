@@ -57,7 +57,7 @@ public interface StructuredFormat extends Serializable {
    * @return the structured writer
    * @throws StructuredIOException the structured iO exception
    */
-  StructuredWriter createWriter(Resource resource) throws StructuredIOException;
+  StructuredWriter createWriter(Resource resource) throws IOException;
 
 
   /**
@@ -82,7 +82,7 @@ public interface StructuredFormat extends Serializable {
     }
 
     @Override
-    public StructuredWriter createWriter(Resource resource) throws StructuredIOException {
+    public StructuredWriter createWriter(Resource resource) throws IOException {
       return new XMLWriter(resource);
     }
 
@@ -105,7 +105,7 @@ public interface StructuredFormat extends Serializable {
     }
 
     @Override
-    public StructuredWriter createWriter(Resource resource) throws StructuredIOException {
+    public StructuredWriter createWriter(Resource resource) throws IOException {
       return new JSONWriter(resource);
     }
 
@@ -136,7 +136,7 @@ public interface StructuredFormat extends Serializable {
     }
 
     @Override
-    public StructuredWriter createWriter(Resource resource) throws StructuredIOException {
+    public StructuredWriter createWriter(Resource resource) throws IOException {
       try {
         return format.writer(resource);
       } catch (IOException e) {

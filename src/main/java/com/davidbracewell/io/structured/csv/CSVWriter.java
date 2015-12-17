@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
  *
  * @author David B. Bracewell
  */
-public class CSVWriter extends StructuredWriter implements AutoCloseable {
+public class CSVWriter implements StructuredWriter {
 
   private final CSVFormatter formatter;
   private final BufferedWriter writer;
@@ -180,53 +180,18 @@ public class CSVWriter extends StructuredWriter implements AutoCloseable {
   }
 
   @Override
-  public CSVWriter endDocument() throws StructuredIOException {
+  public void endDocument() throws StructuredIOException {
     if (inArray) {
       throw new StructuredIOException("Cannot end document with an open array.");
     }
     documentEnd = true;
-    return this;
   }
 
 
-  @Override
-  @SuppressWarnings("unchecked")
-  public CSVWriter writeObject(@NonNull Object value) throws StructuredIOException {
-    checkState();
-    if (inArray) {
-      throw new StructuredIOException("Cannot write object while in an array");
-    }
-
-    try {
-      if (value instanceof Map) {
-        write(Cast.<Map>as(value));
-      } else if (value instanceof Counter) {
-        write(Cast.<Counter>as(value).asMap());
-      } else if (value instanceof Iterable) {
-        write(Cast.<Iterable>as(value));
-      } else if (value.getClass().isArray()) {
-        write(Convert.convert(value, Iterable.class));
-      } else {
-        beginArray();
-        writeValue(value);
-        endArray();
-      }
-    } catch (IOException e) {
-      throw new StructuredIOException(e);
-    }
-
-    return this;
-  }
-
-  private void checkState() throws StructuredIOException {
+   private void checkState() throws StructuredIOException {
     if (documentEnd) {
       throw new StructuredIOException("Already ended document");
     }
-  }
-
-  @Override
-  public CSVWriter writeObject(String name, Object object) throws StructuredIOException {
-    throw new UnsupportedOperationException("CSV does not support named objects");
   }
 
   @Override
@@ -243,8 +208,32 @@ public class CSVWriter extends StructuredWriter implements AutoCloseable {
     }
   }
 
+
   @Override
-  public CSVWriter writeValue(Object value) throws StructuredIOException {
+  public StructuredWriter writeNull() throws IOException {
+    checkState();
+    checkInArray();
+    row.put("--NON-HEADER_" + row.size(), null);
+    return this;  }
+
+  @Override
+  public StructuredWriter writeNumber(Number number) throws IOException {
+    checkState();
+    checkInArray();
+    row.put("--NON-HEADER_" + row.size(), number);
+    return this;
+  }
+
+  @Override
+  public StructuredWriter writeString(String string) throws IOException {
+    checkState();
+    checkInArray();
+    row.put("--NON-HEADER_" + row.size(), string);
+    return this;
+  }
+
+  @Override
+  public StructuredWriter writeBoolean(boolean value) throws IOException {
     checkState();
     checkInArray();
     row.put("--NON-HEADER_" + row.size(), value);
@@ -302,6 +291,16 @@ public class CSVWriter extends StructuredWriter implements AutoCloseable {
   }
 
   @Override
+  public boolean inArray() {
+    return inArray;
+  }
+
+  @Override
+  public boolean inObject() {
+    return false;
+  }
+
+  @Override
   public void flush() throws StructuredIOException {
     try {
       writer.flush();
@@ -309,5 +308,6 @@ public class CSVWriter extends StructuredWriter implements AutoCloseable {
       throw new StructuredIOException(e);
     }
   }
+
 
 }//END OF CSVWriter
