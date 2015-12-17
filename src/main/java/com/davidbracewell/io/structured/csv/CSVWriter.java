@@ -22,7 +22,6 @@
 package com.davidbracewell.io.structured.csv;
 
 import com.davidbracewell.SystemInfo;
-import com.davidbracewell.collection.Counter;
 import com.davidbracewell.collection.Index;
 import com.davidbracewell.collection.Indexes;
 import com.davidbracewell.conversion.Cast;
@@ -30,6 +29,7 @@ import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.structured.StructuredIOException;
 import com.davidbracewell.io.structured.StructuredWriter;
+import com.davidbracewell.io.structured.Writeable;
 import com.davidbracewell.string.CSVFormatter;
 import com.davidbracewell.string.StringUtils;
 import com.google.common.base.Preconditions;
@@ -38,20 +38,23 @@ import lombok.NonNull;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * <p> Wraps writing collections and maps in DSV format to resources. </p>
  *
  * @author David B. Bracewell
  */
-public class CSVWriter implements StructuredWriter {
+public class CSVWriter extends StructuredWriter {
 
   private final CSVFormatter formatter;
   private final BufferedWriter writer;
-  private boolean documentEnd = false;
-  private boolean inArray = false;
+  private boolean endOfDocument = false;
   private Index<String> header = Indexes.newIndex();
   private Map<String, Object> row = new LinkedHashMap<>();
 
@@ -64,7 +67,6 @@ public class CSVWriter implements StructuredWriter {
       header.addAll(csv.getHeader());
     }
   }
-
 
   /**
    * Writes the items in the row to the resource in DSV format.
@@ -92,18 +94,6 @@ public class CSVWriter implements StructuredWriter {
     writer.write(SystemInfo.LINE_SEPARATOR);
   }
 
-  public void writeMapAsOneRow(Map<?, ?> row, char keyValueDelimiter) throws IOException {
-    if (row != null) {
-      String keyValueDelimStr = Character.toString(keyValueDelimiter);
-      Preconditions.checkArgument(!keyValueDelimStr.equals(formatter.getDelimiter()), "Key-value delimiter cannot be the same as the file delimiter.");
-      List<String> rowList = row.entrySet().stream().map(m ->
-        Convert.convert(m.getKey(), String.class).replace(keyValueDelimStr, formatter.getEscape() + keyValueDelimStr)
-        + keyValueDelimiter +
-        Convert.convert(m.getValue(), String.class).replace(keyValueDelimStr, formatter.getEscape() + keyValueDelimStr)).collect(Collectors.toCollection(LinkedList::new));
-      write(rowList);
-    }
-  }
-
   /**
    * Writes the items in the row to the resource in DSV format.
    *
@@ -118,11 +108,19 @@ public class CSVWriter implements StructuredWriter {
           writer.write(SystemInfo.LINE_SEPARATOR);
         }
       } else {
-        writer.write(formatter.format(
-          header.asList().stream()
-            .map(h -> row.containsKey(h) ? Convert.convert(row.get(h), String.class) : StringUtils.EMPTY)
-            .collect(Collectors.toList())
-        ));
+        writer.write(
+          formatter.format(
+            Stream.concat(
+              header.asList().stream()
+                .map(h -> row.containsKey(h) ? Convert.convert(row.get(h), String.class) : StringUtils.EMPTY),
+              row.keySet().stream()
+                .map(k -> Convert.convert(k, String.class))
+                .filter(h -> !header.contains(h))
+                .map(h -> Convert.convert(row.get(h), String.class))
+            )
+              .collect(Collectors.toList())
+          )
+        );
         writer.write(SystemInfo.LINE_SEPARATOR);
       }
 
@@ -142,11 +140,19 @@ public class CSVWriter implements StructuredWriter {
       if (header.isEmpty()) {
         writer.write(formatter.format(row, keyValueSeparator));
       } else {
-        writer.write(formatter.format(
-          header.asList().stream()
-            .map(h -> row.containsKey(h) ? Convert.convert(row.get(h), String.class) : StringUtils.EMPTY)
-            .collect(Collectors.toList())
-        ));
+        writer.write(
+          formatter.format(
+            Stream.concat(
+              header.asList().stream()
+                .map(h -> row.containsKey(h) ? Convert.convert(row.get(h), String.class) : StringUtils.EMPTY),
+              row.keySet().stream()
+                .map(k -> Convert.convert(k, String.class))
+                .filter(h -> !header.contains(h))
+                .map(h -> Convert.convert(row.get(h), String.class))
+            )
+              .collect(Collectors.toList())
+          )
+        );
       }
     }
     writer.write(SystemInfo.LINE_SEPARATOR);
@@ -165,139 +171,9 @@ public class CSVWriter implements StructuredWriter {
     writer.write(SystemInfo.LINE_SEPARATOR);
   }
 
-
   @Override
   public void close() throws IOException {
     writer.close();
-  }
-
-  @Override
-  public CSVWriter beginDocument() throws StructuredIOException {
-    if (documentEnd) {
-      throw new StructuredIOException("Already ended document");
-    }
-    return this;
-  }
-
-  @Override
-  public void endDocument() throws StructuredIOException {
-    if (inArray) {
-      throw new StructuredIOException("Cannot end document with an open array.");
-    }
-    documentEnd = true;
-  }
-
-
-   private void checkState() throws StructuredIOException {
-    if (documentEnd) {
-      throw new StructuredIOException("Already ended document");
-    }
-  }
-
-  @Override
-  public CSVWriter writeKeyValue(String key, Object value) throws StructuredIOException {
-    checkState();
-    checkInArray();
-    row.put(key, value);
-    return this;
-  }
-
-  private void checkInArray() throws StructuredIOException {
-    if (!inArray) {
-      throw new StructuredIOException("Must be in an array to write a key value");
-    }
-  }
-
-
-  @Override
-  public StructuredWriter writeNull() throws IOException {
-    checkState();
-    checkInArray();
-    row.put("--NON-HEADER_" + row.size(), null);
-    return this;  }
-
-  @Override
-  public StructuredWriter writeNumber(Number number) throws IOException {
-    checkState();
-    checkInArray();
-    row.put("--NON-HEADER_" + row.size(), number);
-    return this;
-  }
-
-  @Override
-  public StructuredWriter writeString(String string) throws IOException {
-    checkState();
-    checkInArray();
-    row.put("--NON-HEADER_" + row.size(), string);
-    return this;
-  }
-
-  @Override
-  public StructuredWriter writeBoolean(boolean value) throws IOException {
-    checkState();
-    checkInArray();
-    row.put("--NON-HEADER_" + row.size(), value);
-    return this;
-  }
-
-  @Override
-  public CSVWriter beginObject() throws StructuredIOException {
-    return beginArray();
-  }
-
-  @Override
-  public CSVWriter beginObject(String objectName) throws StructuredIOException {
-    throw new UnsupportedOperationException("CSV does not support named objects");
-  }
-
-  @Override
-  public CSVWriter endObject() throws StructuredIOException {
-    return endArray();
-  }
-
-  @Override
-  public CSVWriter beginArray() throws StructuredIOException {
-    if (inArray) {
-      throw new StructuredIOException("CSV does not support nested arrays.");
-    }
-    inArray = true;
-    row.clear();
-    return this;
-  }
-
-  @Override
-  public CSVWriter beginArray(String arrayName) throws StructuredIOException {
-    throw new UnsupportedOperationException("CSV does not support named arrays");
-  }
-
-  @Override
-  public CSVWriter endArray() throws StructuredIOException {
-    try {
-      if (header.isEmpty()) {
-        write(row.entrySet().stream()
-          .map(e -> e.getKey().startsWith("--NON_HEADER") ? e.getValue() : e)
-          .collect(Collectors.toList())
-        );
-      } else {
-        write(header.asList().stream()
-          .map(h -> row.containsKey(h) ? Convert.convert(row.get(h), String.class) : StringUtils.EMPTY)
-          .collect(Collectors.toList()));
-      }
-    } catch (IOException e) {
-      throw new StructuredIOException(e);
-    }
-    inArray = false;
-    return this;
-  }
-
-  @Override
-  public boolean inArray() {
-    return inArray;
-  }
-
-  @Override
-  public boolean inObject() {
-    return false;
   }
 
   @Override
@@ -309,5 +185,156 @@ public class CSVWriter implements StructuredWriter {
     }
   }
 
+  @Override
+  public StructuredWriter beginDocument(boolean isArray) throws IOException {
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
+    return this;
+  }
+
+  @Override
+  public void endDocument() throws IOException {
+    if (row.size() > 0) {
+      write(row);
+    }
+    endOfDocument = true;
+  }
+
+  @Override
+  public StructuredWriter beginObject(String name) throws IOException {
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
+    return this;
+  }
+
+  @Override
+  public StructuredWriter beginObject() throws IOException {
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
+    return this;
+  }
+
+  @Override
+  public StructuredWriter endObject() throws IOException {
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
+    write(row);
+    row.clear();
+    return this;
+  }
+
+  @Override
+  public StructuredWriter beginArray(String name) throws IOException {
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
+    return this;
+  }
+
+  @Override
+  public StructuredWriter beginArray() throws IOException {
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
+    return this;
+  }
+
+  @Override
+  public StructuredWriter endArray() throws IOException {
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
+    write(row);
+    row.clear();
+    return this;
+  }
+
+  @Override
+  public boolean inArray() {
+    return true;
+  }
+
+  @Override
+  public boolean inObject() {
+    return true;
+  }
+
+  @Override
+  public StructuredWriter writeValue(Object value) throws IOException {
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
+    if (value instanceof Writeable) {
+      Cast.<Writeable>as(value).write(this);
+    } else {
+      row.put("___UNNAMED___[" + row.size() + "]", value);
+    }
+    return this;
+  }
+
+  @Override
+  protected StructuredWriter writeObject(@NonNull Object value) throws IOException {
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
+    if (value instanceof Writeable) {
+      Cast.<Writeable>as(value).write(this);
+    } else {
+      row.put("___UNNAMED___[" + row.size() + "]", value);
+    }
+    return this;
+  }
+
+  @Override
+  protected StructuredWriter writeMap(@NonNull Map<?, ?> map) throws IOException {
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
+    map.entrySet().forEach(entry ->
+      row.put(Convert.convert(entry.getKey(), String.class), Convert.convert(entry.getValue(), String.class))
+    );
+    return this;
+  }
+
+  @Override
+  protected StructuredWriter writeCollection(@NonNull Collection<?> collection) throws IOException {
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
+    collection.forEach(value ->
+      row.put("___UNNAMED___[" + row.size() + "]", value)
+    );
+    return this;
+  }
+
+  @Override
+  protected StructuredWriter writeArray(@NonNull Object[] array) throws IOException {
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
+    for (Object value : array) {
+      row.put("___UNNAMED___[" + row.size() + "]", value);
+    }
+    return this;
+  }
+
+  @Override
+  public StructuredWriter writeKeyValue(String key, Object value) throws IOException {
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
+    if (value instanceof Writeable) {
+      Cast.<Writeable>as(value).write(this);
+    } else {
+      row.put(key, value);
+    }
+    return this;
+  }
+
+  @Override
+  protected StructuredWriter writeNull() throws IOException {
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
+    row.put("___UNNAMED___[" + row.size() + "]", null);
+    return this;
+  }
+
+  @Override
+  protected StructuredWriter writeNumber(Number number) throws IOException {
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
+    row.put("___UNNAMED___[" + row.size() + "]", number.toString());
+    return this;
+  }
+
+  @Override
+  protected StructuredWriter writeString(String string) throws IOException {
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
+    row.put("___UNNAMED___[" + row.size() + "]", string);
+    return this;
+  }
+
+  @Override
+  protected StructuredWriter writeBoolean(boolean value) throws IOException {
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
+    row.put("___UNNAMED___[" + row.size() + "]", Boolean.toString(value));
+    return this;
+  }
 
 }//END OF CSVWriter

@@ -30,6 +30,7 @@ import com.google.common.base.Strings;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Stack;
@@ -39,12 +40,13 @@ import java.util.Stack;
  *
  * @author David B. Bracewell
  */
-public class XMLWriter implements StructuredWriter {
+public class XMLWriter extends StructuredWriter {
 
   private final String documentTag;
   private final Stack<ElementType> stack;
   private final OutputStream os;
   private final XMLStreamWriter writer;
+  private boolean documentIsArray = false;
 
   /**
    * Creates an XML writer with the document tag "document"
@@ -76,10 +78,15 @@ public class XMLWriter implements StructuredWriter {
   }
 
   @Override
-  public XMLWriter beginDocument() throws IOException {
+  public XMLWriter beginDocument(boolean inArray) throws IOException {
     try {
       writer.writeStartDocument();
       writer.writeStartElement(documentTag);
+      if (inArray) {
+        writer.writeAttribute("type", "array");
+        documentIsArray = true;
+      }
+      stack.push(ElementType.BEGIN_DOCUMENT);
     } catch (XMLStreamException e) {
       throw new IOException(e);
     }
@@ -114,7 +121,7 @@ public class XMLWriter implements StructuredWriter {
   }
 
   @Override
-  public StructuredWriter writeNull() throws IOException {
+  protected StructuredWriter writeNull() throws IOException {
     try {
       writer.writeCharacters("null");
     } catch (XMLStreamException e) {
@@ -124,7 +131,7 @@ public class XMLWriter implements StructuredWriter {
   }
 
   @Override
-  public StructuredWriter writeNumber(Number number) throws IOException {
+  protected StructuredWriter writeNumber(Number number) throws IOException {
     try {
       writer.writeCharacters(number.toString());
     } catch (XMLStreamException e) {
@@ -134,7 +141,7 @@ public class XMLWriter implements StructuredWriter {
   }
 
   @Override
-  public StructuredWriter writeString(String string) throws IOException {
+  protected StructuredWriter writeString(String string) throws IOException {
     try {
       writer.writeCharacters(string);
     } catch (XMLStreamException e) {
@@ -144,7 +151,7 @@ public class XMLWriter implements StructuredWriter {
   }
 
   @Override
-  public StructuredWriter writeBoolean(boolean value) throws IOException {
+  protected StructuredWriter writeBoolean(boolean value) throws IOException {
     try {
       writer.writeCharacters(Boolean.toString(value));
     } catch (XMLStreamException e) {
@@ -178,7 +185,7 @@ public class XMLWriter implements StructuredWriter {
     try {
       stack.push(ElementType.BEGIN_OBJECT);
       writer.writeStartElement(objectName);
-      writer.writeAttribute("elementType", "object");
+      writer.writeAttribute("type", "object");
     } catch (XMLStreamException e) {
       throw new IOException(e);
     }
@@ -209,7 +216,7 @@ public class XMLWriter implements StructuredWriter {
     try {
       stack.push(ElementType.BEGIN_ARRAY);
       writer.writeStartElement(arrayName);
-      writer.writeAttribute("elementType", "array");
+      writer.writeAttribute("type", "array");
     } catch (XMLStreamException e) {
       throw new IOException(e);
     }
@@ -232,12 +239,12 @@ public class XMLWriter implements StructuredWriter {
 
   @Override
   public boolean inArray() {
-    return stack.peek() == ElementType.BEGIN_ARRAY;
+    return stack.peek() == ElementType.BEGIN_ARRAY || (stack.peek() == ElementType.BEGIN_DOCUMENT && documentIsArray);
   }
 
   @Override
   public boolean inObject() {
-    return stack.peek() == ElementType.BEGIN_OBJECT || stack.peek() == ElementType.BEGIN_DOCUMENT;
+    return stack.peek() == ElementType.BEGIN_OBJECT || (stack.peek() == ElementType.BEGIN_DOCUMENT && !documentIsArray);
   }
 
   @Override

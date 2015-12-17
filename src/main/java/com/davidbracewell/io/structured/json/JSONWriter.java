@@ -21,34 +21,27 @@
 
 package com.davidbracewell.io.structured.json;
 
-import com.davidbracewell.collection.Counter;
-import com.davidbracewell.collection.MultiCounter;
-import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.ElementType;
 import com.davidbracewell.io.structured.StructuredIOException;
 import com.davidbracewell.io.structured.StructuredWriter;
-import com.davidbracewell.io.structured.Writeable;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Multimap;
 import com.google.gson.stream.JsonWriter;
 import lombok.NonNull;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Stack;
 
 /**
  * The type JSON writer.
  *
  * @author David B. Bracewell
  */
-public class JSONWriter implements StructuredWriter {
+public class JSONWriter extends StructuredWriter {
 
   private final JsonWriter writer;
-  private final boolean isArray;
   private final Stack<ElementType> writeStack = new Stack<>();
+  private boolean isArray;
 
   /**
    * Instantiates a new JSON writer.
@@ -57,18 +50,6 @@ public class JSONWriter implements StructuredWriter {
    * @throws StructuredIOException the structured iO exception
    */
   public JSONWriter(@NonNull Resource resource) throws IOException {
-    this(resource, false);
-  }
-
-  /**
-   * Instantiates a new JSON writer.
-   *
-   * @param resource the resource
-   * @param isArray  the is array
-   * @throws StructuredIOException the structured iO exception
-   */
-  public JSONWriter(@NonNull Resource resource, boolean isArray) throws IOException {
-    this.isArray = isArray;
     this.writer = new JsonWriter(resource.writer());
   }
 
@@ -88,7 +69,8 @@ public class JSONWriter implements StructuredWriter {
   }
 
   @Override
-  public JSONWriter beginDocument() throws IOException {
+  public JSONWriter beginDocument(boolean isArray) throws IOException {
+    this.isArray = isArray;
     if (isArray) {
       writer.beginArray();
     } else {
@@ -115,7 +97,7 @@ public class JSONWriter implements StructuredWriter {
 
   private void checkAndPop(ElementType required) throws IOException {
     if (writeStack.peek() != required) {
-      throw new IOException("Illformed JSON: " + required + " is required, but have the following unclosed: " + writeStack);
+      throw new IOException("Ill-formed JSON: " + required + " is required, but have the following unclosed: " + writeStack);
     }
     writeStack.pop();
   }
@@ -160,19 +142,6 @@ public class JSONWriter implements StructuredWriter {
     }
   }
 
-  private boolean isInObject() {
-    if (writeStack.peek() == ElementType.BEGIN_DOCUMENT && !isArray) {
-      return true;
-    }
-    return writeStack.peek() == ElementType.BEGIN_OBJECT;
-  }
-
-  private boolean needsName() {
-    return writeStack.peek() != ElementType.BEGIN_ARRAY
-      && writeStack.peek() != ElementType.NAME
-      && (writeStack.peek() == ElementType.BEGIN_DOCUMENT && !isArray);
-  }
-
   private void popIf(ElementType type) {
     if (writeStack.peek() == type) {
       writeStack.pop();
@@ -205,64 +174,13 @@ public class JSONWriter implements StructuredWriter {
     return this;
   }
 
-  private boolean needsArray() {
-    if (writeStack.peek() == ElementType.BEGIN_DOCUMENT && isArray) {
-      return false;
-    }
-    return writeStack.peek() != ElementType.BEGIN_ARRAY;
-  }
-
   @Override
   public JSONWriter writeKeyValue(String key, Object value) throws IOException {
     if (inArray()) {
       throw new StructuredIOException("Cannot write key-value pair inside an array.");
     }
-
-    if (value instanceof Collection) {
-      writeCollection(key, Cast.as(value));
-    } else if (value instanceof Map) {
-      writeMap(key, Cast.as(value));
-    } else if (value.getClass().isArray()) {
-      writeArray(key, Cast.as(value));
-    } else if (value instanceof Multimap) {
-      writeMap(key, Cast.<Multimap>as(value).asMap());
-    } else if (value instanceof Counter) {
-      writeMap(key, Cast.<Counter>as(value).asMap());
-    } else if (value instanceof MultiCounter) {
-      writeMap(key, Cast.<MultiCounter>as(value).asMap());
-    } else if (value instanceof Iterable) {
-      writeCollection(key, new AbstractCollection<Object>() {
-        @Override
-        public Iterator<Object> iterator() {
-          return Cast.<Iterable<Object>>as(value).iterator();
-        }
-
-        @Override
-        public int size() {
-          return Iterables.size(Cast.as(value));
-        }
-      });
-    } else if (value instanceof Iterator) {
-      writeCollection(key, new AbstractCollection<Object>() {
-        @Override
-        public Iterator<Object> iterator() {
-          return Cast.as(value);
-        }
-
-        @Override
-        public int size() {
-          return Iterators.size(Cast.as(value));
-        }
-      });
-    } else if (value instanceof Writeable) {
-      beginObject(key);
-      writeKeyValue("class", value.getClass().getName());
-      Cast.<Writeable>as(value).write(this);
-      endObject();
-    } else {
-      writeName(key);
-      writeValue(value);
-    }
+    writeName(key);
+    writeValue(value);
     return this;
   }
 
@@ -277,11 +195,11 @@ public class JSONWriter implements StructuredWriter {
 
   @Override
   public StructuredWriter writeValue(Object value) throws IOException {
-    if( !inArray() ){
+    if (!inArray()) {
       Preconditions.checkState(writeStack.peek() == ElementType.NAME, "Expecting an array or a name, but found " + writeStack.peek());
     }
+    super.writeValue(value);
     popIf(ElementType.NAME);
-    StructuredWriter.super.writeValue(value);
     return this;
   }
 
@@ -296,25 +214,25 @@ public class JSONWriter implements StructuredWriter {
   }
 
   @Override
-  public StructuredWriter writeNull() throws IOException {
+  protected StructuredWriter writeNull() throws IOException {
     writer.nullValue();
     return this;
   }
 
   @Override
-  public StructuredWriter writeNumber(Number number) throws IOException {
+  protected StructuredWriter writeNumber(Number number) throws IOException {
     writer.value(number);
     return this;
   }
 
   @Override
-  public StructuredWriter writeString(String string) throws IOException {
+  protected StructuredWriter writeString(String string) throws IOException {
     writer.value(string);
     return this;
   }
 
   @Override
-  public StructuredWriter writeBoolean(boolean value) throws IOException {
+  protected StructuredWriter writeBoolean(boolean value) throws IOException {
     writer.value(value);
     return this;
   }

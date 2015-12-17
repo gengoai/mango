@@ -33,12 +33,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Represents a class for reading data in a structured format, e.g. xml, json, yaml, etc. Individual implementations
- * may provide extra functionality (e.g. read xml attributes).
+ * Represents a class for reading data in a structured format, e.g. xml, json, yaml, etc. Individual implementations may
+ * provide extra functionality (e.g. read xml attributes).
  *
  * @author David B. Bracewell
  */
-public abstract class StructuredReader implements Closeable, AutoCloseable {
+public abstract class StructuredReader implements Closeable {
 
   /**
    * Begins an Array
@@ -52,13 +52,15 @@ public abstract class StructuredReader implements Closeable, AutoCloseable {
    * Begins an array with an expected name.
    *
    * @param expectedName The name that the next array should have
+   * @return the structured reader
    * @throws StructuredIOException Something happened reading or the expected name was not found
    */
-  public void beginArray(String expectedName) throws StructuredIOException {
+  public StructuredReader beginArray(String expectedName) throws StructuredIOException {
     String name = beginArray();
     if (expectedName != null && (name == null || !name.equals(expectedName))) {
       throw new StructuredIOException("Expected " + expectedName);
     }
+    return this;
   }
 
   /**
@@ -81,21 +83,24 @@ public abstract class StructuredReader implements Closeable, AutoCloseable {
    * Begins an object with an expected name.
    *
    * @param expectedName The name that the next object should have
+   * @return the structured reader
    * @throws StructuredIOException Something happened reading or the expected name was not found
    */
-  public void beginObject(String expectedName) throws StructuredIOException {
+  public StructuredReader beginObject(String expectedName) throws StructuredIOException {
     String name = beginObject();
     if (name == null || !name.equals(expectedName)) {
       throw new StructuredIOException("Expected " + expectedName);
     }
+    return this;
   }
 
   /**
    * Ends an Array
    *
+   * @return the structured reader
    * @throws StructuredIOException Something went wrong reading
    */
-  public abstract void endArray() throws StructuredIOException;
+  public abstract StructuredReader endArray() throws StructuredIOException;
 
   /**
    * Ends the document
@@ -108,9 +113,10 @@ public abstract class StructuredReader implements Closeable, AutoCloseable {
   /**
    * Ends the document
    *
+   * @return the structured reader
    * @throws StructuredIOException Something went wrong reading
    */
-  public abstract void endObject() throws StructuredIOException;
+  public abstract StructuredReader endObject() throws StructuredIOException;
 
   /**
    * Checks if there is something left to read
@@ -148,6 +154,8 @@ public abstract class StructuredReader implements Closeable, AutoCloseable {
   }
 
   /**
+   * Next key value tuple 2.
+   *
    * @return The next key value Tuple2
    * @throws StructuredIOException Something went wrong reading
    */
@@ -171,13 +179,20 @@ public abstract class StructuredReader implements Closeable, AutoCloseable {
   /**
    * Deserializes an object from the stream.
    *
-   * @param clazz The class of the object
    * @param <T>   The generic class type
+   * @param clazz The class of the object
    * @return A deserialized object
    * @throws StructuredIOException Something went wrong reading
    */
   public abstract <T> T nextObject(Class<T> clazz) throws StructuredIOException;
 
+  /**
+   * Next object t.
+   *
+   * @param <T> the type parameter
+   * @return the t
+   * @throws StructuredIOException the structured io exception
+   */
   public abstract <T> T nextObject() throws StructuredIOException;
 
   /**

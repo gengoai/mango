@@ -63,7 +63,7 @@ public class XMLWriterTest {
       writer.beginDocument();
       TestBean bean = new TestBean();
       bean.setName("testing");
-      writer.writeObject(bean);
+//      writer.writeObject(bean);
       writer.endDocument();
     }
     assertEquals("<?xml version=\"1.0\" ?><document><com.davidbracewell.io.structured.xml.TestBean><name>testing</name></com.davidbracewell.io.structured.xml.TestBean></document>",

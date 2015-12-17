@@ -57,7 +57,7 @@ public class JSONWriterTest {
     resource = new StringResource();
     try (JSONWriter writer = new JSONWriter(resource)) {
       writer.beginDocument();
-      writer.writeObject(Tuple2.of("String1", 34d));
+//      writer.writeObject(Tuple2.of("String1", 34d));
       writer.endDocument();
     }
     assertEquals("{\"List\":[\"String1\",34.0]}", resource.readToString().trim());

@@ -50,7 +50,7 @@ public class CSVWriterTest {
       writer.write(Arrays.asList("4", "5", "6"));
       writer.write(Arrays.asList("7", "8", "9").iterator());
       writer.write(map);
-      writer.writeMapAsOneRow(map, ':');
+      writer.write(map, ':');
     }
 
     try (CSVReader reader = CSV.builder().delimiter('\t').reader(r)) {
@@ -68,7 +68,7 @@ public class CSVWriterTest {
       writer.write(Arrays.asList("4", "5", "6"));
       writer.write(Arrays.asList("7", "8", "9").iterator());
       writer.write(map);
-      writer.writeMapAsOneRow(map, ':');
+      writer.write(map, ':');
     }
 
     try (CSVReader reader = CSV.builder().reader(r)) {
