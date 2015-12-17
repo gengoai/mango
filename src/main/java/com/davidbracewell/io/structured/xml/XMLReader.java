@@ -58,6 +58,10 @@ public class XMLReader extends StructuredReader {
   private final XMLEventReader reader;
   private final Stack<Tuple2<String, ElementType>> stack;
 
+  @Override
+  public <T> T nextObject() throws StructuredIOException {
+    return null;
+  }
 
   /**
    * Creates an XMLReader

@@ -178,6 +178,8 @@ public abstract class StructuredReader implements Closeable, AutoCloseable {
    */
   public abstract <T> T nextObject(Class<T> clazz) throws StructuredIOException;
 
+  public abstract <T> T nextObject() throws StructuredIOException;
+
   /**
    * Reads the next value
    *

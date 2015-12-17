@@ -29,6 +29,7 @@ import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.ElementType;
 import com.davidbracewell.io.structured.StructuredIOException;
 import com.davidbracewell.io.structured.StructuredWriter;
+import com.davidbracewell.io.structured.Writeable;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Multimap;
 import com.google.gson.stream.JsonWriter;
@@ -326,11 +327,6 @@ public class JSONWriter extends StructuredWriter {
   }
 
   private JSONWriter writeObject(String name, Object value, boolean isValue) throws StructuredIOException {
-    if (isValue) {
-      if (!inArray() && writeStack.peek() != ElementType.NAME) {
-        throw new StructuredIOException("Can only write a value after a name or inside an array");
-      }
-    }
     try {
       if (value == null) {
         if (name != null) writeName(name);
@@ -359,11 +355,15 @@ public class JSONWriter extends StructuredWriter {
       } else if (value instanceof MultiCounter) {
         if (name != null) writeName(name);
         return writeMap(Cast.<MultiCounter>as(value).asMap());
+      } else if (value instanceof Writeable) {
+        if (name != null) beginObject(name);
+        writeKeyValue("class", value.getClass().getName());
+        Cast.<Writeable>as(value).write(this);
+        if (name != null) endObject();
       } else {
         if (name != null) writeName(name);
         writer.value(Convert.convert(value, String.class));
       }
-
     } catch (IOException e) {
       throw new StructuredIOException(e);
     }

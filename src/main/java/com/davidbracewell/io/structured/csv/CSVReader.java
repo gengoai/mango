@@ -541,4 +541,8 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
     return ElementType.BEGIN_ARRAY;
   }
 
+  @Override
+  public <T> T nextObject() throws StructuredIOException {
+    return null;
+  }
 }//END OF CSVReader

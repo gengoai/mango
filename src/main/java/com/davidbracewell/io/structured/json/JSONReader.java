@@ -21,12 +21,18 @@
 
 package com.davidbracewell.io.structured.json;
 
+import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.ElementType;
+import com.davidbracewell.io.structured.Readable;
 import com.davidbracewell.io.structured.StructuredIOException;
 import com.davidbracewell.io.structured.StructuredReader;
+import com.davidbracewell.reflection.BeanMap;
+import com.davidbracewell.reflection.Reflect;
+import com.davidbracewell.reflection.ReflectionException;
 import com.davidbracewell.tuple.Tuple2;
+import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
@@ -247,6 +253,30 @@ public class JSONReader extends StructuredReader {
     String name = currentValue.getValue().asString();
     consume();
     return Tuple2.of(name, nextValue());
+  }
+
+  public <T> T nextObject() throws StructuredIOException {
+    Preconditions.checkState(peek() == ElementType.BEGIN_OBJECT, "Expecting Begin Object, Found " + peek());
+    Object o;
+
+    beginObject();
+    try {
+      Val val = nextKeyValue("class").getV2();
+      o = Reflect.onClass(
+        val.asClass()
+      ).create().get();
+    } catch (ReflectionException e) {
+      throw new StructuredIOException(e);
+    }
+    if (o instanceof Readable) {
+      Cast.<Readable>as(o).read(this);
+    } else {
+      BeanMap map = new BeanMap(o);
+      map.putAll(nextMap());
+    }
+    endObject();
+
+    return Cast.as(o);
   }
 
   @Override
