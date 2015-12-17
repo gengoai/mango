@@ -5,6 +5,7 @@ import com.davidbracewell.collection.Counter;
 import com.davidbracewell.collection.MultiCounter;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Multimap;
@@ -226,9 +227,13 @@ public interface StructuredWriter extends AutoCloseable {
    * @throws IOException the io exception
    */
   default StructuredWriter writeMap(@NonNull Map<?, ?> map) throws IOException {
+    boolean inArray = inArray();
+    if (inArray) beginObject();
+    Preconditions.checkState(inObject(), "Must be in an object.");
     for (Map.Entry<?, ?> entry : map.entrySet()) {
       writeKeyValue(Convert.convert(entry.getKey(), String.class), entry.getValue());
     }
+    if (inArray) endObject();
     return this;
   }
 
@@ -255,6 +260,7 @@ public interface StructuredWriter extends AutoCloseable {
    * @throws IOException the io exception
    */
   default StructuredWriter writeCollection(@NonNull Collection<?> collection) throws IOException {
+    Preconditions.checkState(inArray(), "Must be in an array.");
     for (Object o : collection) {
       writeValue(o);
     }
@@ -280,13 +286,13 @@ public interface StructuredWriter extends AutoCloseable {
   /**
    * Write array structured writer.
    *
-   * @param <T>   the type parameter
    * @param array the array
    * @return the structured writer
    * @throws IOException the io exception
    */
-  default <T> StructuredWriter writeArray(@NonNull T[] array) throws IOException {
-    for (T o : array) {
+  default StructuredWriter writeArray(@NonNull Object[] array) throws IOException {
+    Preconditions.checkState(inArray(), "Must be in an array.");
+    for (Object o : array) {
       writeValue(o);
     }
     return this;
@@ -295,13 +301,12 @@ public interface StructuredWriter extends AutoCloseable {
   /**
    * Write array structured writer.
    *
-   * @param <T>   the type parameter
    * @param name  the name
    * @param array the array
    * @return the structured writer
    * @throws IOException the io exception
    */
-  default <T> StructuredWriter writeArray(@NonNull String name, @NonNull T[] array) throws IOException {
+  default StructuredWriter writeArray(@NonNull String name, @NonNull Object[] array) throws IOException {
     beginArray(name);
     writeArray(array);
     endArray();

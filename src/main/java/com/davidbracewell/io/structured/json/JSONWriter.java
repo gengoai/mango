@@ -277,8 +277,11 @@ public class JSONWriter implements StructuredWriter {
 
   @Override
   public StructuredWriter writeValue(Object value) throws IOException {
-    StructuredWriter.super.writeValue(value);
+    if( !inArray() ){
+      Preconditions.checkState(writeStack.peek() == ElementType.NAME, "Expecting an array or a name, but found " + writeStack.peek());
+    }
     popIf(ElementType.NAME);
+    StructuredWriter.super.writeValue(value);
     return this;
   }
 
