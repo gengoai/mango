@@ -205,8 +205,8 @@ public class JSONWriter extends StructuredWriter {
 
   private boolean needsName() {
     return writeStack.peek() != ElementType.BEGIN_ARRAY
-        && writeStack.peek() != ElementType.NAME
-        && (writeStack.peek() == ElementType.BEGIN_DOCUMENT && !isArray);
+      && writeStack.peek() != ElementType.NAME
+      && (writeStack.peek() == ElementType.BEGIN_DOCUMENT && !isArray);
   }
 
   private void popIf(ElementType type) {
@@ -313,20 +313,19 @@ public class JSONWriter extends StructuredWriter {
 
   @Override
   public JSONWriter writeObject(@NonNull Object object) throws StructuredIOException {
-    return writeObject(object, false);
+    return writeObject(null, object, false);
   }
 
   @Override
   public JSONWriter writeObject(String name, Object object) throws StructuredIOException {
-    writeName(name);
-    return writeObject(object, false);
+    return writeObject(name, object, false);
   }
 
   private boolean inArray() {
     return writeStack.peek() == ElementType.BEGIN_ARRAY || (writeStack.peek() == ElementType.BEGIN_DOCUMENT && isArray);
   }
 
-  private JSONWriter writeObject(Object value, boolean isValue) throws StructuredIOException {
+  private JSONWriter writeObject(String name, Object value, boolean isValue) throws StructuredIOException {
     if (isValue) {
       if (!inArray() && writeStack.peek() != ElementType.NAME) {
         throw new StructuredIOException("Can only write a value after a name or inside an array");
@@ -334,30 +333,37 @@ public class JSONWriter extends StructuredWriter {
     }
     try {
       if (value == null) {
+        if (name != null) writeName(name);
         writer.nullValue();
       } else if (value instanceof Number) {
+        if (name != null) writeName(name);
         writer.value((Number) value);
       } else if (value instanceof String) {
+        if (name != null) writeName(name);
         writer.value((String) value);
       } else if (value instanceof Boolean) {
+        if (name != null) writeName(name);
         writer.value((Boolean) value);
       } else if (value instanceof Map) {
+        if (name != null) writeName(name);
         writeMap(Cast.as(value));
       } else if (value instanceof Iterable || value.getClass().isArray()) {
+        if (name != null) writeName(name);
         writeIterable(Convert.convert(value, Iterable.class));
       } else if (value instanceof Counter) {
+        if (name != null) writeName(name);
         writeMap(Cast.<Counter<?>>as(value).asMap());
       } else if (value instanceof Multimap) {
+        if (name != null) writeName(name);
         writeMap(Cast.<Multimap>as(value).asMap());
       } else if (value instanceof MultiCounter) {
+        if (name != null) writeName(name);
         return writeMap(Cast.<MultiCounter>as(value).asMap());
       } else {
+        if (name != null) writeName(name);
         writer.value(Convert.convert(value, String.class));
       }
 
-//      Gson gson = new Gson();
-//      gson.toJson(object, object.getClass(), writer);
-//
     } catch (IOException e) {
       throw new StructuredIOException(e);
     }
@@ -367,7 +373,7 @@ public class JSONWriter extends StructuredWriter {
 
   @Override
   public JSONWriter writeValue(Object value) throws StructuredIOException {
-    return writeObject(value, true);
+    return writeObject(null, value, true);
   }
 
 
