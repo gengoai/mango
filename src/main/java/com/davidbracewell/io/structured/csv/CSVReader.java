@@ -22,16 +22,11 @@
 package com.davidbracewell.io.structured.csv;
 
 import com.davidbracewell.collection.Collect;
-import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.function.Unchecked;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.structured.ElementType;
-import com.davidbracewell.io.structured.StructuredIOException;
 import com.davidbracewell.io.structured.StructuredReader;
-import com.davidbracewell.reflection.BeanMap;
-import com.davidbracewell.reflection.Reflect;
-import com.davidbracewell.reflection.ReflectionException;
 import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
 import com.google.common.base.CharMatcher;
@@ -183,21 +178,26 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
   }
 
   @Override
-  public String beginArray() throws StructuredIOException {
+  public ElementType getDocumentType() {
+    return ElementType.BEGIN_ARRAY;
+  }
+
+  @Override
+  public String beginArray() throws IOException {
     valueIdx = 0;
     rowId++;
     return StringUtils.EMPTY;
   }
 
   @Override
-  public StructuredReader beginDocument() throws StructuredIOException {
+  public StructuredReader beginDocument() throws IOException {
     if (header != null) {
       rowId++;
       return this;
     }
 
     if (rowId != 0) {
-      throw new StructuredIOException("Illegal begin of document");
+      throw new IOException("Illegal begin of document");
     }
     consume();
     rowId++;
@@ -205,7 +205,7 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
   }
 
   @Override
-  public String beginObject() throws StructuredIOException {
+  public String beginObject() throws IOException {
     return beginArray();
   }
 
@@ -245,32 +245,34 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
     reader.close();
   }
 
-  private void consume() throws StructuredIOException {
+  private void consume() throws IOException {
     if (documentEnd) {
-      throw new StructuredIOException("Document has ended.");
+      throw new IOException("Document has ended.");
     }
     try {
       row = nextRow();
     } catch (IOException e) {
-      throw new StructuredIOException(e);
+      throw new IOException(e);
     }
   }
 
   @Override
-  public void endArray() throws StructuredIOException {
+  public StructuredReader endArray() throws IOException {
     valueIdx = -1;
     consume();
-  }
-
-  @Override
-  public StructuredReader endDocument() throws StructuredIOException {
-    documentEnd = true;
     return this;
   }
 
   @Override
-  public void endObject() throws StructuredIOException {
+  public void endDocument() throws IOException {
+    documentEnd = true;
+
+  }
+
+  @Override
+  public StructuredReader endObject() throws IOException {
     endArray();
+    return this;
   }
 
   private char escape() throws IOException {
@@ -288,7 +290,7 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
   }
 
   @Override
-  public boolean hasNext() throws StructuredIOException {
+  public boolean hasNext() throws IOException {
     return row != null;
   }
 
@@ -347,43 +349,8 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
     }
   }
 
-  private class RowIterator implements Iterator<List<String>> {
-
-    /**
-     * The Row.
-     */
-    List<String> row = null;
-
-    private boolean advance() {
-      if (row == null) {
-        try {
-          row = nextRow();
-        } catch (IOException e) {
-          throw Throwables.propagate(e);
-        }
-      }
-      return row != null;
-    }
-
-    @Override
-    public boolean hasNext() {
-      return advance();
-    }
-
-    @Override
-    public List<String> next() {
-      if (!advance()) {
-        throw new NoSuchElementException();
-      }
-      List<String> c = row;
-      row = null;
-      return c;
-    }
-
-  }
-
   @Override
-  public Map<String, Val> nextMap() throws StructuredIOException {
+  public Map<String, Val> nextMap() throws IOException {
     beginArray();
     Map<String, Val> map = new LinkedHashMap<>();
     while (peek() != ElementType.END_ARRAY) {
@@ -395,7 +362,7 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
   }
 
   @Override
-  public Tuple2<String, Val> nextKeyValue() throws StructuredIOException {
+  public Tuple2<String, Val> nextKeyValue() throws IOException {
     String key;
     if (valueIdx >= header.size()) {
       key = Integer.toString(valueIdx);
@@ -406,16 +373,14 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
   }
 
   @Override
-  public <T> T nextObject(Class<T> clazz) throws StructuredIOException {
-    Map<String, Val> map = nextMap();
-    BeanMap beanMap;
-    try {
-      beanMap = new BeanMap(Reflect.onClass(clazz).create().get());
-    } catch (ReflectionException e) {
-      throw new StructuredIOException(e);
+  public <T> Tuple2<String, T> nextKeyValue(Class<T> clazz) throws IOException {
+    String key;
+    if (valueIdx >= header.size()) {
+      key = Integer.toString(valueIdx);
+    } else {
+      key = header.get(valueIdx);
     }
-    beanMap.putAll(map);
-    return Cast.as(beanMap.getBean());
+    return Tuple2.of(key, nextValue(clazz));
   }
 
   /**
@@ -471,9 +436,9 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
   }
 
   @Override
-  public Val nextValue() throws StructuredIOException {
+  public Val nextSimpleValue() throws IOException {
     if (row == null) {
-      throw new StructuredIOException("Expecting a value, but found null");
+      throw new IOException("Expecting a value, but found null");
     }
     Val val = Val.of(row.get(valueIdx));
     valueIdx++;
@@ -495,7 +460,7 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
   }
 
   @Override
-  public ElementType peek() throws StructuredIOException {
+  public ElementType peek() throws IOException {
     if (rowId == 0) {
       return ElementType.BEGIN_DOCUMENT;
     } else if (row == null) {
@@ -536,13 +501,44 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
   }
 
   @Override
-  public ElementType skip() throws StructuredIOException {
+  public ElementType skip() throws IOException {
     consume();
     return ElementType.BEGIN_ARRAY;
   }
 
-  @Override
-  public <T> T nextObject() throws StructuredIOException {
-    return null;
+  private class RowIterator implements Iterator<List<String>> {
+
+    /**
+     * The Row.
+     */
+    List<String> row = null;
+
+    private boolean advance() {
+      if (row == null) {
+        try {
+          row = nextRow();
+        } catch (IOException e) {
+          throw Throwables.propagate(e);
+        }
+      }
+      return row != null;
+    }
+
+    @Override
+    public boolean hasNext() {
+      return advance();
+    }
+
+    @Override
+    public List<String> next() {
+      if (!advance()) {
+        throw new NoSuchElementException();
+      }
+      List<String> c = row;
+      row = null;
+      return c;
+    }
+
   }
+
 }//END OF CSVReader

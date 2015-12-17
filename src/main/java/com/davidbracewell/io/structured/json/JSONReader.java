@@ -26,14 +26,12 @@ import com.davidbracewell.conversion.Val;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.ElementType;
 import com.davidbracewell.io.structured.Readable;
-import com.davidbracewell.io.structured.StructuredIOException;
 import com.davidbracewell.io.structured.StructuredReader;
 import com.davidbracewell.reflection.BeanMap;
 import com.davidbracewell.reflection.Reflect;
 import com.davidbracewell.reflection.ReflectionException;
 import com.davidbracewell.tuple.Tuple2;
 import com.google.common.base.Preconditions;
-import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 
@@ -57,9 +55,9 @@ public class JSONReader extends StructuredReader {
    * Creates a JSONReader from a reader
    *
    * @param reader The reader
-   * @throws StructuredIOException Something went wrong reading
+   * @throws IOException Something went wrong reading
    */
-  public JSONReader(Reader reader) throws StructuredIOException {
+  public JSONReader(Reader reader) throws IOException {
     this.reader = new JsonReader(reader);
     consume();
   }
@@ -68,42 +66,41 @@ public class JSONReader extends StructuredReader {
    * Creates a JSONReader
    *
    * @param resource The resource to read json from
-   * @throws StructuredIOException Something went wrong reading
+   * @throws IOException Something went wrong reading
    */
-  public JSONReader(Resource resource) throws StructuredIOException {
+  public JSONReader(Resource resource) throws IOException {
     try {
       this.reader = new JsonReader(resource.reader());
       consume();
     } catch (IOException e) {
-      throw new StructuredIOException(e);
+      throw new IOException(e);
     }
   }
 
+  @Override
   public ElementType getDocumentType() {
     return jsonTokenToStructuredElement(documentType);
   }
 
   @Override
-  public String beginArray() throws StructuredIOException {
+  public String beginArray() throws IOException {
     String name = null;
     if (currentValue.getKey() == NAME) {
       name = currentValue.getValue().asString();
       consume();
     }
-
     if (currentValue.getKey() == BEGIN_ARRAY) {
       consume();
     } else if (readStack.peek() != BEGIN_ARRAY) {
-      throw new StructuredIOException("Expecting BEGIN_ARRAY, but found " + jsonTokenToStructuredElement(null));
+      throw new IOException("Expecting BEGIN_ARRAY, but found " + jsonTokenToStructuredElement(null));
     }
-
     return name;
   }
 
   @Override
-  public JSONReader beginDocument() throws StructuredIOException {
+  public JSONReader beginDocument() throws IOException {
     if (currentValue.getKey() != BEGIN_OBJECT && currentValue.getKey() != BEGIN_ARRAY) {
-      throw new StructuredIOException("Expecting BEGIN_OBJECT or BEGIN_ARRAY, but found " + jsonTokenToStructuredElement(null));
+      throw new IOException("Expecting BEGIN_OBJECT or BEGIN_ARRAY, but found " + jsonTokenToStructuredElement(null));
     }
     documentType = currentValue.getKey();
     consume();
@@ -111,17 +108,16 @@ public class JSONReader extends StructuredReader {
   }
 
   @Override
-  public String beginObject() throws StructuredIOException {
+  public String beginObject() throws IOException {
     String name = null;
     if (currentValue.getKey() == NAME) {
       name = currentValue.getValue().asString();
       consume();
     }
-
     if (currentValue.getKey() == BEGIN_OBJECT) {
       consume();
     } else if (readStack.peek() != BEGIN_OBJECT) {
-      throw new StructuredIOException("Expecting BEGIN_OBJECT, but found " + jsonTokenToStructuredElement(null));
+      throw new IOException("Expecting BEGIN_OBJECT, but found " + jsonTokenToStructuredElement(null));
     }
     return name;
   }
@@ -131,7 +127,7 @@ public class JSONReader extends StructuredReader {
     reader.close();
   }
 
-  private void consume() throws StructuredIOException {
+  private void consume() throws IOException {
     try {
       JsonToken next = reader.peek();
       switch (next) {
@@ -141,7 +137,7 @@ public class JSONReader extends StructuredReader {
           if (readStack.size() == 1 && readStack.peek() == BEGIN_ARRAY) {
             currentValue = Tuple2.of(END_DOCUMENT, Val.NULL);
           } else if (readStack.pop() != BEGIN_ARRAY) {
-            throw new StructuredIOException("Illformed JSON");
+            throw new IOException("Illformed JSON");
           }
           break;
         case END_DOCUMENT:
@@ -153,7 +149,7 @@ public class JSONReader extends StructuredReader {
           if (readStack.size() == 1 && readStack.peek() == BEGIN_OBJECT) {
             currentValue = Tuple2.of(END_DOCUMENT, Val.NULL);
           } else if (readStack.pop() != BEGIN_OBJECT) {
-            throw new StructuredIOException("Illformed JSON");
+            throw new IOException("Illformed JSON");
           }
           break;
         case BEGIN_ARRAY:
@@ -186,33 +182,35 @@ public class JSONReader extends StructuredReader {
           currentValue = Tuple2.of(null, Val.NULL);
       }
     } catch (IOException e) {
-      throw new StructuredIOException(e);
+      throw new IOException(e);
     }
   }
 
   @Override
-  public void endArray() throws StructuredIOException {
+  public StructuredReader endArray() throws IOException {
     if (currentValue.getKey() != END_ARRAY) {
-      throw new StructuredIOException("Expecting END_ARRAY, but found " + jsonTokenToStructuredElement(null));
+      throw new IOException("Expecting END_ARRAY, but found " + jsonTokenToStructuredElement(null));
     }
     consume();
-  }
-
-  @Override
-  public JSONReader endDocument() throws StructuredIOException {
     return this;
   }
 
   @Override
-  public void endObject() throws StructuredIOException {
-    if (currentValue.getKey() != END_OBJECT) {
-      throw new StructuredIOException("Expecting END_OBJECT, but found " + jsonTokenToStructuredElement(null));
-    }
-    consume();
+  public void endDocument() throws IOException {
+    close();
   }
 
   @Override
-  public boolean hasNext() throws StructuredIOException {
+  public StructuredReader endObject() throws IOException {
+    if (currentValue.getKey() != END_OBJECT) {
+      throw new IOException("Expecting END_OBJECT, but found " + jsonTokenToStructuredElement(null));
+    }
+    consume();
+    return this;
+  }
+
+  @Override
+  public boolean hasNext() throws IOException {
     return currentValue.getKey() != null && currentValue.getValue() != null;
   }
 
@@ -246,57 +244,27 @@ public class JSONReader extends StructuredReader {
   }
 
   @Override
-  public Tuple2<String, Val> nextKeyValue() throws StructuredIOException {
+  public Tuple2<String, Val> nextKeyValue() throws IOException {
     if (currentValue.getKey() != NAME) {
-      throw new StructuredIOException("Expecting NAME, but found " + jsonTokenToStructuredElement(null));
+      throw new IOException("Expecting NAME, but found " + jsonTokenToStructuredElement(null));
     }
     String name = currentValue.getValue().asString();
     consume();
     return Tuple2.of(name, nextValue());
   }
 
-  public <T> T nextObject() throws StructuredIOException {
-    Preconditions.checkState(peek() == ElementType.BEGIN_OBJECT, "Expecting Begin Object, Found " + peek());
-    Object o;
-
-    beginObject();
-    try {
-      Val val = nextKeyValue("class").getV2();
-      o = Reflect.onClass(
-        val.asClass()
-      ).create().get();
-    } catch (ReflectionException e) {
-      throw new StructuredIOException(e);
-    }
-    if (o instanceof Readable) {
-      Cast.<Readable>as(o).read(this);
-    } else {
-      BeanMap map = new BeanMap(o);
-      map.putAll(nextMap());
-    }
-    endObject();
-
-    return Cast.as(o);
-  }
-
   @Override
-  public <T> T nextObject(Class<T> clazz) throws StructuredIOException {
+  public <T> Tuple2<String, T> nextKeyValue(Class<T> clazz) throws IOException {
     if (currentValue.getKey() != NAME) {
-      throw new StructuredIOException("Expecting NAME, but found " + jsonTokenToStructuredElement(null));
+      throw new IOException("Expecting NAME, but found " + jsonTokenToStructuredElement(null));
     }
-
-    Gson gson = new Gson();
     String name = currentValue.getValue().asString();
-    if (!name.equals(clazz.getName()) && !name.equals(clazz.getSimpleName())) {
-      throw new StructuredIOException("Expected type:" + clazz.getName() + " found:" + name);
-    }
-    T object = gson.fromJson(reader, clazz);
     consume();
-    return object;
+    return Tuple2.of(name, nextValue(clazz));
   }
 
   @Override
-  public Val nextValue() throws StructuredIOException {
+  public Val nextSimpleValue() throws IOException {
     switch (currentValue.getKey()) {
       case NULL:
       case STRING:
@@ -306,22 +274,17 @@ public class JSONReader extends StructuredReader {
         consume();
         return object;
       default:
-        throw new StructuredIOException("Expecting VALUE, but found " + jsonTokenToStructuredElement(null));
+        throw new IOException("Expecting VALUE, but found " + jsonTokenToStructuredElement(null));
     }
   }
 
   @Override
-  public ElementType peek() throws StructuredIOException {
-    try {
-      return jsonTokenToStructuredElement(reader.peek());
-    } catch (IOException e) {
-      throw new StructuredIOException(e);
-    }
-
+  public ElementType peek() throws IOException {
+    return jsonTokenToStructuredElement(reader.peek());
   }
 
   @Override
-  public ElementType skip() throws StructuredIOException {
+  public ElementType skip() throws IOException {
     try {
       ElementType element = jsonTokenToStructuredElement(reader.peek());
       JsonToken token = currentValue.getKey();
@@ -332,7 +295,7 @@ public class JSONReader extends StructuredReader {
       consume();
       return element;
     } catch (IOException e) {
-      throw new StructuredIOException(e);
+      throw new IOException(e);
     }
   }
 

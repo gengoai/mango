@@ -23,7 +23,6 @@ package com.davidbracewell.io.structured.json;
 
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.ElementType;
-import com.davidbracewell.io.structured.StructuredIOException;
 import com.davidbracewell.io.structured.StructuredWriter;
 import com.google.common.base.Preconditions;
 import com.google.gson.stream.JsonWriter;
@@ -47,7 +46,7 @@ public class JSONWriter extends StructuredWriter {
    * Instantiates a new JSON writer.
    *
    * @param resource the resource
-   * @throws StructuredIOException the structured iO exception
+   * @throws IOException the structured iO exception
    */
   public JSONWriter(@NonNull Resource resource) throws IOException {
     this.writer = new JsonWriter(resource.writer());
@@ -135,11 +134,7 @@ public class JSONWriter extends StructuredWriter {
 
   @Override
   public void flush() throws IOException {
-    try {
-      writer.flush();
-    } catch (IOException e) {
-      throw new StructuredIOException(e);
-    }
+    writer.flush();
   }
 
   private void popIf(ElementType type) {
@@ -177,7 +172,7 @@ public class JSONWriter extends StructuredWriter {
   @Override
   public JSONWriter writeKeyValue(String key, Object value) throws IOException {
     if (inArray()) {
-      throw new StructuredIOException("Cannot write key-value pair inside an array.");
+      throw new IOException("Cannot write key-value pair inside an array.");
     }
     writeName(key);
     writeValue(value);

@@ -45,9 +45,9 @@ public interface StructuredFormat extends Serializable {
    *
    * @param resource the resource
    * @return the structured reader
-   * @throws StructuredIOException the structured iO exception
+   * @throws IOException the structured iO exception
    */
-  StructuredReader createReader(Resource resource) throws StructuredIOException;
+  StructuredReader createReader(Resource resource) throws IOException;
 
 
   /**
@@ -55,7 +55,7 @@ public interface StructuredFormat extends Serializable {
    *
    * @param resource the resource
    * @return the structured writer
-   * @throws StructuredIOException the structured iO exception
+   * @throws IOException the structured iO exception
    */
   StructuredWriter createWriter(Resource resource) throws IOException;
 
@@ -65,9 +65,9 @@ public interface StructuredFormat extends Serializable {
    *
    * @param resource the resource
    * @return the structured document
-   * @throws StructuredIOException the structured iO exception
+   * @throws IOException the structured iO exception
    */
-  StructuredDocument createDocument(Resource resource) throws StructuredIOException;
+  StructuredDocument createDocument(Resource resource) throws IOException;
 
   /**
    * XML Format
@@ -77,7 +77,7 @@ public interface StructuredFormat extends Serializable {
     private static final long serialVersionUID = 1297100190960314727L;
 
     @Override
-    public StructuredReader createReader(Resource resource) throws StructuredIOException {
+    public StructuredReader createReader(Resource resource) throws IOException {
       return new XMLReader(resource);
     }
 
@@ -87,7 +87,7 @@ public interface StructuredFormat extends Serializable {
     }
 
     @Override
-    public StructuredDocument createDocument(Resource resource) throws StructuredIOException {
+    public StructuredDocument createDocument(Resource resource) throws IOException {
       return XMLDocument.from(resource);
     }
   };
@@ -100,7 +100,7 @@ public interface StructuredFormat extends Serializable {
     private static final long serialVersionUID = 1297100190960314727L;
 
     @Override
-    public StructuredReader createReader(Resource resource) throws StructuredIOException {
+    public StructuredReader createReader(Resource resource) throws IOException {
       return new JSONReader(resource);
     }
 
@@ -110,7 +110,7 @@ public interface StructuredFormat extends Serializable {
     }
 
     @Override
-    public StructuredDocument createDocument(Resource resource) throws StructuredIOException {
+    public StructuredDocument createDocument(Resource resource) throws IOException {
       JSONDocument document = new JSONDocument();
       document.read(resource);
       return document;
@@ -127,11 +127,11 @@ public interface StructuredFormat extends Serializable {
     }
 
     @Override
-    public StructuredReader createReader(Resource resource) throws StructuredIOException {
+    public StructuredReader createReader(Resource resource) throws IOException {
       try {
         return format.reader(resource);
       } catch (IOException e) {
-        throw new StructuredIOException(e);
+        throw new IOException(e);
       }
     }
 
@@ -140,12 +140,12 @@ public interface StructuredFormat extends Serializable {
       try {
         return format.writer(resource);
       } catch (IOException e) {
-        throw new StructuredIOException(e);
+        throw new IOException(e);
       }
     }
 
     @Override
-    public StructuredDocument createDocument(Resource resource) throws StructuredIOException {
+    public StructuredDocument createDocument(Resource resource) throws IOException {
       throw new UnsupportedOperationException();
     }
   }

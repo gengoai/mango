@@ -24,7 +24,6 @@ package com.davidbracewell.io.structured.xml;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.Element;
 import com.davidbracewell.io.structured.StructuredDocument;
-import com.davidbracewell.io.structured.StructuredIOException;
 import com.google.common.base.Preconditions;
 import org.w3c.dom.Document;
 
@@ -47,9 +46,9 @@ public class XMLDocument extends XMLElement implements StructuredDocument {
    *
    * @param resource The resource containing the XMLDocument
    * @return The XML Document
-   * @throws StructuredIOException Something went wrong reading in the document.
+   * @throws IOException Something went wrong reading in the document.
    */
-  public static XMLDocument from(Resource resource) throws StructuredIOException {
+  public static XMLDocument from(Resource resource) throws IOException {
     XMLDocument doc = new XMLDocument();
     doc.read(resource);
     return doc;
@@ -82,22 +81,22 @@ public class XMLDocument extends XMLElement implements StructuredDocument {
   }
 
   @Override
-  public void write(Resource resource) throws StructuredIOException {
+  public void write(Resource resource) throws IOException {
     try {
       Preconditions.checkNotNull(resource).write(this.toString());
     } catch (IOException e) {
-      throw new StructuredIOException(e);
+      throw new IOException(e);
     }
   }
 
   @Override
-  public void read(Resource resource) throws StructuredIOException {
+  public void read(Resource resource) throws IOException {
     try {
       this.document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(resource.inputStream());
       setNode(this.document.getDocumentElement());
       setOwner(this);
     } catch (Exception e) {
-      throw new StructuredIOException(e);
+      throw new IOException(e);
     }
   }
 

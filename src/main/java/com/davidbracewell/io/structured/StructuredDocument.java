@@ -25,6 +25,7 @@ package com.davidbracewell.io.structured;
 import com.davidbracewell.io.resource.Resource;
 import lombok.NonNull;
 
+import java.io.IOException;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -44,17 +45,17 @@ public interface StructuredDocument {
    * Writes the document.
    *
    * @param resource the resource to write the document to
-   * @throws StructuredIOException something went wrong in writing the document.
+   * @throws IOException something went wrong in writing the document.
    */
-  void write(Resource resource) throws StructuredIOException;
+  void write(Resource resource) throws IOException;
 
   /**
    * Reads a document from a given resource overriding the document currently loaded.
    *
    * @param resource the resource to read from
-   * @throws StructuredIOException something went wrong reading in the document.
+   * @throws IOException something went wrong reading in the document.
    */
-  void read(Resource resource) throws StructuredIOException;
+  void read(Resource resource) throws IOException;
 
   /**
    * Gets the root element of the document.

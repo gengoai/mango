@@ -24,12 +24,12 @@ package com.davidbracewell.io.structured.xml;
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.structured.ElementType;
-import com.davidbracewell.io.structured.StructuredIOException;
 import com.davidbracewell.tuple.Tuple2;
 import com.google.common.collect.Lists;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -97,7 +97,7 @@ public class XMLReaderTest {
     reader.close();
   }
 
-  @Test(expected = StructuredIOException.class)
+  @Test(expected = IOException.class)
   public void testReadError() throws Exception {
     XMLReader reader = new XMLReader(Resources.fromClasspath("iknowledge/espresso/test.xml"));
     reader.beginDocument();

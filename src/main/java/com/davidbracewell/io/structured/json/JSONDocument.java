@@ -24,7 +24,6 @@ package com.davidbracewell.io.structured.json;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.Element;
 import com.davidbracewell.io.structured.StructuredDocument;
-import com.davidbracewell.io.structured.StructuredIOException;
 import com.google.common.base.Preconditions;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -43,23 +42,23 @@ public class JSONDocument extends JSONElement implements StructuredDocument {
   }
 
   @Override
-  public void write(Resource resource) throws StructuredIOException {
+  public void write(Resource resource) throws IOException {
     try {
       Preconditions.checkNotNull(resource).write(
-          new GsonBuilder().setPrettyPrinting().create().toJson(node)
+        new GsonBuilder().setPrettyPrinting().create().toJson(node)
       );
     } catch (IOException e) {
-      throw new StructuredIOException(e);
+      throw new IOException(e);
     }
   }
 
   @Override
-  public void read(Resource resource) throws StructuredIOException {
+  public void read(Resource resource) throws IOException {
     try {
       JsonElement element = new JsonParser().parse(resource.reader());
       setNode(element);
     } catch (IOException e) {
-      throw new StructuredIOException(e);
+      throw new IOException(e);
     }
   }
 

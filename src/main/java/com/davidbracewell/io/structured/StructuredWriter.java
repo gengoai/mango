@@ -233,8 +233,10 @@ public abstract class StructuredWriter implements Closeable {
         }
       });
     } else if (object instanceof Writeable) {
+      beginObject();
       writeKeyValue("class", object.getClass().getName());
       Cast.<Writeable>as(object).write(this);
+      endObject();
     } else {
       writeValue(Convert.convert(object, String.class));
     }

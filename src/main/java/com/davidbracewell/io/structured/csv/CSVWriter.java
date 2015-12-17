@@ -27,7 +27,6 @@ import com.davidbracewell.collection.Indexes;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.CSV;
-import com.davidbracewell.io.structured.StructuredIOException;
 import com.davidbracewell.io.structured.StructuredWriter;
 import com.davidbracewell.io.structured.Writeable;
 import com.davidbracewell.string.CSVFormatter;
@@ -177,12 +176,8 @@ public class CSVWriter extends StructuredWriter {
   }
 
   @Override
-  public void flush() throws StructuredIOException {
-    try {
-      writer.flush();
-    } catch (IOException e) {
-      throw new StructuredIOException(e);
-    }
+  public void flush() throws IOException {
+    writer.flush();
   }
 
   @Override

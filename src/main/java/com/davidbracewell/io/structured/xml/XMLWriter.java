@@ -30,7 +30,6 @@ import com.google.common.base.Strings;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Stack;
