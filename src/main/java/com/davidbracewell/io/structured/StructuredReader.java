@@ -36,10 +36,10 @@ import lombok.NonNull;
 import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.*;
 
 /**
  * Represents a class for reading data in a structured format, e.g. xml, json, yaml, etc. Individual implementations may
@@ -362,6 +362,23 @@ public abstract class StructuredReader implements Closeable {
         throw new IOException(e);
       }
     } else if (peek() == ElementType.BEGIN_OBJECT) {
+      Reflect reflected = Reflect.onClass(clazz);
+      Optional<Method> staticRead = reflected.getMethods("read", 1).stream()
+        .filter(m -> StructuredReader.class.isAssignableFrom(m.getParameterTypes()[0]))
+        .filter(m -> Modifier.isStatic(m.getModifiers()))
+        .findFirst();
+
+      if (staticRead.isPresent()) {
+        try {
+          beginObject();
+          T result = Cast.as(staticRead.get().invoke(null,this));
+          endObject();
+          return result;
+        } catch (IllegalAccessException | InvocationTargetException e) {
+          throw new IOException(e);
+        }
+      }
+
       try {
         T object = Reflect.onClass(clazz).create().get();
         beginObject();
