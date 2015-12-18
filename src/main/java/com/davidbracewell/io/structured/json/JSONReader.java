@@ -21,17 +21,11 @@
 
 package com.davidbracewell.io.structured.json;
 
-import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.ElementType;
-import com.davidbracewell.io.structured.Readable;
 import com.davidbracewell.io.structured.StructuredReader;
-import com.davidbracewell.reflection.BeanMap;
-import com.davidbracewell.reflection.Reflect;
-import com.davidbracewell.reflection.ReflectionException;
 import com.davidbracewell.tuple.Tuple2;
-import com.google.common.base.Preconditions;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 
@@ -264,7 +258,7 @@ public class JSONReader extends StructuredReader {
   }
 
   @Override
-  public Val nextSimpleValue() throws IOException {
+  protected Val nextSimpleValue() throws IOException {
     switch (currentValue.getKey()) {
       case NULL:
       case STRING:

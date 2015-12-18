@@ -26,6 +26,7 @@ import com.davidbracewell.conversion.Val;
 import com.davidbracewell.reflection.BeanMap;
 import com.davidbracewell.reflection.Reflect;
 import com.davidbracewell.reflection.ReflectionException;
+import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
@@ -34,6 +35,7 @@ import lombok.NonNull;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -48,6 +50,11 @@ import java.util.Map;
 public abstract class StructuredReader implements Closeable {
 
 
+  /**
+   * Gets document type.
+   *
+   * @return the document type
+   */
   public abstract ElementType getDocumentType();
 
   /**
@@ -67,7 +74,7 @@ public abstract class StructuredReader implements Closeable {
    */
   public final StructuredReader beginArray(String expectedName) throws IOException {
     String name = beginArray();
-    if (expectedName != null && (name == null || !name.equals(expectedName))) {
+    if (!StringUtils.isNullOrBlank(expectedName) && (name == null || !name.equals(expectedName))) {
       throw new IOException("Expected " + expectedName);
     }
     return this;
@@ -98,7 +105,7 @@ public abstract class StructuredReader implements Closeable {
    */
   public final StructuredReader beginObject(String expectedName) throws IOException {
     String name = beginObject();
-    if (name != null && !name.equals(expectedName)) {
+    if (!StringUtils.isNullOrBlank(expectedName) && !name.equals(expectedName)) {
       throw new IOException("Expected " + expectedName);
     }
     return this;
@@ -115,7 +122,6 @@ public abstract class StructuredReader implements Closeable {
   /**
    * Ends the document
    *
-   * @return This structured writer
    * @throws IOException Something went wrong reading
    */
   public abstract void endDocument() throws IOException;
@@ -143,7 +149,19 @@ public abstract class StructuredReader implements Closeable {
    * @throws IOException Something went wrong reading the array
    */
   public final Val[] nextArray() throws IOException {
-    return nextArray(null);
+    return nextArray(StringUtils.EMPTY);
+  }
+
+  /**
+   * Next array t [ ].
+   *
+   * @param <T>         the type parameter
+   * @param elementType the element type
+   * @return the t [ ]
+   * @throws IOException the io exception
+   */
+  public final <T> T[] nextArray(@NonNull Class<T> elementType) throws IOException {
+    return nextArray(StringUtils.EMPTY, elementType);
   }
 
   /**
@@ -163,15 +181,86 @@ public abstract class StructuredReader implements Closeable {
     return array.toArray(new Val[array.size()]);
   }
 
-  public <T extends Collection<Val>> T nextCollection(@NonNull Supplier<T> supplier) throws IOException {
-    return nextCollection(supplier, null);
+  /**
+   * Next array t [ ].
+   *
+   * @param <T>          the type parameter
+   * @param expectedName the expected name
+   * @param elementType  the element type
+   * @return the t [ ]
+   * @throws IOException the io exception
+   */
+  public final <T> T[] nextArray(String expectedName, @NonNull Class<T> elementType) throws IOException {
+    beginArray(expectedName);
+    List<T> array = Lists.newArrayList();
+    while (peek() != ElementType.END_ARRAY) {
+      array.add(nextValue(elementType));
+    }
+    endArray();
+    return array.toArray(Cast.as(Array.newInstance(elementType, array.size())));
   }
 
+  /**
+   * Next collection t.
+   *
+   * @param <T>      the type parameter
+   * @param supplier the supplier
+   * @return the t
+   * @throws IOException the io exception
+   */
+  public <T extends Collection<Val>> T nextCollection(@NonNull Supplier<T> supplier) throws IOException {
+    return nextCollection(supplier, StringUtils.EMPTY);
+  }
+
+  /**
+   * Next collection t.
+   *
+   * @param <T>         the type parameter
+   * @param <R>         the type parameter
+   * @param supplier    the supplier
+   * @param elementType the element type
+   * @return the t
+   * @throws IOException the io exception
+   */
+  public <T extends Collection<R>, R> T nextCollection(@NonNull Supplier<T> supplier, @NonNull Class<R> elementType) throws IOException {
+    return nextCollection(supplier, null, elementType);
+  }
+
+  /**
+   * Next collection t.
+   *
+   * @param <T>          the type parameter
+   * @param supplier     the supplier
+   * @param expectedName the expected name
+   * @return the t
+   * @throws IOException the io exception
+   */
   public <T extends Collection<Val>> T nextCollection(@NonNull Supplier<T> supplier, String expectedName) throws IOException {
     beginArray(expectedName);
     T collection = supplier.get();
     while (peek() != ElementType.END_ARRAY) {
       collection.add(nextValue());
+    }
+    endArray();
+    return collection;
+  }
+
+  /**
+   * Next collection t.
+   *
+   * @param <T>          the type parameter
+   * @param <R>          the type parameter
+   * @param supplier     the supplier
+   * @param expectedName the expected name
+   * @param elementType  the element type
+   * @return the t
+   * @throws IOException the io exception
+   */
+  public <T extends Collection<R>, R> T nextCollection(@NonNull Supplier<T> supplier, String expectedName, @NonNull Class<R> elementType) throws IOException {
+    beginArray(expectedName);
+    T collection = supplier.get();
+    while (peek() != ElementType.END_ARRAY) {
+      collection.add(nextValue(elementType));
     }
     endArray();
     return collection;
@@ -185,6 +274,14 @@ public abstract class StructuredReader implements Closeable {
    */
   public abstract Tuple2<String, Val> nextKeyValue() throws IOException;
 
+  /**
+   * Next key value tuple 2.
+   *
+   * @param <T>   the type parameter
+   * @param clazz the clazz
+   * @return the tuple 2
+   * @throws IOException the io exception
+   */
   public abstract <T> Tuple2<String, T> nextKeyValue(Class<T> clazz) throws IOException;
 
   /**
@@ -202,6 +299,15 @@ public abstract class StructuredReader implements Closeable {
     return Tuple2.getV2();
   }
 
+  /**
+   * Next key value t.
+   *
+   * @param <T>         the type parameter
+   * @param expectedKey the expected key
+   * @param clazz       the clazz
+   * @return the t
+   * @throws IOException the io exception
+   */
   public final <T> T nextKeyValue(String expectedKey, Class<T> clazz) throws IOException {
     Tuple2<String, T> Tuple2 = nextKeyValue(clazz);
     if (expectedKey != null && (Tuple2 == null || !Tuple2.getKey().equals(expectedKey))) {
@@ -228,11 +334,19 @@ public abstract class StructuredReader implements Closeable {
     }
   }
 
+  /**
+   * Next simple value val.
+   *
+   * @return the val
+   * @throws IOException the io exception
+   */
   protected abstract Val nextSimpleValue() throws IOException;
 
   /**
    * Reads the next value
    *
+   * @param <T>   the type parameter
+   * @param clazz the clazz
    * @return The next value
    * @throws IOException Something went wrong reading
    */
@@ -276,15 +390,55 @@ public abstract class StructuredReader implements Closeable {
    * @throws IOException Something went wrong reading
    */
   public Map<String, Val> nextMap() throws IOException {
-    return nextMap(null);
+    return nextMap(StringUtils.EMPTY);
   }
 
+  /**
+   * Next map map.
+   *
+   * @param expectedName the expected name
+   * @return the map
+   * @throws IOException the io exception
+   */
   public Map<String, Val> nextMap(String expectedName) throws IOException {
-    boolean ignoreObject = peek() != ElementType.BEGIN_OBJECT && expectedName == null;
+    boolean ignoreObject = peek() != ElementType.BEGIN_OBJECT && StringUtils.isNullOrBlank(expectedName);
     if (!ignoreObject) beginObject(expectedName);
     Map<String, Val> map = Maps.newHashMap();
     while (peek() != ElementType.END_OBJECT) {
       Tuple2<String, Val> kv = nextKeyValue();
+      map.put(kv.getKey(), kv.getValue());
+    }
+    if (!ignoreObject) endObject();
+    return map;
+  }
+
+  /**
+   * Next map map.
+   *
+   * @param <T>       the type parameter
+   * @param valueType the value type
+   * @return the map
+   * @throws IOException the io exception
+   */
+  public <T> Map<String, T> nextMap(@NonNull Class<T> valueType) throws IOException {
+    return nextMap(null, valueType);
+  }
+
+  /**
+   * Next map map.
+   *
+   * @param <T>          the type parameter
+   * @param expectedName the expected name
+   * @param valueType    the value type
+   * @return the map
+   * @throws IOException the io exception
+   */
+  public <T> Map<String, T> nextMap(String expectedName, @NonNull Class<T> valueType) throws IOException {
+    boolean ignoreObject = peek() != ElementType.BEGIN_OBJECT && expectedName == null;
+    if (!ignoreObject) beginObject(expectedName);
+    Map<String, T> map = Maps.newHashMap();
+    while (peek() != ElementType.END_OBJECT) {
+      Tuple2<String, T> kv = nextKeyValue(valueType);
       map.put(kv.getKey(), kv.getValue());
     }
     if (!ignoreObject) endObject();

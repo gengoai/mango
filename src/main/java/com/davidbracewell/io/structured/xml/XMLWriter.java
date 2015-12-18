@@ -21,18 +21,27 @@
 
 package com.davidbracewell.io.structured.xml;
 
+import com.davidbracewell.DynamicEnum;
+import com.davidbracewell.collection.Counter;
+import com.davidbracewell.collection.MultiCounter;
+import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.ElementType;
 import com.davidbracewell.io.structured.StructuredWriter;
+import com.davidbracewell.io.structured.Writeable;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Multimap;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Stack;
+import java.util.*;
 
 /**
  * An implementation of a StructuredWriter that writes xml.
@@ -160,14 +169,64 @@ public class XMLWriter extends StructuredWriter {
   }
 
   @Override
-  public XMLWriter writeKeyValue(String key, Object value) throws IOException {
+  public XMLWriter writeKeyValue(String key, Object object) throws IOException {
     try {
-      if (key == null) {
-        writeValue(value);
+
+      if (object == null ||
+        object instanceof Number ||
+        object instanceof String ||
+        object instanceof Boolean ||
+        object instanceof Enum ||
+        object instanceof DynamicEnum) {
+        writer.writeStartElement(key);
+        writeValue(object);
+        writer.writeEndElement();
+      } else if (object instanceof Collection) {
+        writeCollection(key, Cast.as(object));
+      } else if (object instanceof Map) {
+        writeMap(key, Cast.as(object));
+      } else if (object.getClass().isArray()) {
+        writeArray(key, Cast.as(object));
+      } else if (object instanceof Multimap) {
+        writeMap(key, Cast.<Multimap>as(object).asMap());
+      } else if (object instanceof Counter) {
+        writeMap(key, Cast.<Counter>as(object).asMap());
+      } else if (object instanceof MultiCounter) {
+        writeMap(key, Cast.<MultiCounter>as(object).asMap());
+      } else if (object instanceof Iterable) {
+        writeCollection(key, new AbstractCollection<Object>() {
+          @Override
+          public Iterator<Object> iterator() {
+            return Cast.<Iterable<Object>>as(object).iterator();
+          }
+
+          @Override
+          public int size() {
+            return Iterables.size(Cast.as(object));
+          }
+        });
+      } else if (object instanceof Iterator) {
+        writeCollection(key, new AbstractCollection<Object>() {
+          @Override
+          public Iterator<Object> iterator() {
+            return Cast.as(object);
+          }
+
+          @Override
+          public int size() {
+            return Iterators.size(Cast.as(object));
+          }
+        });
+      } else if (object instanceof Writeable) {
+        beginObject(key);
+        Cast.<Writeable>as(object).write(this);
+        endObject();
+      } else {
+        writer.writeStartElement(key);
+        writeValue(Convert.convert(object, String.class));
+        writer.writeEndElement();
       }
-      writer.writeStartElement(key);
-      writeValue(value);
-      writer.writeEndElement();
+
     } catch (XMLStreamException e) {
       throw new IOException(e);
     }
