@@ -196,6 +196,10 @@ public abstract class StructuredWriter implements Closeable {
       writeBoolean(Cast.as(object));
     } else if (object instanceof Enum || object instanceof DynamicEnum) {
       writeString(Convert.convert(object, String.class));
+    } else  if (object instanceof Writeable) {
+      beginObject();
+      Cast.<Writeable>as(object).write(this);
+      endObject();
     } else if (object instanceof Collection) {
       writeCollection(Cast.as(object));
     } else if (object instanceof Map) {
@@ -232,10 +236,6 @@ public abstract class StructuredWriter implements Closeable {
           return Iterators.size(Cast.as(object));
         }
       });
-    } else if (object instanceof Writeable) {
-      beginObject();
-      Cast.<Writeable>as(object).write(this);
-      endObject();
     } else {
       writeValue(Convert.convert(object, String.class));
     }
