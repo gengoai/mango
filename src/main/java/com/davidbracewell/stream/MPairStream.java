@@ -90,6 +90,8 @@ public interface MPairStream<T, U> extends AutoCloseable {
    */
   void forEach(SerializableBiConsumer<? super T, ? super U> consumer);
 
+  void forEachLocal(SerializableBiConsumer<? super T, ? super U> consumer);
+
   /**
    * Group by key m pair stream.
    *

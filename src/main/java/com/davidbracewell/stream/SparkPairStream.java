@@ -57,6 +57,11 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
   }
 
   @Override
+  public void forEachLocal(SerializableBiConsumer<? super T, ? super U> consumer) {
+    rdd.toLocalIterator().forEachRemaining(e -> consumer.accept(e._1(), e._2()));
+  }
+
+  @Override
   public void close() throws Exception {
 
   }

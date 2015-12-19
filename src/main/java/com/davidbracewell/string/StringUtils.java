@@ -61,6 +61,29 @@ public class StringUtils {
    */
   public static final CharMatcher NOT_LETTER_OR_DIGIT = CharMatcher.forPredicate(Predicates.not(LETTER_OR_DIGIT));
 
+  public static String center(@NonNull String s, int length) {
+    int start = (int) Math.floor(Math.max(0, (length - s.length()) / 2d));
+    int end = length - (start + s.length());
+    return repeat(' ', start) +
+      s +
+      repeat(' ', end);
+  }
+
+  public static String repeat(@NonNull String s, int count) {
+    StringBuilder builder = new StringBuilder();
+    for (int i = 0; i < count; i++) {
+      builder.append(s);
+    }
+    return builder.toString();
+  }
+
+  public static String repeat(@NonNull char c, int count) {
+    StringBuilder builder = new StringBuilder();
+    for (int i = 0; i < count; i++) {
+      builder.append(c);
+    }
+    return builder.toString();
+  }
 
   /**
    * <p>Abbreviates a string to a desired length and adds "..." at the end.</p>
@@ -231,7 +254,7 @@ public class StringUtils {
     }
     StringBuilder builder = new StringBuilder();
     for (int i = 0; i < input.length(); ) {
-      if (input.charAt(i) == escapeCharacter ) {
+      if (input.charAt(i) == escapeCharacter) {
         builder.append(input.charAt(i + 1));
         i = i + 2;
       } else {

@@ -138,6 +138,8 @@ public interface MStream<T> extends AutoCloseable {
    */
   void forEach(SerializableConsumer<? super T> consumer);
 
+  void forEachLocal(SerializableConsumer<? super T> consumer);
+
   /**
    * Iterator iterator.
    *

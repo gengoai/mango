@@ -182,6 +182,11 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
   }
 
   @Override
+  public void forEachLocal(SerializableConsumer<? super T> consumer) {
+    stream.forEachOrdered(consumer);
+  }
+
+  @Override
   public Iterator<T> iterator() {
     return stream.iterator();
   }

@@ -156,6 +156,11 @@ public class SparkStream<T> implements MStream<T>, Serializable {
   }
 
   @Override
+  public void forEachLocal(SerializableConsumer<? super T> consumer) {
+    rdd.toLocalIterator().forEachRemaining(consumer);
+  }
+
+  @Override
   public Iterator<T> iterator() {
     return rdd.toLocalIterator();
   }

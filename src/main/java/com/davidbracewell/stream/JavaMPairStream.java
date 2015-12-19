@@ -74,7 +74,24 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U>, Serializable {
 
   @Override
   public void forEach(@NonNull SerializableBiConsumer<? super T, ? super U> consumer) {
-    stream.forEach(e -> consumer.accept(e.getKey(), e.getValue()));
+    stream.forEach(e -> {
+      if (e == null) {
+        consumer.accept(null, null);
+      } else {
+        consumer.accept(e.getKey(), e.getValue());
+      }
+    });
+  }
+
+  @Override
+  public void forEachLocal(SerializableBiConsumer<? super T, ? super U> consumer) {
+    stream.sequential().forEach(e -> {
+      if (e == null) {
+        consumer.accept(null, null);
+      } else {
+        consumer.accept(e.getKey(), e.getValue());
+      }
+    });
   }
 
   @Override
