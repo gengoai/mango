@@ -24,10 +24,7 @@ package com.davidbracewell.string;
 import com.davidbracewell.collection.Collect;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.structured.csv.CSVReader;
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicates;
-import com.google.common.base.Throwables;
+import com.google.common.base.*;
 import com.google.common.collect.Lists;
 import lombok.NonNull;
 
@@ -63,10 +60,7 @@ public class StringUtils {
 
   public static String center(@NonNull String s, int length) {
     int start = (int) Math.floor(Math.max(0, (length - s.length()) / 2d));
-    int end = length - (start + s.length());
-    return repeat(' ', start) +
-      s +
-      repeat(' ', end);
+    return Strings.padEnd(repeat(' ', start) + s, length, ' ');
   }
 
   public static String repeat(@NonNull String s, int count) {
