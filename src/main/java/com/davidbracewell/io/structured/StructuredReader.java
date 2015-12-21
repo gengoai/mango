@@ -342,6 +342,19 @@ public abstract class StructuredReader implements Closeable {
    */
   protected abstract Val nextSimpleValue() throws IOException;
 
+  private <T> T readReadable(Class<T> clazz) throws IOException {
+    try {
+      T object = Reflect.onClass(clazz).create().get();
+      boolean objectWrapped = peek() == ElementType.BEGIN_OBJECT;
+      if (objectWrapped) beginObject();
+      Cast.<Readable>as(object).read(this);
+      if (objectWrapped) endObject();
+      return object;
+    } catch (ReflectionException e) {
+      throw new IOException(e);
+    }
+  }
+
   /**
    * Reads the next value
    *
@@ -352,15 +365,7 @@ public abstract class StructuredReader implements Closeable {
    */
   public final <T> T nextValue(@NonNull Class<T> clazz) throws IOException {
     if (Readable.class.isAssignableFrom(clazz)) {
-      try {
-        T object = Reflect.onClass(clazz).create().get();
-        beginObject();
-        Cast.<Readable>as(object).read(this);
-        endObject();
-        return object;
-      } catch (ReflectionException e) {
-        throw new IOException(e);
-      }
+      return readReadable(clazz);
     } else if (peek() == ElementType.BEGIN_OBJECT) {
       Reflect reflected = Reflect.onClass(clazz);
       Optional<Method> staticRead = reflected.getMethods("read", 1).stream()
@@ -371,7 +376,7 @@ public abstract class StructuredReader implements Closeable {
       if (staticRead.isPresent()) {
         try {
           beginObject();
-          T result = Cast.as(staticRead.get().invoke(null,this));
+          T result = Cast.as(staticRead.get().invoke(null, this));
           endObject();
           return result;
         } catch (IllegalAccessException | InvocationTargetException e) {
