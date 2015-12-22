@@ -23,6 +23,7 @@ package com.davidbracewell.config;
 
 import com.davidbracewell.Language;
 import com.davidbracewell.SystemInfo;
+import com.davidbracewell.application.Application;
 import com.davidbracewell.application.CommandLineApplication;
 import com.davidbracewell.cli.CommandLineParser;
 import com.davidbracewell.cli.NamedOption;
@@ -195,10 +196,8 @@ public final class Config implements Serializable {
   /**
    * <p>Checks if a property is in the config or or set on the system. The property name is constructed as
    * <code>clazz.getName() + . + propertyComponent[0] + . + propertyComponent[1] + ... +
-   * (language.toString()|language.getCode().toLowerCase())</code>
-   * This will return true if the language specific config option is set or a default (i.e. no-language specified)
-   * version is set.
-   * </p>
+   * (language.toString()|language.getCode().toLowerCase())</code> This will return true if the language specific config
+   * option is set or a default (i.e. no-language specified) version is set. </p>
    *
    * @param propertyPrefix     The prefix
    * @param language           The language we would like the config for
@@ -268,10 +267,8 @@ public final class Config implements Serializable {
   /**
    * <p>Checks if a property is in the config or or set on the system. The property name is constructed as
    * <code>clazz.getName() + . + propertyComponent[0] + . + propertyComponent[1] + ... +
-   * (language.toString()|language.getCode().toLowerCase())</code>
-   * This will return true if the language specific config option is set or a default (i.e. no-language specified)
-   * version is set.
-   * </p>
+   * (language.toString()|language.getCode().toLowerCase())</code> This will return true if the language specific config
+   * option is set or a default (i.e. no-language specified) version is set. </p>
    *
    * @param clazz              The class with which the property is associated.
    * @param language           The language we would like the config for
@@ -321,8 +318,8 @@ public final class Config implements Serializable {
   }
 
   /**
-   * <p>Gets the value associated with a property. The property name is constructed as
-   * <code>propertyPrefix + . + propertyComponent[0] + . + propertyComponent[1] + ...</code></p>
+   * <p>Gets the value associated with a property. The property name is constructed as <code>propertyPrefix + . +
+   * propertyComponent[0] + . + propertyComponent[1] + ...</code></p>
    *
    * @param propertyPrefix     The prefix
    * @param propertyComponents The components
@@ -440,6 +437,7 @@ public final class Config implements Serializable {
       // ignore the config class
       if (!ste.getClassName().equals(Config.class.getName()) &&
         !ste.getClassName().equals(CommandLineApplication.class.getName())
+        && !ste.getClassName().equals(Application.class.getName())
         ) {
         return ste.getClassName();
       }
@@ -464,9 +462,9 @@ public final class Config implements Serializable {
 
 
   /**
-   * <p> Initializes the configuration. </p> <p> Looks for a properties (programName.conf) in the classpath, the
-   * user home directory, and in the run directory to load </p> <p> The command line arguments are parsed and added to
-   * the configuration. </p>
+   * <p> Initializes the configuration. </p> <p> Looks for a properties (programName.conf) in the classpath, the user
+   * home directory, and in the run directory to load </p> <p> The command line arguments are parsed and added to the
+   * configuration. </p>
    *
    * @param programName the program name
    * @param args        the command line arguments
@@ -602,9 +600,9 @@ public final class Config implements Serializable {
   }
 
   /**
-   * <p> Initializes the configuration. </p> <p> Looks for a properties (programName.conf) in the classpath, the
-   * user home directory, and in the run directory to load </p> <p> The command line arguments are parsed and added to
-   * the configuration. </p>
+   * <p> Initializes the configuration. </p> <p> Looks for a properties (programName.conf) in the classpath, the user
+   * home directory, and in the run directory to load </p> <p> The command line arguments are parsed and added to the
+   * configuration. </p>
    *
    * @param programName the program name
    * @param args        the command line arguments
