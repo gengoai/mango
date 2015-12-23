@@ -71,7 +71,7 @@ public class TreeMapCounter<TYPE> extends AbstractMapCounter<TYPE> {
   }
 
   @Override
-  protected Counter<TYPE> newInstance() {
+  protected <R> Counter<R> newInstance() {
     return new TreeMapCounter<>();
   }
 

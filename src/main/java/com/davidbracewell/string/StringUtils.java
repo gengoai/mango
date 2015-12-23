@@ -71,7 +71,7 @@ public class StringUtils {
     return builder.toString();
   }
 
-  public static String repeat(@NonNull char c, int count) {
+  public static String repeat(char c, int count) {
     StringBuilder builder = new StringBuilder();
     for (int i = 0; i < count; i++) {
       builder.append(c);
