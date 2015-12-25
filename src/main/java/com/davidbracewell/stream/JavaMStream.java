@@ -104,7 +104,7 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() throws IOException {
     stream.close();
   }
 

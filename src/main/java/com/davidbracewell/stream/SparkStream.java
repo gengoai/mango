@@ -33,6 +33,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.ToDoubleFunction;
@@ -86,7 +87,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() throws IOException {
   }
 
   @Override

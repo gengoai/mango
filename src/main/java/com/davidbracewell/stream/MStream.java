@@ -31,6 +31,7 @@ import com.davidbracewell.io.resource.Resource;
 import com.google.common.collect.Ordering;
 import lombok.NonNull;
 
+import java.io.Closeable;
 import java.util.*;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Collector;
@@ -41,7 +42,7 @@ import java.util.stream.Collector;
  * @param <T> the type parameter
  * @author David B. Bracewell
  */
-public interface MStream<T> extends AutoCloseable {
+public interface MStream<T> extends Closeable {
 
   /**
    * Filter m stream.
