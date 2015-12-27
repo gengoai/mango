@@ -44,6 +44,20 @@ import java.util.stream.Collector;
 public interface Counters {
 
   /**
+   * From array counter.
+   *
+   * @param array the array
+   * @return the counter
+   */
+  static Counter<Integer> fromArray(@NonNull double[] array) {
+    Counter<Integer> counter = Counters.newHashMapCounter();
+    for (int i = 0; i < array.length; i++) {
+      counter.set(i, array[i]);
+    }
+    return counter;
+  }
+
+  /**
    * New concurrent counter.
    *
    * @param <TYPE> the type parameter
