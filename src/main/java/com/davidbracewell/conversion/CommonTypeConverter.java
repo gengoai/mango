@@ -66,7 +66,7 @@ public class CommonTypeConverter {
 
       String string = STRING.apply(input);
       if (string != null) {
-        string = StringUtils.trim(string.replaceAll("\\p{Z}+", " "));
+        string = StringUtils.trim(string.replaceAll(StringUtils.UNICODE_WHITESPACE_PLUS, " "));
 
         Date date = DateUtils.parseQuietly(string, Locale.getDefault());
         if (date != null) {
@@ -202,11 +202,11 @@ public class CommonTypeConverter {
         return array + "]";
       } else if (input instanceof Date) {
         return SimpleDateFormat.getDateTimeInstance().format(input);
-      } else if (input instanceof Map){
+      } else if (input instanceof Map) {
         StringBuilder builder = new StringBuilder("{");
         CSVFormatter mapFormat = CSV.builder().delimiter('=').formatter();
-        Cast.<Map<?,?>>as(input).forEach((o, o2) -> builder.append(
-          mapFormat.format(Convert.convert(o,String.class), Convert.convert(o2,String.class))
+        Cast.<Map<?, ?>>as(input).forEach((o, o2) -> builder.append(
+          mapFormat.format(Convert.convert(o, String.class), Convert.convert(o2, String.class))
         ));
         return builder.append("}").toString();
       }

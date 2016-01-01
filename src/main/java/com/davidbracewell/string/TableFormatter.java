@@ -18,7 +18,8 @@ public class TableFormatter {
   /**
    * The Number formatter.
    */
-  final DecimalFormat numberFormatter = new DecimalFormat("#####E0");
+  final DecimalFormat longNumberFormatter = new DecimalFormat("#####E0");
+  final DecimalFormat normalNumberFormatter = new DecimalFormat("0.000");
   private List<Object> header = new ArrayList<>();
   private List<List<Object>> content = new LinkedList<>();
   private int longestCell = 2;
@@ -89,11 +90,9 @@ public class TableFormatter {
       Number number = Cast.as(o);
       double d = number.doubleValue();
       if (d >= maxNumber) {
-        return numberFormatter.format(d);
-      } else if (d == number.longValue()) {
-        return String.format("%d", number.longValue());
+        return longNumberFormatter.format(d);
       } else {
-        return String.format("%.3f", d);
+        return normalNumberFormatter.format(d);
       }
     }
     return StringUtils.abbreviate(o.toString(), longestCell - 2);

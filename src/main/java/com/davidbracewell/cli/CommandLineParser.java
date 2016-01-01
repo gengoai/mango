@@ -250,8 +250,7 @@ public class CommandLineParser {
     NamedOption option = options.get(key.replaceAll("^-+", ""));
 
     if (option == null) {
-
-      if (LONG.startsWith(key)) {
+      if (key.startsWith(LONG)) {
         unamedOptions.put(key.replaceAll("^--", ""), value);
         return null;
       } else if (value == null || value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {

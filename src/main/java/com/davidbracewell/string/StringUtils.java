@@ -39,6 +39,10 @@ import java.util.stream.Stream;
  */
 public class StringUtils {
 
+  public static String UNICODE_WHITESPACE = "[\\p{Z}\t\r\n\f]";
+  public static String UNICODE_WHITESPACE_STAR = "[\\p{Z}\t\r\n\f]*";
+  public static String UNICODE_WHITESPACE_PLUS = "[\\p{Z}\t\r\n\f]+";
+
   /**
    * CharMatcher combining INVISIBLE, BREAKING_WHITESPACE, and WHITESPACE
    */
