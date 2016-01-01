@@ -251,14 +251,14 @@ public class CommandLineParser {
 
     if (option == null) {
       if (key.startsWith(LONG)) {
-        unamedOptions.put(key.replaceAll("^--", ""), value);
-        return null;
+        unamedOptions.put(key.substring(2), value);
+        return value;
       } else if (value == null || value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
-        unamedOptions.put(key.replaceAll("^-", ""), value);
-        return null;
+        unamedOptions.put(key.substring(1), value);
+        return value;
       }
 
-      unamedOptions.put(key.replaceAll("^-", ""), "true");
+      unamedOptions.put(key.substring(1), "true");
       return null;
 
     } else if (option.isBoolean()) {
