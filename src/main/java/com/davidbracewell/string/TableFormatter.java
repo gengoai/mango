@@ -91,6 +91,8 @@ public class TableFormatter {
       double d = number.doubleValue();
       if (d >= maxNumber) {
         return longNumberFormatter.format(d);
+      } else if (number instanceof Long || number instanceof Integer) {
+        return Long.toString(number.longValue());
       } else {
         return normalNumberFormatter.format(d);
       }
