@@ -27,9 +27,6 @@ import com.davidbracewell.conversion.Val;
 import com.davidbracewell.string.StringUtils;
 import com.google.common.base.Defaults;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -38,6 +35,7 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * <code>Reflect</code> is a class that allows fluent use of reflection
@@ -90,7 +88,7 @@ public class Reflect {
    * @return The Reflect object
    * @throws ClassNotFoundException the class not found exception
    */
-  public static Reflect onClass(String clazz) throws ClassNotFoundException {
+  public static Reflect onClass(String clazz) throws Exception {
     return new Reflect(null, ReflectionUtils.getClassForName(clazz));
   }
 
@@ -164,7 +162,7 @@ public class Reflect {
   }
 
   private static Object convertValueType(Object value, Class<?> toClass) {
-    if( value == null ){
+    if (value == null) {
       return Defaults.defaultValue(toClass);
     }
     if (Val.class.isAssignableFrom(toClass)) {
@@ -184,11 +182,14 @@ public class Reflect {
    * @return True if there is a field with the given name
    */
   public boolean containsField(String name) {
-    try {
-      return clazz.getField(name) != null;
-    } catch (NoSuchFieldException e) {
+    if (StringUtils.isNullOrBlank(name)) {
       return false;
     }
+    return ClassDescriptorCache.getInstance()
+      .getClassDescriptor(clazz)
+      .getFields(accessAll)
+      .stream()
+      .anyMatch(f -> f.getName().equals(name));
   }
 
   /**
@@ -292,9 +293,9 @@ public class Reflect {
    * was called.
    */
   public Set<Constructor<?>> getConstructors() {
-    return Sets.union(Sets.newHashSet(clazz.getConstructors()),
-        (accessAll ? Sets.newHashSet(clazz.getDeclaredConstructors()) : Collections.<Constructor<?>>emptySet())
-    );
+    return ClassDescriptorCache.getInstance()
+      .getClassDescriptor(clazz)
+      .getConstructors(accessAll);
   }
 
   /**
@@ -306,9 +307,9 @@ public class Reflect {
    * was called.
    */
   public Set<Method> getMethods() {
-    return Sets.union(Sets.newHashSet(clazz.getMethods()),
-        (accessAll ? Sets.newHashSet(clazz.getDeclaredMethods()) : Collections.<Method>emptySet())
-    );
+    return ClassDescriptorCache.getInstance()
+      .getClassDescriptor(clazz)
+      .getMethods(accessAll);
   }
 
   public Method getMethod(String name) {
@@ -328,16 +329,11 @@ public class Reflect {
     if (StringUtils.isNullOrBlank(name)) {
       return false;
     }
-    return !Iterables.isEmpty(
-        Iterables.filter(getMethods(),
-            new Predicate<Method>() {
-              @Override
-              public boolean apply(Method input) {
-                return input != null && name.equals(input.getName());
-              }
-            }
-        )
-    );
+    return ClassDescriptorCache.getInstance()
+      .getClassDescriptor(clazz)
+      .getMethods(accessAll)
+      .stream()
+      .anyMatch(f -> f.getName().equals(name));
   }
 
   /**
@@ -351,16 +347,12 @@ public class Reflect {
     if (StringUtils.isNullOrBlank(name) || numParams < 0) {
       return Collections.emptySet();
     }
-    return Sets.newHashSet(
-        Iterables.filter(getMethods(),
-            new Predicate<Method>() {
-              @Override
-              public boolean apply(Method input) {
-                return input != null && name.equals(input.getName()) && input.getParameterTypes().length == numParams;
-              }
-            }
-        )
-    );
+    return ClassDescriptorCache.getInstance()
+      .getClassDescriptor(clazz)
+      .getMethods(accessAll)
+      .stream()
+      .filter(f -> f.getName().equals(name) && f.getParameterCount() == numParams)
+      .collect(Collectors.toSet());
   }
 
   /**
@@ -474,16 +466,9 @@ public class Reflect {
    * was called.
    */
   public Set<Field> getFields() {
-    Set<Field> fields = Sets.newHashSet(clazz.getFields());
-    if (accessAll) {
-      Collections.addAll(fields, clazz.getDeclaredFields());
-      Class<?> parent = clazz.getSuperclass();
-      while (parent != null && parent != Object.class) {
-        fields.addAll(Reflect.onClass(parent).allowPrivilegedAccess().getFields());
-        parent = parent.getSuperclass();
-      }
-    }
-    return fields;
+    return ClassDescriptorCache.getInstance()
+      .getClassDescriptor(clazz)
+      .getFields(accessAll);
   }
 
   @Override

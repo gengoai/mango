@@ -27,6 +27,8 @@ import lombok.EqualsAndHashCode;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * <p> A resource that wraps a String. </p>
@@ -46,6 +48,25 @@ public class StringResource extends BaseResource implements NonTraversableResour
     this(null);
   }
 
+  @Override
+  public String readToString() throws IOException {
+    return resource.toString();
+  }
+
+  @Override
+  public byte[] readBytes() throws IOException {
+    return resource.toString().getBytes();
+  }
+
+  @Override
+  public Reader reader() throws IOException {
+    return new StringReader(readToString());
+  }
+
+  @Override
+  public List<String> readLines() throws IOException {
+    return Arrays.asList(readToString().split("\r?\n"));
+  }
 
   /**
    * <p> Creates a Resource that is a String. </p>
