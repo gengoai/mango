@@ -22,7 +22,6 @@
 package com.davidbracewell.io.structured.xml;
 
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.io.structured.Element;
 import com.davidbracewell.io.structured.StructuredDocument;
 import com.google.common.base.Preconditions;
 import org.w3c.dom.Document;
@@ -98,11 +97,6 @@ public class XMLDocument extends XMLElement implements StructuredDocument {
     } catch (Exception e) {
       throw new IOException(e);
     }
-  }
-
-  @Override
-  public Element getRoot() {
-    return this;
   }
 
   @Override

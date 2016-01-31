@@ -21,60 +21,61 @@
 
 package com.davidbracewell.io.structured.json;
 
-import com.davidbracewell.conversion.Val;
 import com.davidbracewell.io.Resources;
-import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.tuple.Tuple2;
-import org.junit.Test;
+import com.davidbracewell.io.structured.AbstractStructuredReaderTest;
 
-import static org.junit.Assert.*;
+import java.io.IOException;
 
 /**
  * @author David B. Bracewell
  */
-public class JSONReaderTest {
+public class JSONReaderTest extends AbstractStructuredReaderTest {
 
-  @Test
-  public void readerTest() throws Exception {
-    Resource resource = Resources.fromClasspath("com/davidbracewell/test.json");
-    try (JSONReader reader = new JSONReader(resource)) {
-      reader.beginDocument();
-
-      Tuple2<String, Val> keyValue = reader.nextKeyValue();
-      assertEquals(keyValue.getKey(), "person.name");
-      assertEquals(keyValue.getValue().asString(), "Fred");
-      keyValue = reader.nextKeyValue();
-      assertEquals(keyValue.getKey(), "person.age");
-      assertEquals(keyValue.getValue().asString(), "56.0");
-
-      assertEquals(reader.beginArray(), "person.children");
-      reader.beginObject();
-      assertEquals(reader.nextKeyValue().getValue().asString(), "Sara");
-      reader.endObject();
-      reader.beginObject();
-      assertEquals(reader.nextKeyValue().getValue().asString(), "John");
-      reader.endObject();
-      reader.endArray();
-
-      assertEquals(reader.beginObject(), "person.address");
-      keyValue = reader.nextKeyValue();
-      assertEquals(keyValue.getKey(), "address.number");
-      assertEquals(keyValue.getValue().asString(), "45.0");
-      keyValue = reader.nextKeyValue();
-      assertEquals(keyValue.getKey(), "address.street");
-      assertEquals(keyValue.getValue().asString(), "Elm Street");
-      keyValue = reader.nextKeyValue();
-      assertEquals(keyValue.getKey(), "address.city");
-      assertEquals(keyValue.getValue().asString(), "New Haven");
-      keyValue = reader.nextKeyValue();
-      assertEquals(keyValue.getKey(), "address.state");
-      assertEquals(keyValue.getValue().asString(), "Texas");
-
-      reader.endObject();
-      reader.endDocument();
-    }
-
-
+  public JSONReaderTest() throws IOException {
+    super(new JSONReader(Resources.fromClasspath("com/davidbracewell/test.json")));
   }
+
+//  @Test
+//  public void readerTest() throws Exception {
+//    Resource resource = Resources.fromClasspath("com/davidbracewell/test.json");
+//    try (JSONReader reader = new JSONReader(resource)) {
+//      reader.beginDocument();
+//
+//      Tuple2<String, Val> keyValue = reader.nextKeyValue();
+//      assertEquals(keyValue.getKey(), "person.name");
+//      assertEquals(keyValue.getValue().asString(), "Fred");
+//      keyValue = reader.nextKeyValue();
+//      assertEquals(keyValue.getKey(), "person.age");
+//      assertEquals(keyValue.getValue().asString(), "56.0");
+//
+//      assertEquals(reader.beginArray(), "person.children");
+//      reader.beginObject();
+//      assertEquals(reader.nextKeyValue().getValue().asString(), "Sara");
+//      reader.endObject();
+//      reader.beginObject();
+//      assertEquals(reader.nextKeyValue().getValue().asString(), "John");
+//      reader.endObject();
+//      reader.endArray();
+//
+//      assertEquals(reader.beginObject(), "person.address");
+//      keyValue = reader.nextKeyValue();
+//      assertEquals(keyValue.getKey(), "address.number");
+//      assertEquals(keyValue.getValue().asString(), "45.0");
+//      keyValue = reader.nextKeyValue();
+//      assertEquals(keyValue.getKey(), "address.street");
+//      assertEquals(keyValue.getValue().asString(), "Elm Street");
+//      keyValue = reader.nextKeyValue();
+//      assertEquals(keyValue.getKey(), "address.city");
+//      assertEquals(keyValue.getValue().asString(), "New Haven");
+//      keyValue = reader.nextKeyValue();
+//      assertEquals(keyValue.getKey(), "address.state");
+//      assertEquals(keyValue.getValue().asString(), "Texas");
+//
+//      reader.endObject();
+//      reader.endDocument();
+//    }
+//
+//
+//  }
 
 }

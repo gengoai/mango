@@ -21,87 +21,18 @@
 
 package com.davidbracewell.io.structured.xml;
 
-import com.davidbracewell.conversion.Val;
 import com.davidbracewell.io.Resources;
-import com.davidbracewell.io.structured.ElementType;
-import com.davidbracewell.tuple.Tuple2;
-import org.junit.Assert;
-import org.junit.Test;
+import com.davidbracewell.io.structured.AbstractStructuredReaderTest;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.Assert.*;
 
 /**
  * @author David B. Bracewell
  */
-public class XMLReaderTest {
+public class XMLReaderTest extends AbstractStructuredReaderTest {
 
-  @Test
-  public void testReader() throws Exception {
-    XMLReader reader = new XMLReader(Resources.fromClasspath("com/davidbracewell/test.xml"));
-    reader.beginDocument();
-
-    Tuple2<String, Val> keyValue = reader.nextKeyValue();
-    assertEquals(keyValue.getKey(), "person.name");
-    assertEquals(keyValue.getValue().asString(), "Fred");
-    keyValue = reader.nextKeyValue();
-    assertEquals(keyValue.getKey(), "person.age");
-    assertEquals(keyValue.getValue().asString(), "56");
-
-    assertEquals(reader.beginArray(), "person.children");
-    keyValue = reader.nextKeyValue();
-    assertEquals(keyValue.getKey(), "person.name");
-    assertEquals(keyValue.getValue().asString(), "Sara");
-    keyValue = reader.nextKeyValue();
-    assertEquals(keyValue.getKey(), "person.name");
-    assertEquals(keyValue.getValue().asString(), "John");
-    reader.endArray();
-
-    assertEquals(reader.beginObject(), "person.address");
-    Map<String, Val> map = reader.nextMap();
-    assertEquals((Integer) 45, map.get("address.number").asInteger());
-    assertEquals("Elm Street", map.get("address.street").asString());
-    assertEquals("New Haven", map.get("address.city").asString());
-    assertEquals("Texas", map.get("address.state").asString());
-    reader.endObject();
-
-    List<Val> hobbies = reader.nextCollection(ArrayList::new, "person.hobbies");
-    assertEquals(2, hobbies.size());
-    assertEquals("Music", hobbies.get(0).asString());
-    assertEquals("Movies", hobbies.get(1).asString());
-
-    reader.endDocument();
-    reader.close();
+  public XMLReaderTest() throws IOException {
+    super(new XMLReader(Resources.fromClasspath("com/davidbracewell/test.xml")));
   }
 
-  @Test
-  public void testReaderSkip() throws Exception {
-    XMLReader reader = new XMLReader(Resources.fromClasspath("com/davidbracewell/test.xml"));
-    reader.beginDocument();
-
-    Tuple2<String, Val> keyValue = reader.nextKeyValue();
-    assertEquals("person.name", keyValue.getKey());
-    assertEquals("Fred", keyValue.getValue().asString());
-    keyValue = reader.nextKeyValue();
-    assertEquals("person.age", keyValue.getKey());
-    assertEquals("56", keyValue.getValue().asString());
-
-    Assert.assertEquals(reader.skip(), ElementType.BEGIN_ARRAY);
-    assertEquals(reader.skip(), ElementType.BEGIN_OBJECT);
-    assertEquals(reader.skip(), ElementType.BEGIN_ARRAY);
-
-    reader.endDocument();
-    reader.close();
-  }
-
-  @Test(expected = IOException.class)
-  public void testReadError() throws Exception {
-    XMLReader reader = new XMLReader(Resources.fromClasspath("iknowledge/espresso/test.xml"));
-    reader.beginDocument();
-    reader.beginArray();
-  }
 }

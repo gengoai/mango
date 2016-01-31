@@ -28,7 +28,7 @@ import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.structured.StructuredWriter;
-import com.davidbracewell.io.structured.Writeable;
+import com.davidbracewell.io.structured.Writable;
 import com.davidbracewell.string.CSVFormatter;
 import com.davidbracewell.string.StringUtils;
 import com.google.common.base.Preconditions;
@@ -247,8 +247,8 @@ public class CSVWriter extends StructuredWriter {
   @Override
   public StructuredWriter writeValue(Object value) throws IOException {
     Preconditions.checkState(!endOfDocument, "endDocument() has been called");
-    if (value instanceof Writeable) {
-      Cast.<Writeable>as(value).write(this);
+    if (value instanceof Writable) {
+      Cast.<Writable>as(value).write(this);
     } else {
       row.put("___UNNAMED___[" + row.size() + "]", value);
     }
@@ -258,8 +258,8 @@ public class CSVWriter extends StructuredWriter {
   @Override
   protected StructuredWriter writeObject(@NonNull Object value) throws IOException {
     Preconditions.checkState(!endOfDocument, "endDocument() has been called");
-    if (value instanceof Writeable) {
-      Cast.<Writeable>as(value).write(this);
+    if (value instanceof Writable) {
+      Cast.<Writable>as(value).write(this);
     } else {
       row.put("___UNNAMED___[" + row.size() + "]", value);
     }
@@ -296,8 +296,8 @@ public class CSVWriter extends StructuredWriter {
   @Override
   public StructuredWriter writeKeyValue(String key, Object value) throws IOException {
     Preconditions.checkState(!endOfDocument, "endDocument() has been called");
-    if (value instanceof Writeable) {
-      Cast.<Writeable>as(value).write(this);
+    if (value instanceof Writable) {
+      Cast.<Writable>as(value).write(this);
     } else {
       row.put(key, value);
     }

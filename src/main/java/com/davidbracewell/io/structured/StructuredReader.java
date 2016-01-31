@@ -42,7 +42,8 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 
 /**
- * Represents a class for reading data in a structured format, e.g. xml, json, yaml, etc. Individual implementations may
+ * Represents a class for reading data in a structured format, e.g. xml, json, yaml, etc. Individual implementations
+ * may
  * provide extra functionality (e.g. read xml attributes).
  *
  * @author David B. Bracewell

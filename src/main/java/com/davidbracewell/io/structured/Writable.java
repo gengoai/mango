@@ -7,10 +7,10 @@ import java.io.IOException;
 /**
  * @author David B. Bracewell
  */
-public interface Writeable {
+public interface Writable {
 
   default void write(StructuredWriter writer) throws IOException {
     writer.writeMap(new BeanMap(this));
   }
 
-}//END OF Writeable
+}//END OF Writable

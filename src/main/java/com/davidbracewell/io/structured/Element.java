@@ -22,14 +22,13 @@
 package com.davidbracewell.io.structured;
 
 import com.davidbracewell.collection.Collect;
+import com.davidbracewell.conversion.Val;
 import com.google.common.collect.Lists;
 import lombok.NonNull;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -38,7 +37,21 @@ import java.util.stream.Stream;
  *
  * @author David B. Bracewell
  */
-public abstract class Element {
+public interface Element {
+
+  default Val getFirstValueOfKey(String key) {
+    return selectValuesForKey(key).stream().findFirst().orElse(Val.NULL);
+  }
+
+  default List<Val> selectValuesForKey(String key) {
+    return select(element -> element.getName().equals(key)).map(Element::getValue).collect(Collectors.toList());
+  }
+
+  boolean isObject();
+
+  boolean isArray();
+
+  boolean isKeyValue();
 
 
   /**
@@ -47,49 +60,49 @@ public abstract class Element {
    * @param attributeName the attribute name
    * @return the attribute value or null if the attribute does not exist
    */
-  public abstract String getAttribute(String attributeName);
+  String getAttribute(String attributeName);
 
   /**
    * Gets a set of the attribute names.
    *
    * @return the attribute names associated with the element
    */
-  public abstract Set<String> getAttributeNames();
+  Set<String> getAttributeNames();
 
   /**
    * Gets the children of the element.
    *
    * @return the children or an empty list if there are no children.
    */
-  public abstract List<Element> getChildren();
+  List<Element> getChildren();
 
   /**
    * Gets the document owning the element
    *
    * @return The document
    */
-  public abstract StructuredDocument getDocument();
+  StructuredDocument getDocument();
 
   /**
    * Gets the name of the element.
    *
    * @return the name
    */
-  public abstract String getName();
+  String getName();
 
   /**
    * Gets the parent.
    *
    * @return the parent
    */
-  public abstract Element getParent();
+  Element getParent();
 
   /**
    * Gets the text of the element
    *
    * @return the text
    */
-  public abstract String getValue();
+  Val getValue();
 
   /**
    * Determines if an attribute by the given name is contained in the element
@@ -97,16 +110,16 @@ public abstract class Element {
    * @param name the name
    * @return True if the element has the attribute, false if not
    */
-  public abstract boolean hasAttribute(String name);
+  boolean hasAttribute(String name);
 
   /**
    * Determines if the element has children
    *
    * @return True if the element has children
    */
-  public abstract boolean hasChildren();
+  boolean hasChildren();
 
-  public final Stream<Element> select(@NonNull Predicate<Element> predicate) {
+  default Stream<Element> select(@NonNull Predicate<Element> predicate) {
     return select(predicate, false);
   }
 
@@ -117,28 +130,46 @@ public abstract class Element {
    * @param recursive true if to select over all descendants, false immediate children
    * @return the iterable of the descendants matching the predicate
    */
-  public final Stream<Element> select(@NonNull Predicate<Element> predicate, boolean recursive) {
+  default Stream<Element> select(@NonNull Predicate<Element> predicate, boolean recursive) {
     return stream(recursive).filter(predicate);
   }
 
-  public final Stream<Element> selectWithAttribute(@NonNull String attributeName) {
+  default Stream<Element> selectWithAttribute(@NonNull String attributeName) {
     return selectWithAttribute(attributeName, false);
   }
 
-  public final Stream<Element> selectWithAttribute(@NonNull String attributeName, boolean recursive) {
+  default Stream<Element> selectWithAttribute(@NonNull String attributeName, boolean recursive) {
     return stream(recursive).filter(e -> e.hasAttribute(attributeName));
   }
 
-  public final Stream<Element> selectWithAttributeValue(@NonNull String attributeName, @NonNull Predicate<? super String> attributeValuePredicate) {
+  default Stream<Element> selectWithAttributeValue(@NonNull String attributeName, @NonNull Predicate<? super String> attributeValuePredicate) {
     return selectWithAttributeValue(attributeName, attributeValuePredicate, false);
   }
 
-  public final Stream<Element> selectWithAttributeValue(@NonNull String attributeName, @NonNull Predicate<? super String> attributeValuePredicate, boolean recursive) {
+  default Stream<Element> selectWithAttributeValue(@NonNull String attributeName, @NonNull Predicate<? super String> attributeValuePredicate, boolean recursive) {
     return stream(recursive).filter(e -> e.hasAttribute(attributeName))
       .filter(e -> attributeValuePredicate.test(e.getAttribute(attributeName)));
   }
 
-  public final Stream<Element> stream(boolean recursive) {
+
+  default Optional<Element> selectFirstByName(@NonNull String name) {
+    return selectByName(name, false).findFirst();
+  }
+
+
+  default Optional<Element> selectFirstByName(@NonNull String name, boolean recursive) {
+    return selectByName(name, recursive).findFirst();
+  }
+
+  default Stream<Element> selectByName(@NonNull String name) {
+    return selectByName(name, false);
+  }
+
+  default Stream<Element> selectByName(@NonNull String name, boolean recursive) {
+    return stream(recursive).filter(e -> e.getName().equals(name));
+  }
+
+  default Stream<Element> stream(boolean recursive) {
     if (recursive) {
       return Collect.from(new RecursiveElementIterator(this));
     }
@@ -148,7 +179,7 @@ public abstract class Element {
   /**
    * The type Recursive element iterator.
    */
-  protected class RecursiveElementIterator implements Iterator<Element> {
+  class RecursiveElementIterator implements Iterator<Element> {
     Queue<Element> nodes = Lists.newLinkedList();
 
     private RecursiveElementIterator(Element element) {

@@ -21,6 +21,7 @@
 
 package com.davidbracewell.io.structured.xml;
 
+import com.davidbracewell.conversion.Val;
 import com.davidbracewell.io.structured.Element;
 import com.davidbracewell.io.structured.StructuredDocument;
 import com.davidbracewell.string.StringUtils;
@@ -35,6 +36,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.Objects;
@@ -45,8 +47,8 @@ import java.util.Set;
  *
  * @author David B. Bracewell
  */
-public class XMLElement extends Element {
-
+public class XMLElement implements Element, Serializable {
+  private static final long serialVersionUID = 1L;
   private Node node;
   private XMLDocument owner;
 
@@ -68,13 +70,31 @@ public class XMLElement extends Element {
   }
 
   @Override
-  public String getValue() {
-    return node.getTextContent().trim();
+  public Val getValue() {
+    return Val.of(node.getTextContent().trim());
   }
 
   @Override
   public String getName() {
     return node.getNodeName();
+  }
+
+
+  @Override
+  public boolean isObject() {
+    Node type = node.getAttributes().getNamedItem("type");
+    return node.getNodeName().equals("object") || (type != null && type.getNodeName().equals("object"));
+  }
+
+  @Override
+  public boolean isArray() {
+    Node type = node.getAttributes().getNamedItem("type");
+    return node.getNodeName().equals("array") || (type != null && type.getNodeName().equals("array"));
+  }
+
+  @Override
+  public boolean isKeyValue() {
+    return !isArray() && !isObject();
   }
 
   @Override

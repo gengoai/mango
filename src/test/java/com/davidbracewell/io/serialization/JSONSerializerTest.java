@@ -21,26 +21,31 @@
 
 package com.davidbracewell.io.serialization;
 
+import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.io.resource.Resource;
-import com.google.common.base.Preconditions;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.davidbracewell.io.resource.StringResource;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
- * <p>JSON Serializer implementation</p>
- *
  * @author David B. Bracewell
  */
-public class JSONSerializer implements Serializer {
+public class JSONSerializerTest {
 
-  @Override
-  public void serialize(Object o, Resource resource) throws Exception {
-    Preconditions.checkNotNull(resource).write(new GsonBuilder().create().toJson(Preconditions.checkNotNull(o)).trim());
+  @Test
+  public void test() throws Exception {
+    Person person = new Person("John", 24);
+    person.getHobbies().add("Tennis");
+    person.getHobbies().add("TV");
+    person.getHobbies().add("Pool");
+
+    JSONSerializer jsonSerializer = new JSONSerializer();
+
+    Resource resource = new StringResource();
+    jsonSerializer.serialize(person, resource);
+    Person deserialized = Cast.as(jsonSerializer.deserialize(resource, Person.class));
+
+    assertEquals(person, deserialized);
   }
-
-  @Override
-  public <T> T deserialize(Resource resource, Class<T> clazz) throws Exception {
-    return new Gson().fromJson(Preconditions.checkNotNull(resource).readToString(), Preconditions.checkNotNull(clazz));
-  }
-
-}//END OF JSONSerializer
+}

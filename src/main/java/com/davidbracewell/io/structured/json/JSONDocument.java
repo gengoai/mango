@@ -22,7 +22,6 @@
 package com.davidbracewell.io.structured.json;
 
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.io.structured.Element;
 import com.davidbracewell.io.structured.StructuredDocument;
 import com.google.common.base.Preconditions;
 import com.google.gson.GsonBuilder;
@@ -35,7 +34,7 @@ import java.io.IOException;
  * @author David B. Bracewell
  */
 public class JSONDocument extends JSONElement implements StructuredDocument {
-
+  private static final long serialVersionUID = 1L;
 
   public JSONDocument() {
     setOwner(this);
@@ -62,9 +61,5 @@ public class JSONDocument extends JSONElement implements StructuredDocument {
     }
   }
 
-  @Override
-  public Element getRoot() {
-    return this;
-  }
 
 }//END OF JSONDocument

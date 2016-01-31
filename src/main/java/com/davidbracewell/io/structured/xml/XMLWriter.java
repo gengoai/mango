@@ -29,7 +29,7 @@ import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.ElementType;
 import com.davidbracewell.io.structured.StructuredWriter;
-import com.davidbracewell.io.structured.Writeable;
+import com.davidbracewell.io.structured.Writable;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
@@ -217,9 +217,9 @@ public class XMLWriter extends StructuredWriter {
             return Iterators.size(Cast.as(object));
           }
         });
-      } else if (object instanceof Writeable) {
+      } else if (object instanceof Writable) {
         beginObject(key);
-        Cast.<Writeable>as(object).write(this);
+        Cast.<Writable>as(object).write(this);
         endObject();
       } else {
         writer.writeStartElement(key);

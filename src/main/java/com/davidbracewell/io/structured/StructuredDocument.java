@@ -23,11 +23,8 @@ package com.davidbracewell.io.structured;
 
 
 import com.davidbracewell.io.resource.Resource;
-import lombok.NonNull;
 
 import java.io.IOException;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 /**
  * <p>A structured document is an in-memory model of a structured resource, such as XML or JSON. It wraps the document
@@ -39,7 +36,7 @@ import java.util.stream.Stream;
  *
  * @author David B. Bracewell
  */
-public interface StructuredDocument {
+public interface StructuredDocument extends Element {
 
   /**
    * Writes the document.
@@ -56,77 +53,87 @@ public interface StructuredDocument {
    * @throws IOException something went wrong reading in the document.
    */
   void read(Resource resource) throws IOException;
-
-  /**
-   * Gets the root element of the document.
-   *
-   * @return the root
-   */
-  Element getRoot();
-
-  /**
-   * Select stream.
-   *
-   * @param predicate the predicate
-   * @return the stream
-   */
-  default Stream<Element> select(@NonNull Predicate<Element> predicate) {
-    return select(predicate, false);
-  }
-
-  /**
-   * Select stream.
-   *
-   * @param predicate the predicate
-   * @param recursive the recursive
-   * @return the stream
-   */
-  default Stream<Element> select(@NonNull Predicate<Element> predicate, boolean recursive) {
-    return getRoot().select(predicate, recursive);
-  }
-
-  /**
-   * Select with attribute value.
-   *
-   * @param attributeName the attribute name
-   * @param attributeValuePredicate the attribute value predicate
-   * @return the stream
-   */
-  default Stream<Element> selectWithAttributeValue(@NonNull String attributeName, @NonNull Predicate<? super String> attributeValuePredicate) {
-    return selectWithAttributeValue(attributeName, attributeValuePredicate, false);
-  }
-
-  /**
-   * Select with attribute value.
-   *
-   * @param attributeName the attribute name
-   * @param attributeValuePredicate the attribute value predicate
-   * @param recursive the recursive
-   * @return the stream
-   */
-  default Stream<Element> selectWithAttributeValue(@NonNull String attributeName, @NonNull Predicate<? super String> attributeValuePredicate, boolean recursive) {
-    return getRoot().selectWithAttributeValue(attributeName, attributeValuePredicate, recursive);
-  }
-
-  /**
-   * Select with attribute.
-   *
-   * @param attributeName the attribute name
-   * @return the stream
-   */
-  default Stream<Element> selectWithAttribute(@NonNull String attributeName) {
-    return selectWithAttribute(attributeName, false);
-  }
-
-  /**
-   * Select with attribute.
-   *
-   * @param attributeName the attribute name
-   * @param recursive the recursive
-   * @return the stream
-   */
-  default Stream<Element> selectWithAttribute(@NonNull String attributeName, boolean recursive) {
-    return getRoot().stream(recursive).filter(e -> e.hasAttribute(attributeName));
-  }
+//
+//
+//  default List<Val> selectValuesForKey(String keyName) {
+//    return select(e -> e.getName().equals(keyName)).map(e -> Val.of(e.getValue())).collect(Collectors.toList());
+//  }
+//
+//
+//  default Val getFirstValue(String keyName) {
+//    return selectValuesForKey(keyName).stream().findFirst().orElse(Val.NULL);
+//  }
+//
+//  /**
+//   * Gets the root element of the document.
+//   *
+//   * @return the root
+//   */
+//  Element getRoot();
+//
+//  /**
+//   * Select stream.
+//   *
+//   * @param predicate the predicate
+//   * @return the stream
+//   */
+//  default Stream<Element> select(@NonNull Predicate<Element> predicate) {
+//    return select(predicate, false);
+//  }
+//
+//  /**
+//   * Select stream.
+//   *
+//   * @param predicate the predicate
+//   * @param recursive the recursive
+//   * @return the stream
+//   */
+//  default Stream<Element> select(@NonNull Predicate<Element> predicate, boolean recursive) {
+//    return select(predicate, recursive);
+//  }
+//
+//  /**
+//   * Select with attribute value.
+//   *
+//   * @param attributeName           the attribute name
+//   * @param attributeValuePredicate the attribute value predicate
+//   * @return the stream
+//   */
+//  default Stream<Element> selectWithAttributeValue(@NonNull String attributeName, @NonNull Predicate<? super String> attributeValuePredicate) {
+//    return selectWithAttributeValue(attributeName, attributeValuePredicate, false);
+//  }
+//
+//  /**
+//   * Select with attribute value.
+//   *
+//   * @param attributeName           the attribute name
+//   * @param attributeValuePredicate the attribute value predicate
+//   * @param recursive               the recursive
+//   * @return the stream
+//   */
+//  default Stream<Element> selectWithAttributeValue(@NonNull String attributeName, @NonNull Predicate<? super String> attributeValuePredicate, boolean recursive) {
+//    return getRoot().selectWithAttributeValue(attributeName, attributeValuePredicate, recursive);
+//  }
+//
+//  /**
+//   * Select with attribute.
+//   *
+//   * @param attributeName the attribute name
+//   * @return the stream
+//   */
+//  default Stream<Element> selectWithAttribute(@NonNull String attributeName) {
+//    return selectWithAttribute(attributeName, false);
+//  }
+//
+//  /**
+//   * Select with attribute.
+//   *
+//   * @param attributeName the attribute name
+//   * @param recursive     the recursive
+//   * @return the stream
+//   */
+//  default Stream<Element> selectWithAttribute(@NonNull String attributeName, boolean recursive) {
+//    return getRoot().stream(recursive).filter(e -> e.hasAttribute(attributeName));
+//  }
 
 }//END OF StructuredDocument

@@ -21,10 +21,12 @@
 
 package com.davidbracewell.io.structured.json;
 
+import com.davidbracewell.conversion.Val;
 import com.davidbracewell.io.structured.Element;
 import com.davidbracewell.io.structured.StructuredDocument;
 import com.google.gson.JsonElement;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,7 +35,8 @@ import java.util.stream.Collectors;
  *
  * @author David B. Bracewell
  */
-public class JSONElement extends Element {
+public class JSONElement implements Element, Serializable {
+  private static final long serialVersionUID = 1L;
 
   String name;
   JsonElement node;
@@ -48,36 +51,6 @@ public class JSONElement extends Element {
     this.node = node;
     this.parent = parent;
     this.owner = owner;
-  }
-
-  void setNode(JsonElement node) {
-    this.node = node;
-  }
-
-  void setOwner(JSONDocument document) {
-    this.owner = document;
-  }
-
-  @Override
-  public String getValue() {
-    if (node.isJsonPrimitive()) {
-      return node.getAsString();
-    }
-    return null;
-  }
-
-  @Override
-  public Element getParent() {
-    return parent;
-  }
-
-  @Override
-  public String getName() {
-    return name;
-  }
-
-  void setName(String name) {
-    this.name = name;
   }
 
   @Override
@@ -100,6 +73,70 @@ public class JSONElement extends Element {
   }
 
   @Override
+  public List<Element> getChildren() {
+    if (node.isJsonObject()) {
+      return node.getAsJsonObject().entrySet().stream()
+        .map(entry -> new JSONElement(entry.getKey(), entry.getValue(), this, owner))
+        .collect(Collectors.toList());
+
+    } else if (node.isJsonArray()) {
+      int i = 0;
+      List<Element> children = new LinkedList<>();
+      for (JsonElement element : node.getAsJsonArray()) {
+        if (element.isJsonObject() || element.isJsonArray()) {
+          children.add(new JSONElement(name + "[" + i + "]", element, this, owner));
+          i++;
+        } else if (element.isJsonPrimitive() || element.isJsonNull()) {
+          children.add(new JSONElement("value", element, this, owner));
+        }
+      }
+      return children;
+    }
+
+    return Collections.emptyList();
+  }
+
+  @Override
+  public StructuredDocument getDocument() {
+    return owner;
+  }
+
+  @Override
+  public String getName() {
+    return name;
+  }
+
+  void setName(String name) {
+    this.name = name;
+  }
+
+  @Override
+  public Element getParent() {
+    return parent;
+  }
+
+  @Override
+  public Val getValue() {
+    if (node.isJsonNull()) {
+      return Val.NULL;
+    }
+    if (node.isJsonPrimitive()) {
+      return Val.of(node.getAsString());
+    }
+    if (node.isJsonArray()) {
+      List<Val> list = new ArrayList<>();
+      getChildren().forEach(e -> list.add(e.getValue()));
+      return Val.of(list);
+    }
+    if (node.isJsonObject()) {
+      Map<String, Val> map = new HashMap<>();
+      getChildren().forEach(e -> map.put(e.getName(), e.getValue()));
+      return Val.of(map);
+    }
+    return null;
+  }
+
+  @Override
   public boolean hasAttribute(String name) {
     if (node.isJsonObject()) {
       return getAttributeNames().contains(name);
@@ -114,30 +151,26 @@ public class JSONElement extends Element {
   }
 
   @Override
-  public List<Element> getChildren() {
-    if (node.isJsonObject()) {
-      return node.getAsJsonObject().entrySet().stream()
-        .map(entry -> new JSONElement(entry.getKey(), entry.getValue(), this, owner))
-        .collect(Collectors.toList());
-
-    } else if (node.isJsonArray()) {
-      int i = 0;
-      List<Element> children = new LinkedList<>();
-      for (JsonElement element : node.getAsJsonArray()) {
-        if (element.isJsonObject() || element.isJsonArray()) {
-          children.add(new JSONElement(name + "[" + i + "]", element, this, owner));
-          i++;
-        }
-      }
-      return children;
-    }
-
-    return Collections.emptyList();
+  public boolean isArray() {
+    return node.isJsonArray();
   }
 
   @Override
-  public StructuredDocument getDocument() {
-    return owner;
+  public boolean isKeyValue() {
+    return node.isJsonNull() || node.isJsonPrimitive();
+  }
+
+  @Override
+  public boolean isObject() {
+    return node.isJsonObject();
+  }
+
+  void setNode(JsonElement node) {
+    this.node = node;
+  }
+
+  void setOwner(JSONDocument document) {
+    this.owner = document;
   }
 
   @Override

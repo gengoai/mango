@@ -19,12 +19,11 @@
  * under the License.
  */
 
-package com.davidbracewell.io;
+package com.davidbracewell.io.structured.csv;
 
+import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.resource.StringResource;
-import com.davidbracewell.io.structured.csv.CSVReader;
-import com.davidbracewell.io.structured.csv.CSVWriter;
 import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 

@@ -21,12 +21,10 @@
 
 package com.davidbracewell.io.serialization;
 
+import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.io.resource.ByteArrayResource;
 import com.davidbracewell.io.resource.Resource;
-import com.google.common.collect.Lists;
 import org.junit.Test;
-
-import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -35,16 +33,21 @@ import static org.junit.Assert.*;
  */
 public class SerializerTest {
 
-  JavaSerializer javaSerializer = new JavaSerializer();
-
-  List<String> list = Lists.newArrayList("ABBA", "Duran Duran", "AC/DC", "Run DMC");
 
   @Test
   public void testSerialize() throws Exception {
-    Resource r1 = new ByteArrayResource();
-    javaSerializer.serialize(list, r1);
-    assertEquals(list, javaSerializer.deserialize(r1, List.class));
+    Person person = new Person("John", 24);
+    person.getHobbies().add("Tennis");
+    person.getHobbies().add("TV");
+    person.getHobbies().add("Pool");
 
+    JavaSerializer javaSerializer = new JavaSerializer();
+
+    Resource resource = new ByteArrayResource();
+    javaSerializer.serialize(person, resource);
+    Person deserialized = Cast.as(javaSerializer.deserialize(resource, Person.class));
+
+    assertEquals(person, deserialized);
   }
 
 }//END OF SerializerTest

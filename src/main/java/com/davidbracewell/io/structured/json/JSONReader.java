@@ -191,6 +191,9 @@ public class JSONReader extends StructuredReader {
 
   @Override
   public void endDocument() throws IOException {
+    if (readStack.pop() != documentType) {
+      throw new IOException("Premature end document call.");
+    }
     close();
   }
 
