@@ -71,7 +71,6 @@ public class ApplicationTest {
   public void testReflection() throws Exception {
     TestApp app1 = new TestApp();
     app1.run(new String[]{"--name=John", "--age=", "35", "--map", "{ALPHA:23}"});
-
   }
 
 

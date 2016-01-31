@@ -315,6 +315,28 @@ public class XMLWriter extends StructuredWriter {
   }
 
   @Override
+  public StructuredWriter writeValue(Object value) throws IOException {
+    boolean inArray = inArray();
+    if (inArray) {
+      try {
+        writer.writeStartElement("value");
+//        writer.writeAttribute("type", "value");
+      } catch (XMLStreamException e) {
+        throw new IOException(e);
+      }
+    }
+    super.writeValue(value);
+    if (inArray) {
+      try {
+        writer.writeEndElement();
+      } catch (XMLStreamException e) {
+        throw new IOException(e);
+      }
+    }
+    return this;
+  }
+
+  @Override
   public void close() throws IOException {
     try {
       os.close();

@@ -185,7 +185,7 @@ public abstract class StructuredWriter implements Closeable {
    * @return the structured writer
    * @throws IOException the io exception
    */
-  protected StructuredWriter writeObject(@NonNull Object object) throws IOException {
+  protected StructuredWriter writeObject(Object object) throws IOException {
     if (object == null) {
       writeNull();
     } else if (object instanceof Number) {

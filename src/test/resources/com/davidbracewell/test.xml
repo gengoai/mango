@@ -23,20 +23,21 @@
 <document>
     <person.name>Fred</person.name>
     <person.age>56</person.age>
-    <person.children elementType="array">
+
+    <person.children type="array">
         <person.name>Sara</person.name>
         <person.name>John</person.name>
     </person.children>
-    <person.address elementType="object">
+
+    <person.address type="object">
         <address.number>45</address.number>
         <address.street>Elm Street</address.street>
         <address.city>New Haven</address.city>
         <address.state>Texas</address.state>
     </person.address>
-    <person.hobbies elementType="object">
-        <list elementType="array">
-            <item>Music</item>
-            <item>Movies</item>
-        </list>
+
+    <person.hobbies type="array">
+        <value>Music</value>
+        <value>Movies</value>
     </person.hobbies>
 </document>

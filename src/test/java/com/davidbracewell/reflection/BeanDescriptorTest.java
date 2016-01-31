@@ -73,7 +73,7 @@ public class BeanDescriptorTest {
 
 
     //class
-    assertNotNull(descriptor.getReadMethod("class"));
+    assertNull(descriptor.getReadMethod("class"));
   }
 
   @Test
@@ -91,7 +91,7 @@ public class BeanDescriptorTest {
   @Test
   public void testGetReadMethodNames() throws Exception {
     assertEquals(
-        Sets.newHashSet("class", "name", "stocks", "children"),
+        Sets.newHashSet("name", "stocks", "children"),
         descriptor.getReadMethodNames()
     );
   }
@@ -111,7 +111,7 @@ public class BeanDescriptorTest {
 
   @Test
   public void testNumberOfReadMethods() throws Exception {
-    assertEquals(4, descriptor.numberOfReadMethods());
+    assertEquals(3, descriptor.numberOfReadMethods());
   }
 
   @Test

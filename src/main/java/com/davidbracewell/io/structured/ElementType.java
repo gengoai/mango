@@ -35,5 +35,6 @@ public enum ElementType {
   BEGIN_DOCUMENT,
   END_DOCUMENT,
   NAME,
-  OTHER
+  OTHER,
+  END_KEY_VALUE
 } //END OF StructuredElement

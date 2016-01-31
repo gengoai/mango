@@ -329,6 +329,8 @@ public abstract class StructuredReader implements Closeable {
         return Val.of(nextCollection(ArrayList::new));
       case BEGIN_OBJECT:
         return Val.of(nextMap());
+      case NAME:
+        return nextKeyValue().getV2();
       default:
         return nextSimpleValue();
     }

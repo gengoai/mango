@@ -147,7 +147,9 @@ public class CommandLineParser {
         if (key != null) {
           setValue(key, "true");
         } else {
-          if (current.contains(KEY_VALUE_SEPARATOR)) {
+          if (current.endsWith(KEY_VALUE_SEPARATOR)) {
+            key = current.substring(LONG.length(),current.length()-1);
+          } else if (current.contains(KEY_VALUE_SEPARATOR)) {
             int pos = current.indexOf(KEY_VALUE_SEPARATOR);
             setValue(current.substring(LONG.length(), pos), current.substring(pos + KEY_VALUE_SEPARATOR.length()));
           } else {

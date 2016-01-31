@@ -25,11 +25,12 @@ import com.davidbracewell.conversion.Val;
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.structured.ElementType;
 import com.davidbracewell.tuple.Tuple2;
-import com.google.common.collect.Lists;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -68,10 +69,10 @@ public class XMLReaderTest {
     assertEquals("Texas", map.get("address.state").asString());
     reader.endObject();
 
-    assertEquals(reader.beginObject(), "person.hobbies");
-    map = reader.nextMap();
-    assertEquals(Lists.newArrayList("Music", "Movies"), map.get("list").asList(String.class));
-    reader.endObject();
+    List<Val> hobbies = reader.nextCollection(ArrayList::new, "person.hobbies");
+    assertEquals(2, hobbies.size());
+    assertEquals("Music", hobbies.get(0).asString());
+    assertEquals("Movies", hobbies.get(1).asString());
 
     reader.endDocument();
     reader.close();
@@ -83,15 +84,15 @@ public class XMLReaderTest {
     reader.beginDocument();
 
     Tuple2<String, Val> keyValue = reader.nextKeyValue();
-    assertEquals(keyValue.getKey(), "person.name");
-    assertEquals(keyValue.getValue().asString(), "Fred");
+    assertEquals("person.name", keyValue.getKey());
+    assertEquals("Fred", keyValue.getValue().asString());
     keyValue = reader.nextKeyValue();
-    assertEquals(keyValue.getKey(), "person.age");
-    assertEquals(keyValue.getValue().asString(), "56");
+    assertEquals("person.age", keyValue.getKey());
+    assertEquals("56", keyValue.getValue().asString());
 
     Assert.assertEquals(reader.skip(), ElementType.BEGIN_ARRAY);
     assertEquals(reader.skip(), ElementType.BEGIN_OBJECT);
-    assertEquals(reader.skip(), ElementType.BEGIN_OBJECT);
+    assertEquals(reader.skip(), ElementType.BEGIN_ARRAY);
 
     reader.endDocument();
     reader.close();

@@ -26,6 +26,7 @@ import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.ElementType;
 import com.davidbracewell.io.structured.StructuredReader;
+import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -178,13 +179,13 @@ public class XMLReader extends StructuredReader {
       }
 
       String typeName = element.getAttributeByName(elementType).getValue();
-      if (typeName.equalsIgnoreCase("array")) {
+      if (typeName.equalsIgnoreCase("array") || element.getName().toString().equals("array")) {
         return ElementType.BEGIN_ARRAY;
       }
-      if (typeName.equalsIgnoreCase("object")) {
+      if (typeName.equalsIgnoreCase("object") || element.getName().toString().equals("object")) {
         return ElementType.BEGIN_OBJECT;
       }
-      if (typeName.equalsIgnoreCase("value")) {
+      if (typeName.equalsIgnoreCase("value") || element.getName().toString().equals("value")) {
         return ElementType.VALUE;
       }
 
@@ -205,12 +206,17 @@ public class XMLReader extends StructuredReader {
       if (top.equals(Tuple2.of(elementName, ElementType.BEGIN_OBJECT))) {
         return ElementType.END_OBJECT;
       }
+
+      return ElementType.END_KEY_VALUE;
     }
 
     return ElementType.OTHER;
   }
 
   public ElementType peek() throws IOException {
+    if (!StringUtils.isNullOrBlank(readerText)) {
+      return ElementType.END_KEY_VALUE;
+    }
     while (true) {
       try {
         XMLEvent event = reader.peek();
@@ -324,7 +330,21 @@ public class XMLReader extends StructuredReader {
 
   @Override
   protected Val nextSimpleValue() throws IOException {
-    return Val.of(readerText);
+    Val v;
+    if (!StringUtils.isNullOrBlank(readerText)) {
+      v = Val.of(readerText);
+      readerText = null;
+    } else if (peek() == ElementType.VALUE) {
+      next();
+      try {
+        return Val.of(reader.getElementText());
+      } catch (XMLStreamException e) {
+        throw new IOException(e);
+      }
+    } else {
+      throw new IOException("Error");
+    }
+    return v;
   }
 
   @Override
