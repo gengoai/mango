@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -301,7 +302,7 @@ public interface Streams {
    */
   static <T> MStream<T> of(@NonNull Iterator<? extends T> iterator, boolean distributed) {
     if (distributed) {
-      return new SparkStream<>(Lists.newLinkedList(Collect.asIterable(iterator)));
+      return new SparkStream<>(Collect.from(iterator).collect(Collectors.toList()));
     }
     return new JavaMStream<>(iterator);
   }
