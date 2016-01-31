@@ -120,7 +120,7 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
 
   @Override
   public <R> MStream<R> flatMap(@NonNull SerializableFunction<? super T, ? extends Iterable<? extends R>> mapper) {
-    return Cast.as(new JavaMStream<>(stream.flatMap(t -> Collect.from(mapper.apply(t)))));
+    return new JavaMStream<>(stream.flatMap(t -> Collect.from(mapper.apply(t)).map(Cast::<R>as)));
   }
 
   @Override

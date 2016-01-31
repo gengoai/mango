@@ -302,7 +302,7 @@ public interface Streams {
    */
   static <T> MStream<T> of(@NonNull Iterator<? extends T> iterator, boolean distributed) {
     if (distributed) {
-      return new SparkStream<>(Collect.from(iterator).collect(Collectors.toList()));
+      return new SparkStream<>(Collect.from(iterator).map(Cast::<T>as).collect(Collectors.toList()));
     }
     return new JavaMStream<>(iterator);
   }
