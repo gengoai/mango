@@ -24,10 +24,8 @@ package com.davidbracewell.collection;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.io.structured.Element;
 import com.davidbracewell.io.structured.csv.CSVReader;
 import com.davidbracewell.io.structured.csv.CSVWriter;
-import com.davidbracewell.io.structured.json.JSONDocument;
 import com.davidbracewell.tuple.Tuple3;
 import com.google.common.primitives.Doubles;
 import lombok.NonNull;
@@ -153,32 +151,6 @@ public interface MultiCounters {
           }
         }
         rowN++;
-      }
-    }
-    return mc;
-  }
-
-  /**
-   * New hash map multi counter.
-   *
-   * @param <K>        the type parameter
-   * @param <V>        the type parameter
-   * @param json       the json
-   * @param keyClass   the key class
-   * @param valueClass the value class
-   * @return the multi counter
-   * @throws IOException the iO exception
-   */
-  static <K, V> MultiCounter<K, V> fromJson(@NonNull Resource json, @NonNull Class<K> keyClass, @NonNull Class<V> valueClass, @NonNull Supplier<MultiCounter<K, V>> supplier) throws IOException {
-    MultiCounter<K, V> mc = supplier.get();
-    JSONDocument document = new JSONDocument();
-    document.read(json);
-    for (Element e : document.getChildren()) {
-      K k = Convert.convert(e.getName(), keyClass);
-      for (Element c : e.getChildren()) {
-        V v = Convert.convert(c.getName(), valueClass);
-        double d = Convert.convert(c.getValue(), Double.class);
-        mc.set(k, v, d);
       }
     }
     return mc;

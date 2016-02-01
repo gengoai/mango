@@ -22,10 +22,8 @@
 package com.davidbracewell.io.structured;
 
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.io.structured.json.JSONDocument;
 import com.davidbracewell.io.structured.json.JSONReader;
 import com.davidbracewell.io.structured.json.JSONWriter;
-import com.davidbracewell.io.structured.xml.XMLDocument;
 import com.davidbracewell.io.structured.xml.XMLReader;
 import com.davidbracewell.io.structured.xml.XMLWriter;
 import lombok.NonNull;
@@ -60,14 +58,6 @@ public interface StructuredFormat extends Serializable {
   StructuredWriter createWriter(Resource resource) throws IOException;
 
 
-  /**
-   * Create document.
-   *
-   * @param resource the resource
-   * @return the structured document
-   * @throws IOException the structured iO exception
-   */
-  StructuredDocument createDocument(Resource resource) throws IOException;
 
   /**
    * XML Format
@@ -84,11 +74,6 @@ public interface StructuredFormat extends Serializable {
     @Override
     public StructuredWriter createWriter(Resource resource) throws IOException {
       return new XMLWriter(resource);
-    }
-
-    @Override
-    public StructuredDocument createDocument(Resource resource) throws IOException {
-      return XMLDocument.from(resource);
     }
   };
 
@@ -109,12 +94,6 @@ public interface StructuredFormat extends Serializable {
       return new JSONWriter(resource);
     }
 
-    @Override
-    public StructuredDocument createDocument(Resource resource) throws IOException {
-      JSONDocument document = new JSONDocument();
-      document.read(resource);
-      return document;
-    }
   };
 
 
@@ -144,10 +123,6 @@ public interface StructuredFormat extends Serializable {
       }
     }
 
-    @Override
-    public StructuredDocument createDocument(Resource resource) throws IOException {
-      throw new UnsupportedOperationException();
-    }
   }
 
 
