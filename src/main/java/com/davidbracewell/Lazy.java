@@ -4,6 +4,7 @@ import com.davidbracewell.function.SerializableSupplier;
 import lombok.NonNull;
 
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 /**
@@ -12,25 +13,26 @@ import java.util.function.Supplier;
 public final class Lazy<T> implements Serializable {
   private static final long serialVersionUID = 1L;
   private volatile T lazyObject = null;
-  private volatile SerializableSupplier<T> supplier;
+  private AtomicBoolean constructed = new AtomicBoolean(false);
+  private volatile SerializableSupplier<? extends T> supplier;
 
-  public Lazy(@NonNull SerializableSupplier<T> supplier) {
+  public Lazy(@NonNull SerializableSupplier<? extends T> supplier) {
     this.supplier = supplier;
   }
 
   public T get() {
-    final T result = lazyObject;
-    if (result == null) {
+    if (!constructed.get()) {
       return compute(supplier);
     }
-    return result;
+    return lazyObject;
   }
 
 
-  private synchronized T compute(Supplier<T> supplier) {
-    if (lazyObject == null) {
+  private synchronized T compute(Supplier<? extends T> supplier) {
+    if (!constructed.get() && lazyObject == null) {
       lazyObject = supplier.get();
     }
+    constructed.set(true);
     return lazyObject;
   }
 

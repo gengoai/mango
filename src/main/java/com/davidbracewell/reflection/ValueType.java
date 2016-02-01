@@ -33,7 +33,8 @@ import java.util.Map;
 /**
  * @author David B. Bracewell
  */
-public abstract class ValueType {
+public abstract class ValueType implements Serializable {
+  private static final long serialVersionUID = 1L;
 
   public static final String TYPE_PROPERTY = "type";
   public static final String ELEMENT_TYPE_PROPERTY = "elementType";
@@ -63,17 +64,17 @@ public abstract class ValueType {
     //Check for a collection
     if (Collection.class.isAssignableFrom(typeClass)) {
       return new CollectionValueType(
-          typeClass,
-          typeInfo.getOrDefault(ELEMENT_TYPE_PROPERTY, String.class)
+        typeClass,
+        typeInfo.getOrDefault(ELEMENT_TYPE_PROPERTY, String.class)
       );
     }
 
     //Check for a Map
     if (Map.class.isAssignableFrom(typeClass)) {
       return new MapValueType(
-          typeClass,
-          typeInfo.getOrDefault(KEY_TYPE_PROPERTY, String.class),
-          typeInfo.getOrDefault(VALUE_TYPE_PROPERTY, String.class)
+        typeClass,
+        typeInfo.getOrDefault(KEY_TYPE_PROPERTY, String.class),
+        typeInfo.getOrDefault(VALUE_TYPE_PROPERTY, String.class)
       );
     }
 
@@ -180,6 +181,5 @@ public abstract class ValueType {
       return true;
     }
   }
-
 
 }//END OF ValueType
