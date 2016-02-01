@@ -95,4 +95,9 @@ public abstract class JavaFXApplication extends javafx.application.Application i
     return stage;
   }
 
+  @Override
+  public final void run() {
+
+  }
+
 }//END OF JavaFXApplication
