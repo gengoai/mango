@@ -19,21 +19,20 @@
  * under the License.
  */
 /**
+ * <b>Note this Package is taken from Apache Commons Collections project</b>
  * This package contains implementations of the
  * {@link com.davidbracewell.collection.trie.Trie} interface.
- * <p>
  * The implementations are in the form of direct implementations and decorators.
  * A decorator wraps another implementation of the interface to add some
  * specific additional functionality.
- * <p>
  * The following implementations are provided in the package:
  * <ul>
- *   <li>PatriciaTrie - an implementation of a PATRICIA trie
+ * <li>PatriciaTrie - an implementation of a PATRICIA trie
  * </ul>
  * <p>
  * The following decorators are provided:
  * <ul>
- *   <li>Unmodifiable - ensures the collection cannot be altered
+ * <li>Unmodifiable - ensures the collection cannot be altered
  * </ul>
  *
  * @version $Id: package-info.java 1493523 2013-06-16 15:56:35Z tn $

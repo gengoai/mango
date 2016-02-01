@@ -19,7 +19,9 @@
  * under the License.
  */
 /**
- * This package contains various {@link org.apache.commons.collections4.trie.KeyAnalyzer} implementations.
+ * <b>Note this Package is taken from Apache Commons Collections project</b>
+ * This package contains various {@link com.davidbracewell.collection.trie.KeyAnalyzer}
+ * implementations.
  *
  * @version $Id: package-info.java 1491615 2013-06-10 21:46:19Z tn $
  */
