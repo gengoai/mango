@@ -86,7 +86,7 @@ public class BeanMap extends AbstractMap<String, Object> {
   @Override
   public Set<Entry<String, Object>> entrySet() {
     return this.keySet().stream()
-        .map(key -> Cast.<Map.Entry<String, Object>>as(Tuple2.<String, Object>of(key, get(key))))
+        .map(key -> Cast.<Map.Entry<String, Object>>as(Tuple2.of(key, get(key))))
         .collect(Collectors.toSet());
   }
 
@@ -97,7 +97,7 @@ public class BeanMap extends AbstractMap<String, Object> {
       try {
         return m.invoke(bean);
       } catch (Exception e) {
-        log.warn(e);
+        log.finest(e);
       }
     }
     return null;
@@ -150,11 +150,10 @@ public class BeanMap extends AbstractMap<String, Object> {
         log.warn(e);
       }
     } else {
-      log.warn("{0} is not a setter on {1}.", arg0, bean.getClass());
+      log.finest("{0} is not a setter on {1}.", arg0, bean.getClass());
     }
     return null;
   }
-
 
   @Override
   public int size() {

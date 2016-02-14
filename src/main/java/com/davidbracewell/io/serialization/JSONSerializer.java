@@ -27,6 +27,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 /**
+ * <p>JSON Serializer implementation</p>
+ *
  * @author David B. Bracewell
  */
 public class JSONSerializer implements Serializer {

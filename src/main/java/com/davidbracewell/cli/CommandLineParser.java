@@ -28,7 +28,6 @@ import com.davidbracewell.reflection.Reflect;
 import com.davidbracewell.reflection.ReflectionException;
 import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
-import com.google.common.base.CharMatcher;
 import com.google.common.base.Throwables;
 import lombok.NonNull;
 
@@ -133,63 +132,55 @@ public class CommandLineParser {
   public String[] parse(@NonNull String[] args) {
     List<String> filtered = new ArrayList<>();
 
-    for (ListIterator<String> iterator = Arrays.asList(args).listIterator(); iterator.hasNext(); ) {
+    String key = null;
 
-      String current = iterator.next();
+    for (String current : args) {
       if (current == null) {
         continue;
       }
+
       if (LONG.equals(current) || SHORT.equals(current)) {
         throw new CommandLineParserException(current, null);
       }
 
       if (current.startsWith(LONG)) {
-
-        String key;
-        String value;
-
-        if (current.endsWith(KEY_VALUE_SEPARATOR)) {
-
-          key = current.substring(0, current.length() - 1);
-          value = iterator.hasNext() ? iterator.next() : null;
-
-        } else if (current.contains(KEY_VALUE_SEPARATOR)) {
-
-          int index = current.indexOf(KEY_VALUE_SEPARATOR);
-          key = current.substring(0, index);
-          value = current.substring(index + 1);
-
+        if (key != null) {
+          setValue(key, "true");
         } else {
-
-          key = current;
-          value = iterator.hasNext() ? iterator.next() : null;
-          if (KEY_VALUE_SEPARATOR.equals(value)) {
-            value = iterator.hasNext() ? iterator.next() : null;
+          if (current.endsWith(KEY_VALUE_SEPARATOR)) {
+            key = current.substring(LONG.length(),current.length()-1);
+          } else if (current.contains(KEY_VALUE_SEPARATOR)) {
+            int pos = current.indexOf(KEY_VALUE_SEPARATOR);
+            setValue(current.substring(LONG.length(), pos), current.substring(pos + KEY_VALUE_SEPARATOR.length()));
+          } else {
+            key = current.substring(LONG.length());
           }
-
         }
-
-        value = setValue(key, value);
-        if (value == null) {
-          iterator.previous();
-        }
-
       } else if (current.startsWith(SHORT)) {
-
-        for (int i = 1; i < current.length(); i++) {
-          if (CharMatcher.JAVA_LETTER_OR_DIGIT.negate().matches(current.charAt(i))) {
-            throw new CommandLineParserException(Character.toString(current.charAt(i)), null);
+        if (key != null) {
+          setValue(key, "true");
+        } else {
+          if (current.contains(KEY_VALUE_SEPARATOR)) {
+            int pos = current.indexOf(KEY_VALUE_SEPARATOR);
+            setValue(current.substring(SHORT.length(), pos), current.substring(pos + KEY_VALUE_SEPARATOR.length()));
+          } else {
+            key = current.substring(SHORT.length());
           }
-          setValue(Character.toString(current.charAt(i)), null);
         }
-
+      } else if (current.equals(KEY_VALUE_SEPARATOR)) {
+        if (key == null) {
+          throw new CommandLineParserException(current, null);
+        }
+      } else if (key != null) {
+        setValue(key, current);
+        key = null;
       } else {
-
         filtered.add(current);
-
       }
+    }
 
-
+    if (key != null) {
+      setValue(key, "true");
     }
 
     optionSet.forEach(option -> {
@@ -213,12 +204,95 @@ public class CommandLineParser {
 
 
     return filtered.toArray(new String[filtered.size()]);
+//    List<String> filtered = new ArrayList<>();
+//
+//    for (ListIterator<String> iterator = Arrays.asList(args).listIterator(); iterator.hasNext(); ) {
+//
+//      String current = iterator.next();
+//      if (current == null) {
+//        continue;
+//      }
+//      if (LONG.equals(current) || SHORT.equals(current)) {
+//        throw new CommandLineParserException(current, null);
+//      }
+//
+//      if (current.startsWith(LONG)) {
+//
+//        String key;
+//        String value;
+//
+//        if (current.endsWith(KEY_VALUE_SEPARATOR)) {
+//
+//          key = current.substring(0, current.length() - 1);
+//          value = iterator.hasNext() ? iterator.next() : null;
+//
+//        } else if (current.contains(KEY_VALUE_SEPARATOR)) {
+//
+//          int index = current.indexOf(KEY_VALUE_SEPARATOR);
+//          key = current.substring(0, index);
+//          value = current.substring(index + 1);
+//
+//        } else {
+//
+//          key = current;
+//          value = iterator.hasNext() ? iterator.next() : null;
+//          if (KEY_VALUE_SEPARATOR.equals(value)) {
+//            value = iterator.hasNext() ? iterator.next() : null;
+//          }
+//
+//        }
+//
+//        value = setValue(key, value);
+//        if (value == null) {
+//          iterator.previous();
+//        }
+//
+//      } else if (current.startsWith(SHORT)) {
+//
+//        for (int i = 1; i < current.length(); i++) {
+//          if (CharMatcher.JAVA_LETTER_OR_DIGIT.negate().matches(current.charAt(i))) {
+//            throw new CommandLineParserException(Character.toString(current.charAt(i)), null);
+//          }
+//          setValue(Character.toString(current.charAt(i)), null);
+//        }
+//
+//      } else {
+//
+//        filtered.add(current);
+//
+//      }
+//
+//
+//    }
+//
+//    optionSet.forEach(option -> {
+//      if (option.getName().equals("h") && Cast.<Boolean>as(option.getValue())) {
+//        showHelp();
+//        System.exit(0);
+//      } else if (option.isRequired() && !isSet(option.getName())) {
+//        System.err.println("ERROR: " + option.getName() + " is required, but was not set.");
+//        showHelp();
+//        System.exit(-1);
+//      }
+//
+//      if (owner != null && option.getField() != null) {
+//        try {
+//          Reflect.onObject(owner).allowPrivilegedAccess().set(option.getField().getName(), option.getValue());
+//        } catch (ReflectionException e) {
+//          throw Throwables.propagate(e);
+//        }
+//      }
+//    });
+//
+//
+//    return filtered.toArray(new String[filtered.size()]);
   }
 
 
   /**
    * Prints help to standard error
    */
+
   public void showHelp() {
     System.err.println(applicationDescription);
     int maxArgName = optionSet.stream().map(no -> no.getName().length()).max((x, y) -> -x.compareTo(y)).orElse(10);
@@ -250,16 +324,15 @@ public class CommandLineParser {
     NamedOption option = options.get(key.replaceAll("^-+", ""));
 
     if (option == null) {
-
-      if (LONG.startsWith(key)) {
-        unamedOptions.put(key.replaceAll("^--", ""), value);
-        return null;
+      if (key.startsWith(LONG)) {
+        unamedOptions.put(key.substring(2), value);
+        return value;
       } else if (value == null || value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
-        unamedOptions.put(key.replaceAll("^-", ""), value);
-        return null;
+        unamedOptions.put(key.substring(1), value);
+        return value;
       }
 
-      unamedOptions.put(key.replaceAll("^-", ""), "true");
+      unamedOptions.put(key.substring(1), "true");
       return null;
 
     } else if (option.isBoolean()) {

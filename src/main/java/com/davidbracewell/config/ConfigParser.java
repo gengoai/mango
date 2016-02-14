@@ -60,44 +60,43 @@ class ConfigParser extends Parser {
     @Override
     public ParserTokenStream lex(final Resource input) throws IOException {
       return new ParserTokenStream(
-          new Iterator<ParserToken>() {
-            final ConfigTokenizer backing = new ConfigTokenizer(input.reader());
-            ParserToken next = null;
+        new Iterator<ParserToken>() {
+          final ConfigTokenizer backing = new ConfigTokenizer(input.reader());
+          ParserToken next = null;
 
-            @Override
-            public boolean hasNext() {
-              if (next == null) {
-                try {
-                  next = backing.next();
-                } catch (IOException | ParseException e) {
-                  throw Throwables.propagate(e);
-                }
+          @Override
+          public boolean hasNext() {
+            if (next == null) {
+              try {
+                next = backing.next();
+              } catch (IOException | ParseException e) {
+                throw Throwables.propagate(e);
               }
-              return next != null;
             }
-
-            @Override
-            public ParserToken next() {
-              if (!hasNext()) {
-                throw new NoSuchElementException();
-              }
-              ParserToken returnToken = next;
-              next = null;
-              return returnToken;
-            }
-
-            @Override
-            public void remove() {
-              throw new UnsupportedOperationException();
-            }
+            return next != null;
           }
+
+          @Override
+          public ParserToken next() {
+            if (!hasNext()) {
+              throw new NoSuchElementException();
+            }
+            ParserToken returnToken = next;
+            next = null;
+            return returnToken;
+          }
+
+          @Override
+          public void remove() {
+            throw new UnsupportedOperationException();
+          }
+        }
       );
     }
   };
 
   private final Config.ConfigPropertySetter propertySetter;
   private final String resourceName;
-
 
   /**
    * Instantiates a new Config parser.
@@ -129,6 +128,9 @@ class ConfigParser extends Parser {
 
       if (importStatement.contains("/")) {
         path = importStatement;
+        if (!path.endsWith(".conf")) {
+          path += ".conf";
+        }
       } else {
         if (importStatement.endsWith(".conf")) {
           int index = importStatement.lastIndexOf('.');
@@ -137,11 +139,12 @@ class ConfigParser extends Parser {
           path = importStatement.replace(".", "/") + ".conf";
         }
       }
+
       path = Config.resolveVariables(path).trim();
       if (path.startsWith("file:")) {
-        Config.loadConfig(Resources.from(path));
+        Config.loadConfig(Resources.from(path), propertySetter);
       } else {
-        Config.loadConfig(new ClasspathResource(path));
+        Config.loadConfig(new ClasspathResource(path), propertySetter);
       }
     }
   }
@@ -149,11 +152,11 @@ class ConfigParser extends Parser {
   private void setProperty(PrefixExpression assignment, String section) {
     String key = section;
 
-    if( assignment.operator.text.equals("_")){
-      if( StringUtils.isNullOrBlank(section)){
+    if (assignment.operator.text.equals("_")) {
+      if (StringUtils.isNullOrBlank(section)) {
         throw new IllegalStateException("Trying to set a non-section value using the \"_\" property.");
       }
-      key  = section.substring(0,section.length()-1);
+      key = section.substring(0, section.length() - 1);
     } else {
       key = section + assignment.operator.text;
     }
@@ -209,7 +212,6 @@ class ConfigParser extends Parser {
 
     return Collections.emptyList();
   }
-
 
   private void handleSection(String parent, SectionExpression exp) {
     final SectionExpression section = exp.as(SectionExpression.class);

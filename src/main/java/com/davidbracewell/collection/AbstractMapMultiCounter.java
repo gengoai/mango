@@ -109,17 +109,17 @@ abstract class AbstractMapMultiCounter<K, V> implements MultiCounter<K, V>, Seri
   @Override
   public List<Map.Entry<K, V>> itemsByCount(boolean ascending) {
     return Collect.from(new KeyKeyValueIterator())
-        .sorted((c1, c2) -> (ascending ? 1 : -1) * Double.compare(c1.getV3(), c2.getV3()))
-        .map(t -> Cast.<Map.Entry<K, V>>as(Tuple2.of(t.getV1(), t.getV2())))
-        .collect(Collectors.toList());
+      .sorted((c1, c2) -> (ascending ? 1 : -1) * Double.compare(c1.getV3(), c2.getV3()))
+      .map(t -> Cast.<Map.Entry<K, V>>as(Tuple2.of(t.getV1(), t.getV2())))
+      .collect(Collectors.toList());
   }
 
   @Override
   public MultiCounter<K, V> filterByValue(@NonNull DoublePredicate predicate) {
     MultiCounter<K, V> tmp = newInstance();
     Collect.from(new KeyKeyValueIterator())
-        .filter(t -> predicate.test(t.getV3()))
-        .forEach(t -> tmp.set(t.getV1(), t.getV2(), t.getV3()));
+      .filter(t -> predicate.test(t.getV3()))
+      .forEach(t -> tmp.set(t.getV1(), t.getV2(), t.getV3()));
     return tmp;
   }
 
@@ -127,8 +127,8 @@ abstract class AbstractMapMultiCounter<K, V> implements MultiCounter<K, V>, Seri
   public MultiCounter<K, V> filterByFirstKey(@NonNull Predicate<K> predicate) {
     MultiCounter<K, V> tmp = newInstance();
     Collect.from(new KeyKeyValueIterator())
-        .filter(t -> predicate.test(t.getV1()))
-        .forEach(t -> tmp.set(t.getV1(), t.getV2(), t.getV3()));
+      .filter(t -> predicate.test(t.getV1()))
+      .forEach(t -> tmp.set(t.getV1(), t.getV2(), t.getV3()));
     return tmp;
   }
 
@@ -136,8 +136,8 @@ abstract class AbstractMapMultiCounter<K, V> implements MultiCounter<K, V>, Seri
   public MultiCounter<K, V> filterBySecondKey(@NonNull Predicate<V> predicate) {
     MultiCounter<K, V> tmp = newInstance();
     Collect.from(new KeyKeyValueIterator())
-        .filter(t -> predicate.test(t.getV2()))
-        .forEach(t -> tmp.set(t.getV1(), t.getV2(), t.getV3()));
+      .filter(t -> predicate.test(t.getV2()))
+      .forEach(t -> tmp.set(t.getV1(), t.getV2(), t.getV3()));
     return tmp;
   }
 
@@ -145,7 +145,7 @@ abstract class AbstractMapMultiCounter<K, V> implements MultiCounter<K, V>, Seri
   public void merge(MultiCounter<K, V> other) {
     if (other != null) {
       other.entries().stream()
-          .forEach(e -> increment(e.v1, e.v2, e.v3));
+        .forEach(e -> increment(e.v1, e.v2, e.v3));
     }
   }
 
@@ -209,6 +209,17 @@ abstract class AbstractMapMultiCounter<K, V> implements MultiCounter<K, V>, Seri
    */
   protected abstract MultiCounter<K, V> newInstance();
 
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    items().stream().limit(10).forEach(item ->{
+      builder.append(item).append(":").append(get(item)).append("\n");
+    });
+    if( size() > 10 ){
+      builder.append("....");
+    }
+    return builder.toString().trim();
+  }
 
   protected class KeyKeyValueIterator implements Iterator<Tuple3<K, V, Double>> {
 

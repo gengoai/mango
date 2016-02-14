@@ -28,10 +28,7 @@ import com.davidbracewell.tuple.Tuple2;
 import lombok.NonNull;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -77,7 +74,24 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U>, Serializable {
 
   @Override
   public void forEach(@NonNull SerializableBiConsumer<? super T, ? super U> consumer) {
-    stream.forEach(e -> consumer.accept(e.getKey(), e.getValue()));
+    stream.forEach(e -> {
+      if (e == null) {
+        consumer.accept(null, null);
+      } else {
+        consumer.accept(e.getKey(), e.getValue());
+      }
+    });
+  }
+
+  @Override
+  public void forEachLocal(SerializableBiConsumer<? super T, ? super U> consumer) {
+    stream.sequential().forEach(e -> {
+      if (e == null) {
+        consumer.accept(null, null);
+      } else {
+        consumer.accept(e.getKey(), e.getValue());
+      }
+    });
   }
 
   @Override
@@ -154,5 +168,17 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U>, Serializable {
     return new JavaMStream<>(stream.map(Map.Entry::getValue));
   }
 
+  @Override
+  public MPairStream<T, U> parallel() {
+    return new JavaMPairStream<>(stream.parallel());
+  }
 
+  @Override
+  public MPairStream<T, U> shuffle(Random random) {
+    return new JavaMPairStream<>(
+      stream.map(t -> Tuple2.of(random.nextDouble(), t))
+        .sorted(Map.Entry.comparingByKey())
+        .map(Tuple2::getValue)
+    );
+  }
 }//END OF JavaMPairStream

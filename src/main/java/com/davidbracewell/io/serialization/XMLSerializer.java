@@ -21,15 +21,15 @@
 
 package com.davidbracewell.io.serialization;
 
-import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.io.resource.Resource;
 
-import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
+import javax.xml.bind.JAXB;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
+ * <p>XML Serializer implementation.</p>
+ *
  * @author David B. Bracewell
  */
 public class XMLSerializer implements Serializer {
@@ -37,18 +37,16 @@ public class XMLSerializer implements Serializer {
   @Override
   public void serialize(Object o, Resource resource) throws Exception {
     try (OutputStream outputStream = resource.outputStream();
-         XMLEncoder encoder = new XMLEncoder(outputStream)
     ) {
-      encoder.writeObject(o);
+      JAXB.marshal(o, outputStream);
     }
   }
 
   @Override
   public <T> T deserialize(Resource resource, Class<T> clazz) throws Exception {
     try (InputStream inputStream = resource.inputStream();
-         XMLDecoder decoder = new XMLDecoder(inputStream);
     ) {
-      return Cast.as(decoder.readObject(), clazz);
+      return JAXB.unmarshal(inputStream, clazz);
     }
   }
 

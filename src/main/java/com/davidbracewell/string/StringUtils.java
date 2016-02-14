@@ -24,10 +24,7 @@ package com.davidbracewell.string;
 import com.davidbracewell.collection.Collect;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.structured.csv.CSVReader;
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicates;
-import com.google.common.base.Throwables;
+import com.google.common.base.*;
 import com.google.common.collect.Lists;
 import lombok.NonNull;
 
@@ -41,6 +38,10 @@ import java.util.stream.Stream;
  * @author David B. Bracewell
  */
 public class StringUtils {
+
+  public static String UNICODE_WHITESPACE = "[\\p{Z}\t\r\n\f]";
+  public static String UNICODE_WHITESPACE_STAR = "[\\p{Z}\t\r\n\f]*";
+  public static String UNICODE_WHITESPACE_PLUS = "[\\p{Z}\t\r\n\f]+";
 
   /**
    * CharMatcher combining INVISIBLE, BREAKING_WHITESPACE, and WHITESPACE
@@ -61,6 +62,26 @@ public class StringUtils {
    */
   public static final CharMatcher NOT_LETTER_OR_DIGIT = CharMatcher.forPredicate(Predicates.not(LETTER_OR_DIGIT));
 
+  public static String center(@NonNull String s, int length) {
+    int start = (int) Math.floor(Math.max(0, (length - s.length()) / 2d));
+    return Strings.padEnd(repeat(' ', start) + s, length, ' ');
+  }
+
+  public static String repeat(@NonNull String s, int count) {
+    StringBuilder builder = new StringBuilder();
+    for (int i = 0; i < count; i++) {
+      builder.append(s);
+    }
+    return builder.toString();
+  }
+
+  public static String repeat(char c, int count) {
+    StringBuilder builder = new StringBuilder();
+    for (int i = 0; i < count; i++) {
+      builder.append(c);
+    }
+    return builder.toString();
+  }
 
   /**
    * <p>Abbreviates a string to a desired length and adds "..." at the end.</p>
@@ -231,7 +252,7 @@ public class StringUtils {
     }
     StringBuilder builder = new StringBuilder();
     for (int i = 0; i < input.length(); ) {
-      if (input.charAt(i) == escapeCharacter ) {
+      if (input.charAt(i) == escapeCharacter) {
         builder.append(input.charAt(i + 1));
         i = i + 2;
       } else {

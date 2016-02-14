@@ -42,6 +42,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
+ * The type Java m stream.
+ *
+ * @param <T> the type parameter
  * @author David B. Bracewell
  */
 public class JavaMStream<T> implements MStream<T>, Serializable {
@@ -49,23 +52,48 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
 
   private final Stream<T> stream;
 
+  /**
+   * Instantiates a new Java m stream.
+   *
+   * @param items the items
+   */
   @SafeVarargs
   public JavaMStream(@NonNull final T... items) {
     this.stream = Stream.of(items);
   }
 
+  /**
+   * Instantiates a new Java m stream.
+   *
+   * @param stream the stream
+   */
   public JavaMStream(@NonNull final Stream<T> stream) {
     this.stream = stream;
   }
 
+  /**
+   * Instantiates a new Java m stream.
+   *
+   * @param collection the collection
+   */
   public JavaMStream(@NonNull final Collection<T> collection) {
     this.stream = collection.parallelStream();
   }
 
+  /**
+   * Instantiates a new Java m stream.
+   *
+   * @param iterable the iterable
+   */
   public JavaMStream(@NonNull final Iterable<T> iterable) {
     this.stream = Collect.parallelFrom(iterable);
   }
 
+  /**
+   * Instantiates a new Java m stream.
+   *
+   * @param iterator the iterator
+   */
   public JavaMStream(@NonNull final Iterator<? extends T> iterator) {
     this.stream = Collect.parallelFrom(Cast.<Iterator<T>>as(iterator));
   }
@@ -76,7 +104,7 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() throws IOException {
     stream.close();
   }
 
@@ -92,7 +120,7 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
 
   @Override
   public <R> MStream<R> flatMap(@NonNull SerializableFunction<? super T, ? extends Iterable<? extends R>> mapper) {
-    return new JavaMStream<>(stream.flatMap(t -> Collect.from(mapper.apply(t))));
+    return new JavaMStream<>(stream.flatMap(t -> Collect.from(mapper.apply(t)).map(Cast::<R>as)));
   }
 
   @Override
@@ -118,12 +146,16 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
       return new JavaMStream<>(Stream.<T>empty());
     }
     Random random = new Random();
-    List<T> sample = stream.limit(count).collect(Collectors.toList());
+    List<T> sample = new ArrayList<>();
     AtomicInteger k = new AtomicInteger(count + 1);
-    stream.skip(count).forEach(document -> {
-      int rndIndex = random.nextInt(k.getAndIncrement());
-      if (rndIndex < count) {
-        sample.set(rndIndex, document);
+    stream.forEach(document -> {
+      if (sample.size() < count) {
+        sample.add(document);
+      } else {
+        int rndIndex = random.nextInt(k.getAndIncrement());
+        if (rndIndex < count) {
+          sample.set(rndIndex, document);
+        }
       }
     });
     return new JavaMStream<>(sample.parallelStream());
@@ -146,6 +178,11 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
 
   @Override
   public void forEach(@NonNull SerializableConsumer<? super T> consumer) {
+    stream.forEachOrdered(consumer);
+  }
+
+  @Override
+  public void forEachLocal(SerializableConsumer<? super T> consumer) {
     stream.forEachOrdered(consumer);
   }
 
@@ -174,6 +211,11 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
     return new JavaMStream<>(stream.skip(n));
   }
 
+  /**
+   * Stream stream.
+   *
+   * @return the stream
+   */
   public Stream<T> stream() {
     return stream;
   }
@@ -261,6 +303,20 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
     } catch (IOException e) {
       throw Throwables.propagate(e);
     }
+  }
+
+  @Override
+  public MStream<T> parallel() {
+    return new JavaMStream<>(stream.parallel());
+  }
+
+  @Override
+  public MStream<T> shuffle(@NonNull Random random) {
+    return new JavaMStream<>(
+      stream.map(t -> Tuple2.of(random.nextDouble(), t))
+        .sorted(Map.Entry.comparingByKey())
+        .map(Tuple2::getValue)
+    );
   }
 
 }//END OF JavaMStream

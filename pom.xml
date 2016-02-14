@@ -23,7 +23,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.davidbracewell</groupId>
     <artifactId>mango</artifactId>
-    <version>0.1</version>
+    <version>0.2</version>
     <packaging>jar</packaging>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>A set of utilities and tools to speed up and ease programming in Java.</description>
@@ -41,7 +41,7 @@
         <connection>scm:git:git@github.com:dbracewell/mango.git</connection>
         <developerConnection>scm:git:git@github.com:dbracewell/mango.git</developerConnection>
         <url>git@github.com:dbracewell/mango.git</url>
-        <tag>mango-0.1</tag>
+        <tag>mango-0.2</tag>
     </scm>
 
     <developers>

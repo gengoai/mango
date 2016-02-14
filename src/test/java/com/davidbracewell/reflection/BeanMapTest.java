@@ -21,12 +21,8 @@
 
 package com.davidbracewell.reflection;
 
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
+import com.davidbracewell.tuple.Tuple2;
 import org.junit.Test;
-
-import java.util.Map;
-import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -39,20 +35,18 @@ public class BeanMapTest {
   @Test
   @SuppressWarnings("unchecked")
   public void testObject() throws Exception {
-    BeanMap map = new BeanMap(new Object());
-
-    assertTrue(Sets.difference(map.keySet(), Sets.newHashSet("class")).isEmpty());
-    assertTrue(map.containsKey("class"));
-    assertTrue(map.containsValue(Object.class));
+    BeanMap map = new BeanMap(Tuple2.of("A", "B"));
+    assertFalse(map.containsKey("class"));
+    assertFalse(map.containsValue(Object.class));
     assertFalse(map.isEmpty());
-    assertEquals(1, map.size());
-    assertTrue(Sets.difference(Sets.newHashSet(map.values()), Sets.newHashSet(Object.class)).isEmpty());
-    assertEquals(Class.class, map.getType("class"));
 
-    Set<Map.Entry<String, Object>> entrySet = map.entrySet();
-    assertEquals(1, entrySet.size());
-    assertEquals("class", Iterables.getOnlyElement(entrySet).getKey());
-    assertEquals(Object.class, Iterables.getOnlyElement(entrySet).getValue());
+    assertTrue(map.containsKey("v1"));
+    assertTrue(map.containsKey("v2"));
+
+    assertEquals("A", map.get("v1"));
+    assertEquals("B", map.get("v2"));
+
+    assertNull(map.put("v1", "G"));
 
   }
 

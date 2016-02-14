@@ -19,19 +19,38 @@
  * under the License.
  */
 
-package com.davidbracewell.io.structured.xml;
+package com.davidbracewell.io.serialization;
+
+import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.io.resource.ByteArrayResource;
+import com.davidbracewell.io.resource.Resource;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * @author David B. Bracewell
  */
-public class TestBean {
-  private String name;
+public class XMLSerializerTest {
 
-  public String getName() {
-    return name;
+
+
+  @Test
+  public void test() throws Exception {
+    Person person = new Person("John", 24);
+    person.getHobbies().add("Tennis");
+    person.getHobbies().add("TV");
+    person.getHobbies().add("Pool");
+
+    XMLSerializer xmlSerializer = new XMLSerializer();
+
+    Resource resource = new ByteArrayResource();
+    xmlSerializer.serialize(person, resource);
+    Person deserialized = Cast.as(xmlSerializer.deserialize(resource, Person.class));
+
+    assertEquals(person,deserialized);
+
+
   }
 
-  public void setName(String name) {
-    this.name = name;
-  }
 }

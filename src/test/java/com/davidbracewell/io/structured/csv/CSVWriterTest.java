@@ -19,12 +19,11 @@
  * under the License.
  */
 
-package com.davidbracewell.io;
+package com.davidbracewell.io.structured.csv;
 
+import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.resource.StringResource;
-import com.davidbracewell.io.structured.csv.CSVReader;
-import com.davidbracewell.io.structured.csv.CSVWriter;
 import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 
@@ -50,7 +49,7 @@ public class CSVWriterTest {
       writer.write(Arrays.asList("4", "5", "6"));
       writer.write(Arrays.asList("7", "8", "9").iterator());
       writer.write(map);
-      writer.writeMapAsOneRow(map, ':');
+      writer.write(map, ':');
     }
 
     try (CSVReader reader = CSV.builder().delimiter('\t').reader(r)) {
@@ -68,7 +67,7 @@ public class CSVWriterTest {
       writer.write(Arrays.asList("4", "5", "6"));
       writer.write(Arrays.asList("7", "8", "9").iterator());
       writer.write(map);
-      writer.writeMapAsOneRow(map, ':');
+      writer.write(map, ':');
     }
 
     try (CSVReader reader = CSV.builder().reader(r)) {

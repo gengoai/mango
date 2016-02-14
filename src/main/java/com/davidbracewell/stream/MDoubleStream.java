@@ -207,4 +207,11 @@ public interface MDoubleStream extends AutoCloseable {
    */
   MDoubleStream flatMap(SerializableDoubleFunction<double[]> mapper);
 
+  /**
+   * Parallel m double stream.
+   *
+   * @return the m double stream
+   */
+  MDoubleStream parallel();
+
 }//END OF MDoubleStream

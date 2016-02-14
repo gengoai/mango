@@ -21,13 +21,14 @@
 
 package com.davidbracewell.io.structured.json;
 
+import com.davidbracewell.conversion.Val;
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.resource.StringResource;
 import com.davidbracewell.tuple.Tuple2;
 import org.junit.Test;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -57,7 +58,7 @@ public class JSONWriterTest {
     resource = new StringResource();
     try (JSONWriter writer = new JSONWriter(resource)) {
       writer.beginDocument();
-      writer.writeObject(Tuple2.of("String1", 34d));
+      writer.writeKeyValue("List", Tuple2.of("String1", 34d));
       writer.endDocument();
     }
     assertEquals("{\"List\":[\"String1\",34.0]}", resource.readToString().trim());
@@ -65,7 +66,10 @@ public class JSONWriterTest {
 
     try (JSONReader reader = new JSONReader(resource)) {
       reader.beginDocument();
-      assertEquals(reader.nextObject(List.class), Arrays.asList("String1", 34d));
+      List<Val> list = reader.nextCollection(ArrayList::new);
+      assertTrue(list.size() == 2);
+      assertEquals("String1", list.get(0).asString());
+      assertEquals(34.0d, list.get(1).asDoubleValue(), 0d);
       reader.endDocument();
     }
   }

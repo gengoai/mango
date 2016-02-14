@@ -22,8 +22,10 @@
 package com.davidbracewell.conversion;
 
 import com.davidbracewell.DateUtils;
+import com.davidbracewell.io.CSV;
 import com.davidbracewell.logging.Logger;
 import com.davidbracewell.reflection.ReflectionUtils;
+import com.davidbracewell.string.CSVFormatter;
 import com.davidbracewell.string.StringUtils;
 import com.google.common.base.Function;
 import com.google.common.primitives.Bytes;
@@ -39,10 +41,7 @@ import java.nio.file.Path;
 import java.sql.Blob;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * Functions for converting objects to common types in Java e.g. Class, Object, Character, and String
@@ -67,7 +66,7 @@ public class CommonTypeConverter {
 
       String string = STRING.apply(input);
       if (string != null) {
-        string = StringUtils.trim(string.replaceAll("\\p{Z}+", " "));
+        string = StringUtils.trim(string.replaceAll(StringUtils.UNICODE_WHITESPACE_PLUS, " "));
 
         Date date = DateUtils.parseQuietly(string, Locale.getDefault());
         if (date != null) {
@@ -203,6 +202,13 @@ public class CommonTypeConverter {
         return array + "]";
       } else if (input instanceof Date) {
         return SimpleDateFormat.getDateTimeInstance().format(input);
+      } else if (input instanceof Map) {
+        StringBuilder builder = new StringBuilder("{");
+        CSVFormatter mapFormat = CSV.builder().delimiter('=').formatter();
+        Cast.<Map<?, ?>>as(input).forEach((o, o2) -> builder.append(
+          mapFormat.format(Convert.convert(o, String.class), Convert.convert(o2, String.class))
+        ));
+        return builder.append("}").toString();
       }
 
       return input.toString();

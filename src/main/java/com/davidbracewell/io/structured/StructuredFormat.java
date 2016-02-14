@@ -22,10 +22,8 @@
 package com.davidbracewell.io.structured;
 
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.io.structured.json.JSONDocument;
 import com.davidbracewell.io.structured.json.JSONReader;
 import com.davidbracewell.io.structured.json.JSONWriter;
-import com.davidbracewell.io.structured.xml.XMLDocument;
 import com.davidbracewell.io.structured.xml.XMLReader;
 import com.davidbracewell.io.structured.xml.XMLWriter;
 import lombok.NonNull;
@@ -45,9 +43,9 @@ public interface StructuredFormat extends Serializable {
    *
    * @param resource the resource
    * @return the structured reader
-   * @throws StructuredIOException the structured iO exception
+   * @throws IOException the structured iO exception
    */
-  StructuredReader createReader(Resource resource) throws StructuredIOException;
+  StructuredReader createReader(Resource resource) throws IOException;
 
 
   /**
@@ -55,19 +53,11 @@ public interface StructuredFormat extends Serializable {
    *
    * @param resource the resource
    * @return the structured writer
-   * @throws StructuredIOException the structured iO exception
+   * @throws IOException the structured iO exception
    */
-  StructuredWriter createWriter(Resource resource) throws StructuredIOException;
+  StructuredWriter createWriter(Resource resource) throws IOException;
 
 
-  /**
-   * Create document.
-   *
-   * @param resource the resource
-   * @return the structured document
-   * @throws StructuredIOException the structured iO exception
-   */
-  StructuredDocument createDocument(Resource resource) throws StructuredIOException;
 
   /**
    * XML Format
@@ -77,18 +67,13 @@ public interface StructuredFormat extends Serializable {
     private static final long serialVersionUID = 1297100190960314727L;
 
     @Override
-    public StructuredReader createReader(Resource resource) throws StructuredIOException {
+    public StructuredReader createReader(Resource resource) throws IOException {
       return new XMLReader(resource);
     }
 
     @Override
-    public StructuredWriter createWriter(Resource resource) throws StructuredIOException {
+    public StructuredWriter createWriter(Resource resource) throws IOException {
       return new XMLWriter(resource);
-    }
-
-    @Override
-    public StructuredDocument createDocument(Resource resource) throws StructuredIOException {
-      return XMLDocument.from(resource);
     }
   };
 
@@ -100,21 +85,15 @@ public interface StructuredFormat extends Serializable {
     private static final long serialVersionUID = 1297100190960314727L;
 
     @Override
-    public StructuredReader createReader(Resource resource) throws StructuredIOException {
+    public StructuredReader createReader(Resource resource) throws IOException {
       return new JSONReader(resource);
     }
 
     @Override
-    public StructuredWriter createWriter(Resource resource) throws StructuredIOException {
+    public StructuredWriter createWriter(Resource resource) throws IOException {
       return new JSONWriter(resource);
     }
 
-    @Override
-    public StructuredDocument createDocument(Resource resource) throws StructuredIOException {
-      JSONDocument document = new JSONDocument();
-      document.read(resource);
-      return document;
-    }
   };
 
 
@@ -127,27 +106,23 @@ public interface StructuredFormat extends Serializable {
     }
 
     @Override
-    public StructuredReader createReader(Resource resource) throws StructuredIOException {
+    public StructuredReader createReader(Resource resource) throws IOException {
       try {
         return format.reader(resource);
       } catch (IOException e) {
-        throw new StructuredIOException(e);
+        throw new IOException(e);
       }
     }
 
     @Override
-    public StructuredWriter createWriter(Resource resource) throws StructuredIOException {
+    public StructuredWriter createWriter(Resource resource) throws IOException {
       try {
         return format.writer(resource);
       } catch (IOException e) {
-        throw new StructuredIOException(e);
+        throw new IOException(e);
       }
     }
 
-    @Override
-    public StructuredDocument createDocument(Resource resource) throws StructuredIOException {
-      throw new UnsupportedOperationException();
-    }
   }
 
 

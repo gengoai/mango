@@ -45,29 +45,6 @@ public class BeanDescriptor implements Serializable {
   private final Map<String, Method> writeMethods;
   private final Class<?> clazz;
 
-  private void setReadWrite(Class<?> clazz) {
-    if (clazz == null) {
-      return;
-    }
-    Reflect.onClass(clazz).getMethods().forEach(method -> {
-      String name = method.getName();
-      if (name.startsWith("get")) {
-        readMethods.put(transformName(name), method);
-      } else if (name.startsWith("set")) {
-        writeMethods.put(transformName(name), method);
-      }
-    });
-  }
-
-  private String transformName(String name) {
-    if (name.length() == 3) {
-      return StringUtils.EMPTY;
-    }
-    char[] carrry = name.substring(3, name.length()).toCharArray();
-    carrry[0] = Character.toLowerCase(carrry[0]);
-    return new String(carrry);
-  }
-
   /**
    * Default Constructor that initializes the descriptor using class information
    *
@@ -85,6 +62,35 @@ public class BeanDescriptor implements Serializable {
       }
     }
     setReadWrite(this.clazz);
+  }
+
+  private void setReadWrite(Class<?> clazz) {
+    if (clazz == null) {
+      return;
+    }
+    Reflect.onClass(clazz).getMethods().forEach(method -> {
+      String name = method.getName();
+      if (!name.equals("getClass") && method.getAnnotation(Ignore.class) == null) {
+        if (name.startsWith("get") || name.startsWith("is")) {
+          readMethods.put(transformName(name), method);
+        } else if (name.startsWith("set")) {
+          writeMethods.put(transformName(name), method);
+        }
+      }
+    });
+  }
+
+  private String transformName(String name) {
+    int prefixLen = 3;
+    if (name.startsWith("is")) {
+      prefixLen = 2;
+    }
+    if (name.length() == prefixLen) {
+      return StringUtils.EMPTY;
+    }
+    char[] carrry = name.substring(prefixLen, name.length()).toCharArray();
+    carrry[0] = Character.toLowerCase(carrry[0]);
+    return new String(carrry);
   }
 
   /**

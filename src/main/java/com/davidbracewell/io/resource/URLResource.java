@@ -42,7 +42,7 @@ import java.util.Optional;
  *
  * @author David B. Bracewell
  */
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 public class URLResource extends BaseResource {
 
   private static final long serialVersionUID = -5874490341557934277L;

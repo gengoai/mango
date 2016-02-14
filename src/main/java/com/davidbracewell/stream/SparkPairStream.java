@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * @author David B. Bracewell
@@ -53,6 +54,11 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
   @Override
   public void forEach(@NonNull SerializableBiConsumer<? super T, ? super U> consumer) {
     rdd.foreach(tuple -> consumer.accept(tuple._1(), tuple._2()));
+  }
+
+  @Override
+  public void forEachLocal(SerializableBiConsumer<? super T, ? super U> consumer) {
+    rdd.toLocalIterator().forEachRemaining(e -> consumer.accept(e._1(), e._2()));
   }
 
   @Override
@@ -142,4 +148,26 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
     return new SparkPairStream<>(rdd.sortByKey(comparator));
   }
 
+  @Override
+  public MPairStream<T, U> parallel() {
+    return this;
+  }
+
+  /**
+   * Gets context.
+   *
+   * @return the context
+   */
+  public JavaSparkContext getContext() {
+    return Spark.context(rdd);
+  }
+
+  @Override
+  public MPairStream<T, U> shuffle(Random random) {
+    return new SparkPairStream<T, U>(
+      rdd.mapToPair(t -> new scala.Tuple2<>(random.nextDouble(), t))
+        .sortByKey()
+        .mapToPair(scala.Tuple2::_2)
+    );
+  }
 }// END OF SparkPairStream

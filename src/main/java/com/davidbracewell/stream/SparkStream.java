@@ -33,6 +33,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.ToDoubleFunction;
@@ -47,15 +48,6 @@ import java.util.stream.Collector;
 public class SparkStream<T> implements MStream<T>, Serializable {
   private static final long serialVersionUID = 1L;
   private final JavaRDD<T> rdd;
-
-  /**
-   * Gets rdd.
-   *
-   * @return the rdd
-   */
-  public JavaRDD<T> getRDD() {
-    return rdd;
-  }
 
   /**
    * Instantiates a new Spark stream.
@@ -77,6 +69,15 @@ public class SparkStream<T> implements MStream<T>, Serializable {
   }
 
   /**
+   * Gets rdd.
+   *
+   * @return the rdd
+   */
+  public JavaRDD<T> getRDD() {
+    return rdd;
+  }
+
+  /**
    * Gets context.
    *
    * @return the context
@@ -86,7 +87,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() throws IOException {
   }
 
   @Override
@@ -153,6 +154,11 @@ public class SparkStream<T> implements MStream<T>, Serializable {
   @Override
   public void forEach(SerializableConsumer<? super T> consumer) {
     rdd.foreach(consumer::accept);
+  }
+
+  @Override
+  public void forEachLocal(SerializableConsumer<? super T> consumer) {
+    rdd.toLocalIterator().forEachRemaining(consumer);
   }
 
   @Override
@@ -266,5 +272,20 @@ public class SparkStream<T> implements MStream<T>, Serializable {
   @Override
   public void saveAsTextFile(@NonNull String location) {
     rdd.saveAsTextFile(location);
+  }
+
+
+  @Override
+  public MStream<T> parallel() {
+    return this;
+  }
+
+  @Override
+  public MStream<T> shuffle(@NonNull Random random) {
+    return new SparkStream<>(
+      rdd.mapToPair(t -> new Tuple2<>(random.nextDouble(), t))
+        .sortByKey()
+        .map(Tuple2::_2)
+    );
   }
 }//END OF SparkStream

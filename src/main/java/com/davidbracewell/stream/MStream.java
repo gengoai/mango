@@ -31,6 +31,7 @@ import com.davidbracewell.io.resource.Resource;
 import com.google.common.collect.Ordering;
 import lombok.NonNull;
 
+import java.io.Closeable;
 import java.util.*;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Collector;
@@ -41,7 +42,7 @@ import java.util.stream.Collector;
  * @param <T> the type parameter
  * @author David B. Bracewell
  */
-public interface MStream<T> extends AutoCloseable {
+public interface MStream<T> extends Closeable {
 
   /**
    * Filter m stream.
@@ -137,6 +138,8 @@ public interface MStream<T> extends AutoCloseable {
    * @param consumer the consumer
    */
   void forEach(SerializableConsumer<? super T> consumer);
+
+  void forEachLocal(SerializableConsumer<? super T> consumer);
 
   /**
    * Iterator iterator.
@@ -300,7 +303,6 @@ public interface MStream<T> extends AutoCloseable {
    */
   MStream<T> union(MStream<T> other);
 
-
   /**
    * Save as text file.
    *
@@ -308,10 +310,32 @@ public interface MStream<T> extends AutoCloseable {
    */
   void saveAsTextFile(Resource location);
 
-
+  /**
+   * Save as text file.
+   *
+   * @param location the location
+   */
   default void saveAsTextFile(@NonNull String location) {
     saveAsTextFile(Resources.from(location));
   }
+
+  /**
+   * Parallel m stream.
+   *
+   * @return the m stream
+   */
+  MStream<T> parallel();
+
+  /**
+   * Shuffle m stream.
+   *
+   * @return the m stream
+   */
+  default MStream<T> shuffle() {
+    return shuffle(new Random());
+  }
+
+  MStream<T> shuffle(Random random);
 
 
 }//END OF MStream

@@ -69,6 +69,12 @@ public final class Spark {
     return context;
   }
 
+  /**
+   * Context java spark context.
+   *
+   * @param stream the stream
+   * @return the java spark context
+   */
   public static JavaSparkContext context(MStream<?> stream) {
     if (stream == null) {
       return context();
@@ -91,6 +97,12 @@ public final class Spark {
     return new JavaSparkContext(rdd.context());
   }
 
+  /**
+   * Context java spark context.
+   *
+   * @param rdd the rdd
+   * @return the java spark context
+   */
   public static JavaSparkContext context(JavaPairRDD<?, ?> rdd) {
     if (rdd == null) {
       return context();

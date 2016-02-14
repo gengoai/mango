@@ -21,24 +21,27 @@
 
 package com.davidbracewell.io.structured.xml;
 
+import com.davidbracewell.DynamicEnum;
+import com.davidbracewell.collection.Counter;
+import com.davidbracewell.collection.MultiCounter;
+import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.ElementType;
-import com.davidbracewell.io.structured.StructuredIOException;
 import com.davidbracewell.io.structured.StructuredWriter;
+import com.davidbracewell.io.structured.Writable;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Multimap;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.namespace.QName;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Stack;
+import java.util.*;
 
 /**
  * An implementation of a StructuredWriter that writes xml.
@@ -51,14 +54,15 @@ public class XMLWriter extends StructuredWriter {
   private final Stack<ElementType> stack;
   private final OutputStream os;
   private final XMLStreamWriter writer;
+  private boolean documentIsArray = false;
 
   /**
    * Creates an XML writer with the document tag "document"
    *
    * @param resource The resource to write xml to
-   * @throws StructuredIOException Something went wrong writing
+   * @throws IOException Something went wrong writing
    */
-  public XMLWriter(Resource resource) throws StructuredIOException {
+  public XMLWriter(Resource resource) throws IOException {
     this("document", resource);
   }
 
@@ -67,9 +71,9 @@ public class XMLWriter extends StructuredWriter {
    *
    * @param documentTag The document tag to use for the xml document
    * @param resource    The resource to write xml to
-   * @throws StructuredIOException Something went wrong writing
+   * @throws IOException Something went wrong writing
    */
-  public XMLWriter(String documentTag, Resource resource) throws StructuredIOException {
+  public XMLWriter(String documentTag, Resource resource) throws IOException {
     try {
       Preconditions.checkArgument(!Strings.isNullOrEmpty(documentTag));
       stack = new Stack<>();
@@ -77,17 +81,22 @@ public class XMLWriter extends StructuredWriter {
       this.os = resource.outputStream();
       this.writer = XMLOutputFactory.newFactory().createXMLStreamWriter(os, "UTF-8");
     } catch (Exception e) {
-      throw new StructuredIOException(e);
+      throw new IOException(e);
     }
   }
 
   @Override
-  public XMLWriter beginDocument() throws StructuredIOException {
+  public XMLWriter beginDocument(boolean inArray) throws IOException {
     try {
       writer.writeStartDocument();
       writer.writeStartElement(documentTag);
+      if (inArray) {
+        writer.writeAttribute("type", "array");
+        documentIsArray = true;
+      }
+      stack.push(ElementType.BEGIN_DOCUMENT);
     } catch (XMLStreamException e) {
-      throw new StructuredIOException(e);
+      throw new IOException(e);
     }
     return this;
   }
@@ -98,156 +107,233 @@ public class XMLWriter extends StructuredWriter {
    * @param name  the name of the attribute
    * @param value The value of the attribute
    * @return This XMLWriter
-   * @throws StructuredIOException Something went wrong writing
+   * @throws IOException Something went wrong writing
    */
-  public XMLWriter writeAttribute(String name, String value) throws StructuredIOException {
+  public XMLWriter writeAttribute(String name, String value) throws IOException {
     try {
       writer.writeAttribute(name, value);
     } catch (XMLStreamException e) {
-      throw new StructuredIOException(e);
+      throw new IOException(e);
     }
     return this;
   }
 
   @Override
-  public XMLWriter endDocument() throws StructuredIOException {
+  public void endDocument() throws IOException {
     try {
       writer.writeEndElement();
       writer.writeEndDocument();
     } catch (XMLStreamException e) {
-      throw new StructuredIOException(e);
+      throw new IOException(e);
     }
-    return this;
   }
 
   @Override
-  @SuppressWarnings("unchecked")
-  public <T> StructuredWriter writeObject(T object) throws StructuredIOException {
-    return writeObject(object.getClass().getName(), object);
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public <T> StructuredWriter writeObject(String name, T object) throws StructuredIOException {
+  protected StructuredWriter writeNull() throws IOException {
     try {
-      JAXBElement<T> element = new JAXBElement(new QName(name), object.getClass(), object);
-      JAXBContext context = JAXBContext.newInstance(object.getClass());
-      Marshaller marshaller = context.createMarshaller();
-      marshaller.setProperty("jaxb.fragment", Boolean.TRUE);
-      marshaller.marshal(element, writer);
-    } catch (JAXBException e) {
-      throw new StructuredIOException(e);
-    }
-    return this;
-  }
-
-  @Override
-  public StructuredWriter writeValue(Object value) throws StructuredIOException {
-    if (stack.isEmpty()) {
-      throw new StructuredIOException(new IllegalStateException("Trying to write a value outside of an element"));
-    }
-    try {
-      switch (stack.peek()) {
-        case BEGIN_ARRAY:
-          writer.writeStartElement("arrayElement");
-          writer.writeAttribute("elementType", "value");
-          writer.writeCharacters(value == null ? "null" : value.toString());
-          writer.writeEndElement();
-          break;
-        default:
-          writer.writeCharacters(value == null ? "null" : value.toString());
-      }
+      writer.writeCharacters("null");
     } catch (XMLStreamException e) {
-      throw new StructuredIOException(e);
+      throw new IOException(e);
     }
     return this;
   }
 
   @Override
-  public XMLWriter writeKeyValue(String key, Object value) throws StructuredIOException {
+  protected StructuredWriter writeNumber(Number number) throws IOException {
     try {
-      if (key == null) {
-        writeValue(value);
-      }
-      writer.writeStartElement(key);
-      writer.writeCharacters(value == null ? "null" : value.toString());
-      writer.writeEndElement();
+      writer.writeCharacters(number.toString());
     } catch (XMLStreamException e) {
-      throw new StructuredIOException(e);
+      throw new IOException(e);
     }
     return this;
   }
 
   @Override
-  public XMLWriter beginObject() throws StructuredIOException {
+  protected StructuredWriter writeString(String string) throws IOException {
+    try {
+      writer.writeCharacters(string);
+    } catch (XMLStreamException e) {
+      throw new IOException(e);
+    }
+    return this;
+  }
+
+  @Override
+  protected StructuredWriter writeBoolean(boolean value) throws IOException {
+    try {
+      writer.writeCharacters(Boolean.toString(value));
+    } catch (XMLStreamException e) {
+      throw new IOException(e);
+    }
+    return this;
+  }
+
+  @Override
+  public XMLWriter writeKeyValue(String key, Object object) throws IOException {
+    try {
+
+      if (object == null ||
+        object instanceof Number ||
+        object instanceof String ||
+        object instanceof Boolean ||
+        object instanceof Enum ||
+        object instanceof DynamicEnum) {
+        writer.writeStartElement(key);
+        writeValue(object);
+        writer.writeEndElement();
+      } else if (object instanceof Collection) {
+        writeCollection(key, Cast.as(object));
+      } else if (object instanceof Map) {
+        writeMap(key, Cast.as(object));
+      } else if (object.getClass().isArray()) {
+        writeArray(key, Cast.as(object));
+      } else if (object instanceof Multimap) {
+        writeMap(key, Cast.<Multimap>as(object).asMap());
+      } else if (object instanceof Counter) {
+        writeMap(key, Cast.<Counter>as(object).asMap());
+      } else if (object instanceof MultiCounter) {
+        writeMap(key, Cast.<MultiCounter>as(object).asMap());
+      } else if (object instanceof Iterable) {
+        writeCollection(key, new AbstractCollection<Object>() {
+          @Override
+          public Iterator<Object> iterator() {
+            return Cast.<Iterable<Object>>as(object).iterator();
+          }
+
+          @Override
+          public int size() {
+            return Iterables.size(Cast.as(object));
+          }
+        });
+      } else if (object instanceof Iterator) {
+        writeCollection(key, new AbstractCollection<Object>() {
+          @Override
+          public Iterator<Object> iterator() {
+            return Cast.as(object);
+          }
+
+          @Override
+          public int size() {
+            return Iterators.size(Cast.as(object));
+          }
+        });
+      } else if (object instanceof Writable) {
+        beginObject(key);
+        Cast.<Writable>as(object).write(this);
+        endObject();
+      } else {
+        writer.writeStartElement(key);
+        writeValue(Convert.convert(object, String.class));
+        writer.writeEndElement();
+      }
+
+    } catch (XMLStreamException e) {
+      throw new IOException(e);
+    }
+    return this;
+  }
+
+  @Override
+  public XMLWriter beginObject() throws IOException {
     return beginObject("object");
   }
 
   @Override
-  public XMLWriter beginObject(String objectName) throws StructuredIOException {
+  public XMLWriter beginObject(String objectName) throws IOException {
     try {
       stack.push(ElementType.BEGIN_OBJECT);
       writer.writeStartElement(objectName);
-      writer.writeAttribute("elementType", "object");
+      writer.writeAttribute("type", "object");
     } catch (XMLStreamException e) {
-      throw new StructuredIOException(e);
+      throw new IOException(e);
     }
     return this;
   }
 
   @Override
-  public XMLWriter endObject() throws StructuredIOException {
+  public XMLWriter endObject() throws IOException {
     try {
       ElementType element = stack.pop();
       if (element != ElementType.BEGIN_OBJECT) {
-        throw new StructuredIOException("Write error could not end an object before ending " + element);
+        throw new IOException("Write error could not end an object before ending " + element);
       }
       writer.writeEndElement();
     } catch (XMLStreamException e) {
-      throw new StructuredIOException(e);
+      throw new IOException(e);
     }
     return this;
   }
 
   @Override
-  public XMLWriter beginArray() throws StructuredIOException {
+  public XMLWriter beginArray() throws IOException {
     return beginArray("array");
   }
 
   @Override
-  public XMLWriter beginArray(String arrayName) throws StructuredIOException {
+  public XMLWriter beginArray(String arrayName) throws IOException {
     try {
       stack.push(ElementType.BEGIN_ARRAY);
       writer.writeStartElement(arrayName);
-      writer.writeAttribute("elementType", "array");
+      writer.writeAttribute("type", "array");
     } catch (XMLStreamException e) {
-      throw new StructuredIOException(e);
+      throw new IOException(e);
     }
     return this;
   }
 
   @Override
-  public XMLWriter endArray() throws StructuredIOException {
+  public XMLWriter endArray() throws IOException {
     try {
       ElementType element = stack.pop();
       if (element != ElementType.BEGIN_ARRAY) {
-        throw new StructuredIOException("Write error could not end an array before ending " + element);
+        throw new IOException("Write error could not end an array before ending " + element);
       }
-
       writer.writeEndElement();
     } catch (XMLStreamException e) {
-      throw new StructuredIOException(e);
+      throw new IOException(e);
     }
     return this;
   }
 
   @Override
-  public void flush() throws StructuredIOException {
+  public boolean inArray() {
+    return stack.peek() == ElementType.BEGIN_ARRAY || (stack.peek() == ElementType.BEGIN_DOCUMENT && documentIsArray);
+  }
+
+  @Override
+  public boolean inObject() {
+    return stack.peek() == ElementType.BEGIN_OBJECT || (stack.peek() == ElementType.BEGIN_DOCUMENT && !documentIsArray);
+  }
+
+  @Override
+  public void flush() throws IOException {
     try {
       writer.flush();
     } catch (XMLStreamException e) {
-      throw new StructuredIOException(e);
+      throw new IOException(e);
     }
+  }
+
+  @Override
+  public StructuredWriter writeValue(Object value) throws IOException {
+    boolean inArray = inArray();
+    if (inArray) {
+      try {
+        writer.writeStartElement("value");
+//        writer.writeAttribute("type", "value");
+      } catch (XMLStreamException e) {
+        throw new IOException(e);
+      }
+    }
+    super.writeValue(value);
+    if (inArray) {
+      try {
+        writer.writeEndElement();
+      } catch (XMLStreamException e) {
+        throw new IOException(e);
+      }
+    }
+    return this;
   }
 
   @Override

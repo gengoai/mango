@@ -19,33 +19,33 @@
  * under the License.
  */
 
-package com.davidbracewell.io.structured;
+package com.davidbracewell.io.serialization;
 
-import java.io.IOException;
+import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.io.resource.Resource;
+import com.davidbracewell.io.resource.StringResource;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * @author David B. Bracewell
  */
-public class StructuredIOException extends IOException {
+public class JSONSerializerTest {
 
-  private static final long serialVersionUID = 9204359671367338048L;
+  @Test
+  public void test() throws Exception {
+    Person person = new Person("John", 24);
+    person.getHobbies().add("Tennis");
+    person.getHobbies().add("TV");
+    person.getHobbies().add("Pool");
 
-  /**
-   * Default constructor
-   *
-   * @param t Throwable that being caught
-   */
-  public StructuredIOException(Throwable t) {
-    super(t);
+    JSONSerializer jsonSerializer = new JSONSerializer();
+
+    Resource resource = new StringResource();
+    jsonSerializer.serialize(person, resource);
+    Person deserialized = Cast.as(jsonSerializer.deserialize(resource, Person.class));
+
+    assertEquals(person, deserialized);
   }
-
-  /**
-   * Default constructor
-   *
-   * @param message Error message
-   */
-  public StructuredIOException(String message) {
-    super(message);
-  }
-
-}//END OF StructuredWriterException
+}

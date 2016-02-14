@@ -1,0 +1,16 @@
+package com.davidbracewell.io.structured;
+
+import com.davidbracewell.reflection.BeanMap;
+
+import java.io.IOException;
+
+/**
+ * @author David B. Bracewell
+ */
+public interface Writable {
+
+  default void write(StructuredWriter writer) throws IOException {
+    writer.writeMap(new BeanMap(this));
+  }
+
+}//END OF Writable

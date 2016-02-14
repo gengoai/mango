@@ -23,10 +23,9 @@ package com.davidbracewell.io.structured.xml;
 
 import com.davidbracewell.io.resource.ByteArrayResource;
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.io.resource.StringResource;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * @author David B. Bracewell
@@ -54,22 +53,8 @@ public class XMLWriterTest {
       writer.endArray();
       writer.endDocument();
     }
-    assertEquals("<?xml version=\"1.0\" ?><document><test elementType=\"object\" attribute=\"isSet\">Value1</test><Key>Value</Key><object elementType=\"object\"><language>ENGLISH</language><length>123</length></object><array elementType=\"array\"><arrayElement elementType=\"value\">Value2</arrayElement><arrayElement elementType=\"value\">Value3</arrayElement></array></document>",
+    assertEquals("<?xml version=\"1.0\" ?><document><test type=\"object\" attribute=\"isSet\">Value1</test><Key>Value</Key><object type=\"object\"><language>ENGLISH</language><length>123</length></object><array type=\"array\"><value>Value2</value><value>Value3</value></array></document>",
         resource.readToString().trim());
-
-
-    resource = new StringResource();
-    try (XMLWriter writer = new XMLWriter(resource)) {
-      writer.beginDocument();
-      TestBean bean = new TestBean();
-      bean.setName("testing");
-      writer.writeObject(bean);
-      writer.endDocument();
-    }
-    assertEquals("<?xml version=\"1.0\" ?><document><com.davidbracewell.io.structured.xml.TestBean><name>testing</name></com.davidbracewell.io.structured.xml.TestBean></document>",
-        resource.readToString().trim()
-    );
-
 
   }
 

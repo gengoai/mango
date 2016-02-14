@@ -28,7 +28,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Primitives;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -44,6 +43,7 @@ public final class ReflectionUtils {
 
   private final static Logger log = Logger.getLogger(ReflectionUtils.class);
 
+
   private ReflectionUtils() {
   }
 
@@ -52,26 +52,19 @@ public final class ReflectionUtils {
    *
    * @param clazz      the clazz
    * @param name       the name
-   * @param privaleged the privalged
+   * @param privileged the privalged
    * @return the field
    */
-  public static Field getField(Class<?> clazz, String name, boolean privaleged) {
+  public static Field getField(Class<?> clazz, String name, boolean privileged) {
     if (clazz == null || name == null) {
       return null;
     }
-    Field field = null;
-    try {
-      field = clazz.getField(name);
-    } catch (NoSuchFieldException e) {
-      if (privaleged) {
-        try {
-          field = clazz.getDeclaredField(name);
-        } catch (NoSuchFieldException e1) {
-          //ignore
-        }
-      }
-    }
-    return field;
+    return ClassDescriptorCache.getInstance()
+      .getClassDescriptor(clazz)
+      .getFields(privileged)
+      .stream()
+      .filter(f -> f.getName().equals(name))
+      .findFirst().orElse(null);
   }
 
   /**
@@ -262,62 +255,8 @@ public final class ReflectionUtils {
    * @return The  represented by the name
    * @throws ClassNotFoundException The class doesn't exist
    */
-  public static Class<?> getClassForName(String name) throws ClassNotFoundException {
-    if (Strings.isNullOrEmpty(name)) {
-      throw new ClassNotFoundException();
-    }
-    name = name.trim();
-
-    boolean isArray = false;
-    if (name.endsWith("[]")) {
-      isArray = true;
-      name = name.substring(0, name.length() - 2);
-    } else if (name.startsWith("[L")) {
-      isArray = true;
-      name = name.substring(2);
-    } else if (name.startsWith("[")) {
-      isArray = true;
-      name = name.substring(1);
-    }
-
-    switch (name) {
-      case "int":
-        return isArray ? int[].class : int.class;
-      case "double":
-        return isArray ? double[].class : double.class;
-      case "float":
-        return isArray ? float[].class : float.class;
-      case "boolean":
-        return isArray ? boolean[].class : boolean.class;
-      case "short":
-        return isArray ? short[].class : short.class;
-      case "byte":
-        return isArray ? byte[].class : byte.class;
-      case "long":
-        return isArray ? long[].class : long.class;
-    }
-
-    Class<?> clazz;
-    try {
-      clazz = Class.forName(name);
-    } catch (Exception e) {
-      try {
-        clazz = Class.forName("java.lang." + name);
-      } catch (Exception e2) {
-        try {
-          clazz = Class.forName("java.util." + name);
-        } catch (Exception e3) {
-          try {
-            clazz = Class.forName("com.davidbracewell." + name);
-          } catch (Exception e4) {
-            throw e;
-          }
-        }
-      }
-    }
-
-    return isArray ? Array.newInstance(clazz, 0).getClass() : clazz;
-
+  public static Class<?> getClassForName(String name) throws Exception {
+    return ClassDescriptorCache.getInstance().getClassForName(name);
   }
 
   /**
@@ -330,7 +269,7 @@ public final class ReflectionUtils {
   public static Class<?> getClassForNameQuietly(String name) {
     try {
       return getClassForName(name);
-    } catch (ClassNotFoundException cnfe) {
+    } catch (Exception cnfe) {
       log.finest(cnfe);
       return null;
     }
@@ -408,12 +347,11 @@ public final class ReflectionUtils {
     if (clazz == null) {
       return false;
     }
-    try {
-      clazz.getField(fieldName);
-    } catch (NoSuchFieldException e) {
-      return false;
-    }
-    return true;
+    return ClassDescriptorCache.getInstance()
+      .getClassDescriptor(clazz)
+      .getFields(false)
+      .stream()
+      .anyMatch(f -> f.getName().equals(fieldName));
   }
 
   public static boolean hasDeclaredField(Class<?> clazz, String fieldName) {

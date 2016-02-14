@@ -165,4 +165,9 @@ public class JavaDoubleStream implements MDoubleStream, Serializable {
     );
   }
 
+  @Override
+  public MDoubleStream parallel() {
+    return new JavaDoubleStream(stream.parallel());
+  }
+
 }//END OF JavaDoubleStream

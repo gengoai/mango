@@ -27,6 +27,7 @@ import com.google.common.collect.Ordering;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * The interface M pair stream.
@@ -88,6 +89,8 @@ public interface MPairStream<T, U> extends AutoCloseable {
    * @param consumer the consumer
    */
   void forEach(SerializableBiConsumer<? super T, ? super U> consumer);
+
+  void forEachLocal(SerializableBiConsumer<? super T, ? super U> consumer);
 
   /**
    * Group by key m pair stream.
@@ -174,6 +177,24 @@ public interface MPairStream<T, U> extends AutoCloseable {
    * @return the m stream
    */
   MStream<U> values();
+
+  /**
+   * Parallel m pair stream.
+   *
+   * @return the m pair stream
+   */
+  MPairStream<T, U> parallel();
+
+  /**
+   * Shuffle m stream.
+   *
+   * @return the m stream
+   */
+  default MPairStream<T, U> shuffle() {
+    return shuffle(new Random());
+  }
+
+  MPairStream<T, U> shuffle(Random random);
 
 
 }//END OF MPairStream
