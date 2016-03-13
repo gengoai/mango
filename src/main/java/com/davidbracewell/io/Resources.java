@@ -31,6 +31,8 @@ import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -83,7 +85,11 @@ public final class Resources {
 
 
       if (provider == null) {
-        throw new IllegalStateException(schema + " is an unknown protocol.");
+        try {
+          return new URIResource(new URI(resource));
+        } catch (URISyntaxException e) {
+          throw new IllegalStateException(schema + " is an unknown protocol.");
+        }
       }
 
 
