@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  */
 public class ArrayListMap<K, V> implements Map<K, V>, Serializable {
   private static final long serialVersionUID = 1L;
-  private static final int DEFAULT_INITIAL_SIZE = 3;
+  private static final int DEFAULT_INITIAL_SIZE = 10;
   private final ArrayList<K> keys;
   private final ArrayList<V> values;
   private Comparator<? super K> comparator;
