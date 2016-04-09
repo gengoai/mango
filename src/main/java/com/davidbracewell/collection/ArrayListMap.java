@@ -27,33 +27,59 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Ordering;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * The type Array list map.
+ *
+ * @param <K> the type parameter
+ * @param <V> the type parameter
  * @author David B. Bracewell
  */
 public class ArrayListMap<K, V> implements Map<K, V>, Serializable {
   private static final long serialVersionUID = 1L;
   private static final int DEFAULT_INITIAL_SIZE = 10;
-  private final ArrayList<K> keys;
-  private final ArrayList<V> values;
+  private volatile ArrayList<K> keys;
+  private volatile ArrayList<V> values;
   private Comparator<? super K> comparator;
 
+  /**
+   * Instantiates a new Array list map.
+   */
   public ArrayListMap() {
     this(DEFAULT_INITIAL_SIZE);
   }
 
+  /**
+   * Instantiates a new Array list map.
+   *
+   * @param comparator the comparator
+   */
   public ArrayListMap(Comparator<? super K> comparator) {
     this(DEFAULT_INITIAL_SIZE, comparator);
   }
 
+  /**
+   * Instantiates a new Array list map.
+   *
+   * @param initialSize the initial size
+   */
   public ArrayListMap(int initialSize) {
     this(initialSize, null);
   }
 
 
+  /**
+   * Instantiates a new Array list map.
+   *
+   * @param initialSize the initial size
+   * @param comparator  the comparator
+   */
   public ArrayListMap(int initialSize, Comparator<? super K> comparator) {
     this.keys = new ArrayList<>(initialSize);
     this.values = new ArrayList<>(initialSize);
@@ -199,6 +225,9 @@ public class ArrayListMap<K, V> implements Map<K, V>, Serializable {
       + "}";
   }
 
+  /**
+   * Trim to size.
+   */
   public void trimToSize() {
     keys.trimToSize();
     values.trimToSize();
@@ -231,5 +260,18 @@ public class ArrayListMap<K, V> implements Map<K, V>, Serializable {
       keys.remove(index);
     }
   }
+
+  private void writeObject(ObjectOutputStream out) throws IOException {
+    out.writeObject(keys);
+    out.writeObject(values);
+  }
+
+  private void readObject(ObjectInputStream in) throws IOException,
+    ClassNotFoundException {
+    keys = Cast.as(in.readObject());
+    values = Cast.as(in.readObject());
+  }
+
+
 
 }//END OF ArrayListMap

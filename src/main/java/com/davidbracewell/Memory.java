@@ -114,7 +114,7 @@ public final class Memory {
    * @param memory The amount of memory
    * @return The human readable version of the memory
    */
-  private static String humanReadable(long memory) {
+  public static String humanReadable(long memory) {
     if (memory < KB) {
       return memory + " B";
     }
