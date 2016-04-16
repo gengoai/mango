@@ -31,7 +31,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -154,7 +153,7 @@ public interface Collect {
    */
   static <T> Iterable<T> asIterable(final Iterator<T> iterator) {
     if (iterator == null) {
-      return () -> Cast.as(Iterators.emptyIterator());
+      return () -> Cast.as(Collections.emptyIterator());
     }
     return () -> iterator;
   }

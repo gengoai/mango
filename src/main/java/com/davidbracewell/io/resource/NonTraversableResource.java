@@ -21,8 +21,6 @@
 
 package com.davidbracewell.io.resource;
 
-import com.google.common.collect.Iterators;
-
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -45,7 +43,7 @@ public interface NonTraversableResource extends Resource {
 
   @Override
   default Iterator<Resource> childIterator(String pattern, boolean recursive) {
-    return Iterators.emptyIterator();
+    return Collections.emptyIterator();
   }
 
   @Override
@@ -75,7 +73,7 @@ public interface NonTraversableResource extends Resource {
 
   @Override
   default Iterator<Resource> childIterator(boolean recursive) {
-    return Iterators.emptyIterator();
+    return Collections.emptyIterator();
   }
 
 }//END OF NonTraversableResource

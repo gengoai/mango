@@ -21,6 +21,7 @@
 
 package com.davidbracewell.parsing;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.NonNull;
@@ -50,7 +51,7 @@ public final class ParserToken {
 
   @Override
   public String toString() {
-    return Objects.toStringHelper(ParserToken.class)
+    return MoreObjects.toStringHelper(ParserToken.class)
         .add("text", text)
         .add("type", type)
         .toString();
