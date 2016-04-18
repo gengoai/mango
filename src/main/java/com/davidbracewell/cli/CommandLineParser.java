@@ -323,6 +323,8 @@ public class CommandLineParser {
   private String setValue(String key, String value) {
     NamedOption option = options.get(key.replaceAll("^-+", ""));
 
+//    System.out.println(key + " := " + option);
+
     if (option == null) {
       if (key.startsWith(LONG)) {
         unamedOptions.put(key.substring(2), value);

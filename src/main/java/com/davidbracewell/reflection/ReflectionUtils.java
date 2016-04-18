@@ -27,14 +27,12 @@ import com.google.common.base.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Primitives;
+import lombok.NonNull;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Static classes to make reflection easier.
@@ -45,6 +43,65 @@ public final class ReflectionUtils {
 
 
   private ReflectionUtils() {
+  }
+
+
+//  public static Set<Method> getMethods(@NonNull Class<?> clazz, boolean recursive, boolean privileged) {
+//
+//  }
+
+  /**
+   * Gets fields.
+   *
+   * @param o         the o
+   * @param recursive the recursive
+   * @return the fields
+   */
+  public static List<Field> getFields(@NonNull Object o, boolean recursive) {
+    return getFields(o.getClass(), recursive);
+  }
+
+  /**
+   * Gets declared fields.
+   *
+   * @param o         the o
+   * @param recursive the recursive
+   * @return the declared fields
+   */
+  public static List<Field> getDeclaredFields(@NonNull Object o, boolean recursive) {
+    return getDeclaredFields(o.getClass(), recursive);
+  }
+
+  /**
+   * Gets fields.
+   *
+   * @param clazz     the clazz
+   * @param recursive the recursive
+   * @return the fields
+   */
+  public static List<Field> getFields(@NonNull Class<?> clazz, boolean recursive) {
+    List<Field> fields = new ArrayList<>();
+    do {
+      fields.addAll(Arrays.asList(clazz.getFields()));
+      clazz = clazz.getSuperclass();
+    } while (recursive && clazz != null && clazz != Object.class);
+    return fields;
+  }
+
+  /**
+   * Gets declared fields.
+   *
+   * @param clazz     the clazz
+   * @param recursive the recursive
+   * @return the declared fields
+   */
+  public static List<Field> getDeclaredFields(@NonNull Class<?> clazz, boolean recursive) {
+    List<Field> fields = new ArrayList<>();
+    do {
+      fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
+      clazz = clazz.getSuperclass();
+    } while (recursive && clazz != null && clazz != Object.class);
+    return fields;
   }
 
   /**
@@ -203,7 +260,8 @@ public final class ReflectionUtils {
    * Gets the singleton instance of a class. Looks for a <code>getInstance</code>, <code>getSingleton</code> or
    * <code>createInstance</code> method.
    *
-   * @param cz The class
+   * @param <T> the type parameter
+   * @param cz  The class
    * @return The singleton instance or null if the class is not a singleton.
    */
   public static <T> T getSingletonFor(Class<?> cz) {
@@ -252,8 +310,8 @@ public final class ReflectionUtils {
    * java.lang.String </p>
    *
    * @param name The class name
-   * @return The  represented by the name
-   * @throws ClassNotFoundException The class doesn't exist
+   * @return The represented by the name
+   * @throws Exception the exception
    */
   public static Class<?> getClassForName(String name) throws Exception {
     return ClassDescriptorCache.getInstance().getClassForName(name);
@@ -275,6 +333,13 @@ public final class ReflectionUtils {
     }
   }
 
+  /**
+   * Best matching constructor constructor.
+   *
+   * @param clazz              the clazz
+   * @param numberOfParameters the number of parameters
+   * @return the constructor
+   */
   public static Constructor<?> bestMatchingConstructor(Class<?> clazz, int numberOfParameters) {
     if (numberOfParameters <= 0) {
       try {
@@ -343,6 +408,13 @@ public final class ReflectionUtils {
     return m1.getName().equals(m2.getName()) && typesMatch(m1.getParameterTypes(), m2.getParameterTypes());
   }
 
+  /**
+   * Has field boolean.
+   *
+   * @param clazz     the clazz
+   * @param fieldName the field name
+   * @return the boolean
+   */
   public static boolean hasField(Class<?> clazz, String fieldName) {
     if (clazz == null) {
       return false;
@@ -354,6 +426,13 @@ public final class ReflectionUtils {
       .anyMatch(f -> f.getName().equals(fieldName));
   }
 
+  /**
+   * Has declared field boolean.
+   *
+   * @param clazz     the clazz
+   * @param fieldName the field name
+   * @return the boolean
+   */
   public static boolean hasDeclaredField(Class<?> clazz, String fieldName) {
     if (clazz == null) {
       return false;
@@ -395,6 +474,9 @@ public final class ReflectionUtils {
   }
 
   private enum IsInterface implements Predicate<Class<?>> {
+    /**
+     * Instance is interface.
+     */
     INSTANCE;
 
     @Override

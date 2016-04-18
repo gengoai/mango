@@ -53,8 +53,8 @@ final class ClassDescriptor implements Serializable {
     this.declaredMethods.addAll(Arrays.asList(clazz.getDeclaredMethods()));
     this.constructors.addAll(Arrays.asList(clazz.getConstructors()));
     this.declaredConstructors.addAll(Arrays.asList(clazz.getDeclaredConstructors()));
-    this.fields.addAll(Arrays.asList(clazz.getFields()));
-    this.declaredFields.addAll(Arrays.asList(clazz.getDeclaredFields()));
+    this.fields.addAll(ReflectionUtils.getFields(clazz,true));
+    this.declaredFields.addAll(ReflectionUtils.getDeclaredFields(clazz, true));
   }
 
 
