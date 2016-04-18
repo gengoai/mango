@@ -142,16 +142,33 @@ public final class NamedOption {
     this.field = null;
   }
 
+
+  public String[] getAliasSpecifications() {
+    if (aliases == null) {
+      return new String[0];
+    }
+    String[] a = new String[aliases.length];
+    for (int i = 0; i < aliases.length; i++) {
+      a[i] = toSpecificationForm(aliases[i]);
+    }
+    return a;
+  }
+
+
+  private String toSpecificationForm(String optionName) {
+    if (isBoolean() && optionName.length() == 1) {
+      return "-" + optionName;
+    }
+    return "--" + optionName;
+  }
+
   /**
    * Gets specification form for the command line.
    *
    * @return the specification form for the command line
    */
   public String getSpecification() {
-    if (isBoolean() && name.length() == 1) {
-      return "-" + name;
-    }
-    return "--" + name;
+    return toSpecificationForm(name);
   }
 
   /**

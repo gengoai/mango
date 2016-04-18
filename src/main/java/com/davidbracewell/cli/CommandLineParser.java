@@ -33,6 +33,7 @@ import lombok.NonNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -148,7 +149,7 @@ public class CommandLineParser {
           setValue(key, "true");
         } else {
           if (current.endsWith(KEY_VALUE_SEPARATOR)) {
-            key = current.substring(LONG.length(),current.length()-1);
+            key = current.substring(LONG.length(), current.length() - 1);
           } else if (current.contains(KEY_VALUE_SEPARATOR)) {
             int pos = current.indexOf(KEY_VALUE_SEPARATOR);
             setValue(current.substring(LONG.length(), pos), current.substring(pos + KEY_VALUE_SEPARATOR.length()));
@@ -204,88 +205,6 @@ public class CommandLineParser {
 
 
     return filtered.toArray(new String[filtered.size()]);
-//    List<String> filtered = new ArrayList<>();
-//
-//    for (ListIterator<String> iterator = Arrays.asList(args).listIterator(); iterator.hasNext(); ) {
-//
-//      String current = iterator.next();
-//      if (current == null) {
-//        continue;
-//      }
-//      if (LONG.equals(current) || SHORT.equals(current)) {
-//        throw new CommandLineParserException(current, null);
-//      }
-//
-//      if (current.startsWith(LONG)) {
-//
-//        String key;
-//        String value;
-//
-//        if (current.endsWith(KEY_VALUE_SEPARATOR)) {
-//
-//          key = current.substring(0, current.length() - 1);
-//          value = iterator.hasNext() ? iterator.next() : null;
-//
-//        } else if (current.contains(KEY_VALUE_SEPARATOR)) {
-//
-//          int index = current.indexOf(KEY_VALUE_SEPARATOR);
-//          key = current.substring(0, index);
-//          value = current.substring(index + 1);
-//
-//        } else {
-//
-//          key = current;
-//          value = iterator.hasNext() ? iterator.next() : null;
-//          if (KEY_VALUE_SEPARATOR.equals(value)) {
-//            value = iterator.hasNext() ? iterator.next() : null;
-//          }
-//
-//        }
-//
-//        value = setValue(key, value);
-//        if (value == null) {
-//          iterator.previous();
-//        }
-//
-//      } else if (current.startsWith(SHORT)) {
-//
-//        for (int i = 1; i < current.length(); i++) {
-//          if (CharMatcher.JAVA_LETTER_OR_DIGIT.negate().matches(current.charAt(i))) {
-//            throw new CommandLineParserException(Character.toString(current.charAt(i)), null);
-//          }
-//          setValue(Character.toString(current.charAt(i)), null);
-//        }
-//
-//      } else {
-//
-//        filtered.add(current);
-//
-//      }
-//
-//
-//    }
-//
-//    optionSet.forEach(option -> {
-//      if (option.getName().equals("h") && Cast.<Boolean>as(option.getValue())) {
-//        showHelp();
-//        System.exit(0);
-//      } else if (option.isRequired() && !isSet(option.getName())) {
-//        System.err.println("ERROR: " + option.getName() + " is required, but was not set.");
-//        showHelp();
-//        System.exit(-1);
-//      }
-//
-//      if (owner != null && option.getField() != null) {
-//        try {
-//          Reflect.onObject(owner).allowPrivilegedAccess().set(option.getField().getName(), option.getValue());
-//        } catch (ReflectionException e) {
-//          throw Throwables.propagate(e);
-//        }
-//      }
-//    });
-//
-//
-//    return filtered.toArray(new String[filtered.size()]);
   }
 
 
@@ -295,35 +214,44 @@ public class CommandLineParser {
 
   public void showHelp() {
     System.err.println(applicationDescription);
-    int maxArgName = optionSet.stream().map(no -> no.getName().length()).max((x, y) -> -x.compareTo(y)).orElse(10);
-    optionSet.stream().map(NamedOption::getName)
-      .sorted()
-      .forEach(name -> {
-          NamedOption no = options.get(name);
-          String arg = no.getSpecification();
-          boolean insertSpace = !arg.startsWith("--");
-          System.err.printf(String.format((insertSpace ? " " : "") + "%1$-" + maxArgName + "s", arg));
-          System.err.print(" " + no.getDescription());
-          if (no.isRequired()) {
-            System.err.print("\t[REQUIRED]");
-          }
-          System.err.println();
-          for (String alias : no.getAliases()) {
-            if (!alias.equals(arg)) {
-              insertSpace = !alias.startsWith("--");
-              System.err.println(String.format((insertSpace ? " " : "") + "   %1$-" + maxArgName + "s   ", alias));
-            }
-          }
+    System.err.println("===============================================");
+
+    Map<NamedOption, String> optionNames = new HashMap<>();
+    optionSet.stream()
+      .forEach(option -> {
+        String out = Stream.concat(
+          Stream.of(option.getAliasSpecifications()),
+          Stream.of(option.getSpecification())
+        ).sorted((s1, s2) -> Integer.compare(s1.length(), s2.length()))
+          .collect(Collectors.joining(", "));
+        if (option.isRequired()) {
+          out += " *";
         }
-      );
+        optionNames.put(option, out);
+      });
+
+    int maxArgName = optionNames.values().stream().mapToInt(String::length).max().orElse(10);
+
+    optionNames.entrySet().stream()
+      .sorted(Map.Entry.comparingByValue())
+      .forEach(entry -> {
+        String arg = entry.getValue();
+        boolean insertSpace = !arg.startsWith("--");
+        if (insertSpace) {
+          System.err.print(" ");
+        }
+        System.err.printf("%1$-" + maxArgName + "s\t", arg);
+        System.err.println(entry.getKey().getDescription());
+      });
+
+    System.err.println("===============================================");
+    System.err.println("* = Required");
 
   }
 
 
   private String setValue(String key, String value) {
     NamedOption option = options.get(key.replaceAll("^-+", ""));
-
-//    System.out.println(key + " := " + option);
 
     if (option == null) {
       if (key.startsWith(LONG)) {
