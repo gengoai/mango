@@ -49,4 +49,23 @@ public class StdoutResource extends BaseResource implements NonTraversableResour
     return this;
   }
 
+  @Override
+  public boolean mkdir() {
+    return true;
+  }
+
+  @Override
+  public boolean mkdirs() {
+    return true;
+  }
+
+  @Override
+  public Resource getParent() {
+    return this;
+  }
+
+  @Override
+  public Resource getChild(String relativePath) {
+    return this;
+  }
 }//END OF StdoutResource
