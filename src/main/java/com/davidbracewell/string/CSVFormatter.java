@@ -26,6 +26,7 @@ import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.CSV;
 import com.google.common.base.Preconditions;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
@@ -37,7 +38,8 @@ import java.util.stream.Stream;
  *
  * @author David B. Bracewell
  */
-public class CSVFormatter {
+public class CSVFormatter implements Serializable {
+  private static final long serialVersionUID = 1L;
 
   final String comment;
   final String delimiter;
