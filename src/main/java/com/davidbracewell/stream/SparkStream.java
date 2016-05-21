@@ -101,7 +101,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
   }
 
   @Override
-  public <R> MStream<R> flatMap(SerializableFunction<? super T, ? extends Iterable<? extends R>> mapper) {
+  public <R> MStream<R> flatMap(SerializableFunction<? super T, Iterable<? extends R>> mapper) {
     return new SparkStream<>(rdd.flatMap(t -> Cast.as(mapper.apply(t))));
   }
 

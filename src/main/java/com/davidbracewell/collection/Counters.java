@@ -57,52 +57,16 @@ public interface Counters {
     return counter;
   }
 
-  /**
-   * New concurrent counter.
-   *
-   * @param <TYPE> the type parameter
-   * @param items  the items
-   * @return the counter
-   */
-  @SafeVarargs
-  static <TYPE> Counter<TYPE> newConcurrentCounter(TYPE... items) {
-    if (items == null) {
-      return new ConcurrentMapCounter<>();
-    }
-    return newConcurrentCounter(Arrays.asList(items));
-  }
 
   /**
-   * New concurrent counter.
-   *
-   * @param <TYPE> the type parameter
-   * @param items  the items
-   * @return the counter
-   */
-  static <TYPE> Counter<TYPE> newConcurrentCounter(@NonNull Iterable<? extends TYPE> items) {
-    return new ConcurrentMapCounter<>(items);
-  }
-
-  /**
-   * New concurrent counter.
-   *
-   * @param <TYPE> the type parameter
-   * @param items  the items
-   * @return the counter
-   */
-  static <TYPE> Counter<TYPE> newConcurrentCounter(@NonNull Map<? extends TYPE, ? extends Number> items) {
-    return new ConcurrentMapCounter<>(items);
-  }
-
-  /**
-   * New concurrent counter.
+   * Synchronized counter counter.
    *
    * @param <TYPE>  the type parameter
    * @param counter the counter
    * @return the counter
    */
-  static <TYPE> Counter<TYPE> newConcurrentCounter(@NonNull Counter<? extends TYPE> counter) {
-    return new ConcurrentMapCounter<>(counter);
+  static <TYPE> Counter<TYPE> synchronizedCounter(@NonNull Counter<TYPE> counter) {
+    return new SynchronizedCounter<>(counter);
   }
 
   /**

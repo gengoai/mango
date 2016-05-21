@@ -50,7 +50,7 @@ public interface Counter<T> {
    *
    * @param function the function
    */
-  void adjustValuesSelf(DoubleUnaryOperator function);
+  Counter<T> adjustValuesSelf(DoubleUnaryOperator function);
 
   /**
    * As map.
@@ -101,8 +101,8 @@ public interface Counter<T> {
    *
    * @param item The item to increment
    */
-  default void decrement(T item) {
-    decrement(item, 1);
+  default Counter<T> decrement(T item) {
+    return decrement(item, 1);
   }
 
   /**
@@ -111,8 +111,8 @@ public interface Counter<T> {
    * @param item   The item to increment
    * @param amount The amount to decrement
    */
-  default void decrement(T item, double amount) {
-    increment(item, -amount);
+  default Counter<T> decrement(T item, double amount) {
+    return increment(item, -amount);
   }
 
   /**
@@ -120,10 +120,11 @@ public interface Counter<T> {
    *
    * @param iterable The iterable of items to decrement
    */
-  default void decrementAll(Iterable<? extends T> iterable) {
+  default Counter<T> decrementAll(Iterable<? extends T> iterable) {
     if (iterable != null) {
       iterable.forEach(this::decrement);
     }
+    return this;
   }
 
   /**
@@ -132,16 +133,17 @@ public interface Counter<T> {
    * @param iterable The iterable of items to decrement
    * @param amount   The amount to decrement
    */
-  default void decrementAll(Iterable<? extends T> iterable, double amount) {
+  default Counter<T> decrementAll(Iterable<? extends T> iterable, double amount) {
     if (iterable != null) {
       iterable.forEach(i -> decrement(i, amount));
     }
+    return this;
   }
 
   /**
    * Divides the values in the counter by the sum and sets the sum to 1.0
    */
-  void divideBySum();
+  Counter<T> divideBySum();
 
   /**
    * Entries set.
@@ -179,8 +181,8 @@ public interface Counter<T> {
    *
    * @param item The item to increment
    */
-  default void increment(T item) {
-    increment(item, 1);
+  default Counter<T> increment(T item) {
+    return increment(item, 1);
   }
 
   /**
@@ -189,17 +191,18 @@ public interface Counter<T> {
    * @param item   The item to increment
    * @param amount The amount to increment
    */
-  void increment(T item, double amount);
+  Counter<T> increment(T item, double amount);
 
   /**
    * Increments all items in a given iterable by 1
    *
    * @param iterable The iterable of items to increment
    */
-  default void incrementAll(Iterable<? extends T> iterable) {
+  default Counter<T> incrementAll(Iterable<? extends T> iterable) {
     if (iterable != null) {
       iterable.forEach(this::increment);
     }
+    return this;
   }
 
   /**
@@ -208,10 +211,11 @@ public interface Counter<T> {
    * @param iterable The iterable of items to increment
    * @param amount   The amount to increment
    */
-  default void incrementAll(Iterable<? extends T> iterable, double amount) {
+  default Counter<T> incrementAll(Iterable<? extends T> iterable, double amount) {
     if (iterable != null) {
       iterable.forEach(i -> increment(i, amount));
     }
+    return this;
   }
 
   /**
@@ -291,7 +295,7 @@ public interface Counter<T> {
    *
    * @param other The other counter to merge.
    */
-  void merge(Map<? extends T, ? extends Number> other);
+  Counter<T> merge(Map<? extends T, ? extends Number> other);
 
   /**
    * Min t.
@@ -328,16 +332,17 @@ public interface Counter<T> {
    *
    * @param items The items to remove
    */
-  default void removeAll(Iterable<T> items) {
+  default Counter<T> removeAll(Iterable<T> items) {
     if (items != null) {
       items.forEach(this::remove);
     }
+    return this;
   }
 
   /**
    * removes all items whose count is zero
    */
-  void removeZeroCounts();
+  Counter<T> removeZeroCounts();
 
   /**
    * Sample an item based on its count.
@@ -365,7 +370,7 @@ public interface Counter<T> {
    * @param item  The item
    * @param count The count
    */
-  void set(T item, double count);
+  Counter<T> set(T item, double count);
 
   /**
    * Size int.

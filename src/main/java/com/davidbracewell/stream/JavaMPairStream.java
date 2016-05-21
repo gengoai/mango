@@ -63,7 +63,7 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U>, Serializable {
 
   @Override
   public MPairStream<T, U> reduceByKey(SerializableBinaryOperator<U> operator) {
-    return groupByKey().mapToPair((t, u) -> Tuple2.of(t, Collect.from(u).reduce(operator).orElse(null)));
+    return groupByKey().mapToPair((t, u) -> Tuple2.of(t, Collect.stream(u).reduce(operator).orElse(null)));
   }
 
 

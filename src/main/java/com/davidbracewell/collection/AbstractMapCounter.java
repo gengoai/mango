@@ -75,17 +75,18 @@ abstract class AbstractMapCounter<T> implements Counter<T>, Serializable {
   }
 
   @Override
-  public void increment(T item, double amount) {
+  public Counter<T> increment(T item, double amount) {
     if (amount == 0) {
-      return;
+      return this;
     }
-    double total = get(item) + amount;
-    if (total == 0) {
+    double value = map.getOrDefault(item, 0d) + amount;
+    sum.addAndGet(amount);
+    if (value == 0) {
       map.remove(item);
     } else {
-      map.put(item, total);
+      map.put(item, value);
     }
-    sum.addAndGet(amount);
+    return this;
   }
 
 
@@ -127,22 +128,24 @@ abstract class AbstractMapCounter<T> implements Counter<T>, Serializable {
 
 
   @Override
-  public void removeZeroCounts() {
+  public Counter<T> removeZeroCounts() {
     for (Iterator<Map.Entry<T, Double>> entryItr = map.entrySet().iterator(); entryItr.hasNext(); ) {
       Map.Entry<T, Double> entry = entryItr.next();
       if (entry.getValue() == 0.0d) {
         entryItr.remove();
       }
     }
+    return this;
   }
 
 
   @Override
-  public void merge(Map<? extends T, ? extends Number> other) {
+  public Counter<T> merge(Map<? extends T, ? extends Number> other) {
     Preconditions.checkNotNull(other);
     for (Map.Entry<? extends T, ? extends Number> entry : other.entrySet()) {
       increment(entry.getKey(), entry.getValue().doubleValue());
     }
+    return this;
   }
 
   @Override
@@ -174,21 +177,28 @@ abstract class AbstractMapCounter<T> implements Counter<T>, Serializable {
 
 
   @Override
-  public void set(T item, double count) {
-    remove(item);
-    increment(item, count);
+  public Counter<T> set(T item, double count) {
+    sum.addAndGet(-get(item));
+    if (count == 0) {
+      map.remove(item);
+      return this;
+    }
+    map.put(item, count);
+    sum.addAndGet(count);
+    return this;
   }
 
 
   @Override
-  public void divideBySum() {
+  public Counter<T> divideBySum() {
     if (map.isEmpty()) {
-      return;
+      return this;
     }
     for (T key : map.keySet()) {
       map.put(key, map.get(key) / sum());
     }
     sum.set(1d);
+    return this;
   }
 
   @Override
@@ -242,10 +252,11 @@ abstract class AbstractMapCounter<T> implements Counter<T>, Serializable {
   }
 
   @Override
-  public void removeAll(Iterable<T> items) {
+  public Counter<T> removeAll(Iterable<T> items) {
     if (items != null) {
       items.forEach(this::remove);
     }
+    return this;
   }
 
   @Override
@@ -261,9 +272,10 @@ abstract class AbstractMapCounter<T> implements Counter<T>, Serializable {
   }
 
   @Override
-  public void adjustValuesSelf(@NonNull DoubleUnaryOperator function) {
+  public Counter<T> adjustValuesSelf(@NonNull DoubleUnaryOperator function) {
     map.entrySet().forEach(entry -> entry.setValue(function.applyAsDouble(entry.getValue())));
     sum.set(Collect.sum(map.values()));
+    return this;
   }
 
   protected abstract <R> Counter<R> newInstance();

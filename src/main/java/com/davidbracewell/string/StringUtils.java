@@ -520,7 +520,7 @@ public class StringUtils {
    */
   public static String join(@NonNull String separator, Iterator<?> items) {
 
-    return join(separator, Collect.from(items), null);
+    return join(separator, Collect.stream(items), null);
   }
 
   /**
@@ -532,7 +532,7 @@ public class StringUtils {
    * @return the string
    */
   public static String join(@NonNull String separator, Iterator<?> items, String nullString) {
-    return join(separator, Collect.from(items), nullString);
+    return join(separator, Collect.stream(items), nullString);
   }
 
   /**

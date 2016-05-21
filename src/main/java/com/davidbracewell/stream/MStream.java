@@ -68,7 +68,7 @@ public interface MStream<T> extends Closeable {
    * @param mapper the mapper
    * @return the m stream
    */
-  <R> MStream<R> flatMap(SerializableFunction<? super T, ? extends Iterable<? extends R>> mapper);
+  <R> MStream<R> flatMap(SerializableFunction<? super T, Iterable<? extends R>> mapper);
 
   /**
    * Flat map to pair m pair stream.

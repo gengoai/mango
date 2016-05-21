@@ -67,31 +67,7 @@ public interface MultiCounters {
     return new HashMapMultiCounter<>(triples);
   }
 
-  /**
-   * New concurrent map multi counter.
-   *
-   * @param <K> the type parameter
-   * @param <V> the type parameter
-   * @return the multi counter
-   */
-  static <K, V> MultiCounter<K, V> newConcurrentMapMultiCounter() {
-    return new ConcurrentMapMultiCounter<>();
-  }
-
-  /**
-   * New concurrent map multi counter.
-   *
-   * @param <K>     the type parameter
-   * @param <V>     the type parameter
-   * @param triples the triples
-   * @return the multi counter
-   */
-  @SafeVarargs
-  static <K, V> MultiCounter<K, V> newConcurrentMapMultiCounter(Tuple3<K, V, ? extends Number>... triples) {
-    return new ConcurrentMapMultiCounter<>(triples);
-  }
-
-  static <K, V> Resource toCSV(@NonNull MultiCounter<K, V> counter, @NonNull Resource resource, @NonNull CSV csv) throws IOException {
+   static <K, V> Resource toCSV(@NonNull MultiCounter<K, V> counter, @NonNull Resource resource, @NonNull CSV csv) throws IOException {
     try (CSVWriter writer = csv.writer(resource)) {
       Set<String> columns = new TreeSet<>(
         counter.entries().stream()

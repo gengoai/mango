@@ -42,22 +42,22 @@ class UnmodifiableCounter<TYPE> extends ForwardingCounter<TYPE> {
   }
 
   @Override
-  public void decrement(TYPE item) {
+  public Counter<TYPE> decrement(TYPE item) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void decrement(TYPE item, double amount) {
+  public Counter<TYPE> decrement(TYPE item, double amount) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void decrementAll(Iterable<? extends TYPE> iterable) {
+  public Counter<TYPE> decrementAll(Iterable<? extends TYPE> iterable) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void decrementAll(Iterable<? extends TYPE> iterable, double amount) {
+  public Counter<TYPE> decrementAll(Iterable<? extends TYPE> iterable, double amount) {
     throw new UnsupportedOperationException();
   }
 
@@ -67,27 +67,27 @@ class UnmodifiableCounter<TYPE> extends ForwardingCounter<TYPE> {
   }
 
   @Override
-  public void divideBySum() {
+  public Counter<TYPE> divideBySum() {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void increment(TYPE item) {
+  public Counter<TYPE> increment(TYPE item) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void increment(TYPE item, double amount) {
+  public Counter<TYPE> increment(TYPE item, double amount) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void incrementAll(Iterable<? extends TYPE> iterable) {
+  public Counter<TYPE> incrementAll(Iterable<? extends TYPE> iterable) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void incrementAll(Iterable<? extends TYPE> iterable, double amount) {
+  public Counter<TYPE> incrementAll(Iterable<? extends TYPE> iterable, double amount) {
     throw new UnsupportedOperationException();
   }
 
@@ -107,7 +107,7 @@ class UnmodifiableCounter<TYPE> extends ForwardingCounter<TYPE> {
   }
 
   @Override
-  public void merge(Map<? extends TYPE, ? extends Number> other) {
+  public Counter<TYPE> merge(Map<? extends TYPE, ? extends Number> other) {
     throw new UnsupportedOperationException();
   }
 
@@ -117,17 +117,17 @@ class UnmodifiableCounter<TYPE> extends ForwardingCounter<TYPE> {
   }
 
   @Override
-  public void removeAll(Iterable<TYPE> items) {
+  public Counter<TYPE> removeAll(Iterable<TYPE> items) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void removeZeroCounts() {
+  public Counter<TYPE> removeZeroCounts() {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void set(TYPE item, double count) {
+  public Counter<TYPE> set(TYPE item, double count) {
     throw new UnsupportedOperationException();
   }
 

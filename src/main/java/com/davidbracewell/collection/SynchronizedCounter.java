@@ -36,218 +36,226 @@ import java.util.function.Predicate;
 /**
  * @author David B. Bracewell
  */
-public abstract class ForwardingCounter<TYPE> implements Counter<TYPE>, Serializable {
+class SynchronizedCounter<TYPE> implements Counter<TYPE>, Serializable {
   private static final long serialVersionUID = 1L;
 
+  final Counter<TYPE> delegate;
+
+  public SynchronizedCounter(Counter<TYPE> delegate) {
+    this.delegate = delegate;
+  }
+
   @Override
-  public <R> Counter<R> mapKeys(Function<TYPE, R> function) {
+  public synchronized <R> Counter<R> mapKeys(Function<TYPE, R> function) {
     return delegate().mapKeys(function);
   }
 
   @Override
-  public Counter<TYPE> adjustValues(DoubleUnaryOperator function) {
+  public synchronized Counter<TYPE> adjustValues(DoubleUnaryOperator function) {
     return delegate().adjustValues(function);
   }
 
   @Override
-  public Counter<TYPE> adjustValuesSelf(@NonNull DoubleUnaryOperator function) {
+  public synchronized Counter<TYPE> adjustValuesSelf(@NonNull DoubleUnaryOperator function) {
     return delegate().adjustValuesSelf(function);
   }
 
   @Override
-  public Map<TYPE, Double> asMap() {
+  public synchronized Map<TYPE, Double> asMap() {
     return delegate().asMap();
   }
 
   @Override
-  public double average() {
+  public synchronized double average() {
     return delegate().average();
   }
 
   @Override
-  public Counter<TYPE> bottomN(int n) {
+  public synchronized Counter<TYPE> bottomN(int n) {
     return delegate().bottomN(n);
   }
 
   @Override
-  public void clear() {
+  public synchronized void clear() {
     delegate().clear();
   }
 
   @Override
-  public boolean contains(TYPE item) {
+  public synchronized boolean contains(TYPE item) {
     return delegate().contains(item);
   }
 
   @Override
-  public Collection<Double> counts() {
+  public synchronized Collection<Double> counts() {
     return delegate().counts();
   }
 
   @Override
-  public Counter<TYPE> decrement(TYPE item) {
+  public synchronized Counter<TYPE> decrement(TYPE item) {
     return delegate().decrement(item);
   }
 
   @Override
-  public Counter<TYPE> decrement(TYPE item, double amount) {
+  public synchronized Counter<TYPE> decrement(TYPE item, double amount) {
     return delegate().decrement(item, amount);
   }
 
   @Override
-  public Counter<TYPE> decrementAll(Iterable<? extends TYPE> iterable) {
+  public synchronized Counter<TYPE> decrementAll(Iterable<? extends TYPE> iterable) {
     return delegate().decrementAll(iterable);
   }
 
   @Override
-  public Counter<TYPE> decrementAll(Iterable<? extends TYPE> iterable, double amount) {
+  public synchronized Counter<TYPE> decrementAll(Iterable<? extends TYPE> iterable, double amount) {
     return delegate().decrementAll(iterable, amount);
   }
 
-  protected abstract Counter<TYPE> delegate();
+  protected Counter<TYPE> delegate() {
+    return delegate;
+  }
 
   @Override
-  public Counter<TYPE> divideBySum() {
+  public synchronized Counter<TYPE> divideBySum() {
     return delegate().divideBySum();
   }
 
   @Override
-  public double get(TYPE item) {
+  public synchronized double get(TYPE item) {
     return delegate().get(item);
   }
 
   @Override
-  public Counter<TYPE> increment(TYPE item) {
+  public synchronized Counter<TYPE> increment(TYPE item) {
     return delegate().increment(item);
   }
 
   @Override
-  public Counter<TYPE> increment(TYPE item, double amount) {
+  public synchronized Counter<TYPE> increment(TYPE item, double amount) {
     return delegate().increment(item, amount);
   }
 
   @Override
-  public Counter<TYPE> incrementAll(Iterable<? extends TYPE> iterable) {
+  public synchronized Counter<TYPE> incrementAll(Iterable<? extends TYPE> iterable) {
     return delegate().incrementAll(iterable);
   }
 
   @Override
-  public Counter<TYPE> incrementAll(Iterable<? extends TYPE> iterable, double amount) {
+  public synchronized Counter<TYPE> incrementAll(Iterable<? extends TYPE> iterable, double amount) {
     return delegate().incrementAll(iterable, amount);
   }
 
   @Override
-  public boolean isEmpty() {
+  public synchronized boolean isEmpty() {
     return delegate().isEmpty();
   }
 
   @Override
-  public Set<TYPE> items() {
+  public synchronized Set<TYPE> items() {
     return delegate().items();
   }
 
   @Override
-  public List<TYPE> itemsByCount(boolean ascending) {
+  public synchronized List<TYPE> itemsByCount(boolean ascending) {
     return delegate().itemsByCount(ascending);
   }
 
   @Override
-  public Set<Map.Entry<TYPE, Double>> entries() {
+  public synchronized Set<Map.Entry<TYPE, Double>> entries() {
     return delegate().entries();
   }
 
   @Override
-  public double magnitude() {
+  public synchronized double magnitude() {
     return delegate().magnitude();
   }
 
   @Override
-  public TYPE max() {
+  public synchronized TYPE max() {
     return delegate().max();
   }
 
   @Override
-  public double maximumCount() {
+  public synchronized double maximumCount() {
     return delegate().maximumCount();
   }
 
   @Override
-  public Counter<TYPE> merge(Counter<? extends TYPE> other) {
+  public synchronized Counter<TYPE> merge(Counter<? extends TYPE> other) {
     return delegate().merge(other);
   }
 
   @Override
-  public Counter<TYPE> merge(Map<? extends TYPE, ? extends Number> other) {
+  public synchronized Counter<TYPE> merge(Map<? extends TYPE, ? extends Number> other) {
     return delegate().merge(other);
   }
 
   @Override
-  public TYPE min() {
+  public synchronized TYPE min() {
     return delegate().min();
   }
 
   @Override
-  public double minimumCount() {
+  public synchronized double minimumCount() {
     return delegate().minimumCount();
   }
 
   @Override
-  public double remove(TYPE item) {
+  public synchronized double remove(TYPE item) {
     return delegate().remove(item);
   }
 
   @Override
-  public Counter<TYPE> removeAll(Iterable<TYPE> items) {
+  public synchronized Counter<TYPE> removeAll(Iterable<TYPE> items) {
     return delegate().removeAll(items);
   }
 
   @Override
-  public Counter<TYPE> removeZeroCounts() {
+  public synchronized Counter<TYPE> removeZeroCounts() {
     return delegate().removeZeroCounts();
   }
 
   @Override
-  public TYPE sample() {
+  public synchronized TYPE sample() {
     return delegate().sample();
   }
 
   @Override
-  public Counter<TYPE> set(TYPE item, double count) {
+  public synchronized Counter<TYPE> set(TYPE item, double count) {
     return delegate().set(item, count);
   }
 
   @Override
-  public int size() {
+  public synchronized int size() {
     return delegate().size();
   }
 
   @Override
-  public double standardDeviation() {
+  public synchronized double standardDeviation() {
     return delegate().standardDeviation();
   }
 
   @Override
-  public double sum() {
+  public synchronized double sum() {
     return delegate().sum();
   }
 
   @Override
-  public double sumOfSquares() {
+  public synchronized double sumOfSquares() {
     return delegate().sumOfSquares();
   }
 
   @Override
-  public Counter<TYPE> topN(int n) {
+  public synchronized Counter<TYPE> topN(int n) {
     return delegate().topN(n);
   }
 
   @Override
-  public Counter<TYPE> filterByKey(@NonNull Predicate<TYPE> predicate) {
+  public synchronized Counter<TYPE> filterByKey(@NonNull Predicate<TYPE> predicate) {
     return delegate().filterByKey(predicate);
   }
 
   @Override
-  public Counter<TYPE> filterByValue(@NonNull DoublePredicate doublePredicate) {
+  public synchronized Counter<TYPE> filterByValue(@NonNull DoublePredicate doublePredicate) {
     return delegate().filterByValue(doublePredicate);
   }
 

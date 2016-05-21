@@ -334,7 +334,7 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
    * @return the stream
    */
   public Stream<List<String>> stream() {
-    return Collect.from(new RowIterator()).onClose(Unchecked.runnable(this::close));
+    return Collect.stream(new RowIterator()).onClose(Unchecked.runnable(this::close));
   }
 
   /**

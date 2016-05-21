@@ -86,7 +86,7 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
    * @param iterable the iterable
    */
   public JavaMStream(@NonNull final Iterable<T> iterable) {
-    this.stream = Collect.parallelFrom(iterable);
+    this.stream = Collect.stream(iterable);
   }
 
   /**
@@ -95,7 +95,7 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
    * @param iterator the iterator
    */
   public JavaMStream(@NonNull final Iterator<? extends T> iterator) {
-    this.stream = Collect.parallelFrom(Cast.<Iterator<T>>as(iterator));
+    this.stream = Collect.stream(Cast.<Iterator<T>>as(iterator));
   }
 
   @Override
@@ -119,8 +119,8 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
   }
 
   @Override
-  public <R> MStream<R> flatMap(@NonNull SerializableFunction<? super T, ? extends Iterable<? extends R>> mapper) {
-    return new JavaMStream<>(stream.flatMap(t -> Collect.from(mapper.apply(t)).map(Cast::<R>as)));
+  public <R> MStream<R> flatMap(@NonNull SerializableFunction<? super T, Iterable<? extends R>> mapper) {
+    return new JavaMStream<>(stream.flatMap(t -> Collect.stream(mapper.apply(t)).map(Cast::<R>as)));
   }
 
   @Override

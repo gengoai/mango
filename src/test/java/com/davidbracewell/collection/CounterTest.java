@@ -55,7 +55,7 @@ public class CounterTest {
 
   @Test
   public void testGetAverageValue() throws Exception {
-    Counter<String> counterOne = Counters.newConcurrentCounter(Arrays.asList("a", "b", "c", "a", "b", "a"));
+    Counter<String> counterOne = Counters.synchronizedCounter(Counters.newHashMapCounter(Arrays.asList("a", "b", "c", "a", "b", "a")));
     assertEquals((Double) counterOne.average(), (Double) 2.0d);
     counterOne.increment("d", 2.0);
     assertEquals((Double) counterOne.average(), (Double) 2.0d);

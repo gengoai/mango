@@ -60,11 +60,8 @@ public interface Collect {
    * @param iterator the iterator
    * @return the stream
    */
-  static <T> Stream<T> from(Iterator<T> iterator) {
-    if (iterator == null) {
-      return Collections.<T>emptyList().stream();
-    }
-    return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);
+  static <T> Stream<T> stream(Iterator<T> iterator) {
+    return stream(iterator, false);
   }
 
   /**
@@ -74,11 +71,8 @@ public interface Collect {
    * @param iterable the iterable
    * @return the stream
    */
-  static <T> Stream<T> from(Iterable<T> iterable) {
-    if (iterable == null) {
-      return Collections.<T>emptyList().stream();
-    }
-    return StreamSupport.stream(iterable.spliterator(), false);
+  static <T> Stream<T> stream(Iterable<T> iterable) {
+    return stream(iterable, false);
   }
 
   /**
@@ -88,11 +82,11 @@ public interface Collect {
    * @param iterator the iterator
    * @return the stream
    */
-  static <T> Stream<T> parallelFrom(Iterator<T> iterator) {
+  static <T> Stream<T> stream(Iterator<T> iterator, boolean parallel) {
     if (iterator == null) {
       return Collections.<T>emptyList().stream();
     }
-    return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), true);
+    return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), parallel);
   }
 
   /**
@@ -102,11 +96,11 @@ public interface Collect {
    * @param iterable the iterable
    * @return the stream
    */
-  static <T> Stream<T> parallelFrom(Iterable<T> iterable) {
+  static <T> Stream<T> stream(Iterable<T> iterable, boolean parallel) {
     if (iterable == null) {
       return Collections.<T>emptyList().stream();
     }
-    return StreamSupport.stream(iterable.spliterator(), true);
+    return StreamSupport.stream(iterable.spliterator(), parallel);
   }
 
   static <K, V> void put(@NonNull Map<K, V> map, Map.Entry<K, V> entry) {
@@ -193,7 +187,7 @@ public interface Collect {
    * @return the optional
    */
   static <T> Optional<T> first(Iterable<T> iterable) {
-    return from(iterable).findFirst();
+    return stream(iterable).findFirst();
   }
 
   /**
@@ -204,12 +198,13 @@ public interface Collect {
    * @return the optional
    */
   static <T> Optional<T> first(Iterator<T> iterator) {
-    return from(iterator).findFirst();
+    return stream(iterator).findFirst();
   }
 
   /**
    * <p>Creates a HashMap from a string converting the keys and values using {@link Convert#getConverter(Class)}. Empty
-   * or null  strings result in an empty Map. The string format should be in csv where the commas separate the key-value
+   * or null  strings result in an empty Map. The string format should be in csv where the commas separate the
+   * key-value
    * pairs. Keys and values are the separated using either <code>:</code> or <code>=</code> depending on which one is
    * present and appears first. </p>
    *
@@ -386,7 +381,7 @@ public interface Collect {
     if (iterable == null) {
       return new EnhancedDoubleStatistics();
     }
-    return from(iterable)
+    return stream(iterable)
       .mapToDouble(Number::doubleValue)
       .collect(EnhancedDoubleStatistics::new, EnhancedDoubleStatistics::accept, EnhancedDoubleStatistics::combine);
   }
@@ -525,7 +520,7 @@ public interface Collect {
     }
     return list.stream()
       .filter(Objects::nonNull)
-      .flatMap(Collect::from)
+      .flatMap(Collect::stream)
       .collect(Collectors.toList());
   }
 
@@ -555,7 +550,7 @@ public interface Collect {
    * @return the stream
    */
   static <T, U> Stream<Map.Entry<T, U>> zip(@NonNull final Iterator<T> iterator1, @NonNull final Iterator<U> iterator2) {
-    return from(new Iterator<Map.Entry<T, U>>() {
+    return stream(new Iterator<Map.Entry<T, U>>() {
       @Override
       public boolean hasNext() {
         return iterator1.hasNext() && iterator2.hasNext();
