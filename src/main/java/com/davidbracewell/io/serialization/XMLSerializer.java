@@ -22,6 +22,7 @@
 package com.davidbracewell.io.serialization;
 
 import com.davidbracewell.io.resource.Resource;
+import lombok.NonNull;
 
 import javax.xml.bind.JAXB;
 import java.io.InputStream;
@@ -35,17 +36,15 @@ import java.io.OutputStream;
 public class XMLSerializer implements Serializer {
 
   @Override
-  public void serialize(Object o, Resource resource) throws Exception {
-    try (OutputStream outputStream = resource.outputStream();
-    ) {
+  public void serialize(@NonNull Object o, @NonNull Resource resource) throws Exception {
+    try (OutputStream outputStream = resource.outputStream()) {
       JAXB.marshal(o, outputStream);
     }
   }
 
   @Override
-  public <T> T deserialize(Resource resource, Class<T> clazz) throws Exception {
-    try (InputStream inputStream = resource.inputStream();
-    ) {
+  public <T> T deserialize(@NonNull Resource resource, @NonNull Class<T> clazz) throws Exception {
+    try (InputStream inputStream = resource.inputStream()) {
       return JAXB.unmarshal(inputStream, clazz);
     }
   }

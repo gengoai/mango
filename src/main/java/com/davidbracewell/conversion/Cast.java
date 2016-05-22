@@ -22,7 +22,6 @@
 package com.davidbracewell.conversion;
 
 import com.davidbracewell.function.SerializableFunction;
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -62,8 +61,7 @@ public final class Cast {
    * @param clazz The class to cast to
    * @return the casted object or null if the object was null or the object was not of the desired type
    */
-  public static <T> T as(Object o, Class<T> clazz) {
-    Preconditions.checkNotNull(clazz);
+  public static <T> T as(Object o, @NonNull Class<T> clazz) {
     try {
       return o == null ? null : clazz.cast(o);
     } catch (Exception e) {
