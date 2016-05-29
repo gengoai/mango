@@ -21,24 +21,44 @@ public interface MAccumulator {
     decrement(1d);
   }
 
+  /**
+   * Increment if.
+   *
+   * @param result the result
+   */
   default void incrementIf(boolean result) {
     if (result) {
       increment(1d);
     }
   }
 
+  /**
+   * Decrement if.
+   *
+   * @param result the result
+   */
   default void decrementIf(boolean result) {
     if (result) {
       decrement(1d);
     }
   }
 
+  /**
+   * Increment unless.
+   *
+   * @param result the result
+   */
   default void incrementUnless(boolean result) {
     if (!result) {
       increment(1d);
     }
   }
 
+  /**
+   * Decrement unless.
+   *
+   * @param result the result
+   */
   default void decrementUnless(boolean result) {
     if (!result) {
       decrement(1d);
@@ -74,6 +94,11 @@ public interface MAccumulator {
   void setValue(double value);
 
 
+  /**
+   * Name string.
+   *
+   * @return the string
+   */
   String name();
 
 

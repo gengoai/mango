@@ -32,7 +32,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The interface Application.
+ * <p>Generic interface for building applications that use Mango's {@link Config} and {@link CommandLineParser} to
+ * reduce the boilerplate of  application configuration and command line parsing.</p>
  *
  * @author David B. Bracewell
  */
@@ -44,7 +45,7 @@ public interface Application extends Runnable, Serializable {
    *
    * @return Other arguments on the command line that were not paresable
    */
-  String[] getOtherArguments();
+  String[] getNonParsableArguments();
 
   /**
    * Get all arguments passed to the application.

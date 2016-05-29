@@ -21,8 +21,9 @@
 
 package com.davidbracewell;
 
-import com.davidbracewell.function.SerializableFunction;
+import com.davidbracewell.function.CheckedFunction;
 import com.davidbracewell.function.SerializablePredicate;
+import com.davidbracewell.function.Unchecked;
 import lombok.Builder;
 import lombok.Singular;
 
@@ -31,6 +32,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
+ * Converts a value to another based on a series of predicates. In essence allows for <code>switch</code> statements in
+ * the form of complex predicate -> function pairs to be performed on any data type.
+ *
+ * @param <T> the type parameter being switched on
+ * @param <R> the type parameter returned from the switch operation
  * @author David B. Bracewell
  */
 @Builder
@@ -38,25 +44,38 @@ public class Switch<T, R> implements Serializable {
   private static final long serialVersionUID = 1L;
 
   @Singular
-  private Map<SerializablePredicate<? super T>, SerializableFunction<? super T, ? extends R>> caseStmts = new LinkedHashMap<>();
-  private SerializableFunction<? super T, ? extends R> defaultStmt;
+  private Map<SerializablePredicate<? super T>, CheckedFunction<? super T, ? extends R>> caseStmts = new LinkedHashMap<>();
+  private CheckedFunction<? super T, ? extends R> defaultStmt;
 
+  /**
+   * Instantiates a new Switch.
+   *
+   * @param caseStmts   the case stmts
+   * @param defaultStmt the default stmt
+   */
   @java.beans.ConstructorProperties({"caseStmts", "defaultStmt"})
-  Switch(Map<SerializablePredicate<? super T>, SerializableFunction<? super T, ? extends R>> caseStmts, SerializableFunction<? super T, ? extends R> defaultStmt) {
+  Switch(Map<SerializablePredicate<? super T>, CheckedFunction<? super T, ? extends R>> caseStmts, CheckedFunction<? super T, ? extends R> defaultStmt) {
     this.caseStmts = caseStmts;
     this.defaultStmt = defaultStmt;
   }
 
+  /**
+   * Switch on r.
+   *
+   * @param argument the argument
+   * @return the r
+   */
   public R switchOn(T argument) {
     for (SerializablePredicate<? super T> p : caseStmts.keySet()) {
       if (p.test(argument)) {
-        return caseStmts.get(p).apply(argument);
+        return Unchecked.function(caseStmts.get(p)).apply(argument);
       }
     }
     if (defaultStmt != null) {
-      return defaultStmt.apply(argument);
+      return Unchecked.function(defaultStmt).apply(argument);
     }
     return null;
   }
+
 
 }//END OF Switch

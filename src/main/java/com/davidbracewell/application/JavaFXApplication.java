@@ -27,7 +27,8 @@ import javafx.stage.Stage;
 import java.util.List;
 
 /**
- * The type Java fX application.
+ * <p>An JavaFX {@link Application} implementation. Child classes should define their UI via the {@link #setup()}
+ * method and should define a <code>main</code> method that calls {@link #launch(String...)}. </p>
  *
  * @author David B. Bracewell
  */
@@ -39,18 +40,13 @@ public abstract class JavaFXApplication extends javafx.application.Application i
   private String[] allArgs;
   private Stage stage;
 
+  /**
+   * Instantiates a new Java fx application.
+   *
+   * @param applicationName the application name
+   */
   public JavaFXApplication(String applicationName) {
     this.applicationName = applicationName;
-  }
-
-  @Override
-  public final String[] getOtherArguments() {
-    return nonNamedArguments;
-  }
-
-  @Override
-  public final void setOtherArguments(String[] otherArguments) {
-    this.nonNamedArguments = otherArguments;
   }
 
   @Override
@@ -64,13 +60,37 @@ public abstract class JavaFXApplication extends javafx.application.Application i
   }
 
   @Override
+  public String getName() {
+    return applicationName;
+  }
+
+  @Override
+  public final String[] getNonParsableArguments() {
+    return nonNamedArguments;
+  }
+
+  /**
+   * Gets stage.
+   *
+   * @return the stage
+   */
+  protected final Stage getStage() {
+    return stage;
+  }
+
+  @Override
   public final void run(String[] args) {
     Application.super.run(args);
   }
 
   @Override
-  public String getName() {
-    return applicationName;
+  public final void run() {
+
+  }
+
+  @Override
+  public final void setOtherArguments(String[] otherArguments) {
+    this.nonNamedArguments = otherArguments;
   }
 
   @Override
@@ -83,21 +103,6 @@ public abstract class JavaFXApplication extends javafx.application.Application i
     } else {
       run(parameters.toArray(new String[parameters.size()]));
     }
-  }
-
-
-  /**
-   * Gets stage.
-   *
-   * @return the stage
-   */
-  protected final Stage getStage() {
-    return stage;
-  }
-
-  @Override
-  public final void run() {
-
   }
 
 }//END OF JavaFXApplication

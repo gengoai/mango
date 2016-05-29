@@ -48,12 +48,9 @@ import java.io.Serializable;
  * @author David B. Bracewell
  */
 public abstract class CommandLineApplication implements Application, Serializable {
-  private static final long serialVersionUID = 1L;
   private static final Logger log = Logger.getLogger(CommandLineApplication.class);
+  private static final long serialVersionUID = 1L;
 
-  /**
-   * The name of the application
-   */
   public final String applicationName;
   private String[] nonNamedArguments;
   private String[] allArgs;
@@ -66,16 +63,6 @@ public abstract class CommandLineApplication implements Application, Serializabl
    */
   protected CommandLineApplication(String applicationName) {
     this(applicationName, null);
-  }
-
-  /**
-   * Gets the name of the application
-   *
-   * @return The name of the application
-   */
-  @Override
-  public String getName() {
-    return applicationName;
   }
 
   /**
@@ -92,16 +79,6 @@ public abstract class CommandLineApplication implements Application, Serializabl
   }
 
   /**
-   * Get other arguments.
-   *
-   * @return Other arguments on the command line not specified by the annotations.
-   */
-  @Override
-  public final String[] getOtherArguments() {
-    return nonNamedArguments;
-  }
-
-  /**
    * Get all arguments passed to the application.
    *
    * @return the array of arguments passed to the application
@@ -110,6 +87,43 @@ public abstract class CommandLineApplication implements Application, Serializabl
   public final String[] getAllArguments() {
     return allArgs;
   }
+
+  @Override
+  public void setAllArguments(String[] allArguments) {
+    this.allArgs = allArguments;
+  }
+
+  @Override
+  public String getConfigPackageName() {
+    return packageName;
+  }
+
+  /**
+   * Gets the name of the application
+   *
+   * @return The name of the application
+   */
+  @Override
+  public String getName() {
+    return applicationName;
+  }
+
+  /**
+   * Get other arguments.
+   *
+   * @return Other arguments on the command line not specified by the annotations.
+   */
+  @Override
+  public final String[] getNonParsableArguments() {
+    return nonNamedArguments;
+  }
+
+  /**
+   * Child classes override this method adding their program logic.
+   *
+   * @throws Exception Something abnormal happened.
+   */
+  protected abstract void programLogic() throws Exception;
 
   @Override
   public final void run() {
@@ -121,27 +135,9 @@ public abstract class CommandLineApplication implements Application, Serializabl
     }
   }
 
-  /**
-   * Child classes override this method adding their program logic.
-   *
-   * @throws Exception Something abnormal happened.
-   */
-  protected abstract void programLogic() throws Exception;
-
-
-  @Override
-  public void setAllArguments(String[] allArguments) {
-    this.allArgs = allArguments;
-  }
-
   @Override
   public void setOtherArguments(String[] otherArguments) {
     this.nonNamedArguments = otherArguments;
-  }
-
-  @Override
-  public String getConfigPackageName() {
-    return packageName;
   }
 
   @Override

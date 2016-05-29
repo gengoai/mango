@@ -30,6 +30,8 @@ import java.util.PrimitiveIterator;
 import java.util.stream.DoubleStream;
 
 /**
+ * The type Java double stream.
+ *
  * @author David B. Bracewell
  */
 public class JavaDoubleStream implements MDoubleStream, Serializable {
@@ -37,6 +39,11 @@ public class JavaDoubleStream implements MDoubleStream, Serializable {
 
   private final DoubleStream stream;
 
+  /**
+   * Instantiates a new Java double stream.
+   *
+   * @param stream the stream
+   */
   public JavaDoubleStream(DoubleStream stream) {
     this.stream = stream;
   }

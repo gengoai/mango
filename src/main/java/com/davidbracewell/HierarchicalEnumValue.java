@@ -24,7 +24,7 @@ package com.davidbracewell;
 import java.util.List;
 
 /**
- * The type Hierarchical enum value.
+ * <p>An {@link EnumValue} which has a tree structure.</p>
  *
  * @author David B. Bracewell
  */
@@ -115,7 +115,7 @@ public abstract class HierarchicalEnumValue extends EnumValue {
   }
 
   /**
-   * Gets parent config.
+   * Determines the parent via a configuration setting.
    *
    * @return the parent config
    */
