@@ -1,8 +1,13 @@
 package com.davidbracewell.string;
 
 import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.io.resource.Resource;
+import com.davidbracewell.io.resource.StringResource;
+import lombok.NonNull;
 
+import java.io.IOException;
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,12 +19,11 @@ import java.util.List;
  *
  * @author David B. Bracewell
  */
-public class TableFormatter {
-  /**
-   * The Number formatter.
-   */
-  final DecimalFormat longNumberFormatter = new DecimalFormat("#####E0");
-  final DecimalFormat normalNumberFormatter = new DecimalFormat("0.000");
+public class TableFormatter implements Serializable {
+  private static final long serialVersionUID = 1L;
+  private static final int MIN_CELL_WIDTH = 5;
+  private static final DecimalFormat longNumberFormatter = new DecimalFormat("0.0E0");
+  private static final DecimalFormat normalNumberFormatter = new DecimalFormat("0.000#####");
   private List<Object> header = new ArrayList<>();
   private List<List<Object>> content = new LinkedList<>();
   private int longestCell = 2;
@@ -62,6 +66,13 @@ public class TableFormatter {
     return this;
   }
 
+  private int length(Number number) {
+    if (number instanceof Long || number instanceof Integer || number instanceof Short) {
+      return Math.min(longNumberFormatter.format(number).length(), number.toString().length());
+    }
+    return Math.min(longNumberFormatter.format(number).length(), normalNumberFormatter.format(number).length());
+  }
+
   /**
    * Content table formatter.
    *
@@ -70,7 +81,16 @@ public class TableFormatter {
    */
   public TableFormatter content(Collection<?> collection) {
     this.content.add(new ArrayList<>(collection));
-    longestCell = (int) Math.max(longestCell, collection.stream().filter(o -> o instanceof String).mapToDouble(o -> o.toString().length() + 2).max().orElse(0));
+    longestCell = (int) Math.max(longestCell, collection.stream()
+      .mapToDouble(o -> {
+          if (o instanceof Number) {
+            return Math.max(MIN_CELL_WIDTH, length(Cast.as(o)));
+          } else {
+            return Math.max(MIN_CELL_WIDTH, o.toString().length() + 2);
+          }
+        }
+      ).max().orElse(0)
+    );
     longestRow = Math.max(longestRow, collection.size());
     return this;
   }
@@ -88,13 +108,12 @@ public class TableFormatter {
   private String convert(Object o, int longestCell) {
     if (o instanceof Number) {
       Number number = Cast.as(o);
-      double d = number.doubleValue();
-      if (d >= maxNumber) {
-        return longNumberFormatter.format(d);
-      } else if (number instanceof Long || number instanceof Integer) {
-        return Long.toString(number.longValue());
+      if (number instanceof Long || number instanceof Integer || number instanceof Short) {
+        String numString = Long.toString(number.longValue());
+        return numString.length() <= longestCell ? numString : longNumberFormatter.format(number);
       } else {
-        return normalNumberFormatter.format(d);
+        String numString = normalNumberFormatter.format(number);
+        return numString.length() <= longestCell ? numString : longNumberFormatter.format(number);
       }
     }
     return StringUtils.abbreviate(o.toString(), longestCell - 2);
@@ -112,14 +131,14 @@ public class TableFormatter {
   }
 
   /**
-   * Print.
+   * Print the table to the give PrintStream .
    *
-   * @param stream the stream
+   * @param stream the print stream to write to
    */
-  public void print(PrintStream stream) {
+  public void print(@NonNull PrintStream stream) {
     String horizontalBar = StringUtils.repeat("─", longestCell);
     String hline = middleCMBar(horizontalBar, longestRow);
-    maxNumber = Math.pow(10, longestCell);
+    maxNumber = Math.pow(10, longestCell - 2);
     longestRow = Math.max(longestRow, header.size());
 
     if (!StringUtils.isNullOrBlank(title)) {
@@ -154,5 +173,22 @@ public class TableFormatter {
     stream.println("┘");
 
   }
+
+  /**
+   * Writes the table to a resource.
+   *
+   * @param resource the resource to write to
+   * @return the resource written to
+   * @throws IOException Something went wrong writing to the resource
+   */
+  public Resource write(@NonNull Resource resource) throws IOException {
+    Resource stringResource = new StringResource();
+    try (PrintStream printStream = new PrintStream(stringResource.outputStream())) {
+      print(printStream);
+    }
+    resource.write(stringResource.readToString());
+    return resource;
+  }
+
 
 }// END OF TableFormatter

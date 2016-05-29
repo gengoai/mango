@@ -282,13 +282,35 @@ public enum StringPredicates implements SerializablePredicate<CharSequence> {
 
 
   /**
-   * Returns a method that performs an exact match on two charsequences
+   * Returns a method that checks if a text is contained an given string.
    *
-   * @param toMatch the sequence to match
+   * @param text The text to check for
    * @return the predicate
    */
-  public static SerializablePredicate<CharSequence> MATCHES(String toMatch) {
-    return MATCHES(toMatch, true);
+  public static SerializablePredicate<CharSequence> CONTAINS(String text) {
+    return CONTAINS(text, true);
+  }
+
+  /**
+   * Returns a method that checks if a text is contained an given string.
+   *
+   * @param text          The text to check for
+   * @param caseSensitive True case sensitive match, False case insensitive
+   * @return the predicate
+   */
+  public static SerializablePredicate<CharSequence> CONTAINS(String text, boolean caseSensitive) {
+    return new ContainsPredicate(caseSensitive, text);
+  }
+
+  /**
+   * Creates a predicate that matches the ending of a string
+   *
+   * @param toMatch       the sequence to match
+   * @param caseSensitive True case sensitive match, False case insensitive
+   * @return the predicate
+   */
+  public static SerializablePredicate<CharSequence> ENDS_WITH(String toMatch, boolean caseSensitive) {
+    return new EndsWithPredicate(StringFunctions.NULL_TO_EMPTY.apply(toMatch), caseSensitive);
   }
 
   /**
@@ -304,27 +326,14 @@ public enum StringPredicates implements SerializablePredicate<CharSequence> {
   }
 
   /**
-   * Returns a method that checks if a text is contained an given string.
+   * Returns a method that performs an exact match on two charsequences
    *
-   * @param text The text to check for
+   * @param toMatch the sequence to match
    * @return the predicate
    */
-  public static SerializablePredicate<CharSequence> CONTAINS(String text) {
-    return CONTAINS(text, true);
+  public static SerializablePredicate<CharSequence> MATCHES(String toMatch) {
+    return MATCHES(toMatch, true);
   }
-
-
-  /**
-   * Returns a method that checks if a text is contained an given string.
-   *
-   * @param text          The text to check for
-   * @param caseSensitive True case sensitive match, False case insensitive
-   * @return the predicate
-   */
-  public static SerializablePredicate<CharSequence> CONTAINS(String text, boolean caseSensitive) {
-    return new ContainsPredicate(caseSensitive, text);
-  }
-
 
   /**
    * Creates a predicate that matches a given regular expression
@@ -346,18 +355,6 @@ public enum StringPredicates implements SerializablePredicate<CharSequence> {
   public static SerializablePredicate<CharSequence> STARTS_WITH(String toMatch, boolean caseSensitive) {
     return new StartsWithPredicate(StringFunctions.NULL_TO_EMPTY.apply(toMatch), caseSensitive);
   }
-
-  /**
-   * Creates a predicate that matches the ending of a string
-   *
-   * @param toMatch       the sequence to match
-   * @param caseSensitive True case sensitive match, False case insensitive
-   * @return the predicate
-   */
-  public static SerializablePredicate<CharSequence> ENDS_WITH(String toMatch, boolean caseSensitive) {
-    return new EndsWithPredicate(StringFunctions.NULL_TO_EMPTY.apply(toMatch), caseSensitive);
-  }
-
 
   private static class StartsWithPredicate implements SerializablePredicate<CharSequence> {
     private static final long serialVersionUID = 1L;

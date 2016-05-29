@@ -23,7 +23,7 @@ package com.davidbracewell.string;
 
 import com.davidbracewell.function.SerializableFunction;
 import com.google.common.base.CharMatcher;
-import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 import java.text.Normalizer;
 import java.util.regex.Pattern;
@@ -146,10 +146,11 @@ public enum StringFunctions implements SerializableFunction<String, String> {
    * @param replacement The replacement text
    * @return The function
    */
-  public static SerializableFunction<String, String> REGEX_REPLACE(String pattern, String replacement) {
+  public static SerializableFunction<String, String> REGEX_REPLACE(@NonNull String pattern, @NonNull String replacement) {
     return REGEX_REPLACE(
-      Pattern.compile(Preconditions.checkNotNull(pattern)),
-      Preconditions.checkNotNull(replacement));
+      Pattern.compile(pattern),
+      replacement
+    );
   }
 
   /**
@@ -160,9 +161,7 @@ public enum StringFunctions implements SerializableFunction<String, String> {
    * @param replacement The replacement text
    * @return The function
    */
-  public static SerializableFunction<String, String> REGEX_REPLACE(final Pattern pattern, final String replacement) {
-    Preconditions.checkNotNull(pattern);
-    Preconditions.checkNotNull(replacement);
+  public static SerializableFunction<String, String> REGEX_REPLACE(@NonNull final Pattern pattern, @NonNull final String replacement) {
     return arg0 -> arg0 == null ? null : pattern.matcher(arg0).replaceAll(replacement);
   }
 
