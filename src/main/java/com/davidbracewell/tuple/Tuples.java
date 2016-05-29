@@ -21,12 +21,32 @@
 
 package com.davidbracewell.tuple;
 
+import java.util.List;
+
 /**
  * The interface Tuples.
  *
  * @author David B. Bracewell
  */
 public interface Tuples {
+
+  static <T> Tuple tuple(List<T> list) {
+    if (list == null || list.size() == 0) {
+      return Tuple0.INSTANCE;
+    }
+    switch (list.size()) {
+      case 1:
+        return Tuple1.of(list.get(0));
+      case 2:
+        return Tuple2.of(list.get(0), list.get(1));
+      case 3:
+        return Tuple3.of(list.get(0), list.get(1), list.get(2));
+      case 4:
+        return Tuple4.of(list.get(0), list.get(1), list.get(2), list.get(3));
+      default:
+        return NTuple.of(list);
+    }
+  }
 
   /**
    * Creates a triple

@@ -6,6 +6,7 @@ import lombok.NonNull;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author David B. Bracewell
@@ -23,6 +24,10 @@ public class NTuple implements Tuple {
   @SafeVarargs
   public static <T> NTuple of(@NonNull T... items) {
     return new NTuple(items);
+  }
+
+  public static <T> NTuple of(@NonNull List<T> items ){
+    return new NTuple(items.toArray());
   }
 
   @Override
