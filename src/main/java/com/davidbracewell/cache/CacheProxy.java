@@ -21,14 +21,15 @@
 
 package com.davidbracewell.cache;
 
+import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.Unchecked;
 import com.davidbracewell.logging.Logger;
 import com.davidbracewell.reflection.Reflect;
 import com.davidbracewell.reflection.ReflectionUtils;
+import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 
@@ -66,7 +67,7 @@ public class CacheProxy<T> implements InvocationHandler, Serializable {
 
     if (r.getReflectedClass().isAnnotationPresent(Cached.class)) {
       Cached cached = r.getReflectedClass().getAnnotation(Cached.class);
-      defaultCacheName = cached.name();
+      defaultCacheName = StringUtils.isNullOrBlank(cached.name()) ? CacheManager.GLOBAL_CACHE : cached.name();
       defaultKeyMaker = cached.keyMaker() == KeyMaker.DefaultKeyMaker.class ? new KeyMaker.HashCodeKeyMaker() : Reflect.onClass(cached.keyMaker()).create().get();
     } else {
       defaultCacheName = CacheManager.GLOBAL_CACHE;
@@ -121,16 +122,18 @@ public class CacheProxy<T> implements InvocationHandler, Serializable {
       return method.invoke(object, args);
     }
 
-    Tuple2<Cached, KeyMaker> Tuple2 = cachedMethods.get(cachedMethod);
-    KeyMaker maker = (Tuple2.getValue() instanceof KeyMaker.DefaultKeyMaker) ?
-      defaultKeyMaker :
-      Tuple2.getValue();
-    Object key = maker.make(object.getClass(), cachedMethod, args);
-    Cache<Object, Object> cache = CacheManager.getInstance().get(
-      Strings.isNullOrEmpty(Tuple2.getKey().name()) ?
-        defaultCacheName :
-        Tuple2.getKey().name()
-    );
+    Tuple2<Cached, KeyMaker> tuple = cachedMethods.get(cachedMethod);
+    String cacheName = tuple.v1.name();
+    if (StringUtils.isNullOrBlank(cacheName)) {
+      cacheName = defaultCacheName;
+    }
+    if (cacheName.equals(CacheManager.GLOBAL_CACHE) && Config.hasProperty(cachedMethod.getDeclaringClass(), cachedMethod.getName(), "cache")) {
+      cacheName = Config.get(cachedMethod.getDeclaringClass(), cachedMethod.getName(), "cache").asString();
+    }
+
+    KeyMaker keyMaker = tuple.v2;
+    Object key = keyMaker.make(object.getClass(), cachedMethod, args);
+    Cache<Object, Object> cache = CacheManager.getInstance().get(cacheName);
 
     if (cache.containsKey(key)) {
       if (log.isLoggable(Level.FINEST)) {
