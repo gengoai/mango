@@ -47,7 +47,7 @@ import java.util.Map;
  * <li>Name is a multiple characters: long form <code>--n</code></li>
  * </ul>
  * <code>NamedOption</code>s can be built either by passing a <code>Field</code> containing an {@link Option}
- * annotation or by using the builder {@link NamedOption#builder()}.
+ * annotation or by using the builder.
  * </p>
  * <p>
  * Three options are predefined and are automatically added to every command line parser:

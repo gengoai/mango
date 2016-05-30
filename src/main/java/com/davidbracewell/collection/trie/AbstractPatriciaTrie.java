@@ -181,7 +181,7 @@ abstract class AbstractPatriciaTrie<K, V> extends AbstractBitwiseTrie<K, V> {
     }
 
     /**
-     * Adds the given {@link iknowledge.espresso.collections.trie.AbstractPatriciaTrie.TrieEntry} to the {@link Trie}.
+     * Adds the given {@link TrieEntry} to the {@link Trie}.
      */
     TrieEntry<K, V> addEntry(final TrieEntry<K, V> entry, final int lengthInBits) {
         TrieEntry<K, V> current = root.left;
@@ -253,7 +253,7 @@ abstract class AbstractPatriciaTrie<K, V> extends AbstractBitwiseTrie<K, V> {
     }
 
     /**
-     * Returns the {@link Entry} whose key is closest in a bitwise XOR
+     * Returns the {@link java.util.Map.Entry} whose key is closest in a bitwise XOR
      * metric to the given key. This is NOT lexicographic closeness.
      * For example, given the keys:
      *
@@ -268,7 +268,7 @@ abstract class AbstractPatriciaTrie<K, V> extends AbstractBitwiseTrie<K, V> {
      * than the XOR distance between D &amp; H.
      *
      * @param key  the key to use in the search
-     * @return the {@link Entry} whose key is closest in a bitwise XOR metric
+     * @return the {@link java.util.Map.Entry} whose key is closest in a bitwise XOR metric
      *   to the provided key
      */
     public Entry<K, V> select(final K key) {
@@ -336,7 +336,7 @@ abstract class AbstractPatriciaTrie<K, V> extends AbstractBitwiseTrie<K, V> {
     }
 
     /**
-     * This is equivalent to the other {@link #selectR(iknowledge.espresso.collections.trie.AbstractPatriciaTrie.TrieEntry, int, Object, int, Cursor, iknowledge.espresso.collections.trie.AbstractPatriciaTrie.Reference)}
+     * This is equivalent to the other {@link #selectR(TrieEntry, int, Object, int, Reference)}
      * method but without its overhead because we're selecting only one best matching Entry from the {@link Trie}.
      */
     private boolean selectR(final TrieEntry<K, V> h, final int bitIndex,
@@ -1246,11 +1246,11 @@ abstract class AbstractPatriciaTrie<K, V> extends AbstractBitwiseTrie<K, V> {
     }
 
     /**
-     * A {@link iknowledge.espresso.collections.trie.AbstractPatriciaTrie.Reference} allows us to return something through a Method's
+     * A {@link Reference} allows us to return something through a Method's
      * argument list. An alternative would be to an Array with a length of
      * one (1) but that leads to compiler warnings. Computationally and memory
      * wise there's no difference (except for the need to load the
-     * {@link iknowledge.espresso.collections.trie.AbstractPatriciaTrie.Reference} Class but that happens only once).
+     * {@link Reference} Class but that happens only once).
      */
     private static class Reference<E> {
 
@@ -1266,7 +1266,7 @@ abstract class AbstractPatriciaTrie<K, V> extends AbstractBitwiseTrie<K, V> {
     }
 
     /**
-     *  A {@link Trie} is a set of {@link iknowledge.espresso.collections.trie.AbstractPatriciaTrie.TrieEntry} nodes.
+     *  A {@link Trie} is a set of {@link TrieEntry} nodes.
      */
     protected static class TrieEntry<K,V> extends BasicEntry<K, V> {
 

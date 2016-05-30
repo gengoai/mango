@@ -819,8 +819,8 @@ public enum Language {
   /**
    * Convenience method for constructing a collator.
    *
-   * @param strength      The strength {@see Collator}
-   * @param decomposition The decomposition {@see Collator}
+   * @param strength      The strength of the {@link Collator}
+   * @param decomposition The decomposition of the {@link Collator}
    * @return The collator
    */
   public final Collator getCollator(int strength, int decomposition) {
@@ -852,7 +852,7 @@ public enum Language {
   /**
    * Convenience method for constructing a collator using <code>FULL_DECOMPOSITION</code>
    *
-   * @param strength The strength {@see Collator}
+   * @param strength The strength of the {@link Collator}
    * @return The collator
    */
   public final Collator getCollator(int strength) {
