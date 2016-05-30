@@ -22,26 +22,28 @@
 package com.davidbracewell.cache;
 
 /**
- * The interface Cache engine.
+ * <p>A factory-like interface for creating a cache using a specific implementation strategy defined by a {@link
+ * CacheSpec} </p>
+ *
  * @author David B. Bracewell
  */
 public interface CacheEngine {
 
   /**
-   * Name string.
+   * The engine name
    *
-   * @return the string
+   * @return The engine name
    */
   String name();
 
 
   /**
-   * Create cache.
+   * Creates a cache based on the give <code>CacheSpec</code> .
    *
-   * @param <K>  the type parameter
-   * @param <V>  the type parameter
+   * @param <K>       the Key parameter
+   * @param <V>       the Value parameter
    * @param cacheSpec the cache spec
-   * @return the cache
+   * @return the new cache
    */
   <K, V> Cache<K, V> create(CacheSpec<K, V> cacheSpec);
 

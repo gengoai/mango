@@ -195,23 +195,4 @@ public final class CacheManager {
     return Cast.as(caches.get(specification.getName()));
   }
 
-//  /**
-//   * Registers an already constructed cache with the manager.
-//   *
-//   * @param <K>   the key parameter
-//   * @param <V>   the value parameter
-//   * @param cache the cache to register.
-//   * @throws IllegalStateException if a different cache with the same name is already registered
-//   */
-//  public <K, V> void register(Cache<K, V> cache) {
-//    if (cache != null) {
-//      if (caches.containsKey(cache.getName())) {
-//        if (!cache.equals(caches.get(cache.getName()))) {
-//          throw new IllegalStateException("Trying to register a new cache with the same name as an existing cache.");
-//        }
-//      }
-//      caches.put(cache.getName(), cache);
-//    }
-//  }
-
 }//END OF CacheManager

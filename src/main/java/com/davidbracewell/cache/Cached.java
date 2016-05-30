@@ -38,7 +38,7 @@ public @interface Cached {
   /**
    * @return The KeyMaker to use for converting the arguments to a key
    */
-  Class<? extends KeyMaker> keyMaker() default  KeyMaker.DefaultKeyMaker.class;
+  Class<? extends KeyMaker> keyMaker() default KeyMaker.DefaultKeyMaker.class;
 
   /**
    * @return The name of the cache to use defaults to Global cache

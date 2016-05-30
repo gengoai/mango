@@ -22,13 +22,14 @@ package com.davidbracewell.cache;
 
 
 /**
- * The type Cache.
+ * <p>A generic cache interface that allows multiple implementations, definition through specification, management, and
+ * auto cached interfaces.</p>
  *
- * @param <K> the type parameter
- * @param <V> the type parameter
+ * @param <K> the Key parameter
+ * @param <V> the Value parameter
  * @author David B. Bracewell
  */
-public interface Cache<K, V> extends AutoCloseable {
+public interface Cache<K, V> {
 
   /**
    * Clears the cache of all stored keys and values
@@ -99,5 +100,6 @@ public interface Cache<K, V> extends AutoCloseable {
    * @return The current size of the cache
    */
   long size();
+
 
 }//END OF Cache

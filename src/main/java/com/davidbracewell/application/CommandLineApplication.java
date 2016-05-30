@@ -22,8 +22,7 @@
 package com.davidbracewell.application;
 
 import com.davidbracewell.logging.Logger;
-import com.davidbracewell.string.StringUtils;
-import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 import java.io.Serializable;
 
@@ -72,17 +71,11 @@ public abstract class CommandLineApplication implements Application, Serializabl
    * @param packageName     the package name to use for the application, which is important for loading the correct
    *                        configuration.
    */
-  protected CommandLineApplication(String applicationName, String packageName) {
-    Preconditions.checkArgument(!StringUtils.isNullOrBlank(applicationName));
+  protected CommandLineApplication(@NonNull String applicationName, String packageName) {
     this.applicationName = applicationName;
     this.packageName = packageName;
   }
 
-  /**
-   * Get all arguments passed to the application.
-   *
-   * @return the array of arguments passed to the application
-   */
   @Override
   public final String[] getAllArguments() {
     return allArgs;
@@ -98,21 +91,12 @@ public abstract class CommandLineApplication implements Application, Serializabl
     return packageName;
   }
 
-  /**
-   * Gets the name of the application
-   *
-   * @return The name of the application
-   */
   @Override
   public String getName() {
     return applicationName;
   }
 
-  /**
-   * Get other arguments.
-   *
-   * @return Other arguments on the command line not specified by the annotations.
-   */
+
   @Override
   public final String[] getNonParsableArguments() {
     return nonNamedArguments;
@@ -136,8 +120,8 @@ public abstract class CommandLineApplication implements Application, Serializabl
   }
 
   @Override
-  public void setOtherArguments(String[] otherArguments) {
-    this.nonNamedArguments = otherArguments;
+  public void setNonParsableArguments(String[] nonParsableArguments) {
+    this.nonNamedArguments = nonParsableArguments;
   }
 
   @Override

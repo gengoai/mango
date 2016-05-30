@@ -23,6 +23,7 @@ package com.davidbracewell.application;
 
 
 import javafx.stage.Stage;
+import lombok.NonNull;
 
 import java.util.List;
 
@@ -36,6 +37,7 @@ public abstract class JavaFXApplication extends javafx.application.Application i
 
   private static final long serialVersionUID = 1L;
   private final String applicationName;
+  private final String packageName;
   private String[] nonNamedArguments;
   private String[] allArgs;
   private Stage stage;
@@ -46,7 +48,25 @@ public abstract class JavaFXApplication extends javafx.application.Application i
    * @param applicationName the application name
    */
   public JavaFXApplication(String applicationName) {
+    this(applicationName, null);
+  }
+
+  /**
+   * Instantiates a new Application.
+   *
+   * @param applicationName the application name
+   * @param packageName     the package name to use for the application, which is important for loading the correct
+   *                        configuration.
+   */
+  protected JavaFXApplication(@NonNull String applicationName, String packageName) {
     this.applicationName = applicationName;
+    this.packageName = packageName;
+  }
+
+
+  @Override
+  public String getConfigPackageName() {
+    return packageName;
   }
 
   @Override
@@ -69,6 +89,11 @@ public abstract class JavaFXApplication extends javafx.application.Application i
     return nonNamedArguments;
   }
 
+  @Override
+  public final void setNonParsableArguments(String[] nonParsableArguments) {
+    this.nonNamedArguments = nonParsableArguments;
+  }
+
   /**
    * Gets stage.
    *
@@ -86,11 +111,6 @@ public abstract class JavaFXApplication extends javafx.application.Application i
   @Override
   public final void run() {
 
-  }
-
-  @Override
-  public final void setOtherArguments(String[] otherArguments) {
-    this.nonNamedArguments = otherArguments;
   }
 
   @Override

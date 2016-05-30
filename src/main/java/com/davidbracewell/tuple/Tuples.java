@@ -116,7 +116,7 @@ public interface Tuples {
    * @param first the first item
    * @return the tuple of degree one.
    */
-  static <F> Tuple1<F> tuple(F first) {
+  static <F> Tuple1<F> $(F first) {
     return Tuple1.of(first);
   }
 

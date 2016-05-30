@@ -94,11 +94,6 @@ public class GuavaLoadingCache<K, V> implements AutoCalculatingCache<K, V>, Seri
   }
 
   @Override
-  public void close() throws Exception {
-    cache.cleanUp();
-  }
-
-  @Override
   public V get(K key) {
     try {
       return cache.get(key);

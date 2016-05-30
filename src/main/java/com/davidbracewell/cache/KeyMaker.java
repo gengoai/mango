@@ -23,7 +23,7 @@ package com.davidbracewell.cache;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.Objects;
+import java.util.Arrays;
 
 /**
  * The interface Key maker.
@@ -49,7 +49,13 @@ public interface KeyMaker extends Serializable{
     private static final long serialVersionUID = 1L;
     @Override
     public Object make(Class<?> clazz, Method method, Object[] args) {
-      return Objects.hash(clazz, method, args);
+      Object[] tmp = new Object[args.length+2];
+      tmp[0] = clazz;
+      tmp[1] = method;
+      if( args.length > 0 ) {
+        System.arraycopy(args,0,tmp,2,args.length);
+      }
+      return Arrays.hashCode(tmp);
     }
   }//END OF KeyMaker$HashCodeKeyMaker
 

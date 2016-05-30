@@ -66,21 +66,13 @@ public class DefaultAutoCalculatingCache<K, V> implements AutoCalculatingCache<K
   }
 
   @Override
-  public void close() throws Exception {
-
-  }
-
-  @Override
   public boolean containsKey(K key) {
     return cache.containsKey(key);
   }
 
   @Override
   public V get(K key) {
-    if (!cache.containsKey(key)) {
-      cache.putIfAbsent(key, function.apply(key));
-    }
-    return cache.get(key);
+    return cache.computeIfAbsent(key, function);
   }
 
   @Override

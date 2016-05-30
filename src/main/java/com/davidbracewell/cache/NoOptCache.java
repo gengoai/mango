@@ -88,8 +88,4 @@ public class NoOptCache<K, V> implements Cache<K, V>, Serializable {
   public void invalidate(K key) {
   }
 
-  @Override
-  public void close() throws Exception {
-  }
-
 }//END OF NoOptCache

@@ -57,11 +57,6 @@ public class DefaultCache<K, V> implements Cache<K, V>, Serializable {
   }
 
   @Override
-  public void close() throws Exception {
-
-  }
-
-  @Override
   public boolean containsKey(K key) {
     return cache.containsKey(key);
   }

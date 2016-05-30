@@ -28,7 +28,6 @@ import com.google.common.cache.CacheBuilder;
 import lombok.NonNull;
 
 import java.io.Serializable;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -57,12 +56,7 @@ class GuavaCache<K, V> implements com.davidbracewell.cache.Cache<K, V>, Serializ
   @Override
   public V putIfAbsent(K key, final V value) {
     try {
-      return cache.get(key, new Callable<V>() {
-        @Override
-        public V call() throws Exception {
-          return value;
-        }
-      });
+      return cache.get(key, () -> value);
     } catch (ExecutionException e) {
       throw Throwables.propagate(e);
     }
@@ -108,9 +102,5 @@ class GuavaCache<K, V> implements com.davidbracewell.cache.Cache<K, V>, Serializ
     cache.invalidate(key);
   }
 
-  @Override
-  public void close() throws Exception {
-    cache.cleanUp();
-  }
 
 }//END OF GuavaCache

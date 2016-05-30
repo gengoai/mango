@@ -22,9 +22,9 @@
 package com.davidbracewell.cache;
 
 import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.function.Unchecked;
 import com.davidbracewell.logging.Logger;
 import com.davidbracewell.reflection.Reflect;
-import com.davidbracewell.reflection.ReflectionException;
 import com.davidbracewell.reflection.ReflectionUtils;
 import com.davidbracewell.tuple.Tuple2;
 import com.google.common.base.Preconditions;
@@ -63,25 +63,24 @@ public class CacheProxy<T> implements InvocationHandler, Serializable {
     this.object = object;
     Reflect r = Reflect.onObject(object).allowPrivilegedAccess();
 
+
     if (r.getReflectedClass().isAnnotationPresent(Cached.class)) {
       Cached cached = r.getReflectedClass().getAnnotation(Cached.class);
       defaultCacheName = cached.name();
-      defaultKeyMaker = Reflect.onClass(cached.keyMaker()).create().get();
+      defaultKeyMaker = cached.keyMaker() == KeyMaker.DefaultKeyMaker.class ? new KeyMaker.HashCodeKeyMaker() : Reflect.onClass(cached.keyMaker()).create().get();
     } else {
       defaultCacheName = CacheManager.GLOBAL_CACHE;
       defaultKeyMaker = new KeyMaker.HashCodeKeyMaker();
     }
 
-    r.getMethods().forEach(method -> {
+    r.getMethods().forEach(Unchecked.consumer(method -> {
       if (method.isAnnotationPresent(Cached.class)) {
         Cached cached = method.getAnnotation(Cached.class);
-        try {
-          cachedMethods.put(method, Tuple2.of(cached, Reflect.onClass(cached.keyMaker()).create().<KeyMaker>get()));
-        } catch (ReflectionException e) {
-          throw Throwables.propagate(e);
-        }
+        KeyMaker keyMaker = cached.keyMaker() == KeyMaker.DefaultKeyMaker.class ? defaultKeyMaker : Reflect.onClass(cached.keyMaker()).create().get();
+        cachedMethods.put(method, Tuple2.of(cached, keyMaker));
       }
-    });
+    }));
+
   }
 
   private Method findMethod(Method childMethod) {
@@ -103,11 +102,13 @@ public class CacheProxy<T> implements InvocationHandler, Serializable {
   public static <T> T newInstance(Object object) {
     Preconditions.checkNotNull(object);
     try {
-      return Cast.as(Proxy.newProxyInstance(
+      return Cast.as(
+        Proxy.newProxyInstance(
           object.getClass().getClassLoader(),
           ReflectionUtils.getAllInterfaces(object).toArray(new Class[1]),
           new CacheProxy<>(object)
-      ));
+        )
+      );
     } catch (Exception e) {
       throw Throwables.propagate(e);
     }
@@ -122,13 +123,13 @@ public class CacheProxy<T> implements InvocationHandler, Serializable {
 
     Tuple2<Cached, KeyMaker> Tuple2 = cachedMethods.get(cachedMethod);
     KeyMaker maker = (Tuple2.getValue() instanceof KeyMaker.DefaultKeyMaker) ?
-        defaultKeyMaker :
-        Tuple2.getValue();
+      defaultKeyMaker :
+      Tuple2.getValue();
     Object key = maker.make(object.getClass(), cachedMethod, args);
     Cache<Object, Object> cache = CacheManager.getInstance().get(
-        Strings.isNullOrEmpty(Tuple2.getKey().name()) ?
-            defaultCacheName :
-            Tuple2.getKey().name()
+      Strings.isNullOrEmpty(Tuple2.getKey().name()) ?
+        defaultCacheName :
+        Tuple2.getKey().name()
     );
 
     if (cache.containsKey(key)) {

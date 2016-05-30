@@ -55,23 +55,23 @@ public interface Application extends Runnable, Serializable {
   String[] getAllArguments();
 
   /**
-   * Sets all arguments.
+   * <p>Sets all arguments found on the command line.</p>
    *
-   * @param allArguments the all arguments
+   * @param allArguments All arguments from the command line.
    */
   void setAllArguments(String[] allArguments);
 
   /**
-   * Sets other arguments.
+   * <p>Sets the arguments that were not parsable by the command line parser</p>
    *
-   * @param otherArguments the other arguments
+   * @param nonParsableArguments the non-parsable arguments
    */
-  void setOtherArguments(String[] otherArguments);
+  void setNonParsableArguments(String[] nonParsableArguments);
 
   /**
-   * Gets config package name.
+   * <p>Gets the package name to use for loading a default.conf</p>
    *
-   * @return the config package name
+   * @return the config package name or null if using the application's package
    */
   default String getConfigPackageName() {
     return null;
@@ -86,7 +86,9 @@ public interface Application extends Runnable, Serializable {
 
 
   /**
-   * Run void.
+   * <p>Runs the application by first parsing the command line arguments and initializing the config. The process
+   * then runs the {@link #setup()} method to perform any special user-defined setup and then finally runs the {@link
+   * #run()} command which performs the application logic and is specific to each implementation.</p>
    *
    * @param args the args
    */
@@ -105,7 +107,7 @@ public interface Application extends Runnable, Serializable {
     }
 
     CommandLineParser parser = new CommandLineParser(this, cliDesc);
-    setOtherArguments(Config.initialize(getName(), args, parser));
+    setNonParsableArguments(Config.initialize(getName(), args, parser));
     if (getConfigPackageName() != null) {
       Config.loadConfig(Resources.fromClasspath(getConfigPackageName().replace(".", "/") + "/default.conf"));
       Config.setAllCommandLine(allArgs);
