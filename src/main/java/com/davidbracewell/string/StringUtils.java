@@ -244,6 +244,17 @@ public class StringUtils {
     return StringPredicates.IS_NOT_NULL_OR_BLANK.test(input);
   }
 
+  public static String firstNonNullOrBlank(String... strings) {
+    if (strings == null || strings.length == 0) {
+      return null;
+    }
+    for (String s : strings) {
+      if (isNotNullOrBlank(s)) {
+        return s;
+      }
+    }
+    return null;
+  }
 
   /**
    * Determines if a given string is only made up of punctuation characters.
