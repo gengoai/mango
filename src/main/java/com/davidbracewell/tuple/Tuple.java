@@ -25,12 +25,12 @@ import com.davidbracewell.Copyable;
 import com.davidbracewell.collection.Sorting;
 import com.davidbracewell.conversion.Cast;
 import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -140,6 +140,19 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
   }
 
   /**
+   * Takes a slice of the tuple from an inclusive start to an exclusive end index.
+   *
+   * @param start Where to start the slice from (inclusive)
+   * @param end   Where to end the slice at (exclusive)
+   * @return A new tuple of degree (end - start) with the elements of this tuple from start to end
+   */
+  public Tuple slice(int start, int end) {
+    Preconditions.checkArgument(start >= 0, "Start index must be >= 0");
+    Preconditions.checkArgument(start < end, "Start index must be < end index");
+    return new NTuple(Arrays.copyOfRange(array(), start, end));
+  }
+
+  /**
    * Appends an item the beginning of the tuple resulting in a new tuple of degree + 1
    *
    * @param <T>    the type parameter
@@ -184,11 +197,13 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(array());
+    return Arrays.hashCode(array());
   }
 
   @Override
   public String toString() {
     return "(" + Joiner.on(',').join(array()) + ")";
   }
+
+
 }//END OF Tuple

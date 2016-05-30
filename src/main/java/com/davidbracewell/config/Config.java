@@ -43,6 +43,7 @@ import com.davidbracewell.scripting.ScriptEnvironment;
 import com.davidbracewell.scripting.ScriptEnvironmentManager;
 import com.davidbracewell.string.StringPredicates;
 import com.davidbracewell.string.StringUtils;
+import com.google.common.base.Joiner;
 import com.google.common.base.Throwables;
 import lombok.NonNull;
 
@@ -176,7 +177,7 @@ public final class Config implements Serializable {
   public static boolean hasProperty(String propertyPrefix, String... propertyComponents) {
     String propertyName = propertyPrefix;
     if (propertyComponents != null && propertyComponents.length > 0) {
-      propertyName += "." + StringUtils.join(".", propertyComponents);
+      propertyName += "." + Joiner.on('.').join(propertyComponents);
     }
     return getInstance().properties.containsKey(propertyName) || System.getProperties().contains(propertyName);
   }
@@ -196,7 +197,8 @@ public final class Config implements Serializable {
   /**
    * <p>Checks if a property is in the config or or set on the system. The property name is constructed as
    * <code>clazz.getName() + . + propertyComponent[0] + . + propertyComponent[1] + ... +
-   * (language.toString()|language.getCode().toLowerCase())</code> This will return true if the language specific config
+   * (language.toString()|language.getCode().toLowerCase())</code> This will return true if the language specific
+   * config
    * option is set or a default (i.e. no-language specified) version is set. </p>
    *
    * @param propertyPrefix     The prefix
@@ -241,7 +243,7 @@ public final class Config implements Serializable {
     }
 
 
-    String components = StringUtils.join(".", propertyComponents);
+    String components = Joiner.on('.').join(propertyComponents);
 
     for (String key :
       new String[]{
@@ -267,7 +269,8 @@ public final class Config implements Serializable {
   /**
    * <p>Checks if a property is in the config or or set on the system. The property name is constructed as
    * <code>clazz.getName() + . + propertyComponent[0] + . + propertyComponent[1] + ... +
-   * (language.toString()|language.getCode().toLowerCase())</code> This will return true if the language specific config
+   * (language.toString()|language.getCode().toLowerCase())</code> This will return true if the language specific
+   * config
    * option is set or a default (i.e. no-language specified) version is set. </p>
    *
    * @param clazz              The class with which the property is associated.
@@ -328,7 +331,7 @@ public final class Config implements Serializable {
   public static Val get(String propertyPrefix, String... propertyComponents) {
     String propertyName = propertyPrefix;
     if (propertyComponents != null && propertyComponents.length > 0) {
-      propertyName += "." + StringUtils.join(".", propertyComponents);
+      propertyName += "." + Joiner.on('.').join(propertyComponents);
     }
 
     if (StringUtils.isNullOrBlank(propertyName)) {

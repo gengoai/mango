@@ -48,7 +48,7 @@ public final class DynamicEnum<E extends EnumValue> implements Serializable {
    * @return the string
    */
   public static String normalize(String input) {
-    return StringUtils.trim(input.toUpperCase()).replaceAll(StringUtils.UNICODE_WHITESPACE_PLUS, "_");
+    return StringUtils.trim(input.toUpperCase()).replaceAll(StringUtils.MULTIPLE_WHITESPACE, "_");
   }
 
   /**

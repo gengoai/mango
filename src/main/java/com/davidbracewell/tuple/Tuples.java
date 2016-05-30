@@ -37,7 +37,7 @@ public interface Tuples {
    * @param list the list
    * @return the tuple
    */
-  static <T> Tuple tuple(List<T> list) {
+  static <T> Tuple $(List<T> list) {
     if (list == null || list.size() == 0) {
       return Tuple0.INSTANCE;
     }
@@ -66,7 +66,7 @@ public interface Tuples {
    * @param third  the third item
    * @return the triple
    */
-  static <F, S, T> Tuple3<F, S, T> tuple(F first, S second, T third) {
+  static <F, S, T> Tuple3<F, S, T> $(F first, S second, T third) {
     return Tuple3.of(first, second, third);
   }
 
@@ -83,7 +83,7 @@ public interface Tuples {
    * @param fourth the fourth item
    * @return the quadruple
    */
-  static <F, S, T, D> Tuple4<F, S, T, D> tuple(F first, S second, T third, D fourth) {
+  static <F, S, T, D> Tuple4<F, S, T, D> $(F first, S second, T third, D fourth) {
     return Tuple4.of(first, second, third, fourth);
   }
 
@@ -96,7 +96,7 @@ public interface Tuples {
    * @param second the second item
    * @return the pair
    */
-  static <F, S> Tuple2<F, S> tuple(F first, S second) {
+  static <F, S> Tuple2<F, S> $(F first, S second) {
     return Tuple2.of(first, second);
   }
 
@@ -105,7 +105,7 @@ public interface Tuples {
    *
    * @return the tuple with degree zero.
    */
-  static Tuple0 tuple() {
+  static Tuple0 $() {
     return Tuple0.INSTANCE;
   }
 
@@ -126,7 +126,7 @@ public interface Tuples {
    * @param items the items
    * @return the tuple
    */
-  static Tuple tuple(Object... items) {
+  static Tuple $(Object... items) {
     return NTuple.of(items);
   }
 

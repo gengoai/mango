@@ -66,7 +66,7 @@ public class CommonTypeConverter {
 
       String string = STRING.apply(input);
       if (string != null) {
-        string = StringUtils.trim(string.replaceAll(StringUtils.UNICODE_WHITESPACE_PLUS, " "));
+        string = StringUtils.trim(string.replaceAll(StringUtils.MULTIPLE_WHITESPACE, " "));
 
         Date date = DateUtils.parseQuietly(string, Locale.getDefault());
         if (date != null) {

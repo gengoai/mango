@@ -49,6 +49,12 @@ public enum StringPredicates implements SerializablePredicate<CharSequence> {
       return Strings.isNullOrEmpty(input.toString());
     }
   },
+  IS_NOT_NULL_OR_EMPTY {
+    @Override
+    public boolean test(CharSequence charSequence) {
+      return !Strings.isNullOrEmpty(charSequence.toString());
+    }
+  },
   /**
    * True if the input string is null or blank (trimmed version is empty)
    */
@@ -56,6 +62,12 @@ public enum StringPredicates implements SerializablePredicate<CharSequence> {
     @Override
     public boolean test(CharSequence input) {
       return IS_NULL.test(input) || StringUtils.trim(input.toString()).isEmpty();
+    }
+  },
+  IS_NOT_NULL_OR_BLANK {
+    @Override
+    public boolean test(CharSequence input) {
+      return !IS_NULL.test(input) && !StringUtils.trim(input.toString()).isEmpty();
     }
   },
   /**

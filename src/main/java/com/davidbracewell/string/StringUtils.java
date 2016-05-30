@@ -21,7 +21,6 @@
 
 package com.davidbracewell.string;
 
-import com.davidbracewell.collection.Collect;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.structured.csv.CSVReader;
 import com.google.common.base.*;
@@ -29,8 +28,8 @@ import com.google.common.collect.Lists;
 import lombok.NonNull;
 
 import java.io.StringReader;
-import java.util.*;
-import java.util.stream.Stream;
+import java.util.List;
+import java.util.Random;
 
 /**
  * String utility methods
@@ -39,9 +38,18 @@ import java.util.stream.Stream;
  */
 public class StringUtils {
 
-  public static String UNICODE_WHITESPACE = "[\\p{Z}\t\r\n\f]";
-  public static String UNICODE_WHITESPACE_STAR = "[\\p{Z}\t\r\n\f]*";
-  public static String UNICODE_WHITESPACE_PLUS = "[\\p{Z}\t\r\n\f]+";
+  /**
+   * The constant SINGLE_UNICODE_WHITESPACE.
+   */
+  public static String SINGLE_UNICODE_WHITESPACE = "[\\p{Z}\t\r\n\f]";
+  /**
+   * The constant ZERO_OR_MORE_WHITESPACE.
+   */
+  public static String ZERO_OR_MORE_WHITESPACE = "[\\p{Z}\t\r\n\f]*";
+  /**
+   * The constant MULTIPLE_WHITESPACE.
+   */
+  public static String MULTIPLE_WHITESPACE = "[\\p{Z}\t\r\n\f]+";
 
   /**
    * CharMatcher combining INVISIBLE, BREAKING_WHITESPACE, and WHITESPACE
@@ -62,27 +70,6 @@ public class StringUtils {
    */
   public static final CharMatcher NOT_LETTER_OR_DIGIT = CharMatcher.forPredicate(Predicates.not(LETTER_OR_DIGIT));
 
-  public static String center(@NonNull String s, int length) {
-    int start = (int) Math.floor(Math.max(0, (length - s.length()) / 2d));
-    return Strings.padEnd(repeat(' ', start) + s, length, ' ');
-  }
-
-  public static String repeat(@NonNull String s, int count) {
-    StringBuilder builder = new StringBuilder();
-    for (int i = 0; i < count; i++) {
-      builder.append(s);
-    }
-    return builder.toString();
-  }
-
-  public static String repeat(char c, int count) {
-    StringBuilder builder = new StringBuilder();
-    for (int i = 0; i < count; i++) {
-      builder.append(c);
-    }
-    return builder.toString();
-  }
-
   /**
    * <p>Abbreviates a string to a desired length and adds "..." at the end.</p>
    *
@@ -98,6 +85,34 @@ public class StringUtils {
       return input;
     }
     return input.substring(0, length) + "...";
+  }
+
+  /**
+   * Capitalizes the first character in a string.
+   *
+   * @param word the string to capitalize
+   * @return A new string with the first letter capitalized
+   */
+  public static String capitalize(CharSequence word) {
+    if (word == null) {
+      return null;
+    }
+    if (word.length() == 0) {
+      return EMPTY;
+    }
+    return Character.toUpperCase(word.charAt(0)) + (word.length() > 1 ? word.subSequence(1, word.length()).toString() : EMPTY);
+  }
+
+  /**
+   * Center string.
+   *
+   * @param s      the s
+   * @param length the length
+   * @return the string
+   */
+  public static String center(@NonNull String s, int length) {
+    int start = (int) Math.floor(Math.max(0, (length - s.length()) / 2d));
+    return Strings.padEnd(repeat(' ', start) + s, length, ' ');
   }
 
   /**
@@ -120,48 +135,13 @@ public class StringUtils {
   }
 
   /**
-   * Capitalizes the first character in a string.
-   *
-   * @param word the string to capitalize
-   * @return A new string with the first letter capitalized
-   */
-  public static String capitalize(CharSequence word) {
-    if (word == null) {
-      return null;
-    }
-    if (word.length() == 0) {
-      return EMPTY;
-    }
-    return Character.toUpperCase(word.charAt(0)) + (word.length() > 1 ? word.subSequence(1, word.length()).toString() : EMPTY);
-  }
-
-  /**
-   * Safe equals.
-   *
-   * @param s1            the s 1
-   * @param s2            the s 2
-   * @param caseSensitive the case sensitive
-   * @return the boolean
-   */
-  public static boolean safeEquals(String s1, String s2, boolean caseSensitive) {
-    if (s1 == s2) {
-      return true;
-    } else if (s1 == null || s2 == null) {
-      return false;
-    } else if (caseSensitive) {
-      return s1.equals(s2);
-    }
-    return s1.equalsIgnoreCase(s2);
-  }
-
-  /**
-   * Determines if a string is only made up of letters or digits
+   * Determines if a string has at least one digit
    *
    * @param string the string to check
-   * @return True if the string is only made up of letter or digits
+   * @return True if the string has at least one digit
    */
-  public static boolean isAlphaNumeric(CharSequence string) {
-    return StringPredicates.IS_LETTER_OR_DIGIT.test(string);
+  public static boolean hasDigit(CharSequence string) {
+    return StringPredicates.HAS_LETTER.test(string);
   }
 
   /**
@@ -175,13 +155,23 @@ public class StringUtils {
   }
 
   /**
-   * Determines if a string has at least one digit
+   * Determines if a given string has one or more punctuation characters.
    *
    * @param string the string to check
-   * @return True if the string has at least one digit
+   * @return True if the string has one or more punctuation characters
    */
-  public static boolean hasDigit(CharSequence string) {
-    return StringPredicates.HAS_LETTER.test(string);
+  public static boolean hasPunctuation(CharSequence string) {
+    return StringPredicates.HAS_PUNCTUATION.test(string);
+  }
+
+  /**
+   * Determines if a string is only made up of letters or digits
+   *
+   * @param string the string to check
+   * @return True if the string is only made up of letter or digits
+   */
+  public static boolean isAlphaNumeric(CharSequence string) {
+    return StringPredicates.IS_LETTER_OR_DIGIT.test(string);
   }
 
   /**
@@ -214,7 +204,6 @@ public class StringUtils {
     return Character.isAlphabetic((int) c) || Character.isDigit((int) c);
   }
 
-
   /**
    * Determines if an entire string is lower case or not
    *
@@ -245,23 +234,16 @@ public class StringUtils {
     return StringPredicates.IS_NULL_OR_BLANK.test(input);
   }
 
-
-  public static String unescape(String input, char escapeCharacter) {
-    if (input == null) {
-      return null;
-    }
-    StringBuilder builder = new StringBuilder();
-    for (int i = 0; i < input.length(); ) {
-      if (input.charAt(i) == escapeCharacter) {
-        builder.append(input.charAt(i + 1));
-        i = i + 2;
-      } else {
-        builder.append(input.charAt(i));
-        i++;
-      }
-    }
-    return builder.toString();
+  /**
+   * Determines if a string is not null or blank (trimmed string is empty).
+   *
+   * @param input The input string
+   * @return True when the input string is not null and the trimmed version of the string is not empty.
+   */
+  public static boolean isNotNullOrBlank(CharSequence input) {
+    return StringPredicates.IS_NOT_NULL_OR_BLANK.test(input);
   }
+
 
   /**
    * Determines if a given string is only made up of punctuation characters.
@@ -272,17 +254,6 @@ public class StringUtils {
   public static boolean isPunctuation(CharSequence string) {
     return StringPredicates.IS_PUNCTUATION.test(string);
   }
-
-  /**
-   * Determines if a given string has one or more punctuation characters.
-   *
-   * @param string the string to check
-   * @return True if the string has one or more punctuation characters
-   */
-  public static boolean hasPunctuation(CharSequence string) {
-    return StringPredicates.HAS_PUNCTUATION.test(string);
-  }
-
 
   /**
    * Determines if a character represents a punctuation mark
@@ -404,6 +375,36 @@ public class StringUtils {
   }
 
   /**
+   * Repeat string.
+   *
+   * @param s     the s
+   * @param count the count
+   * @return the string
+   */
+  public static String repeat(@NonNull String s, int count) {
+    StringBuilder builder = new StringBuilder();
+    for (int i = 0; i < count; i++) {
+      builder.append(s);
+    }
+    return builder.toString();
+  }
+
+  /**
+   * Repeat string.
+   *
+   * @param c     the c
+   * @param count the count
+   * @return the string
+   */
+  public static String repeat(char c, int count) {
+    StringBuilder builder = new StringBuilder();
+    for (int i = 0; i < count; i++) {
+      builder.append(c);
+    }
+    return builder.toString();
+  }
+
+  /**
    * Right trim.
    *
    * @param input the input
@@ -414,6 +415,25 @@ public class StringUtils {
       return null;
     }
     return StringFunctions.RIGHT_TRIM.apply(input.toString());
+  }
+
+  /**
+   * Safe equals.
+   *
+   * @param s1            the s 1
+   * @param s2            the s 2
+   * @param caseSensitive the case sensitive
+   * @return the boolean
+   */
+  public static boolean safeEquals(String s1, String s2, boolean caseSensitive) {
+    if (s1 == s2) {
+      return true;
+    } else if (s1 == null || s2 == null) {
+      return false;
+    } else if (caseSensitive) {
+      return s1.equals(s2);
+    }
+    return s1.equalsIgnoreCase(s2);
   }
 
   /**
@@ -479,131 +499,30 @@ public class StringUtils {
     return StringFunctions.TRIM.apply(input.toString());
   }
 
-
   /**
-   * Join string.
+   * Unescape string.
    *
-   * @param <T>       the type parameter
-   * @param separator the separator
-   * @param items     the items
+   * @param input           the input
+   * @param escapeCharacter the escape character
    * @return the string
    */
-  public static <T> String join(@NonNull String separator, T[] items) {
-    if (items == null) {
-      return join(separator, Collections.emptyList(), null);
-    }
-    return join(separator, Arrays.asList(items), null);
-  }
-
-  /**
-   * Join string.
-   *
-   * @param <T>        the type parameter
-   * @param separator  the separator
-   * @param items      the items
-   * @param nullString the null string
-   * @return the string
-   */
-  public static <T> String join(@NonNull String separator, T[] items, String nullString) {
-    if (items == null) {
-      return join(separator, Collections.emptyList(), nullString);
-    }
-    return join(separator, Arrays.asList(items), nullString);
-  }
-
-  /**
-   * Join string.
-   *
-   * @param separator the separator
-   * @param items     the items
-   * @return the string
-   */
-  public static String join(@NonNull String separator, Iterator<?> items) {
-
-    return join(separator, Collect.stream(items), null);
-  }
-
-  /**
-   * Join string.
-   *
-   * @param separator  the separator
-   * @param items      the items
-   * @param nullString the null string
-   * @return the string
-   */
-  public static String join(@NonNull String separator, Iterator<?> items, String nullString) {
-    return join(separator, Collect.stream(items), nullString);
-  }
-
-  /**
-   * Join string.
-   *
-   * @param separator the separator
-   * @param items     the items
-   * @return the string
-   */
-  public static String join(@NonNull String separator, Iterable<?> items) {
-    return join(separator, items, null);
-  }
-
-  /**
-   * Join string.
-   *
-   * @param separator  the separator
-   * @param items      the items
-   * @param nullString the null string
-   * @return the string
-   */
-  public static String join(@NonNull String separator, Iterable<?> items, String nullString) {
-    if (items == null) {
-      return StringUtils.EMPTY;
+  public static String unescape(String input, char escapeCharacter) {
+    if (input == null) {
+      return null;
     }
     StringBuilder builder = new StringBuilder();
-    for (Object o : items) {
-      if (builder.length() > 0) {
-        builder.append(separator);
+    for (int i = 0; i < input.length(); ) {
+      if (input.charAt(i) == escapeCharacter) {
+        builder.append(input.charAt(i + 1));
+        i = i + 2;
+      } else {
+        builder.append(input.charAt(i));
+        i++;
       }
-      String str = o == null ? nullString : o.toString();
-      builder.append(str);
     }
     return builder.toString();
   }
 
-  /**
-   * Join string.
-   *
-   * @param <T>       the type parameter
-   * @param separator the separator
-   * @param items     the items
-   * @return the string
-   */
-  public static <T> String join(@NonNull String separator, Stream<T> items) {
-    return join(separator, items, null);
-  }
-
-  /**
-   * Join string.
-   *
-   * @param <T>        the type parameter
-   * @param separator  the separator
-   * @param items      the items
-   * @param nullString the null string
-   * @return the string
-   */
-  public static <T> String join(@NonNull String separator, Stream<T> items, String nullString) {
-    if (items == null) {
-      return StringUtils.EMPTY;
-    }
-    StringBuilder builder = new StringBuilder();
-    items.forEach(o -> {
-      if (builder.length() > 0) {
-        builder.append(separator);
-      }
-      String str = o == null ? nullString : o.toString();
-      builder.append(str);
-    });
-    return builder.toString();
-  }
 
 }// END OF StringUtils
 
