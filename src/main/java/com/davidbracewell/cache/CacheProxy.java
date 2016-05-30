@@ -49,7 +49,7 @@ public class CacheProxy<T> implements InvocationHandler, Serializable {
   private static final long serialVersionUID = 1L;
   private static final Logger log = Logger.getLogger(CacheProxy.class);
   private final T object;
-  private final Map<Method, Tuple2<Cached, KeyMaker>> cachedMethods = Maps.newHashMap();
+  private final Map<String, Tuple2<Cached, KeyMaker>> cachedMethods = Maps.newHashMap();
   private final String defaultCacheName;
   private final KeyMaker defaultKeyMaker;
 
@@ -71,18 +71,9 @@ public class CacheProxy<T> implements InvocationHandler, Serializable {
       if (method.isAnnotationPresent(Cached.class)) {
         Cached cached = method.getAnnotation(Cached.class);
         KeyMaker keyMaker = cached.keyMaker() == KeyMaker.DefaultKeyMaker.class ? defaultKeyMaker : Reflect.onClass(cached.keyMaker()).create().get();
-        cachedMethods.put(method, Tuple2.of(cached, keyMaker));
+        cachedMethods.put(method2String(method), Tuple2.of(cached, keyMaker));
       }
     }));
-  }
-
-  private Method findMethod(Method childMethod) {
-    for (Method m : cachedMethods.keySet()) {
-      if (ReflectionUtils.methodsEqual(childMethod, m)) {
-        return m;
-      }
-    }
-    return null;
   }
 
   /**
@@ -92,11 +83,11 @@ public class CacheProxy<T> implements InvocationHandler, Serializable {
    * @param object The object being wrapped
    * @return The wrapped object
    */
-  public static <T> T newInstance(Object object) {
-    return newInstance(object, null);
+  public static <T> T cache(Object object) {
+    return cache(object, null);
   }
 
-  public static <T> T newInstance(@NonNull Object object, String defaultCacheName) {
+  public static <T> T cache(@NonNull Object object, String defaultCacheName) {
     try {
       return Cast.as(
         Proxy.newProxyInstance(
@@ -110,17 +101,20 @@ public class CacheProxy<T> implements InvocationHandler, Serializable {
     }
   }
 
+  private String method2String(Method method){
+    return method.getName() + "::" + method.getParameterCount();
+  }
+
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-    Method cachedMethod = findMethod(method);
-    if (cachedMethod == null) {
+    Tuple2<Cached, KeyMaker> tuple = cachedMethods.get(method2String(method));
+    if (tuple == null) {
       return method.invoke(object, args);
     }
 
-    Tuple2<Cached, KeyMaker> tuple = cachedMethods.get(cachedMethod);
     String cacheName = StringUtils.firstNonNullOrBlank(tuple.v1.name(), defaultCacheName);
     KeyMaker keyMaker = tuple.v2;
-    Object key = keyMaker.make(object.getClass(), cachedMethod, args);
+    Object key = keyMaker.make(object.getClass(), method, args);
     Cache<Object, Object> cache = CacheManager.getInstance().get(cacheName);
 
     if (cache.containsKey(key)) {

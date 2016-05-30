@@ -61,7 +61,7 @@ public class CacheProxyTest {
 
   @Test
   public void testNewInstance() throws Exception {
-    Function<String, String> func = CacheProxy.newInstance(new TestFunction());
+    Function<String, String> func = CacheProxy.cache(new TestFunction());
     Stopwatch sw1 = Stopwatch.createStarted();
     for (int i = 0; i < 3; i++) {
       func.apply(Integer.toString(i));

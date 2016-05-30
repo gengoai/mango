@@ -63,7 +63,7 @@ public final class CacheManager {
    * @return The Proxy object
    */
   public static <T> T cacheObject(T object) {
-    return CacheProxy.newInstance(object);
+    return CacheProxy.cache(object);
   }
 
   /**
