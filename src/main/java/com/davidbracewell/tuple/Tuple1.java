@@ -21,11 +21,9 @@
 
 package com.davidbracewell.tuple;
 
-import com.davidbracewell.Copyable;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NonNull;
-
-import java.io.Serializable;
+import lombok.Setter;
 
 /**
  * A tuple of degree one.
@@ -33,8 +31,9 @@ import java.io.Serializable;
  * @param <V1> the type parameter
  * @author David B. Bracewell
  */
-@Data
-public class Tuple1<V1> implements Tuple, Serializable, Comparable<Tuple1>, Copyable<Tuple1<V1>> {
+@Getter
+@Setter
+public class Tuple1<V1> extends Tuple {
   private static final long serialVersionUID = 1L;
   /**
    * The V 1.
@@ -57,12 +56,6 @@ public class Tuple1<V1> implements Tuple, Serializable, Comparable<Tuple1>, Copy
    */
   public Tuple1(@NonNull Tuple1<? extends V1> other) {
     this.v1 = other.v1;
-  }
-
-
-  @Override
-  public int compareTo(Tuple1 o) {
-    return 0;
   }
 
   @Override

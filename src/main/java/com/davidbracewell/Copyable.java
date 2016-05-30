@@ -23,7 +23,7 @@ package com.davidbracewell;
 
 /**
  * <p>
- * The Copyable interface defines the <code>copy</code> method that makes a deep copy of the object.
+ * The Copyable interface defines the <code>copy</code> method that returns a copy of the given object.
  * </p>
  *
  * @param <E> The type of object that being copied

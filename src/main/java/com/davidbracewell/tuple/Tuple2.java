@@ -21,10 +21,9 @@
 
 package com.davidbracewell.tuple;
 
-import com.davidbracewell.collection.Sorting;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -34,8 +33,9 @@ import java.util.Map;
  * @param <V> the type parameter
  * @author David B. Bracewell
  */
-@Data
-public class Tuple2<K, V> implements Serializable, Map.Entry<K, V>, Comparable<Tuple2<K, V>>, Tuple {
+@Getter
+@Setter
+public class Tuple2<K, V> extends Tuple implements Map.Entry<K, V> {
 
   private static final long serialVersionUID = 1L;
   /**
@@ -59,6 +59,11 @@ public class Tuple2<K, V> implements Serializable, Map.Entry<K, V>, Comparable<T
   }
 
   @Override
+  public Tuple2<K, V> copy() {
+    return new Tuple2<>(this.v1, this.v2);
+  }
+
+  @Override
   public int degree() {
     return 2;
   }
@@ -66,15 +71,6 @@ public class Tuple2<K, V> implements Serializable, Map.Entry<K, V>, Comparable<T
   @Override
   public Object[] array() {
     return new Object[]{v1, v2};
-  }
-
-  @Override
-  public int compareTo(Tuple2<K, V> o) {
-    if (o == null) {
-      return 1;
-    }
-    int result = Sorting.compare(v1, o.v1);
-    return result != 0 ? result : Sorting.compare(v2, o.v2);
   }
 
   @Override

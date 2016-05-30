@@ -21,10 +21,8 @@
 
 package com.davidbracewell.tuple;
 
-import com.davidbracewell.collection.Sorting;
-import lombok.Data;
-
-import java.io.Serializable;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * The type Tuple 3.
@@ -34,8 +32,10 @@ import java.io.Serializable;
  * @param <C> the type parameter
  * @author David B. Bracewell
  */
-@Data
-public class Tuple3<A, B, C> implements Tuple, Serializable, Comparable<Tuple3<A, B, C>> {
+
+@Getter
+@Setter
+public class Tuple3<A, B, C> extends Tuple {
   private static final long serialVersionUID = 1L;
   /**
    * the first value
@@ -90,6 +90,11 @@ public class Tuple3<A, B, C> implements Tuple, Serializable, Comparable<Tuple3<A
   }
 
   @Override
+  public Tuple copy() {
+    return new Tuple3<>(this.v1, this.v2, this.v3);
+  }
+
+  @Override
   public int degree() {
     return 3;
   }
@@ -118,18 +123,6 @@ public class Tuple3<A, B, C> implements Tuple, Serializable, Comparable<Tuple3<A
   @Override
   public Tuple2<A, B> shiftRight() {
     return Tuple2.of(v1, v2);
-  }
-
-  @Override
-  public int compareTo(Tuple3<A, B, C> o) {
-    if (o == null) {
-      return 1;
-    }
-    int result = Sorting.compare(v1, o.v1);
-    if (result != 0) return result;
-    result = Sorting.compare(v2, o.v2);
-    if (result != 0) return result;
-    return Sorting.compare(v3, o.v3);
   }
 
   @Override

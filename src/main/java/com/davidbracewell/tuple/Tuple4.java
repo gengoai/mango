@@ -21,10 +21,8 @@
 
 package com.davidbracewell.tuple;
 
-import com.davidbracewell.collection.Sorting;
-import lombok.Data;
-
-import java.io.Serializable;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * The type Tuple 4.
@@ -35,8 +33,9 @@ import java.io.Serializable;
  * @param <D> the type parameter
  * @author David B. Bracewell
  */
-@Data
-public class Tuple4<A, B, C, D> implements Tuple, Serializable, Comparable<Tuple4<A, B, C, D>> {
+@Getter
+@Setter
+public class Tuple4<A, B, C, D> extends Tuple {
   private static final long serialVersionUID = 1L;
   /**
    * the first value
@@ -88,6 +87,11 @@ public class Tuple4<A, B, C, D> implements Tuple, Serializable, Comparable<Tuple
   }
 
   @Override
+  public Tuple4<A, B, C, D> copy() {
+    return new Tuple4<>(this.v1, this.v2, this.v3, this.v4);
+  }
+
+  @Override
   public int degree() {
     return 4;
   }
@@ -97,20 +101,6 @@ public class Tuple4<A, B, C, D> implements Tuple, Serializable, Comparable<Tuple
     return new Object[]{v1, v2, v3, v4};
   }
 
-
-  @Override
-  public int compareTo(Tuple4<A, B, C, D> o) {
-    if (o == null) {
-      return 1;
-    }
-    int result = Sorting.compare(v1, o.v1);
-    if (result != 0) return result;
-    result = Sorting.compare(v2, o.v2);
-    if (result != 0) return result;
-    result = Sorting.compare(v3, o.v3);
-    if (result != 0) return result;
-    return Sorting.compare(v4, o.v4);
-  }
 
   @Override
   public String toString() {

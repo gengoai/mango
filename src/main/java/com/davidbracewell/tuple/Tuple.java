@@ -21,65 +21,85 @@
 
 package com.davidbracewell.tuple;
 
+import com.davidbracewell.Copyable;
+import com.davidbracewell.collection.Sorting;
+import com.davidbracewell.conversion.Cast;
+import com.google.common.base.Joiner;
 import lombok.NonNull;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
- * A tuple is a collection of values of possibly different types.
+ * A tuple is a finite sequence of items.
  *
  * @author David B. Bracewell
  */
-public interface Tuple extends Iterable<Object> {
+public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copyable<Tuple>, Serializable {
+  private static final long serialVersionUID = 1L;
 
   /**
    * The number of items in the tuple
    *
    * @return the number of items in the tuple
    */
-  int degree();
+  public abstract int degree();
 
   /**
    * The tuple as an array of objects
    *
    * @return an array representing the items in the tuple
    */
-  Object[] array();
+  public abstract Object[] array();
 
   @Override
-  default Iterator<Object> iterator() {
+  public Iterator<Object> iterator() {
     return Arrays.asList(array()).iterator();
   }
 
   /**
-   * Map r.
+   * Maps the tuple to another a data type.
    *
-   * @param <R>      the type parameter
-   * @param function the function
-   * @return the r
+   * @param <R>      the type being mapped to
+   * @param function the mapping function
+   * @return the result of the mapping function
    */
-  default <R> R map(@NonNull Function<Tuple, R> function) {
+  public <R> R map(@NonNull Function<Tuple, R> function) {
     return function.apply(this);
   }
 
   /**
-   * Get object.
+   * Maps the values of the tuple to another data type
    *
-   * @param index the index
-   * @return the object
+   * @param function the mapping function
+   * @return A new tuple of same degree whose values are the result of the mapping function applied to the this tuple's
+   * elements.
    */
-  default Object get(int index) {
-    return array()[index];
+  public Tuple mapValues(@NonNull Function<Object, ? extends Object> function) {
+    return NTuple.of(Arrays.asList(array()).stream().map(function).collect(Collectors.toList()));
   }
 
   /**
-   * Shift left tuple.
+   * Gets the ith item of the tuple.
    *
-   * @return the tuple
+   * @param <T> the type parameter
+   * @param i   the index of the item
+   * @return the item at the ith index
    */
-  default Tuple shiftLeft() {
+  public <T> T get(int i) {
+    return Cast.as(array()[i]);
+  }
+
+  /**
+   * Shifts the first element of the tuple resulting in a tuple of degree - 1.
+   *
+   * @return A new tuple without the shifted element;
+   */
+  public Tuple shiftLeft() {
     if (degree() < 2) {
       return Tuple0.INSTANCE;
     }
@@ -89,11 +109,11 @@ public interface Tuple extends Iterable<Object> {
   }
 
   /**
-   * Shift right tuple.
+   * Shifts the last element of the tuple resulting in a tuple of degree - 1.
    *
-   * @return the tuple
+   * @return A new tuple without the shifted element;
    */
-  default Tuple shiftRight() {
+  public Tuple shiftRight() {
     if (degree() < 2) {
       return Tuple0.INSTANCE;
     }
@@ -103,13 +123,13 @@ public interface Tuple extends Iterable<Object> {
   }
 
   /**
-   * Append right tuple.
+   * Appends an item the end of the tuple resulting in a new tuple of degree + 1
    *
    * @param <T>    the type parameter
-   * @param object the object
-   * @return the tuple
+   * @param object the object being appended
+   * @return A new tuple of degree + 1 containing the object at the end
    */
-  default <T> Tuple appendRight(T object) {
+  public <T> Tuple appendRight(T object) {
     if (degree() == 0) {
       return Tuple1.of(object);
     }
@@ -120,13 +140,13 @@ public interface Tuple extends Iterable<Object> {
   }
 
   /**
-   * Append left tuple.
+   * Appends an item the beginning of the tuple resulting in a new tuple of degree + 1
    *
    * @param <T>    the type parameter
-   * @param object the object
-   * @return the tuple
+   * @param object the object being appended
+   * @return A new tuple of degree + 1 containing the object at the beginning
    */
-  default <T> Tuple appendLeft(T object) {
+  public <T> Tuple appendLeft(T object) {
     if (degree() == 0) {
       return Tuple1.of(object);
     }
@@ -137,4 +157,38 @@ public interface Tuple extends Iterable<Object> {
   }
 
 
+  @Override
+  public int compareTo(Tuple o) {
+    if (o == null) {
+      return 1;
+    } else if (degree() < o.degree()) {
+      return -1;
+    } else if (degree() > o.degree()) {
+      return 1;
+    }
+    Object[] a1 = array();
+    Object[] a2 = o.array();
+    for (int i = 0; i < a1.length; i++) {
+      int cmp = Sorting.compare(a1[i], a2[i]);
+      if (cmp != 0) {
+        return cmp;
+      }
+    }
+    return 0;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    return obj != null && obj instanceof Tuple && Arrays.equals(array(), Cast.as(obj, Tuple.class).array());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(array());
+  }
+
+  @Override
+  public String toString() {
+    return "(" + Joiner.on(',').join(array()) + ")";
+  }
 }//END OF Tuple

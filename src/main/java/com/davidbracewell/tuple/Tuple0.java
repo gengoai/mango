@@ -21,24 +21,22 @@
 
 package com.davidbracewell.tuple;
 
-import com.davidbracewell.Copyable;
+import lombok.NonNull;
 
-import java.io.Serializable;
+import java.util.function.Function;
 
 /**
- * A tuple of degree zero.
+ * A tuple of order 0, i.e. empty
  *
  * @author David B. Bracewell
  */
-public class Tuple0 implements Tuple, Serializable, Comparable<Tuple0>, Copyable<Tuple0> {
+public class Tuple0 extends Tuple {
   private static final long serialVersionUID = 1L;
 
+  /**
+   * The constant INSTANCE.
+   */
   public static Tuple0 INSTANCE = new Tuple0();
-
-  @Override
-  public int compareTo(Tuple0 o) {
-    return 0;
-  }
 
   @Override
   public Tuple0 copy() {
@@ -53,6 +51,11 @@ public class Tuple0 implements Tuple, Serializable, Comparable<Tuple0>, Copyable
   @Override
   public Object[] array() {
     return new Object[0];
+  }
+
+  @Override
+  public Tuple mapValues(@NonNull Function<Object, ? extends Object> function) {
+    return this;
   }
 
   @Override

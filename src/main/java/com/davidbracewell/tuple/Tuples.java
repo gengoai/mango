@@ -30,6 +30,13 @@ import java.util.List;
  */
 public interface Tuples {
 
+  /**
+   * Tuple tuple.
+   *
+   * @param <T>  the type parameter
+   * @param list the list
+   * @return the tuple
+   */
   static <T> Tuple tuple(List<T> list) {
     if (list == null || list.size() == 0) {
       return Tuple0.INSTANCE;
