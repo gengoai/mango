@@ -22,12 +22,9 @@
 package com.davidbracewell.collection;
 
 
-import com.google.common.collect.Iterators;
 import lombok.NonNull;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * The type Indexes.
@@ -41,33 +38,15 @@ public final class Indexes {
   }
 
   /**
-   * New concurrent index.
+   * New synchronized index.
    *
    * @param <TYPE> the type parameter
-   * @param items  the items
    * @return the index
    */
-  @SafeVarargs
-  public static <TYPE> Index<TYPE> newConcurrentIndex(TYPE... items) {
-    Index<TYPE> index = new ConcurrentMapIndex<>();
-    if (items != null) {
-      index.addAll(Arrays.asList(items));
-    }
-    return index;
+  public static <TYPE> Index<TYPE> synchronizedIndex(@NonNull Index<TYPE> index) {
+    return new SynchronizedIndex<>(index);
   }
 
-  /**
-   * New concurrent index.
-   *
-   * @param <TYPE> the type parameter
-   * @param items  the items
-   * @return the index
-   */
-  public static <TYPE> Index<TYPE> newConcurrentIndex(@NonNull Iterable<TYPE> items) {
-    Index<TYPE> index = new ConcurrentMapIndex<>();
-    index.addAll(items);
-    return index;
-  }
 
   /**
    * New index.
@@ -146,66 +125,6 @@ public final class Indexes {
       super(new HashMap<>(), new ArrayList<>());
     }
 
-  }
-
-  private static class ConcurrentMapIndex<TYPE> extends MapIndex<TYPE> {
-
-    private static final long serialVersionUID = -323657672209561540L;
-
-    private ConcurrentMapIndex() {
-      super(new ConcurrentHashMap<>(), new CopyOnWriteArrayList<>());
-    }
-
-  }
-
-  private static class UnmodifiableIndex<TYPE> extends ForwardingIndex<TYPE> {
-
-    private static final long serialVersionUID = -3044104679509123935L;
-    private final Index<TYPE> backing;
-
-    private UnmodifiableIndex(Index<TYPE> backing) {
-      this.backing = backing;
-    }
-
-    @Override
-    public int add(TYPE item) {
-      throw new UnsupportedOperationException("Cannot modify a read only index.");
-    }
-
-    @Override
-    public void addAll(Iterable<TYPE> items) {
-      throw new UnsupportedOperationException("Cannot modify a read only index.");
-    }
-
-    @Override
-    public void clear() {
-      throw new UnsupportedOperationException("Cannot modify a read only index.");
-    }
-
-    @Override
-    protected Index<TYPE> delegate() {
-      return backing;
-    }
-
-    @Override
-    public Iterator<TYPE> iterator() {
-      return Iterators.unmodifiableIterator(super.iterator());
-    }
-
-    @Override
-    public int remove(TYPE item) {
-      throw new UnsupportedOperationException("Cannot modify a read only index.");
-    }
-
-    @Override
-    public TYPE remove(int id) {
-      throw new UnsupportedOperationException("Cannot modify a read only index.");
-    }
-
-    @Override
-    public TYPE set(int index, TYPE newValue) {
-      throw new UnsupportedOperationException("Cannot modify a read only index.");
-    }
   }
 
 

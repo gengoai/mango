@@ -47,8 +47,8 @@ public abstract class ForwardingMutliCounter<K, V> implements MultiCounter<K, V>
   }
 
   @Override
-  public void adjustValuesSelf(@NonNull DoubleUnaryOperator function) {
-    delegate().adjustValuesSelf(function);
+  public MultiCounter<K, V> adjustValuesSelf(@NonNull DoubleUnaryOperator function) {
+    return delegate().adjustValuesSelf(function);
   }
 
   @Override
@@ -117,8 +117,8 @@ public abstract class ForwardingMutliCounter<K, V> implements MultiCounter<K, V>
   }
 
   @Override
-  public void merge(MultiCounter<K, V> other) {
-    delegate().merge(other);
+  public MultiCounter<K, V> merge(MultiCounter<K, V> other) {
+    return delegate().merge(other);
   }
 
   @Override
@@ -132,13 +132,13 @@ public abstract class ForwardingMutliCounter<K, V> implements MultiCounter<K, V>
   }
 
   @Override
-  public void set(K item1, V item2, double count) {
-    delegate().set(item1, item2, count);
+  public MultiCounter<K, V> set(K item1, V item2, double count) {
+    return delegate().set(item1, item2, count);
   }
 
   @Override
-  public void set(K item, @NonNull Counter<V> counter) {
-    delegate().set(item, counter);
+  public MultiCounter<K, V> set(K item, @NonNull Counter<V> counter) {
+    return delegate().set(item, counter);
   }
 
   @Override
@@ -146,4 +146,4 @@ public abstract class ForwardingMutliCounter<K, V> implements MultiCounter<K, V>
     return delegate().size();
   }
 
-}//END OF ForwardingMutliCounter
+}//END OF ForwardingMultiCounter

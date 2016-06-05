@@ -48,8 +48,9 @@ abstract class AbstractMapMultiCounter<K, V> implements MultiCounter<K, V>, Seri
   }
 
   @Override
-  public void adjustValuesSelf(@NonNull DoubleUnaryOperator function) {
+  public MultiCounter<K, V> adjustValuesSelf(@NonNull DoubleUnaryOperator function) {
     items().forEach(key -> get(key).adjustValuesSelf(function));
+    return this;
   }
 
   @Override
@@ -142,11 +143,12 @@ abstract class AbstractMapMultiCounter<K, V> implements MultiCounter<K, V>, Seri
   }
 
   @Override
-  public void merge(MultiCounter<K, V> other) {
+  public MultiCounter<K, V> merge(MultiCounter<K, V> other) {
     if (other != null) {
       other.entries().stream()
         .forEach(e -> increment(e.v1, e.v2, e.v3));
     }
+    return this;
   }
 
   @Override
@@ -166,13 +168,15 @@ abstract class AbstractMapMultiCounter<K, V> implements MultiCounter<K, V>, Seri
   }
 
   @Override
-  public void set(K item1, V item2, double count) {
+  public MultiCounter<K, V> set(K item1, V item2, double count) {
     get(item1).set(item2, count);
+    return this;
   }
 
   @Override
-  public void set(K item, @NonNull Counter<V> counter) {
+  public MultiCounter<K, V> set(K item, @NonNull Counter<V> counter) {
     map.put(item, counter);
+    return this;
   }
 
   @Override
@@ -212,10 +216,10 @@ abstract class AbstractMapMultiCounter<K, V> implements MultiCounter<K, V>, Seri
   @Override
   public String toString() {
     StringBuilder builder = new StringBuilder();
-    items().stream().limit(10).forEach(item ->{
+    items().stream().limit(10).forEach(item -> {
       builder.append(item).append(":").append(get(item)).append("\n");
     });
-    if( size() > 10 ){
+    if (size() > 10) {
       builder.append("....");
     }
     return builder.toString().trim();

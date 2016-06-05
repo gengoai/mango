@@ -60,7 +60,7 @@ public interface MultiCounter<K, V> {
    *
    * @param function the function
    */
-  void adjustValuesSelf(DoubleUnaryOperator function);
+  MultiCounter<K, V> adjustValuesSelf(DoubleUnaryOperator function);
 
   /**
    * As map.
@@ -109,23 +109,21 @@ public interface MultiCounter<K, V> {
 
   /**
    * Decrement void.
-   *
-   * @param item1 the item 1
+   *  @param item1 the item 1
    * @param item2 the item 2
    */
-  default void decrement(K item1, V item2) {
-    decrement(item1, item2, 1);
+  default MultiCounter<K, V> decrement(K item1, V item2) {
+    return decrement(item1, item2, 1);
   }
 
   /**
    * Decrement void.
-   *
-   * @param item1 the item 1
+   *  @param item1 the item 1
    * @param item2 the item 2
    * @param amount the amount
    */
-  default void decrement(K item1, V item2, double amount) {
-    increment(item1, item2, -amount);
+  default MultiCounter<K, V> decrement(K item1, V item2, double amount) {
+    return increment(item1, item2, -amount);
   }
 
   /**
@@ -133,34 +131,37 @@ public interface MultiCounter<K, V> {
    *
    * @param iterable the iterable
    */
-  default void decrementAll(Iterable<? extends Map.Entry<K, V>> iterable) {
+  default MultiCounter<K, V> decrementAll(Iterable<? extends Map.Entry<K, V>> iterable) {
     if (iterable != null) {
       iterable.forEach(e -> decrement(e.getKey(), e.getValue()));
     }
+    return this;
   }
 
   /**
    * Decrement all.
-   *
-   * @param item the item
+   *  @param item the item
    * @param iterable the iterable
    */
-  default void decrementAll(K item, Iterable<? extends V> iterable) {
+  default MultiCounter<K, V> decrementAll(K item, Iterable<? extends V> iterable) {
     get(item).decrementAll(iterable);
+    return this;
   }
 
   /**
    * Divide by key sum.
    */
-  default void divideByKeySum() {
+  default MultiCounter<K, V> divideByKeySum() {
     items().forEach(key -> get(key).divideBySum());
+    return this;
   }
 
   /**
    * Divides the values in the counter by the sum and sets the sum to 1.0
    */
-  default void divideBySum() {
+  default MultiCounter<K, V> divideBySum() {
     adjustValuesSelf(d -> 1d / sum());
+    return this;
   }
 
   /**
@@ -211,33 +212,33 @@ public interface MultiCounter<K, V> {
 
   /**
    * Increment void.
-   *
-   * @param item1 the item 1
+   *  @param item1 the item 1
    * @param item2 the item 2
    */
-  default void increment(K item1, V item2) {
+  default MultiCounter<K, V> increment(K item1, V item2) {
     increment(item1, item2, 1);
+    return this;
   }
 
   /**
    * Increment void.
-   *
-   * @param item1 the item 1
+   *  @param item1 the item 1
    * @param item2 the item 2
    * @param amount the amount
    */
-  default void increment(K item1, V item2, double amount) {
+  default MultiCounter<K, V> increment(K item1, V item2, double amount) {
     get(item1).increment(item2, amount);
+    return this;
   }
 
   /**
    * Increment all.
-   *
-   * @param item the item
+   *  @param item the item
    * @param iterable the iterable
    */
-  default void incrementAll(K item, Iterable<? extends V> iterable) {
+  default MultiCounter<K, V> incrementAll(K item, Iterable<? extends V> iterable) {
     get(item).incrementAll(iterable);
+    return this;
   }
 
   /**
@@ -245,10 +246,11 @@ public interface MultiCounter<K, V> {
    *
    * @param iterable the iterable
    */
-  default void incrementAll(Iterable<? extends Map.Entry<K, V>> iterable) {
+  default MultiCounter<K, V> incrementAll(Iterable<? extends Map.Entry<K, V>> iterable) {
     if (iterable != null) {
       iterable.forEach(e -> increment(e.getKey(), e.getValue()));
     }
+    return this;
   }
 
   /**
@@ -296,7 +298,7 @@ public interface MultiCounter<K, V> {
    *
    * @param other The other counter to merge.
    */
-  void merge(MultiCounter<K, V> other);
+  MultiCounter<K, V> merge(MultiCounter<K, V> other);
 
   /**
    * Minimum count.
@@ -329,28 +331,27 @@ public interface MultiCounter<K, V> {
    *
    * @param items The items to remove
    */
-  default void removeAll(Iterable<K> items) {
+  default MultiCounter<K, V> removeAll(Iterable<K> items) {
     if (items != null) {
       items.forEach(this::remove);
     }
+    return this;
   }
 
   /**
    * Set void.
-   *
-   * @param item1 the item 1
+   *  @param item1 the item 1
    * @param item2 the item 2
    * @param count the count
    */
-  void set(K item1, V item2, double count);
+  MultiCounter<K, V> set(K item1, V item2, double count);
 
   /**
    * Set void.
-   *
-   * @param item the item
+   *  @param item the item
    * @param counter the counter
    */
-  void set(K item, Counter<V> counter);
+  MultiCounter<K, V> set(K item, Counter<V> counter);
 
   /**
    * Size int.
