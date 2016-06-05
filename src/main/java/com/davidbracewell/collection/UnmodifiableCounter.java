@@ -146,6 +146,4 @@ class UnmodifiableCounter<TYPE> extends ForwardingCounter<TYPE> {
     return delegate().hashCode();
   }
 
-
-
-}
+}//END OF UnmodifiableCounter

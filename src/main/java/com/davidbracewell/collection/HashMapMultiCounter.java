@@ -54,7 +54,7 @@ public class HashMapMultiCounter<K, V> extends AbstractMapMultiCounter<K, V> {
 
   @Override
   protected Counter<V> newCounter() {
-    return Counters.newHashMapCounter();
+    return Counters.create();
   }
 
   @Override

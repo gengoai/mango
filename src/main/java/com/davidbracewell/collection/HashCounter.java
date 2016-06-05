@@ -43,28 +43,25 @@ import java.util.function.Predicate;
  * @author David B. Bracewell
  */
 @EqualsAndHashCode(exclude = {"sum"})
-abstract class AbstractMapCounter<T> implements Counter<T>, Serializable {
+public class HashCounter<T> implements Counter<T>, Serializable {
   private static final long serialVersionUID = 1L;
-  private final Map<T, Double> map;
+  private final Map<T, Double> map = new HashMap<>();
   private AtomicDouble sum = new AtomicDouble(0d);
 
-  protected AbstractMapCounter(Map<T, Double> backingMap) {
-    this.map = backingMap;
-    this.sum.set(0d);
+
+  public HashCounter() {
+
   }
 
-  protected AbstractMapCounter(Map<T, Double> backingMap, Iterable<? extends T> items) {
-    this(backingMap);
+  public HashCounter(Iterable<? extends T> items) {
     incrementAll(items);
   }
 
-  protected AbstractMapCounter(Map<T, Double> backingMap, Map<? extends T, ? extends Number> items) {
-    this(backingMap);
+  public HashCounter(Map<? extends T, ? extends Number> items) {
     merge(items);
   }
 
-  protected AbstractMapCounter(Map<T, Double> backingMap, Counter<? extends T> items) {
-    this(backingMap);
+  public HashCounter(Counter<? extends T> items) {
     merge(items);
   }
 
@@ -278,7 +275,9 @@ abstract class AbstractMapCounter<T> implements Counter<T>, Serializable {
     return this;
   }
 
-  protected abstract <R> Counter<R> newInstance();
+  protected <R> Counter<R> newInstance() {
+    return new HashCounter<R>();
+  }
 
   @Override
   public Counter<T> topN(int n) {
@@ -327,4 +326,10 @@ abstract class AbstractMapCounter<T> implements Counter<T>, Serializable {
     map.forEach((k, v) -> result.increment(function.apply(k), v));
     return result;
   }
+
+  @Override
+  public Counter<T> copy() {
+    return this.<T>newInstance().merge(this);
+  }
+
 }//END OF AbstractMapCounter

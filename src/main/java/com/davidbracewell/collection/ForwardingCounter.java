@@ -251,4 +251,8 @@ public abstract class ForwardingCounter<TYPE> implements Counter<TYPE>, Serializ
     return delegate().filterByValue(doublePredicate);
   }
 
+  @Override
+  public Counter<TYPE> copy() {
+    return delegate().copy();
+  }
 }//END OF ForwardingCounter

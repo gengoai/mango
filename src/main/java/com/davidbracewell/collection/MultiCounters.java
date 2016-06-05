@@ -85,7 +85,7 @@ public interface MultiCounters {
         List<String> row = new LinkedList<>();
         row.add(Convert.convert(key, String.class));
 
-        Counter<String> ctr = Counters.newHashMapCounter();
+        Counter<String> ctr = Counters.create();
         counter.get(key).asMap().entrySet().forEach(e ->
           ctr.set(Convert.convert(e.getKey(), String.class), e.getValue())
         );

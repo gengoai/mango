@@ -22,9 +22,12 @@
 package com.davidbracewell.collection;
 
 import com.davidbracewell.conversion.Convert;
-import com.davidbracewell.io.CSV;
+import com.davidbracewell.conversion.Val;
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.io.structured.csv.CSVReader;
+import com.davidbracewell.io.structured.ElementType;
+import com.davidbracewell.io.structured.StructuredFormat;
+import com.davidbracewell.io.structured.StructuredReader;
+import com.davidbracewell.tuple.Tuple2;
 import lombok.NonNull;
 
 import java.io.IOException;
@@ -44,19 +47,115 @@ import java.util.stream.Collector;
 public interface Counters {
 
   /**
+   * Collector collector.
+   *
+   * @param <T> the type parameter
+   * @return the collector
+   */
+  static <T> Collector<T, Counter<T>, Counter<T>> collector() {
+    return new CounterCollector<>();
+  }
+
+  /**
+   * New hash map counter.
+   *
+   * @param <TYPE> the type parameter
+   * @param items  the items
+   * @return the counter
+   */
+  @SafeVarargs
+  static <TYPE> Counter<TYPE> create(TYPE... items) {
+    if (items == null) {
+      return new HashCounter<>();
+    }
+    return create(Arrays.asList(items));
+  }
+
+  /**
+   * New hash map counter.
+   *
+   * @param <TYPE> the type parameter
+   * @param items  the items
+   * @return the counter
+   */
+  static <TYPE> Counter<TYPE> create(@NonNull Iterable<? extends TYPE> items) {
+    return new HashCounter<>(items);
+  }
+
+  /**
+   * New hash map counter.
+   *
+   * @param <TYPE> the type parameter
+   * @param items  the items
+   * @return the counter
+   */
+  static <TYPE> Counter<TYPE> create(@NonNull Map<? extends TYPE, ? extends Number> items) {
+    return new HashCounter<>(items);
+  }
+
+  /**
    * From array counter.
    *
    * @param array the array
    * @return the counter
    */
-  static Counter<Integer> fromArray(@NonNull double[] array) {
-    Counter<Integer> counter = Counters.newHashMapCounter();
+  static Counter<Integer> createVectorCounter(@NonNull double[] array) {
+    Counter<Integer> counter = Counters.create();
     for (int i = 0; i < array.length; i++) {
       counter.set(i, array[i]);
     }
     return counter;
   }
 
+  /**
+   * Read counter.
+   *
+   * @param <TYPE>           the type parameter
+   * @param structuredFormat the structured format
+   * @param resource         the resource
+   * @param keyType          the key type
+   * @return the counter
+   * @throws IOException the io exception
+   */
+  static <TYPE> Counter<TYPE> read(@NonNull StructuredFormat structuredFormat, @NonNull Resource resource, @NonNull Class<TYPE> keyType) throws IOException {
+    return read(structuredFormat, resource, str -> Convert.convert(str, keyType));
+  }
+
+  /**
+   * Read counter.
+   *
+   * @param <TYPE>           the type parameter
+   * @param structuredFormat the structured format
+   * @param resource         the resource
+   * @param deserializer     the deserializer
+   * @return the counter
+   * @throws IOException the io exception
+   */
+  static <TYPE> Counter<TYPE> read(@NonNull StructuredFormat structuredFormat, @NonNull Resource resource, @NonNull Function<String, TYPE> deserializer) throws IOException {
+    Counter<TYPE> counter = new HashCounter<>();
+    try (StructuredReader reader = structuredFormat.createReader(resource)) {
+      reader.beginDocument();
+      while (reader.peek() != ElementType.END_DOCUMENT) {
+        Tuple2<String, Val> keyValue = reader.nextKeyValue();
+        counter.set(deserializer.apply(keyValue.v1), keyValue.v2.asDouble());
+      }
+      reader.endDocument();
+    }
+    return counter;
+  }
+
+  /**
+   * Read csv counter.
+   *
+   * @param <TYPE>   the type parameter
+   * @param resource the resource
+   * @param keyClass the key class
+   * @return the counter
+   * @throws IOException the io exception
+   */
+  static <TYPE> Counter<TYPE> readCSV(@NonNull Resource resource, @NonNull Class<TYPE> keyClass) throws IOException {
+    return read(StructuredFormat.CSV, resource, keyClass);
+  }
 
   /**
    * Synchronized counter counter.
@@ -70,142 +169,14 @@ public interface Counters {
   }
 
   /**
-   * New hash map counter.
-   *
-   * @param <TYPE> the type parameter
-   * @param items  the items
-   * @return the counter
-   */
-  @SafeVarargs
-  static <TYPE> Counter<TYPE> newHashMapCounter(TYPE... items) {
-    if (items == null) {
-      return new HashMapCounter<>();
-    }
-    return newHashMapCounter(Arrays.asList(items));
-  }
-
-  /**
-   * New hash map counter.
-   *
-   * @param <TYPE> the type parameter
-   * @param items  the items
-   * @return the counter
-   */
-  static <TYPE> Counter<TYPE> newHashMapCounter(@NonNull Iterable<? extends TYPE> items) {
-    return new HashMapCounter<>(items);
-  }
-
-  /**
-   * New hash map counter.
-   *
-   * @param <TYPE> the type parameter
-   * @param items  the items
-   * @return the counter
-   */
-  static <TYPE> Counter<TYPE> newHashMapCounter(@NonNull Map<? extends TYPE, ? extends Number> items) {
-    return new HashMapCounter<>(items);
-  }
-
-  /**
-   * New hash map counter.
+   * Unmodifiable counter.
    *
    * @param <TYPE>  the type parameter
    * @param counter the counter
    * @return the counter
    */
-  static <TYPE> Counter<TYPE> newHashMapCounter(@NonNull Counter<? extends TYPE> counter) {
-    return new HashMapCounter<>(counter);
-  }
-
-  /**
-   * New tree map counter.
-   *
-   * @param <TYPE> the type parameter
-   * @param items  the items
-   * @return the counter
-   */
-  @SafeVarargs
-  static <TYPE> Counter<TYPE> newTreeMapCounter(TYPE... items) {
-    if (items == null) {
-      return new TreeMapCounter<>();
-    }
-    return newTreeMapCounter(Arrays.asList(items));
-  }
-
-  /**
-   * New tree map counter.
-   *
-   * @param <TYPE> the type parameter
-   * @param items  the items
-   * @return the counter
-   */
-  static <TYPE> Counter<TYPE> newTreeMapCounter(@NonNull Iterable<? extends TYPE> items) {
-    return new TreeMapCounter<>(items);
-  }
-
-  /**
-   * New tree map counter.
-   *
-   * @param <TYPE> the type parameter
-   * @param items  the items
-   * @return the counter
-   */
-  static <TYPE> Counter<TYPE> newTreeMapCounter(@NonNull Map<? extends TYPE, ? extends Number> items) {
-    return new TreeMapCounter<>(items);
-  }
-
-  /**
-   * New tree map counter.
-   *
-   * @param <TYPE>  the type parameter
-   * @param counter the counter
-   * @return the counter
-   */
-  static <TYPE> Counter<TYPE> newTreeMapCounter(@NonNull Counter<? extends TYPE> counter) {
-    return new TreeMapCounter<>(counter);
-  }
-
-  /**
-   * Unmodifable counter.
-   *
-   * @param <TYPE>  the type parameter
-   * @param counter the counter
-   * @return the counter
-   */
-  static <TYPE> Counter<TYPE> unmodifableCounter(@NonNull final Counter<TYPE> counter) {
+  static <TYPE> Counter<TYPE> unmodifiableCounter(@NonNull final Counter<TYPE> counter) {
     return new UnmodifiableCounter<>(counter);
-  }
-
-  /**
-   * From csv counter.
-   *
-   * @param <TYPE>   the type parameter
-   * @param resource the resource
-   * @param keyClass the key class
-   * @param supplier the supplier
-   * @return the counter
-   * @throws IOException the io exception
-   */
-  static <TYPE> Counter<TYPE> fromCSV(@NonNull Resource resource, @NonNull Class<TYPE> keyClass, @NonNull Supplier<Counter<TYPE>> supplier) throws IOException {
-    Counter<TYPE> counter = supplier.get();
-    try (CSVReader reader = CSV.builder().reader(resource)) {
-      reader.forEach(row -> {
-        if (row.size() >= 2) {
-          counter.increment(Convert.convert(row.get(0), keyClass), Double.parseDouble(row.get(1)));
-        }
-      });
-    }
-    return counter;
-  }
-
-  /**
-   * Collector collector.
-   *
-   * @param <T> the type parameter
-   * @return the collector
-   */
-  static <T> Collector<T, Counter<T>, Counter<T>> collector() {
-    return new CounterCollector<>();
   }
 
   /**
@@ -216,21 +187,18 @@ public interface Counters {
   class CounterCollector<T> implements Collector<T, Counter<T>, Counter<T>> {
 
     @Override
-    public Supplier<Counter<T>> supplier() {
-      return Counters::newHashMapCounter;
-    }
-
-    @Override
     public BiConsumer<Counter<T>, T> accumulator() {
       return Counter::increment;
     }
 
     @Override
+    public Set<Characteristics> characteristics() {
+      return EnumSet.of(Characteristics.UNORDERED);
+    }
+
+    @Override
     public BinaryOperator<Counter<T>> combiner() {
-      return (c1, c2) -> {
-        c1.merge(c2);
-        return c1;
-      };
+      return Counter::merge;
     }
 
     @Override
@@ -239,8 +207,8 @@ public interface Counters {
     }
 
     @Override
-    public Set<Characteristics> characteristics() {
-      return EnumSet.of(Characteristics.UNORDERED);
+    public Supplier<Counter<T>> supplier() {
+      return Counters::create;
     }
 
   }

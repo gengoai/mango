@@ -22,6 +22,14 @@
 package com.davidbracewell.collection;
 
 
+import com.davidbracewell.Copyable;
+import com.davidbracewell.conversion.Convert;
+import com.davidbracewell.io.resource.Resource;
+import com.davidbracewell.io.structured.StructuredFormat;
+import com.davidbracewell.io.structured.StructuredWriter;
+import lombok.NonNull;
+
+import java.io.IOException;
 import java.util.*;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
@@ -35,7 +43,7 @@ import java.util.stream.Collectors;
  * @param <T> Type of item.
  * @author David B. Bracewell
  */
-public interface Counter<T> {
+public interface Counter<T> extends Copyable<Counter<T>> {
 
   /**
    * Constructs a new counter made up of counts that are adjusted using a <code>Function</code>.
@@ -49,6 +57,7 @@ public interface Counter<T> {
    * Adjust values self.
    *
    * @param function the function
+   * @return the counter
    */
   Counter<T> adjustValuesSelf(DoubleUnaryOperator function);
 
@@ -100,6 +109,7 @@ public interface Counter<T> {
    * Decrements the count of the item by one.
    *
    * @param item The item to increment
+   * @return the counter
    */
   default Counter<T> decrement(T item) {
     return decrement(item, 1);
@@ -110,6 +120,7 @@ public interface Counter<T> {
    *
    * @param item   The item to increment
    * @param amount The amount to decrement
+   * @return the counter
    */
   default Counter<T> decrement(T item, double amount) {
     return increment(item, -amount);
@@ -119,6 +130,7 @@ public interface Counter<T> {
    * Decrements all items in a given iterable by 1
    *
    * @param iterable The iterable of items to decrement
+   * @return the counter
    */
   default Counter<T> decrementAll(Iterable<? extends T> iterable) {
     if (iterable != null) {
@@ -132,6 +144,7 @@ public interface Counter<T> {
    *
    * @param iterable The iterable of items to decrement
    * @param amount   The amount to decrement
+   * @return the counter
    */
   default Counter<T> decrementAll(Iterable<? extends T> iterable, double amount) {
     if (iterable != null) {
@@ -142,6 +155,8 @@ public interface Counter<T> {
 
   /**
    * Divides the values in the counter by the sum and sets the sum to 1.0
+   *
+   * @return the counter
    */
   Counter<T> divideBySum();
 
@@ -180,6 +195,7 @@ public interface Counter<T> {
    * Increments the count of the item by one.
    *
    * @param item The item to increment
+   * @return the counter
    */
   default Counter<T> increment(T item) {
     return increment(item, 1);
@@ -190,6 +206,7 @@ public interface Counter<T> {
    *
    * @param item   The item to increment
    * @param amount The amount to increment
+   * @return the counter
    */
   Counter<T> increment(T item, double amount);
 
@@ -197,6 +214,7 @@ public interface Counter<T> {
    * Increments all items in a given iterable by 1
    *
    * @param iterable The iterable of items to increment
+   * @return the counter
    */
   default Counter<T> incrementAll(Iterable<? extends T> iterable) {
     if (iterable != null) {
@@ -210,6 +228,7 @@ public interface Counter<T> {
    *
    * @param iterable The iterable of items to increment
    * @param amount   The amount to increment
+   * @return the counter
    */
   default Counter<T> incrementAll(Iterable<? extends T> iterable, double amount) {
     if (iterable != null) {
@@ -258,7 +277,7 @@ public interface Counter<T> {
    * @param function the function
    * @return the counter
    */
-  <R> Counter<R> mapKeys(Function<T,R> function);
+  <R> Counter<R> mapKeys(Function<T, R> function);
 
   /**
    * Max t.
@@ -294,6 +313,7 @@ public interface Counter<T> {
    * Merges the counts in a map with this counter.
    *
    * @param other The other counter to merge.
+   * @return the counter
    */
   Counter<T> merge(Map<? extends T, ? extends Number> other);
 
@@ -331,6 +351,7 @@ public interface Counter<T> {
    * Removes all the given items from the counter
    *
    * @param items The items to remove
+   * @return the counter
    */
   default Counter<T> removeAll(Iterable<T> items) {
     if (items != null) {
@@ -341,6 +362,8 @@ public interface Counter<T> {
 
   /**
    * removes all items whose count is zero
+   *
+   * @return the counter
    */
   Counter<T> removeZeroCounts();
 
@@ -369,6 +392,7 @@ public interface Counter<T> {
    *
    * @param item  The item
    * @param count The count
+   * @return the counter
    */
   Counter<T> set(T item, double count);
 
@@ -413,5 +437,44 @@ public interface Counter<T> {
    * @return the counter
    */
   Counter<T> topN(int n);
+
+  /**
+   * Write csv.
+   *
+   * @param output the output
+   * @throws IOException the io exception
+   */
+  default void writeCSV(@NonNull Resource output) throws IOException {
+    write(StructuredFormat.CSV, output);
+  }
+
+  /**
+   * Write.
+   *
+   * @param structuredFormat the structured format
+   * @param output           the output
+   * @throws IOException the io exception
+   */
+  default void write(@NonNull StructuredFormat structuredFormat, @NonNull Resource output) throws IOException {
+    write(structuredFormat, output, item -> Convert.convert(item, String.class));
+  }
+
+  /**
+   * Write.
+   *
+   * @param structuredFormat the structured format
+   * @param output           the output
+   * @param keySerializer    the key serializer
+   * @throws IOException the io exception
+   */
+  default void write(@NonNull StructuredFormat structuredFormat, @NonNull Resource output, @NonNull Function<? super T, String> keySerializer) throws IOException {
+    try (StructuredWriter writer = structuredFormat.createWriter(output)) {
+      writer.beginDocument();
+      for (Map.Entry<T, Double> entry : entries()) {
+        writer.writeKeyValue(keySerializer.apply(entry.getKey()), entry.getValue());
+      }
+      writer.endDocument();
+    }
+  }
 
 }//END OF Counter

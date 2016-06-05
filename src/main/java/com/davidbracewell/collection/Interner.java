@@ -49,8 +49,7 @@ public final class Interner<OBJECT> implements Serializable {
     if (object == null) {
       return null;
     }
-    map.putIfAbsent(object, object);
-    return map.get(object);
+    return map.computeIfAbsent(object, o -> o);
   }
 
 }//END OF Interner
