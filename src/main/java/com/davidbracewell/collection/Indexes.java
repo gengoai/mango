@@ -22,30 +22,23 @@
 package com.davidbracewell.collection;
 
 
+import com.davidbracewell.conversion.Convert;
+import com.davidbracewell.io.resource.Resource;
+import com.davidbracewell.io.structured.ElementType;
+import com.davidbracewell.io.structured.StructuredFormat;
+import com.davidbracewell.io.structured.StructuredReader;
 import lombok.NonNull;
 
-import java.util.*;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.function.Function;
 
 /**
  * The type Indexes.
  *
  * @author David B. Bracewell
  */
-public final class Indexes {
-
-  private Indexes() {
-    throw new IllegalAccessError();
-  }
-
-  /**
-   * New synchronized index.
-   *
-   * @param <TYPE> the type parameter
-   * @return the index
-   */
-  public static <TYPE> Index<TYPE> synchronizedIndex(@NonNull Index<TYPE> index) {
-    return new SynchronizedIndex<>(index);
-  }
+public interface Indexes {
 
 
   /**
@@ -56,7 +49,7 @@ public final class Indexes {
    * @return the index
    */
   @SafeVarargs
-  public static <TYPE> Index<TYPE> newIndex(TYPE... items) {
+  static <TYPE> Index<TYPE> create(TYPE... items) {
     Index<TYPE> index = new HashMapIndex<>();
     if (items != null) {
       index.addAll(Arrays.asList(items));
@@ -71,10 +64,20 @@ public final class Indexes {
    * @param items  the items
    * @return the index
    */
-  public static <TYPE> Index<TYPE> newIndex(@NonNull Iterable<TYPE> items) {
+  static <TYPE> Index<TYPE> create(@NonNull Iterable<TYPE> items) {
     Index<TYPE> index = new HashMapIndex<>();
     index.addAll(items);
     return index;
+  }
+
+  /**
+   * New synchronized index.
+   *
+   * @param <TYPE> the type parameter
+   * @return the index
+   */
+  static <TYPE> Index<TYPE> synchronizedIndex(@NonNull Index<TYPE> index) {
+    return new SynchronizedIndex<>(index);
   }
 
   /**
@@ -84,47 +87,62 @@ public final class Indexes {
    * @param index  the index
    * @return the index
    */
-  public static <TYPE> Index<TYPE> unmodifiableIndex(@NonNull final Index<TYPE> index) {
+  static <TYPE> Index<TYPE> unmodifiableIndex(@NonNull final Index<TYPE> index) {
     return new UnmodifiableIndex<>(index);
   }
 
-  private static abstract class MapIndex<TYPE> extends AbstractMapListIndex<TYPE> {
-    private static final long serialVersionUID = 7244518534324307338L;
-    private final List<TYPE> list;
-    private final Map<TYPE, Integer> map;
 
-    /**
-     * Instantiates a new Map index.
-     *
-     * @param map  the map
-     * @param list the list
-     */
-    protected MapIndex(Map<TYPE, Integer> map, List<TYPE> list) {
-      this.map = map;
-      this.list = list;
-    }
-
-    @Override
-    protected List<TYPE> list() {
-      return list;
-    }
-
-    @Override
-    protected Map<TYPE, Integer> map() {
-      return map;
-    }
-
-
+  /**
+   * Read counter.
+   *
+   * @param <TYPE>           the type parameter
+   * @param structuredFormat the structured format
+   * @param resource         the resource
+   * @param keyType          the key type
+   * @return the counter
+   * @throws IOException the io exception
+   */
+  static <TYPE> Index<TYPE> read(@NonNull StructuredFormat structuredFormat, @NonNull Resource resource, @NonNull Class<TYPE> keyType) throws IOException {
+    return read(structuredFormat, resource, str -> Convert.convert(str, keyType));
   }
 
-  private static class HashMapIndex<TYPE> extends MapIndex<TYPE> {
-
-    private static final long serialVersionUID = -323657672209561540L;
-
-    private HashMapIndex() {
-      super(new HashMap<>(), new ArrayList<>());
+  /**
+   * Read counter.
+   *
+   * @param <TYPE>           the type parameter
+   * @param structuredFormat the structured format
+   * @param resource         the resource
+   * @param deserializer     the deserializer
+   * @return the counter
+   * @throws IOException the io exception
+   */
+  static <TYPE> Index<TYPE> read(@NonNull StructuredFormat structuredFormat, @NonNull Resource resource, @NonNull Function<String, TYPE> deserializer) throws IOException {
+    Index<TYPE> index = new HashMapIndex<>();
+    try (StructuredReader reader = structuredFormat.createReader(resource)) {
+      reader.beginDocument();
+      while (reader.peek() != ElementType.END_DOCUMENT) {
+        index.add(deserializer.apply(reader.nextValue().asString()));
+      }
+      reader.endDocument();
     }
+    return index;
+  }
 
+  /**
+   * Read csv counter.
+   *
+   * @param <TYPE>   the type parameter
+   * @param resource the resource
+   * @param keyClass the key class
+   * @return the counter
+   * @throws IOException the io exception
+   */
+  static <TYPE> Index<TYPE> readCSV(@NonNull Resource resource, @NonNull Class<TYPE> keyClass) throws IOException {
+    return read(StructuredFormat.CSV, resource, keyClass);
+  }
+
+  static <TYPE> Index<TYPE> readJson(@NonNull Resource resource, @NonNull Class<TYPE> keyClass) throws IOException {
+    return read(StructuredFormat.JSON, resource, keyClass);
   }
 
 

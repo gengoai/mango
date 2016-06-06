@@ -27,12 +27,12 @@ import java.util.List;
 
 /**
  * The type Forwarding index.
- * @param <TYPE>  the type parameter
+ *
+ * @param <TYPE> the type parameter
  * @author David B. Bracewell
  */
 public abstract class ForwardingIndex<TYPE> implements Index<TYPE>, Serializable {
   private static final long serialVersionUID = 1L;
-
 
   /**
    * Delegate index.
@@ -106,4 +106,8 @@ public abstract class ForwardingIndex<TYPE> implements Index<TYPE>, Serializable
     return delegate().iterator();
   }
 
+  @Override
+  public Index<TYPE> copy() {
+    return delegate().copy();
+  }
 }//END OF ForwardingIndex

@@ -40,28 +40,47 @@ import java.util.function.Predicate;
 /**
  * <p>Abstract class for counters backed by <code>java.util.Map</code> implementations. </p>
  *
+ * @param <T> the type parameter
  * @author David B. Bracewell
  */
 @EqualsAndHashCode(exclude = {"sum"})
-public class HashCounter<T> implements Counter<T>, Serializable {
+public class HashMapCounter<T> implements Counter<T>, Serializable {
   private static final long serialVersionUID = 1L;
   private final Map<T, Double> map = new HashMap<>();
   private AtomicDouble sum = new AtomicDouble(0d);
 
 
-  public HashCounter() {
+  /**
+   * Instantiates a new Hash map counter.
+   */
+  public HashMapCounter() {
 
   }
 
-  public HashCounter(Iterable<? extends T> items) {
+  /**
+   * Instantiates a new Hash map counter.
+   *
+   * @param items the items
+   */
+  public HashMapCounter(Iterable<? extends T> items) {
     incrementAll(items);
   }
 
-  public HashCounter(Map<? extends T, ? extends Number> items) {
+  /**
+   * Instantiates a new Hash map counter.
+   *
+   * @param items the items
+   */
+  public HashMapCounter(Map<? extends T, ? extends Number> items) {
     merge(items);
   }
 
-  public HashCounter(Counter<? extends T> items) {
+  /**
+   * Instantiates a new Hash map counter.
+   *
+   * @param items the items
+   */
+  public HashMapCounter(Counter<? extends T> items) {
     merge(items);
   }
 
@@ -275,8 +294,14 @@ public class HashCounter<T> implements Counter<T>, Serializable {
     return this;
   }
 
+  /**
+   * New instance counter.
+   *
+   * @param <R> the type parameter
+   * @return the counter
+   */
   protected <R> Counter<R> newInstance() {
-    return new HashCounter<R>();
+    return new HashMapCounter<R>();
   }
 
   @Override

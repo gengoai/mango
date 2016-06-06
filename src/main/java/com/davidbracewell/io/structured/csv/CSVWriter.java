@@ -54,7 +54,7 @@ public class CSVWriter extends StructuredWriter {
   private final CSVFormatter formatter;
   private final BufferedWriter writer;
   private boolean endOfDocument = false;
-  private Index<String> header = Indexes.newIndex();
+  private Index<String> header = Indexes.create();
   private Map<String, Object> row = new LinkedHashMap<>();
 
   public CSVWriter(@NonNull CSV csv, @NonNull Writer writer) throws IOException {

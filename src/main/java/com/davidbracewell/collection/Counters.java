@@ -66,7 +66,7 @@ public interface Counters {
   @SafeVarargs
   static <TYPE> Counter<TYPE> create(TYPE... items) {
     if (items == null) {
-      return new HashCounter<>();
+      return new HashMapCounter<>();
     }
     return create(Arrays.asList(items));
   }
@@ -79,7 +79,7 @@ public interface Counters {
    * @return the counter
    */
   static <TYPE> Counter<TYPE> create(@NonNull Iterable<? extends TYPE> items) {
-    return new HashCounter<>(items);
+    return new HashMapCounter<>(items);
   }
 
   /**
@@ -90,7 +90,7 @@ public interface Counters {
    * @return the counter
    */
   static <TYPE> Counter<TYPE> create(@NonNull Map<? extends TYPE, ? extends Number> items) {
-    return new HashCounter<>(items);
+    return new HashMapCounter<>(items);
   }
 
   /**
@@ -132,7 +132,7 @@ public interface Counters {
    * @throws IOException the io exception
    */
   static <TYPE> Counter<TYPE> read(@NonNull StructuredFormat structuredFormat, @NonNull Resource resource, @NonNull Function<String, TYPE> deserializer) throws IOException {
-    Counter<TYPE> counter = new HashCounter<>();
+    Counter<TYPE> counter = new HashMapCounter<>();
     try (StructuredReader reader = structuredFormat.createReader(resource)) {
       reader.beginDocument();
       while (reader.peek() != ElementType.END_DOCUMENT) {

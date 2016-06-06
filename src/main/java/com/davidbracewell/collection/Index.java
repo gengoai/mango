@@ -21,7 +21,16 @@
 
 package com.davidbracewell.collection;
 
+import com.davidbracewell.Copyable;
+import com.davidbracewell.conversion.Convert;
+import com.davidbracewell.io.resource.Resource;
+import com.davidbracewell.io.structured.StructuredFormat;
+import com.davidbracewell.io.structured.StructuredWriter;
+import lombok.NonNull;
+
+import java.io.IOException;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -31,7 +40,7 @@ import java.util.stream.StreamSupport;
  * @param <E> the type parameter
  * @author David B. Bracewell
  */
-public interface Index<E> extends Iterable<E> {
+public interface Index<E> extends Iterable<E>, Copyable<Index<E>> {
 
   /**
    * <p>Adds an item to the index. If the item is already in the index, the item's id is returned.</p>
@@ -141,5 +150,51 @@ public interface Index<E> extends Iterable<E> {
   default Stream<E> parallelStream() {
     return StreamSupport.stream(spliterator(), true);
   }
+
+
+  /**
+   * Write csv.
+   *
+   * @param output the output
+   * @throws IOException the io exception
+   */
+  default void writeCSV(@NonNull Resource output) throws IOException {
+    write(StructuredFormat.CSV, output);
+  }
+
+  default void writeJson(@NonNull Resource output) throws IOException {
+    write(StructuredFormat.JSON, output);
+  }
+
+
+  /**
+   * Write.
+   *
+   * @param structuredFormat the structured format
+   * @param output           the output
+   * @throws IOException the io exception
+   */
+  default void write(@NonNull StructuredFormat structuredFormat, @NonNull Resource output) throws IOException {
+    write(structuredFormat, output, item -> Convert.convert(item, String.class));
+  }
+
+  /**
+   * Write.
+   *
+   * @param structuredFormat the structured format
+   * @param output           the output
+   * @param keySerializer    the key serializer
+   * @throws IOException the io exception
+   */
+  default void write(@NonNull StructuredFormat structuredFormat, @NonNull Resource output, @NonNull Function<? super E, String> keySerializer) throws IOException {
+    try (StructuredWriter writer = structuredFormat.createWriter(output)) {
+      writer.beginDocument(true);
+      for (E item : asList()) {
+        writer.writeValue(keySerializer.apply(item));
+      }
+      writer.endDocument();
+    }
+  }
+
 
 }//END OF Index

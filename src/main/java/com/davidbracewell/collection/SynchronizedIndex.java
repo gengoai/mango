@@ -29,7 +29,8 @@ import java.util.List;
 
 /**
  * The type Forwarding index.
- * @param <TYPE>  the type parameter
+ *
+ * @param <TYPE> the type parameter
  * @author David B. Bracewell
  */
 public class SynchronizedIndex<TYPE> implements Index<TYPE>, Serializable {
@@ -105,4 +106,8 @@ public class SynchronizedIndex<TYPE> implements Index<TYPE>, Serializable {
     return delegate.iterator();
   }
 
+  @Override
+  public Index<TYPE> copy() {
+    return Indexes.synchronizedIndex(delegate.copy());
+  }
 }//END OF SynchronizedIndex
