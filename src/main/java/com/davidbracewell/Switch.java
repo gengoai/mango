@@ -25,12 +25,12 @@ import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.CheckedFunction;
 import com.davidbracewell.function.SerializablePredicate;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableMap;
 import lombok.NonNull;
+import lombok.Value;
 
 import java.io.Serializable;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Converts a value to another based on a series of predicates. In essence allows for <code>switch</code> statements in
@@ -43,22 +43,34 @@ import java.util.Map;
 public class Switch<T, R> implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private Map<SerializablePredicate<? super T>, CheckedFunction<? super T, ? extends R>> caseStmts = new LinkedHashMap<>();
-  private CheckedFunction<? super T, ? extends R> defaultStmt;
+  private final List<PredFunc<T, R>> statements = new LinkedList<>();
+  protected CheckedFunction<? super T, ? extends R> defaultStmt;
+
+  protected Switch() {
+
+  }
 
   /**
    * Instantiates a new Switch.
    *
-   * @param caseStmts   the case stmts
+   * @param statements  the case statements
    * @param defaultStmt the default stmt
    */
-  private Switch(Map<SerializablePredicate<? super T>, CheckedFunction<? super T, ? extends R>> caseStmts, CheckedFunction<? super T, ? extends R> defaultStmt) {
-    this.caseStmts = caseStmts;
+  private Switch(List<PredFunc<T, R>> statements, CheckedFunction<? super T, ? extends R> defaultStmt) {
+    this.statements.addAll(statements);
     this.defaultStmt = defaultStmt;
   }
 
   public static <T, R> Builder<T, R> builder() {
     return new Builder<>();
+  }
+
+  protected void $(@NonNull SerializablePredicate<? super T> predicate, @NonNull CheckedFunction<? super T, ? extends R> function) {
+    this.statements.add(new PredFunc<>(predicate, function));
+  }
+
+  protected <V> void $(@NonNull SerializablePredicate<? super T> predicate, @NonNull CheckedFunction<? super T, V> mapper, @NonNull CheckedFunction<? super V, ? extends R> function) {
+    this.statements.add(new PredFunc<>(predicate, mapper.andThen(function)));
   }
 
   /**
@@ -68,10 +80,10 @@ public class Switch<T, R> implements Serializable {
    * @return the r
    */
   public R switchOn(T argument) throws Exception {
-    for (SerializablePredicate<? super T> p : caseStmts.keySet()) {
-      if (p.test(argument)) {
+    for (PredFunc<T, R> predFunc : statements) {
+      if (predFunc.getPredicate().test(argument)) {
         try {
-          return caseStmts.get(p).apply(argument);
+          return predFunc.getFunction().apply(argument);
         } catch (Throwable throwable) {
           throw toException(Throwables.getRootCause(throwable));
         }
@@ -95,7 +107,7 @@ public class Switch<T, R> implements Serializable {
   }
 
   public static class Builder<T, R> {
-    private final ImmutableMap.Builder<SerializablePredicate<? super T>, CheckedFunction<? super T, ? extends R>> caseStmts = ImmutableMap.builder();
+    private final List<PredFunc<T, R>> caseStmts = new LinkedList<>();
     private CheckedFunction<? super T, ? extends R> defaultStmt = null;
 
     public Builder<T, R> defaultStatement(CheckedFunction<? super T, ? extends R> defaultStmt) {
@@ -104,19 +116,26 @@ public class Switch<T, R> implements Serializable {
     }
 
     public Builder<T, R> caseStmt(@NonNull SerializablePredicate<? super T> predicate, @NonNull CheckedFunction<? super T, ? extends R> function) {
-      this.caseStmts.put(predicate, function);
+      this.caseStmts.add(new PredFunc<>(predicate, function));
       return this;
     }
 
     public <V> Builder<T, R> caseStmt(@NonNull SerializablePredicate<? super T> predicate, @NonNull CheckedFunction<? super T, V> mapper, @NonNull CheckedFunction<? super V, ? extends R> function) {
-      this.caseStmts.put(predicate, mapper.andThen(function));
+      this.caseStmts.add(new PredFunc<>(predicate, mapper.andThen(function)));
       return this;
     }
 
     public Switch<T, R> build() {
-      return new Switch<>(caseStmts.build(), defaultStmt);
+      return new Switch<>(caseStmts, defaultStmt);
     }
 
+  }
+
+
+  @Value
+  private static class PredFunc<T, R> implements Serializable {
+    SerializablePredicate<? super T> predicate;
+    CheckedFunction<? super T, ? extends R> function;
   }
 
 

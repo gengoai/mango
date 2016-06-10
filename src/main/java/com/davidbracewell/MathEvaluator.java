@@ -21,9 +21,9 @@
 
 package com.davidbracewell;
 
-import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.parsing.CommonTypes;
+import com.davidbracewell.parsing.Evaluator;
 import com.davidbracewell.parsing.Grammar;
 import com.davidbracewell.parsing.ParseException;
 import com.davidbracewell.parsing.Parser;
@@ -64,63 +64,28 @@ public final class MathEvaluator {
     .build();
 
 
-  private static final Switch<Expression, Double> eval = Switch.<Expression, Double>builder()
-    .caseStmt(
-      e -> e.isInstance(ValueExpression.class),
-      e -> NumberFormat.getInstance().parse(e.toString()).doubleValue()
-    )
-    .caseStmt(
-      e -> e.match(PrefixExpression.class, CommonTypes.MINUS),
-      Cast::<PrefixExpression>as,
-      u -> -eval(u)
-    )
-    .caseStmt(
-      e -> e.match(BinaryOperatorExpression.class, CommonTypes.PLUS),
-      Cast::<BinaryOperatorExpression>as,
-      e -> eval(e.left) + eval(e.right)
-    )
-    .caseStmt(
-      e -> e.match(BinaryOperatorExpression.class, CommonTypes.MINUS),
-      Cast::<BinaryOperatorExpression>as,
-      e -> eval(e.left) - eval(e.right)
-    )
-    .caseStmt(
-      e -> e.match(BinaryOperatorExpression.class, CommonTypes.DIVIDE),
-      Cast::<BinaryOperatorExpression>as,
-      e -> eval(e.left) / eval(e.right)
-    )
-    .caseStmt(
-      e -> e.match(BinaryOperatorExpression.class, CommonTypes.MULTIPLY),
-      Cast::<BinaryOperatorExpression>as,
-      e -> eval(e.left) * eval(e.right)
-    )
-    .caseStmt(
-      e -> e.match(BinaryOperatorExpression.class, CommonTypes.CARROT),
-      Cast::<BinaryOperatorExpression>as,
-      e -> Math.pow(eval(e.left), eval(e.right))
-    )
-    .caseStmt(
-      e -> e.isInstance(MethodCallExpression.class),
-      Cast::<MethodCallExpression>as,
-      method -> {
+  private static final Evaluator<Double> evaluator = new Evaluator<Double>() {
+    {
+      $(ValueExpression.class, e -> NumberFormat.getInstance().parse(e.toString()).doubleValue());
+      $(PrefixExpression.class, CommonTypes.MINUS, u -> -eval(u));
+      $(BinaryOperatorExpression.class, CommonTypes.PLUS, e -> eval(e.left) + eval(e.right));
+      $(BinaryOperatorExpression.class, CommonTypes.MINUS, e -> eval(e.left) - eval(e.right));
+      $(BinaryOperatorExpression.class, CommonTypes.DIVIDE, e -> eval(e.left) / eval(e.right));
+      $(BinaryOperatorExpression.class, CommonTypes.MULTIPLY, e -> eval(e.left) * eval(e.right));
+      $(BinaryOperatorExpression.class, CommonTypes.CARROT, e -> Math.pow(eval(e.left), eval(e.right)));
+      $(MethodCallExpression.class, method -> {
         Object[] args = new Object[method.arguments.size()];
         for (int i = 0; i < method.arguments.size(); i++) {
           args[i] = eval(method.arguments.get(i));
         }
         return Reflect.onClass(Math.class).invoke(method.methodName, args).get();
-      }
-    )
-    .defaultStatement(exp -> {
-      throw new ParseException("Unknown Expression [" + exp + " : " + exp.getTokenType() + "]");
-    })
-    .build();
+      });
+    }
+  };
+
 
   private MathEvaluator() {
     throw new IllegalAccessError();
-  }
-
-  private static Double eval(Expression exp) throws Exception {
-    return eval.switchOn(exp);
   }
 
   /**
@@ -137,7 +102,7 @@ public final class MathEvaluator {
     if (parser.hasNext()) {
       throw new ParseException("Invalid expression: " + expression);
     }
-    return eval(next);
+    return evaluator.eval(next);
   }
 
   private static class MathGrammar extends Grammar {
