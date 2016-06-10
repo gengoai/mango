@@ -83,7 +83,7 @@ public abstract class Expression {
     return type;
   }
 
-  public final <T extends Expression> boolean match(@NonNull Class<T> clazz, ParserTokenType type) {
+  public final <T extends Expression> boolean match(@NonNull Class<T> clazz, @NonNull ParserTokenType type) {
     return isInstance(clazz) && match(type);
   }
 
