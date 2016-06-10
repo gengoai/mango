@@ -21,9 +21,10 @@
 
 package com.davidbracewell;
 
+import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.CheckedFunction;
 import com.davidbracewell.function.SerializablePredicate;
-import com.davidbracewell.function.Unchecked;
+import com.google.common.base.Throwables;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -66,16 +67,31 @@ public class Switch<T, R> implements Serializable {
    * @param argument the argument
    * @return the r
    */
-  public R switchOn(T argument) {
+  public R switchOn(T argument) throws Exception {
     for (SerializablePredicate<? super T> p : caseStmts.keySet()) {
       if (p.test(argument)) {
-        return Unchecked.function(caseStmts.get(p)).apply(argument);
+        try {
+          return caseStmts.get(p).apply(argument);
+        } catch (Throwable throwable) {
+          throw toException(Throwables.getRootCause(throwable));
+        }
       }
     }
     if (defaultStmt != null) {
-      return Unchecked.function(defaultStmt).apply(argument);
+      try {
+        return defaultStmt.apply(argument);
+      } catch (Throwable throwable) {
+        throw toException(Throwables.getRootCause(throwable));
+      }
     }
     return null;
+  }
+
+  private Exception toException(Throwable throwable) {
+    if (throwable instanceof Exception) {
+      return Cast.as(throwable);
+    }
+    return new Exception(throwable);
   }
 
   public static class Builder<T, R> {
