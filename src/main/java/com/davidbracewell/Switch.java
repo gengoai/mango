@@ -25,10 +25,10 @@ import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.CheckedFunction;
 import com.davidbracewell.function.SerializablePredicate;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
 import lombok.NonNull;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -95,7 +95,7 @@ public class Switch<T, R> implements Serializable {
   }
 
   public static class Builder<T, R> {
-    private final Map<SerializablePredicate<? super T>, CheckedFunction<? super T, ? extends R>> caseStmts = new HashMap<>();
+    private final ImmutableMap.Builder<SerializablePredicate<? super T>, CheckedFunction<? super T, ? extends R>> caseStmts = ImmutableMap.builder();
     private CheckedFunction<? super T, ? extends R> defaultStmt = null;
 
     public Builder<T, R> defaultStatement(CheckedFunction<? super T, ? extends R> defaultStmt) {
@@ -114,7 +114,7 @@ public class Switch<T, R> implements Serializable {
     }
 
     public Switch<T, R> build() {
-      return new Switch<>(caseStmts, defaultStmt);
+      return new Switch<>(caseStmts.build(), defaultStmt);
     }
 
   }
