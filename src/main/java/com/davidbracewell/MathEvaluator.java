@@ -62,8 +62,6 @@ public final class MathEvaluator {
     .add(CommonTypes.COMMA)
     .add(CommonTypes.WORD, "[a-zA-z]\\w*")
     .build();
-
-
   private static final Evaluator<Double> evaluator = new Evaluator<Double>() {
     {
       $(ValueExpression.class, e -> NumberFormat.getInstance().parse(e.toString()).doubleValue());
@@ -82,7 +80,20 @@ public final class MathEvaluator {
       });
     }
   };
-
+  private static final Grammar grammar = new Grammar() {
+    {
+      register(CommonTypes.NUMBER, new ValueHandler());
+      register(CommonTypes.OPENPARENS, new GroupHandler(CommonTypes.CLOSEPARENS));
+      register(CommonTypes.PLUS, new BinaryOperatorHandler(3, true));
+      register(CommonTypes.MINUS, new BinaryOperatorHandler(3, true));
+      register(CommonTypes.MINUS, new PrefixOperatorHandler(12));
+      register(CommonTypes.MULTIPLY, new BinaryOperatorHandler(6, true));
+      register(CommonTypes.DIVIDE, new BinaryOperatorHandler(6, true));
+      register(CommonTypes.CARROT, new BinaryOperatorHandler(10, true));
+      register(CommonTypes.WORD, new ValueHandler());
+      register(CommonTypes.OPENPARENS, new MethodCallHandler(12, CommonTypes.CLOSEPARENS, CommonTypes.COMMA));
+    }
+  };
 
   private MathEvaluator() {
     throw new IllegalAccessError();
@@ -97,29 +108,12 @@ public final class MathEvaluator {
    * @throws ParseException Something went wrong during evaluation
    */
   public static double evaluate(@NonNull String expression) throws Exception {
-    Parser parser = new Parser(MathGrammar.INSTANCE, lexer.lex(Resources.fromString(expression)));
+    Parser parser = new Parser(grammar, lexer.lex(Resources.fromString(expression)));
     Expression next = parser.next();
     if (parser.hasNext()) {
       throw new ParseException("Invalid expression: " + expression);
     }
     return evaluator.eval(next);
-  }
-
-  private static class MathGrammar extends Grammar {
-    private static final MathGrammar INSTANCE = new MathGrammar();
-
-    private MathGrammar() {
-      register(CommonTypes.NUMBER, new ValueHandler());
-      register(CommonTypes.OPENPARENS, new GroupHandler(CommonTypes.CLOSEPARENS));
-      register(CommonTypes.PLUS, new BinaryOperatorHandler(3, true));
-      register(CommonTypes.MINUS, new BinaryOperatorHandler(3, true));
-      register(CommonTypes.MINUS, new PrefixOperatorHandler(12));
-      register(CommonTypes.MULTIPLY, new BinaryOperatorHandler(6, true));
-      register(CommonTypes.DIVIDE, new BinaryOperatorHandler(6, true));
-      register(CommonTypes.CARROT, new BinaryOperatorHandler(10, true));
-      register(CommonTypes.WORD, new ValueHandler());
-      register(CommonTypes.OPENPARENS, new MethodCallHandler(12, CommonTypes.CLOSEPARENS, CommonTypes.COMMA));
-    }
   }
 
 
