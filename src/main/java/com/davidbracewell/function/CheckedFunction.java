@@ -21,6 +21,8 @@
 
 package com.davidbracewell.function;
 
+import lombok.NonNull;
+
 import java.io.Serializable;
 
 /**
@@ -33,5 +35,15 @@ import java.io.Serializable;
 public interface CheckedFunction<T, R> extends Serializable {
 
   R apply(T t) throws Throwable;
+
+
+  default <V> CheckedFunction<V, R> compose(@NonNull CheckedFunction<? super V, ? extends T> before) {
+    return v -> apply(before.apply(v));
+  }
+
+  default <V> CheckedFunction<T, V> andThen(@NonNull CheckedFunction<? super R, ? extends V> after) {
+    return t -> after.apply(apply(t));
+  }
+
 
 }//END OF CheckedFunction

@@ -24,10 +24,10 @@ package com.davidbracewell;
 import com.davidbracewell.function.CheckedFunction;
 import com.davidbracewell.function.SerializablePredicate;
 import com.davidbracewell.function.Unchecked;
-import lombok.Builder;
-import lombok.Singular;
+import lombok.NonNull;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -39,11 +39,9 @@ import java.util.Map;
  * @param <R> the type parameter returned from the switch operation
  * @author David B. Bracewell
  */
-@Builder
 public class Switch<T, R> implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  @Singular
   private Map<SerializablePredicate<? super T>, CheckedFunction<? super T, ? extends R>> caseStmts = new LinkedHashMap<>();
   private CheckedFunction<? super T, ? extends R> defaultStmt;
 
@@ -53,10 +51,13 @@ public class Switch<T, R> implements Serializable {
    * @param caseStmts   the case stmts
    * @param defaultStmt the default stmt
    */
-  @java.beans.ConstructorProperties({"caseStmts", "defaultStmt"})
-  Switch(Map<SerializablePredicate<? super T>, CheckedFunction<? super T, ? extends R>> caseStmts, CheckedFunction<? super T, ? extends R> defaultStmt) {
+  private Switch(Map<SerializablePredicate<? super T>, CheckedFunction<? super T, ? extends R>> caseStmts, CheckedFunction<? super T, ? extends R> defaultStmt) {
     this.caseStmts = caseStmts;
     this.defaultStmt = defaultStmt;
+  }
+
+  public static <T, R> Builder<T, R> builder() {
+    return new Builder<>();
   }
 
   /**
@@ -75,6 +76,31 @@ public class Switch<T, R> implements Serializable {
       return Unchecked.function(defaultStmt).apply(argument);
     }
     return null;
+  }
+
+  public static class Builder<T, R> {
+    Map<SerializablePredicate<? super T>, CheckedFunction<? super T, ? extends R>> caseStmts = new HashMap<>();
+    CheckedFunction<? super T, ? extends R> defaultStmt = null;
+
+    public Builder<T, R> defaultStatement(CheckedFunction<? super T, ? extends R> defaultStmt) {
+      this.defaultStmt = defaultStmt;
+      return this;
+    }
+
+    public Builder<T, R> caseStmt(@NonNull SerializablePredicate<? super T> predicate, @NonNull CheckedFunction<? super T, ? extends R> function) {
+      this.caseStmts.put(predicate, function);
+      return this;
+    }
+
+    public <V> Builder<T, R> caseStmt(@NonNull SerializablePredicate<? super T> predicate, @NonNull CheckedFunction<? super T, V> mapper, @NonNull CheckedFunction<? super V, ? extends R> function) {
+      this.caseStmts.put(predicate, mapper.andThen(function));
+      return this;
+    }
+
+    public Switch<T, R> build() {
+      return new Switch<>(caseStmts, defaultStmt);
+    }
+
   }
 
 
