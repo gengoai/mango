@@ -95,8 +95,8 @@ public class Switch<T, R> implements Serializable {
   }
 
   public static class Builder<T, R> {
-    Map<SerializablePredicate<? super T>, CheckedFunction<? super T, ? extends R>> caseStmts = new HashMap<>();
-    CheckedFunction<? super T, ? extends R> defaultStmt = null;
+    private final Map<SerializablePredicate<? super T>, CheckedFunction<? super T, ? extends R>> caseStmts = new HashMap<>();
+    private CheckedFunction<? super T, ? extends R> defaultStmt = null;
 
     public Builder<T, R> defaultStatement(CheckedFunction<? super T, ? extends R> defaultStmt) {
       this.defaultStmt = defaultStmt;
