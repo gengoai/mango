@@ -67,7 +67,7 @@ public interface MultiCounters {
     return new HashMapMultiCounter<>(triples);
   }
 
-   static <K, V> Resource toCSV(@NonNull MultiCounter<K, V> counter, @NonNull Resource resource, @NonNull CSV csv) throws IOException {
+  static <K, V> Resource toCSV(@NonNull MultiCounter<K, V> counter, @NonNull Resource resource, @NonNull CSV csv) throws IOException {
     try (CSVWriter writer = csv.writer(resource)) {
       Set<String> columns = new TreeSet<>(
         counter.entries().stream()
@@ -85,7 +85,7 @@ public interface MultiCounters {
         List<String> row = new LinkedList<>();
         row.add(Convert.convert(key, String.class));
 
-        Counter<String> ctr = Counters.create();
+        Counter<String> ctr = new HashMapCounter<>();
         counter.get(key).asMap().entrySet().forEach(e ->
           ctr.set(Convert.convert(e.getKey(), String.class), e.getValue())
         );
