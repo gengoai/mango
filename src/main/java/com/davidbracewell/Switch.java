@@ -134,6 +134,7 @@ public class Switch<T, R> implements Serializable {
 
   @Value
   private static class PredFunc<T, R> implements Serializable {
+    private static final long serialVersionUID = 1L;
     SerializablePredicate<? super T> predicate;
     CheckedFunction<? super T, ? extends R> function;
   }

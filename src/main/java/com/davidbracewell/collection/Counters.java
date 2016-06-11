@@ -31,9 +31,7 @@ import com.davidbracewell.tuple.Tuple2;
 import lombok.NonNull;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.EnumSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -42,12 +40,13 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 
 /**
- * The interface Counters.
+ * Common methods for reading counters from structured files, creating synchronized and unmodifiable wrappers, and
+ * creating collectors.
  */
 public interface Counters {
 
   /**
-   * Collector collector.
+   * <p>Creates a Counter collector that count the items in a string generating a {@link HashMapCounter}.</p>
    *
    * @param <T> the type parameter
    * @return the collector
@@ -57,50 +56,24 @@ public interface Counters {
   }
 
   /**
-   * New hash map counter.
+   * <p>Creates a Counter collector that count the items in a string generating a Counter using the given supplier.</p>
    *
-   * @param <TYPE> the type parameter
-   * @param items  the items
-   * @return the counter
+   * @param <T>      the type parameter
+   * @param supplier the supplier to use for creating a counter
+   * @return the collector
    */
-  @SafeVarargs
-  static <TYPE> Counter<TYPE> create(TYPE... items) {
-    if (items == null) {
-      return new HashMapCounter<>();
-    }
-    return create(Arrays.asList(items));
+  static <T> Collector<T, Counter<T>, Counter<T>> collector(@NonNull Supplier<Counter<T>> supplier) {
+    return new CounterCollector<>(supplier);
   }
 
   /**
-   * New hash map counter.
-   *
-   * @param <TYPE> the type parameter
-   * @param items  the items
-   * @return the counter
-   */
-  static <TYPE> Counter<TYPE> create(@NonNull Iterable<? extends TYPE> items) {
-    return new HashMapCounter<>(items);
-  }
-
-  /**
-   * New hash map counter.
-   *
-   * @param <TYPE> the type parameter
-   * @param items  the items
-   * @return the counter
-   */
-  static <TYPE> Counter<TYPE> create(@NonNull Map<? extends TYPE, ? extends Number> items) {
-    return new HashMapCounter<>(items);
-  }
-
-  /**
-   * From array counter.
+   * <p>Creates a Counter whose keys are Integers and values are associated value in the given double array.</p>
    *
    * @param array the array
    * @return the counter
    */
   static Counter<Integer> createVectorCounter(@NonNull double[] array) {
-    Counter<Integer> counter = Counters.create();
+    Counter<Integer> counter = new HashMapCounter<>();
     for (int i = 0; i < array.length; i++) {
       counter.set(i, array[i]);
     }
@@ -108,31 +81,34 @@ public interface Counters {
   }
 
   /**
-   * Read counter.
+   * <p>Reads a resource in the given {@link StructuredFormat} which is made up of key value pairs where the key is the
+   * item in the counter and the value is its count.</p>
    *
-   * @param <TYPE>           the type parameter
-   * @param structuredFormat the structured format
-   * @param resource         the resource
-   * @param keyType          the key type
+   * @param <TYPE>           the item type
+   * @param structuredFormat the format of the file being read
+   * @param resource         the resource of the file being read
+   * @param keyType          the class of the item type
    * @return the counter
-   * @throws IOException the io exception
+   * @throws IOException Something went wrong reading in the counter.
    */
   static <TYPE> Counter<TYPE> read(@NonNull StructuredFormat structuredFormat, @NonNull Resource resource, @NonNull Class<TYPE> keyType) throws IOException {
-    return read(structuredFormat, resource, str -> Convert.convert(str, keyType));
+    return read(structuredFormat, resource, str -> Convert.convert(str, keyType), HashMapCounter::new);
   }
 
   /**
-   * Read counter.
+   * <p>Reads a resource in the given {@link StructuredFormat} which is made up of key value pairs where the key is the
+   * item in the counter and the value is its count.</p>
    *
-   * @param <TYPE>           the type parameter
-   * @param structuredFormat the structured format
-   * @param resource         the resource
-   * @param deserializer     the deserializer
+   * @param <TYPE>           the item type
+   * @param structuredFormat the format of the file being read
+   * @param resource         the resource of the file being read
+   * @param deserializer     Function to turn string representation of key into an item
+   * @param supplier         the supplier to use for creating the initial counter
    * @return the counter
-   * @throws IOException the io exception
+   * @throws IOException Something went wrong reading in the counter.
    */
-  static <TYPE> Counter<TYPE> read(@NonNull StructuredFormat structuredFormat, @NonNull Resource resource, @NonNull Function<String, TYPE> deserializer) throws IOException {
-    Counter<TYPE> counter = new HashMapCounter<>();
+  static <TYPE> Counter<TYPE> read(@NonNull StructuredFormat structuredFormat, @NonNull Resource resource, @NonNull Function<String, TYPE> deserializer, @NonNull Supplier<Counter<TYPE>> supplier) throws IOException {
+    Counter<TYPE> counter = supplier.get();
     try (StructuredReader reader = structuredFormat.createReader(resource)) {
       reader.beginDocument();
       while (reader.peek() != ElementType.END_DOCUMENT) {
@@ -145,46 +121,80 @@ public interface Counters {
   }
 
   /**
-   * Read csv counter.
+   * <p>Reads a counter from a CSV file.</p>
    *
-   * @param <TYPE>   the type parameter
-   * @param resource the resource
-   * @param keyClass the key class
+   * @param <TYPE>   the item type
+   * @param resource the resource that the counter values are written to.
+   * @param keyClass the class of the item type
    * @return the counter
-   * @throws IOException the io exception
+   * @throws IOException Something went wrong reading in the counter.
    */
   static <TYPE> Counter<TYPE> readCSV(@NonNull Resource resource, @NonNull Class<TYPE> keyClass) throws IOException {
     return read(StructuredFormat.CSV, resource, keyClass);
   }
 
   /**
-   * Synchronized counter counter.
+   * <p>Reads a counter from a Json file.</p>
    *
-   * @param <TYPE>  the type parameter
-   * @param counter the counter
+   * @param <TYPE>   the item type
+   * @param resource the resource that the counter values are written to.
+   * @param keyClass the class of the item type
    * @return the counter
+   * @throws IOException Something went wrong reading in the counter.
+   */
+  static <TYPE> Counter<TYPE> readJson(@NonNull Resource resource, @NonNull Class<TYPE> keyClass) throws IOException {
+    return read(StructuredFormat.JSON, resource, keyClass);
+  }
+
+  /**
+   * <p>Wraps a counter making each method call synchronized.</p>
+   *
+   * @param <TYPE>  the item type
+   * @param counter the counter to wrap
+   * @return the wrapped counter
    */
   static <TYPE> Counter<TYPE> synchronizedCounter(@NonNull Counter<TYPE> counter) {
     return new SynchronizedCounter<>(counter);
   }
 
   /**
-   * Unmodifiable counter.
+   * <p>Wraps a counter making its entries unmodifiable.</p>
    *
-   * @param <TYPE>  the type parameter
-   * @param counter the counter
-   * @return the counter
+   * @param <TYPE>  the item type
+   * @param counter the counter to wrap
+   * @return the wrapped counter
    */
   static <TYPE> Counter<TYPE> unmodifiableCounter(@NonNull final Counter<TYPE> counter) {
     return new UnmodifiableCounter<>(counter);
   }
 
   /**
-   * The type Counter collector.
+   * <p>{@link Collector} implementation for Counters.</p>
    *
-   * @param <T> the type parameter
+   * @param <T> The item type of the Counter
    */
   class CounterCollector<T> implements Collector<T, Counter<T>, Counter<T>> {
+
+    /**
+     * The Supplier.
+     */
+    final Supplier<Counter<T>> supplier;
+
+    /**
+     * Instantiates a new Counter collector.
+     */
+    public CounterCollector() {
+      this(HashMapCounter::new);
+    }
+
+    /**
+     * Instantiates a new Counter collector.
+     *
+     * @param supplier the supplier
+     */
+    public CounterCollector(Supplier<Counter<T>> supplier) {
+      this.supplier = supplier;
+    }
 
     @Override
     public BiConsumer<Counter<T>, T> accumulator() {
@@ -208,7 +218,7 @@ public interface Counters {
 
     @Override
     public Supplier<Counter<T>> supplier() {
-      return Counters::create;
+      return supplier;
     }
 
   }

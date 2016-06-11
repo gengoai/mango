@@ -57,6 +57,13 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
 
   }
 
+  @SafeVarargs
+  public HashMapCounter(T... items) {
+    if (items != null) {
+      incrementAll(Arrays.asList(items));
+    }
+  }
+
   /**
    * Instantiates a new Hash map counter.
    *
