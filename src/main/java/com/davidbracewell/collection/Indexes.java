@@ -30,8 +30,8 @@ import com.davidbracewell.io.structured.StructuredReader;
 import lombok.NonNull;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * The type Indexes.
@@ -40,40 +40,11 @@ import java.util.function.Function;
  */
 public interface Indexes {
 
-
-  /**
-   * New index.
-   *
-   * @param <TYPE> the type parameter
-   * @param items  the items
-   * @return the index
-   */
-  @SafeVarargs
-  static <TYPE> Index<TYPE> create(TYPE... items) {
-    Index<TYPE> index = new HashMapIndex<>();
-    if (items != null) {
-      index.addAll(Arrays.asList(items));
-    }
-    return index;
-  }
-
-  /**
-   * New index.
-   *
-   * @param <TYPE> the type parameter
-   * @param items  the items
-   * @return the index
-   */
-  static <TYPE> Index<TYPE> create(@NonNull Iterable<TYPE> items) {
-    Index<TYPE> index = new HashMapIndex<>();
-    index.addAll(items);
-    return index;
-  }
-
   /**
    * New synchronized index.
    *
    * @param <TYPE> the type parameter
+   * @param index  the index
    * @return the index
    */
   static <TYPE> Index<TYPE> synchronizedIndex(@NonNull Index<TYPE> index) {
@@ -113,11 +84,12 @@ public interface Indexes {
    * @param structuredFormat the structured format
    * @param resource         the resource
    * @param deserializer     the deserializer
+   * @param supplier         the supplier
    * @return the counter
    * @throws IOException the io exception
    */
-  static <TYPE> Index<TYPE> read(@NonNull StructuredFormat structuredFormat, @NonNull Resource resource, @NonNull Function<String, TYPE> deserializer) throws IOException {
-    Index<TYPE> index = new HashMapIndex<>();
+  static <TYPE> Index<TYPE> read(@NonNull StructuredFormat structuredFormat, @NonNull Resource resource, @NonNull Function<String, TYPE> deserializer, @NonNull Supplier<Index<TYPE>> supplier) throws IOException {
+    Index<TYPE> index = supplier.get();
     try (StructuredReader reader = structuredFormat.createReader(resource)) {
       reader.beginDocument();
       while (reader.peek() != ElementType.END_DOCUMENT) {
@@ -126,6 +98,20 @@ public interface Indexes {
       reader.endDocument();
     }
     return index;
+  }
+
+  /**
+   * Read counter.
+   *
+   * @param <TYPE>           the type parameter
+   * @param structuredFormat the structured format
+   * @param resource         the resource
+   * @param deserializer     the deserializer
+   * @return the counter
+   * @throws IOException the io exception
+   */
+  static <TYPE> Index<TYPE> read(@NonNull StructuredFormat structuredFormat, @NonNull Resource resource, @NonNull Function<String, TYPE> deserializer) throws IOException {
+    return read(structuredFormat, resource, deserializer, HashMapIndex::new);
   }
 
   /**
@@ -141,6 +127,15 @@ public interface Indexes {
     return read(StructuredFormat.CSV, resource, keyClass);
   }
 
+  /**
+   * Read json index.
+   *
+   * @param <TYPE>   the type parameter
+   * @param resource the resource
+   * @param keyClass the key class
+   * @return the index
+   * @throws IOException the io exception
+   */
   static <TYPE> Index<TYPE> readJson(@NonNull Resource resource, @NonNull Class<TYPE> keyClass) throws IOException {
     return read(StructuredFormat.JSON, resource, keyClass);
   }

@@ -36,7 +36,7 @@ import java.util.function.Predicate;
 /**
  * @author David B. Bracewell
  */
-class SynchronizedCounter<TYPE> implements Counter<TYPE>, Serializable {
+final class SynchronizedCounter<TYPE> implements Counter<TYPE>, Serializable {
   private static final long serialVersionUID = 1L;
 
   final Counter<TYPE> delegate;
@@ -258,5 +258,20 @@ class SynchronizedCounter<TYPE> implements Counter<TYPE>, Serializable {
   @Override
   public Counter<TYPE> copy() {
     return Counters.synchronizedCounter(delegate.copy());
+  }
+
+  @Override
+  public String toString() {
+    return delegate.toString();
+  }
+
+  @Override
+  public int hashCode() {
+    return delegate.hashCode();
+  }
+
+  @Override
+  public synchronized boolean equals(Object object) {
+    return delegate.equals(object);
   }
 }//END OF ForwardingCounter

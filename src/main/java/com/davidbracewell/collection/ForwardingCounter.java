@@ -252,6 +252,21 @@ public abstract class ForwardingCounter<TYPE> implements Counter<TYPE>, Serializ
   }
 
   @Override
+  public String toString() {
+    return delegate().toString();
+  }
+
+  @Override
+  public int hashCode() {
+    return delegate().hashCode();
+  }
+
+  @Override
+  public boolean equals(Object object) {
+    return delegate().equals(object);
+  }
+
+  @Override
   public Counter<TYPE> copy() {
     return delegate().copy();
   }

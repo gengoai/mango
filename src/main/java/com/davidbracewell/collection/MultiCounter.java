@@ -21,21 +21,28 @@
 
 package com.davidbracewell.collection;
 
+import com.davidbracewell.conversion.Convert;
+import com.davidbracewell.io.resource.Resource;
+import com.davidbracewell.io.structured.StructuredFormat;
+import com.davidbracewell.io.structured.StructuredWriter;
 import com.davidbracewell.tuple.Tuple3;
+import lombok.NonNull;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
  * <p> Provides double-based counts for pairs of items. </p>
  *
- * @param <K>  Type of item.
- * @param <V>  the type parameter
+ * @param <K> Type of item.
+ * @param <V> the type parameter
  * @author David B. Bracewell
  */
 public interface MultiCounter<K, V> {
@@ -59,6 +66,7 @@ public interface MultiCounter<K, V> {
    * Adjust values.
    *
    * @param function the function
+   * @return the multi counter
    */
   MultiCounter<K, V> adjustValuesSelf(DoubleUnaryOperator function);
 
@@ -109,8 +117,10 @@ public interface MultiCounter<K, V> {
 
   /**
    * Decrement void.
-   *  @param item1 the item 1
+   *
+   * @param item1 the item 1
    * @param item2 the item 2
+   * @return the multi counter
    */
   default MultiCounter<K, V> decrement(K item1, V item2) {
     return decrement(item1, item2, 1);
@@ -118,9 +128,11 @@ public interface MultiCounter<K, V> {
 
   /**
    * Decrement void.
-   *  @param item1 the item 1
-   * @param item2 the item 2
+   *
+   * @param item1  the item 1
+   * @param item2  the item 2
    * @param amount the amount
+   * @return the multi counter
    */
   default MultiCounter<K, V> decrement(K item1, V item2, double amount) {
     return increment(item1, item2, -amount);
@@ -130,6 +142,7 @@ public interface MultiCounter<K, V> {
    * Decrement all.
    *
    * @param iterable the iterable
+   * @return the multi counter
    */
   default MultiCounter<K, V> decrementAll(Iterable<? extends Map.Entry<K, V>> iterable) {
     if (iterable != null) {
@@ -140,8 +153,10 @@ public interface MultiCounter<K, V> {
 
   /**
    * Decrement all.
-   *  @param item the item
+   *
+   * @param item     the item
    * @param iterable the iterable
+   * @return the multi counter
    */
   default MultiCounter<K, V> decrementAll(K item, Iterable<? extends V> iterable) {
     get(item).decrementAll(iterable);
@@ -150,6 +165,8 @@ public interface MultiCounter<K, V> {
 
   /**
    * Divide by key sum.
+   *
+   * @return the multi counter
    */
   default MultiCounter<K, V> divideByKeySum() {
     items().forEach(key -> get(key).divideBySum());
@@ -158,6 +175,8 @@ public interface MultiCounter<K, V> {
 
   /**
    * Divides the values in the counter by the sum and sets the sum to 1.0
+   *
+   * @return the multi counter
    */
   default MultiCounter<K, V> divideBySum() {
     adjustValuesSelf(d -> 1d / sum());
@@ -212,8 +231,10 @@ public interface MultiCounter<K, V> {
 
   /**
    * Increment void.
-   *  @param item1 the item 1
+   *
+   * @param item1 the item 1
    * @param item2 the item 2
+   * @return the multi counter
    */
   default MultiCounter<K, V> increment(K item1, V item2) {
     increment(item1, item2, 1);
@@ -222,9 +243,11 @@ public interface MultiCounter<K, V> {
 
   /**
    * Increment void.
-   *  @param item1 the item 1
-   * @param item2 the item 2
+   *
+   * @param item1  the item 1
+   * @param item2  the item 2
    * @param amount the amount
+   * @return the multi counter
    */
   default MultiCounter<K, V> increment(K item1, V item2, double amount) {
     get(item1).increment(item2, amount);
@@ -233,8 +256,10 @@ public interface MultiCounter<K, V> {
 
   /**
    * Increment all.
-   *  @param item the item
+   *
+   * @param item     the item
    * @param iterable the iterable
+   * @return the multi counter
    */
   default MultiCounter<K, V> incrementAll(K item, Iterable<? extends V> iterable) {
     get(item).incrementAll(iterable);
@@ -245,6 +270,7 @@ public interface MultiCounter<K, V> {
    * Increment all.
    *
    * @param iterable the iterable
+   * @return the multi counter
    */
   default MultiCounter<K, V> incrementAll(Iterable<? extends Map.Entry<K, V>> iterable) {
     if (iterable != null) {
@@ -297,6 +323,7 @@ public interface MultiCounter<K, V> {
    * Merges the counts in one counter with this one.
    *
    * @param other The other counter to merge.
+   * @return the multi counter
    */
   MultiCounter<K, V> merge(MultiCounter<K, V> other);
 
@@ -330,6 +357,7 @@ public interface MultiCounter<K, V> {
    * Removes all the given items from the counter
    *
    * @param items The items to remove
+   * @return the multi counter
    */
   default MultiCounter<K, V> removeAll(Iterable<K> items) {
     if (items != null) {
@@ -340,16 +368,20 @@ public interface MultiCounter<K, V> {
 
   /**
    * Set void.
-   *  @param item1 the item 1
+   *
+   * @param item1 the item 1
    * @param item2 the item 2
    * @param count the count
+   * @return the multi counter
    */
   MultiCounter<K, V> set(K item1, V item2, double count);
 
   /**
    * Set void.
-   *  @param item the item
+   *
+   * @param item    the item
    * @param counter the counter
+   * @return the multi counter
    */
   MultiCounter<K, V> set(K item, Counter<V> counter);
 
@@ -387,4 +419,52 @@ public interface MultiCounter<K, V> {
     return Collect.analyze(counts()).getSumOfSquares();
   }
 
-}//END OF Counter
+  /**
+   * Write csv.
+   *
+   * @param output the output
+   * @throws IOException the io exception
+   */
+  default void writeCSV(@NonNull Resource output) throws IOException {
+    write(StructuredFormat.CSV, output);
+  }
+
+  default void writeJson(@NonNull Resource output) throws IOException {
+    write(StructuredFormat.JSON, output);
+  }
+
+  /**
+   * Write.
+   *
+   * @param structuredFormat the structured format
+   * @param output           the output
+   * @throws IOException the io exception
+   */
+  default void write(@NonNull StructuredFormat structuredFormat, @NonNull Resource output) throws IOException {
+    write(structuredFormat, output, item -> Convert.convert(item, String.class), item -> Convert.convert(item, String.class));
+  }
+
+  /**
+   * Write.
+   *
+   * @param structuredFormat the structured format
+   * @param output           the output
+   * @param key1Serializer   the key 1 serializer
+   * @param key2Serializer   the key 2 serializer
+   * @throws IOException the io exception
+   */
+  default void write(@NonNull StructuredFormat structuredFormat, @NonNull Resource output, @NonNull Function<? super K, String> key1Serializer, @NonNull Function<? super V, String> key2Serializer) throws IOException {
+    try (StructuredWriter writer = structuredFormat.createWriter(output)) {
+      writer.beginDocument();
+      for (Tuple3<K, V, Double> entry : entries()) {
+        writer.beginObject("entry");
+        writer.writeKeyValue("k1", key1Serializer.apply(entry.v1));
+        writer.writeKeyValue("k2", key2Serializer.apply(entry.v2));
+        writer.writeKeyValue("v", entry.v3);
+        writer.endObject();
+      }
+      writer.endDocument();
+    }
+  }
+
+}//END OF MultiCounter

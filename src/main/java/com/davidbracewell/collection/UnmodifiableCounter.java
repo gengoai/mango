@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * @author David B. Bracewell
  */
-class UnmodifiableCounter<TYPE> extends ForwardingCounter<TYPE> {
+final class UnmodifiableCounter<TYPE> extends ForwardingCounter<TYPE> {
   private static final long serialVersionUID = 1L;
   private final Counter<TYPE> backing;
 

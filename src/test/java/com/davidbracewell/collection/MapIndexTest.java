@@ -38,7 +38,7 @@ public class MapIndexTest {
 
   @Before
   public void setUp() throws Exception {
-    index = Indexes.create(Arrays.asList("A", "B", "C", "D", "E"));
+    index = new HashMapIndex<>("A", "B", "C", "D", "E");
   }
 
   @Test

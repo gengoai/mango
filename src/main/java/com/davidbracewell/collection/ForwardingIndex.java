@@ -110,4 +110,20 @@ public abstract class ForwardingIndex<TYPE> implements Index<TYPE>, Serializable
   public Index<TYPE> copy() {
     return delegate().copy();
   }
+
+  @Override
+  public String toString() {
+    return delegate().toString();
+  }
+
+  @Override
+  public int hashCode() {
+    return delegate().hashCode();
+  }
+
+  @Override
+  public boolean equals(Object object) {
+    return delegate().equals(object);
+  }
+
 }//END OF ForwardingIndex

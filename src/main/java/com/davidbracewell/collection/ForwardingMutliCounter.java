@@ -34,6 +34,10 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
 
 /**
+ * The type Forwarding mutli counter.
+ *
+ * @param <K> the type parameter
+ * @param <V> the type parameter
  * @author David B. Bracewell
  */
 public abstract class ForwardingMutliCounter<K, V> implements MultiCounter<K, V>, Serializable {
@@ -144,6 +148,21 @@ public abstract class ForwardingMutliCounter<K, V> implements MultiCounter<K, V>
   @Override
   public int size() {
     return delegate().size();
+  }
+
+  @Override
+  public String toString() {
+    return delegate().toString();
+  }
+
+  @Override
+  public int hashCode() {
+    return delegate().hashCode();
+  }
+
+  @Override
+  public boolean equals(Object object) {
+    return delegate().equals(object);
   }
 
 }//END OF ForwardingMultiCounter

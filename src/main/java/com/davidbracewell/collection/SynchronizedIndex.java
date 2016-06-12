@@ -33,7 +33,7 @@ import java.util.List;
  * @param <TYPE> the type parameter
  * @author David B. Bracewell
  */
-public class SynchronizedIndex<TYPE> implements Index<TYPE>, Serializable {
+final class SynchronizedIndex<TYPE> implements Index<TYPE>, Serializable {
   private static final long serialVersionUID = 1L;
   private final Index<TYPE> delegate;
 
@@ -110,4 +110,20 @@ public class SynchronizedIndex<TYPE> implements Index<TYPE>, Serializable {
   public Index<TYPE> copy() {
     return Indexes.synchronizedIndex(delegate.copy());
   }
+
+  @Override
+  public String toString() {
+    return delegate.toString();
+  }
+
+  @Override
+  public int hashCode() {
+    return delegate.hashCode();
+  }
+
+  @Override
+  public synchronized boolean equals(Object object) {
+    return delegate.equals(object);
+  }
+
 }//END OF SynchronizedIndex

@@ -36,6 +36,20 @@ public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
   private final Map<TYPE, Integer> map = new HashMap<>();
   private final List<TYPE> list = new ArrayList<>();
 
+  public HashMapIndex() {
+
+  }
+
+  public HashMapIndex(@NonNull Iterable<TYPE> items) {
+    addAll(items);
+  }
+
+  @SafeVarargs
+  public HashMapIndex(@NonNull TYPE... items) {
+    addAll(Arrays.asList(items));
+  }
+
+
   @Override
   public int add(@NonNull TYPE item) {
     if (map.containsKey(item)) {

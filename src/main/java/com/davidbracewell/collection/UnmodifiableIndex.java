@@ -28,7 +28,7 @@ import java.util.Iterator;
 /**
  * @author David B. Bracewell
  */
-class UnmodifiableIndex<TYPE> extends ForwardingIndex<TYPE> {
+final class UnmodifiableIndex<TYPE> extends ForwardingIndex<TYPE> {
 
   private static final long serialVersionUID = -3044104679509123935L;
   private final Index<TYPE> backing;

@@ -22,8 +22,8 @@
 package com.davidbracewell.io.structured.csv;
 
 import com.davidbracewell.SystemInfo;
+import com.davidbracewell.collection.HashMapIndex;
 import com.davidbracewell.collection.Index;
-import com.davidbracewell.collection.Indexes;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.CSV;
@@ -37,10 +37,7 @@ import lombok.NonNull;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -54,7 +51,7 @@ public class CSVWriter extends StructuredWriter {
   private final CSVFormatter formatter;
   private final BufferedWriter writer;
   private boolean endOfDocument = false;
-  private Index<String> header = Indexes.create();
+  private Index<String> header = new HashMapIndex<>();
   private Map<String, Object> row = new LinkedHashMap<>();
 
   public CSVWriter(@NonNull CSV csv, @NonNull Writer writer) throws IOException {
@@ -102,10 +99,9 @@ public class CSVWriter extends StructuredWriter {
   public void write(Map<?, ?> row) throws IOException {
     if (row != null) {
       if (header.isEmpty()) {
-        for (Map.Entry<?, ?> m : row.entrySet()) {
-          writer.write(formatter.format(Convert.convert(m.getKey(), String.class), Convert.convert(m.getValue(), String.class)));
-          writer.write(SystemInfo.LINE_SEPARATOR);
-        }
+        List<?> entries = row.values().stream().map(o -> Convert.convert(o,String.class)).collect(Collectors.toList());
+        writer.write(formatter.format(entries));
+        writer.write(SystemInfo.LINE_SEPARATOR);
       } else {
         writer.write(
           formatter.format(

@@ -28,16 +28,7 @@ import com.google.common.collect.Iterators;
 import lombok.NonNull;
 
 import java.io.Serializable;
-import java.util.AbstractCollection;
-import java.util.AbstractSet;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
@@ -54,6 +45,19 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
   private static final long serialVersionUID = 1L;
   private final Map<K, Counter<V>> map = new HashMap<>();
 
+  public HashMapMultiCounter() {
+
+  }
+
+  @SafeVarargs
+  public HashMapMultiCounter(@NonNull Tuple3<K, V, ? extends Number>... triples) {
+    this(Arrays.asList(triples));
+  }
+
+  public HashMapMultiCounter(@NonNull Iterable<Tuple3<K, V, ? extends Number>> triples) {
+    triples.forEach(triple -> increment(triple.v1, triple.v2, triple.v3.doubleValue()));
+  }
+
   @Override
   public MultiCounter<K, V> adjustValues(@NonNull DoubleUnaryOperator function) {
     MultiCounter<K, V> tmp = newInstance();
@@ -65,21 +69,6 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
   public MultiCounter<K, V> adjustValuesSelf(@NonNull DoubleUnaryOperator function) {
     items().forEach(key -> get(key).adjustValuesSelf(function));
     return this;
-  }
-
-  @Override
-  public Collection<Double> counts() {
-    return new AbstractCollection<Double>() {
-      @Override
-      public Iterator<Double> iterator() {
-        return Iterators.transform(new KeyKeyValueIterator(), Tuple3::getV3);
-      }
-
-      @Override
-      public int size() {
-        return HashMapMultiCounter.this.size();
-      }
-    };
   }
 
   @Override
@@ -103,39 +92,33 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
   }
 
   @Override
-  public Counter<V> get(K item) {
-    if (!map.containsKey(item)) {
-      map.put(item, newCounter());
-    }
-    return map.get(item);
-  }
+  public Collection<Double> counts() {
+    return new AbstractCollection<Double>() {
+      @Override
+      public Iterator<Double> iterator() {
+        return Iterators.transform(new KeyKeyValueIterator(), Tuple3::getV3);
+      }
 
-
-  @Override
-  public boolean isEmpty() {
-    return map.isEmpty();
-  }
-
-  @Override
-  public Set<K> items() {
-    return map.keySet();
+      @Override
+      public int size() {
+        return HashMapMultiCounter.this.size();
+      }
+    };
   }
 
   @Override
-  public List<Map.Entry<K, V>> itemsByCount(boolean ascending) {
-    return Collect.stream(new KeyKeyValueIterator())
-      .sorted((c1, c2) -> (ascending ? 1 : -1) * Double.compare(c1.getV3(), c2.getV3()))
-      .map(t -> Cast.<Map.Entry<K, V>>as(Tuple2.of(t.getV1(), t.getV2())))
-      .collect(Collectors.toList());
-  }
+  public Set<Tuple3<K, V, Double>> entries() {
+    return new AbstractSet<Tuple3<K, V, Double>>() {
+      @Override
+      public Iterator<Tuple3<K, V, Double>> iterator() {
+        return new KeyKeyValueIterator();
+      }
 
-  @Override
-  public MultiCounter<K, V> filterByValue(@NonNull DoublePredicate predicate) {
-    MultiCounter<K, V> tmp = newInstance();
-    Collect.stream(new KeyKeyValueIterator())
-      .filter(t -> predicate.test(t.getV3()))
-      .forEach(t -> tmp.set(t.getV1(), t.getV2(), t.getV3()));
-    return tmp;
+      @Override
+      public int size() {
+        return HashMapMultiCounter.this.size();
+      }
+    };
   }
 
   @Override
@@ -157,12 +140,65 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
   }
 
   @Override
+  public MultiCounter<K, V> filterByValue(@NonNull DoublePredicate predicate) {
+    MultiCounter<K, V> tmp = newInstance();
+    Collect.stream(new KeyKeyValueIterator())
+      .filter(t -> predicate.test(t.getV3()))
+      .forEach(t -> tmp.set(t.getV1(), t.getV2(), t.getV3()));
+    return tmp;
+  }
+
+  @Override
+  public Counter<V> get(K item) {
+    if (!map.containsKey(item)) {
+      map.put(item, newCounter());
+    }
+    return map.get(item);
+  }
+
+  @Override
+  public boolean isEmpty() {
+    return map.isEmpty();
+  }
+
+  @Override
+  public Set<K> items() {
+    return map.keySet();
+  }
+
+  @Override
+  public List<Map.Entry<K, V>> itemsByCount(boolean ascending) {
+    return Collect.stream(new KeyKeyValueIterator())
+      .sorted((c1, c2) -> (ascending ? 1 : -1) * Double.compare(c1.getV3(), c2.getV3()))
+      .map(t -> Cast.<Map.Entry<K, V>>as(Tuple2.of(t.getV1(), t.getV2())))
+      .collect(Collectors.toList());
+  }
+
+  @Override
   public MultiCounter<K, V> merge(MultiCounter<K, V> other) {
     if (other != null) {
       other.entries().stream()
         .forEach(e -> increment(e.v1, e.v2, e.v3));
     }
     return this;
+  }
+
+  /**
+   * New counter.
+   *
+   * @return the counter
+   */
+  private Counter<V> newCounter() {
+    return new HashMapCounter<>();
+  }
+
+  /**
+   * New instance.
+   *
+   * @return the multi counter
+   */
+  private MultiCounter<K, V> newInstance() {
+    return new HashMapMultiCounter<>();
   }
 
   @Override
@@ -196,39 +232,6 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
   @Override
   public int size() {
     return map.values().parallelStream().mapToInt(Counter::size).sum();
-  }
-
-  @Override
-  public Set<Tuple3<K, V, Double>> entries() {
-    return new AbstractSet<Tuple3<K, V, Double>>() {
-      @Override
-      public Iterator<Tuple3<K, V, Double>> iterator() {
-        return new KeyKeyValueIterator();
-      }
-
-      @Override
-      public int size() {
-        return HashMapMultiCounter.this.size();
-      }
-    };
-  }
-
-  /**
-   * New counter.
-   *
-   * @return the counter
-   */
-  private Counter<V> newCounter() {
-    return new HashMapCounter<>();
-  }
-
-  /**
-   * New instance.
-   *
-   * @return the multi counter
-   */
-  private MultiCounter<K, V> newInstance() {
-    return new HashMapMultiCounter<>();
   }
 
   @Override
