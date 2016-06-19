@@ -21,7 +21,7 @@
 
 package com.davidbracewell.conversion;
 
-import com.davidbracewell.DateUtils;
+import com.davidbracewell.DateParser;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.logging.Logger;
 import com.davidbracewell.reflection.ReflectionUtils;
@@ -39,7 +39,6 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.sql.Blob;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -51,6 +50,7 @@ import java.util.*;
 public class CommonTypeConverter {
 
   public static final Function<Object, Date> JAVA_DATE = new Function<Object, Date>() {
+    private  final DateParser dateParser = new DateParser();
 
     @Override
     public Date apply(Object input) {
@@ -68,21 +68,9 @@ public class CommonTypeConverter {
       if (string != null) {
         string = StringUtils.trim(string.replaceAll(StringUtils.MULTIPLE_WHITESPACE, " "));
 
-        Date date = DateUtils.parseQuietly(string, Locale.getDefault());
-        if (date != null) {
-          return date;
-        }
-        date = DateUtils.parseQuietly(string, DateUtils.ISO_8601);
-        if (date != null) {
-          return date;
-        }
-        date = DateUtils.parseQuietly(string, DateUtils.US_STANDARD);
-        if (date != null) {
-          return date;
-        }
-        date = DateUtils.parseQuietly(string, DateFormat.getTimeInstance());
-        if (date != null) {
-          return date;
+        Optional<Date> date = dateParser.parseQuietly(string);
+        if (date.isPresent()) {
+          return date.get();
         }
       }
 

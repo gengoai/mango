@@ -62,6 +62,7 @@ public final class MathEvaluator {
     .add(CommonTypes.COMMA)
     .add(CommonTypes.WORD, "[a-zA-z]\\w*")
     .build();
+
   private static final Evaluator<Double> evaluator = new Evaluator<Double>() {
     {
       $(ValueExpression.class, e -> NumberFormat.getInstance().parse(e.toString()).doubleValue());

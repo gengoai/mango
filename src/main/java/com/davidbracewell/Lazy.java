@@ -32,8 +32,12 @@ public final class Lazy<T> implements Serializable {
    * @return the value
    */
   public T get() {
-    atomicReference.compareAndSet(null, supplier.get());
-    return atomicReference.get();
+    T val = atomicReference.get();
+    if (val == null) {
+      atomicReference.compareAndSet(null, supplier.get());
+      val = atomicReference.get();
+    }
+    return val;
   }
 
 }// END OF Lazy
