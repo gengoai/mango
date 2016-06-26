@@ -24,7 +24,12 @@ package com.davidbracewell.config;
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.ClasspathResource;
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.parsing.*;
+import com.davidbracewell.parsing.Grammar;
+import com.davidbracewell.parsing.Lexer;
+import com.davidbracewell.parsing.ParseException;
+import com.davidbracewell.parsing.Parser;
+import com.davidbracewell.parsing.ParserToken;
+import com.davidbracewell.parsing.ParserTokenStream;
 import com.davidbracewell.parsing.expressions.Expression;
 import com.davidbracewell.parsing.expressions.PrefixExpression;
 import com.davidbracewell.parsing.expressions.ValueExpression;
@@ -95,19 +100,16 @@ class ConfigParser extends Parser {
     }
   };
 
-  private final Config.ConfigPropertySetter propertySetter;
   private final String resourceName;
 
   /**
    * Instantiates a new Config parser.
    *
-   * @param config         the config
-   * @param propertySetter the property setter
+   * @param config the config
    * @throws java.io.IOException the iO exception
    */
-  public ConfigParser(Resource config, Config.ConfigPropertySetter propertySetter) throws IOException {
+  public ConfigParser(Resource config) throws IOException {
     super(CONFIG_GRAMMAR, CONFIG_LEXER.lex(config));
-    this.propertySetter = propertySetter;
     this.resourceName = config.descriptor();
   }
 
@@ -123,7 +125,7 @@ class ConfigParser extends Parser {
   }
 
   private void importConfig(String importStatement) throws ParseException {
-    if (!Config.loadDefaultConf(importStatement, propertySetter)) {
+    if (!Config.loadDefaultConf(importStatement)) {
       String path;
 
       if (importStatement.contains("/")) {
@@ -142,9 +144,9 @@ class ConfigParser extends Parser {
 
       path = Config.resolveVariables(path).trim();
       if (path.startsWith("file:")) {
-        Config.loadConfig(Resources.from(path), propertySetter);
+        Config.loadConfig(Resources.from(path));
       } else {
-        Config.loadConfig(new ClasspathResource(path), propertySetter);
+        Config.loadConfig(new ClasspathResource(path));
       }
     }
   }
@@ -174,7 +176,7 @@ class ConfigParser extends Parser {
       }
     }
 
-    propertySetter.setProperty(key, value, resourceName);
+    Config.getInstance().setterFunction.setProperty(key, value, resourceName);
   }
 
   @Override

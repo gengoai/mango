@@ -48,8 +48,19 @@ import com.google.common.base.Throwables;
 import lombok.NonNull;
 
 import javax.script.ScriptException;
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Predicate;
@@ -79,9 +90,9 @@ public final class Config implements Serializable {
   private static Resource localConfigDirectory = Resources.fromFile(SystemInfo.USER_HOME + "/config/");
   private static ClassLoader defaultClassLoader = Config.class.getClassLoader();
   private volatile static Config INSTANCE;
-
   private final Map<String, String> properties = new ConcurrentHashMap<>();
   private final Set<String> loaded = new ConcurrentSkipListSet<>();
+  ConfigPropertySetter setterFunction = ConfigSettingError.INSTANCE;
 
   /**
    * Gets instance.
@@ -197,8 +208,7 @@ public final class Config implements Serializable {
   /**
    * <p>Checks if a property is in the config or or set on the system. The property name is constructed as
    * <code>clazz.getName() + . + propertyComponent[0] + . + propertyComponent[1] + ... +
-   * (language.toString()|language.getCode().toLowerCase())</code> This will return true if the language specific
-   * config
+   * (language.toString()|language.getCode().toLowerCase())</code> This will return true if the language specific config
    * option is set or a default (i.e. no-language specified) version is set. </p>
    *
    * @param propertyPrefix     The prefix
@@ -269,8 +279,7 @@ public final class Config implements Serializable {
   /**
    * <p>Checks if a property is in the config or or set on the system. The property name is constructed as
    * <code>clazz.getName() + . + propertyComponent[0] + . + propertyComponent[1] + ... +
-   * (language.toString()|language.getCode().toLowerCase())</code> This will return true if the language specific
-   * config
+   * (language.toString()|language.getCode().toLowerCase())</code> This will return true if the language specific config
    * option is set or a default (i.e. no-language specified) version is set. </p>
    *
    * @param clazz              The class with which the property is associated.
@@ -402,19 +411,18 @@ public final class Config implements Serializable {
    *
    * @param resource The config file
    */
-  public static void loadConfig(Resource resource) {
-    if (resource != null && resource.exists()) {
-      loadConfig(resource, ConfigSettingFunction.INSTANCE);
-    }
-  }
+//  public static void loadConfig(Resource resource) {
+//    if (resource != null && resource.exists()) {
+//      loadConfig(resource);
+//    }
+//  }
 
   /**
    * Loads a config file
    *
-   * @param resource       The config file
-   * @param propertySetter the property setter
+   * @param resource The config file
    */
-  static void loadConfig(Resource resource, ConfigPropertySetter propertySetter) {
+  public static void loadConfig(Resource resource) {
     if (resource == null || !resource.exists()) {
       return;
     }
@@ -422,7 +430,7 @@ public final class Config implements Serializable {
       return; //Only load once!
     }
     try {
-      new ConfigParser(resource, propertySetter).parse();
+      new ConfigParser(resource).parse();
       if (resource.path() != null) {
         getInstance().loaded.add(resource.path());
       }
@@ -457,9 +465,17 @@ public final class Config implements Serializable {
     if (args != null) {
       CommandLineParser parser = new CommandLineParser();
       parser.parse(args);
-      parser.getSetEntries().forEach(entry -> {
-        ConfigSettingFunction.INSTANCE.setProperty(entry.getKey(), entry.getValue(), "CommandLine");
-      });
+      parser.getSetEntries().forEach(entry ->
+        getInstance().setterFunction.setProperty(entry.getKey(), entry.getValue(), "CommandLine")
+      );
+    }
+  }
+
+  public static void setAllCommandLine(CommandLineParser parser) {
+    if (parser != null) {
+      parser.getSetEntries().forEach(entry ->
+        getInstance().setterFunction.setProperty(entry.getKey(), entry.getValue(), "CommandLine")
+      );
     }
   }
 
@@ -475,23 +491,26 @@ public final class Config implements Serializable {
    * @return Non config/option parameters from command line
    */
   public static String[] initialize(String programName, String[] args, CommandLineParser parser) {
-    String[] rval = null;
+    String rval[];
     if (args != null) {
       rval = parser.parse(args);
+    } else {
+      rval = new String[0];
     }
 
     //Check if we should only explain the config
-    final ConfigPropertySetter setterFunction =
-      NamedOption.CONFIG_EXPLAIN.<Boolean>getValue()
-        ? ConfigExplainSettingFunction.INSTANCE
-        : ConfigSettingFunction.INSTANCE;
+    if (NamedOption.CONFIG_EXPLAIN.<Boolean>getValue()) {
+      getInstance().setterFunction = ConfigExplainSettingFunction.INSTANCE;
+    } else {
+      getInstance().setterFunction = ConfigSettingFunction.INSTANCE;
+    }
 
     // Auto-discover the package of the calling class.
     String className = getCallingClass();
 
     if (className != null) {
       try {
-        loadDefaultConf(className, setterFunction);
+        loadDefaultConf(className);
       } catch (ParseException e) {
         throw Throwables.propagate(e);
       }
@@ -508,7 +527,7 @@ public final class Config implements Serializable {
       .filter(Resource::exists)
       .forEach(resource -> {
         log.finest("Loading {0}.conf from :", programName);
-        loadConfig(resource, setterFunction);
+        loadConfig(resource);
       });
 
 
@@ -520,12 +539,15 @@ public final class Config implements Serializable {
     }
 
     if (parser.isSet(NamedOption.CONFIG)) {
-      loadConfig(NamedOption.CONFIG.getValue(), setterFunction);
+      loadConfig(NamedOption.CONFIG.getValue());
     }
+
+
+    setAllCommandLine(parser);
 
     // If config-explain was set then output the config recording and then quit
     if (parser.isSet(NamedOption.CONFIG_EXPLAIN)) {
-      ConfigExplainSettingFunction settings = (ConfigExplainSettingFunction) setterFunction;
+      ConfigExplainSettingFunction settings = (ConfigExplainSettingFunction) getInstance().setterFunction;
       for (String key : new TreeSet<>(settings.properties.keySet())) {
         System.err.println(key);
         int max = settings.properties.get(key).size();
@@ -540,6 +562,7 @@ public final class Config implements Serializable {
     }
 
 
+
     return rval;
   }
 
@@ -547,12 +570,11 @@ public final class Config implements Serializable {
   /**
    * Load default conf.
    *
-   * @param packageName    the package name
-   * @param propertySetter the property setter
+   * @param packageName the package name
    * @return the boolean
    * @throws ParseException the parse exception
    */
-  protected static boolean loadDefaultConf(String packageName, ConfigPropertySetter propertySetter) throws ParseException {
+  protected static boolean loadDefaultConf(String packageName) throws ParseException {
 
     if (packageName.endsWith(".conf")) {
       return false;
@@ -576,7 +598,7 @@ public final class Config implements Serializable {
     }
 
     if (defaultConf.exists()) {
-      loadConfig(defaultConf, propertySetter);
+      loadConfig(defaultConf);
       return true;
     }
 
@@ -761,7 +783,7 @@ public final class Config implements Serializable {
     public void setProperty(String name, String value, String resourceName) {
       Config.setProperty(name, value);
       if (!properties.containsKey(name)) {
-        properties.put(name, new LinkedHashSet<String>());
+        properties.put(name, new LinkedHashSet<>());
       }
       properties.get(name).add(resourceName + "::" + value);
     }
@@ -780,6 +802,20 @@ public final class Config implements Serializable {
     @Override
     public void setProperty(String name, String value, String resourceName) {
       Config.setProperty(name, value);
+    }
+
+  }
+
+
+  enum ConfigSettingError implements ConfigPropertySetter {
+    /**
+     * The INSTANCE.
+     */
+    INSTANCE;
+
+    @Override
+    public void setProperty(String name, String value, String resourceName) {
+      throw new IllegalStateException("Config not initialized");
     }
 
   }

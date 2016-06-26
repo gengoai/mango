@@ -21,7 +21,6 @@
 
 package com.davidbracewell.cli;
 
-import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.reflection.Reflect;
@@ -31,7 +30,13 @@ import com.davidbracewell.tuple.Tuple2;
 import com.google.common.base.Throwables;
 import lombok.NonNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -254,26 +259,19 @@ public class CommandLineParser {
     NamedOption option = options.get(key.replaceAll("^-+", ""));
 
     if (option == null) {
-      if (key.startsWith(LONG)) {
-        unamedOptions.put(key.substring(2), value);
-        return value;
-      } else if (value == null || value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
-        unamedOptions.put(key.substring(1), value);
-        return value;
+      if (value == null) {
+        value = "true";
       }
-
-      unamedOptions.put(key.substring(1), "true");
-      return null;
+      unamedOptions.put(key, value);
+      return value;
 
     } else if (option.isBoolean()) {
 
       if (value == null || value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
         option.setValue(value);
-        Config.setProperty(option.getName(), value == null ? "true" : value);
         return null;
       }
 
-      Config.setProperty(key, "true");
       option.setValue(null);
       return value;
 
@@ -283,7 +281,6 @@ public class CommandLineParser {
         throw new CommandLineParserException(key, value);
       }
 
-      Config.setProperty(option.getName(), value);
       option.setValue(value);
       return value;
 

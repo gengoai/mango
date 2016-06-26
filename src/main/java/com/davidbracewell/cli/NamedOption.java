@@ -186,7 +186,6 @@ public final class NamedOption {
    * @param optionValue the option value
    */
   void setValue(String optionValue) {
-
     if (StringUtils.isNullOrBlank(optionValue) && isBoolean()) {
 
       this.value = true;
@@ -254,6 +253,11 @@ public final class NamedOption {
     .type(Boolean.class)
     .description("Explains how the config values were set.")
     .defaultValue(false)
+    .alias("config_explain")
+    .alias("config_dump")
+    .alias("config-dump")
+    .alias("dump_config")
+    .alias("dump-config")
     .build();
 
 }//END OF NamedOption

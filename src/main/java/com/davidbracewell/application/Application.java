@@ -48,6 +48,13 @@ public interface Application extends Runnable, Serializable {
   String[] getNonParsableArguments();
 
   /**
+   * <p>Sets the arguments that were not parsable by the command line parser</p>
+   *
+   * @param nonParsableArguments the non-parsable arguments
+   */
+  void setNonParsableArguments(String[] nonParsableArguments);
+
+  /**
    * Get all arguments passed to the application.
    *
    * @return the array of arguments passed to the application
@@ -60,13 +67,6 @@ public interface Application extends Runnable, Serializable {
    * @param allArguments All arguments from the command line.
    */
   void setAllArguments(String[] allArguments);
-
-  /**
-   * <p>Sets the arguments that were not parsable by the command line parser</p>
-   *
-   * @param nonParsableArguments the non-parsable arguments
-   */
-  void setNonParsableArguments(String[] nonParsableArguments);
 
   /**
    * <p>Gets the package name to use for loading a default.conf</p>
@@ -86,9 +86,9 @@ public interface Application extends Runnable, Serializable {
 
 
   /**
-   * <p>Runs the application by first parsing the command line arguments and initializing the config. The process
-   * then runs the {@link #setup()} method to perform any special user-defined setup and then finally runs the {@link
-   * #run()} command which performs the application logic and is specific to each implementation.</p>
+   * <p>Runs the application by first parsing the command line arguments and initializing the config. The process then
+   * runs the {@link #setup()} method to perform any special user-defined setup and then finally runs the {@link #run()}
+   * command which performs the application logic and is specific to each implementation.</p>
    *
    * @param args the args
    */
@@ -110,8 +110,9 @@ public interface Application extends Runnable, Serializable {
     setNonParsableArguments(Config.initialize(getName(), args, parser));
     if (getConfigPackageName() != null) {
       Config.loadConfig(Resources.fromClasspath(getConfigPackageName().replace(".", "/") + "/default.conf"));
-      Config.setAllCommandLine(allArgs);
+      Config.setAllCommandLine(parser);
     }
+
 
     try {
       setup();
