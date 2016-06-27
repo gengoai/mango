@@ -23,12 +23,11 @@ public class TableFormatter implements Serializable {
   private static final long serialVersionUID = 1L;
   private static final int MIN_CELL_WIDTH = 5;
   private static final DecimalFormat longNumberFormatter = new DecimalFormat("0.0E0");
-  private static final DecimalFormat normalNumberFormatter = new DecimalFormat("0.000#####");
+  private DecimalFormat normalNumberFormatter = new DecimalFormat("0.000");
   private List<Object> header = new ArrayList<>();
   private List<List<Object>> content = new LinkedList<>();
   private int longestCell = 2;
   private int longestRow;
-  private double maxNumber;
   private String title;
 
   /**
@@ -40,7 +39,6 @@ public class TableFormatter implements Serializable {
     this.longestCell = 2;
     this.longestRow = 0;
     this.title = null;
-    this.maxNumber = 0;
   }
 
   /**
@@ -52,6 +50,14 @@ public class TableFormatter implements Serializable {
   public TableFormatter title(String title) {
     this.title = title;
     return this;
+  }
+
+  public void setMinCellWidth(int cellWidth) {
+    this.longestCell = cellWidth;
+  }
+
+  public void setNumberFormatter(@NonNull DecimalFormat decimalFormat) {
+    this.normalNumberFormatter = decimalFormat;
   }
 
   /**
@@ -70,7 +76,7 @@ public class TableFormatter implements Serializable {
     if (number instanceof Long || number instanceof Integer || number instanceof Short) {
       return Math.min(longNumberFormatter.format(number).length(), number.toString().length());
     }
-    return Math.min(longNumberFormatter.format(number).length(), normalNumberFormatter.format(number).length());
+    return Math.max(5, Math.min(longNumberFormatter.format(number).length(), normalNumberFormatter.format(number).length()));
   }
 
   /**
@@ -138,7 +144,6 @@ public class TableFormatter implements Serializable {
   public void print(@NonNull PrintStream stream) {
     String horizontalBar = StringUtils.repeat("─", longestCell);
     String hline = middleCMBar(horizontalBar, longestRow);
-    maxNumber = Math.pow(10, longestCell - 2);
     longestRow = Math.max(longestRow, header.size());
 
     if (!StringUtils.isNullOrBlank(title)) {
