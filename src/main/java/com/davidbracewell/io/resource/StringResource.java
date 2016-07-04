@@ -22,7 +22,7 @@
 package com.davidbracewell.io.resource;
 
 import com.davidbracewell.stream.MStream;
-import com.davidbracewell.stream.Streams;
+import com.davidbracewell.stream.StreamingContext;
 import lombok.EqualsAndHashCode;
 
 import java.io.*;
@@ -99,7 +99,7 @@ public class StringResource extends BaseResource implements NonTraversableResour
 
   @Override
   public MStream<String> lines() throws IOException {
-    return Streams.of(false, resource.toString().split("\r?\n"));
+    return StreamingContext.local().stream(resource.toString().split("\r?\n"));
   }
 
   @Override

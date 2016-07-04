@@ -34,7 +34,7 @@ public class CollectionAccumulatable<E, C extends Collection<E>> implements Accu
 
   @Override
   public C addAccumulator(C t1, C t2) {
-    Collection<E> cnew = Collect.create(t1.getClass());
+    Collection<E> cnew = Cast.as(Collect.create(t1.getClass()));
     cnew.addAll(t1);
     cnew.addAll(t2);
     return Cast.as(cnew);

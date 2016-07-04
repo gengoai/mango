@@ -22,7 +22,7 @@
 package com.davidbracewell.io.resource;
 
 import com.davidbracewell.stream.MStream;
-import com.davidbracewell.stream.Streams;
+import com.davidbracewell.stream.StreamingContext;
 import com.google.common.base.Preconditions;
 import lombok.EqualsAndHashCode;
 
@@ -83,7 +83,7 @@ public class ByteArrayResource extends BaseResource implements NonTraversableRes
 
   @Override
   public MStream<String> lines() throws IOException {
-    return Streams.of(false, buffer.toString(getCharset().name()).split("\r?\n"));
+    return StreamingContext.local().stream(buffer.toString(getCharset().name()).split("\r?\n"));
   }
 
   @Override
