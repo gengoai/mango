@@ -26,7 +26,7 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
   }
 
   public SparkPairStream(Map<? extends T, ? extends U> map) {
-    this(Spark.context(), map);
+    this(SparkStreamingContext.INSTANCE.sparkContext(), map);
   }
 
   public SparkPairStream(JavaSparkContext context, Map<? extends T, ? extends U> map) {
@@ -43,7 +43,10 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
 
   @Override
   public <V> MPairStream<T, Map.Entry<U, V>> join(MPairStream<? extends T, ? extends V> stream) {
-    return new SparkPairStream<>(rdd.join(toPairRDD(stream)).mapToPair(t -> new scala.Tuple2<>(t._1(), toMapEntry(t._2()))));
+    JavaPairRDD<T, Map.Entry<U, V>> nrdd = Cast.as(rdd
+      .join(toPairRDD(stream))
+      .mapToPair(t -> new scala.Tuple2<>(t._1(), toMapEntry(t._2()))));
+    return new SparkPairStream<>(nrdd);
   }
 
   @Override
@@ -127,7 +130,8 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
     if (other instanceof SparkPairStream) {
       oRDD = Cast.<SparkPairStream<K, V>>as(other).rdd;
     } else {
-      oRDD = new SparkPairStream<>(Spark.context(rdd), other.collectAsMap()).rdd;
+      JavaSparkContext jsc = SparkStreamingContext.contextOf(this).sparkContext();
+      oRDD = Cast.as(new SparkPairStream<>(jsc, other.collectAsMap()).rdd);
     }
     return oRDD;
   }
@@ -153,13 +157,13 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
     return this;
   }
 
-  /**
-   * Gets context.
-   *
-   * @return the context
-   */
-  public JavaSparkContext getContext() {
-    return Spark.context(rdd);
+  JavaPairRDD<T, U> getRDD() {
+    return rdd;
+  }
+
+  @Override
+  public StreamingContext getContext() {
+    return SparkStreamingContext.contextOf(this);
   }
 
   @Override

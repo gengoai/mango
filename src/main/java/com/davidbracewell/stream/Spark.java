@@ -21,14 +21,6 @@
 
 package com.davidbracewell.stream;
 
-import com.davidbracewell.config.Config;
-import com.davidbracewell.conversion.Cast;
-import com.davidbracewell.string.StringUtils;
-import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-
 /**
  * The interface Spark.
  *
@@ -36,78 +28,78 @@ import org.apache.spark.api.java.JavaSparkContext;
  */
 public final class Spark {
 
-  /**
-   * The constant SPARK_MASTER.
-   */
-  public static String SPARK_MASTER = "spark.master";
-  /**
-   * The constant SPARK_APPNAME.
-   */
-  public static String SPARK_APPNAME = "spark.appName";
-
-  private static volatile JavaSparkContext context;
-
-
-  /**
-   * Gets context.
-   *
-   * @return the context
-   */
-  public static JavaSparkContext context() {
-    if (context == null) {
-      synchronized (Spark.class) {
-        if (context == null) {
-          SparkConf conf = new SparkConf();
-          if (Config.hasProperty(SPARK_MASTER)) {
-            conf.setMaster(Config.get(SPARK_MASTER).asString());
-          }
-          conf.setAppName(Config.get(SPARK_APPNAME).asString(StringUtils.randomHexString(20)));
-          context = new JavaSparkContext(conf);
-        }
-      }
-    }
-    return context;
-  }
-
-  /**
-   * Context java spark context.
-   *
-   * @param stream the stream
-   * @return the java spark context
-   */
-  public static JavaSparkContext context(MStream<?> stream) {
-    if (stream == null) {
-      return context();
-    } else if (stream instanceof SparkStream) {
-      return context(Cast.<SparkStream>as(stream).getRDD());
-    }
-    return context();
-  }
-
-  /**
-   * Context java spark context.
-   *
-   * @param rdd the rdd
-   * @return the java spark context
-   */
-  public static JavaSparkContext context(JavaRDD<?> rdd) {
-    if (rdd == null) {
-      return context();
-    }
-    return new JavaSparkContext(rdd.context());
-  }
-
-  /**
-   * Context java spark context.
-   *
-   * @param rdd the rdd
-   * @return the java spark context
-   */
-  public static JavaSparkContext context(JavaPairRDD<?, ?> rdd) {
-    if (rdd == null) {
-      return context();
-    }
-    return new JavaSparkContext(rdd.context());
-  }
+//  /**
+//   * The constant SPARK_MASTER.
+//   */
+//  public static String SPARK_MASTER = "spark.master";
+//  /**
+//   * The constant SPARK_APPNAME.
+//   */
+//  public static String SPARK_APPNAME = "spark.appName";
+//
+//  private static volatile JavaSparkContext context;
+//
+//
+//  /**
+//   * Gets context.
+//   *
+//   * @return the context
+//   */
+//  public static JavaSparkContext context() {
+//    if (context == null) {
+//      synchronized (Spark.class) {
+//        if (context == null) {
+//          SparkConf conf = new SparkConf();
+//          if (Config.hasProperty(SPARK_MASTER)) {
+//            conf.setMaster(Config.get(SPARK_MASTER).asString());
+//          }
+//          conf.setAppName(Config.get(SPARK_APPNAME).asString(StringUtils.randomHexString(20)));
+//          context = new JavaSparkContext(conf);
+//        }
+//      }
+//    }
+//    return context;
+//  }
+//
+//  /**
+//   * Context java spark context.
+//   *
+//   * @param stream the stream
+//   * @return the java spark context
+//   */
+//  public static JavaSparkContext context(MStream<?> stream) {
+//    if (stream == null) {
+//      return context();
+//    } else if (stream instanceof SparkStream) {
+//      return context(Cast.<SparkStream>as(stream).getRDD());
+//    }
+//    return context();
+//  }
+//
+//  /**
+//   * Context java spark context.
+//   *
+//   * @param rdd the rdd
+//   * @return the java spark context
+//   */
+//  public static JavaSparkContext context(JavaRDD<?> rdd) {
+//    if (rdd == null) {
+//      return context();
+//    }
+//    return new JavaSparkContext(rdd.context());
+//  }
+//
+//  /**
+//   * Context java spark context.
+//   *
+//   * @param rdd the rdd
+//   * @return the java spark context
+//   */
+//  public static JavaSparkContext context(JavaPairRDD<?, ?> rdd) {
+//    if (rdd == null) {
+//      return context();
+//    }
+//    return new JavaSparkContext(rdd.context());
+//  }
 
 }//END OF Spark

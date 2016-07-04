@@ -38,6 +38,8 @@ import java.util.Random;
  */
 public interface MPairStream<T, U> extends AutoCloseable {
 
+  public StreamingContext getContext();
+
   /**
    * Collect as list list.
    *

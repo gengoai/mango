@@ -32,9 +32,9 @@ import com.davidbracewell.string.StringUtils;
 import lombok.NonNull;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.broadcast.Broadcast;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
@@ -56,23 +56,23 @@ public enum SparkStreamingContext implements StreamingContext {
    */
   public static String SPARK_APPNAME = "spark.appName";
 
-  private volatile static AtomicReference<JavaSparkContext> sparkContext = new AtomicReference<>(null);
+  private static volatile JavaSparkContext context;
 
 
   private static JavaSparkContext getSparkContext() {
-    if (sparkContext.get() == null) {
+    if (context == null) {
       synchronized (SparkStreamingContext.class) {
-        return sparkContext.updateAndGet(jsc -> {
+        if (context == null) {
           SparkConf conf = new SparkConf();
           if (Config.hasProperty(SPARK_MASTER)) {
             conf.setMaster(Config.get(SPARK_MASTER).asString());
           }
           conf.setAppName(Config.get(SPARK_APPNAME).asString(StringUtils.randomHexString(20)));
-          return new JavaSparkContext(conf);
-        });
+          context = new JavaSparkContext(conf);
+        }
       }
     }
-    return sparkContext.get();
+    return context;
   }
 
   public JavaSparkContext sparkContext() {
@@ -142,7 +142,7 @@ public enum SparkStreamingContext implements StreamingContext {
     if (items == null) {
       return empty();
     }
-    return new JavaMStream<>(Arrays.asList(items));
+    return new SparkStream<>(Arrays.asList(items));
   }
 
   @Override
@@ -150,7 +150,7 @@ public enum SparkStreamingContext implements StreamingContext {
     if (stream == null) {
       return empty();
     }
-    return new JavaMStream<>(stream.collect(Collectors.toList()));
+    return new SparkStream<>(stream.collect(Collectors.toList()));
   }
 
   @Override
@@ -191,10 +191,30 @@ public enum SparkStreamingContext implements StreamingContext {
 
 
   public static SparkStreamingContext contextOf(@NonNull SparkStream<?> stream) {
-    JavaSparkContext jsc = new JavaSparkContext(stream.getRDD().context());
-    sparkContext.set(jsc);
+    if (context == null) {
+      synchronized (SparkStreamingContext.class) {
+        if (context == null) {
+          context = new JavaSparkContext(stream.getRDD().context());
+        }
+      }
+    }
     return SparkStreamingContext.INSTANCE;
   }
 
+  public static SparkStreamingContext contextOf(@NonNull SparkPairStream<?, ?> stream) {
+    if (context == null) {
+      synchronized (SparkStreamingContext.class) {
+        if (context == null) {
+          context = new JavaSparkContext(stream.getRDD().context());
+        }
+      }
+    }
+    return SparkStreamingContext.INSTANCE;
+  }
+
+
+  public <T> Broadcast<T> broadcast(T object) {
+    return getSparkContext().broadcast(object);
+  }
 
 }//END OF SparkStreamingContext

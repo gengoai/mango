@@ -136,6 +136,11 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U>, Serializable {
 
 
   @Override
+  public StreamingContext getContext() {
+    return JavaStreamingContext.INSTANCE;
+  }
+
+  @Override
   public List<Map.Entry<T, U>> collectAsList() {
     return stream.map(Cast::<Map.Entry<T, U>>as).collect(Collectors.toList());
   }

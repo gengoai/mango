@@ -65,7 +65,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    */
   public SparkStream(List<T> collection) {
     int slices = Math.max(1, collection.size() / Config.get("spark.sliceSize").asIntegerValue(100));
-    this.rdd = Spark.context().parallelize(collection, slices);
+    this.rdd = SparkStreamingContext.INSTANCE.sparkContext().parallelize(collection, slices);
   }
 
   /**
@@ -98,7 +98,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
   @Override
   public <R> MStream<R> flatMap(SerializableFunction<? super T, Iterable<? extends R>> mapper) {
-    return new SparkStream<>(rdd.flatMap(t -> Cast.as(mapper.apply(t))));
+    return new SparkStream<>(rdd.flatMap(t -> Cast.as(mapper.apply(t).iterator())));
   }
 
   @Override
@@ -257,7 +257,8 @@ public class SparkStream<T> implements MStream<T>, Serializable {
     if (other instanceof SparkStream) {
       return new SparkStream<>(rdd.union(Cast.<SparkStream<T>>as(other).rdd));
     }
-    return new SparkStream<>(rdd.union(Spark.context(rdd).parallelize(other.collect())));
+    JavaSparkContext sc = new JavaSparkContext(rdd.context());
+    return new SparkStream<>(rdd.union(sc.parallelize(other.collect())));
   }
 
   @Override
