@@ -21,11 +21,23 @@
 
 package com.davidbracewell.stream;
 
+import com.davidbracewell.collection.Collect;
+import com.davidbracewell.config.Config;
+import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.stream.accumulator.Accumulatable;
 import com.davidbracewell.stream.accumulator.MAccumulator;
+import com.davidbracewell.stream.accumulator.SparkAccumulatable;
+import com.davidbracewell.stream.accumulator.SparkAccumulator;
+import com.davidbracewell.string.StringUtils;
 import lombok.NonNull;
+import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -34,36 +46,155 @@ import java.util.stream.Stream;
 public enum SparkStreamingContext implements StreamingContext {
   INSTANCE;
 
-  private transient volatile JavaSparkContext sparkContext;
 
+  /**
+   * The constant SPARK_MASTER.
+   */
+  public static String SPARK_MASTER = "spark.master";
+  /**
+   * The constant SPARK_APPNAME.
+   */
+  public static String SPARK_APPNAME = "spark.appName";
+
+  private volatile static AtomicReference<JavaSparkContext> sparkContext = new AtomicReference<>(null);
+
+
+  private static JavaSparkContext getSparkContext() {
+    if (sparkContext.get() == null) {
+      synchronized (SparkStreamingContext.class) {
+        return sparkContext.updateAndGet(jsc -> {
+          SparkConf conf = new SparkConf();
+          if (Config.hasProperty(SPARK_MASTER)) {
+            conf.setMaster(Config.get(SPARK_MASTER).asString());
+          }
+          conf.setAppName(Config.get(SPARK_APPNAME).asString(StringUtils.randomHexString(20)));
+          return new JavaSparkContext(conf);
+        });
+      }
+    }
+    return sparkContext.get();
+  }
+
+  public JavaSparkContext sparkContext() {
+    return getSparkContext();
+  }
 
   @Override
   public MAccumulator<Double> accumulator(double initialValue, String name) {
-    return null;
+    return new SparkAccumulator<>(
+      getSparkContext().doubleAccumulator(initialValue, name)
+    );
   }
 
   @Override
   public MAccumulator<Integer> accumulator(int initialValue, String name) {
-    return null;
+    return new SparkAccumulator<>(
+      getSparkContext().intAccumulator(initialValue, name)
+    );
   }
 
   @Override
-  public <T> MAccumulator<T> accumulator(T initialValue, Accumulatable<T> accumulatable, String name) {
-    return null;
+  public <T> MAccumulator<T> accumulator(T initialValue, @NonNull Accumulatable<T> accumulatable, String name) {
+    return new SparkAccumulator<>(
+      getSparkContext().accumulator(
+        initialValue,
+        name,
+        new SparkAccumulatable<T>(accumulatable)
+      )
+    );
   }
 
   @Override
-  public <T> MStream<T> stream(@NonNull T... items) {
-    return null;
+  public MDoubleStream doubleStream(DoubleStream doubleStream) {
+    if (doubleStream == null) {
+      return empty().mapToDouble(o -> Double.NaN);
+    }
+    return new SparkDoubleStream(
+      getSparkContext().parallelizeDoubles(doubleStream.boxed().collect(Collectors.toList()))
+    );
+  }
+
+  @Override
+  public MDoubleStream doubleStream(double... values) {
+    if (values == null) {
+      return empty().mapToDouble(o -> Double.NaN);
+    }
+    return new SparkDoubleStream(
+      getSparkContext().parallelizeDoubles(DoubleStream.of(values).boxed().collect(Collectors.toList()))
+    );
+  }
+
+  @Override
+  public <T> MStream<T> empty() {
+    return new SparkStream<>(getSparkContext().parallelize(new ArrayList<>()));
+  }
+
+  @Override
+  public MStream<Integer> range(int startInclusive, int endExclusive) {
+    return new SparkStream<Integer>(
+      IntStream.range(startInclusive, endExclusive).boxed().collect(Collectors.toList())
+    );
+  }
+
+  @Override
+  @SafeVarargs
+  public final <T> MStream<T> stream(T... items) {
+    if (items == null) {
+      return empty();
+    }
+    return new JavaMStream<>(Arrays.asList(items));
   }
 
   @Override
   public <T> MStream<T> stream(@NonNull Stream<T> stream) {
-    return null;
+    if (stream == null) {
+      return empty();
+    }
+    return new JavaMStream<>(stream.collect(Collectors.toList()));
+  }
+
+  @Override
+  public <K, V> MPairStream<K, V> stream(Map<? extends K, ? extends V> map) {
+    if (map == null) {
+      return new SparkPairStream<>(new HashMap<K, V>());
+    }
+    return new SparkPairStream<>(map);
+  }
+
+  @Override
+  public <T> MStream<T> stream(Collection<? extends T> collection) {
+    if (collection == null) {
+      return empty();
+    } else if (collection instanceof List) {
+      return new SparkStream<>(Cast.<List<T>>as(collection));
+    }
+    return new SparkStream<>(collection.stream().collect(Collectors.toList()));
+  }
+
+  @Override
+  public <T> MStream<T> stream(Iterable<? extends T> iterable) {
+    if (iterable == null) {
+      return empty();
+    } else if (iterable instanceof Collection) {
+      return stream(Cast.<Collection<T>>as(iterable));
+    }
+    return new SparkStream<>(Collect.stream(iterable).collect(Collectors.toList()));
   }
 
   @Override
   public MStream<String> textFile(String location) {
-    return null;
+    if (StringUtils.isNullOrBlank(location)) {
+      return empty();
+    }
+    return new SparkStream<>(getSparkContext().textFile(location));
   }
+
+
+  public static SparkStreamingContext contextOf(@NonNull SparkStream<?> stream) {
+    JavaSparkContext jsc = new JavaSparkContext(stream.getRDD().context());
+    sparkContext.set(jsc);
+    return SparkStreamingContext.INSTANCE;
+  }
+
+
 }//END OF SparkStreamingContext

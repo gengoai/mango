@@ -25,7 +25,6 @@ import com.davidbracewell.collection.Collect;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.*;
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.stream.accumulator.*;
 import com.davidbracewell.tuple.Tuple2;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Ordering;
@@ -321,18 +320,13 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
   }
 
   @Override
-  public MAccumulator<Double> doubleAccumulator(double initialValue, String name) {
-    return new JavaAccumulator<>(new DoubleAccumulatable(), initialValue, name);
+  public MStream<T> repartition(int numPartitions) {
+    return this;
   }
 
   @Override
-  public MAccumulator<Integer> intAccumulator(int initialValue, String name) {
-    return new JavaAccumulator<>(new IntAccumulatable(), initialValue, name);
-  }
-
-  @Override
-  public <T1> MAccumulator<T1> accumulator(T1 initialValue, @NonNull Accumulatable<T1> accumulatable, String name) {
-    return new JavaAccumulator<>(accumulatable, initialValue, name);
+  public StreamingContext getContext() {
+    return JavaStreamingContext.INSTANCE;
   }
 
 }//END OF JavaMStream

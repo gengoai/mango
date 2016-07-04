@@ -21,16 +21,20 @@
 
 package com.davidbracewell.stream;
 
+import com.davidbracewell.collection.Collect;
 import com.davidbracewell.collection.Counter;
 import com.davidbracewell.collection.HashMapCounter;
+import com.davidbracewell.config.Config;
 import com.davidbracewell.stream.accumulator.Accumulatable;
 import com.davidbracewell.stream.accumulator.CollectionAccumulatable;
 import com.davidbracewell.stream.accumulator.CounterAccumulatable;
 import com.davidbracewell.stream.accumulator.MAccumulator;
-import lombok.NonNull;
 
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
 /**
@@ -39,6 +43,26 @@ import java.util.stream.Stream;
  * @author David B. Bracewell
  */
 public interface StreamingContext {
+
+  static StreamingContext get() {
+    return get(Config.get("streams.distributed").asBooleanValue(false));
+  }
+
+  static StreamingContext get(boolean distributed) {
+    if (distributed) {
+      return distributed();
+    }
+    return local();
+  }
+
+  static StreamingContext local() {
+    return JavaStreamingContext.INSTANCE;
+  }
+
+  static StreamingContext distributed() {
+    return SparkStreamingContext.INSTANCE;
+  }
+
 
   /**
    * Double accumulator m accumulator.
@@ -126,10 +150,23 @@ public interface StreamingContext {
     return accumulator(collectionSupplier.get(), new CollectionAccumulatable<>());
   }
 
+  /**
+   * Counter accumulator m accumulator.
+   *
+   * @param <E> the type parameter
+   * @return the m accumulator
+   */
   default <E> MAccumulator<Counter<E>> counterAccumulator() {
     return accumulator(new HashMapCounter<E>(), new CounterAccumulatable<>());
   }
 
+  /**
+   * Counter accumulator m accumulator.
+   *
+   * @param <E>  the type parameter
+   * @param name the name
+   * @return the m accumulator
+   */
   default <E> MAccumulator<Counter<E>> counterAccumulator(String name) {
     return accumulator(new HashMapCounter<E>(), new CounterAccumulatable<>(), name);
   }
@@ -141,7 +178,7 @@ public interface StreamingContext {
    * @param items the items
    * @return the m stream
    */
-  <T> MStream<T> stream(@NonNull T... items);
+  <T> MStream<T> stream(T... items);
 
   /**
    * Of m stream.
@@ -150,7 +187,68 @@ public interface StreamingContext {
    * @param stream the stream
    * @return the m stream
    */
-  <T> MStream<T> stream(@NonNull Stream<T> stream);
+  <T> MStream<T> stream(Stream<T> stream);
+
+
+  /**
+   * Stream m pair stream.
+   *
+   * @param <K> the type parameter
+   * @param <V> the type parameter
+   * @param map the map
+   * @return the m pair stream
+   */
+  <K, V> MPairStream<K, V> stream(Map<? extends K, ? extends V> map);
+
+
+  /**
+   * Stream m stream.
+   *
+   * @param <T>        the type parameter
+   * @param collection the collection
+   * @return the m stream
+   */
+  <T> MStream<T> stream(Collection<? extends T> collection);
+
+
+  /**
+   * Stream m stream.
+   *
+   * @param <T>      the type parameter
+   * @param iterable the iterable
+   * @return the m stream
+   */
+  <T> MStream<T> stream(Iterable<? extends T> iterable);
+
+  /**
+   * Stream m stream.
+   *
+   * @param <T>      the type parameter
+   * @param iterator the iterator
+   * @return the m stream
+   */
+  default <T> MStream<T> stream(Iterator<? extends T> iterator) {
+    if (iterator == null) {
+      return empty();
+    }
+    return stream(Collect.asIterable(iterator));
+  }
+
+  /**
+   * Double stream m double stream.
+   *
+   * @param doubleStream the double stream
+   * @return the m double stream
+   */
+  MDoubleStream doubleStream(DoubleStream doubleStream);
+
+  /**
+   * Double stream m double stream.
+   *
+   * @param values the values
+   * @return the m double stream
+   */
+  MDoubleStream doubleStream(double... values);
 
   /**
    * Text file m stream.
@@ -160,5 +258,21 @@ public interface StreamingContext {
    */
   MStream<String> textFile(String location);
 
+  /**
+   * Range m stream.
+   *
+   * @param startInclusive the start inclusive
+   * @param endExclusive   the end exclusive
+   * @return the m stream
+   */
+  MStream<Integer> range(int startInclusive, int endExclusive);
+
+  /**
+   * Empty m stream.
+   *
+   * @param <T> the type parameter
+   * @return the m stream
+   */
+  <T> MStream<T> empty();
 
 }//END OF StreamingContext
