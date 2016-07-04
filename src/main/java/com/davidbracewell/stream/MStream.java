@@ -28,11 +28,15 @@ import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.function.SerializablePredicate;
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.Resource;
+import com.davidbracewell.stream.accumulator.Accumulatable;
+import com.davidbracewell.stream.accumulator.CollectionAccumulatable;
+import com.davidbracewell.stream.accumulator.MAccumulator;
 import com.google.common.collect.Ordering;
 import lombok.NonNull;
 
 import java.io.Closeable;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Collector;
 
@@ -139,6 +143,11 @@ public interface MStream<T> extends Closeable {
    */
   void forEach(SerializableConsumer<? super T> consumer);
 
+  /**
+   * For each local.
+   *
+   * @param consumer the consumer
+   */
   void forEachLocal(SerializableConsumer<? super T> consumer);
 
   /**
@@ -335,7 +344,38 @@ public interface MStream<T> extends Closeable {
     return shuffle(new Random());
   }
 
+  /**
+   * Shuffle m stream.
+   *
+   * @param random the random
+   * @return the m stream
+   */
   MStream<T> shuffle(Random random);
 
+  default MAccumulator<Double> doubleAccumulator(double initialValue) {
+    return doubleAccumulator(initialValue, null);
+  }
+
+  MAccumulator<Double> doubleAccumulator(double initialValue, String name);
+
+  default MAccumulator<Integer> intAccumulator(int initialValue) {
+    return intAccumulator(initialValue, null);
+  }
+
+  MAccumulator<Integer> intAccumulator(int initialValue, String name);
+
+  default <T> MAccumulator<T> accumulator(T initialValue, Accumulatable<T> accumulatable) {
+    return accumulator(initialValue, accumulatable, null);
+  }
+
+  <T> MAccumulator<T> accumulator(T initialValue, Accumulatable<T> accumulatable, String name);
+
+  default <T> MAccumulator<Collection<T>> collectionAccumulator(Supplier<Collection<T>> collectionSupplier, String name) {
+    return accumulator(collectionSupplier.get(), new CollectionAccumulatable<>(), name);
+  }
+
+  default <T> MAccumulator<Collection<T>> collectionAccumulator(Supplier<Collection<T>> collectionSupplier) {
+    return accumulator(collectionSupplier.get(), new CollectionAccumulatable<>());
+  }
 
 }//END OF MStream

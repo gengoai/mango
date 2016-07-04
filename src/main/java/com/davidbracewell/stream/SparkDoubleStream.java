@@ -177,7 +177,7 @@ public class SparkDoubleStream implements MDoubleStream, Serializable {
 
   @Override
   public MDoubleStream flatMap(SerializableDoubleFunction<double[]> mapper) {
-    return new SparkDoubleStream(doubleStream.flatMapToDouble(d -> new PrimitiveArrayList<>(mapper.apply(d), Double.class)));
+    return new SparkDoubleStream(doubleStream.flatMapToDouble(d -> new PrimitiveArrayList<>(mapper.apply(d), Double.class).iterator()));
   }
 
   @Override

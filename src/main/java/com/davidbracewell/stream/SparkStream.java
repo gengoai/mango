@@ -28,6 +28,10 @@ import com.davidbracewell.function.SerializableConsumer;
 import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.function.SerializablePredicate;
 import com.davidbracewell.io.resource.Resource;
+import com.davidbracewell.stream.accumulator.Accumulatable;
+import com.davidbracewell.stream.accumulator.MAccumulator;
+import com.davidbracewell.stream.accumulator.SparkAccumulatable;
+import com.davidbracewell.stream.accumulator.SparkAccumulator;
 import lombok.NonNull;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -107,10 +111,10 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
   @Override
   public <R, U> MPairStream<R, U> flatMapToPair(SerializableFunction<? super T, ? extends Iterable<? extends Map.Entry<? extends R, ? extends U>>> function) {
-    return new SparkPairStream<R, U>(rdd.flatMapToPair(t -> {
+    return new SparkPairStream<>(rdd.flatMapToPair(t -> {
       List<Tuple2<R, U>> list = new LinkedList<>();
       function.apply(t).forEach(e -> list.add(new Tuple2<>(e.getKey(), e.getValue())));
-      return list;
+      return list.iterator();
     }));
   }
 
@@ -288,4 +292,42 @@ public class SparkStream<T> implements MStream<T>, Serializable {
         .map(Tuple2::_2)
     );
   }
+
+
+  @Override
+  public MAccumulator<Double> doubleAccumulator(double initialValue, String name) {
+    return new SparkAccumulator<>(getContext().doubleAccumulator(initialValue, name));
+  }
+
+  @Override
+  public MAccumulator<Integer> intAccumulator(int initialValue, String name) {
+    return new SparkAccumulator<>(getContext().accumulator(initialValue, name));
+  }
+
+  @Override
+  public MAccumulator<Double> doubleAccumulator(double initialValue) {
+    return new SparkAccumulator<>(getContext().doubleAccumulator(initialValue));
+  }
+
+  @Override
+  public MAccumulator<Integer> intAccumulator(int initialValue) {
+    return new SparkAccumulator<>(getContext().accumulator(initialValue));
+  }
+
+
+  @Override
+  public <T1> MAccumulator<T1> accumulator(T1 initialValue, @NonNull Accumulatable<T1> accumulatable) {
+    return new SparkAccumulator<>(
+      getContext().accumulator(initialValue, new SparkAccumulatable<T1>(accumulatable))
+    );
+  }
+
+  @Override
+  public <T1> MAccumulator<T1> accumulator(T1 initialValue, Accumulatable<T1> accumulatable, String name) {
+    return new SparkAccumulator<>(
+      getContext().accumulator(initialValue, name, new SparkAccumulatable<>(accumulatable))
+    );
+  }
+
+
 }//END OF SparkStream
