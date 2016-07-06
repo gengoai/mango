@@ -429,7 +429,7 @@ public abstract class StructuredReader implements Closeable {
     boolean ignoreObject = peek() != ElementType.BEGIN_OBJECT && StringUtils.isNullOrBlank(expectedName);
     if (!ignoreObject) beginObject(expectedName);
     Map<String, Val> map = Maps.newHashMap();
-    while (peek() != ElementType.END_OBJECT) {
+    while (peek() != ElementType.END_OBJECT && peek() != ElementType.END_DOCUMENT) {
       Tuple2<String, Val> kv = nextKeyValue();
       map.put(kv.getKey(), kv.getValue());
     }

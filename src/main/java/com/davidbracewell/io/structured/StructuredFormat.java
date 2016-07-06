@@ -28,11 +28,15 @@ import com.davidbracewell.io.structured.json.JSONReader;
 import com.davidbracewell.io.structured.json.JSONWriter;
 import com.davidbracewell.io.structured.xml.XMLReader;
 import com.davidbracewell.io.structured.xml.XMLWriter;
+import com.davidbracewell.tuple.Tuple2;
+import com.davidbracewell.tuple.Tuples;
 import com.google.common.base.Throwables;
 import lombok.NonNull;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 
 /**
@@ -61,6 +65,17 @@ public interface StructuredFormat extends Serializable {
    */
   StructuredWriter createWriter(Resource resource) throws IOException;
 
+  default Map<String,?> loads(String data) {
+    Map<String,?> r;
+    try( StructuredReader reader = createReader(new StringResource(data))){
+      reader.beginDocument();
+      r= reader.nextMap();
+      reader.endDocument();;
+    }catch (IOException e ){
+      throw Throwables.propagate(e);
+    }
+    return r;
+  }
 
   default String dumps(@NonNull Map<String,?> map) {
     Resource strResource = new StringResource();
@@ -169,9 +184,5 @@ public interface StructuredFormat extends Serializable {
    */
   StructuredFormat TSV_HEADER = new DSVFormat(com.davidbracewell.io.CSV.builder().delimiter('\t').hasHeader());
 
-
-  public static void main(String[] args) {
-    System.out.println(StructuredFormat.JSON.dumps(Collect.map("name", "David", "children", new String[]{"Shirley"})));
-  }
 
 }//END OF StructuredFormat
