@@ -21,15 +21,19 @@
 
 package com.davidbracewell.io.structured;
 
+import com.davidbracewell.collection.Collect;
 import com.davidbracewell.io.resource.Resource;
+import com.davidbracewell.io.resource.StringResource;
 import com.davidbracewell.io.structured.json.JSONReader;
 import com.davidbracewell.io.structured.json.JSONWriter;
 import com.davidbracewell.io.structured.xml.XMLReader;
 import com.davidbracewell.io.structured.xml.XMLWriter;
+import com.google.common.base.Throwables;
 import lombok.NonNull;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * The type Structured format.
@@ -56,6 +60,25 @@ public interface StructuredFormat extends Serializable {
    * @throws IOException the structured iO exception
    */
   StructuredWriter createWriter(Resource resource) throws IOException;
+
+
+  default String dumps(@NonNull Map<String,?> map) {
+    Resource strResource = new StringResource();
+    try( StructuredWriter writer = createWriter(strResource)){
+      writer.beginDocument();
+      for( Map.Entry<String,?> entry : map.entrySet()){
+          writer.writeKeyValue(entry.getKey(), entry.getValue());
+      }
+      writer.endDocument();
+    } catch (IOException e ){
+      throw Throwables.propagate(e);
+    }
+    try {
+      return strResource.readToString().trim();
+    } catch (IOException e) {
+      throw Throwables.propagate(e);
+    }
+  }
 
 
 
@@ -146,5 +169,9 @@ public interface StructuredFormat extends Serializable {
    */
   StructuredFormat TSV_HEADER = new DSVFormat(com.davidbracewell.io.CSV.builder().delimiter('\t').hasHeader());
 
+
+  public static void main(String[] args) {
+    System.out.println(StructuredFormat.JSON.dumps(Collect.map("name", "David", "children", new String[]{"Shirley"})));
+  }
 
 }//END OF StructuredFormat
