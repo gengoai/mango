@@ -65,6 +65,24 @@ public interface StructuredFormat extends Serializable {
    */
   StructuredWriter createWriter(Resource resource) throws IOException;
 
+
+  /**
+   * Reads the resource in the format to a map.
+   *
+   * @param resource the resource
+   * @return the data in the resource as a map
+   * @throws IOException something went wrong reading the resource
+   */
+  default Map<String,?> loads(Resource resource) throws IOException {
+    return loads(resource.readToString());
+  }
+
+  /**
+   * Reads the resource in the format to a map.
+   *
+   * @param data the data
+   * @return the data in the resource as a map
+   */
   default Map<String,?> loads(String data) {
     Map<String,?> r;
     try( StructuredReader reader = createReader(new StringResource(data))){
@@ -77,6 +95,12 @@ public interface StructuredFormat extends Serializable {
     return r;
   }
 
+  /**
+   * Dumps a map in this format to a string.
+   *
+   * @param map the map to dump
+   * @return the string representation of the map
+   */
   default String dumps(@NonNull Map<String,?> map) {
     Resource strResource = new StringResource();
     try( StructuredWriter writer = createWriter(strResource)){
@@ -94,7 +118,6 @@ public interface StructuredFormat extends Serializable {
       throw Throwables.propagate(e);
     }
   }
-
 
 
   /**
@@ -135,11 +158,19 @@ public interface StructuredFormat extends Serializable {
   };
 
 
+  /**
+   * The type Dsv format.
+   */
   class DSVFormat implements StructuredFormat {
     private static final long serialVersionUID = 1L;
     private final com.davidbracewell.io.CSV format;
 
-    public DSVFormat(@NonNull com.davidbracewell.io.CSV format) {
+    /**
+     * Instantiates a new Dsv format.
+     *
+     * @param format the format
+     */
+    DSVFormat(@NonNull com.davidbracewell.io.CSV format) {
       this.format = format;
     }
 
