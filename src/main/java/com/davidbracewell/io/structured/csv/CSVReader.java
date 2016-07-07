@@ -23,8 +23,12 @@ package com.davidbracewell.io.structured.csv;
 
 import com.davidbracewell.collection.Collect;
 import com.davidbracewell.conversion.Val;
+import com.davidbracewell.function.SerializableConsumer;
+import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.function.Unchecked;
 import com.davidbracewell.io.CSV;
+import com.davidbracewell.io.QuietIO;
+import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.structured.ElementType;
 import com.davidbracewell.io.structured.StructuredReader;
 import com.davidbracewell.string.StringUtils;
@@ -37,10 +41,19 @@ import lombok.NonNull;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Queue;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 
 /**
  * The type CSV reader.
@@ -145,6 +158,7 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
     this.header = builder.getHeader() == null ? Collections.emptyList() : builder.getHeader();
     if (hasHeader && header.isEmpty()) {
       header = nextRow();
+      row.clear();
       rowId = 1;
     }
   }
@@ -163,6 +177,55 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
     }
     cell.setLength(0);
     wasQuoted = false;
+  }
+
+  public <R> List<R> processRows(@NonNull SerializableFunction<List<String>, Optional<R>> converter) throws IOException {
+    List<String> row;
+    List<R> rval = new ArrayList<>();
+    try {
+      while ((row = nextRow()) != null) {
+        if (row.size() > 0) {
+          Optional<R> r = converter.apply(row);
+          if (r.isPresent()) {
+            rval.add(r.get());
+          }
+        }
+      }
+    } finally {
+      QuietIO.closeQuietly(this);
+    }
+    return rval;
+  }
+
+  public <R> List<R> processMaps(@NonNull SerializableFunction<Map<String, Val>, Optional<R>> converter) throws IOException {
+    Map<String, Val> row;
+    List<R> rval = new ArrayList<>();
+    try {
+      while (peek() != ElementType.END_DOCUMENT && (row = nextMap()) != null) {
+        if (row.size() > 0) {
+          Optional<R> r = converter.apply(row);
+          if (r.isPresent()) {
+            rval.add(r.get());
+          }
+        }
+      }
+    } finally {
+      QuietIO.closeQuietly(this);
+    }
+    return rval;
+  }
+
+  public void consumeMaps(@NonNull SerializableConsumer<Map<String, Val>> consumer) throws IOException {
+    Map<String, Val> row;
+    try {
+      while (peek() != ElementType.END_DOCUMENT && (row = nextMap()) != null) {
+        if (row.size() > 0) {
+          consumer.accept(row);
+        }
+      }
+    } finally {
+      QuietIO.closeQuietly(this);
+    }
   }
 
   /**
@@ -195,7 +258,6 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
       rowId++;
       return this;
     }
-
     if (rowId != 0) {
       throw new IOException("Illegal begin of document");
     }
@@ -266,7 +328,6 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
   @Override
   public void endDocument() throws IOException {
     documentEnd = true;
-
   }
 
   @Override
@@ -326,7 +387,6 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
   public Iterator<List<String>> iterator() {
     return new RowIterator();
   }
-
 
   /**
    * Stream stream.

@@ -21,22 +21,17 @@
 
 package com.davidbracewell.io.structured;
 
-import com.davidbracewell.collection.Collect;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.resource.StringResource;
 import com.davidbracewell.io.structured.json.JSONReader;
 import com.davidbracewell.io.structured.json.JSONWriter;
 import com.davidbracewell.io.structured.xml.XMLReader;
 import com.davidbracewell.io.structured.xml.XMLWriter;
-import com.davidbracewell.tuple.Tuple2;
-import com.davidbracewell.tuple.Tuples;
 import com.google.common.base.Throwables;
 import lombok.NonNull;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Map;
 
 /**
