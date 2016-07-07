@@ -21,6 +21,7 @@
 
 package com.davidbracewell.tuple;
 
+import com.davidbracewell.conversion.Cast;
 import lombok.NonNull;
 
 import java.util.function.Function;

@@ -149,7 +149,10 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
   public Tuple slice(int start, int end) {
     Preconditions.checkArgument(start >= 0, "Start index must be >= 0");
     Preconditions.checkArgument(start < end, "Start index must be < end index");
-    return new NTuple(Arrays.copyOfRange(array(), start, end));
+    if( start >= degree() ){
+      return Tuple0.INSTANCE;
+    }
+    return new NTuple(Arrays.copyOfRange(array(), start, Math.min(end,degree())));
   }
 
   /**

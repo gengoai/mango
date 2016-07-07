@@ -21,6 +21,7 @@
 
 package com.davidbracewell.tuple;
 
+import com.davidbracewell.conversion.Cast;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -101,6 +102,17 @@ public class Tuple4<A, B, C, D> extends Tuple {
     return new Object[]{v1, v2, v3, v4};
   }
 
+  @Override
+  public <T> T get(int i) {
+    switch (i){
+      case 0: return Cast.as(v1);
+      case 1: return Cast.as(v2);
+      case 2: return Cast.as(v3);
+      case 3: return Cast.as(v4);
+      default:
+        throw new ArrayIndexOutOfBoundsException();
+    }
+  }
 
   @Override
   public String toString() {
