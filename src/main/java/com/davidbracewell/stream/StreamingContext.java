@@ -24,11 +24,17 @@ package com.davidbracewell.stream;
 import com.davidbracewell.collection.Collect;
 import com.davidbracewell.collection.Counter;
 import com.davidbracewell.collection.HashMapCounter;
+import com.davidbracewell.collection.HashMapMultiCounter;
+import com.davidbracewell.collection.MultiCounter;
 import com.davidbracewell.config.Config;
+import com.davidbracewell.function.SerializableSupplier;
 import com.davidbracewell.stream.accumulator.Accumulatable;
 import com.davidbracewell.stream.accumulator.CollectionAccumulatable;
 import com.davidbracewell.stream.accumulator.CounterAccumulatable;
 import com.davidbracewell.stream.accumulator.MAccumulator;
+import com.davidbracewell.stream.accumulator.MapAccumulatable;
+import com.davidbracewell.stream.accumulator.MultiCounterAccumulatable;
+import lombok.NonNull;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -150,6 +156,15 @@ public interface StreamingContext {
     return accumulator(collectionSupplier.get(), new CollectionAccumulatable<>());
   }
 
+
+  default <K, V> MAccumulator<Map<K, V>> mapAccumulator(@NonNull SerializableSupplier<Map<K, V>> supplier) {
+    return accumulator(null, new MapAccumulatable<>(supplier));
+  }
+
+  default <K, V> MAccumulator<Map<K, V>> mapAccumulator(@NonNull SerializableSupplier<Map<K, V>> supplier, String name) {
+    return accumulator(null, new MapAccumulatable<>(supplier), name);
+  }
+
   /**
    * Counter accumulator m accumulator.
    *
@@ -158,6 +173,15 @@ public interface StreamingContext {
    */
   default <E> MAccumulator<Counter<E>> counterAccumulator() {
     return accumulator(new HashMapCounter<E>(), new CounterAccumulatable<>());
+  }
+
+  default <K, V> MAccumulator<MultiCounter<K, V>> multiCounterAccumulator() {
+    return accumulator(new HashMapMultiCounter<K, V>(), new MultiCounterAccumulatable<>());
+  }
+
+
+  default <K, V> MAccumulator<MultiCounter<K, V>> multiCounterAccumulator(String name) {
+    return accumulator(new HashMapMultiCounter<K, V>(), new MultiCounterAccumulatable<>(), name);
   }
 
   /**

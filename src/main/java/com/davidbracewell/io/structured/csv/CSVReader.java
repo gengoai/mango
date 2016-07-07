@@ -28,7 +28,6 @@ import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.function.Unchecked;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.QuietIO;
-import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.structured.ElementType;
 import com.davidbracewell.io.structured.StructuredReader;
 import com.davidbracewell.string.StringUtils;

@@ -39,6 +39,7 @@ public class ConfigTest {
 
   @Before
   public void setUp() throws Exception {
+    Config.initializeTest();
     Config.loadConfig(Resources.fromClasspath("com/davidbracewell/testing.conf"));
     Config.setProperty("name", "David");
     Config.setProperty("age", "script[js]: 34+1;");

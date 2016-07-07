@@ -24,6 +24,7 @@ package com.davidbracewell.collection;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.tuple.Tuple2;
 import com.davidbracewell.tuple.Tuple3;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterators;
 import lombok.NonNull;
 
@@ -33,6 +34,8 @@ import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import static com.ibm.icu.impl.ValidIdentifiers.Datatype.t;
 
 /**
  * The type Hash map multi counter.
@@ -48,6 +51,11 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
   public HashMapMultiCounter() {
 
   }
+
+  public HashMapMultiCounter(@NonNull MultiCounter<? extends K, ? extends V> multiCounter) {
+    multiCounter.entries().forEach(t -> increment(t.v1,t.v2,t.v3));
+  }
+
 
   @SafeVarargs
   public HashMapMultiCounter(@NonNull Tuple3<K, V, ? extends Number>... triples) {

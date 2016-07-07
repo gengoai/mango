@@ -21,15 +21,17 @@
 
 package com.davidbracewell.io.structured.csv;
 
+import com.davidbracewell.collection.Collect;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.resource.StringResource;
 import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.Arrays;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
 
 /**
  * @author David B. Bracewell
@@ -75,6 +77,58 @@ public class CSVWriterTest {
       assertArrayEquals(new String[]{"7", "8", "9"}, reader.nextRow().toArray(new String[3]));
       assertArrayEquals(new String[]{"1", "2"}, reader.nextRow().toArray(new String[2]));
       assertArrayEquals(new String[]{"A:1", "B:2"}, reader.nextRow().toArray(new String[2]));
+    }
+
+
+  }
+
+  @Test
+  public void structuredWrite1() throws IOException {
+    try (CSVWriter writer = CSV.builder().writer(new StringResource())) {
+      writer.beginDocument();
+      writer.beginArray();
+      writer.writeValue("A");
+      writer.writeValue("B");
+      writer.writeValue("C");
+      writer.endArray();
+      writer.beginObject("OBJECT");
+      writer.writeValue("A");
+      writer.writeValue("B");
+      writer.writeValue("C");
+      writer.endObject();
+      writer.writeMap(Collect.map("A", "D"));
+      writer.write(Collect.<String, String>map("A", "D"), ':');
+      writer.endDocument();
+    }
+  }
+
+  @Test
+  public void structuredWrite2() throws IOException {
+    try (CSVWriter writer = CSV.builder()
+      .header("One", "Two", "Three", "Four", "Five")
+      .writer(new StringResource())) {
+      writer.beginDocument();
+      writer.beginArray();
+      writer.writeValue("A");
+      writer.writeValue("B");
+      writer.writeValue("C");
+      writer.endArray();
+      writer.beginObject("OBJECT");
+      writer.writeValue("A");
+      writer.writeValue("B");
+      writer.writeValue("C");
+      writer.endObject();
+      writer.writeMap(Collect.map("A", "D"));
+      writer.write(Collect.<String, String>map("A", "D"), ':');
+      writer.beginArray();
+      writer.writeKeyValue("One", 1);
+      writer.writeKeyValue("Two", 1);
+      writer.writeKeyValue("Three", 1);
+      writer.writeKeyValue("Four", 1);
+      writer.writeKeyValue("Five", 1);
+      writer.endArray();
+      writer.writeArray(new String[]{"A","B","C","D"});
+      writer.endDocument();
     }
   }
 
