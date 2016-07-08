@@ -113,6 +113,17 @@ public class CommandLineParser {
     addOption(NamedOption.CONFIG_EXPLAIN);
   }
 
+  private static String peek(List<String> list, int index) {
+    if (index < 0 || index >= list.size()) {
+      return StringUtils.EMPTY;
+    }
+    return list.get(index);
+  }
+
+  private static boolean isOptionName(String string) {
+    return string.startsWith(LONG) || string.startsWith(SHORT);
+  }
+
   /**
    * Add option.
    *
@@ -128,7 +139,6 @@ public class CommandLineParser {
     }
   }
 
-
   /**
    * Parses an array of arguments
    *
@@ -137,56 +147,66 @@ public class CommandLineParser {
    */
   public String[] parse(@NonNull String[] args) {
     List<String> filtered = new ArrayList<>();
-
-    String key = null;
-
-    for (String current : args) {
-      if (current == null) {
-        continue;
+    List<String> cleanedArgs = new ArrayList<>();
+    for (String c : args) {
+      if (c.endsWith(KEY_VALUE_SEPARATOR) && isOptionName(c)) {
+        cleanedArgs.add(c.substring(0, c.length() - 1));
+        cleanedArgs.add(KEY_VALUE_SEPARATOR);
+      } else if (c.contains(KEY_VALUE_SEPARATOR) && isOptionName(c)) {
+        int index = c.lastIndexOf(KEY_VALUE_SEPARATOR);
+        cleanedArgs.add(c.substring(0, index));
+        cleanedArgs.add(KEY_VALUE_SEPARATOR);
+        cleanedArgs.add(c.substring(index + KEY_VALUE_SEPARATOR.length()));
+      } else {
+        cleanedArgs.add(c);
       }
+    }
 
-      if (LONG.equals(current) || SHORT.equals(current)) {
+    for (int i = 0; i < cleanedArgs.size(); i++) {
+      String current = cleanedArgs.get(i);
+
+      if (StringUtils.isNullOrBlank(current)) {
+        continue;
+      } else if (LONG.equals(current) || SHORT.equals(current)) {
         throw new CommandLineParserException(current, null);
       }
 
       if (current.startsWith(LONG)) {
-        if (key != null) {
-          setValue(key, "true");
-        } else {
-          if (current.endsWith(KEY_VALUE_SEPARATOR)) {
-            key = current.substring(LONG.length(), current.length() - 1);
-          } else if (current.contains(KEY_VALUE_SEPARATOR)) {
-            int pos = current.indexOf(KEY_VALUE_SEPARATOR);
-            setValue(current.substring(LONG.length(), pos), current.substring(pos + KEY_VALUE_SEPARATOR.length()));
-          } else {
-            key = current.substring(LONG.length());
-          }
+        String value = "true";
+        String next = peek(cleanedArgs, i + 1);
+        if (next.equalsIgnoreCase(KEY_VALUE_SEPARATOR)) {
+          value = peek(cleanedArgs, i + 2);
+          i += 2;
+        } else if (!isOptionName(next)) {
+          i++;
+          value = next;
         }
+        setValue(current, value, filtered);
       } else if (current.startsWith(SHORT)) {
-        if (key != null) {
-          setValue(key, "true");
-        } else {
-          if (current.contains(KEY_VALUE_SEPARATOR)) {
-            int pos = current.indexOf(KEY_VALUE_SEPARATOR);
-            setValue(current.substring(SHORT.length(), pos), current.substring(pos + KEY_VALUE_SEPARATOR.length()));
-          } else {
-            key = current.substring(SHORT.length());
-          }
-        }
-      } else if (current.equals(KEY_VALUE_SEPARATOR)) {
-        if (key == null) {
-          throw new CommandLineParserException(current, null);
-        }
-      } else if (key != null) {
-        setValue(key, current);
-        key = null;
-      } else {
-        filtered.add(current);
-      }
-    }
 
-    if (key != null) {
-      setValue(key, "true");
+        //Are we setting multiple "boolean" values?
+        if (current.length() > 2) {
+          char[] opts = current.substring(1).toCharArray();
+          for (char c : opts) {
+            setValue("-" + c, "true", filtered);
+          }
+        } else {
+          String value = "true";
+          String next = peek(cleanedArgs, i + 1);
+          if (next.equalsIgnoreCase(KEY_VALUE_SEPARATOR)) {
+            value = peek(cleanedArgs, i + 2);
+            i += 2;
+          } else if (!isOptionName(next)) {
+            i++;
+            value = next;
+          }
+          setValue(current, value, filtered);
+        }
+
+      } else {
+        throw new CommandLineParserException(current, null);
+      }
+
     }
 
     optionSet.forEach(option -> {
@@ -207,7 +227,6 @@ public class CommandLineParser {
         }
       }
     });
-
 
     return filtered.toArray(new String[filtered.size()]);
   }
@@ -255,14 +274,17 @@ public class CommandLineParser {
   }
 
 
-  private String setValue(String key, String value) {
+  private String setValue(String key, String value, List<String> filtered) {
     NamedOption option = options.get(key.replaceAll("^-+", ""));
 
     if (option == null) {
+      filtered.add(key);
       if (value == null) {
         value = "true";
+      } else {
+        filtered.add(value);
       }
-      unamedOptions.put(key, value);
+      unamedOptions.put(key.replaceAll("^-+", ""), value);
       return value;
 
     } else if (option.isBoolean()) {

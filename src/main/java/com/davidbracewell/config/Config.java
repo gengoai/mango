@@ -498,6 +498,7 @@ public final class Config implements Serializable {
       rval = new String[0];
     }
 
+
     //Check if we should only explain the config
     if (NamedOption.CONFIG_EXPLAIN.<Boolean>getValue()) {
       getInstance().setterFunction = ConfigExplainSettingFunction.INSTANCE;

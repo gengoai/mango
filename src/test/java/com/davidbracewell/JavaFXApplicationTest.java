@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import java.util.Map;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -78,6 +79,9 @@ public class JavaFXApplicationTest {
 
       //Make sure config was loaded
       assertEquals("up", Config.get("direction").asString());
+
+      assertArrayEquals(new String[]{"--name=John", "--age=", "35", "--map", "{ALPHA:23}", "--action", "update"}, getAllArguments());
+      assertArrayEquals(new String[]{"--action", "update"}, getNonParsableArguments());
     }
   }
 

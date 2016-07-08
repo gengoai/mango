@@ -30,6 +30,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Arrays;
 
 /**
  * <p>Generic interface for building applications that use Mango's {@link Config} and {@link CommandLineParser} to
@@ -73,9 +74,7 @@ public interface Application extends Runnable, Serializable {
    *
    * @return the config package name or null if using the application's package
    */
-  default String getConfigPackageName() {
-    return null;
-  }
+  String getConfigPackageName();
 
   /**
    * Gets the name of the application
