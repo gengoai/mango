@@ -23,9 +23,12 @@ package com.davidbracewell.string;
 
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.structured.csv.CSVReader;
-import com.google.common.base.*;
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Predicates;
+import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
-import lombok.NonNull;
 
 import java.io.StringReader;
 import java.util.List;
@@ -36,8 +39,24 @@ import java.util.Random;
  *
  * @author David B. Bracewell
  */
-public class StringUtils {
+public final class StringUtils {
 
+  /**
+   * CharMatcher combining INVISIBLE, BREAKING_WHITESPACE, and WHITESPACE
+   */
+  public static final CharMatcher WHITESPACE = CharMatcher.INVISIBLE.and(CharMatcher.BREAKING_WHITESPACE).and(CharMatcher.WHITESPACE);
+  /**
+   * Empty String
+   */
+  public static final String EMPTY = "";
+  /**
+   * A CharMatcher that matches anything that is a letter or digit
+   */
+  public static final CharMatcher LETTER_OR_DIGIT = CharMatcher.forPredicate(Character::isLetterOrDigit);
+  /**
+   * A CharMatcher that matches anything that is not a letter or digit
+   */
+  public static final CharMatcher NOT_LETTER_OR_DIGIT = CharMatcher.forPredicate(Predicates.not(LETTER_OR_DIGIT));
   /**
    * The constant SINGLE_UNICODE_WHITESPACE.
    */
@@ -50,25 +69,9 @@ public class StringUtils {
    * The constant MULTIPLE_WHITESPACE.
    */
   public static String MULTIPLE_WHITESPACE = "[\\p{Z}\t\r\n\f]+";
-
-  /**
-   * CharMatcher combining INVISIBLE, BREAKING_WHITESPACE, and WHITESPACE
-   */
-  public static final CharMatcher WHITESPACE = CharMatcher.INVISIBLE.and(CharMatcher.BREAKING_WHITESPACE).and(CharMatcher.WHITESPACE);
-  /**
-   * Empty String
-   */
-  public static final String EMPTY = "";
-
-  /**
-   * A CharMatcher that matches anything that is a letter or digit
-   */
-  public static final CharMatcher LETTER_OR_DIGIT = CharMatcher.forPredicate(Character::isLetterOrDigit);
-
-  /**
-   * A CharMatcher that matches anything that is not a letter or digit
-   */
-  public static final CharMatcher NOT_LETTER_OR_DIGIT = CharMatcher.forPredicate(Predicates.not(LETTER_OR_DIGIT));
+  private StringUtils() {
+    throw new IllegalAccessError();
+  }
 
   /**
    * <p>Abbreviates a string to a desired length and adds "..." at the end.</p>
@@ -88,29 +91,16 @@ public class StringUtils {
   }
 
   /**
-   * Capitalizes the first character in a string.
-   *
-   * @param word the string to capitalize
-   * @return A new string with the first letter capitalized
-   */
-  public static String capitalize(CharSequence word) {
-    if (word == null) {
-      return null;
-    }
-    if (word.length() == 0) {
-      return EMPTY;
-    }
-    return Character.toUpperCase(word.charAt(0)) + (word.length() > 1 ? word.subSequence(1, word.length()).toString() : EMPTY);
-  }
-
-  /**
    * Center string.
    *
    * @param s      the s
    * @param length the length
    * @return the string
    */
-  public static String center(@NonNull String s, int length) {
+  public static String center(String s, int length) {
+    if (s == null) {
+      return null;
+    }
     int start = (int) Math.floor(Math.max(0, (length - s.length()) / 2d));
     return Strings.padEnd(repeat(' ', start) + s, length, ' ');
   }
@@ -141,7 +131,7 @@ public class StringUtils {
    * @return True if the string has at least one digit
    */
   public static boolean hasDigit(CharSequence string) {
-    return StringPredicates.HAS_LETTER.test(string);
+    return StringPredicates.HAS_DIGIT.test(string);
   }
 
   /**
@@ -244,6 +234,12 @@ public class StringUtils {
     return StringPredicates.IS_NOT_NULL_OR_BLANK.test(input);
   }
 
+  /**
+   * First non null or blank string.
+   *
+   * @param strings the strings
+   * @return the string
+   */
   public static String firstNonNullOrBlank(String... strings) {
     if (strings == null || strings.length == 0) {
       return null;
@@ -392,7 +388,10 @@ public class StringUtils {
    * @param count the count
    * @return the string
    */
-  public static String repeat(@NonNull String s, int count) {
+  public static String repeat(String s, int count) {
+    if (s == null) {
+      return null;
+    }
     StringBuilder builder = new StringBuilder();
     for (int i = 0; i < count; i++) {
       builder.append(s);

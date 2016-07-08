@@ -52,7 +52,7 @@ public interface Specification {
             List<String> parts = StringUtils.split(prop, ':');
 
             String methodName = parts.get(0).trim();
-            String capitalize = StringUtils.capitalize(methodName);
+            String capitalize = StringUtils.toTitleCase(methodName);
             if (!rThis.containsMethod(methodName)) {
               if (rThis.containsMethod("put" + capitalize)) {
                 methodName = "put" + capitalize;

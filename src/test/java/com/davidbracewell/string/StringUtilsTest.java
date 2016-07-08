@@ -23,7 +23,11 @@ package com.davidbracewell.string;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class StringUtilsTest {
 
@@ -128,5 +132,115 @@ public class StringUtilsTest {
     assertFalse(StringUtils.isPunctuation(null));
   }
 
+  @Test
+  public void trim() throws Exception {
+    final String untrimmed = "  Alphabet Soup  " +
+      "";
+    assertEquals("Alphabet Soup  " +
+      "", StringUtils.leftTrim(untrimmed));
+    assertEquals("  Alphabet Soup", StringUtils.rightTrim(untrimmed));
+    assertEquals("Alphabet Soup", StringUtils.trim(untrimmed));
 
+    assertNull(StringUtils.leftTrim(null));
+    assertNull(StringUtils.rightTrim(null));
+    assertNull(StringUtils.trim(null));
+  }
+
+  @Test
+  public void firstNonNullOrBlank() throws Exception {
+    assertEquals("One", StringUtils.firstNonNullOrBlank("One", "Two", null));
+    assertEquals("Two", StringUtils.firstNonNullOrBlank("   ", "Two", null));
+    assertEquals("Two", StringUtils.firstNonNullOrBlank(null, "Two", null));
+    assertNull(StringUtils.firstNonNullOrBlank(null, null, "        "));
+    assertNull(StringUtils.firstNonNullOrBlank());
+    assertNull(StringUtils.firstNonNullOrBlank(null));
+  }
+
+  @Test
+  public void center() throws Exception {
+    assertEquals("  One  ", StringUtils.center("One", 7));
+    assertEquals("One", StringUtils.center("One", 1));
+    assertEquals("One", StringUtils.center("One", -1));
+    assertNull(StringUtils.center(null, -1));
+  }
+
+  @Test
+  public void repeat() throws Exception {
+    assertEquals("++++", StringUtils.repeat('+', 4));
+    assertEquals("++++", StringUtils.repeat("+", 4));
+    assertEquals("+=+=+=+=", StringUtils.repeat("+=", 4));
+    assertNull(StringUtils.repeat(null, -1));
+  }
+
+  @Test
+  public void hasPunctuation() throws Exception {
+    assertTrue(StringUtils.hasPunctuation("A.C."));
+    assertTrue(StringUtils.hasPunctuation(";-"));
+    assertFalse(StringUtils.hasPunctuation("abc"));
+    assertFalse(StringUtils.hasPunctuation(null));
+  }
+
+  @Test
+  public void isAlphanumeric() throws Exception {
+    assertFalse(StringUtils.isAlphaNumeric(null));
+    assertFalse(StringUtils.isAlphaNumeric("A.C."));
+    assertFalse(StringUtils.isAlphaNumeric(";-"));
+    assertTrue(StringUtils.isAlphaNumeric("abc"));
+    assertTrue(StringUtils.isAlphaNumeric("abc123"));
+  }
+
+  @Test
+  public void isDigit() throws Exception {
+    assertFalse(StringUtils.isDigit(null));
+    assertFalse(StringUtils.isDigit("A.C."));
+    assertFalse(StringUtils.isDigit(";-"));
+    assertFalse(StringUtils.isDigit("abc"));
+    assertFalse(StringUtils.isDigit("abc123"));
+    assertTrue(StringUtils.isDigit("123"));
+    assertFalse(StringUtils.isDigit("123,000.45"));
+  }
+
+  @Test
+  public void hasDigit() throws Exception {
+    assertFalse(StringUtils.hasDigit(null));
+    assertFalse(StringUtils.hasDigit("A.C."));
+    assertFalse(StringUtils.hasDigit(";-"));
+    assertFalse(StringUtils.hasDigit("abc"));
+    assertTrue(StringUtils.hasDigit("abc123"));
+    assertTrue(StringUtils.hasDigit("123"));
+    assertTrue(StringUtils.hasDigit("123,000.45"));
+  }
+
+  @Test
+  public void hasLetter() throws Exception {
+    assertFalse(StringUtils.hasLetter(null));
+    assertTrue(StringUtils.hasLetter("A.C."));
+    assertFalse(StringUtils.hasLetter(";-"));
+    assertTrue(StringUtils.hasLetter("abc"));
+    assertTrue(StringUtils.hasLetter("abc123"));
+    assertFalse(StringUtils.hasLetter("123"));
+    assertFalse(StringUtils.hasLetter("123,000.45"));
+  }
+
+  @Test
+  public void safeEquals() throws Exception {
+    assertTrue(StringUtils.safeEquals(null, null, false));
+    assertTrue(StringUtils.safeEquals("A", "A", false));
+    assertFalse(StringUtils.safeEquals("A", null, false));
+    assertFalse(StringUtils.safeEquals(null, "A", false));
+    assertTrue(StringUtils.safeEquals("a", "A", false));
+
+    assertTrue(StringUtils.safeEquals(null, null, true));
+    assertTrue(StringUtils.safeEquals("A", "A", true));
+    assertFalse(StringUtils.safeEquals("a", "A", true));
+    assertFalse(StringUtils.safeEquals("A", null, true));
+    assertFalse(StringUtils.safeEquals(null, "A", true));
+  }
+
+  @Test
+  public void unescape() throws Exception {
+    assertNull(StringUtils.unescape(null, '\\'));
+    assertEquals("A&C", StringUtils.unescape("A\\&C", '\\'));
+    assertEquals("A&\\C", StringUtils.unescape("A\\&\\\\C", '\\'));
+  }
 }//END OF StringUtilsTest

@@ -123,7 +123,7 @@ public enum StringPredicates implements SerializablePredicate<CharSequence> {
     }
   },
   /**
-   * True if the input string is all letter or digits
+   * True if the input string is all letter or whitespace
    */
   IS_LETTER_OR_WHITESPACE {
     @Override
