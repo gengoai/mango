@@ -2,8 +2,13 @@ package com.davidbracewell.tuple;
 
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.Collections;
+
+import static com.davidbracewell.tuple.Tuples.$;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author David B. Bracewell
@@ -60,5 +65,9 @@ public class Tuple0Test {
     Tuple0.INSTANCE.get(1);
   }
 
+  @Test
+  public void list() throws Exception {
+    assertTrue($(Collections.emptyList()) instanceof Tuple0);
+  }
 
 }

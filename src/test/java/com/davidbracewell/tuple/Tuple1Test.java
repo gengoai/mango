@@ -3,9 +3,12 @@ package com.davidbracewell.tuple;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
+
 import static com.davidbracewell.tuple.Tuples.$;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author David B. Bracewell
@@ -76,7 +79,11 @@ public class Tuple1Test {
 
   @Test
   public void values() throws Exception {
-    assertEquals("A", tuple.v1);
+    assertEquals("A", tuple.getV1());
   }
 
+  @Test
+  public void list() throws Exception {
+    assertTrue($(Arrays.asList("A")) instanceof Tuple1);
+  }
 }

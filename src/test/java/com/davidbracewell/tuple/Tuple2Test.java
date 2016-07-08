@@ -3,20 +3,23 @@ package com.davidbracewell.tuple;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
+
 import static com.davidbracewell.tuple.Tuples.$;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author David B. Bracewell
  */
 public class Tuple2Test {
 
-  Tuple2<String,String> tuple;
+  Tuple2<String, String> tuple;
 
   @Before
   public void setUp() throws Exception {
-    tuple = $("A","A");
+    tuple = $("A", "A");
   }
 
   @Test
@@ -31,12 +34,12 @@ public class Tuple2Test {
 
   @Test
   public void array() throws Exception {
-    assertArrayEquals(new Object[]{"A","A"}, tuple.array());
+    assertArrayEquals(new Object[]{"A", "A"}, tuple.array());
   }
 
   @Test
   public void mapValues() throws Exception {
-    assertEquals($("a","a"), tuple.mapValues(o -> o.toString().toLowerCase()));
+    assertEquals($("a", "a"), tuple.mapValues(o -> o.toString().toLowerCase()));
   }
 
   @Test
@@ -51,7 +54,7 @@ public class Tuple2Test {
 
   @Test
   public void appendRight() throws Exception {
-    assertEquals($("A","A", "A"), tuple.appendRight("A"));
+    assertEquals($("A", "A", "A"), tuple.appendRight("A"));
   }
 
   @Test
@@ -77,8 +80,13 @@ public class Tuple2Test {
 
   @Test
   public void values() throws Exception {
-    assertEquals("A", tuple.v1);
-    assertEquals("A", tuple.v2);
+    assertEquals("A", tuple.getV1());
+    assertEquals("A", tuple.getV2());
+  }
+
+  @Test
+  public void list() throws Exception {
+    assertTrue($(Arrays.asList("A", "A")) instanceof Tuple2);
   }
 
 }
