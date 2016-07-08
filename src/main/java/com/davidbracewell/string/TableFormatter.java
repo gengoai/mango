@@ -52,10 +52,20 @@ public class TableFormatter implements Serializable {
     return this;
   }
 
+  /**
+   * Sets min cell width.
+   *
+   * @param cellWidth the cell width
+   */
   public void setMinCellWidth(int cellWidth) {
     this.longestCell = cellWidth;
   }
 
+  /**
+   * Sets number formatter.
+   *
+   * @param decimalFormat the decimal format
+   */
   public void setNumberFormatter(@NonNull DecimalFormat decimalFormat) {
     this.normalNumberFormatter = decimalFormat;
   }

@@ -19,7 +19,7 @@ package com.davidbracewell;/*
  * under the License.
  */
 
-import com.davidbracewell.application.CommandLineApplication;
+import com.davidbracewell.application.JavaFXApplication;
 import com.davidbracewell.cli.Option;
 import com.davidbracewell.collection.Collect;
 import com.davidbracewell.config.Config;
@@ -27,14 +27,30 @@ import org.junit.Test;
 
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author David B. Bracewell
  */
-public class ApplicationTest {
+public class JavaFXApplicationTest {
 
-  private static class TestApp extends CommandLineApplication {
+  @Test
+  public void testReflection() throws Exception {
+    TestApp app1 = new TestApp();
+    app1.run(new String[]{"--name=John", "--age=", "35", "--map", "{ALPHA:23}", "--action", "update"});
+  }
+
+  private static class TestApp extends JavaFXApplication {
+
+    @Option(description = "Name")
+    public String name;
+    @Option(name = "age", description = "Age")
+    public int age;
+    @Option(name = "phone", description = "Phone", defaultValue = "UNKNOWN")
+    public String phone;
+    @Option(description = "map")
+    public Map<String, Double> map;
+
 
     /**
      * Default Constructor
@@ -43,28 +59,12 @@ public class ApplicationTest {
       super("TestApp", "com.davidbracewell.test");
     }
 
-
-    @Option(description = "Name")
-    public String name;
-
-
-    @Option(name = "age", description = "Age")
-    public int age;
-
-
-    @Option(name = "phone", description = "Phone", defaultValue = "UNKNOWN")
-    public String phone;
-
-
-    @Option(description = "map")
-    public Map<String, Double> map;
-
     @Override
-    protected void programLogic() throws Exception {
+    public void setup() throws Exception {
       assertEquals("John", name);
       assertEquals(35, age);
       assertEquals("UNKNOWN", phone);
-      assertEquals(Collect.map("ALPHA",23d), map);
+      assertEquals(Collect.map("ALPHA", 23d), map);
 
       assertEquals("com.davidbracewell.test", getConfigPackageName());
 
@@ -72,19 +72,13 @@ public class ApplicationTest {
       assertEquals("John", Config.get("name").asString());
       assertEquals("UNKNOWN", Config.get("phone").asString());
       assertEquals(35, Config.get("age").asIntegerValue());
-      assertEquals(Collect.map("ALPHA",23d), Config.get("map").asMap(String.class,Double.class));
+      assertEquals(Collect.map("ALPHA", 23d), Config.get("map").asMap(String.class, Double.class));
       //Test CLI can override config parameter
       assertEquals("update", Config.get("action").asString());
 
       //Make sure config was loaded
       assertEquals("up", Config.get("direction").asString());
     }
-  }
-
-  @Test
-  public void testReflection() throws Exception {
-    TestApp app1 = new TestApp();
-    app1.run(new String[]{"--name=John", "--age=", "35", "--map", "{ALPHA:23}", "--action", "update"});
   }
 
 
