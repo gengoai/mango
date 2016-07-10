@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Collector;
@@ -89,17 +90,9 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
     this.stream = Collect.stream(iterable);
   }
 
-  /**
-   * Instantiates a new Java m stream.
-   *
-   * @param iterator the iterator
-   */
-  public JavaMStream(@NonNull final Iterator<? extends T> iterator) {
-    this.stream = Collect.stream(Cast.<Iterator<T>>as(iterator));
-  }
 
   @Override
-  public void onClose(@NonNull Runnable closeHandler) {
+  public void onClose(@NonNull SerializableRunnable closeHandler) {
     stream.onClose(closeHandler);
   }
 
@@ -126,7 +119,7 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
   @Override
   public <R, U> MPairStream<R, U> flatMapToPair(SerializableFunction<? super T, ? extends Iterable<? extends Map.Entry<? extends R, ? extends U>>> function) {
     return new JavaMPairStream<>(
-      stream.flatMap(t -> Cast.as(function.apply(t)))
+      stream.flatMap(t -> Collect.stream(Cast.<Iterable<Map.Entry<R,U>>>as(function.apply(t))))
     );
   }
 
@@ -248,12 +241,12 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
   }
 
   @Override
-  public Optional<T> max(@NonNull Comparator<? super T> comparator) {
+  public Optional<T> max(@NonNull SerializableComparator<? super T> comparator) {
     return stream.max(comparator);
   }
 
   @Override
-  public Optional<T> min(@NonNull Comparator<? super T> comparator) {
+  public Optional<T> min(@NonNull SerializableComparator<? super T> comparator) {
     return stream.min(comparator);
   }
 
@@ -270,8 +263,8 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
 
   @Override
   public MPairStream<T, Long> zipWithIndex() {
-    final AtomicInteger integer = new AtomicInteger();
-    return new JavaMPairStream<>(stream.map(t -> Cast.<Map.Entry<T, Long>>as(Tuple2.of(t, integer.getAndIncrement()))));
+    final AtomicLong indexer = new AtomicLong();
+    return new JavaMPairStream<>(stream.map(t -> Cast.<Map.Entry<T, Long>>as(Tuple2.of(t, indexer.getAndIncrement()))));
   }
 
   @Override

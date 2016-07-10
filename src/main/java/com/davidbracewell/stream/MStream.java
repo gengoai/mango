@@ -23,9 +23,11 @@ package com.davidbracewell.stream;
 
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.SerializableBinaryOperator;
+import com.davidbracewell.function.SerializableComparator;
 import com.davidbracewell.function.SerializableConsumer;
 import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.function.SerializablePredicate;
+import com.davidbracewell.function.SerializableRunnable;
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.Resource;
 import com.google.common.collect.Ordering;
@@ -225,7 +227,7 @@ public interface MStream<T> extends Closeable {
    *
    * @param closeHandler the close handler
    */
-  void onClose(Runnable closeHandler);
+  void onClose(SerializableRunnable closeHandler);
 
   /**
    * Max optional.
@@ -233,7 +235,7 @@ public interface MStream<T> extends Closeable {
    * @return the optional
    */
   default Optional<T> max() {
-    return max(Cast.as(Ordering.natural()));
+    return min((t1,t2) -> Ordering.natural().reverse().compare(Cast.as(t1),Cast.as(t2)));
   }
 
   /**
@@ -242,7 +244,7 @@ public interface MStream<T> extends Closeable {
    * @return the optional
    */
   default Optional<T> min() {
-    return min(Cast.as(Ordering.natural()));
+    return min((t1,t2) -> Ordering.natural().compare(Cast.as(t1),Cast.as(t2)));
   }
 
   /**
@@ -259,7 +261,7 @@ public interface MStream<T> extends Closeable {
    * @param comparator the comparator
    * @return the optional
    */
-  Optional<T> max(Comparator<? super T> comparator);
+  Optional<T> max(SerializableComparator<? super T> comparator);
 
   /**
    * Min optional.
@@ -267,7 +269,7 @@ public interface MStream<T> extends Closeable {
    * @param comparator the comparator
    * @return the optional
    */
-  Optional<T> min(Comparator<? super T> comparator);
+  Optional<T> min(SerializableComparator<? super T> comparator);
 
   /**
    * Zip m pair stream.

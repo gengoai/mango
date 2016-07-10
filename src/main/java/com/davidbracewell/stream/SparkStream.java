@@ -24,10 +24,13 @@ package com.davidbracewell.stream;
 import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.SerializableBinaryOperator;
+import com.davidbracewell.function.SerializableComparator;
 import com.davidbracewell.function.SerializableConsumer;
 import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.function.SerializablePredicate;
+import com.davidbracewell.function.SerializableRunnable;
 import com.davidbracewell.io.resource.Resource;
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -35,7 +38,12 @@ import scala.Tuple2;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Collector;
 
@@ -48,7 +56,7 @@ import java.util.stream.Collector;
 public class SparkStream<T> implements MStream<T>, Serializable {
   private static final long serialVersionUID = 1L;
   private final JavaRDD<T> rdd;
-
+  private SerializableRunnable onClose;
   /**
    * Instantiates a new Spark stream.
    *
@@ -84,6 +92,9 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
   @Override
   public void close() throws IOException {
+    if( onClose != null ){
+      onClose.run();;
+    }
   }
 
   @Override
@@ -164,12 +175,22 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
   @Override
   public Optional<T> first() {
+    if (rdd.isEmpty()) {
+      return Optional.empty();
+    }
     return Optional.ofNullable(rdd.first());
   }
 
   @Override
   public MStream<T> sample(int number) {
-    return new SparkStream<>(rdd.sample(false, number / (double) count()));
+    if( number <= 0 ){
+      return getContext().empty();
+    }
+    double count = count();
+    if( count <= number ){
+      return this;
+    }
+    return shuffle().limit(number);
   }
 
   @Override
@@ -194,22 +215,29 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
   @Override
   public MStream<T> limit(long number) {
+    Preconditions.checkArgument(number >= 0);
     return new SparkStream<>(rdd.zipWithIndex().filter(p -> p._2() < number).map(Tuple2::_1));
   }
 
   @Override
   public List<T> take(int n) {
+    Preconditions.checkArgument(n >= 0);
     return rdd.take(n);
   }
 
   @Override
   public MStream<T> skip(long n) {
-    return new SparkStream<>(rdd.zipWithIndex().filter(p -> p._2() > n).map(Tuple2::_1));
+    if( n > count() ){
+      return getContext().empty();
+    } else if ( n <= 0 ){
+      return this;
+    }
+    return new SparkStream<>(rdd.zipWithIndex().filter(p -> p._2() > n-1).map(Tuple2::_1));
   }
 
   @Override
-  public void onClose(Runnable closeHandler) {
-
+  public void onClose(SerializableRunnable closeHandler) {
+    this.onClose = closeHandler;
   }
 
   @Override
@@ -218,12 +246,12 @@ public class SparkStream<T> implements MStream<T>, Serializable {
   }
 
   @Override
-  public Optional<T> max(Comparator<? super T> comparator) {
+  public Optional<T> max(SerializableComparator<? super T> comparator) {
     return Optional.ofNullable(rdd.max(Cast.as(comparator)));
   }
 
   @Override
-  public Optional<T> min(Comparator<? super T> comparator) {
+  public Optional<T> min(SerializableComparator<? super T> comparator) {
     return Optional.ofNullable(rdd.min(Cast.as(comparator)));
   }
 
