@@ -23,12 +23,23 @@ package com.davidbracewell.stream;
 
 import com.davidbracewell.collection.Collect;
 import com.davidbracewell.conversion.Cast;
-import com.davidbracewell.function.*;
+import com.davidbracewell.function.SerializableBiConsumer;
+import com.davidbracewell.function.SerializableBiFunction;
+import com.davidbracewell.function.SerializableBiPredicate;
+import com.davidbracewell.function.SerializableBinaryOperator;
+import com.davidbracewell.function.SerializableComparator;
+import com.davidbracewell.function.SerializablePredicate;
+import com.davidbracewell.function.SerializableRunnable;
 import com.davidbracewell.tuple.Tuple2;
 import lombok.NonNull;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -51,6 +62,9 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U>, Serializable {
 
   @Override
   public <V> MPairStream<T, Map.Entry<U, V>> join(MPairStream<? extends T, ? extends V> other) {
+    if (other == null) {
+      return getContext().emptyPair();
+    }
     Map<T, Iterable<V>> map = Cast.as(other.groupByKey().collectAsMap());
     return new JavaMPairStream<>(stream.flatMap(e -> {
       List<Map.Entry<T, Map.Entry<U, V>>> list = new LinkedList<>();
@@ -59,6 +73,47 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U>, Serializable {
       }
       return list.stream();
     }));
+  }
+
+  @Override
+  public <V> MPairStream<T, Map.Entry<U, V>> leftOuterJoin(MPairStream<? extends T, ? extends V> other) {
+    if (other == null) {
+      return Cast.as(this);
+    }
+    Map<T, Iterable<V>> map = Cast.as(other.groupByKey().collectAsMap());
+    return new JavaMPairStream<>(stream.flatMap(e -> {
+      List<Map.Entry<T, Map.Entry<U, V>>> list = new LinkedList<>();
+      if (map.containsKey(e.getKey())) {
+        map.get(e.getKey()).forEach(v -> list.add(Tuple2.of(e.getKey(), Tuple2.of(e.getValue(), v))));
+      } else {
+        list.add(Tuple2.of(e.getKey(), Tuple2.of(e.getValue(), null)));
+      }
+      return list.stream();
+    }));
+  }
+
+  @Override
+  public <V> MPairStream<T, Map.Entry<U, V>> rightOuterJoin(MPairStream<? extends T, ? extends V> other) {
+    if (other == null) {
+      return getContext().emptyPair();
+    }
+
+    Map<T, Iterable<U>> lhs = Cast.as(groupByKey().collectAsMap());
+    List<Map.Entry<T, V>> rhs = Cast.as(other.collectAsList());
+    List<Map.Entry<T, Map.Entry<U, V>>> result = new ArrayList<>();
+    rhs.forEach(e -> {
+      if (lhs.containsKey(e.getKey())) {
+        lhs.get(e.getKey()).forEach(u -> result.add(
+          Tuple2.of(
+            e.getKey(),
+            Tuple2.of(u, e.getValue()
+            )
+          )));
+      } else {
+        result.add(Tuple2.of(e.getKey(), Tuple2.of(null, e.getValue())));
+      }
+    });
+    return new JavaMPairStream<>(result.stream());
   }
 
   @Override
@@ -185,5 +240,20 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U>, Serializable {
         .sorted(Map.Entry.comparingByKey())
         .map(Tuple2::getValue)
     );
+  }
+
+  @Override
+  public MPairStream<T, U> cache() {
+    return this;
+  }
+
+  @Override
+  public MPairStream<T, U> repartition(int partitions) {
+    return this;
+  }
+
+  @Override
+  public void onClose(@NonNull SerializableRunnable closeHandler) {
+    stream.onClose(closeHandler);
   }
 }//END OF JavaMPairStream

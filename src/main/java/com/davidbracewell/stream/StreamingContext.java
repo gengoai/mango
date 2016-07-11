@@ -352,4 +352,8 @@ public interface StreamingContext {
    */
   <T> MStream<T> empty();
 
+  default <K,V> MPairStream<K,V> emptyPair(){
+    return empty().mapToPair(k -> null);
+  }
+
 }//END OF StreamingContext

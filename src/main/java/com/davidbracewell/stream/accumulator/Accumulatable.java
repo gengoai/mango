@@ -48,9 +48,7 @@ public interface Accumulatable<T> extends Serializable {
    * @param t2 the t 2
    * @return the t
    */
-  default T addInPlace(T t1, T t2) {
-    return addAccumulator(t1, t2);
-  }
+  T addInPlace(T t1, T t2);
 
   /**
    * Zero t.

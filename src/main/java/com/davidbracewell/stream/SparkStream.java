@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
-import java.util.function.ToDoubleFunction;
 import java.util.stream.Collector;
 
 /**
@@ -58,6 +57,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
   private static final long serialVersionUID = 1L;
   private final JavaRDD<T> rdd;
   private SerializableRunnable onClose;
+
   /**
    * Instantiates a new Spark stream.
    *
@@ -93,8 +93,9 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
   @Override
   public void close() throws IOException {
-    if( onClose != null ){
-      onClose.run();;
+    if (onClose != null) {
+      onClose.run();
+      ;
     }
   }
 
@@ -184,11 +185,11 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
   @Override
   public MStream<T> sample(int number) {
-    if( number <= 0 ){
+    if (number <= 0) {
       return getContext().empty();
     }
     double count = count();
-    if( count <= number ){
+    if (count <= number) {
       return this;
     }
     return shuffle().limit(number);
@@ -228,12 +229,12 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
   @Override
   public MStream<T> skip(long n) {
-    if( n > count() ){
+    if (n > count()) {
       return getContext().empty();
-    } else if ( n <= 0 ){
+    } else if (n <= 0) {
       return this;
     }
-    return new SparkStream<>(rdd.zipWithIndex().filter(p -> p._2() > n-1).map(Tuple2::_1));
+    return new SparkStream<>(rdd.zipWithIndex().filter(p -> p._2() > n - 1).map(Tuple2::_1));
   }
 
   @Override

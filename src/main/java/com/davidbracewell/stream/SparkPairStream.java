@@ -1,7 +1,13 @@
 package com.davidbracewell.stream;
 
 import com.davidbracewell.conversion.Cast;
-import com.davidbracewell.function.*;
+import com.davidbracewell.function.SerializableBiConsumer;
+import com.davidbracewell.function.SerializableBiFunction;
+import com.davidbracewell.function.SerializableBiPredicate;
+import com.davidbracewell.function.SerializableBinaryOperator;
+import com.davidbracewell.function.SerializableComparator;
+import com.davidbracewell.function.SerializablePredicate;
+import com.davidbracewell.function.SerializableRunnable;
 import com.davidbracewell.tuple.Tuple2;
 import lombok.NonNull;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -11,6 +17,7 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 
 /**
@@ -18,8 +25,8 @@ import java.util.Random;
  */
 public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
   private static final long serialVersionUID = 1L;
-
   private final JavaPairRDD<T, U> rdd;
+  private SerializableRunnable onClose;
 
   public SparkPairStream(JavaPairRDD<T, U> rdd) {
     this.rdd = rdd;
@@ -43,6 +50,9 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
 
   @Override
   public <V> MPairStream<T, Map.Entry<U, V>> join(MPairStream<? extends T, ? extends V> stream) {
+    if (stream == null) {
+      return getContext().emptyPair();
+    }
     JavaPairRDD<T, Map.Entry<U, V>> nrdd = Cast.as(rdd
       .join(toPairRDD(stream))
       .mapToPair(t -> new scala.Tuple2<>(t._1(), toMapEntry(t._2()))));
@@ -66,7 +76,9 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
 
   @Override
   public void close() throws Exception {
-
+    if (onClose != null) {
+      onClose.run();
+    }
   }
 
   @Override
@@ -167,11 +179,50 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
   }
 
   @Override
-  public MPairStream<T, U> shuffle(Random random) {
-    return new SparkPairStream<T, U>(
-      rdd.mapToPair(t -> new scala.Tuple2<>(random.nextDouble(), t))
-        .sortByKey()
-        .mapToPair(scala.Tuple2::_2)
-    );
+  public MPairStream<T, U> shuffle(@NonNull Random random) {
+    return new SparkPairStream<>(rdd.sortByKey((SerializableComparator) (t1, t2) -> random.nextDouble() >= 0.5 ? 1 : -1));
+  }
+
+  @Override
+  public MPairStream<T, U> cache() {
+    return new SparkPairStream<>(rdd.cache());
+  }
+
+  @Override
+  public MPairStream<T, U> repartition(int partitions) {
+    return new SparkPairStream<>(rdd.repartition(partitions));
+  }
+
+  @Override
+  public void onClose(@NonNull SerializableRunnable closeHandler) {
+    this.onClose = closeHandler;
+  }
+
+  @Override
+  public <V> MPairStream<T, Map.Entry<U, V>> leftOuterJoin(MPairStream<? extends T, ? extends V> stream) {
+    if (stream == null) {
+      stream = getContext().emptyPair();
+    }
+    JavaPairRDD<T, Map.Entry<U, V>> nrdd = Cast.as(rdd
+      .leftOuterJoin(toPairRDD(stream))
+      .mapToPair(t -> new scala.Tuple2<>(t._1(),
+        Tuple2.of(t._2()._1(), t._2()._2().or(null)))));
+    return new SparkPairStream<>(nrdd);
+  }
+
+  @Override
+  public <V> MPairStream<T, Map.Entry<U, V>> rightOuterJoin(MPairStream<? extends T, ? extends V> stream) {
+    if (stream == null) {
+      return getContext().emptyPair();
+    }
+    JavaPairRDD<T, Map.Entry<U, V>> nrdd = Cast.as(rdd
+      .rightOuterJoin(toPairRDD(stream))
+      .mapToPair(t -> new scala.Tuple2<>(t._1(),
+        Tuple2.of(
+          t._2()._1().or(null),
+          t._2()._2()
+        )
+      )));
+    return new SparkPairStream<>(nrdd);
   }
 }// END OF SparkPairStream

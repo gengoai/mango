@@ -110,6 +110,12 @@ public interface MPairStream<T, U> extends AutoCloseable {
    */
   <V> MPairStream<T, Map.Entry<U, V>> join(MPairStream<? extends T, ? extends V> stream);
 
+
+  <V> MPairStream<T, Map.Entry<U, V>> leftOuterJoin(MPairStream<? extends T, ? extends V> stream);
+
+  <V> MPairStream<T, Map.Entry<U, V>> rightOuterJoin(MPairStream<? extends T, ? extends V> stream);
+
+
   /**
    * Keys m stream.
    *
@@ -198,5 +204,16 @@ public interface MPairStream<T, U> extends AutoCloseable {
 
   MPairStream<T, U> shuffle(Random random);
 
+  MPairStream<T,U> cache();
+
+  MPairStream<T,U> repartition(int partitions);
+
+
+  /**
+   * On close.
+   *
+   * @param closeHandler the close handler
+   */
+  void onClose(SerializableRunnable closeHandler);
 
 }//END OF MPairStream
