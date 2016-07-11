@@ -141,7 +141,7 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
     Random random = new Random();
     List<T> sample = new ArrayList<>();
     AtomicInteger k = new AtomicInteger(count + 1);
-    stream.forEach(document -> {
+    stream.sequential().forEach(document -> {
       if (sample.size() < count) {
         sample.add(document);
       } else {
@@ -268,7 +268,7 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
   }
 
   @Override
-  public MDoubleStream mapToDouble(@NonNull ToDoubleFunction<? super T> function) {
+  public MDoubleStream mapToDouble(@NonNull SerializableToDoubleFunction<? super T> function) {
     return new JavaDoubleStream(stream.mapToDouble(function));
   }
 
@@ -282,7 +282,7 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
     if (other instanceof JavaMStream) {
       return new JavaMStream<>(Stream.concat(stream, Cast.<JavaMStream<T>>as(other).stream));
     }
-    return other.union(this);
+    return new JavaMStream<>(Stream.concat(stream, other.collect().stream()));
   }
 
   @Override

@@ -28,6 +28,7 @@ import com.davidbracewell.function.SerializableConsumer;
 import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.function.SerializablePredicate;
 import com.davidbracewell.function.SerializableRunnable;
+import com.davidbracewell.function.SerializableToDoubleFunction;
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.Resource;
 import com.google.common.collect.Ordering;
@@ -293,7 +294,7 @@ public interface MStream<T> extends Closeable {
    * @param function the function
    * @return the m double stream
    */
-  MDoubleStream mapToDouble(ToDoubleFunction<? super T> function);
+  MDoubleStream mapToDouble(SerializableToDoubleFunction<? super T> function);
 
   /**
    * Cache m stream.

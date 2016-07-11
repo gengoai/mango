@@ -18,6 +18,9 @@ public class MapAccumulatable<K, V> implements Accumulatable<Map<K, V>> {
 
   @Override
   public Map<K, V> addInPlace(Map<K, V> t1, Map<K, V> t2) {
+    if (t1 == null) {
+      t1 = supplier.get();
+    }
     t1.putAll(t2);
     return t1;
   }

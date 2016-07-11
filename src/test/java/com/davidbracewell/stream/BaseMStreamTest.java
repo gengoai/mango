@@ -2,14 +2,25 @@ package com.davidbracewell.stream;
 
 import com.clearspring.analytics.util.Lists;
 import com.davidbracewell.collection.Collect;
+import com.davidbracewell.collection.Counter;
+import com.davidbracewell.collection.HashMapCounter;
+import com.davidbracewell.collection.HashMapMultiCounter;
+import com.davidbracewell.collection.MultiCounter;
+import com.davidbracewell.config.Config;
+import com.davidbracewell.stream.accumulator.MAccumulator;
+import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
+import com.davidbracewell.tuple.Tuple3;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
@@ -216,6 +227,14 @@ public abstract class BaseMStreamTest {
   }
 
   @Test
+  public void zip() throws Exception {
+    List<Map.Entry<String, String>> list = sc.stream("A", "B", "C").zip(sc.stream("B", "C", "D")).collectAsList();
+    assertEquals(Tuple2.of("A", "B"), list.get(0));
+    assertEquals(Tuple2.of("B", "C"), list.get(1));
+    assertEquals(Tuple2.of("C", "D"), list.get(2));
+  }
+
+  @Test
   public void union() throws Exception {
     assertEquals(
       Arrays.asList("A", "B", "C"),
@@ -225,6 +244,24 @@ public abstract class BaseMStreamTest {
       Arrays.asList("A"),
       sc.stream("A").union(sc.empty()).collect()
     );
+
+    StreamingContext other;
+    if (sc instanceof JavaStreamingContext) {
+      Config.setProperty("spark.master", "local[*]");
+      other = StreamingContext.distributed();
+    } else {
+      other = StreamingContext.local();
+    }
+
+    assertEquals(
+      Arrays.asList("A", "B", "C"),
+      sc.stream("A").union(other.stream("B", "C")).collect()
+    );
+    assertEquals(
+      Arrays.asList("A"),
+      sc.stream("A").union(other.empty()).collect()
+    );
+
   }
 
 
@@ -333,5 +370,59 @@ public abstract class BaseMStreamTest {
     assertTrue(g.get("B"));
     assertTrue(g.get("C"));
     assertFalse(g.get("a"));
+  }
+
+
+  @Test
+  public void mapToPair() throws Exception {
+    Map<String, Boolean> g = sc.stream("AB", "BC", "Aa").mapToPair(s -> Tuple2.of(s, StringUtils.isUpperCase(s))).collectAsMap();
+    assertTrue(g.get("AB"));
+    assertTrue(g.get("BC"));
+    assertFalse(g.get("Aa"));
+  }
+
+
+  @Test
+  public void accumulators() throws Exception {
+    MAccumulator<Double> dA = sc.accumulator(0d);
+    MAccumulator<Integer> iA = sc.accumulator(0);
+    MAccumulator<Set<String>> sA = sc.accumulator(HashSet::new);
+    MAccumulator<Map<String, Integer>> mA = sc.mapAccumulator(HashMap::new);
+    MAccumulator<Counter<String>> cA = sc.counterAccumulator();
+    MAccumulator<MultiCounter<Character, Character>> mcA = sc.multiCounterAccumulator();
+    sc.stream("A", "B", "CC", "A").forEach(s -> {
+      dA.add((double) s.length());
+      iA.add(s.length());
+      sA.add(Collections.singleton(s));
+      mA.add(Collect.map(s, s.length()));
+      cA.add(new HashMapCounter<>(s));
+      if (s.length() == 1) {
+        mcA.add(new HashMapMultiCounter<>(Tuple3.of(s.charAt(0), ' ', 1)));
+      } else {
+        mcA.add(new HashMapMultiCounter<>(Tuple3.of(s.charAt(0), s.charAt(1), 1)));
+      }
+    });
+
+    assertEquals(5.0, dA.value(), 0.0);
+    assertEquals(5, iA.value().intValue());
+    assertEquals(3, sA.value().size());
+    assertEquals(1, mA.value().get("A").intValue());
+    assertEquals(1, mA.value().get("B").intValue());
+    assertEquals(2, mA.value().get("CC").intValue());
+    assertEquals(2.0, cA.value().get("A"), 0.0);
+    assertEquals(1.0, cA.value().get("B"), 0.0);
+    assertEquals(1.0, cA.value().get("CC"), 0.0);
+    assertEquals(2.0, mcA.value().get('A', ' '), 0.0);
+    assertEquals(1.0, mcA.value().get('B', ' '), 0.0);
+    assertEquals(1.0, mcA.value().get('C', 'C'), 0.0);
+  }
+
+  @Test
+  public void mapToDouble() throws Exception {
+    assertEquals(
+      6.0,
+      sc.stream("1.0","2.0","3.0").mapToDouble(Double::parseDouble).sum(),
+      0.0
+    );
   }
 }//END OF BaseMStreamTest

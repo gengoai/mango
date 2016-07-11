@@ -29,6 +29,7 @@ import com.davidbracewell.function.SerializableConsumer;
 import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.function.SerializablePredicate;
 import com.davidbracewell.function.SerializableRunnable;
+import com.davidbracewell.function.SerializableToDoubleFunction;
 import com.davidbracewell.io.resource.Resource;
 import com.google.common.base.Preconditions;
 import lombok.NonNull;
@@ -271,7 +272,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
 
   @Override
-  public MDoubleStream mapToDouble(ToDoubleFunction<? super T> function) {
+  public MDoubleStream mapToDouble(SerializableToDoubleFunction<? super T> function) {
     return new SparkDoubleStream(rdd.mapToDouble(function::applyAsDouble));
   }
 

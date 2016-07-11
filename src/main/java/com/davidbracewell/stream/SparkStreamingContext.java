@@ -34,7 +34,12 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
@@ -75,31 +80,63 @@ public enum SparkStreamingContext implements StreamingContext {
     return context;
   }
 
+  public static SparkStreamingContext contextOf(@NonNull SparkStream<?> stream) {
+    if (context == null) {
+      synchronized (SparkStreamingContext.class) {
+        if (context == null) {
+          context = new JavaSparkContext(stream.getRDD().context());
+        }
+      }
+    }
+    return SparkStreamingContext.INSTANCE;
+  }
+
+  public static SparkStreamingContext contextOf(@NonNull SparkPairStream<?, ?> stream) {
+    if (context == null) {
+      synchronized (SparkStreamingContext.class) {
+        if (context == null) {
+          context = new JavaSparkContext(stream.getRDD().context());
+        }
+      }
+    }
+    return SparkStreamingContext.INSTANCE;
+  }
+
   public JavaSparkContext sparkContext() {
     return getSparkContext();
   }
 
   @Override
   public MAccumulator<Double> accumulator(double initialValue, String name) {
-    return new SparkAccumulator<>(
-      getSparkContext().doubleAccumulator(initialValue, name)
-    );
+    if (StringUtils.isNullOrBlank(name)) {
+      return new SparkAccumulator<>(getSparkContext().doubleAccumulator(initialValue));
+    }
+    return new SparkAccumulator<>(getSparkContext().doubleAccumulator(initialValue, name));
   }
 
   @Override
   public MAccumulator<Integer> accumulator(int initialValue, String name) {
-    return new SparkAccumulator<>(
-      getSparkContext().intAccumulator(initialValue, name)
-    );
+    if (StringUtils.isNullOrBlank(name)) {
+      return new SparkAccumulator<>(getSparkContext().intAccumulator(initialValue));
+    }
+    return new SparkAccumulator<>(getSparkContext().intAccumulator(initialValue, name));
   }
 
   @Override
   public <T> MAccumulator<T> accumulator(T initialValue, @NonNull Accumulatable<T> accumulatable, String name) {
+    if (StringUtils.isNullOrBlank(name)) {
+      return new SparkAccumulator<>(
+        getSparkContext().accumulator(
+          initialValue,
+          new SparkAccumulatable<>(accumulatable)
+        )
+      );
+    }
     return new SparkAccumulator<>(
       getSparkContext().accumulator(
         initialValue,
         name,
-        new SparkAccumulatable<T>(accumulatable)
+        new SparkAccumulatable<>(accumulatable)
       )
     );
   }
@@ -188,30 +225,6 @@ public enum SparkStreamingContext implements StreamingContext {
     }
     return new SparkStream<>(getSparkContext().textFile(location));
   }
-
-
-  public static SparkStreamingContext contextOf(@NonNull SparkStream<?> stream) {
-    if (context == null) {
-      synchronized (SparkStreamingContext.class) {
-        if (context == null) {
-          context = new JavaSparkContext(stream.getRDD().context());
-        }
-      }
-    }
-    return SparkStreamingContext.INSTANCE;
-  }
-
-  public static SparkStreamingContext contextOf(@NonNull SparkPairStream<?, ?> stream) {
-    if (context == null) {
-      synchronized (SparkStreamingContext.class) {
-        if (context == null) {
-          context = new JavaSparkContext(stream.getRDD().context());
-        }
-      }
-    }
-    return SparkStreamingContext.INSTANCE;
-  }
-
 
   public <T> Broadcast<T> broadcast(T object) {
     return getSparkContext().broadcast(object);

@@ -50,10 +50,21 @@ import java.util.stream.Stream;
  */
 public interface StreamingContext {
 
+  /**
+   * Get streaming context.
+   *
+   * @return the streaming context
+   */
   static StreamingContext get() {
     return get(Config.get("streams.distributed").asBooleanValue(false));
   }
 
+  /**
+   * Get streaming context.
+   *
+   * @param distributed the distributed
+   * @return the streaming context
+   */
   static StreamingContext get(boolean distributed) {
     if (distributed) {
       return distributed();
@@ -61,10 +72,20 @@ public interface StreamingContext {
     return local();
   }
 
+  /**
+   * Local streaming context.
+   *
+   * @return the streaming context
+   */
   static StreamingContext local() {
     return JavaStreamingContext.INSTANCE;
   }
 
+  /**
+   * Distributed streaming context.
+   *
+   * @return the streaming context
+   */
   static StreamingContext distributed() {
     return SparkStreamingContext.INSTANCE;
   }
@@ -157,10 +178,27 @@ public interface StreamingContext {
   }
 
 
+  /**
+   * Map accumulator m accumulator.
+   *
+   * @param <K>      the type parameter
+   * @param <V>      the type parameter
+   * @param supplier the supplier
+   * @return the m accumulator
+   */
   default <K, V> MAccumulator<Map<K, V>> mapAccumulator(@NonNull SerializableSupplier<Map<K, V>> supplier) {
     return accumulator(null, new MapAccumulatable<>(supplier));
   }
 
+  /**
+   * Map accumulator m accumulator.
+   *
+   * @param <K>      the type parameter
+   * @param <V>      the type parameter
+   * @param supplier the supplier
+   * @param name     the name
+   * @return the m accumulator
+   */
   default <K, V> MAccumulator<Map<K, V>> mapAccumulator(@NonNull SerializableSupplier<Map<K, V>> supplier, String name) {
     return accumulator(null, new MapAccumulatable<>(supplier), name);
   }
@@ -175,11 +213,26 @@ public interface StreamingContext {
     return accumulator(new HashMapCounter<E>(), new CounterAccumulatable<>());
   }
 
+  /**
+   * Multi counter accumulator m accumulator.
+   *
+   * @param <K> the type parameter
+   * @param <V> the type parameter
+   * @return the m accumulator
+   */
   default <K, V> MAccumulator<MultiCounter<K, V>> multiCounterAccumulator() {
     return accumulator(new HashMapMultiCounter<K, V>(), new MultiCounterAccumulatable<>());
   }
 
 
+  /**
+   * Multi counter accumulator m accumulator.
+   *
+   * @param <K>  the type parameter
+   * @param <V>  the type parameter
+   * @param name the name
+   * @return the m accumulator
+   */
   default <K, V> MAccumulator<MultiCounter<K, V>> multiCounterAccumulator(String name) {
     return accumulator(new HashMapMultiCounter<K, V>(), new MultiCounterAccumulatable<>(), name);
   }
