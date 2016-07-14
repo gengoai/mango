@@ -104,11 +104,16 @@ public enum JavaStreamingContext implements StreamingContext, Serializable {
   }
 
   @Override
-  public <K, V> MPairStream<K, V> stream(Map<? extends K, ? extends V> map) {
+  public <K, V> MPairStream<K, V> pairStream(Map<? extends K, ? extends V> map) {
     if (map == null) {
       return new JavaMPairStream<>(Stream.empty());
     }
     return new JavaMPairStream<>(map);
+  }
+
+  @Override
+  public <K, V> MPairStream<K, V> pairStream(Collection<Map.Entry<K, V>> tuples) {
+    return new JavaMPairStream<>(tuples.stream());
   }
 
   @Override
@@ -140,6 +145,7 @@ public enum JavaStreamingContext implements StreamingContext, Serializable {
       throw Throwables.propagate(e);
     }
   }
+
 
 
 }//END OF JavaStreamingContext

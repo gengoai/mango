@@ -45,6 +45,8 @@ import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static com.ibm.icu.impl.ValidIdentifiers.Datatype.t;
+
 /**
  * @author David B. Bracewell
  */
@@ -191,11 +193,16 @@ public enum SparkStreamingContext implements StreamingContext {
   }
 
   @Override
-  public <K, V> MPairStream<K, V> stream(Map<? extends K, ? extends V> map) {
+  public <K, V> MPairStream<K, V> pairStream(Map<? extends K, ? extends V> map) {
     if (map == null) {
       return new SparkPairStream<>(new HashMap<K, V>());
     }
     return new SparkPairStream<>(map);
+  }
+
+  @Override
+  public <K, V> MPairStream<K, V> pairStream(Collection<Map.Entry<K, V>> tuples) {
+    return stream(tuples).mapToPair(t -> t);
   }
 
   @Override
@@ -229,5 +236,7 @@ public enum SparkStreamingContext implements StreamingContext {
   public <T> Broadcast<T> broadcast(T object) {
     return getSparkContext().broadcast(object);
   }
+
+
 
 }//END OF SparkStreamingContext

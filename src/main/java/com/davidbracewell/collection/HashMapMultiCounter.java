@@ -24,18 +24,25 @@ package com.davidbracewell.collection;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.tuple.Tuple2;
 import com.davidbracewell.tuple.Tuple3;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterators;
 import lombok.NonNull;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.AbstractCollection;
+import java.util.AbstractSet;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
-import static com.ibm.icu.impl.ValidIdentifiers.Datatype.t;
 
 /**
  * The type Hash map multi counter.
@@ -48,12 +55,13 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
   private static final long serialVersionUID = 1L;
   private final Map<K, Counter<V>> map = new HashMap<>();
 
+
   public HashMapMultiCounter() {
 
   }
 
   public HashMapMultiCounter(@NonNull MultiCounter<? extends K, ? extends V> multiCounter) {
-    multiCounter.entries().forEach(t -> increment(t.v1,t.v2,t.v3));
+    multiCounter.entries().forEach(t -> increment(t.v1, t.v2, t.v3));
   }
 
 
@@ -185,8 +193,7 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
   @Override
   public MultiCounter<K, V> merge(MultiCounter<K, V> other) {
     if (other != null) {
-      other.entries().stream()
-        .forEach(e -> increment(e.v1, e.v2, e.v3));
+      other.entries().forEach(e -> increment(e.v1, e.v2, e.v3));
     }
     return this;
   }

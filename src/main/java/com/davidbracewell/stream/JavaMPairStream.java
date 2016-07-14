@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -49,25 +50,25 @@ import java.util.stream.Stream;
 public class JavaMPairStream<T, U> implements MPairStream<T, U>, Serializable {
   private static final long serialVersionUID = 1L;
 
-  private final Stream<Map.Entry<T, U>> stream;
+  private final Stream<Entry<T, U>> stream;
 
 
   public JavaMPairStream(Map<? extends T, ? extends U> map) {
     this(map.entrySet().stream());
   }
 
-  public JavaMPairStream(Stream<? extends Map.Entry<? extends T, ? extends U>> stream) {
+  public JavaMPairStream(Stream<? extends Entry<? extends T, ? extends U>> stream) {
     this.stream = stream.map(Cast::as);
   }
 
   @Override
-  public <V> MPairStream<T, Map.Entry<U, V>> join(MPairStream<? extends T, ? extends V> other) {
+  public <V> MPairStream<T, Entry<U, V>> join(MPairStream<? extends T, ? extends V> other) {
     if (other == null) {
       return getContext().emptyPair();
     }
     Map<T, Iterable<V>> map = Cast.as(other.groupByKey().collectAsMap());
     return new JavaMPairStream<>(stream.flatMap(e -> {
-      List<Map.Entry<T, Map.Entry<U, V>>> list = new LinkedList<>();
+      List<Entry<T, Entry<U, V>>> list = new LinkedList<>();
       if (map.containsKey(e.getKey())) {
         map.get(e.getKey()).forEach(v -> list.add(Tuple2.of(e.getKey(), Tuple2.of(e.getValue(), v))));
       }
@@ -76,13 +77,13 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U>, Serializable {
   }
 
   @Override
-  public <V> MPairStream<T, Map.Entry<U, V>> leftOuterJoin(MPairStream<? extends T, ? extends V> other) {
+  public <V> MPairStream<T, Entry<U, V>> leftOuterJoin(MPairStream<? extends T, ? extends V> other) {
     if (other == null) {
       return Cast.as(this);
     }
     Map<T, Iterable<V>> map = Cast.as(other.groupByKey().collectAsMap());
     return new JavaMPairStream<>(stream.flatMap(e -> {
-      List<Map.Entry<T, Map.Entry<U, V>>> list = new LinkedList<>();
+      List<Entry<T, Entry<U, V>>> list = new LinkedList<>();
       if (map.containsKey(e.getKey())) {
         map.get(e.getKey()).forEach(v -> list.add(Tuple2.of(e.getKey(), Tuple2.of(e.getValue(), v))));
       } else {
@@ -93,14 +94,14 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U>, Serializable {
   }
 
   @Override
-  public <V> MPairStream<T, Map.Entry<U, V>> rightOuterJoin(MPairStream<? extends T, ? extends V> other) {
+  public <V> MPairStream<T, Entry<U, V>> rightOuterJoin(MPairStream<? extends T, ? extends V> other) {
     if (other == null) {
       return getContext().emptyPair();
     }
 
     Map<T, Iterable<U>> lhs = Cast.as(groupByKey().collectAsMap());
-    List<Map.Entry<T, V>> rhs = Cast.as(other.collectAsList());
-    List<Map.Entry<T, Map.Entry<U, V>>> result = new ArrayList<>();
+    List<Entry<T, V>> rhs = Cast.as(other.collectAsList());
+    List<Entry<T, Entry<U, V>>> result = new ArrayList<>();
     rhs.forEach(e -> {
       if (lhs.containsKey(e.getKey())) {
         lhs.get(e.getKey()).forEach(u -> result.add(
@@ -157,15 +158,15 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U>, Serializable {
   @Override
   public MPairStream<T, Iterable<U>> groupByKey() {
     return new JavaMPairStream<>(
-      stream.collect(Collectors.groupingBy(Map.Entry::getKey))
+      stream.collect(Collectors.groupingBy(Entry::getKey))
         .entrySet()
         .stream()
-        .map(e -> Tuple2.of(e.getKey(), e.getValue().stream().map(Map.Entry::getValue).collect(Collectors.toList())))
+        .map(e -> Tuple2.of(e.getKey(), e.getValue().stream().map(Entry::getValue).collect(Collectors.toList())))
     );
   }
 
   @Override
-  public <R, V> MPairStream<R, V> mapToPair(SerializableBiFunction<? super T, ? super U, ? extends Map.Entry<? extends R, ? extends V>> function) {
+  public <R, V> MPairStream<R, V> mapToPair(SerializableBiFunction<? super T, ? super U, ? extends Entry<? extends R, ? extends V>> function) {
     return new JavaMPairStream<>(stream.map(entry -> Cast.as(function.apply(entry.getKey(), entry.getValue()))));
   }
 
@@ -196,8 +197,8 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U>, Serializable {
   }
 
   @Override
-  public List<Map.Entry<T, U>> collectAsList() {
-    return stream.map(Cast::<Map.Entry<T, U>>as).collect(Collectors.toList());
+  public List<Entry<T, U>> collectAsList() {
+    return stream.map(Cast::<Entry<T, U>>as).collect(Collectors.toList());
   }
 
   @Override
@@ -207,25 +208,26 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U>, Serializable {
 
   @Override
   public MStream<T> keys() {
-    return new JavaMStream<>(stream.map(Map.Entry::getKey));
+    return new JavaMStream<>(stream.map(Entry::getKey));
   }
 
   @Override
-  public MPairStream<T, U> sortByKey(SerializableComparator<T> comparator) {
+  public MPairStream<T, U> sortByKey(@NonNull SerializableComparator<T> comparator) {
     return new JavaMPairStream<>(stream.sorted((o1, o2) -> comparator.compare(o1.getKey(), o2.getKey())));
   }
 
   @Override
   public MPairStream<T, U> union(MPairStream<? extends T, ? extends U> other) {
-    if (other instanceof SparkPairStream) {
-      return Cast.as(other.union(Cast.as(this)));
+    if( other == null ){
+      return this;
     }
-    return new JavaMPairStream<>(Stream.concat(stream, Cast.<JavaMPairStream<T, U>>as(other).stream));
+    Stream<Entry<T,U>> oStream = Cast.as(other.collectAsList().stream());
+    return new JavaMPairStream<>(Stream.concat(stream, oStream));
   }
 
   @Override
   public MStream<U> values() {
-    return new JavaMStream<>(stream.map(Map.Entry::getValue));
+    return new JavaMStream<>(stream.map(Entry::getValue));
   }
 
   @Override
@@ -237,7 +239,7 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U>, Serializable {
   public MPairStream<T, U> shuffle(Random random) {
     return new JavaMPairStream<>(
       stream.map(t -> Tuple2.of(random.nextDouble(), t))
-        .sorted(Map.Entry.comparingByKey())
+        .sorted(Entry.comparingByKey())
         .map(Tuple2::getValue)
     );
   }

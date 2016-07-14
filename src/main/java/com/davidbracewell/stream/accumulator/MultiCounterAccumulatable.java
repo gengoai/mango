@@ -10,8 +10,7 @@ public class MultiCounterAccumulatable<K, V> implements Accumulatable<MultiCount
   @Override
   public MultiCounter<K, V> addAccumulator(MultiCounter<K, V> t1, MultiCounter<K, V> t2) {
     MultiCounter<K, V> mc = new HashMapMultiCounter<>(t1);
-    mc.merge(t2);
-    return mc;
+    return mc.merge(t2);
   }
 
   @Override

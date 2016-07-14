@@ -17,7 +17,6 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Random;
 
 /**
@@ -151,6 +150,9 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
 
   @Override
   public MPairStream<T, U> union(MPairStream<? extends T, ? extends U> other) {
+    if (other == null) {
+      return this;
+    }
     return new SparkPairStream<>(rdd.union(toPairRDD(other)));
   }
 

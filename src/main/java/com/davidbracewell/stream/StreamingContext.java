@@ -34,11 +34,14 @@ import com.davidbracewell.stream.accumulator.CounterAccumulatable;
 import com.davidbracewell.stream.accumulator.MAccumulator;
 import com.davidbracewell.stream.accumulator.MapAccumulatable;
 import com.davidbracewell.stream.accumulator.MultiCounterAccumulatable;
+import com.davidbracewell.tuple.Tuple2;
 import lombok.NonNull;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Supplier;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
@@ -275,8 +278,32 @@ public interface StreamingContext {
    * @param map the map
    * @return the m pair stream
    */
-  <K, V> MPairStream<K, V> stream(Map<? extends K, ? extends V> map);
+  <K, V> MPairStream<K, V> pairStream(Map<? extends K, ? extends V> map);
 
+  /**
+   * Pair stream m pair stream.
+   *
+   * @param <K>    the type parameter
+   * @param <V>    the type parameter
+   * @param tuples the tuples
+   * @return the m pair stream
+   */
+  <K,V> MPairStream<K,V> pairStream(Collection<Entry<K,V>> tuples);
+
+  /**
+   * Pair stream m pair stream.
+   *
+   * @param <K>    the type parameter
+   * @param <V>    the type parameter
+   * @param tuples the tuples
+   * @return the m pair stream
+   */
+  default <K,V> MPairStream<K,V> pairStream(Tuple2<K,V>... tuples){
+    if( tuples == null ){
+      return emptyPair();
+    }
+    return pairStream(Arrays.asList(tuples));
+  }
 
   /**
    * Stream m stream.
@@ -352,6 +379,13 @@ public interface StreamingContext {
    */
   <T> MStream<T> empty();
 
+  /**
+   * Empty pair m pair stream.
+   *
+   * @param <K> the type parameter
+   * @param <V> the type parameter
+   * @return the m pair stream
+   */
   default <K,V> MPairStream<K,V> emptyPair(){
     return empty().mapToPair(k -> null);
   }
