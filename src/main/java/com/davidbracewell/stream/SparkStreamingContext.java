@@ -93,6 +93,17 @@ public enum SparkStreamingContext implements StreamingContext {
     return SparkStreamingContext.INSTANCE;
   }
 
+  public static SparkStreamingContext contextOf(@NonNull SparkDoubleStream stream) {
+    if (context == null) {
+      synchronized (SparkStreamingContext.class) {
+        if (context == null) {
+          context = new JavaSparkContext(stream.getRDD().context());
+        }
+      }
+    }
+    return SparkStreamingContext.INSTANCE;
+  }
+
   public static SparkStreamingContext contextOf(@NonNull SparkPairStream<?, ?> stream) {
     if (context == null) {
       synchronized (SparkStreamingContext.class) {

@@ -23,9 +23,13 @@ package com.davidbracewell.stream;
 
 import com.davidbracewell.collection.PrimitiveArrayList;
 import com.davidbracewell.conversion.Convert;
-import com.davidbracewell.function.*;
+import com.davidbracewell.function.SerializableDoubleBinaryOperator;
+import com.davidbracewell.function.SerializableDoubleConsumer;
+import com.davidbracewell.function.SerializableDoubleFunction;
+import com.davidbracewell.function.SerializableDoublePredicate;
+import com.davidbracewell.function.SerializableDoubleUnaryOperator;
+import com.davidbracewell.function.SerializableRunnable;
 import org.apache.spark.api.java.JavaDoubleRDD;
-import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
 
 import java.io.Serializable;
@@ -38,8 +42,8 @@ import java.util.PrimitiveIterator;
  */
 public class SparkDoubleStream implements MDoubleStream, Serializable {
   private static final long serialVersionUID = 1L;
-
   private final JavaDoubleRDD doubleStream;
+  private SerializableRunnable onClose;
 
   public SparkDoubleStream(JavaDoubleRDD doubleStream) {
     this.doubleStream = doubleStream;
@@ -47,7 +51,9 @@ public class SparkDoubleStream implements MDoubleStream, Serializable {
 
   @Override
   public void close() throws Exception {
-
+    if (onClose != null) {
+      onClose.run();
+    }
   }
 
   @Override
@@ -185,13 +191,29 @@ public class SparkDoubleStream implements MDoubleStream, Serializable {
     return this;
   }
 
-  /**
-   * Gets context.
-   *
-   * @return the context
-   */
-  public JavaSparkContext getContext() {
-    return new JavaSparkContext(doubleStream.context());
+
+  JavaDoubleRDD getRDD() {
+    return doubleStream;
+  }
+
+  @Override
+  public StreamingContext getContext() {
+    return SparkStreamingContext.contextOf(this);
+  }
+
+  @Override
+  public MDoubleStream cache() {
+    return new SparkDoubleStream(doubleStream.cache());
+  }
+
+  @Override
+  public MDoubleStream repartition(int numberOfPartition) {
+    return new SparkDoubleStream(doubleStream.repartition(numberOfPartition));
+  }
+
+  @Override
+  public void onClose(SerializableRunnable onCloseHandler) {
+    this.onClose = onCloseHandler;
   }
 
 

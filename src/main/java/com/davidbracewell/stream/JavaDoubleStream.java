@@ -23,6 +23,7 @@ package com.davidbracewell.stream;
 
 import com.davidbracewell.collection.EnhancedDoubleStatistics;
 import com.davidbracewell.function.*;
+import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.OptionalDouble;
@@ -38,7 +39,6 @@ public class JavaDoubleStream implements MDoubleStream, Serializable {
   private static final long serialVersionUID = 1L;
 
   private final DoubleStream stream;
-
   /**
    * Instantiates a new Java double stream.
    *
@@ -51,6 +51,26 @@ public class JavaDoubleStream implements MDoubleStream, Serializable {
   @Override
   public void close() throws Exception {
     stream.close();
+  }
+
+  @Override
+  public StreamingContext getContext() {
+    return JavaStreamingContext.INSTANCE;
+  }
+
+  @Override
+  public MDoubleStream cache() {
+    return this;
+  }
+
+  @Override
+  public MDoubleStream repartition(int numberOfPartition) {
+    return this;
+  }
+
+  @Override
+  public void onClose(@NonNull SerializableRunnable onCloseHandler) {
+    stream.onClose(onCloseHandler);
   }
 
   @Override

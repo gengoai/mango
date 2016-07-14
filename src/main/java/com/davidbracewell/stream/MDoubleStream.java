@@ -33,6 +33,15 @@ import java.util.PrimitiveIterator;
  */
 public interface MDoubleStream extends AutoCloseable {
 
+  StreamingContext getContext();
+
+  MDoubleStream cache();
+
+  MDoubleStream repartition(int numberOfPartition);
+
+
+  void onClose(SerializableRunnable onCloseHandler);
+
   /**
    * Sum double.
    *
