@@ -39,6 +39,7 @@ public interface MDoubleStream extends AutoCloseable {
 
   MDoubleStream repartition(int numberOfPartition);
 
+  MDoubleStream union(MDoubleStream other);
 
   void onClose(SerializableRunnable onCloseHandler);
 

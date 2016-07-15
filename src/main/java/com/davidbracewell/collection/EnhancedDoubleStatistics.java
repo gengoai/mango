@@ -101,7 +101,7 @@ public final class EnhancedDoubleStatistics implements SerializableDoubleConsume
    * @return the average
    */
   public double getAverage() {
-    return getCount() > 0 ? getSum() / getCount() : 0d;
+    return getCount() > 0 ? getSum() / getCount() : 0;
   }
 
   /**
@@ -128,7 +128,9 @@ public final class EnhancedDoubleStatistics implements SerializableDoubleConsume
    * @return the sample standard deviation
    */
   public double getSampleStandardDeviation() {
-    if (getCount() <= 1) {
+    if (getCount() <= 0) {
+      return Double.NaN;
+    } else if ( getCount() == 1){
       return 0d;
     }
     return Math.sqrt(getSampleVariance());

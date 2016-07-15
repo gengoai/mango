@@ -1,5 +1,6 @@
 package com.davidbracewell.stream;
 
+import com.davidbracewell.config.Config;
 import org.junit.Before;
 
 /**
@@ -9,6 +10,7 @@ public class SparkDoubleStreamTest extends BaseDoubleStreamTest {
 
   @Before
   public void setUp() throws Exception {
+    Config.setProperty("spark.master", "local[*]");
     sc = StreamingContext.distributed();
   }
 

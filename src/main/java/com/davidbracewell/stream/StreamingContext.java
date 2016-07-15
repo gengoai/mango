@@ -46,6 +46,8 @@ import java.util.function.Supplier;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
+import static com.ibm.icu.impl.ValidIdentifiers.Datatype.u;
+
 /**
  * The interface Streaming context.
  *
@@ -388,6 +390,10 @@ public interface StreamingContext {
    */
   default <K,V> MPairStream<K,V> emptyPair(){
     return empty().mapToPair(k -> null);
+  }
+
+  default MDoubleStream emptyDouble() {
+    return empty().mapToDouble(u -> Double.NaN);
   }
 
 }//END OF StreamingContext

@@ -22,7 +22,13 @@
 package com.davidbracewell.stream;
 
 import com.davidbracewell.collection.EnhancedDoubleStatistics;
-import com.davidbracewell.function.*;
+import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.function.SerializableDoubleBinaryOperator;
+import com.davidbracewell.function.SerializableDoubleConsumer;
+import com.davidbracewell.function.SerializableDoubleFunction;
+import com.davidbracewell.function.SerializableDoublePredicate;
+import com.davidbracewell.function.SerializableDoubleUnaryOperator;
+import com.davidbracewell.function.SerializableRunnable;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -39,6 +45,7 @@ public class JavaDoubleStream implements MDoubleStream, Serializable {
   private static final long serialVersionUID = 1L;
 
   private final DoubleStream stream;
+
   /**
    * Instantiates a new Java double stream.
    *
@@ -110,7 +117,7 @@ public class JavaDoubleStream implements MDoubleStream, Serializable {
   }
 
   @Override
-  public <T> MStream<T> mapToObj(SerializableDoubleFunction<? extends T> function) {
+  public <T> MStream<T> mapToObj(@NonNull SerializableDoubleFunction<? extends T> function) {
     return new JavaMStream<>(stream.mapToObj(function));
   }
 
@@ -121,27 +128,27 @@ public class JavaDoubleStream implements MDoubleStream, Serializable {
   }
 
   @Override
-  public boolean allMatch(SerializableDoublePredicate predicate) {
+  public boolean allMatch(@NonNull SerializableDoublePredicate predicate) {
     return stream.allMatch(predicate);
   }
 
   @Override
-  public boolean anyMatch(SerializableDoublePredicate predicate) {
+  public boolean anyMatch(@NonNull SerializableDoublePredicate predicate) {
     return stream.anyMatch(predicate);
   }
 
   @Override
-  public boolean noneMatch(SerializableDoublePredicate predicate) {
+  public boolean noneMatch(@NonNull SerializableDoublePredicate predicate) {
     return stream.noneMatch(predicate);
   }
 
   @Override
-  public MDoubleStream filter(SerializableDoublePredicate predicate) {
+  public MDoubleStream filter(@NonNull SerializableDoublePredicate predicate) {
     return new JavaDoubleStream(stream.filter(predicate));
   }
 
   @Override
-  public void forEach(SerializableDoubleConsumer consumer) {
+  public void forEach(@NonNull SerializableDoubleConsumer consumer) {
     stream.forEach(consumer);
   }
 
@@ -161,17 +168,17 @@ public class JavaDoubleStream implements MDoubleStream, Serializable {
   }
 
   @Override
-  public MDoubleStream map(SerializableDoubleUnaryOperator mapper) {
+  public MDoubleStream map(@NonNull SerializableDoubleUnaryOperator mapper) {
     return new JavaDoubleStream(stream.map(mapper));
   }
 
   @Override
-  public OptionalDouble reduce(SerializableDoubleBinaryOperator operator) {
+  public OptionalDouble reduce(@NonNull SerializableDoubleBinaryOperator operator) {
     return stream.reduce(operator);
   }
 
   @Override
-  public double reduce(double zeroValue, SerializableDoubleBinaryOperator operator) {
+  public double reduce(double zeroValue, @NonNull SerializableDoubleBinaryOperator operator) {
     return stream.reduce(zeroValue, operator);
   }
 
@@ -186,7 +193,7 @@ public class JavaDoubleStream implements MDoubleStream, Serializable {
   }
 
   @Override
-  public MDoubleStream flatMap(SerializableDoubleFunction<double[]> mapper) {
+  public MDoubleStream flatMap(@NonNull SerializableDoubleFunction<double[]> mapper) {
     return new JavaDoubleStream(
       stream.flatMap(d -> DoubleStream.of(mapper.apply(d)).parallel())
     );
@@ -195,6 +202,16 @@ public class JavaDoubleStream implements MDoubleStream, Serializable {
   @Override
   public MDoubleStream parallel() {
     return new JavaDoubleStream(stream.parallel());
+  }
+
+  @Override
+  public MDoubleStream union(MDoubleStream other) {
+    if (other == null) {
+      return this;
+    } else if (other instanceof JavaDoubleStream) {
+      return new JavaDoubleStream(DoubleStream.concat(stream, Cast.<JavaDoubleStream>as(other).stream));
+    }
+    return new JavaDoubleStream(DoubleStream.concat(stream, DoubleStream.of(other.toArray())));
   }
 
 }//END OF JavaDoubleStream
