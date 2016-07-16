@@ -31,6 +31,7 @@ import com.davidbracewell.stream.accumulator.SparkAccumulator;
 import com.davidbracewell.string.StringUtils;
 import lombok.NonNull;
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 
@@ -44,8 +45,6 @@ import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
-import static com.ibm.icu.impl.ValidIdentifiers.Datatype.t;
 
 /**
  * @author David B. Bracewell
@@ -218,12 +217,15 @@ public enum SparkStreamingContext implements StreamingContext {
 
   @Override
   public <T> MStream<T> stream(Collection<? extends T> collection) {
+    JavaRDD<T> rdd;
     if (collection == null) {
       return empty();
     } else if (collection instanceof List) {
-      return new SparkStream<>(Cast.<List<T>>as(collection));
+      rdd = getSparkContext().parallelize(Cast.<List<T>>as(collection));
+    } else {
+      rdd = getSparkContext().parallelize(new ArrayList<T>(collection));
     }
-    return new SparkStream<>(collection.stream().collect(Collectors.toList()));
+    return new SparkStream<>(rdd);
   }
 
   @Override
@@ -247,7 +249,6 @@ public enum SparkStreamingContext implements StreamingContext {
   public <T> Broadcast<T> broadcast(T object) {
     return getSparkContext().broadcast(object);
   }
-
 
 
 }//END OF SparkStreamingContext
