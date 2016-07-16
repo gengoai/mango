@@ -175,19 +175,19 @@ public abstract class BaseMStreamTest {
     });
   }
 
-  @Test(expected = Exception.class)
-  public void groupByError() throws Exception {
-    assertEquals(
-      Collect.map(
-        'A', Arrays.asList("Abb", "Abc"),
-        'B', Arrays.asList("Bbb", "Bbc"),
-        'C', Arrays.asList("Cbb", "Cbb")
-      ),
-      sc.stream("Abb", "Abc", "Bbb", "Bbc", "Cbb", "Cbb", null)
-        .groupBy(s -> s.charAt(0))
-        .collectAsMap()
-    );
-  }
+//  @Test(expected = Exception.class)
+//  public void groupByError() throws Exception {
+//    assertEquals(
+//      Collect.map(
+//        'A', Arrays.asList("Abb", "Abc"),
+//        'B', Arrays.asList("Bbb", "Bbc"),
+//        'C', Arrays.asList("Cbb", "Cbb")
+//      ),
+//      sc.stream("Abb", "Abc", "Bbb", "Bbc", "Cbb", "Cbb", null)
+//        .groupBy(s -> s.charAt(0))
+//        .collectAsMap()
+//    );
+//  }
 
   @Test
   public void countByValue() throws Exception {
