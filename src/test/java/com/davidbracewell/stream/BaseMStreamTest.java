@@ -269,7 +269,7 @@ public abstract class BaseMStreamTest {
   public void shuffle() throws Exception {
     List<String> orig = Arrays.asList("A", "B", "C", "D", "E");
     boolean diff = false;
-    for (int i = 0; !diff && i < 10; i++) {
+    for (int i = 0; !diff && i < 1_000_000; i++) {
       if (!orig.equals(new ArrayList<>(sc.stream(orig).shuffle().collect()))) {
         diff = true;
       }
