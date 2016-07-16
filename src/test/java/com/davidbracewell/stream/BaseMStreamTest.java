@@ -110,13 +110,13 @@ public abstract class BaseMStreamTest {
     );
   }
 
-//  @Test(expected = IllegalArgumentException.class)
-//  public void limitError() throws Exception {
-//    assertEquals(
-//      Arrays.asList(1, 2, 3, 4, 5),
-//      sc.range(1, 100).limit(-1)
-//    );
-//  }
+  @Test(expected = IllegalArgumentException.class)
+  public void limitError() throws Exception {
+    assertEquals(
+      Arrays.asList(1, 2, 3, 4, 5),
+      sc.range(1, 100).limit(-1)
+    );
+  }
 
   @Test
   public void take() throws Exception {
@@ -136,13 +136,13 @@ public abstract class BaseMStreamTest {
     );
   }
 
-//  @Test(expected = IllegalArgumentException.class)
-//  public void takeError() throws Exception {
-//    assertEquals(
-//      Arrays.asList(1, 2, 3, 4, 5),
-//      sc.range(1, 100).take(-1)
-//    );
-//  }
+  @Test(expected = IllegalArgumentException.class)
+  public void takeError() throws Exception {
+    assertEquals(
+      Arrays.asList(1, 2, 3, 4, 5),
+      sc.range(1, 100).take(-1)
+    );
+  }
 
 
   @Test
@@ -175,19 +175,19 @@ public abstract class BaseMStreamTest {
     });
   }
 
-//  @Test(expected = Exception.class)
-//  public void groupByError() throws Exception {
-//    assertEquals(
-//      Collect.map(
-//        'A', Arrays.asList("Abb", "Abc"),
-//        'B', Arrays.asList("Bbb", "Bbc"),
-//        'C', Arrays.asList("Cbb", "Cbb")
-//      ),
-//      sc.stream("Abb", "Abc", "Bbb", "Bbc", "Cbb", "Cbb", null)
-//        .groupBy(s -> s.charAt(0))
-//        .collectAsMap()
-//    );
-//  }
+  @Test(expected = Exception.class)
+  public void groupByError() throws Exception {
+    assertEquals(
+      Collect.map(
+        'A', Arrays.asList("Abb", "Abc"),
+        'B', Arrays.asList("Bbb", "Bbc"),
+        'C', Arrays.asList("Cbb", "Cbb")
+      ),
+      sc.stream("Abb", "Abc", "Bbb", "Bbc", "Cbb", "Cbb", null)
+        .groupBy(s -> s.charAt(0))
+        .collectAsMap()
+    );
+  }
 
   @Test
   public void countByValue() throws Exception {
