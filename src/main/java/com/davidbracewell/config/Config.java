@@ -27,6 +27,7 @@ import com.davidbracewell.application.Application;
 import com.davidbracewell.application.CommandLineApplication;
 import com.davidbracewell.cli.CommandLineParser;
 import com.davidbracewell.cli.NamedOption;
+import com.davidbracewell.collection.Sorting;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.conversion.Val;
@@ -48,6 +49,7 @@ import com.google.common.base.Throwables;
 import lombok.NonNull;
 
 import javax.script.ScriptException;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -563,7 +565,6 @@ public final class Config implements Serializable {
     }
 
 
-
     return rval;
   }
 
@@ -754,6 +755,25 @@ public final class Config implements Serializable {
     defaultClassLoader = newDefaultClassLoader;
   }
 
+  public static Resource toPythonConfigParser(@NonNull Resource output) throws IOException {
+    return toPythonConfigParser("default", output);
+  }
+
+  public static Resource toPythonConfigParser(@NonNull String sectionName, @NonNull Resource output) throws IOException {
+    try (BufferedWriter writer = new BufferedWriter(output.writer())) {
+      writer.write("[");
+      writer.write(sectionName);
+      writer.write("]\n");
+      for (Map.Entry<String, String> e : Sorting.sortMapEntries(getInstance().properties, Map.Entry.comparingByKey())) {
+        writer.write(e.getKey());
+        writer.write(" : ");
+        writer.write(e.getValue().replaceAll("\n", "\n\t\t\t"));
+        writer.write("\n");
+      }
+    }
+    return output;
+  }
+
   private void writeObject(ObjectOutputStream out) throws IOException {
     out.defaultWriteObject();
     out.writeObject(properties);
@@ -791,6 +811,7 @@ public final class Config implements Serializable {
 
   }
 
+
   /**
    * Standard implementation of ConfigPropertySetter
    */
@@ -807,7 +828,6 @@ public final class Config implements Serializable {
 
   }
 
-
   enum ConfigSettingError implements ConfigPropertySetter {
     /**
      * The INSTANCE.
@@ -820,6 +840,7 @@ public final class Config implements Serializable {
     }
 
   }
+
 
   /**
    * A <code>ConfigPropertySetter</code> takes care of setting properties and their values are they are parsed by the
