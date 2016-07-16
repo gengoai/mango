@@ -43,6 +43,8 @@ public interface MDoubleStream extends AutoCloseable {
 
   void onClose(SerializableRunnable onCloseHandler);
 
+  boolean isEmpty();
+
   /**
    * Sum double.
    *

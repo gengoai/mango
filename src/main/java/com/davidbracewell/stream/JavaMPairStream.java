@@ -50,7 +50,7 @@ import java.util.stream.Stream;
 public class JavaMPairStream<T, U> implements MPairStream<T, U>, Serializable {
   private static final long serialVersionUID = 1L;
 
-  private final Stream<Entry<T, U>> stream;
+  private volatile Stream<Entry<T, U>> stream;
 
 
   public JavaMPairStream(Map<? extends T, ? extends U> map) {
@@ -203,7 +203,9 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U>, Serializable {
 
   @Override
   public long count() {
-    return stream.count();
+    List<Entry<T, U>> list = stream.collect(Collectors.toList());
+    stream = list.stream();
+    return list.size();
   }
 
   @Override
@@ -218,10 +220,10 @@ public class JavaMPairStream<T, U> implements MPairStream<T, U>, Serializable {
 
   @Override
   public MPairStream<T, U> union(MPairStream<? extends T, ? extends U> other) {
-    if( other == null ){
+    if (other == null) {
       return this;
     }
-    Stream<Entry<T,U>> oStream = Cast.as(other.collectAsList().stream());
+    Stream<Entry<T, U>> oStream = Cast.as(other.collectAsList().stream());
     return new JavaMPairStream<>(Stream.concat(stream, oStream));
   }
 

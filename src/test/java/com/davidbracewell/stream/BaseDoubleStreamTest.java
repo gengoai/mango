@@ -26,9 +26,7 @@ public abstract class BaseDoubleStreamTest {
     AtomicBoolean closed = new AtomicBoolean(false);
     stream.cache();
     stream.repartition(10);
-    stream.onClose(() -> {
-      closed.set(true);
-    });
+    stream.onClose(() -> closed.set(true));
     stream.close();
     assertTrue(closed.get());
   }
@@ -183,7 +181,7 @@ public abstract class BaseDoubleStreamTest {
     );
 
     d1 = sc.doubleStream(1, 2, 3, 4);
-    if( sc instanceof SparkStreamingContext ){
+    if (sc instanceof SparkStreamingContext) {
       Config.setProperty("spark.master", "local[*]");
       d2 = StreamingContext.distributed().doubleStream(5);
     } else {
@@ -193,6 +191,70 @@ public abstract class BaseDoubleStreamTest {
     assertEquals(
       5,
       d1.union(d2).count()
+    );
+  }
+
+
+  @Test
+  public void limit() throws Exception {
+    assertEquals(
+      10.0,
+      sc.doubleStream(1, 2, 3, 4, 5).limit(4).sum(),
+      0.0
+    );
+    assertEquals(
+      0.0,
+      sc.emptyDouble().limit(4).sum(),
+      0.0
+    );
+  }
+
+
+  @Test
+  public void skip() throws Exception {
+    assertEquals(
+      5,
+      sc.doubleStream(1, 2, 3, 4, 5).skip(4).sum(),
+      0.0
+    );
+    assertEquals(
+      0.0,
+      sc.emptyDouble().skip(4).sum(),
+      0.0
+    );
+  }
+
+
+  @Test
+  public void reduce() throws Exception {
+    assertEquals(
+      10,
+      sc.doubleStream(1, 2, 3, 4).reduce((x, y) -> x + y).orElse(Double.NaN),
+      0.0
+    );
+
+    assertFalse(sc.emptyDouble().reduce((x, y) -> x + y).isPresent());
+
+    assertEquals(
+      0,
+      sc.emptyDouble().reduce(0, (x, y) -> x + y),
+      0.0
+    );
+  }
+
+  @Test
+  public void flatMap() throws Exception {
+    MDoubleStream ds = sc.doubleStream(1, 2, 3);
+    ds = ds.flatMap(d -> {
+      double[] array = new double[(int) d];
+      for (int i = 0; i < array.length; i++) {
+        array[i] = Math.random();
+      }
+      return array;
+    });
+    assertEquals(
+      6,
+      ds.count()
     );
   }
 }// END OF BaseDoubleStreamTest

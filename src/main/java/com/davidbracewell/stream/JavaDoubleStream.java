@@ -44,7 +44,7 @@ import java.util.stream.DoubleStream;
 public class JavaDoubleStream implements MDoubleStream, Serializable {
   private static final long serialVersionUID = 1L;
 
-  private final DoubleStream stream;
+  private volatile DoubleStream stream;
 
   /**
    * Instantiates a new Java double stream.
@@ -113,7 +113,9 @@ public class JavaDoubleStream implements MDoubleStream, Serializable {
 
   @Override
   public long count() {
-    return stream.count();
+    double[] array = stream.toArray();
+    stream = DoubleStream.of(array);
+    return array.length;
   }
 
   @Override
@@ -214,4 +216,8 @@ public class JavaDoubleStream implements MDoubleStream, Serializable {
     return new JavaDoubleStream(DoubleStream.concat(stream, DoubleStream.of(other.toArray())));
   }
 
+  @Override
+  public boolean isEmpty() {
+    return count() == 0;
+  }
 }//END OF JavaDoubleStream

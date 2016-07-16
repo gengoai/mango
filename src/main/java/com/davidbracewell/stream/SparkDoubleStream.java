@@ -30,6 +30,7 @@ import com.davidbracewell.function.SerializableDoubleFunction;
 import com.davidbracewell.function.SerializableDoublePredicate;
 import com.davidbracewell.function.SerializableDoubleUnaryOperator;
 import com.davidbracewell.function.SerializableRunnable;
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import org.apache.spark.api.java.JavaDoubleRDD;
 import scala.Tuple2;
@@ -79,7 +80,7 @@ public class SparkDoubleStream implements MDoubleStream, Serializable {
 
   @Override
   public <T> MStream<T> mapToObj(@NonNull SerializableDoubleFunction<? extends T> function) {
-    return new SparkStream<T>(
+    return new SparkStream<>(
       doubleStream.map(function::apply)
     );
   }
@@ -134,12 +135,18 @@ public class SparkDoubleStream implements MDoubleStream, Serializable {
 
   @Override
   public MDoubleStream limit(int n) {
+    Preconditions.checkArgument(n >= 0);
     return new SparkDoubleStream(doubleStream.zipWithIndex().filter(p -> p._2() < n).mapToDouble(Tuple2::_1));
   }
 
   @Override
   public MDoubleStream skip(int n) {
-    return new SparkDoubleStream(doubleStream.zipWithIndex().filter(p -> p._2() > n).mapToDouble(Tuple2::_1));
+    if (n > count()) {
+      return getContext().emptyDouble();
+    } else if (n <= 0) {
+      return this;
+    }
+    return new SparkDoubleStream(doubleStream.zipWithIndex().filter(p -> p._2() > n-1).mapToDouble(Tuple2::_1));
   }
 
   @Override
@@ -175,11 +182,22 @@ public class SparkDoubleStream implements MDoubleStream, Serializable {
 
   @Override
   public OptionalDouble reduce(@NonNull SerializableDoubleBinaryOperator operator) {
+    if( doubleStream.isEmpty() ){
+      return OptionalDouble.empty();
+    }
     return OptionalDouble.of(doubleStream.reduce(operator::applyAsDouble));
   }
 
   @Override
+  public boolean isEmpty() {
+    return doubleStream.isEmpty();
+  }
+
+  @Override
   public double reduce(double zeroValue, @NonNull SerializableDoubleBinaryOperator operator) {
+    if( doubleStream.isEmpty() ){
+      return zeroValue;
+    }
     return zeroValue + doubleStream.reduce(operator::applyAsDouble);
   }
 

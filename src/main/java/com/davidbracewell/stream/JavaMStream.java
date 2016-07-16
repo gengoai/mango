@@ -23,7 +23,14 @@ package com.davidbracewell.stream;
 
 import com.davidbracewell.collection.Collect;
 import com.davidbracewell.conversion.Cast;
-import com.davidbracewell.function.*;
+import com.davidbracewell.function.SerializableBinaryOperator;
+import com.davidbracewell.function.SerializableComparator;
+import com.davidbracewell.function.SerializableConsumer;
+import com.davidbracewell.function.SerializableFunction;
+import com.davidbracewell.function.SerializablePredicate;
+import com.davidbracewell.function.SerializableRunnable;
+import com.davidbracewell.function.SerializableToDoubleFunction;
+import com.davidbracewell.function.Unchecked;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.tuple.Tuple2;
 import com.google.common.base.Throwables;
@@ -33,11 +40,17 @@ import lombok.NonNull;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
-import java.util.function.ToDoubleFunction;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -51,7 +64,7 @@ import java.util.stream.Stream;
 public class JavaMStream<T> implements MStream<T>, Serializable {
   private static final long serialVersionUID = 1L;
 
-  private final Stream<T> stream;
+  private volatile Stream<T> stream;
 
   /**
    * Instantiates a new Java m stream.
@@ -119,7 +132,7 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
   @Override
   public <R, U> MPairStream<R, U> flatMapToPair(SerializableFunction<? super T, ? extends Iterable<? extends Map.Entry<? extends R, ? extends U>>> function) {
     return new JavaMPairStream<>(
-      stream.flatMap(t -> Collect.stream(Cast.<Iterable<Map.Entry<R,U>>>as(function.apply(t))))
+      stream.flatMap(t -> Collect.stream(Cast.<Iterable<Map.Entry<R, U>>>as(function.apply(t))))
     );
   }
 
@@ -161,7 +174,9 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
 
   @Override
   public long count() {
-    return stream.count();
+    List<T> objects = stream.collect(Collectors.toList());
+    stream = objects.stream();
+    return objects.size();
   }
 
   @Override
@@ -220,7 +235,7 @@ public class JavaMStream<T> implements MStream<T>, Serializable {
 
   @Override
   public Map<T, Long> countByValue() {
-    return stream.collect(Collectors.groupingBy(Function.<T>identity(), Collectors.counting()));
+    return stream.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
   }
 
   @Override
