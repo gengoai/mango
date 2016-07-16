@@ -21,7 +21,7 @@
 
 package com.davidbracewell.stream;
 
-import com.davidbracewell.collection.Collect;
+import com.clearspring.analytics.util.Lists;
 import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.stream.accumulator.Accumulatable;
@@ -230,12 +230,15 @@ public enum SparkStreamingContext implements StreamingContext {
 
   @Override
   public <T> MStream<T> stream(Iterable<? extends T> iterable) {
+    JavaRDD<T> rdd;
     if (iterable == null) {
       return empty();
-    } else if (iterable instanceof Collection) {
-      return stream(Cast.<Collection<T>>as(iterable));
+    } else if (iterable instanceof List) {
+      rdd = getSparkContext().parallelize(Cast.<List<T>>as(iterable));
+    } else {
+      rdd = getSparkContext().parallelize(Lists.<T>newArrayList(Cast.as(iterable)));
     }
-    return new SparkStream<>(Collect.stream(iterable).collect(Collectors.toList()));
+    return new SparkStream<>(rdd);
   }
 
   @Override

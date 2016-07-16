@@ -27,6 +27,7 @@ import com.davidbracewell.collection.HashMapCounter;
 import com.davidbracewell.collection.HashMapMultiCounter;
 import com.davidbracewell.collection.MultiCounter;
 import com.davidbracewell.config.Config;
+import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.SerializableSupplier;
 import com.davidbracewell.stream.accumulator.Accumulatable;
 import com.davidbracewell.stream.accumulator.CollectionAccumulatable;
@@ -45,8 +46,6 @@ import java.util.Map.Entry;
 import java.util.function.Supplier;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
-
-import static com.ibm.icu.impl.ValidIdentifiers.Datatype.u;
 
 /**
  * The interface Streaming context.
@@ -290,7 +289,7 @@ public interface StreamingContext {
    * @param tuples the tuples
    * @return the m pair stream
    */
-  <K,V> MPairStream<K,V> pairStream(Collection<Entry<K,V>> tuples);
+  <K, V> MPairStream<K, V> pairStream(Collection<Entry<K, V>> tuples);
 
   /**
    * Pair stream m pair stream.
@@ -300,8 +299,8 @@ public interface StreamingContext {
    * @param tuples the tuples
    * @return the m pair stream
    */
-  default <K,V> MPairStream<K,V> pairStream(Tuple2<K,V>... tuples){
-    if( tuples == null ){
+  default <K, V> MPairStream<K, V> pairStream(Tuple2<K, V>... tuples) {
+    if (tuples == null) {
       return emptyPair();
     }
     return pairStream(Arrays.asList(tuples));
@@ -337,7 +336,7 @@ public interface StreamingContext {
     if (iterator == null) {
       return empty();
     }
-    return stream(Collect.asIterable(iterator));
+    return stream(Cast.<Iterable<T>>as(Collect.asIterable(iterator)));
   }
 
   /**
@@ -388,7 +387,7 @@ public interface StreamingContext {
    * @param <V> the type parameter
    * @return the m pair stream
    */
-  default <K,V> MPairStream<K,V> emptyPair(){
+  default <K, V> MPairStream<K, V> emptyPair() {
     return empty().mapToPair(k -> null);
   }
 
