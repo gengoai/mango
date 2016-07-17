@@ -296,7 +296,9 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
   @Override
   public MStream<T> union(MStream<T> other) {
-    if (other instanceof SparkStream) {
+    if (isEmpty()) {
+      return new SparkStream<>(other);
+    } else if (other instanceof SparkStream) {
       return new SparkStream<>(rdd.union(Cast.<SparkStream<T>>as(other).rdd));
     }
     JavaSparkContext sc = new JavaSparkContext(rdd.context());

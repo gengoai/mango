@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -153,6 +154,18 @@ public abstract class BaseMStreamTest {
         .flatMap(c -> c)
         .collect()
     );
+  }
+
+  @Test
+  public void iterator() throws Exception {
+    Iterator<String>  itr = sc.stream("A","B","C").iterator();
+    assertTrue(itr.hasNext());
+    assertEquals("A", itr.next());
+    assertTrue(itr.hasNext());
+    assertEquals("B", itr.next());
+    assertTrue(itr.hasNext());
+    assertEquals("C", itr.next());
+    assertFalse(itr.hasNext());
   }
 
   @Test

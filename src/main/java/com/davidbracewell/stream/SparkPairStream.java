@@ -182,7 +182,7 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
 
   @Override
   public MPairStream<T, U> shuffle(@NonNull Random random) {
-    return new SparkPairStream<>(rdd.sortByKey((SerializableComparator) (t1, t2) -> random.nextDouble() >= 0.5 ? 1 : -1));
+    return new SparkPairStream<>(rdd.sortByKey((SerializableComparator<T>) (t1, t2) -> random.nextDouble() >= 0.5 ? 1 : -1));
   }
 
   @Override

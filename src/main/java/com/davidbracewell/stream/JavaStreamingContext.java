@@ -22,7 +22,11 @@
 package com.davidbracewell.stream;
 
 import com.davidbracewell.conversion.Cast;
-import com.davidbracewell.stream.accumulator.*;
+import com.davidbracewell.stream.accumulator.Accumulatable;
+import com.davidbracewell.stream.accumulator.DoubleAccumulatable;
+import com.davidbracewell.stream.accumulator.IntAccumulatable;
+import com.davidbracewell.stream.accumulator.JavaAccumulator;
+import com.davidbracewell.stream.accumulator.MAccumulator;
 import com.davidbracewell.string.StringUtils;
 import com.google.common.base.Throwables;
 
@@ -32,6 +36,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
@@ -146,7 +151,6 @@ public enum JavaStreamingContext implements StreamingContext, Serializable {
       throw Throwables.propagate(e);
     }
   }
-
 
 
 }//END OF JavaStreamingContext

@@ -41,11 +41,15 @@ import lombok.NonNull;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Supplier;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
+
+import static com.davidbracewell.conversion.Cast.as;
+import static com.ibm.icu.impl.ValidIdentifiers.Datatype.u;
 
 /**
  * The interface Streaming context.
@@ -299,7 +303,7 @@ public interface StreamingContext {
    * @param tuples the tuples
    * @return the m pair stream
    */
-  default <K, V> MPairStream<K, V> pairStream(Tuple2<K, V>... tuples) {
+  default <K, V> MPairStream<K, V> pairStream(Tuple2<K,V>... tuples) {
     if (tuples == null) {
       return emptyPair();
     }

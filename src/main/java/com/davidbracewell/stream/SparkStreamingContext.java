@@ -186,7 +186,6 @@ public enum SparkStreamingContext implements StreamingContext {
   }
 
   @Override
-  @SafeVarargs
   public final <T> MStream<T> stream(T... items) {
     if (items == null) {
       return empty();

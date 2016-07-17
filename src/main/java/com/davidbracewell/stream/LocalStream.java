@@ -67,6 +67,10 @@ public class LocalStream<T> implements MStream<T>, Serializable {
   private volatile Stream<T> stream;
   private SerializableRunnable onClose;
 
+  public LocalStream(){
+    this.stream = Stream.of();
+  }
+
   /**
    * Instantiates a new Java m stream.
    *
