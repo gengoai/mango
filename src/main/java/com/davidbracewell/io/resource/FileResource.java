@@ -23,7 +23,7 @@
 package com.davidbracewell.io.resource;
 
 import com.davidbracewell.io.resource.spi.FileResourceProvider;
-import com.davidbracewell.stream.JavaMStream;
+import com.davidbracewell.stream.LocalStream;
 import com.davidbracewell.stream.MStream;
 import com.davidbracewell.string.StringUtils;
 import com.google.common.base.Preconditions;
@@ -136,7 +136,7 @@ public class FileResource extends BaseResource {
 
   @Override
   public MStream<String> lines() throws IOException {
-    return new JavaMStream<>(Files.lines(asPath().get()));
+    return new LocalStream<>(Files.lines(asPath().get()));
   }
 
   @Override

@@ -33,10 +33,14 @@ import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.Resource;
 import com.google.common.collect.Ordering;
 import lombok.NonNull;
+import org.apache.spark.api.java.JavaRDD;
 
 import java.io.Closeable;
-import java.util.*;
-import java.util.function.ToDoubleFunction;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
 import java.util.stream.Collector;
 
 /**
@@ -46,6 +50,12 @@ import java.util.stream.Collector;
  * @author David B. Bracewell
  */
 public interface MStream<T> extends Closeable {
+
+  default JavaRDD<T> asRDD() {
+    return new SparkStream<>(this).asRDD();
+  }
+
+  SerializableRunnable getOnCloseHandler();
 
   /**
    * Filter m stream.
@@ -236,7 +246,7 @@ public interface MStream<T> extends Closeable {
    * @return the optional
    */
   default Optional<T> max() {
-    return min((t1,t2) -> Ordering.natural().reverse().compare(Cast.as(t1),Cast.as(t2)));
+    return min((t1, t2) -> Ordering.natural().reverse().compare(Cast.as(t1), Cast.as(t2)));
   }
 
   /**
@@ -245,7 +255,7 @@ public interface MStream<T> extends Closeable {
    * @return the optional
    */
   default Optional<T> min() {
-    return min((t1,t2) -> Ordering.natural().compare(Cast.as(t1),Cast.as(t2)));
+    return min((t1, t2) -> Ordering.natural().compare(Cast.as(t1), Cast.as(t2)));
   }
 
   /**

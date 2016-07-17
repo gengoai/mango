@@ -41,7 +41,7 @@ import java.util.stream.DoubleStream;
  *
  * @author David B. Bracewell
  */
-public class JavaDoubleStream implements MDoubleStream, Serializable {
+public class LocalDoubleStream implements MDoubleStream, Serializable {
   private static final long serialVersionUID = 1L;
 
   private volatile DoubleStream stream;
@@ -51,7 +51,7 @@ public class JavaDoubleStream implements MDoubleStream, Serializable {
    *
    * @param stream the stream
    */
-  public JavaDoubleStream(DoubleStream stream) {
+  public LocalDoubleStream(DoubleStream stream) {
     this.stream = stream;
   }
 
@@ -120,13 +120,13 @@ public class JavaDoubleStream implements MDoubleStream, Serializable {
 
   @Override
   public <T> MStream<T> mapToObj(@NonNull SerializableDoubleFunction<? extends T> function) {
-    return new JavaMStream<>(stream.mapToObj(function));
+    return new LocalStream<>(stream.mapToObj(function));
   }
 
 
   @Override
   public MDoubleStream distinct() {
-    return new JavaDoubleStream(stream.distinct());
+    return new LocalDoubleStream(stream.distinct());
   }
 
   @Override
@@ -146,7 +146,7 @@ public class JavaDoubleStream implements MDoubleStream, Serializable {
 
   @Override
   public MDoubleStream filter(@NonNull SerializableDoublePredicate predicate) {
-    return new JavaDoubleStream(stream.filter(predicate));
+    return new LocalDoubleStream(stream.filter(predicate));
   }
 
   @Override
@@ -161,17 +161,17 @@ public class JavaDoubleStream implements MDoubleStream, Serializable {
 
   @Override
   public MDoubleStream limit(int n) {
-    return new JavaDoubleStream(stream.limit(n));
+    return new LocalDoubleStream(stream.limit(n));
   }
 
   @Override
   public MDoubleStream skip(int n) {
-    return new JavaDoubleStream(stream.skip(n));
+    return new LocalDoubleStream(stream.skip(n));
   }
 
   @Override
   public MDoubleStream map(@NonNull SerializableDoubleUnaryOperator mapper) {
-    return new JavaDoubleStream(stream.map(mapper));
+    return new LocalDoubleStream(stream.map(mapper));
   }
 
   @Override
@@ -186,7 +186,7 @@ public class JavaDoubleStream implements MDoubleStream, Serializable {
 
   @Override
   public MDoubleStream sorted() {
-    return new JavaDoubleStream(stream.sorted());
+    return new LocalDoubleStream(stream.sorted());
   }
 
   @Override
@@ -196,28 +196,28 @@ public class JavaDoubleStream implements MDoubleStream, Serializable {
 
   @Override
   public MDoubleStream flatMap(@NonNull SerializableDoubleFunction<double[]> mapper) {
-    return new JavaDoubleStream(
+    return new LocalDoubleStream(
       stream.flatMap(d -> DoubleStream.of(mapper.apply(d)).parallel())
     );
   }
 
   @Override
   public MDoubleStream parallel() {
-    return new JavaDoubleStream(stream.parallel());
+    return new LocalDoubleStream(stream.parallel());
   }
 
   @Override
   public MDoubleStream union(MDoubleStream other) {
     if (other == null) {
       return this;
-    } else if (other instanceof JavaDoubleStream) {
-      return new JavaDoubleStream(DoubleStream.concat(stream, Cast.<JavaDoubleStream>as(other).stream));
+    } else if (other instanceof LocalDoubleStream) {
+      return new LocalDoubleStream(DoubleStream.concat(stream, Cast.<LocalDoubleStream>as(other).stream));
     }
-    return new JavaDoubleStream(DoubleStream.concat(stream, DoubleStream.of(other.toArray())));
+    return new LocalDoubleStream(DoubleStream.concat(stream, DoubleStream.of(other.toArray())));
   }
 
   @Override
   public boolean isEmpty() {
     return count() == 0;
   }
-}//END OF JavaDoubleStream
+}//END OF LocalDoubleStream

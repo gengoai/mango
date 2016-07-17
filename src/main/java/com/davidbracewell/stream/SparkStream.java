@@ -58,6 +58,17 @@ public class SparkStream<T> implements MStream<T>, Serializable {
   private final JavaRDD<T> rdd;
   private SerializableRunnable onClose;
 
+  public SparkStream(@NonNull MStream<T> mStream) {
+    if (mStream instanceof SparkStream) {
+      this.rdd = Cast.<SparkStream<T>>as(mStream).asRDD();
+    } else {
+      List<T> collection = mStream.collect();
+      int slices = Math.max(1, collection.size() / Config.get("spark.partitions").asIntegerValue(100));
+      this.rdd = SparkStreamingContext.INSTANCE.sparkContext().parallelize(collection, slices);
+    }
+    this.onClose = mStream.getOnCloseHandler();
+  }
+
   /**
    * Instantiates a new Spark stream.
    *
@@ -73,16 +84,17 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    * @param collection the collection
    */
   public SparkStream(List<T> collection) {
-    int slices = Math.max(1, collection.size() / Config.get("spark.sliceSize").asIntegerValue(100));
+    int slices = Math.max(1, collection.size() / Config.get("spark.partitions").asIntegerValue(100));
     this.rdd = SparkStreamingContext.INSTANCE.sparkContext().parallelize(collection, slices);
   }
 
-  /**
-   * Gets rdd.
-   *
-   * @return the rdd
-   */
-  public JavaRDD<T> getRDD() {
+  @Override
+  public SerializableRunnable getOnCloseHandler() {
+    return onClose;
+  }
+
+  @Override
+  public JavaRDD<T> asRDD() {
     return rdd;
   }
 

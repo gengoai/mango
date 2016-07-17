@@ -85,7 +85,7 @@ public enum SparkStreamingContext implements StreamingContext {
     if (context == null) {
       synchronized (SparkStreamingContext.class) {
         if (context == null) {
-          context = new JavaSparkContext(stream.getRDD().context());
+          context = new JavaSparkContext(stream.asRDD().context());
         }
       }
     }

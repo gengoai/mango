@@ -27,7 +27,7 @@ import com.davidbracewell.function.Unchecked;
 import com.davidbracewell.io.CharsetDetectingReader;
 import com.davidbracewell.io.FileUtils;
 import com.davidbracewell.io.serialization.JavaSerializer;
-import com.davidbracewell.stream.JavaMStream;
+import com.davidbracewell.stream.LocalStream;
 import com.davidbracewell.stream.MStream;
 import com.google.common.base.Preconditions;
 import com.google.common.io.CharStreams;
@@ -315,7 +315,7 @@ public interface Resource {
    */
   default MStream<String> lines() throws IOException {
     try (Reader reader = reader()) {
-      return new JavaMStream<>(CharStreams.readLines(reader).stream());
+      return new LocalStream<>(CharStreams.readLines(reader).stream());
     }
   }
 

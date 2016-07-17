@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.DoubleStream;
@@ -61,27 +62,27 @@ public enum JavaStreamingContext implements StreamingContext, Serializable {
   @Override
   public MDoubleStream doubleStream(DoubleStream doubleStream) {
     if (doubleStream == null) {
-      return new JavaDoubleStream(DoubleStream.empty());
+      return new LocalDoubleStream(DoubleStream.empty());
     }
-    return new JavaDoubleStream(doubleStream);
+    return new LocalDoubleStream(doubleStream);
   }
 
   @Override
   public MDoubleStream doubleStream(double... values) {
     if (values == null) {
-      return new JavaDoubleStream(DoubleStream.empty());
+      return new LocalDoubleStream(DoubleStream.empty());
     }
-    return new JavaDoubleStream(DoubleStream.of(values));
+    return new LocalDoubleStream(DoubleStream.of(values));
   }
 
   @Override
   public <T> MStream<T> empty() {
-    return new JavaMStream<>();
+    return new LocalStream<>();
   }
 
   @Override
   public MStream<Integer> range(int startInclusive, int endExclusive) {
-    return new JavaMStream<>(
+    return new LocalStream<>(
       IntStream.range(startInclusive, endExclusive).boxed().parallel()
     );
   }
@@ -92,7 +93,7 @@ public enum JavaStreamingContext implements StreamingContext, Serializable {
     if (items == null) {
       return empty();
     }
-    return new JavaMStream<>(items);
+    return new ReusableLocalStream<>(Arrays.asList(items));
   }
 
   @Override
@@ -100,20 +101,20 @@ public enum JavaStreamingContext implements StreamingContext, Serializable {
     if (stream == null) {
       return empty();
     }
-    return new JavaMStream<>(stream);
+    return new LocalStream<>(stream);
   }
 
   @Override
   public <K, V> MPairStream<K, V> pairStream(Map<? extends K, ? extends V> map) {
     if (map == null) {
-      return new JavaMPairStream<>(Stream.empty());
+      return new LocalPairStream<>(Stream.empty());
     }
-    return new JavaMPairStream<>(map);
+    return new LocalPairStream<>(map);
   }
 
   @Override
   public <K, V> MPairStream<K, V> pairStream(Collection<Map.Entry<K, V>> tuples) {
-    return new JavaMPairStream<>(tuples.stream());
+    return new LocalPairStream<>(tuples.stream());
   }
 
   @Override
@@ -121,7 +122,7 @@ public enum JavaStreamingContext implements StreamingContext, Serializable {
     if (collection == null) {
       return empty();
     }
-    return new JavaMStream<>(Cast.<Collection<T>>as(collection));
+    return new ReusableLocalStream<>(Cast.<Collection<T>>as(collection));
   }
 
   @Override
@@ -131,7 +132,7 @@ public enum JavaStreamingContext implements StreamingContext, Serializable {
     } else if (iterable instanceof Collection) {
       return stream(Cast.<Collection<T>>as(iterable));
     }
-    return new JavaMStream<>(Cast.<Iterable<T>>as(iterable));
+    return new LocalStream<>(Cast.<Iterable<T>>as(iterable));
   }
 
   @Override
@@ -140,7 +141,7 @@ public enum JavaStreamingContext implements StreamingContext, Serializable {
       return empty();
     }
     try {
-      return new JavaMStream<>(Files.lines(Paths.get(location)));
+      return new LocalStream<>(Files.lines(Paths.get(location)));
     } catch (IOException e) {
       throw Throwables.propagate(e);
     }
