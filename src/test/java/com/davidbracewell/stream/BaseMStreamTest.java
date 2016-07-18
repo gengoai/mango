@@ -1,6 +1,5 @@
 package com.davidbracewell.stream;
 
-import com.clearspring.analytics.util.Lists;
 import com.davidbracewell.collection.Collect;
 import com.davidbracewell.collection.Counter;
 import com.davidbracewell.collection.HashMapCounter;
@@ -11,6 +10,7 @@ import com.davidbracewell.stream.accumulator.MAccumulator;
 import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
 import com.davidbracewell.tuple.Tuple3;
+import com.google.common.collect.Lists;
 import org.junit.Test;
 
 import java.util.ArrayList;

@@ -24,8 +24,8 @@ package com.davidbracewell.io.resource;
 import com.davidbracewell.io.FileUtils;
 import com.davidbracewell.string.StringUtils;
 import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
-import javax.annotation.Nonnull;
 import java.io.*;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -63,7 +63,7 @@ public abstract class BaseResource implements Resource, Serializable {
   }
 
   @Override
-  public final Resource setCharset(@Nonnull Charset charset) {
+  public final Resource setCharset(@NonNull Charset charset) {
     this.charset = charset;
     return this;
   }

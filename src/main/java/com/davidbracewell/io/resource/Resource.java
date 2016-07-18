@@ -450,7 +450,7 @@ public interface Resource {
   default Reader reader() throws IOException {
     Preconditions.checkState(canRead(), "This is resource cannot be read from.");
     CharsetDetectingReader reader = new CharsetDetectingReader(inputStream(), getCharset());
-    setCharset(reader.getCharset());
+//    setCharset(reader.getCharset());
     return reader;
   }
 

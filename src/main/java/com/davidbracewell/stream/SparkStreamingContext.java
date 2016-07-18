@@ -21,7 +21,6 @@
 
 package com.davidbracewell.stream;
 
-import com.clearspring.analytics.util.Lists;
 import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.stream.accumulator.Accumulatable;
@@ -29,6 +28,7 @@ import com.davidbracewell.stream.accumulator.MAccumulator;
 import com.davidbracewell.stream.accumulator.SparkAccumulatable;
 import com.davidbracewell.stream.accumulator.SparkAccumulator;
 import com.davidbracewell.string.StringUtils;
+import com.google.common.collect.Lists;
 import lombok.NonNull;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
@@ -235,7 +235,7 @@ public enum SparkStreamingContext implements StreamingContext {
     } else if (iterable instanceof List) {
       rdd = getSparkContext().parallelize(Cast.<List<T>>as(iterable));
     } else {
-      rdd = getSparkContext().parallelize(Lists.<T>newArrayList(Cast.as(iterable)));
+      rdd = getSparkContext().parallelize(Lists.<T>newArrayList(iterable));
     }
     return new SparkStream<>(rdd);
   }
