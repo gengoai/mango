@@ -1,4 +1,3 @@
-
 /*
  * (c) 2005 David B. Bracewell
  *
@@ -30,7 +29,12 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import lombok.EqualsAndHashCode;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -204,7 +208,16 @@ public class FileResource extends BaseResource {
 
   @Override
   public void deleteOnExit() {
-    file.deleteOnExit();
+    if (file.isDirectory()) {
+      Runtime.getRuntime().addShutdownHook(new Thread() {
+        @Override
+        public void run() {
+          delete(true);
+        }
+      });
+    } else {
+      file.deleteOnExit();
+    }
   }
 
   @Override
