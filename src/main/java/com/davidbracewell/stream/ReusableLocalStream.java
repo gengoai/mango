@@ -1,5 +1,6 @@
 package com.davidbracewell.stream;
 
+import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.SerializableBinaryOperator;
 import com.davidbracewell.function.SerializableComparator;
 import com.davidbracewell.function.SerializableConsumer;
@@ -10,6 +11,7 @@ import com.davidbracewell.function.SerializableToDoubleFunction;
 import com.davidbracewell.io.resource.Resource;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -190,6 +192,13 @@ public class ReusableLocalStream<T> implements MStream<T> {
 
   @Override
   public MStream<T> union(MStream<T> other) {
+    if (other == null) {
+      return this;
+    } else if (other instanceof ReusableLocalStream) {
+      List<T> list = new ArrayList<>(backingCollection);
+      list.addAll(Cast.<ReusableLocalStream<T>>as(other).backingCollection);
+      return new ReusableLocalStream<>(list);
+    }
     return getStream().union(other);
   }
 
