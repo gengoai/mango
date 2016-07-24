@@ -34,6 +34,7 @@ import com.google.common.base.Throwables;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
@@ -81,7 +82,7 @@ public enum JavaStreamingContext implements StreamingContext, Serializable {
 
   @Override
   public <T> MStream<T> empty() {
-    return new LocalStream<>();
+    return new ReusableLocalStream<>(new ArrayList<>());
   }
 
   @Override
