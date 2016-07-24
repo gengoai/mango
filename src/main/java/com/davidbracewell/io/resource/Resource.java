@@ -319,6 +319,7 @@ public interface Resource {
     }
   }
 
+
   /**
    * For each.
    *

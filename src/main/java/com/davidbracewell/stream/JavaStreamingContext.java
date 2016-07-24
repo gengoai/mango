@@ -22,6 +22,8 @@
 package com.davidbracewell.stream;
 
 import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.io.Resources;
+import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.stream.accumulator.Accumulatable;
 import com.davidbracewell.stream.accumulator.DoubleAccumulatable;
 import com.davidbracewell.stream.accumulator.IntAccumulatable;
@@ -32,11 +34,8 @@ import com.google.common.base.Throwables;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
@@ -145,8 +144,23 @@ public enum JavaStreamingContext implements StreamingContext, Serializable {
     if (StringUtils.isNullOrBlank(location)) {
       return empty();
     }
+    Resource resource = Resources.from(location);
+    if (resource.isDirectory()) {
+      return new LocalStream<>(
+        resource.getChildren(true).stream()
+          .filter(r -> !r.isDirectory())
+          .flatMap(r -> {
+              try {
+                return Cast.<LocalStream>as(r.lines()).stream();
+              } catch (IOException e) {
+                throw Throwables.propagate(e);
+              }
+            }
+          )
+      );
+    }
     try {
-      return new LocalStream<>(Files.lines(Paths.get(location)));
+      return resource.lines();
     } catch (IOException e) {
       throw Throwables.propagate(e);
     }

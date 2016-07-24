@@ -29,7 +29,7 @@ import java.util.function.*;
 public interface Unchecked {
 
   static Runnable runnable(CheckedRunnable runnable) {
-    return (Serializable & Runnable) () -> {
+    return () -> {
       try {
         runnable.run();
       } catch (Throwable e) {
@@ -45,8 +45,8 @@ public interface Unchecked {
    * @param checked The checked functional
    * @return The checked functional.
    */
-  static DoubleToIntFunction doubleToIntFunction(CheckedDoubleToIntFunction checked) {
-    return (Serializable & DoubleToIntFunction) (t) -> {
+  static SerializableDoubleToIntFunction doubleToIntFunction(CheckedDoubleToIntFunction checked) {
+    return (t) -> {
       try {
         return checked.applyAsInt(t);
       } catch (Throwable e) {
@@ -62,8 +62,8 @@ public interface Unchecked {
    * @param checked The checked functional
    * @return The checked functional.
    */
-  static IntToDoubleFunction intToDoubleFunction(CheckedIntToDoubleFunction checked) {
-    return (Serializable & IntToDoubleFunction) (t) -> {
+  static SerializableIntToDoubleFunction intToDoubleFunction(CheckedIntToDoubleFunction checked) {
+    return (t) -> {
       try {
         return checked.applyAsDouble(t);
       } catch (Throwable e) {
@@ -80,8 +80,8 @@ public interface Unchecked {
    * @param <T>     Functional parameter
    * @return The checked functional.
    */
-  static <T> Consumer<T> consumer(CheckedConsumer<T> checked) {
-    return (Serializable & Consumer<T>) (t) -> {
+  static <T> SerializableConsumer<T> consumer(CheckedConsumer<T> checked) {
+    return (t) -> {
       try {
         checked.accept(t);
       } catch (Throwable e) {
@@ -97,8 +97,8 @@ public interface Unchecked {
    * @param checked The checked functional
    * @return The checked functional.
    */
-  static IntPredicate intPredicate(CheckedIntPredicate checked) {
-    return (Serializable & IntPredicate) (t) -> {
+  static SerializableIntPredicate intPredicate(CheckedIntPredicate checked) {
+    return (t) -> {
       try {
         return checked.test(t);
       } catch (Throwable e) {
@@ -115,8 +115,8 @@ public interface Unchecked {
    * @param <T>     Functional parameter
    * @return The checked functional.
    */
-  static <T> ObjLongConsumer<T> objLongConsumer(CheckedObjLongConsumer<T> checked) {
-    return (Serializable & ObjLongConsumer<T>) (t, value) -> {
+  static <T> SerializableObjLongConsumer<T> objLongConsumer(CheckedObjLongConsumer<T> checked) {
+    return (t, value) -> {
       try {
         checked.accept(t, value);
       } catch (Throwable e) {
@@ -134,8 +134,8 @@ public interface Unchecked {
    * @param <U>     Functional parameter
    * @return The checked functional.
    */
-  static <T, U> BiPredicate<T, U> biPredicate(CheckedBiPredicate<T, U> checked) {
-    return (Serializable & BiPredicate<T, U>) (t, U) -> {
+  static <T, U> SerializableBiPredicate<T, U> biPredicate(CheckedBiPredicate<T, U> checked) {
+    return (t, U) -> {
       try {
         return checked.test(t, U);
       } catch (Throwable e) {
@@ -151,8 +151,8 @@ public interface Unchecked {
    * @param checked The checked functional
    * @return The checked functional.
    */
-  static DoubleUnaryOperator doubleUnaryOperator(CheckedDoubleUnaryOperator checked) {
-    return (Serializable & DoubleUnaryOperator) (t) -> {
+  static SerializableDoubleUnaryOperator doubleUnaryOperator(CheckedDoubleUnaryOperator checked) {
+    return (t) -> {
       try {
         return checked.applyAsDouble(t);
       } catch (Throwable e) {
@@ -168,8 +168,8 @@ public interface Unchecked {
    * @param checked The checked functional
    * @return The checked functional.
    */
-  static IntUnaryOperator intUnaryOperator(CheckedIntUnaryOperator checked) {
-    return (Serializable & IntUnaryOperator) (t) -> {
+  static SerializableIntUnaryOperator intUnaryOperator(CheckedIntUnaryOperator checked) {
+    return (t) -> {
       try {
         return checked.applyAsInt(t);
       } catch (Throwable e) {
@@ -185,8 +185,8 @@ public interface Unchecked {
    * @param checked The checked functional
    * @return The checked functional.
    */
-  static LongUnaryOperator longUnaryOperator(CheckedLongUnaryOperator checked) {
-    return (Serializable & LongUnaryOperator) (t) -> {
+  static SerializableLongUnaryOperator longUnaryOperator(CheckedLongUnaryOperator checked) {
+    return (t) -> {
       try {
         return checked.applyAsLong(t);
       } catch (Throwable e) {
@@ -202,8 +202,8 @@ public interface Unchecked {
    * @param checked The checked functional
    * @return The checked functional.
    */
-  static BooleanSupplier booleanSupplier(CheckedBooleanSupplier checked) {
-    return (Serializable & BooleanSupplier) () -> {
+  static SerializableBooleanSupplier booleanSupplier(CheckedBooleanSupplier checked) {
+    return () -> {
       try {
         return checked.getAsBoolean();
       } catch (Throwable e) {
@@ -219,8 +219,8 @@ public interface Unchecked {
    * @param checked The checked functional
    * @return The checked functional.
    */
-  static IntSupplier intSupplier(CheckedIntSupplier checked) {
-    return (Serializable & IntSupplier) () -> {
+  static SerializableIntSupplier intSupplier(CheckedIntSupplier checked) {
+    return () -> {
       try {
         return checked.getAsInt();
       } catch (Throwable e) {
@@ -236,8 +236,8 @@ public interface Unchecked {
    * @param checked The checked functional
    * @return The checked functional.
    */
-  static IntBinaryOperator intBinaryOperator(CheckedIntBinaryOperator checked) {
-    return (Serializable & IntBinaryOperator) (t, u) -> {
+  static SerializableIntBinaryOperator intBinaryOperator(CheckedIntBinaryOperator checked) {
+    return (t, u) -> {
       try {
         return checked.applyAsInt(t, u);
       } catch (Throwable e) {
@@ -254,8 +254,8 @@ public interface Unchecked {
    * @param <T>     Functional parameter
    * @return The checked functional.
    */
-  static <T> ObjIntConsumer<T> objIntConsumer(CheckedObjIntConsumer<T> checked) {
-    return (Serializable & ObjIntConsumer<T>) (t, value) -> {
+  static <T> SerializableObjIntConsumer<T> objIntConsumer(CheckedObjIntConsumer<T> checked) {
+    return (t, value) -> {
       try {
         checked.accept(t, value);
       } catch (Throwable e) {
@@ -271,8 +271,8 @@ public interface Unchecked {
    * @param checked The checked functional
    * @return The checked functional.
    */
-  static LongBinaryOperator longBinaryOperator(CheckedLongBinaryOperator checked) {
-    return (Serializable & LongBinaryOperator) (t, u) -> {
+  static SerializableLongBinaryOperator longBinaryOperator(CheckedLongBinaryOperator checked) {
+    return (t, u) -> {
       try {
         return checked.applyAsLong(t, u);
       } catch (Throwable e) {
@@ -289,8 +289,8 @@ public interface Unchecked {
    * @param <T>     Functional parameter
    * @return The checked functional.
    */
-  static <T> UnaryOperator<T> unaryOperator(CheckedUnaryOperator<T> checked) {
-    return (Serializable & UnaryOperator<T>) (t) -> {
+  static <T> SerializableUnaryOperator<T> unaryOperator(CheckedUnaryOperator<T> checked) {
+    return (t) -> {
       try {
         return checked.apply(t);
       } catch (Throwable e) {
@@ -307,8 +307,8 @@ public interface Unchecked {
    * @param <T>     Functional parameter
    * @return The checked functional.
    */
-  static <T> BinaryOperator<T> binaryOperator(CheckedBinaryOperator<T> checked) {
-    return (Serializable & BinaryOperator<T>) (t, u) -> {
+  static <T> SerializableBinaryOperator<T> binaryOperator(CheckedBinaryOperator<T> checked) {
+    return (t, u) -> {
       try {
         return checked.apply(t, u);
       } catch (Throwable e) {
@@ -325,8 +325,8 @@ public interface Unchecked {
    * @param <T>     Functional parameter
    * @return The checked functional.
    */
-  static <T> Predicate<T> predicate(CheckedPredicate<T> checked) {
-    return (Serializable & Predicate<T>) (t) -> {
+  static <T> SerializablePredicate<T> predicate(CheckedPredicate<T> checked) {
+    return (t) -> {
       try {
         return checked.test(t);
       } catch (Throwable e) {
@@ -343,8 +343,8 @@ public interface Unchecked {
    * @param <T>     Functional parameter
    * @return The checked functional.
    */
-  static <T> ToDoubleFunction<T> toDoubleFunction(CheckedToDoubleFunction<T> checked) {
-    return (Serializable & ToDoubleFunction<T>) (t) -> {
+  static <T> SerializableToDoubleFunction<T> toDoubleFunction(CheckedToDoubleFunction<T> checked) {
+    return (t) -> {
       try {
         return checked.applyAsDouble(t);
       } catch (Throwable e) {
@@ -361,8 +361,8 @@ public interface Unchecked {
    * @param <T>     Functional parameter
    * @return The checked functional.
    */
-  static <T> Supplier<T> supplier(CheckedSupplier<T> checked) {
-    return (Serializable & Supplier<T>) () -> {
+  static <T> SerializableSupplier<T> supplier(CheckedSupplier<T> checked) {
+    return () -> {
       try {
         return checked.get();
       } catch (Throwable e) {
@@ -380,8 +380,8 @@ public interface Unchecked {
    * @param <U>     Functional parameter
    * @return The checked functional.
    */
-  static <T, U> ToDoubleBiFunction<T, U> toDoubleBiFunction(CheckedToDoubleBiFunction<T, U> checked) {
-    return (Serializable & ToDoubleBiFunction<T, U>) (t, u) -> {
+  static <T, U> SerializableToDoubleBiFunction<T, U> toDoubleBiFunction(CheckedToDoubleBiFunction<T, U> checked) {
+    return (t, u) -> {
       try {
         return checked.applyAsDouble(t, u);
       } catch (Throwable e) {
@@ -397,8 +397,8 @@ public interface Unchecked {
    * @param checked The checked functional
    * @return The checked functional.
    */
-  static LongPredicate longPredicate(CheckedLongPredicate checked) {
-    return (Serializable & LongPredicate) (t) -> {
+  static SerializableLongPredicate longPredicate(CheckedLongPredicate checked) {
+    return (t) -> {
       try {
         return checked.test(t);
       } catch (Throwable e) {
@@ -416,8 +416,8 @@ public interface Unchecked {
    * @param <U>     Functional parameter
    * @return The checked functional.
    */
-  static <T, U> BiConsumer<T, U> biConsumer(CheckedBiConsumer<T, U> checked) {
-    return (Serializable & BiConsumer<T, U>) (t, u) -> {
+  static <T, U> SerializableBiConsumer<T, U> biConsumer(CheckedBiConsumer<T, U> checked) {
+    return (t, u) -> {
       try {
         checked.accept(t, u);
       } catch (Throwable e) {
@@ -433,8 +433,8 @@ public interface Unchecked {
    * @param checked The checked functional
    * @return The checked functional.
    */
-  static LongSupplier longSupplier(CheckedLongSupplier checked) {
-    return (Serializable & LongSupplier) () -> {
+  static SerializableLongSupplier longSupplier(CheckedLongSupplier checked) {
+    return () -> {
       try {
         return checked.getAsLong();
       } catch (Throwable e) {
@@ -451,8 +451,8 @@ public interface Unchecked {
    * @param <T>     Functional parameter
    * @return The checked functional.
    */
-  static <T> ToLongFunction<T> toLongFunction(CheckedToLongFunction<T> checked) {
-    return (Serializable & ToLongFunction<T>) (t) -> {
+  static <T> SerializableToLongFunction<T> toLongFunction(CheckedToLongFunction<T> checked) {
+    return (t) -> {
       try {
         return checked.applyAsLong(t);
       } catch (Throwable e) {
@@ -469,8 +469,8 @@ public interface Unchecked {
    * @param <R>     Functional parameter
    * @return The checked functional.
    */
-  static <R> IntFunction<R> intFunction(CheckedIntFunction<R> checked) {
-    return (Serializable & IntFunction<R>) (t) -> {
+  static <R> SerializableIntFunction<R> intFunction(CheckedIntFunction<R> checked) {
+    return (t) -> {
       try {
         return checked.apply(t);
       } catch (Throwable e) {
@@ -486,8 +486,8 @@ public interface Unchecked {
    * @param checked The checked functional
    * @return The checked functional.
    */
-  static IntConsumer intConsumer(CheckedIntConsumer checked) {
-    return (Serializable & IntConsumer) (t) -> {
+  static SerializableIntConsumer intConsumer(CheckedIntConsumer checked) {
+    return (t) -> {
       try {
         checked.accept(t);
       } catch (Throwable e) {
@@ -506,8 +506,8 @@ public interface Unchecked {
    * @param <R>     Functional parameter
    * @return The checked functional.
    */
-  static <T, U, R> BiFunction<T, U, R> biFunction(CheckedBiFunction<T, U, R> checked) {
-    return (Serializable & BiFunction<T, U, R>) (t, u) -> {
+  static <T, U, R> SerializableBiFunction<T, U, R> biFunction(CheckedBiFunction<T, U, R> checked) {
+    return (t, u) -> {
       try {
         return checked.apply(t, u);
       } catch (Throwable e) {
@@ -523,8 +523,8 @@ public interface Unchecked {
    * @param checked The checked functional
    * @return The checked functional.
    */
-  static LongToDoubleFunction longToDoubleFunction(CheckedLongToDoubleFunction checked) {
-    return (Serializable & LongToDoubleFunction) (t) -> {
+  static SerializableLongToDoubleFunction longToDoubleFunction(CheckedLongToDoubleFunction checked) {
+    return (t) -> {
       try {
         return checked.applyAsDouble(t);
       } catch (Throwable e) {
@@ -540,8 +540,8 @@ public interface Unchecked {
    * @param checked The checked functional
    * @return The checked functional.
    */
-  static DoubleBinaryOperator doubleBinaryOperator(CheckedDoubleBinaryOperator checked) {
-    return (Serializable & DoubleBinaryOperator) (t, u) -> {
+  static SerializableDoubleBinaryOperator doubleBinaryOperator(CheckedDoubleBinaryOperator checked) {
+    return (t, u) -> {
       try {
         return checked.applyAsDouble(t, u);
       } catch (Throwable e) {
@@ -559,7 +559,7 @@ public interface Unchecked {
    * @return The checked functional.
    */
   static <R> LongFunction<R> longFunction(CheckedLongFunction<R> checked) {
-    return (Serializable & LongFunction<R>) (t) -> {
+    return (t) -> {
       try {
         return checked.apply(t);
       } catch (Throwable e) {
@@ -575,8 +575,8 @@ public interface Unchecked {
    * @param checked The checked functional
    * @return The checked functional.
    */
-  static LongToIntFunction longToIntFunction(CheckedLongToIntFunction checked) {
-    return (Serializable & LongToIntFunction) (t) -> {
+  static SerializableLongToIntFunction longToIntFunction(CheckedLongToIntFunction checked) {
+    return (t) -> {
       try {
         return checked.applyAsInt(t);
       } catch (Throwable e) {
@@ -594,8 +594,8 @@ public interface Unchecked {
    * @param <U>     Functional parameter
    * @return The checked functional.
    */
-  static <T, U> ToLongBiFunction<T, U> toLongBiFunction(CheckedToLongBiFunction<T, U> checked) {
-    return (Serializable & ToLongBiFunction<T, U>) (t, u) -> {
+  static <T, U> SerializableToLongBiFunction<T, U> toLongBiFunction(CheckedToLongBiFunction<T, U> checked) {
+    return (t, u) -> {
       try {
         return checked.applyAsLong(t, u);
       } catch (Throwable e) {
@@ -611,8 +611,8 @@ public interface Unchecked {
    * @param checked The checked functional
    * @return The checked functional.
    */
-  static DoublePredicate doublePredicate(CheckedDoublePredicate checked) {
-    return (Serializable & DoublePredicate) (t) -> {
+  static SerializableDoublePredicate doublePredicate(CheckedDoublePredicate checked) {
+    return (t) -> {
       try {
         return checked.test(t);
       } catch (Throwable e) {
@@ -629,8 +629,8 @@ public interface Unchecked {
    * @param <R>     Functional parameter
    * @return The checked functional.
    */
-  static <R> DoubleFunction<R> doubleFunction(CheckedDoubleFunction<R> checked) {
-    return (Serializable & DoubleFunction<R>) (t) -> {
+  static <R> SerializableDoubleFunction<R> doubleFunction(CheckedDoubleFunction<R> checked) {
+    return (t) -> {
       try {
         return checked.apply(t);
       } catch (Throwable e) {
@@ -646,8 +646,8 @@ public interface Unchecked {
    * @param checked The checked functional
    * @return The checked functional.
    */
-  static LongConsumer longConsumer(CheckedLongConsumer checked) {
-    return (Serializable & LongConsumer) (t) -> {
+  static SerializableLongConsumer longConsumer(CheckedLongConsumer checked) {
+    return (t) -> {
       try {
         checked.accept(t);
       } catch (Throwable e) {
@@ -665,8 +665,8 @@ public interface Unchecked {
    * @param <R>     Functional parameter
    * @return The checked functional.
    */
-  static <T, R> Function<T, R> function(CheckedFunction<T, R> checked) {
-    return (Serializable & Function<T, R>) (t) -> {
+  static <T, R> SerializableFunction<T, R> function(CheckedFunction<T, R> checked) {
+    return (t) -> {
       try {
         return checked.apply(t);
       } catch (Throwable e) {
@@ -682,8 +682,8 @@ public interface Unchecked {
    * @param checked The checked functional
    * @return The checked functional.
    */
-  static DoubleToLongFunction doubleToLongFunction(CheckedDoubleToLongFunction checked) {
-    return (Serializable & DoubleToLongFunction) (t) -> {
+  static SerializableDoubleToLongFunction doubleToLongFunction(CheckedDoubleToLongFunction checked) {
+    return (t) -> {
       try {
         return checked.applyAsLong(t);
       } catch (Throwable e) {
@@ -699,8 +699,8 @@ public interface Unchecked {
    * @param checked The checked functional
    * @return The checked functional.
    */
-  static DoubleConsumer doubleConsumer(CheckedDoubleConsumer checked) {
-    return (Serializable & DoubleConsumer) (t) -> {
+  static SerializableDoubleConsumer doubleConsumer(CheckedDoubleConsumer checked) {
+    return (t) -> {
       try {
         checked.accept(t);
       } catch (Throwable e) {
@@ -716,8 +716,8 @@ public interface Unchecked {
    * @param checked The checked functional
    * @return The checked functional.
    */
-  static IntToLongFunction intToLongFunction(CheckedIntToLongFunction checked) {
-    return (Serializable & IntToLongFunction) (t) -> {
+  static SerializableIntToLongFunction intToLongFunction(CheckedIntToLongFunction checked) {
+    return (t) -> {
       try {
         return checked.applyAsLong(t);
       } catch (Throwable e) {
@@ -734,8 +734,8 @@ public interface Unchecked {
    * @param <T>     Functional parameter
    * @return The checked functional.
    */
-  static <T> ToIntFunction<T> toIntFunction(CheckedToIntFunction<T> checked) {
-    return (Serializable & ToIntFunction<T>) (t) -> {
+  static <T> SerializableToIntFunction<T> toIntFunction(CheckedToIntFunction<T> checked) {
+    return (t) -> {
       try {
         return checked.applyAsInt(t);
       } catch (Throwable e) {
@@ -751,8 +751,8 @@ public interface Unchecked {
    * @param checked The checked functional
    * @return The checked functional.
    */
-  static DoubleSupplier doubleSupplier(CheckedDoubleSupplier checked) {
-    return (Serializable & DoubleSupplier) () -> {
+  static SerializableDoubleSupplier doubleSupplier(CheckedDoubleSupplier checked) {
+    return () -> {
       try {
         return checked.getAsDouble();
       } catch (Throwable e) {
@@ -770,8 +770,8 @@ public interface Unchecked {
    * @param <U>     Functional parameter
    * @return The checked functional.
    */
-  static <T, U> ToIntBiFunction<T, U> toIntBiFunction(CheckedToIntBiFunction<T, U> checked) {
-    return (Serializable & ToIntBiFunction<T, U>) (t, u) -> {
+  static <T, U> SerializableToIntBiFunction<T, U> toIntBiFunction(CheckedToIntBiFunction<T, U> checked) {
+    return (t, u) -> {
       try {
         return checked.applyAsInt(t, u);
       } catch (Throwable e) {
@@ -788,8 +788,8 @@ public interface Unchecked {
    * @param <T>     Functional parameter
    * @return The checked functional.
    */
-  static <T> ObjDoubleConsumer<T> objDoubleConsumer(CheckedObjDoubleConsumer<T> checked) {
-    return (Serializable & ObjDoubleConsumer<T>) (t, value) -> {
+  static <T> SerializableObjDoubleConsumer<T> objDoubleConsumer(CheckedObjDoubleConsumer<T> checked) {
+    return (t, value) -> {
       try {
         checked.accept(t, value);
       } catch (Throwable e) {
