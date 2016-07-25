@@ -192,11 +192,11 @@ public class ReusableLocalStream<T> implements MStream<T> {
 
   @Override
   public MStream<T> union(MStream<T> other) {
-    if (other == null) {
+    if (other == null || other.isEmpty()) {
       return this;
-    } else if (other instanceof ReusableLocalStream) {
+    } else if (other instanceof ReusableLocalStream || other instanceof LocalStream) {
       List<T> list = new ArrayList<>(backingCollection);
-      list.addAll(Cast.<ReusableLocalStream<T>>as(other).backingCollection);
+      list.addAll(other.collect());
       return new ReusableLocalStream<>(list);
     }
     return getStream().union(other);
