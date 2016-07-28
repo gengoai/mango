@@ -23,14 +23,7 @@ package com.davidbracewell.stream;
 
 import com.davidbracewell.collection.Collect;
 import com.davidbracewell.conversion.Cast;
-import com.davidbracewell.function.SerializableBinaryOperator;
-import com.davidbracewell.function.SerializableComparator;
-import com.davidbracewell.function.SerializableConsumer;
-import com.davidbracewell.function.SerializableFunction;
-import com.davidbracewell.function.SerializablePredicate;
-import com.davidbracewell.function.SerializableRunnable;
-import com.davidbracewell.function.SerializableToDoubleFunction;
-import com.davidbracewell.function.Unchecked;
+import com.davidbracewell.function.*;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.tuple.Tuple2;
 import com.google.common.base.Throwables;
@@ -40,14 +33,7 @@ import lombok.NonNull;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
@@ -67,7 +53,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
   private volatile Stream<T> stream;
   private SerializableRunnable onClose;
 
-  public LocalStream(){
+  public LocalStream() {
     this.stream = Stream.of();
   }
 
@@ -321,7 +307,11 @@ public class LocalStream<T> implements MStream<T>, Serializable {
 
   @Override
   public MStream<T> parallel() {
-    return new LocalStream<>(stream.parallel());
+    Stream<T> parallel = stream.parallel();
+    if (parallel == null) {
+      return this;
+    }
+    return new LocalStream<>(parallel);
   }
 
   @Override

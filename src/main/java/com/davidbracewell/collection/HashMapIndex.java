@@ -51,15 +51,20 @@ public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
 
 
   @Override
-  public int add(@NonNull TYPE item) {
-    if (map.containsKey(item)) {
-      return map.get(item);
+  public int add(TYPE item) {
+    if (item == null) {
+      return -1;
     }
-    if (list.add(item)) {
-      map.put(item, list.size() - 1);
-      return list.size() - 1;
+    if (!map.containsKey(item)) {
+      synchronized (this) {
+        if (!map.containsKey(item)) {
+          list.add(item);
+          map.put(item, list.size() - 1);
+          return list.size() - 1;
+        }
+      }
     }
-    return -1;
+    return map.get(item);
   }
 
   @Override
