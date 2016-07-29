@@ -22,11 +22,20 @@
 package com.davidbracewell.stream;
 
 import com.davidbracewell.conversion.Cast;
-import com.davidbracewell.function.*;
+import com.davidbracewell.function.SerializableBiConsumer;
+import com.davidbracewell.function.SerializableBiFunction;
+import com.davidbracewell.function.SerializableBiPredicate;
+import com.davidbracewell.function.SerializableBinaryOperator;
+import com.davidbracewell.function.SerializableComparator;
+import com.davidbracewell.function.SerializablePredicate;
+import com.davidbracewell.function.SerializableRunnable;
+import com.davidbracewell.function.SerializableToDoubleBiFunction;
 import com.google.common.collect.Ordering;
+import lombok.NonNull;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 
 /**
@@ -114,6 +123,48 @@ public interface MPairStream<T, U> extends AutoCloseable {
   <V> MPairStream<T, Map.Entry<U, V>> leftOuterJoin(MPairStream<? extends T, ? extends V> stream);
 
   <V> MPairStream<T, Map.Entry<U, V>> rightOuterJoin(MPairStream<? extends T, ? extends V> stream);
+
+
+  MDoubleStream mapToDouble(SerializableToDoubleBiFunction<? super T, ? super U> function);
+
+  default Optional<Map.Entry<T, U>> minByKey() {
+    return minByKey((t1, t2) -> Ordering.natural().compare(Cast.as(t1), Cast.as(t2)));
+  }
+
+  default Optional<Map.Entry<T, U>> minByKey(@NonNull SerializableComparator<? super T> comparator) {
+    return min((t1, t2) -> comparator.compare(t1.getKey(), t2.getKey()));
+  }
+
+  default Optional<Map.Entry<T, U>> minByValue() {
+    return minByKey((t1, t2) -> Ordering.natural().compare(Cast.as(t1), Cast.as(t2)));
+  }
+
+  default Optional<Map.Entry<T, U>> minByValue(@NonNull SerializableComparator<? super U> comparator) {
+    return min((t1, t2) -> comparator.compare(t1.getValue(), t2.getValue()));
+  }
+
+  Optional<Map.Entry<T, U>> min(SerializableComparator<Map.Entry<T, U>> comparator);
+
+
+  default Optional<Map.Entry<T, U>> maxByKey() {
+    return minByKey((t1, t2) -> Ordering.natural().reverse().compare(Cast.as(t1), Cast.as(t2)));
+  }
+
+  default Optional<Map.Entry<T, U>> maxByKey(@NonNull SerializableComparator<? super T> comparator) {
+    return min((t1, t2) -> comparator.compare(t1.getKey(), t2.getKey()));
+  }
+
+  default Optional<Map.Entry<T, U>> maxByValue() {
+    return minByKey((t1, t2) -> Ordering.natural().compare(Cast.as(t1), Cast.as(t2)));
+  }
+
+  default Optional<Map.Entry<T, U>> maxByValue(@NonNull SerializableComparator<? super U> comparator) {
+    return min((t1, t2) -> comparator.compare(t1.getValue(), t2.getValue()));
+  }
+
+  Optional<Map.Entry<T, U>> max(SerializableComparator<Map.Entry<T, U>> comparator);
+
+  boolean isEmpty();
 
 
   /**
@@ -204,9 +255,9 @@ public interface MPairStream<T, U> extends AutoCloseable {
 
   MPairStream<T, U> shuffle(Random random);
 
-  MPairStream<T,U> cache();
+  MPairStream<T, U> cache();
 
-  MPairStream<T,U> repartition(int partitions);
+  MPairStream<T, U> repartition(int partitions);
 
 
   /**

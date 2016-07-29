@@ -8,6 +8,7 @@ import com.davidbracewell.function.SerializableBinaryOperator;
 import com.davidbracewell.function.SerializableComparator;
 import com.davidbracewell.function.SerializablePredicate;
 import com.davidbracewell.function.SerializableRunnable;
+import com.davidbracewell.function.SerializableToDoubleBiFunction;
 import com.davidbracewell.tuple.Tuple2;
 import lombok.NonNull;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -17,6 +18,7 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 
 /**
@@ -227,4 +229,32 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
       )));
     return new SparkPairStream<>(nrdd);
   }
+
+  @Override
+  public boolean isEmpty() {
+    return rdd.isEmpty();
+  }
+
+  @Override
+  public MDoubleStream mapToDouble(@NonNull SerializableToDoubleBiFunction<? super T, ? super U> function) {
+    return new SparkDoubleStream(rdd.mapToDouble(e -> function.applyAsDouble(e._1(), e._2())));
+  }
+
+  @Override
+  public Optional<Map.Entry<T, U>> min(@NonNull SerializableComparator<Map.Entry<T, U>> comparator) {
+    if (isEmpty()) {
+      return Optional.empty();
+    }
+    return Optional.of(toMapEntry(rdd.min((t1, t2) -> comparator.compare(toMapEntry(t1), toMapEntry(t2)))));
+  }
+
+  @Override
+  public Optional<Map.Entry<T, U>> max(@NonNull SerializableComparator<Map.Entry<T, U>> comparator) {
+    if (isEmpty()) {
+      return Optional.empty();
+    }
+    return Optional.of(toMapEntry(rdd.max((t1, t2) -> comparator.compare(toMapEntry(t1), toMapEntry(t2)))));
+  }
+
+
 }// END OF SparkPairStream

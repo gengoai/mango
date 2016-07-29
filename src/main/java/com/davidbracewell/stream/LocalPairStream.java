@@ -30,6 +30,7 @@ import com.davidbracewell.function.SerializableBinaryOperator;
 import com.davidbracewell.function.SerializableComparator;
 import com.davidbracewell.function.SerializablePredicate;
 import com.davidbracewell.function.SerializableRunnable;
+import com.davidbracewell.function.SerializableToDoubleBiFunction;
 import com.davidbracewell.tuple.Tuple2;
 import lombok.NonNull;
 
@@ -40,6 +41,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -260,4 +262,26 @@ public class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
   public void onClose(@NonNull SerializableRunnable closeHandler) {
     stream.onClose(closeHandler);
   }
+
+
+  @Override
+  public boolean isEmpty() {
+    return stream.count() == 0;
+  }
+
+  @Override
+  public MDoubleStream mapToDouble(@NonNull SerializableToDoubleBiFunction<? super T, ? super U> function) {
+    return new LocalDoubleStream(stream.mapToDouble(e -> function.applyAsDouble(e.getKey(), e.getValue())));
+  }
+
+  @Override
+  public Optional<Entry<T, U>> min(@NonNull SerializableComparator<Entry<T, U>> comparator) {
+    return stream.min(comparator);
+  }
+
+  @Override
+  public Optional<Entry<T, U>> max(@NonNull SerializableComparator<Entry<T, U>> comparator) {
+    return stream.max(comparator);
+  }
+
 }//END OF LocalPairStream
