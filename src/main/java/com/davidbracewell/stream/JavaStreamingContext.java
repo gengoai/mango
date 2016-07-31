@@ -83,7 +83,7 @@ public enum JavaStreamingContext implements StreamingContext, Serializable {
   }
 
   @Override
-  public void shutdown() {
+  public void close() {
 
   }
 

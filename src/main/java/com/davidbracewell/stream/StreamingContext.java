@@ -43,7 +43,7 @@ import java.util.stream.Stream;
  *
  * @author David B. Bracewell
  */
-public interface StreamingContext {
+public interface StreamingContext extends AutoCloseable {
 
   /**
    * Get streaming context.
@@ -386,7 +386,5 @@ public interface StreamingContext {
     return empty().mapToDouble(u -> Double.NaN);
   }
 
-
-  void shutdown();
 
 }//END OF StreamingContext

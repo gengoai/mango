@@ -174,7 +174,7 @@ public enum SparkStreamingContext implements StreamingContext {
   }
 
   @Override
-  public void shutdown() {
+  public void close() {
     context.close();
   }
 
