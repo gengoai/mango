@@ -51,6 +51,8 @@ import java.util.*;
 public abstract class StructuredReader implements Closeable {
 
 
+  public abstract String peekName() throws IOException;
+
   /**
    * Gets document type.
    *
@@ -345,7 +347,7 @@ public abstract class StructuredReader implements Closeable {
    */
   protected abstract Val nextSimpleValue() throws IOException;
 
-  private <T> T readReadable(Class<T> clazz) throws IOException {
+  protected  <T> T readReadable(Class<T> clazz) throws IOException {
     try {
       T object = Reflect.onClass(clazz).create().get();
       boolean objectWrapped = peek() == ElementType.BEGIN_OBJECT;

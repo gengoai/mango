@@ -25,6 +25,7 @@ import com.davidbracewell.conversion.Val;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.ElementType;
 import com.davidbracewell.io.structured.StructuredReader;
+import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
@@ -248,6 +249,14 @@ public class JSONReader extends StructuredReader {
     String name = currentValue.getValue().asString();
     consume();
     return Tuple2.of(name, nextValue());
+  }
+
+  @Override
+  public String peekName() throws IOException{
+    if (currentValue.getKey() != NAME) {
+      return StringUtils.EMPTY;
+    }
+    return currentValue.getValue().asString();
   }
 
   @Override

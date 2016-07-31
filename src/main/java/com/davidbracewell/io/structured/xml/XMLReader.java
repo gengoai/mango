@@ -41,8 +41,12 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.NoSuchElementException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Stack;
+
+import static com.davidbracewell.tuple.Tuples.$;
 
 /**
  * An implementation of a StructuredReader that reads xml.
@@ -50,10 +54,10 @@ import java.util.Stack;
  * @author David B. Bracewell
  */
 public class XMLReader extends StructuredReader {
-
   private final String documentTag;
   private final XMLEventReader reader;
   private final Stack<Tuple2<String, ElementType>> stack;
+  private final LinkedList<XMLEvent> buffer = new LinkedList<>();
   private ElementType documentType;
   private String readerText;
 
@@ -77,6 +81,37 @@ public class XMLReader extends StructuredReader {
     this("document", Resources.fromReader(resource));
   }
 
+
+  private XMLEvent nextValidEvent() throws IOException {
+    while (true) {
+      try {
+        XMLEvent event = reader.nextEvent();
+        ElementType element = xmlEventToStructuredElement(event);
+        if (element != ElementType.OTHER) {
+          return event;
+        }
+
+      } catch (XMLStreamException e) {
+        throw new IOException(e);
+      }
+    }
+  }
+
+  private XMLEvent consume() throws IOException {
+    if (buffer.isEmpty()) {
+      return nextValidEvent();
+    }
+    return buffer.removeFirst();
+  }
+
+  private XMLEvent peekEvent() throws IOException {
+    if (buffer.isEmpty()) {
+      buffer.add(nextValidEvent());
+    }
+    return buffer.getFirst();
+  }
+
+
   /**
    * Creates an XMLReader
    *
@@ -95,17 +130,14 @@ public class XMLReader extends StructuredReader {
     }
   }
 
-  private XMLEvent next() throws IOException {
-    peek(); // move to the next real event
-    try {
-      return reader.nextEvent();
-    } catch (XMLStreamException e) {
-      throw new IOException(e);
-    } catch (NoSuchElementException e) {
-      return null;
+  @Override
+  public String peekName() throws IOException {
+    XMLEvent event = peekEvent();
+    if (event == null || !(event instanceof StartElement)) {
+      return StringUtils.EMPTY;
     }
+    return ((StartElement) event).getName().getLocalPart();
   }
-
 
   private XMLReader validate(XMLEvent event, ElementType expectedElement, Tuple2<String, ElementType> expectedTopOfStack) throws IOException {
     if (event == null) {
@@ -127,7 +159,7 @@ public class XMLReader extends StructuredReader {
   @Override
   public XMLReader beginDocument() throws IOException {
     try {
-      XMLEvent event = next();
+      XMLEvent event = consume();
       if (event == null) {
         throw new IOException();
       }
@@ -147,7 +179,7 @@ public class XMLReader extends StructuredReader {
 
   @Override
   public void endDocument() throws IOException {
-    XMLEvent event = next();
+    XMLEvent event = consume();
     validate(event, ElementType.END_DOCUMENT, Tuple2.of(documentTag, ElementType.BEGIN_DOCUMENT));
   }
 
@@ -213,28 +245,17 @@ public class XMLReader extends StructuredReader {
     return ElementType.OTHER;
   }
 
+
   public ElementType peek() throws IOException {
     if (!StringUtils.isNullOrBlank(readerText)) {
       return ElementType.END_KEY_VALUE;
     }
-    while (true) {
-      try {
-        XMLEvent event = reader.peek();
-        ElementType element = xmlEventToStructuredElement(event);
-        if (element != ElementType.OTHER) {
-          return element;
-        }
-        reader.nextEvent();
-      } catch (XMLStreamException e) {
-        throw new IOException(e);
-      }
-    }
+    return xmlEventToStructuredElement(peekEvent());
   }
-
 
   @Override
   public String beginObject() throws IOException {
-    XMLEvent event = next();
+    XMLEvent event = consume();
     validate(event, ElementType.BEGIN_OBJECT, null);
     String name = ((StartElement) event).getName().getLocalPart();
     stack.push(Tuple2.of(name, ElementType.BEGIN_OBJECT));
@@ -243,7 +264,7 @@ public class XMLReader extends StructuredReader {
 
   @Override
   public StructuredReader endObject() throws IOException {
-    XMLEvent event = next();
+    XMLEvent event = consume();
     validate(event, ElementType.END_OBJECT, Tuple2.of(((EndElement) event).getName().getLocalPart(), ElementType.BEGIN_OBJECT));
     stack.pop();
     return this;
@@ -256,7 +277,7 @@ public class XMLReader extends StructuredReader {
 
   @Override
   public String beginArray() throws IOException {
-    XMLEvent event = next();
+    XMLEvent event = consume();
     validate(event, ElementType.BEGIN_ARRAY, null);
     String name = ((StartElement) event).getName().getLocalPart();
     stack.push(Tuple2.of(name, ElementType.BEGIN_ARRAY));
@@ -265,7 +286,7 @@ public class XMLReader extends StructuredReader {
 
   @Override
   public StructuredReader endArray() throws IOException {
-    XMLEvent event = next();
+    XMLEvent event = consume();
     validate(event, ElementType.END_ARRAY, Tuple2.of(((EndElement) event).getName().getLocalPart(), ElementType.BEGIN_ARRAY));
     stack.pop();
     return this;
@@ -283,24 +304,54 @@ public class XMLReader extends StructuredReader {
     return text;
   }
 
-  @Override
-  public Tuple2<String, Val> nextKeyValue() throws IOException {
-    XMLEvent event = next();
-    validate(event, ElementType.NAME, null);
-    String key = ((StartElement) event).getName().getLocalPart();
+  private void setReaderText() {
     try {
-      this.readerText = reader.getElementText();
+      this.readerText = handleNullables(reader.getElementText());
     } catch (XMLStreamException e) {
 
+    }
+  }
+
+  @Override
+  public Tuple2<String, Val> nextKeyValue() throws IOException {
+    XMLEvent event = consume();
+    String key = ((StartElement) event).getName().getLocalPart();
+    switch (xmlEventToStructuredElement(event)) {
+      case NAME:
+        setReaderText();
+        break;
+      case BEGIN_OBJECT:
+        stack.push($(key, ElementType.BEGIN_OBJECT));
+        Val v = nextValue();
+        System.out.println(stack);
+        endObject();
+        return $(key, v);
+      case BEGIN_ARRAY:
+        stack.push($(key, ElementType.BEGIN_ARRAY));
+        List<Val> array = new ArrayList<>();
+        while (peek() != ElementType.END_ARRAY) {
+          array.add(nextValue());
+        }
+        endArray();
+        return $(key, Val.of(array));
     }
     return Tuple2.of(key, nextValue());
   }
 
   @Override
   public <T> Tuple2<String, T> nextKeyValue(Class<T> clazz) throws IOException {
-    XMLEvent event = next();
-    validate(event, ElementType.NAME, null);
+    XMLEvent event = consume();
     String key = ((StartElement) event).getName().getLocalPart();
+    switch (xmlEventToStructuredElement(event)) {
+      case NAME:
+        setReaderText();
+        break;
+      case BEGIN_OBJECT:
+        stack.push($(key, ElementType.BEGIN_OBJECT));
+        T v = nextValue(clazz);
+        endObject();
+        return Tuple2.of(key, v);
+    }
     return Tuple2.of(key, nextValue(clazz));
   }
 
@@ -322,7 +373,7 @@ public class XMLReader extends StructuredReader {
         endObject();
         break;
       default:
-        next();
+        consume();
     }
 
     return element;
@@ -335,7 +386,7 @@ public class XMLReader extends StructuredReader {
       v = Val.of(readerText);
       readerText = null;
     } else if (peek() == ElementType.VALUE) {
-      next();
+      consume();
       try {
         return Val.of(reader.getElementText());
       } catch (XMLStreamException e) {
@@ -355,5 +406,4 @@ public class XMLReader extends StructuredReader {
       throw new IOException(e);
     }
   }
-
 }// END OF XMLReader

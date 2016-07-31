@@ -40,15 +40,7 @@ import lombok.NonNull;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Queue;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -531,6 +523,14 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
     } else {
       return ElementType.END_ARRAY;
     }
+  }
+
+  @Override
+  public String peekName() throws IOException {
+    if (valueIdx >= 0 && hasHeader) {
+      return header.get(valueIdx);
+    }
+    return StringUtils.EMPTY;
   }
 
   private int read() throws IOException {
