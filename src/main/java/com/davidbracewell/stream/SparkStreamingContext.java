@@ -35,12 +35,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
@@ -179,6 +174,11 @@ public enum SparkStreamingContext implements StreamingContext {
   }
 
   @Override
+  public void shutdown() {
+    context.close();
+  }
+
+  @Override
   public MStream<Integer> range(int startInclusive, int endExclusive) {
     return new SparkStream<Integer>(
       IntStream.range(startInclusive, endExclusive).boxed().collect(Collectors.toList())
@@ -251,6 +251,8 @@ public enum SparkStreamingContext implements StreamingContext {
   public <T> Broadcast<T> broadcast(T object) {
     return getSparkContext().broadcast(object);
   }
+
+
 
 
 }//END OF SparkStreamingContext

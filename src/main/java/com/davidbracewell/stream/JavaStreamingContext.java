@@ -24,11 +24,7 @@ package com.davidbracewell.stream;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.stream.accumulator.Accumulatable;
-import com.davidbracewell.stream.accumulator.DoubleAccumulatable;
-import com.davidbracewell.stream.accumulator.IntAccumulatable;
-import com.davidbracewell.stream.accumulator.JavaAccumulator;
-import com.davidbracewell.stream.accumulator.MAccumulator;
+import com.davidbracewell.stream.accumulator.*;
 import com.davidbracewell.string.StringUtils;
 import com.google.common.base.Throwables;
 
@@ -48,6 +44,7 @@ import java.util.stream.Stream;
 public enum JavaStreamingContext implements StreamingContext, Serializable {
   INSTANCE;
   private static final long serialVersionUID = 1L;
+
 
   @Override
   public MAccumulator<Double> accumulator(double initialValue, String name) {
@@ -83,6 +80,11 @@ public enum JavaStreamingContext implements StreamingContext, Serializable {
   @Override
   public <T> MStream<T> empty() {
     return new ReusableLocalStream<>(new ArrayList<>());
+  }
+
+  @Override
+  public void shutdown() {
+
   }
 
   @Override
@@ -152,7 +154,7 @@ public enum JavaStreamingContext implements StreamingContext, Serializable {
           .filter(r -> !r.isDirectory())
           .flatMap(r -> {
               try {
-                return Cast.<LocalStream>as(r.lines()).stream();
+                return Cast.<LocalStream<String>>as(r.lines()).stream();
               } catch (IOException e) {
                 throw Throwables.propagate(e);
               }

@@ -21,35 +21,22 @@
 
 package com.davidbracewell.stream;
 
-import com.davidbracewell.collection.Collect;
-import com.davidbracewell.collection.Counter;
-import com.davidbracewell.collection.HashMapCounter;
-import com.davidbracewell.collection.HashMapMultiCounter;
-import com.davidbracewell.collection.MultiCounter;
+import com.davidbracewell.collection.*;
 import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.SerializableSupplier;
-import com.davidbracewell.stream.accumulator.Accumulatable;
-import com.davidbracewell.stream.accumulator.CollectionAccumulatable;
-import com.davidbracewell.stream.accumulator.CounterAccumulatable;
-import com.davidbracewell.stream.accumulator.MAccumulator;
-import com.davidbracewell.stream.accumulator.MapAccumulatable;
-import com.davidbracewell.stream.accumulator.MultiCounterAccumulatable;
+import com.davidbracewell.stream.accumulator.*;
 import com.davidbracewell.tuple.Tuple2;
 import lombok.NonNull;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Supplier;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
-
-import static com.davidbracewell.conversion.Cast.as;
-import static com.ibm.icu.impl.ValidIdentifiers.Datatype.u;
 
 /**
  * The interface Streaming context.
@@ -398,5 +385,8 @@ public interface StreamingContext {
   default MDoubleStream emptyDouble() {
     return empty().mapToDouble(u -> Double.NaN);
   }
+
+
+  void shutdown();
 
 }//END OF StreamingContext
