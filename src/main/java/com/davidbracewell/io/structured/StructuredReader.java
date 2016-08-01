@@ -349,7 +349,7 @@ public abstract class StructuredReader implements Closeable {
 
   protected  <T> T readReadable(Class<T> clazz) throws IOException {
     try {
-      T object = Reflect.onClass(clazz).create().get();
+      T object = Reflect.onClass(clazz).allowPrivilegedAccess().create().get();
       boolean objectWrapped = peek() == ElementType.BEGIN_OBJECT;
       if (objectWrapped) beginObject();
       Cast.<Readable>as(object).read(this);
