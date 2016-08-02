@@ -179,7 +179,7 @@ public interface MStream<T> extends Closeable {
    * @param number the number
    * @return the m stream
    */
-  MStream<T> sample(int number);
+  MStream<T> sample(boolean withReplacement, int number);
 
   /**
    * Size long.

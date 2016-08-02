@@ -19,16 +19,21 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collector;
+import java.util.stream.Stream;
 
 /**
  * @author David B. Bracewell
  */
 public class ReusableLocalStream<T> implements MStream<T> {
-  final Collection<T> backingCollection;
+  final List<T> backingCollection;
   SerializableRunnable onClose;
 
   public ReusableLocalStream(Collection<T> backingCollection) {
-    this.backingCollection = backingCollection;
+    if (backingCollection instanceof List) {
+      this.backingCollection = Cast.as(backingCollection);
+    } else {
+      this.backingCollection = new ArrayList<>(backingCollection);
+    }
   }
 
   private MStream<T> getStream() {
@@ -111,8 +116,19 @@ public class ReusableLocalStream<T> implements MStream<T> {
   }
 
   @Override
-  public MStream<T> sample(int number) {
-    return getStream().sample(number);
+  public MStream<T> sample(boolean withReplacement, int number) {
+    if (number <= 0) {
+      return new LocalStream<>(Stream.<T>empty());
+    }
+    Random random = new Random();
+    if (withReplacement) {
+      List<T> sample = new ArrayList<>();
+      while (sample.size() < number) {
+        sample.add(backingCollection.get(random.nextInt(backingCollection.size())));
+      }
+      return new ReusableLocalStream<>(sample);
+    }
+    return getStream().sample(false, number);
   }
 
   @Override

@@ -310,9 +310,12 @@ public abstract class BaseMStreamTest {
 
   @Test
   public void sample() throws Exception {
-    assertEquals(10, sc.range(0, 100).sample(10).count());
-    assertEquals(0, sc.range(0, 100).sample(-1).count());
-    assertEquals(100, sc.range(0, 100).sample(200).count());
+    assertEquals(10, sc.range(0, 100).sample(false,10).count());
+    assertEquals(0, sc.range(0, 100).sample(false,-1).count());
+    assertEquals(100, sc.range(0, 100).sample(false,200).count());
+    assertEquals(10, sc.range(0, 100).sample(true,10).count());
+    assertEquals(0, sc.range(0, 100).sample(true,-1).count());
+    assertEquals(100, sc.range(0, 100).sample(true,200).count());
   }
 
   @Test

@@ -23,7 +23,14 @@ package com.davidbracewell.stream;
 
 import com.davidbracewell.collection.Collect;
 import com.davidbracewell.conversion.Cast;
-import com.davidbracewell.function.*;
+import com.davidbracewell.function.SerializableBinaryOperator;
+import com.davidbracewell.function.SerializableComparator;
+import com.davidbracewell.function.SerializableConsumer;
+import com.davidbracewell.function.SerializableFunction;
+import com.davidbracewell.function.SerializablePredicate;
+import com.davidbracewell.function.SerializableRunnable;
+import com.davidbracewell.function.SerializableToDoubleFunction;
+import com.davidbracewell.function.Unchecked;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.tuple.Tuple2;
 import com.google.common.base.Throwables;
@@ -33,7 +40,14 @@ import lombok.NonNull;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
@@ -139,24 +153,33 @@ public class LocalStream<T> implements MStream<T>, Serializable {
   }
 
   @Override
-  public MStream<T> sample(int count) {
+  public MStream<T> sample(boolean withReplacement, int count) {
     if (count <= 0) {
       return new LocalStream<>(Stream.<T>empty());
     }
     Random random = new Random();
-    List<T> sample = new ArrayList<>();
-    AtomicInteger k = new AtomicInteger(count + 1);
-    stream.sequential().forEach(document -> {
-      if (sample.size() < count) {
-        sample.add(document);
-      } else {
-        int rndIndex = random.nextInt(k.getAndIncrement());
-        if (rndIndex < count) {
-          sample.set(rndIndex, document);
-        }
+    if (withReplacement) {
+      List<T> all = collect();
+      List<T> sample = new ArrayList<>();
+      while (sample.size() < count) {
+        sample.add(all.get(random.nextInt(all.size())));
       }
-    });
-    return new LocalStream<>(sample.parallelStream());
+      return new ReusableLocalStream<>(sample);
+    } else {
+      List<T> sample = new ArrayList<>();
+      AtomicInteger k = new AtomicInteger(count + 1);
+      stream.sequential().forEach(document -> {
+        if (sample.size() < count) {
+          sample.add(document);
+        } else {
+          int rndIndex = random.nextInt(k.getAndIncrement());
+          if (rndIndex < count) {
+            sample.set(rndIndex, document);
+          }
+        }
+      });
+      return new ReusableLocalStream<>(sample);
+    }
   }
 
   @Override
