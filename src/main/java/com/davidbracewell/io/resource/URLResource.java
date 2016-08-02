@@ -24,6 +24,7 @@ package com.davidbracewell.io.resource;
 import com.davidbracewell.io.FileUtils;
 import com.davidbracewell.io.QuietIO;
 import com.davidbracewell.stream.MStream;
+import com.davidbracewell.stream.StreamingContext;
 import com.davidbracewell.string.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -35,7 +36,10 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * <p> A <code>Resource</code> wrapper for a URL. </p>
@@ -137,8 +141,13 @@ public class URLResource extends BaseResource {
   }
 
   @Override
+  public List<String> readLines() throws IOException {
+    return Arrays.asList(readToString().split("\\r?\\n"));
+  }
+
+  @Override
   public MStream<String> lines() throws IOException {
-    return null;
+    return StreamingContext.local().stream(readLines());
   }
 
   @Override
