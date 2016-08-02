@@ -23,6 +23,7 @@ package com.davidbracewell.stream;
 
 import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.stream.accumulator.Accumulatable;
 import com.davidbracewell.stream.accumulator.MAccumulator;
 import com.davidbracewell.stream.accumulator.SparkAccumulatable;
@@ -35,7 +36,12 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
@@ -240,6 +246,7 @@ public enum SparkStreamingContext implements StreamingContext {
     return new SparkStream<>(rdd);
   }
 
+
   @Override
   public MStream<String> textFile(String location) {
     if (StringUtils.isNullOrBlank(location)) {
@@ -248,11 +255,17 @@ public enum SparkStreamingContext implements StreamingContext {
     return new SparkStream<>(getSparkContext().textFile(location));
   }
 
+  @Override
+  public MStream<String> textFile(Resource location) {
+    if (location == null) {
+      return empty();
+    }
+    return textFile(location.path());
+  }
+
   public <T> Broadcast<T> broadcast(T object) {
     return getSparkContext().broadcast(object);
   }
-
-
 
 
 }//END OF SparkStreamingContext

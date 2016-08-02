@@ -25,6 +25,7 @@ import com.davidbracewell.collection.*;
 import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.SerializableSupplier;
+import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.stream.accumulator.*;
 import com.davidbracewell.tuple.Tuple2;
 import lombok.NonNull;
@@ -353,6 +354,8 @@ public interface StreamingContext extends AutoCloseable {
    * @return the m stream
    */
   MStream<String> textFile(String location);
+
+  MStream<String> textFile(Resource location);
 
   /**
    * Range m stream.

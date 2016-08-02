@@ -24,7 +24,11 @@ package com.davidbracewell.stream;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.stream.accumulator.*;
+import com.davidbracewell.stream.accumulator.Accumulatable;
+import com.davidbracewell.stream.accumulator.DoubleAccumulatable;
+import com.davidbracewell.stream.accumulator.IntAccumulatable;
+import com.davidbracewell.stream.accumulator.JavaAccumulator;
+import com.davidbracewell.stream.accumulator.MAccumulator;
 import com.davidbracewell.string.StringUtils;
 import com.google.common.base.Throwables;
 
@@ -142,12 +146,21 @@ public enum JavaStreamingContext implements StreamingContext, Serializable {
     return new LocalStream<>(Cast.<Iterable<T>>as(iterable));
   }
 
+
   @Override
   public MStream<String> textFile(String location) {
     if (StringUtils.isNullOrBlank(location)) {
       return empty();
     }
-    Resource resource = Resources.from(location);
+    return textFile(Resources.from(location));
+
+  }
+
+  @Override
+  public MStream<String> textFile(Resource resource) {
+    if (resource == null) {
+      return empty();
+    }
     if (resource.isDirectory()) {
       return new LocalStream<>(
         resource.getChildren(true).stream()
