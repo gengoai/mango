@@ -33,9 +33,12 @@ import com.google.common.base.Strings;
 import lombok.NonNull;
 
 import javax.xml.namespace.QName;
+import javax.xml.stream.EventFilter;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.Characters;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
@@ -60,6 +63,15 @@ public class XMLReader extends StructuredReader {
   private final LinkedList<XMLEvent> buffer = new LinkedList<>();
   private ElementType documentType;
   private String readerText;
+
+
+  static class WhitespaceFilter implements EventFilter {
+    @Override
+    public boolean accept(XMLEvent event) {
+      return !(event.isCharacters() && ((Characters) event)
+        .isWhiteSpace());
+    }
+  }
 
   /**
    * Creates an XMLReader
@@ -123,7 +135,8 @@ public class XMLReader extends StructuredReader {
     try {
       Preconditions.checkArgument(!Strings.isNullOrEmpty(documentTag));
       this.documentTag = documentTag;
-      this.reader = XMLInputFactory.newFactory().createXMLEventReader(resource.inputStream(), "UTF-8");
+      XMLInputFactory factory = XMLInputFactory.newFactory();
+      this.reader = factory.createFilteredReader(factory.createXMLEventReader(resource.inputStream(), "UTF-8"), new WhitespaceFilter());
       this.stack = new Stack<>();
     } catch (Exception e) {
       throw new IOException(e);
