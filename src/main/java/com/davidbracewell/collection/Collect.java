@@ -39,9 +39,29 @@ import lombok.NonNull;
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Array;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Queue;
+import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.Stack;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BinaryOperator;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -52,6 +72,54 @@ import java.util.stream.StreamSupport;
  * @author David B. Bracewell
  */
 public interface Collect {
+
+  @SafeVarargs
+  static <T, Y extends T> List<T> list(Y first, Y... others) {
+    return list(ArrayList::new, first, others);
+  }
+
+  @SafeVarargs
+  static <T, Y extends T> List<T> linkedList(Y first, Y... others) {
+    return list(LinkedList::new, first, others);
+  }
+
+  @SafeVarargs
+  static <T, Y extends T> List<T> sortedList(Y first, Y... others) {
+    return list(SortedArrayList::new, first, others);
+  }
+
+  @SafeVarargs
+  static <T, Y extends T> List<T> list(@NonNull Supplier<List<T>> supplier, Y first, Y... others) {
+    if (others == null) {
+      return Collections.singletonList(first);
+    }
+    List<T> list = supplier.get();
+    list.add(first);
+    Collections.addAll(list, others);
+    return list;
+  }
+
+
+  @SafeVarargs
+  static <T, Y extends T> Set<T> set(Y first, Y... others) {
+    return set(HashSet::new, first, others);
+  }
+
+  @SafeVarargs
+  static <T, Y extends T> Set<T> sortedSet(Y first, Y... others) {
+    return set(TreeSet::new, first, others);
+  }
+
+  @SafeVarargs
+  static <T, Y extends T> Set<T> set(@NonNull Supplier<Set<T>> supplier, Y first, Y... others) {
+    if (others == null) {
+      return Collections.singleton(first);
+    }
+    Set<T> set = supplier.get();
+    set.add(first);
+    Collections.addAll(set, others);
+    return set;
+  }
 
   /**
    * From stream.
