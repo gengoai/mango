@@ -47,6 +47,7 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -74,22 +75,22 @@ import java.util.stream.StreamSupport;
 public interface Collect {
 
   @SafeVarargs
-  static <T, Y extends T> List<T> list(Y first, Y... others) {
-    return list(ArrayList::new, first, others);
+  static <T, Y extends T> List<T> asList(Y first, Y... others) {
+    return asList(ArrayList::new, first, others);
   }
 
   @SafeVarargs
-  static <T, Y extends T> List<T> linkedList(Y first, Y... others) {
-    return list(LinkedList::new, first, others);
+  static <T, Y extends T> List<T> asLinkedList(Y first, Y... others) {
+    return asList(LinkedList::new, first, others);
   }
 
   @SafeVarargs
-  static <T, Y extends T> List<T> sortedList(Y first, Y... others) {
-    return list(SortedArrayList::new, first, others);
+  static <T, Y extends T> List<T> asSortedList(Y first, Y... others) {
+    return asList(SortedArrayList::new, first, others);
   }
 
   @SafeVarargs
-  static <T, Y extends T> List<T> list(@NonNull Supplier<List<T>> supplier, Y first, Y... others) {
+  static <T, Y extends T> List<T> asList(@NonNull Supplier<List<T>> supplier, Y first, Y... others) {
     if (others == null) {
       return Collections.singletonList(first);
     }
@@ -101,17 +102,22 @@ public interface Collect {
 
 
   @SafeVarargs
-  static <T, Y extends T> Set<T> set(Y first, Y... others) {
-    return set(HashSet::new, first, others);
+  static <T, Y extends T> Set<T> asSet(Y first, Y... others) {
+    return asSet(HashSet::new, first, others);
   }
 
   @SafeVarargs
-  static <T, Y extends T> Set<T> sortedSet(Y first, Y... others) {
-    return set(TreeSet::new, first, others);
+  static <T, Y extends T> Set<T> asSortedSet(Y first, Y... others) {
+    return asSet(TreeSet::new, first, others);
   }
 
   @SafeVarargs
-  static <T, Y extends T> Set<T> set(@NonNull Supplier<Set<T>> supplier, Y first, Y... others) {
+  static <T, Y extends T> Set<T> asLinkedHashSet(Y first, Y... others) {
+    return asSet(LinkedHashSet::new, first, others);
+  }
+
+  @SafeVarargs
+  static <T, Y extends T> Set<T> asSet(@NonNull Supplier<Set<T>> supplier, Y first, Y... others) {
     if (others == null) {
       return Collections.singleton(first);
     }
