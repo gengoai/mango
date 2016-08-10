@@ -33,7 +33,6 @@ import java.util.logging.Level;
  * @author David B. Bracewell
  */
 public interface Threads {
-
   Logger log = Logger.getLogger(Threads.class);
 
 

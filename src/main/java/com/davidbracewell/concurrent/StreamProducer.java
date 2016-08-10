@@ -26,11 +26,19 @@ import lombok.NonNull;
 import java.util.stream.Stream;
 
 /**
+ * The type Stream producer.
+ *
+ * @param <V> the type parameter
  * @author David B. Bracewell
  */
 public class StreamProducer<V> extends Broker.Producer<V> {
-  final Stream<V> stream;
+  private final Stream<V> stream;
 
+  /**
+   * Instantiates a new Stream producer.
+   *
+   * @param stream the stream
+   */
   public StreamProducer(@NonNull Stream<V> stream) {
     this.stream = stream;
   }
@@ -38,7 +46,7 @@ public class StreamProducer<V> extends Broker.Producer<V> {
   @Override
   public void produce() {
     start();
-    stream.forEach(this::yield);
+    stream.sequential().forEach(this::yield);
     stop();
   }
 

@@ -56,8 +56,8 @@ public class LogManager {
         if (INSTANCE == null) {
           INSTANCE = new LogManager();
           java.util.logging.Logger root = java.util.logging.LogManager
-              .getLogManager()
-              .getLogger("");
+            .getLogManager()
+            .getLogger("");
           for (Handler h : root.getHandlers()) {
             h.setFormatter(new LogFormatter());
             h.setLevel(Level.INFO);
@@ -144,23 +144,6 @@ public class LogManager {
     java.util.logging.Logger jul = java.util.logging.LogManager.getLogManager().getLogger(name);
     if (jul == null) {
       jul = java.util.logging.Logger.getLogger(name);
-//      if (Config.hasProperty(name + ".level")) {
-//        jul.setLevel(Level.parse(Config.get(name + ".level").asString()));
-//      } else {
-//        String parent = getParentLogger(name);
-//        while (true) {
-//          if (Strings.isNullOrEmpty(parent)) {
-//            break;
-//          } else if (java.util.logging.LogManager.getLogManager().getLogger(parent) != null) {
-//            jul.setLevel(java.util.logging.LogManager.getLogManager().getLogger(parent).getLevel());
-//            break;
-//          } else if (Config.hasProperty(parent + ".level")) {
-//            jul.setLevel(Level.parse(Config.get(parent + ".level").asString()));
-//            break;
-//          }
-//          parent = getParentLogger(parent);
-//        }
-//      }
       java.util.logging.LogManager.getLogManager().addLogger(jul);
     }
     return new Logger(jul);
@@ -173,7 +156,7 @@ public class LogManager {
    */
   public Logger getGlobalLogger() {
     return new Logger(java.util.logging.Logger
-        .getLogger(java.util.logging.Logger.GLOBAL_LOGGER_NAME));
+                        .getLogger(java.util.logging.Logger.GLOBAL_LOGGER_NAME));
   }
 
   /**
@@ -189,13 +172,13 @@ public class LogManager {
    * Sets the level of a logger
    *
    * @param logger The name of the logger to set the level for.
-   * @param level The level to set the logger at
+   * @param level  The level to set the logger at
    */
   public void setLevel(String logger, Level level) {
     Logger log = getLogger(logger);
     log.setLevel(level);
-    for( String loggerName : getLoggerNames() ){
-      if( loggerName.startsWith(logger) && !loggerName.equals(logger) ){
+    for (String loggerName : getLoggerNames()) {
+      if (loggerName.startsWith(logger) && !loggerName.equals(logger)) {
         getLogger(loggerName).setLevel(level);
       }
     }

@@ -24,13 +24,13 @@ package com.davidbracewell.application;
 import com.davidbracewell.cli.CommandLineParser;
 import com.davidbracewell.config.Config;
 import com.davidbracewell.io.Resources;
+import com.davidbracewell.logging.Loggable;
 
 import java.io.Serializable;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.Arrays;
 
 /**
  * <p>Generic interface for building applications that use Mango's {@link Config} and {@link CommandLineParser} to
@@ -38,7 +38,7 @@ import java.util.Arrays;
  *
  * @author David B. Bracewell
  */
-public interface Application extends Runnable, Serializable {
+public interface Application extends Runnable, Serializable, Loggable {
 
 
   /**
@@ -115,11 +115,11 @@ public interface Application extends Runnable, Serializable {
 
     try {
       setup();
-      run();
     } catch (Exception e) {
-      e.printStackTrace();
+      logSevere(e);
       System.exit(-1);
     }
+    run();
   }
 
   void setup() throws Exception;

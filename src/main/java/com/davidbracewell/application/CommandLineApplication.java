@@ -21,7 +21,6 @@
 
 package com.davidbracewell.application;
 
-import com.davidbracewell.logging.Logger;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -47,7 +46,6 @@ import java.io.Serializable;
  * @author David B. Bracewell
  */
 public abstract class CommandLineApplication implements Application, Serializable {
-  private static final Logger log = Logger.getLogger(CommandLineApplication.class);
   private static final long serialVersionUID = 1L;
 
   public final String applicationName;
@@ -102,6 +100,11 @@ public abstract class CommandLineApplication implements Application, Serializabl
     return nonNamedArguments;
   }
 
+  @Override
+  public void setNonParsableArguments(String[] nonParsableArguments) {
+    this.nonNamedArguments = nonParsableArguments;
+  }
+
   /**
    * Child classes override this method adding their program logic.
    *
@@ -114,14 +117,9 @@ public abstract class CommandLineApplication implements Application, Serializabl
     try {
       programLogic();
     } catch (Exception e) {
-      log.severe(e);
+      logSevere(e);
       System.exit(-1);
     }
-  }
-
-  @Override
-  public void setNonParsableArguments(String[] nonParsableArguments) {
-    this.nonNamedArguments = nonParsableArguments;
   }
 
   @Override

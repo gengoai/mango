@@ -24,11 +24,19 @@ package com.davidbracewell.concurrent;
 import lombok.NonNull;
 
 /**
+ * The type Iterable producer.
+ *
+ * @param <V> the type parameter
  * @author David B. Bracewell
  */
 public class IterableProducer<V> extends Broker.Producer<V> {
-  final Iterable<V> iterable;
+  private final Iterable<V> iterable;
 
+  /**
+   * Instantiates a new Iterable producer.
+   *
+   * @param iterable the iterable
+   */
   public IterableProducer(@NonNull Iterable<V> iterable) {
     this.iterable = iterable;
   }
@@ -39,4 +47,5 @@ public class IterableProducer<V> extends Broker.Producer<V> {
     iterable.forEach(this::yield);
     stop();
   }
+
 }//END OF IterableProducer
