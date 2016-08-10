@@ -74,58 +74,7 @@ import java.util.stream.StreamSupport;
  */
 public interface Collect {
 
-  @SafeVarargs
-  static <T, Y extends T> List<T> asList(Y first, Y... others) {
-    return asList(ArrayList::new, first, others);
-  }
 
-  @SafeVarargs
-  static <T, Y extends T> List<T> asLinkedList(Y first, Y... others) {
-    return asList(LinkedList::new, first, others);
-  }
-
-  @SafeVarargs
-  static <T, Y extends T> List<T> asSortedList(Y first, Y... others) {
-    return asList(SortedArrayList::new, first, others);
-  }
-
-  @SafeVarargs
-  static <T, Y extends T> List<T> asList(@NonNull Supplier<List<T>> supplier, Y first, Y... others) {
-    if (others == null) {
-      return Collections.singletonList(first);
-    }
-    List<T> list = supplier.get();
-    list.add(first);
-    Collections.addAll(list, others);
-    return list;
-  }
-
-
-  @SafeVarargs
-  static <T, Y extends T> Set<T> asSet(Y first, Y... others) {
-    return asSet(HashSet::new, first, others);
-  }
-
-  @SafeVarargs
-  static <T, Y extends T> Set<T> asSortedSet(Y first, Y... others) {
-    return asSet(TreeSet::new, first, others);
-  }
-
-  @SafeVarargs
-  static <T, Y extends T> Set<T> asLinkedHashSet(Y first, Y... others) {
-    return asSet(LinkedHashSet::new, first, others);
-  }
-
-  @SafeVarargs
-  static <T, Y extends T> Set<T> asSet(@NonNull Supplier<Set<T>> supplier, Y first, Y... others) {
-    if (others == null) {
-      return Collections.singleton(first);
-    }
-    Set<T> set = supplier.get();
-    set.add(first);
-    Collections.addAll(set, others);
-    return set;
-  }
 
   /**
    * From stream.
