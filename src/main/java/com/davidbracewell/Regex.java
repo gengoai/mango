@@ -13,6 +13,14 @@ import java.util.regex.Pattern;
  */
 public final class Regex implements Serializable {
 
+  public static final Regex QUOTE = re("\"");
+
+
+  /**
+   * The constant ANY.
+   */
+  public static final Regex ANY = re(".");
+
   /**
    * The constant WHITESPACE.
    */
@@ -90,12 +98,24 @@ public final class Regex implements Serializable {
    */
   public static final Regex CONNECTOR_PUNCTUATION = re("\\p{Pc}");
 
+  /**
+   * The constant BACKSLASH.
+   */
   public static final Regex BACKSLASH = re("\\");
 
+  /**
+   * The constant DOUBLE_BACKSLASH.
+   */
   public static final Regex DOUBLE_BACKSLASH = re("\\\\");
 
+  /**
+   * The constant WORD_BOUNDRY.
+   */
   public static final Regex WORD_BOUNDRY = re("\b");
 
+  /**
+   * The constant NON_WORD_BOUNDRY.
+   */
   public static final Regex NON_WORD_BOUNDRY = re("\\B");
 
   private static final long serialVersionUID = 1L;
@@ -111,18 +131,42 @@ public final class Regex implements Serializable {
     }
   }
 
+  /**
+   * Pos look ahead regex.
+   *
+   * @param regex the regex
+   * @return the regex
+   */
   public static Regex posLookAhead(@NonNull Regex regex) {
     return re("(?=" + regex.pattern + ")");
   }
 
+  /**
+   * Neg look ahead regex.
+   *
+   * @param regex the regex
+   * @return the regex
+   */
   public static Regex negLookAhead(@NonNull Regex regex) {
     return re("(?!" + regex.pattern + ")");
   }
 
+  /**
+   * Pos look behind regex.
+   *
+   * @param regex the regex
+   * @return the regex
+   */
   public static Regex posLookBehind(@NonNull Regex regex) {
     return re("(?<=" + regex.pattern + ")");
   }
 
+  /**
+   * Neg look behind regex.
+   *
+   * @param regex the regex
+   * @return the regex
+   */
   public static Regex negLookBehind(@NonNull Regex regex) {
     return re("(?<!" + regex.pattern + ")");
   }
@@ -233,6 +277,13 @@ public final class Regex implements Serializable {
     return re(pattern.toString());
   }
 
+  /**
+   * And regex.
+   *
+   * @param first   the first
+   * @param regexes the regexes
+   * @return the regex
+   */
   public static Regex and(@NonNull Regex first, Regex... regexes) {
     StringBuilder pattern = new StringBuilder(first.pattern);
     if (regexes != null) {
@@ -256,7 +307,14 @@ public final class Regex implements Serializable {
     return group(null, first, regexes);
   }
 
-  public static Regex nonMatchingGroup(@NonNull Regex first, Regex... regexes) {
+  /**
+   * Non matching group regex.
+   *
+   * @param first   the first
+   * @param regexes the regexes
+   * @return the regex
+   */
+  public static Regex nmGroup(@NonNull Regex first, Regex... regexes) {
     String pattern = first.pattern;
     if (regexes != null) {
       for (Regex rp : regexes) {
@@ -277,7 +335,7 @@ public final class Regex implements Serializable {
    * @param regexes the regexes
    * @return the regex
    */
-  public static Regex group(@NonNull String name, @NonNull Regex first, Regex... regexes) {
+  public static Regex group(String name, @NonNull Regex first, Regex... regexes) {
     String pattern = first.pattern;
     if (regexes != null) {
       for (Regex rp : regexes) {
@@ -297,29 +355,28 @@ public final class Regex implements Serializable {
    * @return the regex
    */
   public static Regex seq(@NonNull Regex first, Regex... regexes) {
-    Regex r = first;
+    StringBuilder pattern = new StringBuilder(first.toString());
     if (regexes != null) {
       for (Regex rp : regexes) {
         if (rp != null) {
-          r = r.seq(rp);
+          pattern.append(rp.pattern);
         }
       }
     }
-    return r;
+    return re(pattern.toString());
   }
 
-  public Regex followedBy(Regex regex) {
+  /**
+   * Followed by regex.
+   *
+   * @param regex the regex
+   * @return the regex
+   */
+  public Regex then(Regex regex) {
     if (regex == null) {
       return this;
     }
     return re(this.pattern + regex.pattern);
-  }
-
-  public Regex precededBy(Regex regex) {
-    if (regex == null) {
-      return this;
-    }
-    return re(regex.pattern + this.pattern);
   }
 
   /**
@@ -344,22 +401,15 @@ public final class Regex implements Serializable {
     return this;
   }
 
-  public Regex and(@NonNull Regex other) {
-    if (other.pattern.length() > 0) {
-      return re(this.pattern + "&&" + other.pattern);
-    }
-    return this;
-  }
-
   /**
-   * Seq regex.
+   * And regex.
    *
    * @param other the other
    * @return the regex
    */
-  public Regex seq(@NonNull Regex other) {
+  public Regex and(@NonNull Regex other) {
     if (other.pattern.length() > 0) {
-      return re(this.pattern + other.pattern);
+      return re(this.pattern + "&&" + other.pattern);
     }
     return this;
   }
@@ -374,7 +424,12 @@ public final class Regex implements Serializable {
     return re("(" + (StringUtils.isNotNullOrBlank(name) ? "?<" + name + ">" : StringUtils.EMPTY) + pattern + ")");
   }
 
-  public Regex nonMatchingGroup() {
+  /**
+   * Non matching group regex.
+   *
+   * @return the regex
+   */
+  public Regex nmGroup() {
     return re("(?:" + pattern + ")");
   }
 
@@ -401,6 +456,10 @@ public final class Regex implements Serializable {
       return re("^" + this.pattern);
     }
     return this;
+  }
+
+  public static Regex not(Regex regex){
+    return regex.not();
   }
 
 
@@ -439,7 +498,7 @@ public final class Regex implements Serializable {
    *
    * @return the regex
    */
-  public Regex oneOrMore() {
+  public Regex plus() {
     return re(this.pattern + "+");
   }
 
@@ -448,7 +507,7 @@ public final class Regex implements Serializable {
    *
    * @return the regex
    */
-  public Regex zeroOrMore() {
+  public Regex star() {
     return re(this.pattern + "*");
   }
 
@@ -458,7 +517,7 @@ public final class Regex implements Serializable {
    *
    * @return the regex
    */
-  public Regex zeroOrOne() {
+  public Regex question() {
     return re(this.pattern + "?");
   }
 
@@ -497,6 +556,11 @@ public final class Regex implements Serializable {
     return re("^" + this.pattern + "$");
   }
 
+  /**
+   * Chars regex.
+   *
+   * @return the regex
+   */
   public Regex chars() {
     return chars(this);
   }

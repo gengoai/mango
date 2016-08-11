@@ -36,8 +36,8 @@ import static com.davidbracewell.Regex.seq;
 public enum CommonTypes implements ParserTokenType, HasLexicalPattern {
   NUMBER(
     seq(Regex.NUMBER,
-        group(re(","), Regex.NUMBER.nTimes(3)).zeroOrMore(),
-        group(quote("."), Regex.NUMBER.oneOrMore()).zeroOrMore()
+        group(re(","), Regex.NUMBER.nTimes(3)).star(),
+        group(quote("."), Regex.NUMBER.plus()).star()
     )
   ),
   WORD("\\p{L}+"),

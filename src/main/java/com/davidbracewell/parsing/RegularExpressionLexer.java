@@ -21,6 +21,7 @@
 
 package com.davidbracewell.parsing;
 
+import com.davidbracewell.Regex;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.string.StringUtils;
@@ -162,6 +163,18 @@ public class RegularExpressionLexer extends Lexer {
      */
     public Builder add(ParserTokenType type, String pattern) {
       lexicalItems.add(Tuple2.of(type, pattern));
+      return this;
+    }
+
+    /**
+     * Adds a pattern to capture a given type
+     *
+     * @param type    The token type
+     * @param pattern The pattern that captures the given token type (Overrides the pattern on the TokenType)
+     * @return The LexerBuilder
+     */
+    public Builder add(ParserTokenType type, Regex pattern) {
+      lexicalItems.add(Tuple2.of(type, pattern.toString()));
       return this;
     }
 
