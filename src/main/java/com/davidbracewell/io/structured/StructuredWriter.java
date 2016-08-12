@@ -124,7 +124,7 @@ public abstract class StructuredWriter implements Closeable {
   /**
    * Write key value structured writer.
    *
-   * @param key   the key
+   * @param key    the key
    * @param object the value
    * @return the structured writer
    * @throws IOException the io exception
@@ -188,6 +188,19 @@ public abstract class StructuredWriter implements Closeable {
   protected StructuredWriter writeObject(Object object) throws IOException {
     if (object == null) {
       writeNull();
+    } else if (object instanceof StructuredSerializable) {
+      StructuredSerializable structuredSerializable = Cast.as(object);
+      if (object instanceof ArrayValue) {
+        beginArray();
+      } else {
+        beginObject();
+      }
+      structuredSerializable.write(this);
+      if (object instanceof ArrayValue) {
+        endArray();
+      } else {
+        endObject();
+      }
     } else if (object instanceof Number) {
       writeNumber(Cast.as(object));
     } else if (object instanceof String) {
@@ -196,10 +209,6 @@ public abstract class StructuredWriter implements Closeable {
       writeBoolean(Cast.as(object));
     } else if (object instanceof Enum || object instanceof DynamicEnum) {
       writeString(Convert.convert(object, String.class));
-    } else  if (object instanceof Writable) {
-      beginObject();
-      Cast.<Writable>as(object).write(this);
-      endObject();
     } else if (object instanceof Collection) {
       writeCollection(Cast.as(object));
     } else if (object instanceof Map) {

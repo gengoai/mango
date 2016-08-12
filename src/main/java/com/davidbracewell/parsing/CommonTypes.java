@@ -38,7 +38,7 @@ import static com.davidbracewell.Re.seq;
 public enum CommonTypes implements ParserTokenType, HasLexicalPattern {
   NUMBER(
     seq(
-      Re.NUMBER,
+      Re.NUMBER.plus(),
       nmGroup(re(","), Re.NUMBER.nTimes(3)).star(),
       nmGroup(quote("."), Re.NUMBER.plus()).star()
     )

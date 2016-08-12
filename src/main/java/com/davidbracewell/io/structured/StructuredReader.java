@@ -39,7 +39,11 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Represents a class for reading data in a structured format, e.g. xml, json, yaml, etc. Individual implementations
@@ -347,13 +351,18 @@ public abstract class StructuredReader implements Closeable {
    */
   protected abstract Val nextSimpleValue() throws IOException;
 
-  protected  <T> T readReadable(Class<T> clazz) throws IOException {
+  protected <T> T readReadable(Class<T> clazz) throws IOException {
     try {
       T object = Reflect.onClass(clazz).allowPrivilegedAccess().create().get();
+      boolean arrayWrapped = peek() == ElementType.BEGIN_ARRAY;
       boolean objectWrapped = peek() == ElementType.BEGIN_OBJECT;
-      if (objectWrapped) beginObject();
-      Cast.<Readable>as(object).read(this);
-      if (objectWrapped) endObject();
+      StructuredSerializable readable = Cast.as(object);
+      boolean isArray = (object instanceof ArrayValue);
+      if (objectWrapped && !isArray) beginObject();
+      if (arrayWrapped && isArray) beginArray();
+      readable.read(this);
+      if (objectWrapped && !isArray) endObject();
+      if (arrayWrapped && isArray) endArray();
       return object;
     } catch (ReflectionException e) {
       throw new IOException(e);
@@ -369,14 +378,14 @@ public abstract class StructuredReader implements Closeable {
    * @throws IOException Something went wrong reading
    */
   public final <T> T nextValue(@NonNull Class<T> clazz) throws IOException {
-    if (Readable.class.isAssignableFrom(clazz)) {
+    if (StructuredSerializable.class.isAssignableFrom(clazz)) {
       return readReadable(clazz);
     } else if (peek() == ElementType.BEGIN_OBJECT) {
       Reflect reflected = Reflect.onClass(clazz);
       Optional<Method> staticRead = reflected.getMethods("read", 1).stream()
-        .filter(m -> StructuredReader.class.isAssignableFrom(m.getParameterTypes()[0]))
-        .filter(m -> Modifier.isStatic(m.getModifiers()))
-        .findFirst();
+                                             .filter(m -> StructuredReader.class.isAssignableFrom(m.getParameterTypes()[0]))
+                                             .filter(m -> Modifier.isStatic(m.getModifiers()))
+                                             .findFirst();
 
       if (staticRead.isPresent()) {
         try {

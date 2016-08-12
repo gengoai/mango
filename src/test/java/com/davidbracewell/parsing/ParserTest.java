@@ -25,50 +25,42 @@ import com.davidbracewell.parsing.expressions.AssignmentExpression;
 import com.davidbracewell.parsing.expressions.BinaryOperatorExpression;
 import com.davidbracewell.parsing.expressions.Expression;
 import com.davidbracewell.parsing.expressions.MethodCallExpression;
-import com.davidbracewell.parsing.handlers.*;
+import com.davidbracewell.parsing.handlers.AssignmentHandler;
+import com.davidbracewell.parsing.handlers.BinaryOperatorHandler;
+import com.davidbracewell.parsing.handlers.CommentHandler;
+import com.davidbracewell.parsing.handlers.GroupHandler;
+import com.davidbracewell.parsing.handlers.MethodCallHandler;
+import com.davidbracewell.parsing.handlers.PrefixSkipHandler;
+import com.davidbracewell.parsing.handlers.ValueHandler;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author David B. Bracewell
  */
 public class ParserTest {
 
-  private static class TestGrammar extends Grammar {
-
-    public TestGrammar() {
-      super(new PrefixSkipHandler());
-      register(CommonTypes.POUND, new CommentHandler(CommonTypes.NEWLINE));
-      register(CommonTypes.OPENPARENS, new GroupHandler(CommonTypes.CLOSEPARENS));
-      register(CommonTypes.WORD, new ValueHandler());
-      register(CommonTypes.NUMBER, new ValueHandler());
-      register(CommonTypes.PLUS, new BinaryOperatorHandler(3, true));
-      register(CommonTypes.OPENPARENS, new MethodCallHandler(8, CommonTypes.CLOSEPARENS, CommonTypes.COMMA));
-      register(CommonTypes.EQUALS, new AssignmentHandler(10));
-      register(CommonTypes.POUND, new CommentHandler(CommonTypes.NEWLINE));
-    }
-
-  }
-
-
   @Test
   public void test() throws Exception {
     RegularExpressionLexer lexer = RegularExpressionLexer.builder()
-        .add(CommonTypes.EQUALS)
-        .add(CommonTypes.POUND)
-        .add(CommonTypes.WHITESPACE)
-        .add(CommonTypes.PERIOD)
-        .add(CommonTypes.OPENPARENS)
-        .add(CommonTypes.CLOSEPARENS)
-        .add(CommonTypes.NUMBER)
-        .add(CommonTypes.PLUS)
-        .add(CommonTypes.COMMA)
-        .add(CommonTypes.NEWLINE)
-        .add(CommonTypes.WORD, "[a-zA-z]\\w*")
-        .build();
+                                                         .add(CommonTypes.EQUALS)
+                                                         .add(CommonTypes.POUND)
+                                                         .add(CommonTypes.WHITESPACE)
+                                                         .add(CommonTypes.PERIOD)
+                                                         .add(CommonTypes.OPENPARENS)
+                                                         .add(CommonTypes.CLOSEPARENS)
+                                                         .add(CommonTypes.NUMBER)
+                                                         .add(CommonTypes.PLUS)
+                                                         .add(CommonTypes.COMMA)
+                                                         .add(CommonTypes.NEWLINE)
+                                                         .add(CommonTypes.WORD, "[a-zA-z]\\w*")
+                                                         .build();
+
     Parser parser = new Parser(new TestGrammar(), lexer.lex(
-        "(1+2)\nmethod(arg1,arg2)\n#This is a comment.\n... var=(100+34)"
+      "(1+2)\nmethod(arg1,arg2)\n#This is a comment.\n... var=(100+34)"
     )
     );
 
@@ -100,6 +92,22 @@ public class ParserTest {
     assertEquals("var", a.variableName);
     assertEquals("=", a.operator);
     assertEquals("(100 + 34)", a.right.toString());
+  }
+
+  private static class TestGrammar extends Grammar {
+
+    public TestGrammar() {
+      super(new PrefixSkipHandler());
+      register(CommonTypes.POUND, new CommentHandler(CommonTypes.NEWLINE));
+      register(CommonTypes.OPENPARENS, new GroupHandler(CommonTypes.CLOSEPARENS));
+      register(CommonTypes.WORD, new ValueHandler());
+      register(CommonTypes.NUMBER, new ValueHandler());
+      register(CommonTypes.PLUS, new BinaryOperatorHandler(3, true));
+      register(CommonTypes.OPENPARENS, new MethodCallHandler(8, CommonTypes.CLOSEPARENS, CommonTypes.COMMA));
+      register(CommonTypes.EQUALS, new AssignmentHandler(10));
+      register(CommonTypes.POUND, new CommentHandler(CommonTypes.NEWLINE));
+    }
+
   }
 
 }
