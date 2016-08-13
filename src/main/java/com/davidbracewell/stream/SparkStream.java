@@ -21,16 +21,9 @@
 
 package com.davidbracewell.stream;
 
-import com.davidbracewell.collection.Collect;
 import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
-import com.davidbracewell.function.SerializableBinaryOperator;
-import com.davidbracewell.function.SerializableComparator;
-import com.davidbracewell.function.SerializableConsumer;
-import com.davidbracewell.function.SerializableFunction;
-import com.davidbracewell.function.SerializablePredicate;
-import com.davidbracewell.function.SerializableRunnable;
-import com.davidbracewell.function.SerializableToDoubleFunction;
+import com.davidbracewell.function.*;
 import com.davidbracewell.io.resource.Resource;
 import com.google.common.base.Preconditions;
 import lombok.NonNull;
@@ -40,13 +33,10 @@ import scala.Tuple2;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collector;
+
+import static com.davidbracewell.collection.CollectionHelpers.asStream;
 
 /**
  * The type Spark stream.
@@ -154,7 +144,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
   @Override
   public <R> R collect(Collector<? super T, T, R> collector) {
-    return Collect.stream(rdd.toLocalIterator()).collect(collector);
+    return asStream(rdd.toLocalIterator()).collect(collector);
   }
 
   @Override

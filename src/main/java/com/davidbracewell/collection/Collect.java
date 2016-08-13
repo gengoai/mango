@@ -40,7 +40,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+
+import static com.davidbracewell.collection.CollectionHelpers.asStream;
 
 /**
  * Static methods for working with collections and iterables.
@@ -48,57 +49,6 @@ import java.util.stream.StreamSupport;
  * @author David B. Bracewell
  */
 public interface Collect {
-
-
-  /**
-   * From stream.
-   *
-   * @param <T>      the type parameter
-   * @param iterator the iterator
-   * @return the stream
-   */
-  static <T> Stream<T> stream(Iterator<T> iterator) {
-    return stream(iterator, false);
-  }
-
-  /**
-   * From stream.
-   *
-   * @param <T>      the type parameter
-   * @param iterable the iterable
-   * @return the stream
-   */
-  static <T> Stream<T> stream(Iterable<T> iterable) {
-    return stream(iterable, false);
-  }
-
-  /**
-   * Paralle from.
-   *
-   * @param <T>      the type parameter
-   * @param iterator the iterator
-   * @return the stream
-   */
-  static <T> Stream<T> stream(Iterator<T> iterator, boolean parallel) {
-    if (iterator == null) {
-      return Collections.<T>emptyList().stream();
-    }
-    return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), parallel);
-  }
-
-  /**
-   * Paralle from.
-   *
-   * @param <T>      the type parameter
-   * @param iterable the iterable
-   * @return the stream
-   */
-  static <T> Stream<T> stream(Iterable<T> iterable, boolean parallel) {
-    if (iterable == null) {
-      return Collections.<T>emptyList().stream();
-    }
-    return StreamSupport.stream(iterable.spliterator(), parallel);
-  }
 
   static <K, V> void put(@NonNull Map<K, V> map, Map.Entry<K, V> entry) {
     if (entry != null) {
@@ -184,7 +134,7 @@ public interface Collect {
    * @return the optional
    */
   static <T> Optional<T> first(Iterable<T> iterable) {
-    return stream(iterable).findFirst();
+    return asStream(iterable).findFirst();
   }
 
   /**
@@ -195,7 +145,7 @@ public interface Collect {
    * @return the optional
    */
   static <T> Optional<T> first(Iterator<T> iterator) {
-    return stream(iterator).findFirst();
+    return asStream(iterator).findFirst();
   }
 
   /**
@@ -378,7 +328,7 @@ public interface Collect {
     if (iterable == null) {
       return new EnhancedDoubleStatistics();
     }
-    return stream(iterable)
+    return asStream(iterable)
       .mapToDouble(Number::doubleValue)
       .collect(EnhancedDoubleStatistics::new, EnhancedDoubleStatistics::accept, EnhancedDoubleStatistics::combine);
   }
@@ -517,7 +467,7 @@ public interface Collect {
     }
     return list.stream()
       .filter(Objects::nonNull)
-      .flatMap(Collect::stream)
+      .flatMap(CollectionHelpers::asStream)
       .collect(Collectors.toList());
   }
 
@@ -547,7 +497,7 @@ public interface Collect {
    * @return the stream
    */
   static <T, U> Stream<Map.Entry<T, U>> zip(@NonNull final Iterator<T> iterator1, @NonNull final Iterator<U> iterator2) {
-    return stream(new Iterator<Map.Entry<T, U>>() {
+    return asStream(new Iterator<Map.Entry<T, U>>() {
       @Override
       public boolean hasNext() {
         return iterator1.hasNext() && iterator2.hasNext();

@@ -3,22 +3,9 @@ package com.davidbracewell.collection;
 import com.davidbracewell.conversion.Cast;
 import lombok.NonNull;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -157,7 +144,8 @@ public interface CollectionHelpers {
                      $(key3, value3),
                      $(key4, value4),
                      $(key5, value5),
-                     $(key6, value6));
+                     $(key6, value6)
+    );
   }
 
   /**
@@ -189,7 +177,8 @@ public interface CollectionHelpers {
                      $(key4, value4),
                      $(key5, value5),
                      $(key6, value6),
-                     $(key7, value7));
+                     $(key7, value7)
+    );
   }
 
   /**
@@ -224,7 +213,8 @@ public interface CollectionHelpers {
                      $(key5, value5),
                      $(key6, value6),
                      $(key7, value7),
-                     $(key8, value8));
+                     $(key8, value8)
+    );
   }
 
   /**
@@ -262,7 +252,8 @@ public interface CollectionHelpers {
                      $(key6, value6),
                      $(key7, value7),
                      $(key8, value8),
-                     $(key9, value9));
+                     $(key9, value9)
+    );
   }
 
   /**
@@ -303,7 +294,8 @@ public interface CollectionHelpers {
                      $(key7, value7),
                      $(key8, value8),
                      $(key9, value9),
-                     $(key10, value10));
+                     $(key10, value10)
+    );
   }
 
 
@@ -433,7 +425,8 @@ public interface CollectionHelpers {
                      $(key3, value3),
                      $(key4, value4),
                      $(key5, value5),
-                     $(key6, value6));
+                     $(key6, value6)
+    );
   }
 
   /**
@@ -465,7 +458,8 @@ public interface CollectionHelpers {
                      $(key4, value4),
                      $(key5, value5),
                      $(key6, value6),
-                     $(key7, value7));
+                     $(key7, value7)
+    );
   }
 
   /**
@@ -500,7 +494,8 @@ public interface CollectionHelpers {
                      $(key5, value5),
                      $(key6, value6),
                      $(key7, value7),
-                     $(key8, value8));
+                     $(key8, value8)
+    );
   }
 
   /**
@@ -538,7 +533,8 @@ public interface CollectionHelpers {
                      $(key6, value6),
                      $(key7, value7),
                      $(key8, value8),
-                     $(key9, value9));
+                     $(key9, value9)
+    );
   }
 
   /**
@@ -579,7 +575,8 @@ public interface CollectionHelpers {
                      $(key7, value7),
                      $(key8, value8),
                      $(key9, value9),
-                     $(key10, value10));
+                     $(key10, value10)
+    );
   }
 
 
@@ -670,7 +667,8 @@ public interface CollectionHelpers {
                      $(key2, value2),
                      $(key3, value3),
                      $(key4, value4),
-                     $(key5, value5));
+                     $(key5, value5)
+    );
   }
 
   /**
@@ -699,7 +697,8 @@ public interface CollectionHelpers {
                      $(key3, value3),
                      $(key4, value4),
                      $(key5, value5),
-                     $(key6, value6));
+                     $(key6, value6)
+    );
   }
 
   /**
@@ -731,7 +730,8 @@ public interface CollectionHelpers {
                      $(key4, value4),
                      $(key5, value5),
                      $(key6, value6),
-                     $(key7, value7));
+                     $(key7, value7)
+    );
   }
 
   /**
@@ -766,7 +766,8 @@ public interface CollectionHelpers {
                      $(key5, value5),
                      $(key6, value6),
                      $(key7, value7),
-                     $(key8, value8));
+                     $(key8, value8)
+    );
   }
 
   /**
@@ -804,7 +805,8 @@ public interface CollectionHelpers {
                      $(key6, value6),
                      $(key7, value7),
                      $(key8, value8),
-                     $(key9, value9));
+                     $(key9, value9)
+    );
   }
 
   /**
@@ -845,7 +847,8 @@ public interface CollectionHelpers {
                      $(key7, value7),
                      $(key8, value8),
                      $(key9, value9),
-                     $(key10, value10));
+                     $(key10, value10)
+    );
   }
 
 
@@ -909,6 +912,9 @@ public interface CollectionHelpers {
    * @return the stream
    */
   static <T> Stream<T> asStream(T value) {
+    if (value == null) {
+      return Stream.empty();
+    }
     return Stream.of(value);
   }
 
@@ -920,6 +926,9 @@ public interface CollectionHelpers {
    * @return the stream
    */
   static <T> Stream<T> asStream(Iterator<? extends T> iterator) {
+    if (iterator == null) {
+      return Stream.empty();
+    }
     return asStream(iterator, false);
   }
 
@@ -931,6 +940,9 @@ public interface CollectionHelpers {
    * @return the stream
    */
   static <T> Stream<T> asParallelStream(Iterator<? extends T> iterator) {
+    if (iterator == null) {
+      return Stream.empty();
+    }
     return asStream(iterator, true);
   }
 
@@ -957,6 +969,9 @@ public interface CollectionHelpers {
    * @return the stream
    */
   static <T> Stream<T> asStream(Iterable<? extends T> iterable) {
+    if (iterable == null) {
+      return Stream.empty();
+    }
     return asStream(iterable, false);
   }
 
@@ -968,6 +983,9 @@ public interface CollectionHelpers {
    * @return the stream
    */
   static <T> Stream<T> asParallelStream(Iterable<? extends T> iterable) {
+    if (iterable == null) {
+      return Stream.empty();
+    }
     return asStream(iterable, true);
   }
 
@@ -1044,13 +1062,137 @@ public interface CollectionHelpers {
   @SafeVarargs
   @SuppressWarnings("varargs")
   static <T, Y extends T> List<T> createList(@NonNull Supplier<List<T>> supplier, Y first, Y... others) {
+    if (first == null) {
+      return Collections.emptyList();
+    }
     if (others == null) {
       return Collections.singletonList(first);
     }
-    List<T> list = supplier.get();
-    list.add(first);
-    Collections.addAll(list, others);
-    return list;
+    return createList(supplier, Stream.concat(asStream(first), asStream(others)));
+  }
+
+  /**
+   * As array list list.
+   *
+   * @param <T>    the type parameter
+   * @param <Y>    the type parameter
+   * @param stream the stream
+   * @return the list
+   */
+  static <T, Y extends T> List<T> asArrayList(Stream<Y> stream) {
+    return createList(ArrayList::new, stream);
+  }
+
+  /**
+   * As linked list list.
+   *
+   * @param <T>    the type parameter
+   * @param <Y>    the type parameter
+   * @param stream the stream
+   * @return the list
+   */
+  static <T, Y extends T> List<T> asLinkedList(Stream<Y> stream) {
+    return createList(LinkedList::new, stream);
+  }
+
+  /**
+   * As sorted list list.
+   *
+   * @param <T>    the type parameter
+   * @param <Y>    the type parameter
+   * @param stream the stream
+   * @return the list
+   */
+  static <T, Y extends T> List<T> asSortedList(Stream<Y> stream) {
+    return createList(SortedArrayList::new, stream);
+  }
+
+  /**
+   * As array list list.
+   *
+   * @param <T>      the type parameter
+   * @param <Y>      the type parameter
+   * @param iterator the iterator
+   * @return the list
+   */
+  static <T, Y extends T> List<T> asArrayList(Iterator<Y> iterator) {
+    return createList(ArrayList::new, asStream(iterator));
+  }
+
+  /**
+   * As linked list list.
+   *
+   * @param <T>      the type parameter
+   * @param <Y>      the type parameter
+   * @param iterator the iterator
+   * @return the list
+   */
+  static <T, Y extends T> List<T> asLinkedList(Iterator<Y> iterator) {
+    return createList(LinkedList::new, asStream(iterator));
+  }
+
+  /**
+   * As sorted list list.
+   *
+   * @param <T>      the type parameter
+   * @param <Y>      the type parameter
+   * @param iterator the iterator
+   * @return the list
+   */
+  static <T, Y extends T> List<T> asSortedList(Iterator<Y> iterator) {
+    return createList(SortedArrayList::new, asStream(iterator));
+  }
+
+  /**
+   * As array list list.
+   *
+   * @param <T>      the type parameter
+   * @param <Y>      the type parameter
+   * @param iterable the iterable
+   * @return the list
+   */
+  static <T, Y extends T> List<T> asArrayList(Iterable<Y> iterable) {
+    return createList(ArrayList::new, asStream(iterable));
+  }
+
+  /**
+   * As linked list list.
+   *
+   * @param <T>      the type parameter
+   * @param <Y>      the type parameter
+   * @param iterable the iterable
+   * @return the list
+   */
+  static <T, Y extends T> List<T> asLinkedList(Iterable<Y> iterable) {
+    return createList(LinkedList::new, asStream(iterable));
+  }
+
+  /**
+   * As sorted list list.
+   *
+   * @param <T>      the type parameter
+   * @param <Y>      the type parameter
+   * @param iterable the iterable
+   * @return the list
+   */
+  static <T, Y extends T> List<T> asSortedList(Iterable<Y> iterable) {
+    return createList(SortedArrayList::new, asStream(iterable));
+  }
+
+  /**
+   * Create list list.
+   *
+   * @param <T>      the type parameter
+   * @param <Y>      the type parameter
+   * @param supplier the supplier
+   * @param stream   the stream
+   * @return the list
+   */
+  static <T, Y extends T> List<T> createList(@NonNull Supplier<List<T>> supplier, Stream<Y> stream) {
+    if (stream == null) {
+      return Collections.emptyList();
+    }
+    return stream.collect(Collectors.toCollection(supplier));
   }
 
 
@@ -1080,7 +1222,7 @@ public interface CollectionHelpers {
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
-  static <T, Y extends T> Set<T> asSortedSet(Y first, Y... others) {
+  static <T, Y extends T> Set<T> asTreeSet(Y first, Y... others) {
     return createSet(TreeSet::new, first, others);
   }
 
@@ -1112,12 +1254,137 @@ public interface CollectionHelpers {
   @SafeVarargs
   @SuppressWarnings("varargs")
   static <T, Y extends T> Set<T> createSet(@NonNull Supplier<Set<T>> supplier, Y first, Y... others) {
+    if (first == null) {
+      return Collections.emptySet();
+    }
     if (others == null) {
       return Collections.singleton(first);
     }
-    Set<T> set = supplier.get();
-    set.add(first);
-    Collections.addAll(set, others);
-    return set;
+    return createSet(supplier, Stream.concat(asStream(first), asStream(others)));
   }
+
+  /**
+   * As set set.
+   *
+   * @param <T>      the type parameter
+   * @param <Y>      the type parameter
+   * @param iterator the iterator
+   * @return the set
+   */
+  static <T, Y extends T> Set<T> asSet(Iterator<Y> iterator) {
+    return createSet(HashSet::new, asStream(iterator));
+  }
+
+  /**
+   * As tree set set.
+   *
+   * @param <T>      the type parameter
+   * @param <Y>      the type parameter
+   * @param iterator the iterator
+   * @return the set
+   */
+  static <T, Y extends T> Set<T> asTreeSet(Iterator<Y> iterator) {
+    return createSet(TreeSet::new, asStream(iterator));
+  }
+
+  /**
+   * As linked hash set set.
+   *
+   * @param <T>      the type parameter
+   * @param <Y>      the type parameter
+   * @param iterator the iterator
+   * @return the set
+   */
+  static <T, Y extends T> Set<T> asLinkedHashSet(Iterator<Y> iterator) {
+    return createSet(LinkedHashSet::new, asStream(iterator));
+  }
+
+  /**
+   * As set set.
+   *
+   * @param <T>      the type parameter
+   * @param <Y>      the type parameter
+   * @param iterable the iterable
+   * @return the set
+   */
+  static <T, Y extends T> Set<T> asSet(Iterable<Y> iterable) {
+    return createSet(HashSet::new, asStream(iterable));
+  }
+
+  /**
+   * As tree set set.
+   *
+   * @param <T>      the type parameter
+   * @param <Y>      the type parameter
+   * @param iterable the iterable
+   * @return the set
+   */
+  static <T, Y extends T> Set<T> asTreeSet(Iterable<Y> iterable) {
+    return createSet(TreeSet::new, asStream(iterable));
+  }
+
+  /**
+   * As linked hash set set.
+   *
+   * @param <T>      the type parameter
+   * @param <Y>      the type parameter
+   * @param iterable the iterable
+   * @return the set
+   */
+  static <T, Y extends T> Set<T> asLinkedHashSet(Iterable<Y> iterable) {
+    return createSet(LinkedHashSet::new, asStream(iterable));
+  }
+
+  /**
+   * As set set.
+   *
+   * @param <T>    the type parameter
+   * @param <Y>    the type parameter
+   * @param stream the stream
+   * @return the set
+   */
+  static <T, Y extends T> Set<T> asSet(Stream<Y> stream) {
+    return createSet(HashSet::new, stream);
+  }
+
+  /**
+   * As tree set set.
+   *
+   * @param <T>    the type parameter
+   * @param <Y>    the type parameter
+   * @param stream the stream
+   * @return the set
+   */
+  static <T, Y extends T> Set<T> asTreeSet(Stream<Y> stream) {
+    return createSet(TreeSet::new, stream);
+  }
+
+  /**
+   * As linked hash set set.
+   *
+   * @param <T>    the type parameter
+   * @param <Y>    the type parameter
+   * @param stream the stream
+   * @return the set
+   */
+  static <T, Y extends T> Set<T> asLinkedHashSet(Stream<Y> stream) {
+    return createSet(LinkedHashSet::new, stream);
+  }
+
+  /**
+   * Create set set.
+   *
+   * @param <T>      the type parameter
+   * @param <Y>      the type parameter
+   * @param supplier the supplier
+   * @param stream   the stream
+   * @return the set
+   */
+  static <T, Y extends T> Set<T> createSet(@NonNull Supplier<Set<T>> supplier, Stream<Y> stream) {
+    if (stream == null) {
+      return Collections.emptySet();
+    }
+    return stream.collect(Collectors.toCollection(supplier));
+  }
+
 }//END OF CollectionHelpers

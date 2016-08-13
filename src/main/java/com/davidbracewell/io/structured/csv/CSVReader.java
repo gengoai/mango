@@ -21,7 +21,6 @@
 
 package com.davidbracewell.io.structured.csv;
 
-import com.davidbracewell.collection.Collect;
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.function.SerializableConsumer;
 import com.davidbracewell.function.SerializableFunction;
@@ -44,6 +43,8 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.davidbracewell.collection.CollectionHelpers.asStream;
 
 
 /**
@@ -385,7 +386,7 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
    * @return the stream
    */
   public Stream<List<String>> stream() {
-    return Collect.stream(new RowIterator()).onClose(Unchecked.runnable(this::close));
+    return asStream(new RowIterator()).onClose(Unchecked.runnable(this::close));
   }
 
   /**

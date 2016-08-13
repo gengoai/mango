@@ -28,21 +28,13 @@ import com.google.common.collect.Iterators;
 import lombok.NonNull;
 
 import java.io.Serializable;
-import java.util.AbstractCollection;
-import java.util.AbstractSet;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import static com.davidbracewell.collection.CollectionHelpers.asStream;
 
 /**
  * The type Hash map multi counter.
@@ -140,7 +132,7 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
   @Override
   public MultiCounter<K, V> filterByFirstKey(@NonNull Predicate<K> predicate) {
     MultiCounter<K, V> tmp = newInstance();
-    Collect.stream(new KeyKeyValueIterator())
+    asStream(new KeyKeyValueIterator())
       .filter(t -> predicate.test(t.getV1()))
       .forEach(t -> tmp.set(t.getV1(), t.getV2(), t.getV3()));
     return tmp;
@@ -149,7 +141,7 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
   @Override
   public MultiCounter<K, V> filterBySecondKey(@NonNull Predicate<V> predicate) {
     MultiCounter<K, V> tmp = newInstance();
-    Collect.stream(new KeyKeyValueIterator())
+    asStream(new KeyKeyValueIterator())
       .filter(t -> predicate.test(t.getV2()))
       .forEach(t -> tmp.set(t.getV1(), t.getV2(), t.getV3()));
     return tmp;
@@ -158,7 +150,7 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
   @Override
   public MultiCounter<K, V> filterByValue(@NonNull DoublePredicate predicate) {
     MultiCounter<K, V> tmp = newInstance();
-    Collect.stream(new KeyKeyValueIterator())
+    asStream(new KeyKeyValueIterator())
       .filter(t -> predicate.test(t.getV3()))
       .forEach(t -> tmp.set(t.getV1(), t.getV2(), t.getV3()));
     return tmp;
@@ -184,7 +176,7 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
 
   @Override
   public List<Map.Entry<K, V>> itemsByCount(boolean ascending) {
-    return Collect.stream(new KeyKeyValueIterator())
+    return asStream(new KeyKeyValueIterator())
       .sorted((c1, c2) -> (ascending ? 1 : -1) * Double.compare(c1.getV3(), c2.getV3()))
       .map(t -> Cast.<Map.Entry<K, V>>as(Tuple2.of(t.getV1(), t.getV2())))
       .collect(Collectors.toList());

@@ -21,30 +21,18 @@
 
 package com.davidbracewell.stream;
 
-import com.davidbracewell.collection.Collect;
 import com.davidbracewell.conversion.Cast;
-import com.davidbracewell.function.SerializableBiConsumer;
-import com.davidbracewell.function.SerializableBiFunction;
-import com.davidbracewell.function.SerializableBiPredicate;
-import com.davidbracewell.function.SerializableBinaryOperator;
-import com.davidbracewell.function.SerializableComparator;
-import com.davidbracewell.function.SerializablePredicate;
-import com.davidbracewell.function.SerializableRunnable;
-import com.davidbracewell.function.SerializableToDoubleBiFunction;
+import com.davidbracewell.function.*;
 import com.davidbracewell.tuple.Tuple2;
 import lombok.NonNull;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.davidbracewell.collection.CollectionHelpers.asStream;
 
 /**
  * @author David B. Bracewell
@@ -121,7 +109,7 @@ public class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
 
   @Override
   public MPairStream<T, U> reduceByKey(SerializableBinaryOperator<U> operator) {
-    return groupByKey().mapToPair((t, u) -> Tuple2.of(t, Collect.stream(u).reduce(operator).orElse(null)));
+    return groupByKey().mapToPair((t, u) -> Tuple2.of(t, asStream(u).reduce(operator).orElse(null)));
   }
 
 

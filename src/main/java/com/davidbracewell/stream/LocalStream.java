@@ -23,14 +23,7 @@ package com.davidbracewell.stream;
 
 import com.davidbracewell.collection.Collect;
 import com.davidbracewell.conversion.Cast;
-import com.davidbracewell.function.SerializableBinaryOperator;
-import com.davidbracewell.function.SerializableComparator;
-import com.davidbracewell.function.SerializableConsumer;
-import com.davidbracewell.function.SerializableFunction;
-import com.davidbracewell.function.SerializablePredicate;
-import com.davidbracewell.function.SerializableRunnable;
-import com.davidbracewell.function.SerializableToDoubleFunction;
-import com.davidbracewell.function.Unchecked;
+import com.davidbracewell.function.*;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.tuple.Tuple2;
 import com.google.common.base.Throwables;
@@ -40,20 +33,15 @@ import lombok.NonNull;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.davidbracewell.collection.CollectionHelpers.asStream;
 
 /**
  * The type Java m stream.
@@ -105,7 +93,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
    * @param iterable the iterable
    */
   public LocalStream(@NonNull final Iterable<T> iterable) {
-    this.stream = Collect.stream(iterable);
+    this.stream = asStream(iterable);
   }
 
 
@@ -132,13 +120,13 @@ public class LocalStream<T> implements MStream<T>, Serializable {
 
   @Override
   public <R> MStream<R> flatMap(@NonNull SerializableFunction<? super T, Iterable<? extends R>> mapper) {
-    return new LocalStream<>(stream.flatMap(t -> Collect.stream(mapper.apply(t)).map(Cast::<R>as)));
+    return new LocalStream<>(stream.flatMap(t -> asStream(mapper.apply(t)).map(Cast::<R>as)));
   }
 
   @Override
   public <R, U> MPairStream<R, U> flatMapToPair(SerializableFunction<? super T, ? extends Iterable<? extends Map.Entry<? extends R, ? extends U>>> function) {
     return new LocalPairStream<>(
-      stream.flatMap(t -> Collect.stream(Cast.<Iterable<Map.Entry<R, U>>>as(function.apply(t))))
+      stream.flatMap(t -> asStream(Cast.<Iterable<Map.Entry<R, U>>>as(function.apply(t))))
     );
   }
 
