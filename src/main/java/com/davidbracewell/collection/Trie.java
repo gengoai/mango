@@ -7,32 +7,28 @@ import com.google.common.base.CharMatcher;
 import com.google.common.collect.Iterators;
 
 import java.io.Serializable;
-import java.util.AbstractCollection;
-import java.util.AbstractSet;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 import static com.davidbracewell.tuple.Tuples.$;
 
 /**
+ * The type Trie.
+ *
+ * @param <V> the type parameter
  * @author David B. Bracewell
  */
 public class Trie<V> implements Serializable, Map<String, V> {
-
+  private static final long serialVersionUID = 1L;
   private final TrieNode<V> root;
 
+  /**
+   * Instantiates a new Trie.
+   */
   public Trie() {
     this.root = new TrieNode<>(null, null);
   }
 
-  private Trie(TrieNode root) {
+  private Trie(TrieNode<V> root) {
     if (root != null) {
       this.root = root;
     } else {
@@ -40,6 +36,11 @@ public class Trie<V> implements Serializable, Map<String, V> {
     }
   }
 
+  /**
+   * The entry point of application.
+   *
+   * @param args the input arguments
+   */
   public static void main(String[] args) {
     Trie<String> trie = new Trie<>();
     trie.put("Richardson", "LOCATION");
@@ -51,10 +52,8 @@ public class Trie<V> implements Serializable, Map<String, V> {
     System.out.println(trie.prefix("Cl").keySet());
 
     String text = "Trump debated the Clintons in Richardson, TX.";
-    trie.findAll(text,
-                 StringUtils.WHITESPACE.or(CharMatcher.forPredicate(StringUtils::isPunctuation))
-    ).forEach(match -> System.out.println(text.substring(match.start, match.end) + " : " + match.value)
-    );
+    trie.findAll(text, StringUtils.WHITESPACE.or(CharMatcher.forPredicate(StringUtils::isPunctuation)))
+        .forEach(match -> System.out.println(text.substring(match.start, match.end) + " : " + match.value));
   }
 
   @Override
@@ -62,6 +61,13 @@ public class Trie<V> implements Serializable, Map<String, V> {
     return Iterators.toString(entrySet().iterator());
   }
 
+  /**
+   * Find all list.
+   *
+   * @param text      the text
+   * @param delimiter the delimiter
+   * @return the list
+   */
   public List<TrieMatch<V>> findAll(String text, CharMatcher delimiter) {
     int len = text.length();
     StringBuilder key = new StringBuilder();
@@ -152,6 +158,12 @@ public class Trie<V> implements Serializable, Map<String, V> {
     return null;
   }
 
+  /**
+   * Prefix trie.
+   *
+   * @param prefix the prefix
+   * @return the trie
+   */
   public Trie<V> prefix(String prefix) {
     TrieNode<V> match = find(prefix);
     if (match == null) {
@@ -263,6 +275,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
   }
 
   private static class TrieNode<V> implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final Character c;
     private final TrieNode<V> parent;
     private final int depth;
@@ -302,6 +315,14 @@ public class Trie<V> implements Serializable, Map<String, V> {
       return new EntryIterator<>(this);
     }
 
+    /**
+     * Extend v.
+     *
+     * @param word  the word
+     * @param start the start
+     * @param value the value
+     * @return the v
+     */
     V extend(char[] word, int start, V value) {
       TrieNode<V> node = this;
       if (start == word.length) {
@@ -324,10 +345,24 @@ public class Trie<V> implements Serializable, Map<String, V> {
     }
 
     private static class EntryIterator<V> implements Iterator<Map.Entry<String, V>> {
+      /**
+       * The Queue.
+       */
       final Queue<TrieNode<V>> queue = new LinkedList<>();
+      /**
+       * The Current.
+       */
       TrieNode<V> current = null;
+      /**
+       * The Old.
+       */
       TrieNode<V> old = null;
 
+      /**
+       * Instantiates a new Entry iterator.
+       *
+       * @param node the node
+       */
       public EntryIterator(TrieNode<V> node) {
         if (node.matches != null) {
           queue.add(node);
@@ -356,6 +391,9 @@ public class Trie<V> implements Serializable, Map<String, V> {
       @Override
       public Map.Entry<String, V> next() {
         old = move();
+        if (old == null) {
+          throw new NoSuchElementException();
+        }
         current = null;
         return $(old.matches, old.value);
       }

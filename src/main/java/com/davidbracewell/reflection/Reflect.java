@@ -26,7 +26,7 @@ import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.string.StringUtils;
 import com.google.common.base.Defaults;
-import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -77,8 +77,8 @@ public class Reflect {
    * @param clazz The class for reflection
    * @return The Reflect object
    */
-  public static Reflect onClass(Class<?> clazz) {
-    return new Reflect(null, Preconditions.checkNotNull(clazz));
+  public static Reflect onClass(@NonNull Class<?> clazz) {
+    return new Reflect(null,clazz);
   }
 
   /**
@@ -101,8 +101,7 @@ public class Reflect {
    * @return A Reflect wrapper around the constructed object
    * @throws ReflectionException Something went wrong constructing the object
    */
-  public static Reflect on(Constructor constructor, boolean allowPrivilegedAccess, Object... args) throws ReflectionException {
-    Preconditions.checkNotNull(constructor);
+  public static Reflect on(@NonNull Constructor constructor, boolean allowPrivilegedAccess, Object... args) throws ReflectionException {
     boolean accessible = constructor.isAccessible();
     try {
       if (!accessible && allowPrivilegedAccess) {
@@ -135,8 +134,7 @@ public class Reflect {
    * @return A Reflect wrapper around the constructed object
    * @throws ReflectionException Something went wrong invoking the method
    */
-  public static Reflect on(Method method, Object owner, boolean allowPrivilegedAccess, Object... args) throws ReflectionException {
-    Preconditions.checkNotNull(method);
+  public static Reflect on(@NonNull Method method, Object owner, boolean allowPrivilegedAccess, Object... args) throws ReflectionException {
     boolean accessible = method.isAccessible();
     try {
       if (!accessible && allowPrivilegedAccess) {

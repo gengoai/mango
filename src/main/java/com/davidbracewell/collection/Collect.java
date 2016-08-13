@@ -29,40 +29,15 @@ import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import lombok.NonNull;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Queue;
-import java.util.Set;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.Stack;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BinaryOperator;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -73,7 +48,6 @@ import java.util.stream.StreamSupport;
  * @author David B. Bracewell
  */
 public interface Collect {
-
 
 
   /**
@@ -259,11 +233,11 @@ public interface Collect {
    * @return The resulting map
    */
   static <K, V> Map<K, V> fromString(String input, @NonNull Function<Object, K> keyConverter, @NonNull Function<Object, V> valueConverter) {
-    if (Strings.isNullOrEmpty(input)) {
+    if (StringUtils.isNullOrBlank(input)) {
       return Collections.emptyMap();
     }
     String str = input.replaceFirst("^\\s*\\{", "").replaceFirst("}$\\s*", "");
-    Map<K, V> map = Maps.newHashMap();
+    Map<K, V> map = new HashMap<>();
 
     try (CSVReader reader = CSV.builder().reader(new StringReader(str))) {
       reader.forEach(row -> {
@@ -458,13 +432,13 @@ public interface Collect {
     }
 
     if (Set.class.equals(collectionClass)) {
-      return Cast.as(Sets.newHashSet());
+      return Cast.as(new HashSet<>());
     } else if (List.class.equals(collectionClass)) {
-      return Cast.as(Lists.newArrayList());
+      return Cast.as(new ArrayList<>());
     } else if (Queue.class.equals(collectionClass)) {
-      return Cast.as(Lists.newLinkedList());
+      return Cast.as(new LinkedList<>());
     } else if (Deque.class.equals(collectionClass)) {
-      return Cast.as(Lists.newLinkedList());
+      return Cast.as(new LinkedList<>());
     } else if (Stack.class.equals(collectionClass)) {
       return Cast.as(new Stack<>());
     }

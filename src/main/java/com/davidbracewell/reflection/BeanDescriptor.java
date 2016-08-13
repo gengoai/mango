@@ -23,7 +23,6 @@ package com.davidbracewell.reflection;
 
 import com.davidbracewell.logging.Logger;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.collect.Maps;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -31,6 +30,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Contains basic information about the read and write methods for a class.
@@ -52,8 +52,8 @@ public class BeanDescriptor implements Serializable {
    */
   public BeanDescriptor(Class<?> clazz) {
     this.clazz = clazz;
-    readMethods = Maps.newConcurrentMap();
-    writeMethods = Maps.newConcurrentMap();
+    readMethods = new ConcurrentHashMap<>();
+    writeMethods = new ConcurrentHashMap<>();
     setReadWrite(clazz.getSuperclass());
     Class<?>[] interfaces = clazz.getInterfaces();
     if (interfaces != null) {
