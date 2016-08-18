@@ -22,10 +22,10 @@
 package com.davidbracewell.conversion;
 
 import com.davidbracewell.logging.Logger;
-import com.google.common.base.Function;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.function.Function;
 
 /**
  * Functions for converting objects into Numbers and Boolean
@@ -100,9 +100,9 @@ public final class NumberConverter {
    * Converts an object into a BOOLEAN
    */
   public static final Function<Object, Boolean> BOOLEAN = new Function<Object, Boolean>() {
-    
+
     @Override
-    public Boolean apply( Object input) {
+    public Boolean apply(Object input) {
       if (input == null) {
         return null;
       } else if (input instanceof Boolean) {
@@ -148,7 +148,7 @@ public final class NumberConverter {
       if (object == null) {
         return null;
       } else if (object instanceof BigDecimal) {
-        return Cast.as(object,BigDecimal.class).doubleValue();
+        return Cast.as(object, BigDecimal.class).doubleValue();
       } else if (object instanceof BigInteger) {
         return Cast.as(object, BigInteger.class).doubleValue();
       } else if (object instanceof Number) {

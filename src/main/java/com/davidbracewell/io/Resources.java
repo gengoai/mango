@@ -24,16 +24,16 @@ package com.davidbracewell.io;
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.io.resource.*;
 import com.davidbracewell.io.resource.spi.ResourceProvider;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
+import com.davidbracewell.string.StringUtils;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Maps;
 import com.google.common.io.Files;
+import lombok.NonNull;
 
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.UUID;
@@ -47,7 +47,7 @@ import java.util.regex.Pattern;
  */
 public final class Resources {
 
-  private static final Map<String, ResourceProvider> resourceProviders = Maps.newHashMap();
+  private static final Map<String, ResourceProvider> resourceProviders = new HashMap<>();
 
   static {
     for (ResourceProvider provider : ServiceLoader.load(ResourceProvider.class)) {
@@ -58,7 +58,8 @@ public final class Resources {
   }
 
 
-  private static final Pattern protocolPattern = Pattern.compile("^(?<PROTOCOL>\\w+)(?<OPTIONS>\\[(?:[^\\]]+)\\])?:(?<PATH>.*)?");
+  private static final Pattern protocolPattern = Pattern.compile(
+    "^(?<PROTOCOL>\\w+)(?<OPTIONS>\\[(?:[^\\]]+)\\])?:(?<PATH>.*)?");
 
   /**
    * Constructs a resource from a string representation. Defaults to a file based resource if no schema is present.
@@ -67,7 +68,7 @@ public final class Resources {
    * @return A resource representing the string representation
    */
   public static Resource from(String resource) {
-    if (Strings.isNullOrEmpty(resource)) {
+    if (StringUtils.isNullOrBlank(resource)) {
       return new StringResource();
     }
     Matcher matcher = protocolPattern.matcher(resource);
@@ -76,7 +77,7 @@ public final class Resources {
       String options = matcher.group("OPTIONS");
       String path = matcher.group("PATH");
 
-      if (Strings.isNullOrEmpty(options)) {
+      if (StringUtils.isNullOrBlank(options)) {
         options = "";
       } else {
         options = options.replaceFirst("\\[", "").replaceFirst("\\]$", "");
@@ -188,16 +189,16 @@ public final class Resources {
    * @param inputStream The input stream to wrap
    * @return Resource that can read from given input stream
    */
-  public static Resource fromInputStream(InputStream inputStream) {
-    return new InputStreamResource(Preconditions.checkNotNull(inputStream));
+  public static Resource fromInputStream(@NonNull InputStream inputStream) {
+    return new InputStreamResource(inputStream);
   }
 
   /**
    * @param reader The reader to wrap
    * @return Resource that can read from given reader
    */
-  public static Resource fromReader(Reader reader) {
-    return new ReaderResource(Preconditions.checkNotNull(reader));
+  public static Resource fromReader(@NonNull Reader reader) {
+    return new ReaderResource(reader);
   }
 
   /**

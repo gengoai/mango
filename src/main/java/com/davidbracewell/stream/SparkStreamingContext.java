@@ -29,23 +29,19 @@ import com.davidbracewell.stream.accumulator.MAccumulator;
 import com.davidbracewell.stream.accumulator.SparkAccumulatable;
 import com.davidbracewell.stream.accumulator.SparkAccumulator;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.collect.Lists;
 import lombok.NonNull;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import static com.davidbracewell.collection.CollectionHelpers.asArrayList;
 
 /**
  * @author David B. Bracewell
@@ -241,7 +237,7 @@ public enum SparkStreamingContext implements StreamingContext {
     } else if (iterable instanceof List) {
       rdd = getSparkContext().parallelize(Cast.<List<T>>as(iterable));
     } else {
-      rdd = getSparkContext().parallelize(Lists.<T>newArrayList(iterable));
+      rdd = getSparkContext().parallelize(asArrayList(iterable));
     }
     return new SparkStream<>(rdd);
   }

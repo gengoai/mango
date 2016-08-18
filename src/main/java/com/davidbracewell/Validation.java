@@ -19,38 +19,31 @@
  * under the License.
  */
 
-package com.davidbracewell.collection;
-
-
-import com.davidbracewell.conversion.Cast;
-import com.google.common.collect.Iterables;
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.davidbracewell.collection.CollectionHelpers.list;
-import static org.junit.Assert.*;
+package com.davidbracewell;
 
 /**
  * @author David B. Bracewell
  */
-public class CollectTest {
+public final class Validation {
 
-  @Test
-  public void testAsIterable() throws Exception {
-    List<String> list = new ArrayList<>();
-    list.add("1");
-    assertEquals("1", Iterables.getFirst(Collect.asIterable(list.iterator()), null));
+
+  public void validateUnchecked(boolean condition, String onFailMessage) {
+    if (!condition) {
+      throw new RuntimeException(onFailMessage);
+    }
   }
 
-  @Test
-  public void testCast() throws Exception {
-    List<Double> list = list(1.0, 2.5, 3.0);
-    List<Number> numList = Cast.cast(list);
-    assertEquals(1d, numList.get(0).doubleValue(), 0d);
-    assertEquals(2.5d, numList.get(1).doubleValue(), 0d);
-    assertEquals(3d, numList.get(2).doubleValue(), 0d);
+  public void validateArgument(boolean condition, String onFailMessage) {
+    if (!condition) {
+      throw new IllegalArgumentException(onFailMessage);
+    }
   }
 
-}//END OF CollectionUtilsTest
+  public void validateState(boolean condition, String onFailMessage) {
+    if (!condition) {
+      throw new IllegalStateException(onFailMessage);
+    }
+  }
+
+
+}//END OF Validation

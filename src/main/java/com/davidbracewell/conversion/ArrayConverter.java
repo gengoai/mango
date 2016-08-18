@@ -23,11 +23,11 @@ package com.davidbracewell.conversion;
 
 import com.davidbracewell.collection.PrimitiveArrayList;
 import com.davidbracewell.logging.Logger;
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Converts objects to arrays of objects
@@ -72,7 +72,7 @@ public class ArrayConverter<T> implements Function<Object, T[]> {
       }
     }
 
-    List<T> list = Lists.newArrayList();
+    List<T> list = new ArrayList<>();
     boolean anyConversionSuccessful = false;
     for (Object component : Convert.convert(o, Iterable.class)) {
       T comp = Convert.convert(component, componentType);

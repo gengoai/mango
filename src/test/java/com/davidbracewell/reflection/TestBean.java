@@ -21,11 +21,12 @@
 
 package com.davidbracewell.reflection;
 
-import com.google.common.collect.Sets;
-
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import static com.davidbracewell.collection.CollectionHelpers.set;
 
 /**
  * @author David B. Bracewell
@@ -39,12 +40,12 @@ public class TestBean {
 
   public TestBean() {
     this.name = "";
-    this.children = Sets.newHashSet();
+    this.children = new HashSet<>();
   }
 
   public TestBean(String name, String... children) {
     this.name = name;
-    this.children = Sets.newHashSet(children);
+    this.children = set(children);
   }
 
   public String getName() {

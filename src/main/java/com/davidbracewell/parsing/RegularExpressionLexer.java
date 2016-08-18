@@ -27,8 +27,6 @@ import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import lombok.NonNull;
 
 import java.io.IOException;
@@ -55,7 +53,7 @@ public class RegularExpressionLexer extends Lexer {
    */
   public RegularExpressionLexer(@NonNull Collection<Tuple2<ParserTokenType, String>> lexicalPatterns) {
     Preconditions.checkArgument(!lexicalPatterns.isEmpty());
-    types = Sets.newHashSet();
+    types = new HashSet<>();
     StringBuilder pattern = new StringBuilder();
     for (Tuple2<ParserTokenType, String> Tuple2 : lexicalPatterns) {
       types.add(Tuple2.getKey());
@@ -109,7 +107,7 @@ public class RegularExpressionLexer extends Lexer {
         if (matcher.group(type.toString()) != null) {
           endOffset = matcher.end(type.toString());
           startOffset = matcher.start(type.toString());
-          List<String> groups = Lists.newArrayList();
+          List<String> groups = new ArrayList<>();
           for (int i = 2; i < matcher.groupCount(); i++) {
             if (matcher.group(i) != null && !matcher.group(i).equals(matcher.group())) {
               groups.add(matcher.group(i));
@@ -152,7 +150,7 @@ public class RegularExpressionLexer extends Lexer {
    */
   public static class Builder {
 
-    private final Set<Tuple2<ParserTokenType, String>> lexicalItems = Sets.newLinkedHashSet();
+    private final Set<Tuple2<ParserTokenType, String>> lexicalItems = new LinkedHashSet<>();
 
     /**
      * Adds a pattern to capture a given type

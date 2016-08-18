@@ -27,11 +27,11 @@ import com.davidbracewell.logging.Logger;
 import com.davidbracewell.reflection.Reflect;
 import com.davidbracewell.reflection.ReflectionException;
 import com.davidbracewell.reflection.ReflectionUtils;
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * <p> Converter that tries to create a new object from the object it is given. </p> <p> <ul> <li>If the object is an
@@ -51,8 +51,8 @@ public class NewObjectConverter<T> implements Function<Object, T> {
 
   private final Class<T> convertToClass;
 
-  public NewObjectConverter(Class<T> convertToClass) {
-    this.convertToClass = Preconditions.checkNotNull(convertToClass);
+  public NewObjectConverter(@NonNull Class<T> convertToClass) {
+    this.convertToClass = convertToClass;
   }
 
   @Override

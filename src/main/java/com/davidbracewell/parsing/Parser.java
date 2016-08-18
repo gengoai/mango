@@ -22,9 +22,9 @@
 package com.davidbracewell.parsing;
 
 import com.davidbracewell.parsing.expressions.Expression;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
+import lombok.NonNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -47,9 +47,9 @@ public class Parser {
    * @param grammar     the grammar
    * @param tokenStream The stream of tokens to parse
    */
-  public Parser(Grammar grammar, ParserTokenStream tokenStream) {
-    this.grammar = Preconditions.checkNotNull(grammar);
-    this.tokenStream = Preconditions.checkNotNull(tokenStream);
+  public Parser(@NonNull Grammar grammar, @NonNull ParserTokenStream tokenStream) {
+    this.grammar = grammar;
+    this.tokenStream = tokenStream;
   }
 
   /**
@@ -87,7 +87,7 @@ public class Parser {
    * @throws ParseException Something went wrong parsing.
    */
   public List<Expression> parse() throws ParseException {
-    List<Expression> parseTree = Lists.newArrayList();
+    List<Expression> parseTree = new ArrayList<>();
     while (hasNext()) {
       parseTree.add(next());
     }

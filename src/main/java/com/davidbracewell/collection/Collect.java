@@ -27,7 +27,6 @@ import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.structured.csv.CSVReader;
 import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import lombok.NonNull;
@@ -38,6 +37,7 @@ import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -164,8 +164,8 @@ public interface Collect {
    */
   static <K, V> Map<K, V> fromString(String input, @NonNull Class<K> keyClass, @NonNull Class<V> valueClass) {
     return fromString(input,
-      Convert.getConverter(keyClass),
-      Convert.getConverter(valueClass)
+                      Convert.getConverter(keyClass),
+                      Convert.getConverter(valueClass)
     );
   }
 
@@ -466,9 +466,9 @@ public interface Collect {
       return Collections.emptyList();
     }
     return list.stream()
-      .filter(Objects::nonNull)
-      .flatMap(CollectionHelpers::asStream)
-      .collect(Collectors.toList());
+               .filter(Objects::nonNull)
+               .flatMap(CollectionHelpers::asStream)
+               .collect(Collectors.toList());
   }
 
   /**

@@ -26,7 +26,6 @@ import com.davidbracewell.function.Serialized;
 import com.davidbracewell.logging.Logger;
 import com.davidbracewell.reflection.Reflect;
 import com.davidbracewell.reflection.ReflectionException;
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.BiMap;
@@ -35,6 +34,7 @@ import com.google.common.collect.Iterables;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**

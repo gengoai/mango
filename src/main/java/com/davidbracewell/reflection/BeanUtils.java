@@ -24,14 +24,10 @@ package com.davidbracewell.reflection;
 import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
-import com.google.common.collect.Lists;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
@@ -77,7 +73,7 @@ public class BeanUtils {
           throw new IllegalArgumentException(Config.get(typeProperty).asString() + " is not a valid class");
         }
         if (doCollection(beanMap, configOption, propertyName, valueType) ||
-            doMap(beanMap, configOption, propertyName, valueType)) {
+          doMap(beanMap, configOption, propertyName, valueType)) {
           continue;
         }
         beanMap.put(propertyName, Config.get(configOption).as(valueType));
@@ -141,14 +137,19 @@ public class BeanUtils {
         rawValues.add(Config.get(valueName).asString());
         if (Map.class.isAssignableFrom(typeClass)) {
           values.add(
-              Config.get(valueName).asMap(typeClass,
-                  Config.get(name + ".constructor.param" + i + ".type.keyType").asClass(String.class),
-                  Config.get(name + ".constructor.param" + i + ".type.valueType").asClass(String.class))
+            Config.get(valueName).asMap(typeClass,
+                                        Config.get(name + ".constructor.param" + i + ".type.keyType")
+                                              .asClass(String.class),
+                                        Config.get(name + ".constructor.param" + i + ".type.valueType")
+                                              .asClass(String.class)
+            )
           );
         } else if (Collection.class.isAssignableFrom(typeClass)) {
           values.add(
-              Config.get(valueName).asCollection(typeClass,
-                  Config.get(name + ".constructor.param" + i + ".type.elementType").asClass(String.class))
+            Config.get(valueName).asCollection(typeClass,
+                                               Config.get(name + ".constructor.param" + i + ".type.elementType")
+                                                     .asClass(String.class)
+            )
           );
         } else {
           values.add(Config.get(valueName).as(Config.get(typeName).asClass()));
@@ -165,11 +166,14 @@ public class BeanUtils {
 
     BeanMap beanMap;
     if (hadType) {
-      beanMap = new BeanMap(parameterizeObject(reflect.create(paramTypes.toArray(new Class[paramTypes.size()]), values.toArray()).<T>get()));
+      beanMap = new BeanMap(parameterizeObject(reflect.create(paramTypes.toArray(new Class[paramTypes.size()]),
+                                                              values.toArray()
+      ).<T>get()));
     } else {
       Constructor<?> constructor = ReflectionUtils.bestMatchingConstructor(reflect.getReflectedClass(), values.size());
       if (constructor == null) {
-        throw new ReflectionException("Cannot find a matching constructor for " + reflect.getReflectedClass() + " that takes " + values.size() + " arguments of types " + paramTypes);
+        throw new ReflectionException("Cannot find a matching constructor for " + reflect.getReflectedClass() + " that takes " + values
+          .size() + " arguments of types " + paramTypes);
       }
       try {
         Object[] newValues = new Object[values.size()];
@@ -206,7 +210,9 @@ public class BeanUtils {
     }
 
     BeanMap beanMap = new BeanMap(object);
-    for (Class<?> clazz : Lists.reverse(ReflectionUtils.getAllClasses(object))) {
+    List<Class<?>> list = ReflectionUtils.getAllClasses(object);
+    Collections.reverse(list);
+    for (Class<?> clazz : list) {
       String match = clazz.getName() + ".";
       doParametrization(beanMap, match);
     }

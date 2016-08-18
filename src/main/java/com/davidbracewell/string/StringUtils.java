@@ -23,14 +23,10 @@ package com.davidbracewell.string;
 
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.structured.csv.CSVReader;
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicates;
-import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
+import com.google.common.base.*;
 
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -44,7 +40,8 @@ public final class StringUtils {
   /**
    * CharMatcher combining INVISIBLE, BREAKING_WHITESPACE, and WHITESPACE
    */
-  public static final CharMatcher WHITESPACE = CharMatcher.INVISIBLE.and(CharMatcher.BREAKING_WHITESPACE).and(CharMatcher.WHITESPACE);
+  public static final CharMatcher WHITESPACE = CharMatcher.INVISIBLE.and(CharMatcher.BREAKING_WHITESPACE)
+                                                                    .and(CharMatcher.WHITESPACE);
   /**
    * Empty String
    */
@@ -69,6 +66,7 @@ public final class StringUtils {
    * The constant MULTIPLE_WHITESPACE.
    */
   public static String MULTIPLE_WHITESPACE = "[\\p{Z}\t\r\n\f]+";
+
   private StringUtils() {
     throw new IllegalAccessError();
   }
@@ -455,11 +453,11 @@ public final class StringUtils {
    */
   public static List<String> split(CharSequence input, char separator) {
     if (input == null) {
-      return Lists.newArrayList();
+      return new ArrayList<>();
     }
     Preconditions.checkArgument(separator != '"', "Separator cannot be a quote");
     try (CSVReader reader = CSV.builder().delimiter(separator).reader(new StringReader(input.toString()))) {
-      List<String> all = Lists.newArrayList();
+      List<String> all = new ArrayList<>();
       List<String> row;
       while ((row = reader.nextRow()) != null) {
         all.addAll(row);

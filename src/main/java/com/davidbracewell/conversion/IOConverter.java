@@ -24,7 +24,6 @@ package com.davidbracewell.conversion;
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.*;
 import com.davidbracewell.logging.Logger;
-import com.google.common.base.Function;
 import com.google.common.primitives.Bytes;
 
 import java.io.*;
@@ -40,6 +39,7 @@ import java.nio.file.Paths;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.function.Function;
 
 /**
  * Functions for converting objects into IO related objects

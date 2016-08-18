@@ -22,18 +22,18 @@
 package com.davidbracewell.conversion;
 
 
-import com.davidbracewell.logging.Logger;
-import com.google.common.base.Function;
+import com.davidbracewell.logging.Loggable;
 import com.google.common.base.Preconditions;
+
+import java.util.function.Function;
 
 /**
  * Converts objects into an enum value.
  *
  * @author David B. Bracewell
  */
-public class EnumConverter<T extends Enum<T>> implements Function<Object, T> {
+public class EnumConverter<T extends Enum<T>> implements Function<Object, T>, Loggable {
 
-  private static final Logger log = Logger.getLogger(EnumConverter.class);
   private final Class<T> enumClass;
 
   /**
@@ -66,7 +66,7 @@ public class EnumConverter<T extends Enum<T>> implements Function<Object, T> {
       }
     }
 
-    log.fine("Could not convert {0} to an enum of type {1}.", obj.getClass(), enumClass);
+    logFine("Could not convert {0} to an enum of type {1}.", obj.getClass(), enumClass);
     return null;
   }
 

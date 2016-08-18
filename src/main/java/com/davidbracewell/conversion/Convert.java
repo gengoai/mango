@@ -24,7 +24,6 @@ package com.davidbracewell.conversion;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.logging.Logger;
 import com.google.common.base.Defaults;
-import com.google.common.base.Function;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -35,6 +34,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * The type Convert.

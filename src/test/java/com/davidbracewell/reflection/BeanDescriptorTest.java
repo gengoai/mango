@@ -21,10 +21,10 @@
 
 package com.davidbracewell.reflection;
 
-import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Test;
 
+import static com.davidbracewell.collection.CollectionHelpers.set;
 import static org.junit.Assert.*;
 
 public class BeanDescriptorTest {
@@ -91,16 +91,16 @@ public class BeanDescriptorTest {
   @Test
   public void testGetReadMethodNames() throws Exception {
     assertEquals(
-        Sets.newHashSet("name", "stocks", "children"),
-        descriptor.getReadMethodNames()
+      set("name", "stocks", "children"),
+      descriptor.getReadMethodNames()
     );
   }
 
   @Test
   public void testGetWriteMethodNames() throws Exception {
     assertEquals(
-        Sets.newHashSet("stocks", "children"),
-        descriptor.getWriteMethodNames()
+      set("stocks", "children"),
+      descriptor.getWriteMethodNames()
     );
   }
 

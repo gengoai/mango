@@ -24,7 +24,6 @@ package com.davidbracewell.collection;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.tuple.Tuple2;
 import com.davidbracewell.tuple.Tuple3;
-import com.google.common.collect.Iterators;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -104,7 +103,7 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
     return new AbstractCollection<Double>() {
       @Override
       public Iterator<Double> iterator() {
-        return Iterators.transform(new KeyKeyValueIterator(), Tuple3::getV3);
+        return asStream(new KeyKeyValueIterator()).map(Tuple3::getV3).iterator();
       }
 
       @Override

@@ -23,9 +23,8 @@ package com.davidbracewell.reflection;
 
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.logging.Logger;
-import com.google.common.base.*;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import com.davidbracewell.string.StringUtils;
+import com.google.common.base.Throwables;
 import com.google.common.primitives.Primitives;
 import lombok.NonNull;
 
@@ -33,6 +32,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * Static classes to make reflection easier.
@@ -117,11 +117,11 @@ public final class ReflectionUtils {
       return null;
     }
     return ClassDescriptorCache.getInstance()
-      .getClassDescriptor(clazz)
-      .getFields(privileged)
-      .stream()
-      .filter(f -> f.getName().equals(name))
-      .findFirst().orElse(null);
+                               .getClassDescriptor(clazz)
+                               .getFields(privileged)
+                               .stream()
+                               .filter(f -> f.getName().equals(name))
+                               .findFirst().orElse(null);
   }
 
   /**
@@ -131,8 +131,7 @@ public final class ReflectionUtils {
    * @return A list of interfaces implemented by the object
    */
   public static List<Class<?>> getAllInterfaces(Object o) {
-    Preconditions.checkNotNull(o);
-    return getAllClasses(Preconditions.checkNotNull(o), IsInterface.INSTANCE);
+    return getAllClasses(o, IsInterface.INSTANCE);
   }
 
   /**
@@ -142,8 +141,7 @@ public final class ReflectionUtils {
    * @return List of classes including the class of the given object that match the given predicate
    */
   public static List<Class<?>> getAllClasses(Object o) {
-    Preconditions.checkNotNull(o);
-    return getAllClasses(Preconditions.checkNotNull(o), Predicates.<Class<?>>alwaysTrue());
+    return getAllClasses(o, x -> true);
   }
 
   /**
@@ -155,13 +153,16 @@ public final class ReflectionUtils {
    * @return List of classes including the class of the given object that match the given predicate
    */
   private static List<Class<?>> getAllClasses(Object o, Predicate<? super Class<?>> predicate) {
-    List<Class<?>> matches = Lists.newArrayList();
-    Set<Class<?>> seen = Sets.newHashSet();
-    Queue<Class<?>> queue = Lists.newLinkedList();
+    if (o == null) {
+      return Collections.emptyList();
+    }
+    List<Class<?>> matches = new ArrayList<>();
+    Set<Class<?>> seen = new HashSet<>();
+    Queue<Class<?>> queue = new LinkedList<>();
     queue.add(o.getClass());
     while (!queue.isEmpty()) {
       Class<?> clazz = queue.remove();
-      if (predicate.apply(clazz)) {
+      if (predicate.test(clazz)) {
         matches.add(clazz);
       }
       seen.add(clazz);
@@ -186,7 +187,7 @@ public final class ReflectionUtils {
    * @return An object or null if the object the string maps to cannot be determined.
    */
   public static Object createObject(String string) {
-    if (Strings.isNullOrEmpty(string)) {
+    if (StringUtils.isNullOrBlank(string)) {
       return null;
     }
     if (ReflectionUtils.isClassName(string)) {
@@ -243,7 +244,11 @@ public final class ReflectionUtils {
    * @return True if it appears to be a singleton.
    */
   public static boolean isSingleton(Class<?> clazz) {
-    return clazz != null && (Reflect.onClass(clazz).containsMethod("getInstance") || Reflect.onClass(clazz).containsMethod("getSingleton") || Reflect.onClass(clazz).containsMethod("createInstance"));
+    return clazz != null && (Reflect.onClass(clazz).containsMethod("getInstance") || Reflect.onClass(clazz)
+                                                                                            .containsMethod(
+                                                                                              "getSingleton") || Reflect
+      .onClass(clazz)
+      .containsMethod("createInstance"));
   }
 
   /**
@@ -253,7 +258,7 @@ public final class ReflectionUtils {
    * @return True if value of the string is a class name.
    */
   public static boolean isClassName(String string) {
-    return !Strings.isNullOrEmpty(string) && getClassForNameQuietly(string) != null;
+    return StringUtils.isNotNullOrBlank(string) && getClassForNameQuietly(string) != null;
   }
 
   /**
@@ -368,7 +373,7 @@ public final class ReflectionUtils {
    * @return Null if there is no match, otherwise the Method which bests fits the given method name and types
    */
   public static Method bestMatchingMethod(Collection<Method> methods, String methodName, Class[] types) {
-    if (methods == null || Strings.isNullOrEmpty(methodName) || types == null) {
+    if (methods == null || StringUtils.isNotNullOrBlank(methodName) || types == null) {
       return null;
     }
     for (Method method : methods) {
@@ -420,10 +425,10 @@ public final class ReflectionUtils {
       return false;
     }
     return ClassDescriptorCache.getInstance()
-      .getClassDescriptor(clazz)
-      .getFields(false)
-      .stream()
-      .anyMatch(f -> f.getName().equals(fieldName));
+                               .getClassDescriptor(clazz)
+                               .getFields(false)
+                               .stream()
+                               .anyMatch(f -> f.getName().equals(fieldName));
   }
 
   /**
@@ -480,7 +485,7 @@ public final class ReflectionUtils {
     INSTANCE;
 
     @Override
-    public boolean apply(Class<?> input) {
+    public boolean test(Class<?> input) {
       return input != null && input.isInterface();
     }
   }

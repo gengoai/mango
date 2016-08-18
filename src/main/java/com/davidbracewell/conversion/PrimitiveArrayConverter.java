@@ -23,8 +23,6 @@ package com.davidbracewell.conversion;
 
 import com.davidbracewell.collection.PrimitiveArrayList;
 import com.davidbracewell.logging.Logger;
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
 import com.google.common.primitives.Bytes;
@@ -39,6 +37,9 @@ import java.sql.Blob;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
+
+import static com.davidbracewell.collection.CollectionHelpers.asArrayList;
 
 /**
  * The type Primitive array converter.
@@ -52,9 +53,9 @@ public final class PrimitiveArrayConverter {
    * The constant BOOLEAN.
    */
   public static final Function<Object, boolean[]> BOOLEAN = new Function<Object, boolean[]>() {
-    
+
     @Override
-    public boolean[] apply( Object input) {
+    public boolean[] apply(Object input) {
       if (input == null) {
         return null;
       }
@@ -71,9 +72,9 @@ public final class PrimitiveArrayConverter {
    */
   public static final Function<Object, byte[]> BYTE = new Function<Object, byte[]>() {
 
-    
+
     @Override
-    public byte[] apply( Object o) {
+    public byte[] apply(Object o) {
       if (o == null) {
         return null;
       }
@@ -140,9 +141,9 @@ public final class PrimitiveArrayConverter {
    */
   public static final Function<Object, char[]> CHAR = new Function<Object, char[]>() {
 
-    
+
     @Override
-    public char[] apply( Object o) {
+    public char[] apply(Object o) {
       if (o == null) {
         return null;
       }
@@ -198,9 +199,9 @@ public final class PrimitiveArrayConverter {
    * The constant DOUBLE.
    */
   public static final Function<Object, double[]> DOUBLE = new Function<Object, double[]>() {
-    
+
     @Override
-    public double[] apply( Object input) {
+    public double[] apply(Object input) {
       if (input == null) {
         return null;
       }
@@ -216,9 +217,9 @@ public final class PrimitiveArrayConverter {
    * The constant FLOAT.
    */
   public static final Function<Object, float[]> FLOAT = new Function<Object, float[]>() {
-    
+
     @Override
-    public float[] apply( Object input) {
+    public float[] apply(Object input) {
       if (input == null) {
         return null;
       }
@@ -234,9 +235,9 @@ public final class PrimitiveArrayConverter {
    * The constant INT.
    */
   public static final Function<Object, int[]> INT = new Function<Object, int[]>() {
-    
+
     @Override
-    public int[] apply( Object input) {
+    public int[] apply(Object input) {
       if (input == null) {
         return null;
       }
@@ -252,9 +253,9 @@ public final class PrimitiveArrayConverter {
    * The constant LONG.
    */
   public static final Function<Object, long[]> LONG = new Function<Object, long[]>() {
-    
+
     @Override
-    public long[] apply( Object input) {
+    public long[] apply(Object input) {
       if (input == null) {
         return null;
       }
@@ -270,9 +271,9 @@ public final class PrimitiveArrayConverter {
    * The constant SHORT.
    */
   public static final Function<Object, short[]> SHORT = new Function<Object, short[]>() {
-    
+
     @Override
-    public short[] apply( Object input) {
+    public short[] apply(Object input) {
       if (input == null) {
         return null;
       }
@@ -300,7 +301,7 @@ public final class PrimitiveArrayConverter {
       return null;
     }
 
-    List<?> list = Lists.newArrayList(iterable);
+    List<?> list = asArrayList(iterable);
     Object array = Array.newInstance(itemClass, list.size());
     for (int i = 0; i < list.size(); i++) {
       Array.set(array, i, Convert.convert(list.get(i), itemClass));

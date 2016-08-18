@@ -21,13 +21,9 @@
 
 package com.davidbracewell.parsing;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import lombok.NonNull;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * <p>Represents a stream of tokens from a Lexer.</p>
@@ -46,7 +42,7 @@ public class ParserTokenStream {
    * @param iterator The token iterator
    */
   public ParserTokenStream(Iterator<ParserToken> iterator) {
-    this.tokenIterator = Preconditions.checkNotNull(iterator);
+    this.tokenIterator = iterator == null ? Collections.emptyIterator() : iterator;
     this.buffer = new LinkedList<>();
   }
 
@@ -70,7 +66,9 @@ public class ParserTokenStream {
   public ParserToken consume(@NonNull ParserTokenType expectedType) throws ParseException {
     ParserToken next = consume();
     if (next == null || !expectedType.isInstance(next.type)) {
-      throw new ParseException("Expected the next token to be of type " + expectedType + ", but found " + (next == null ? null : next.type));
+      throw new ParseException("Expected the next token to be of type " + expectedType + ", but found " + (next == null
+                                                                                                           ? null
+                                                                                                           : next.type));
     }
     return next;
   }
@@ -125,7 +123,7 @@ public class ParserTokenStream {
    * @return The list of tokens that were consumed.
    */
   public List<ParserToken> consumeUntil(ParserTokenType... types) {
-    List<ParserToken> tokens = Lists.newArrayList();
+    List<ParserToken> tokens = new ArrayList<>();
     while (lookAheadType(0) != null && !isOfType(lookAheadType(0), types)) {
       tokens.add(consume());
     }
@@ -139,7 +137,7 @@ public class ParserTokenStream {
    * @return The list of tokens that were consumed.
    */
   public List<ParserToken> consumeWhile(ParserTokenType... types) {
-    List<ParserToken> tokens = Lists.newArrayList();
+    List<ParserToken> tokens = new ArrayList<>();
     while (isOfType(lookAheadType(0), types)) {
       tokens.add(consume());
     }

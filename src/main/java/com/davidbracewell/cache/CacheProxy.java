@@ -29,13 +29,13 @@ import com.davidbracewell.reflection.ReflectionUtils;
 import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Maps;
 import lombok.NonNull;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -49,7 +49,7 @@ public class CacheProxy<T> implements InvocationHandler, Serializable {
   private static final long serialVersionUID = 1L;
   private static final Logger log = Logger.getLogger(CacheProxy.class);
   private final T object;
-  private final Map<String, Tuple2<Cached, KeyMaker>> cachedMethods = Maps.newHashMap();
+  private final Map<String, Tuple2<Cached, KeyMaker>> cachedMethods = new HashMap<>();
   private final String defaultCacheName;
   private final KeyMaker defaultKeyMaker;
 
@@ -61,7 +61,9 @@ public class CacheProxy<T> implements InvocationHandler, Serializable {
     if (r.getReflectedClass().isAnnotationPresent(Cached.class)) {
       Cached cached = r.getReflectedClass().getAnnotation(Cached.class);
       defaultCacheName = StringUtils.firstNonNullOrBlank(cacheName, cached.name(), CacheManager.GLOBAL_CACHE);
-      defaultKeyMaker = cached.keyMaker() == KeyMaker.DefaultKeyMaker.class ? new KeyMaker.HashCodeKeyMaker() : Reflect.onClass(cached.keyMaker()).create().get();
+      defaultKeyMaker = cached.keyMaker() == KeyMaker.DefaultKeyMaker.class
+                        ? new KeyMaker.HashCodeKeyMaker()
+                        : Reflect.onClass(cached.keyMaker()).create().get();
     } else {
       defaultCacheName = StringUtils.firstNonNullOrBlank(cacheName, CacheManager.GLOBAL_CACHE);
       defaultKeyMaker = new KeyMaker.HashCodeKeyMaker();
@@ -70,7 +72,9 @@ public class CacheProxy<T> implements InvocationHandler, Serializable {
     r.getMethods().forEach(Unchecked.consumer(method -> {
       if (method.isAnnotationPresent(Cached.class)) {
         Cached cached = method.getAnnotation(Cached.class);
-        KeyMaker keyMaker = cached.keyMaker() == KeyMaker.DefaultKeyMaker.class ? defaultKeyMaker : Reflect.onClass(cached.keyMaker()).create().get();
+        KeyMaker keyMaker = cached.keyMaker() == KeyMaker.DefaultKeyMaker.class
+                            ? defaultKeyMaker
+                            : Reflect.onClass(cached.keyMaker()).create().get();
         cachedMethods.put(method2String(method), Tuple2.of(cached, keyMaker));
       }
     }));
@@ -101,7 +105,7 @@ public class CacheProxy<T> implements InvocationHandler, Serializable {
     }
   }
 
-  private String method2String(Method method){
+  private String method2String(Method method) {
     return method.getName() + "::" + method.getParameterCount();
   }
 

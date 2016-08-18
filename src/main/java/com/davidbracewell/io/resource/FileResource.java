@@ -25,19 +25,14 @@ import com.davidbracewell.io.resource.spi.FileResourceProvider;
 import com.davidbracewell.stream.LocalStream;
 import com.davidbracewell.stream.MStream;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -58,8 +53,7 @@ public class FileResource extends BaseResource {
    *
    * @param file The file to be wrapped.
    */
-  public FileResource(File file) {
-    Preconditions.checkNotNull(file);
+  public FileResource(@NonNull File file) {
     this.file = file.getAbsoluteFile();
   }
 
@@ -68,8 +62,8 @@ public class FileResource extends BaseResource {
    *
    * @param path The path of the file
    */
-  public FileResource(String path) {
-    this(new File(Preconditions.checkNotNull(path)));
+  public FileResource(@NonNull String path) {
+    this(new File(path));
   }
 
   @Override
@@ -145,7 +139,7 @@ public class FileResource extends BaseResource {
 
   @Override
   public List<Resource> getChildren(Pattern pattern, boolean recursive) {
-    List<Resource> rval = Lists.newArrayList();
+    List<Resource> rval = new ArrayList<>();
     File[] files = file.listFiles();
     if (files != null) {
       for (File f : files) {

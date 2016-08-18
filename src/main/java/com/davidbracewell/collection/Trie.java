@@ -4,11 +4,11 @@ import com.davidbracewell.collection.trie.TrieMatch;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.string.StringUtils;
 import com.google.common.base.CharMatcher;
-import com.google.common.collect.Iterators;
 
 import java.io.Serializable;
 import java.util.*;
 
+import static com.davidbracewell.collection.CollectionHelpers.asStream;
 import static com.davidbracewell.tuple.Tuples.$;
 
 /**
@@ -34,31 +34,6 @@ public class Trie<V> implements Serializable, Map<String, V> {
     } else {
       this.root = new TrieNode<>(null, null);
     }
-  }
-
-  /**
-   * The entry point of application.
-   *
-   * @param args the input arguments
-   */
-  public static void main(String[] args) {
-    Trie<String> trie = new Trie<>();
-    trie.put("Richardson", "LOCATION");
-    trie.put("Trump", "PERSON");
-    trie.put("Clinton", "PERSON");
-    trie.put("Clintons", "GROUP");
-
-    System.out.println(trie);
-    System.out.println(trie.prefix("Cl").keySet());
-
-    String text = "Trump debated the Clintons in Richardson, TX.";
-    trie.findAll(text, StringUtils.WHITESPACE.or(CharMatcher.forPredicate(StringUtils::isPunctuation)))
-        .forEach(match -> System.out.println(text.substring(match.start, match.end) + " : " + match.value));
-  }
-
-  @Override
-  public String toString() {
-    return Iterators.toString(entrySet().iterator());
   }
 
   /**
@@ -177,7 +152,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
     return new AbstractSet<String>() {
       @Override
       public Iterator<String> iterator() {
-        return Iterators.transform(root.subTreeIterator(), Map.Entry::getKey);
+        return asStream(root.subTreeIterator()).map(Map.Entry::getKey).iterator();
       }
 
       @Override
@@ -192,7 +167,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
     return new AbstractCollection<V>() {
       @Override
       public Iterator<V> iterator() {
-        return Iterators.transform(root.subTreeIterator(), Map.Entry::getValue);
+        return asStream(root.subTreeIterator()).map(Map.Entry::getValue).iterator();
       }
 
       @Override

@@ -33,7 +33,6 @@ import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
 import lombok.NonNull;
 
 import java.io.BufferedReader;
@@ -79,7 +78,7 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
   /**
    * The Buffer.
    */
-  final Queue<Integer> buffer = Lists.newLinkedList();
+  final Queue<Integer> buffer = new LinkedList<>();
   /**
    * The Comment.
    */

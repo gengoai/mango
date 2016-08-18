@@ -77,7 +77,7 @@ public final class Cast {
    * @return A Function for casting objects to other types
    */
   public static <F, T> SerializableFunction<? super F, T> castingFunction() {
-    return input -> Cast.as(input);
+    return Cast::as;
   }
 
 

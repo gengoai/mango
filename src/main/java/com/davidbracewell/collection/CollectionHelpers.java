@@ -1015,7 +1015,7 @@ public interface CollectionHelpers {
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
-  static <T, Y extends T> List<T> asList(Y first, Y... others) {
+  static <T, Y extends T> List<T> list(Y first, Y... others) {
     return createList(ArrayList::new, first, others);
   }
 
@@ -1030,7 +1030,7 @@ public interface CollectionHelpers {
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
-  static <T, Y extends T> List<T> asLinkedList(Y first, Y... others) {
+  static <T, Y extends T> List<T> linkedList(Y first, Y... others) {
     return createList(LinkedList::new, first, others);
   }
 
@@ -1045,7 +1045,7 @@ public interface CollectionHelpers {
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
-  static <T, Y extends T> List<T> asSortedList(Y first, Y... others) {
+  static <T, Y extends T> List<T> sortedList(Y first, Y... others) {
     return createList(SortedArrayList::new, first, others);
   }
 
@@ -1196,20 +1196,12 @@ public interface CollectionHelpers {
   }
 
 
-  /**
-   * As set set.
-   *
-   * @param <T>    the type parameter
-   * @param <Y>    the type parameter
-   * @param first  the first
-   * @param others the others
-   * @return the set
-   */
   @SafeVarargs
   @SuppressWarnings("varargs")
-  static <T, Y extends T> Set<T> asSet(Y first, Y... others) {
-    return createSet(HashSet::new, first, others);
+  static <T, Y extends T> Set<T> set(Y... others) {
+    return createSet(HashSet::new, others);
   }
+
 
   /**
    * As sorted set set.
@@ -1222,7 +1214,7 @@ public interface CollectionHelpers {
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
-  static <T, Y extends T> Set<T> asTreeSet(Y first, Y... others) {
+  static <T, Y extends T> Set<T> treeSet(Y first, Y... others) {
     return createSet(TreeSet::new, first, others);
   }
 
@@ -1237,7 +1229,7 @@ public interface CollectionHelpers {
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
-  static <T, Y extends T> Set<T> asLinkedHashSet(Y first, Y... others) {
+  static <T, Y extends T> Set<T> linkedHashSet(Y first, Y... others) {
     return createSet(LinkedHashSet::new, first, others);
   }
 
@@ -1261,6 +1253,15 @@ public interface CollectionHelpers {
       return Collections.singleton(first);
     }
     return createSet(supplier, Stream.concat(asStream(first), asStream(others)));
+  }
+
+  @SafeVarargs
+  @SuppressWarnings("varargs")
+  static <T, Y extends T> Set<T> createSet(@NonNull Supplier<Set<T>> supplier, Y... others) {
+    if (others == null) {
+      return Collections.emptySet();
+    }
+    return createSet(supplier, Stream.of(others));
   }
 
   /**

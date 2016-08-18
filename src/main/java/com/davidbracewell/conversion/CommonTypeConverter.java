@@ -27,7 +27,6 @@ import com.davidbracewell.logging.Logger;
 import com.davidbracewell.reflection.ReflectionUtils;
 import com.davidbracewell.string.CSVFormatter;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.base.Function;
 import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Chars;
 
@@ -41,6 +40,7 @@ import java.nio.file.Path;
 import java.sql.Blob;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * Functions for converting objects to common types in Java e.g. Class, Object, Character, and String
@@ -50,7 +50,7 @@ import java.util.*;
 public class CommonTypeConverter {
 
   public static final Function<Object, Date> JAVA_DATE = new Function<Object, Date>() {
-    private  final DateParser dateParser = new DateParser();
+    private final DateParser dateParser = new DateParser();
 
     @Override
     public Date apply(Object input) {

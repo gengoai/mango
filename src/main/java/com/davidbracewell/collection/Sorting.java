@@ -22,13 +22,8 @@
 package com.davidbracewell.collection;
 
 import com.davidbracewell.conversion.Cast;
-import com.google.common.collect.Lists;
-import com.google.common.primitives.Doubles;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 /**
@@ -84,7 +79,7 @@ public final class Sorting {
       } else if (o2 == null) {
         return 1;
       }
-      return Doubles.compare(o1.hashCode(), o2.hashCode());
+      return Double.compare(o1.hashCode(), o2.hashCode());
     };
   }
 
@@ -98,8 +93,9 @@ public final class Sorting {
    * @return A <code>List</code> of <code>Entry</code> containing the map entries in sorted order.
    */
   public static <K, V extends Comparable<V>> List<Entry<K, V>> sortMapEntriesByValue(final Map<K, V> map,
-                                                                                     final boolean ascending) {
-    return sortMapEntries(map, new MapEntryComparator<K, V>(false, ascending));
+                                                                                     final boolean ascending
+  ) {
+    return sortMapEntries(map, new MapEntryComparator<>(false, ascending));
   }
 
   /**
@@ -112,8 +108,9 @@ public final class Sorting {
    * @return A <code>List</code> of <code>Entry</code> containing the map entries in sorted order.
    */
   public static <K, V> List<Entry<K, V>> sortMapEntries(final Map<K, V> map,
-                                                        final Comparator<Entry<K, V>> comparator) {
-    List<Entry<K, V>> rval = Lists.newArrayList(map.entrySet());
+                                                        final Comparator<Entry<K, V>> comparator
+  ) {
+    List<Entry<K, V>> rval = new ArrayList<>(map.entrySet());
     Collections.sort(rval, comparator);
     return rval;
   }

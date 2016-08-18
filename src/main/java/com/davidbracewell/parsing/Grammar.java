@@ -25,8 +25,8 @@ import com.davidbracewell.parsing.expressions.Expression;
 import com.davidbracewell.parsing.handlers.InfixHandler;
 import com.davidbracewell.parsing.handlers.PrefixHandler;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -41,8 +41,8 @@ import java.util.Map;
  */
 public class Grammar {
 
-  private final Map<ParserTokenType, PrefixHandler> prefixHandlers = Maps.newHashMap();
-  private final Map<ParserTokenType, InfixHandler> infixHandlers = Maps.newHashMap();
+  private final Map<ParserTokenType, PrefixHandler> prefixHandlers = new HashMap<>();
+  private final Map<ParserTokenType, InfixHandler> infixHandlers = new HashMap<>();
   private final PrefixHandler prefixSkipHandler;
 
   protected Grammar() {

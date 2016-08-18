@@ -22,7 +22,6 @@
 package com.davidbracewell.collection;
 
 import com.davidbracewell.tuple.Tuple2;
-import com.google.common.collect.Iterators;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
@@ -50,7 +49,7 @@ public class NormalizedStringMap<V> implements Map<String, V>, Serializable {
    * Default Constructor uses the default locale for collation
    */
   public NormalizedStringMap() {
-    this(Locale.ENGLISH);
+    this(Locale.getDefault());
   }
 
   /**
@@ -103,7 +102,9 @@ public class NormalizedStringMap<V> implements Map<String, V>, Serializable {
     return new AbstractSet<Entry<String, V>>() {
       @Override
       public Iterator<Entry<String, V>> iterator() {
-        return Iterators.transform(map.entrySet().iterator(), entry -> Tuple2.of(entry.getKey().getSourceString(), entry.getValue()));
+        return map.entrySet().stream()
+                  .map(entry -> (Map.Entry<String, V>) Tuple2.of(entry.getKey().getSourceString(), entry.getValue()))
+                  .iterator();
       }
 
       @Override
@@ -128,7 +129,7 @@ public class NormalizedStringMap<V> implements Map<String, V>, Serializable {
     return new AbstractSet<String>() {
       @Override
       public Iterator<String> iterator() {
-        return Iterators.transform(map.keySet().iterator(), CollationKey::getSourceString);
+        return map.keySet().stream().map(CollationKey::getSourceString).iterator();
       }
 
       @Override

@@ -28,9 +28,6 @@ import com.davidbracewell.reflection.Reflect;
 import com.davidbracewell.reflection.ReflectionException;
 import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
-import com.google.common.base.Supplier;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import lombok.NonNull;
 
 import java.io.Closeable;
@@ -39,11 +36,8 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * Represents a class for reading data in a structured format, e.g. xml, json, yaml, etc. Individual implementations
@@ -180,7 +174,7 @@ public abstract class StructuredReader implements Closeable {
    */
   public final Val[] nextArray(String expectedName) throws IOException {
     beginArray(expectedName);
-    List<Val> array = Lists.newArrayList();
+    List<Val> array = new ArrayList<>();
     while (peek() != ElementType.END_ARRAY) {
       array.add(nextValue());
     }
@@ -199,7 +193,7 @@ public abstract class StructuredReader implements Closeable {
    */
   public final <T> T[] nextArray(String expectedName, @NonNull Class<T> elementType) throws IOException {
     beginArray(expectedName);
-    List<T> array = Lists.newArrayList();
+    List<T> array = new ArrayList<>();
     while (peek() != ElementType.END_ARRAY) {
       array.add(nextValue(elementType));
     }
@@ -439,7 +433,7 @@ public abstract class StructuredReader implements Closeable {
   public Map<String, Val> nextMap(String expectedName) throws IOException {
     boolean ignoreObject = peek() != ElementType.BEGIN_OBJECT && StringUtils.isNullOrBlank(expectedName);
     if (!ignoreObject) beginObject(expectedName);
-    Map<String, Val> map = Maps.newHashMap();
+    Map<String, Val> map = new HashMap<>();
     while (peek() != ElementType.END_OBJECT && peek() != ElementType.END_DOCUMENT) {
       Tuple2<String, Val> kv = nextKeyValue();
       map.put(kv.getKey(), kv.getValue());
@@ -472,7 +466,7 @@ public abstract class StructuredReader implements Closeable {
   public <T> Map<String, T> nextMap(String expectedName, @NonNull Class<T> valueType) throws IOException {
     boolean ignoreObject = peek() != ElementType.BEGIN_OBJECT && expectedName == null;
     if (!ignoreObject) beginObject(expectedName);
-    Map<String, T> map = Maps.newHashMap();
+    Map<String, T> map = new HashMap<>();
     while (peek() != ElementType.END_OBJECT) {
       Tuple2<String, T> kv = nextKeyValue(valueType);
       map.put(kv.getKey(), kv.getValue());

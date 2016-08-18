@@ -21,11 +21,12 @@
 
 package com.davidbracewell.concurrent;
 
-import com.davidbracewell.logging.Logger;
+import com.davidbracewell.logging.Loggable;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
+import lombok.NonNull;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -40,9 +41,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author David B. Bracewell
  */
-public class Broker<V> implements Serializable {
+public class Broker<V> implements Serializable, Loggable {
   private static final long serialVersionUID = 1L;
-  private static final Logger log = Logger.getLogger(Broker.class);
   final ArrayBlockingQueue<V> queue;
   final List<Producer<V>> producers;
   final List<java.util.function.Consumer<? super V>> consumers;
@@ -92,7 +92,7 @@ public class Broker<V> implements Serializable {
     try {
       executors.awaitTermination(Integer.MAX_VALUE, TimeUnit.SECONDS);
     } catch (InterruptedException e) {
-      log.warn(e);
+      logWarning(e);
       return false;
     }
     return true;
@@ -103,7 +103,7 @@ public class Broker<V> implements Serializable {
    * the production process, {@link #stop()} to signal production has finished, and {@link #yield(Object)} to offer an
    * item up for consumption.</p>
    */
-  public abstract static class Producer<V> {
+  public abstract static class Producer<V> implements Loggable {
 
     Broker<V> owner;
     boolean isStopped = false;
@@ -148,7 +148,7 @@ public class Broker<V> implements Serializable {
       try {
         owner.queue.put(object);
       } catch (InterruptedException e) {
-        log.warn(e);
+        logWarning(e);
       }
     }
 
@@ -160,8 +160,8 @@ public class Broker<V> implements Serializable {
   public static class Builder<V> {
 
     private ArrayBlockingQueue<V> queue;
-    private List<Producer<V>> producers = Lists.newArrayList();
-    private List<java.util.function.Consumer<? super V>> consumers = Lists.newArrayList();
+    private List<Producer<V>> producers = new ArrayList<>();
+    private List<java.util.function.Consumer<? super V>> consumers = new ArrayList<>();
 
     /**
      * Adds a  consumer.
@@ -169,8 +169,7 @@ public class Broker<V> implements Serializable {
      * @param consumer the consumer
      * @return the builder
      */
-    public Builder<V> addConsumer(java.util.function.Consumer<? super V> consumer) {
-      Preconditions.checkNotNull(consumer);
+    public Builder<V> addConsumer(@NonNull java.util.function.Consumer<? super V> consumer) {
       return addConsumer(consumer, 1);
     }
 
@@ -181,8 +180,7 @@ public class Broker<V> implements Serializable {
      * @param number   the number of threads to run the consumer on.
      * @return the builder
      */
-    public Builder<V> addConsumer(java.util.function.Consumer<? super V> consumer, int number) {
-      Preconditions.checkNotNull(consumer);
+    public Builder<V> addConsumer(@NonNull java.util.function.Consumer<? super V> consumer, int number) {
       for (int i = 0; i < number; i++) {
         this.consumers.add(consumer);
       }
@@ -195,8 +193,7 @@ public class Broker<V> implements Serializable {
      * @param consumers the consumers
      * @return the builder
      */
-    public Builder<V> addConsumers(Collection<java.util.function.Consumer<? super V>> consumers) {
-      Preconditions.checkNotNull(consumers);
+    public Builder<V> addConsumers(@NonNull Collection<java.util.function.Consumer<? super V>> consumers) {
       this.consumers.addAll(consumers);
       return this;
     }
@@ -208,8 +205,7 @@ public class Broker<V> implements Serializable {
      * @param number   the number of threads to run the producer on.
      * @return the builder
      */
-    public Builder<V> addProducer(Producer<V> producer, int number) {
-      Preconditions.checkNotNull(producer);
+    public Builder<V> addProducer(@NonNull Producer<V> producer, int number) {
       for (int i = 0; i < number; i++) {
         this.producers.add(producer);
       }
@@ -222,8 +218,7 @@ public class Broker<V> implements Serializable {
      * @param producer the producer
      * @return the builder
      */
-    public Builder<V> addProducer(Producer<V> producer) {
-      Preconditions.checkNotNull(producer);
+    public Builder<V> addProducer(@NonNull Producer<V> producer) {
       return addProducer(producer, 1);
     }
 
@@ -233,8 +228,7 @@ public class Broker<V> implements Serializable {
      * @param producers the producers
      * @return the builder
      */
-    public Builder<V> addProducers(Collection<? extends Producer<V>> producers) {
-      Preconditions.checkNotNull(producers);
+    public Builder<V> addProducers(@NonNull Collection<? extends Producer<V>> producers) {
       this.producers.addAll(producers);
       return this;
     }
@@ -268,7 +262,7 @@ public class Broker<V> implements Serializable {
 
   }//END OF ProducerConsumer$Builder
 
-  private class ProducerThread implements Runnable {
+  private class ProducerThread implements Runnable, Loggable {
 
     final Producer<V> producer;
 
@@ -282,14 +276,14 @@ public class Broker<V> implements Serializable {
         try {
           producer.produce();
         } catch (Exception e) {
-          log.warn(e);
+          logWarning(e);
         }
       }
     }
 
   }//END OF Broker$ProducerThread
 
-  private class ConsumerThread implements Runnable {
+  private class ConsumerThread implements Runnable, Loggable {
 
     final java.util.function.Consumer<? super V> consumerAction;
 
@@ -311,7 +305,7 @@ public class Broker<V> implements Serializable {
         } catch (InterruptedException e) {
           break;
         } catch (Exception e) {
-          log.warn(e);
+          logWarning(e);
         }
       }
     }
