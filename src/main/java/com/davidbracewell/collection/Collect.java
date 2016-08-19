@@ -29,9 +29,25 @@ import com.google.common.base.Throwables;
 import lombok.NonNull;
 
 import java.lang.reflect.Array;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Queue;
+import java.util.Set;
+import java.util.Stack;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BinaryOperator;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -212,15 +228,15 @@ public interface Collect {
    * @param c2  the c 2
    * @return the collection
    */
-  static <T> Collection<T> difference(Collection<T> c1, Collection<T> c2) {
-    if (c1 == null) {
-      return Collections.emptyList();
-    } else if (c2 == null || c2.isEmpty()) {
-      return new ArrayList<>(c1);
+  static <T, C extends Collection<T>> C difference(@NonNull Supplier<C> supplier, Collection<? extends T> c1, Collection<? extends T> c2) {
+    if (c1 == null && c2 == null) {
+      return supplier.get();
+    } else if (c1 == null) {
+      return c2.stream().collect(Collectors.toCollection(supplier));
+    } else if (c2 == null) {
+      return c1.stream().collect(Collectors.toCollection(supplier));
     }
-    List<T> diff = new ArrayList<>(c1);
-    diff.removeAll(c2);
-    return diff;
+    return c1.stream().filter(v -> !c2.contains(v)).collect(Collectors.toCollection(supplier));
   }
 
   /**
@@ -231,11 +247,11 @@ public interface Collect {
    * @param c2  the c 2
    * @return the collection
    */
-  static <T> Collection<T> intersection(Collection<T> c1, Collection<T> c2) {
+  static <T, C extends Collection<T>> C intersection(@NonNull Supplier<C> supplier, Collection<? extends T> c1, Collection<? extends T> c2) {
     if (c1 == null || c2 == null || c1.isEmpty() || c2.isEmpty()) {
-      return Collections.emptyList();
+      return supplier.get();
     }
-    return c1.stream().filter(c2::contains).collect(Collectors.toList());
+    return c1.stream().filter(c2::contains).collect(Collectors.toCollection(supplier));
 
   }
 
@@ -247,15 +263,15 @@ public interface Collect {
    * @param c2  the c 2
    * @return the collection
    */
-  static <T> Collection<T> union(Collection<T> c1, Collection<T> c2) {
+  static <T, C extends Collection<T>> C union(@NonNull Supplier<C> supplier, Collection<? extends T> c1, Collection<? extends T> c2) {
     if (c1 == null && c2 == null) {
-      return Collections.emptyList();
+      return supplier.get();
     } else if (c1 == null) {
-      return new ArrayList<>(c2);
+      return c2.stream().collect(Collectors.toCollection(supplier));
     } else if (c2 == null) {
-      return new ArrayList<>(c1);
+      return c1.stream().collect(Collectors.toCollection(supplier));
     }
-    return Stream.concat(c1.stream(), c2.stream()).collect(Collectors.toList());
+    return Stream.concat(c1.stream(), c2.stream()).collect(Collectors.toCollection(supplier));
   }
 
   /**
@@ -340,5 +356,6 @@ public interface Collect {
     }
     return list;
   }
+
 
 }// END OF CollectionUtils

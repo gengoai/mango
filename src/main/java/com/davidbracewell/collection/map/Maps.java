@@ -22,19 +22,29 @@
 package com.davidbracewell.collection.map;
 
 import com.davidbracewell.conversion.Convert;
+import com.davidbracewell.function.Unchecked;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.csv.CSVReader;
 import com.davidbracewell.io.structured.csv.CSVWriter;
+import com.davidbracewell.reflection.Reflect;
 import com.davidbracewell.string.StringUtils;
+import com.davidbracewell.tuple.Tuple2;
 import com.google.common.base.Throwables;
 import lombok.NonNull;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static com.davidbracewell.collection.CollectionHelpers.asStream;
 import static com.davidbracewell.tuple.Tuples.$;
@@ -1040,6 +1050,30 @@ public interface Maps {
       map.put(keyConverter.apply(key), valueConverter.apply(value));
     }
     return map;
+  }
+
+
+  static <K, V, R> Map<R, V> transformKeys(@NonNull Map<? extends K, ? extends V> map, @NonNull Function<? super K, ? extends R> transform) {
+    return map.entrySet().stream()
+              .map(e -> $(transform.apply(e.getKey()), e.getValue()))
+              .collect(Collectors.toMap(Tuple2::getKey,
+                                        Tuple2::getValue,
+                                        (v1, v2) -> v1,
+                                        Unchecked.supplier(() -> Reflect.onClass(map.getClass()).create().get())
+                       )
+              );
+  }
+
+
+  static <K, V, R> Map<K, R> transformValues(@NonNull Map<? extends K, ? extends V> map, @NonNull Function<? super V, ? extends R> transform) {
+    return map.entrySet().stream()
+              .map(e -> $(e.getKey(), transform.apply(e.getValue())))
+              .collect(Collectors.toMap(Tuple2::getKey,
+                                        Tuple2::getValue,
+                                        (v1, v2) -> v1,
+                                        Unchecked.supplier(() -> Reflect.onClass(map.getClass()).create().get())
+                       )
+              );
   }
 
 

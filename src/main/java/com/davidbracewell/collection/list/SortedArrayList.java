@@ -21,13 +21,20 @@
 
 package com.davidbracewell.collection.list;
 
+import com.davidbracewell.collection.Sorting;
 import com.davidbracewell.conversion.Cast;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Ordering;
 import lombok.NonNull;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Objects;
 
 /**
  * The type Sorted array list.
@@ -41,6 +48,15 @@ public class SortedArrayList<E> implements List<E>, Serializable {
 
   private final Comparator<? super E> comparator;
   private final ArrayList<E> backing;
+
+
+  public static void main(String[] args) {
+    List<String> sorted = new SortedArrayList<>();
+    sorted.add("B");
+    sorted.add("C");
+    sorted.add("A");
+    System.out.println(sorted);
+  }
 
   /**
    * Instantiates a new Sorted array list.
@@ -94,7 +110,7 @@ public class SortedArrayList<E> implements List<E>, Serializable {
 
   private void sort() {
     if (comparator == null) {
-      Collections.sort(this.backing, Cast.as(Ordering.natural()));
+      Collections.sort(this.backing, Cast.as(Sorting.natural()));
     } else {
       Collections.sort(this.backing, comparator);
     }
@@ -102,7 +118,7 @@ public class SortedArrayList<E> implements List<E>, Serializable {
 
   private int search(Object object) {
     if (comparator == null) {
-      return Collections.binarySearch(backing, Cast.as(object), Cast.as(Ordering.natural()));
+      return Collections.binarySearch(backing, Cast.as(object), Cast.as(Sorting.natural()));
     }
     return Collections.binarySearch(backing, Cast.as(object), comparator);
   }
@@ -149,60 +165,6 @@ public class SortedArrayList<E> implements List<E>, Serializable {
   @Override
   public ListIterator<E> listIterator(int index) {
     return new WrappedListIterator<>(this.backing.listIterator(index));
-  }
-
-
-  private static class WrappedListIterator<E> implements ListIterator<E> {
-    private final ListIterator<E> wrapped;
-
-    private WrappedListIterator(ListIterator<E> wrapped) {
-      this.wrapped = wrapped;
-    }
-
-    @Override
-    public boolean hasNext() {
-      return wrapped.hasNext();
-    }
-
-    @Override
-    public E next() {
-      return wrapped.next();
-    }
-
-    @Override
-    public boolean hasPrevious() {
-      return wrapped.hasPrevious();
-    }
-
-    @Override
-    public E previous() {
-      return wrapped.previous();
-    }
-
-    @Override
-    public int nextIndex() {
-      return wrapped.nextIndex();
-    }
-
-    @Override
-    public int previousIndex() {
-      return wrapped.previousIndex();
-    }
-
-    @Override
-    public void remove() {
-      wrapped.remove();
-    }
-
-    @Override
-    public void set(E e) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void add(E e) {
-      throw new UnsupportedOperationException();
-    }
   }
 
   @Override
@@ -336,6 +298,59 @@ public class SortedArrayList<E> implements List<E>, Serializable {
   @Override
   public String toString() {
     return this.backing.toString();
+  }
+
+  private static class WrappedListIterator<E> implements ListIterator<E> {
+    private final ListIterator<E> wrapped;
+
+    private WrappedListIterator(ListIterator<E> wrapped) {
+      this.wrapped = wrapped;
+    }
+
+    @Override
+    public boolean hasNext() {
+      return wrapped.hasNext();
+    }
+
+    @Override
+    public E next() {
+      return wrapped.next();
+    }
+
+    @Override
+    public boolean hasPrevious() {
+      return wrapped.hasPrevious();
+    }
+
+    @Override
+    public E previous() {
+      return wrapped.previous();
+    }
+
+    @Override
+    public int nextIndex() {
+      return wrapped.nextIndex();
+    }
+
+    @Override
+    public int previousIndex() {
+      return wrapped.previousIndex();
+    }
+
+    @Override
+    public void remove() {
+      wrapped.remove();
+    }
+
+    @Override
+    public void set(E e) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void add(E e) {
+      throw new UnsupportedOperationException();
+    }
   }
 
 }//END OF SortedArrayList

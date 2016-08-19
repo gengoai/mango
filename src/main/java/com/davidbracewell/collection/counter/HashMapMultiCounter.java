@@ -27,7 +27,17 @@ import com.davidbracewell.tuple.Tuple3;
 import lombok.NonNull;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.AbstractCollection;
+import java.util.AbstractSet;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
@@ -52,6 +62,34 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
    */
   public HashMapMultiCounter() {
 
+  }
+
+  /**
+   * Instantiates a new Hash map multi counter.
+   *
+   * @param multiCounter the multi counter
+   */
+  public HashMapMultiCounter(@NonNull MultiCounter<? extends K, ? extends V> multiCounter) {
+    multiCounter.entries().forEach(t -> increment(t.v1, t.v2, t.v3));
+  }
+
+  /**
+   * Instantiates a new Hash map multi counter.
+   *
+   * @param triples the triples
+   */
+  @SafeVarargs
+  public HashMapMultiCounter(@NonNull Tuple3<K, V, ? extends Number>... triples) {
+    this(Arrays.asList(triples));
+  }
+
+  /**
+   * Instantiates a new Hash map multi counter.
+   *
+   * @param triples the triples
+   */
+  public HashMapMultiCounter(@NonNull Iterable<Tuple3<K, V, ? extends Number>> triples) {
+    triples.forEach(triple -> increment(triple.v1, triple.v2, triple.v3.doubleValue()));
   }
 
   /**
@@ -108,35 +146,6 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
       return new HashMapMultiCounter<>();
     }
     return new HashMapMultiCounter<>(triples);
-  }
-
-  /**
-   * Instantiates a new Hash map multi counter.
-   *
-   * @param multiCounter the multi counter
-   */
-  public HashMapMultiCounter(@NonNull MultiCounter<? extends K, ? extends V> multiCounter) {
-    multiCounter.entries().forEach(t -> increment(t.v1, t.v2, t.v3));
-  }
-
-
-  /**
-   * Instantiates a new Hash map multi counter.
-   *
-   * @param triples the triples
-   */
-  @SafeVarargs
-  public HashMapMultiCounter(@NonNull Tuple3<K, V, ? extends Number>... triples) {
-    this(Arrays.asList(triples));
-  }
-
-  /**
-   * Instantiates a new Hash map multi counter.
-   *
-   * @param triples the triples
-   */
-  public HashMapMultiCounter(@NonNull Iterable<Tuple3<K, V, ? extends Number>> triples) {
-    triples.forEach(triple -> increment(triple.v1, triple.v2, triple.v3.doubleValue()));
   }
 
   @Override
@@ -231,10 +240,7 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
 
   @Override
   public Counter<V> get(K item) {
-    if (!map.containsKey(item)) {
-      map.put(item, newCounter());
-    }
-    return map.get(item);
+    return new WrappedCounter(item);
   }
 
   @Override
@@ -361,5 +367,65 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
 
   }
 
+
+  class WrappedCounter extends ForwardingCounter<V> {
+    private final K key;
+
+    WrappedCounter(K key) {
+      this.key = key;
+    }
+
+    @Override
+    protected Counter<V> delegate() {
+      return map.get(key);
+    }
+
+
+    private Counter<V> createIfNeeded() {
+      Counter<V> counter = delegate();
+      if (counter == null) {
+        map.put(key, new HashMapCounter<>());
+      }
+      return delegate();
+    }
+
+    private void removeIfEmpty() {
+      Counter<V> counter = delegate();
+      if (counter != null && counter.isEmpty()) {
+        map.remove(key);
+      }
+    }
+
+    @Override
+    public Counter<V> increment(V item, double amount) {
+      createIfNeeded().increment(item, amount);
+      return this;
+    }
+
+    @Override
+    public double remove(V item) {
+      double value = super.remove(item);
+      removeIfEmpty();
+      return value;
+    }
+
+    @Override
+    public Counter<V> removeAll(Iterable<V> items) {
+      super.removeAll(items);
+      removeIfEmpty();
+      return this;
+    }
+
+    @Override
+    public Counter<V> set(V item, double count) {
+      if(count == 0 ){
+        remove(item);
+      } else {
+        createIfNeeded().set(item,count);
+      }
+      return this;
+    }
+
+  }
 
 }//END OF HashMapMultiCounter

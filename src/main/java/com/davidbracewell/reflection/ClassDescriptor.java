@@ -21,8 +21,8 @@
 
 package com.davidbracewell.reflection;
 
+import com.davidbracewell.collection.set.Sets;
 import com.davidbracewell.conversion.Cast;
-import com.google.common.collect.Sets;
 import lombok.NonNull;
 
 import java.io.Serializable;

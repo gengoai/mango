@@ -22,8 +22,13 @@
 package com.davidbracewell.collection;
 
 import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.function.SerializableComparator;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 /**
@@ -36,14 +41,18 @@ public final class Sorting {
   private Sorting() {
   }
 
+  public static <E extends Comparable> SerializableComparator<E> natural() {
+    return Sorting::compare;
+  }
+
   @SuppressWarnings("unchecked")
   public static int compare(Object o1, Object o2) {
-    if (o1 == o2) {
+    if (o1 == null && o2 == null) {
       return 0;
     } else if (o1 == null) {
-      return -1;
-    } else if (o2 == null) {
       return 1;
+    } else if (o2 == null) {
+      return -1;
     }
     return Cast.<Comparable>as(o1).compareTo(o2);
   }
@@ -57,7 +66,7 @@ public final class Sorting {
    * @param item An example item to help and determine the best comparator
    * @return A Comparator
    */
-  public static <T> Comparator<T> comparator(T item) {
+  public static <T> SerializableComparator<T> comparator(T item) {
     if ((item != null && item instanceof Comparable)) {
       return Sorting::compare;
     }
@@ -70,16 +79,16 @@ public final class Sorting {
    * @param <T> the type of object being compared
    * @return A simplistic comparator that compares hash code values
    */
-  public static <T> Comparator<T> hashCodeComparator() {
+  public static <T> SerializableComparator<T> hashCodeComparator() {
     return (o1, o2) -> {
       if (o1 == o2) {
         return 0;
       } else if (o1 == null) {
-        return -1;
-      } else if (o2 == null) {
         return 1;
+      } else if (o2 == null) {
+        return -1;
       }
-      return Double.compare(o1.hashCode(), o2.hashCode());
+      return Integer.compare(o1.hashCode(), o2.hashCode());
     };
   }
 
@@ -128,6 +137,7 @@ public final class Sorting {
   public static <K, V> Comparator<Entry<K, V>> mapEntryComparator(boolean sortByKey, boolean ascending) {
     return new MapEntryComparator<>(sortByKey, ascending);
   }
+
 
   static class MapEntryComparator<K, V> implements Comparator<Entry<K, V>> {
 

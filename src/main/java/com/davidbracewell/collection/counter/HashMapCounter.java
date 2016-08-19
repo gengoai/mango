@@ -32,7 +32,13 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
@@ -218,8 +224,9 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
     if (map.isEmpty()) {
       return this;
     }
+    final double tmpSum = sum();
     for (T key : map.keySet()) {
-      map.put(key, map.get(key) / sum());
+      map.put(key, map.get(key) / tmpSum);
     }
     sum.set(1d);
     return this;
@@ -316,8 +323,8 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
   public Counter<T> topN(int n) {
     Counter<T> cprime = newInstance();
     itemsByCount(false).stream()
-      .limit(n)
-      .forEach(t -> cprime.set(t, get(t)));
+                       .limit(n)
+                       .forEach(t -> cprime.set(t, get(t)));
     return cprime;
   }
 
@@ -325,8 +332,8 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
   public Counter<T> bottomN(int n) {
     Counter<T> cprime = newInstance();
     itemsByCount(true).stream()
-      .limit(n)
-      .forEach(t -> cprime.set(t, get(t)));
+                      .limit(n)
+                      .forEach(t -> cprime.set(t, get(t)));
     return cprime;
   }
 
@@ -334,8 +341,8 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
   public Counter<T> filterByValue(@NonNull DoublePredicate doublePredicate) {
     Counter<T> counter = newInstance();
     map.entrySet().stream()
-      .filter(e -> doublePredicate.test(e.getValue()))
-      .forEach(e -> counter.set(e.getKey(), e.getValue()));
+       .filter(e -> doublePredicate.test(e.getValue()))
+       .forEach(e -> counter.set(e.getKey(), e.getValue()));
     return counter;
   }
 
@@ -343,8 +350,8 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
   public Counter<T> filterByKey(@NonNull Predicate<T> predicate) {
     Counter<T> counter = newInstance();
     map.entrySet().stream()
-      .filter(e -> predicate.test(e.getKey()))
-      .forEach(e -> counter.set(e.getKey(), e.getValue()));
+       .filter(e -> predicate.test(e.getKey()))
+       .forEach(e -> counter.set(e.getKey(), e.getValue()));
     return counter;
   }
 
@@ -364,5 +371,6 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
   public Counter<T> copy() {
     return this.<T>newInstance().merge(this);
   }
+
 
 }//END OF AbstractMapCounter

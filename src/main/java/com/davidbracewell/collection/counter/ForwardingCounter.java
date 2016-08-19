@@ -25,6 +25,7 @@ import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,84 +42,120 @@ public abstract class ForwardingCounter<TYPE> implements Counter<TYPE>, Serializ
 
   @Override
   public <R> Counter<R> mapKeys(Function<TYPE, R> function) {
+    if (delegate() == null) {
+      return new HashMapCounter<>();
+    }
     return delegate().mapKeys(function);
   }
 
   @Override
   public Counter<TYPE> adjustValues(DoubleUnaryOperator function) {
+    if (delegate() == null) {
+      return this;
+    }
     return delegate().adjustValues(function);
   }
 
   @Override
   public Counter<TYPE> adjustValuesSelf(@NonNull DoubleUnaryOperator function) {
+    if (delegate() == null) {
+      return this;
+    }
     return delegate().adjustValuesSelf(function);
   }
 
   @Override
   public Map<TYPE, Double> asMap() {
+    if (delegate() == null) {
+      return Collections.emptyMap();
+    }
     return delegate().asMap();
   }
 
   @Override
   public double average() {
+    if (delegate() == null) {
+      return 0d;
+    }
     return delegate().average();
   }
 
   @Override
   public Counter<TYPE> bottomN(int n) {
+    if (delegate() == null) {
+      return this;
+    }
     return delegate().bottomN(n);
   }
 
   @Override
   public void clear() {
-    delegate().clear();
+    if (delegate() != null) {
+      delegate().clear();
+    }
   }
 
   @Override
   public boolean contains(TYPE item) {
-    return delegate().contains(item);
+    return delegate() != null && delegate().contains(item);
   }
 
   @Override
   public Collection<Double> counts() {
+    if (delegate() == null) {
+      return Collections.emptyList();
+    }
     return delegate().counts();
   }
 
   @Override
   public Counter<TYPE> decrement(TYPE item) {
-    return delegate().decrement(item);
+    return decrement(item, 1);
   }
 
   @Override
   public Counter<TYPE> decrement(TYPE item, double amount) {
-    return delegate().decrement(item, amount);
+    return increment(item, -amount);
   }
 
   @Override
   public Counter<TYPE> decrementAll(Iterable<? extends TYPE> iterable) {
-    return delegate().decrementAll(iterable);
+    if (iterable != null) {
+      iterable.forEach(this::decrement);
+    }
+    return this;
   }
 
   @Override
   public Counter<TYPE> decrementAll(Iterable<? extends TYPE> iterable, double amount) {
-    return delegate().decrementAll(iterable, amount);
+    if (iterable != null) {
+      iterable.forEach(i -> decrement(i, amount));
+    }
+    return this;
   }
 
   protected abstract Counter<TYPE> delegate();
 
   @Override
   public Counter<TYPE> divideBySum() {
-    return delegate().divideBySum();
+    if (delegate() == null) {
+      return this;
+    }
+    delegate().divideBySum();
+    return this;
   }
 
   @Override
   public double get(TYPE item) {
+    if (delegate() == null) {
+      return 0d;
+    }
     return delegate().get(item);
   }
 
   @Override
   public Counter<TYPE> increment(TYPE item) {
-    return delegate().increment(item);
+    return increment(item, 1);
   }
 
   @Override
@@ -128,46 +165,70 @@ public abstract class ForwardingCounter<TYPE> implements Counter<TYPE>, Serializ
 
   @Override
   public Counter<TYPE> incrementAll(Iterable<? extends TYPE> iterable) {
-    return delegate().incrementAll(iterable);
+    if (iterable != null) {
+      iterable.forEach(this::increment);
+    }
+    return this;
   }
 
   @Override
   public Counter<TYPE> incrementAll(Iterable<? extends TYPE> iterable, double amount) {
-    return delegate().incrementAll(iterable, amount);
+    if (iterable != null) {
+      iterable.forEach(i -> increment(i, amount));
+    }
+    return this;
   }
 
   @Override
   public boolean isEmpty() {
-    return delegate().isEmpty();
+    return delegate() == null || delegate().isEmpty();
   }
 
   @Override
   public Set<TYPE> items() {
+    if (delegate() == null) {
+      return Collections.emptySet();
+    }
     return delegate().items();
   }
 
   @Override
   public List<TYPE> itemsByCount(boolean ascending) {
+    if (delegate() == null) {
+      return Collections.emptyList();
+    }
     return delegate().itemsByCount(ascending);
   }
 
   @Override
   public Set<Map.Entry<TYPE, Double>> entries() {
+    if (delegate() == null) {
+      return Collections.emptySet();
+    }
     return delegate().entries();
   }
 
   @Override
   public double magnitude() {
+    if (delegate() == null) {
+      return 0d;
+    }
     return delegate().magnitude();
   }
 
   @Override
   public TYPE max() {
+    if (delegate() == null) {
+      return null;
+    }
     return delegate().max();
   }
 
   @Override
   public double maximumCount() {
+    if (delegate() == null) {
+      return 0d;
+    }
     return delegate().maximumCount();
   }
 
@@ -183,31 +244,49 @@ public abstract class ForwardingCounter<TYPE> implements Counter<TYPE>, Serializ
 
   @Override
   public TYPE min() {
+    if (delegate() == null) {
+      return null;
+    }
     return delegate().min();
   }
 
   @Override
   public double minimumCount() {
+    if (delegate() == null) {
+      return 0d;
+    }
     return delegate().minimumCount();
   }
 
   @Override
   public double remove(TYPE item) {
+    if (delegate() == null) {
+      return 0d;
+    }
     return delegate().remove(item);
   }
 
   @Override
   public Counter<TYPE> removeAll(Iterable<TYPE> items) {
+    if (delegate() == null) {
+      return this;
+    }
     return delegate().removeAll(items);
   }
 
   @Override
   public Counter<TYPE> removeZeroCounts() {
+    if (delegate() == null) {
+      return this;
+    }
     return delegate().removeZeroCounts();
   }
 
   @Override
   public TYPE sample() {
+    if (delegate() == null) {
+      return null;
+    }
     return delegate().sample();
   }
 
@@ -218,56 +297,87 @@ public abstract class ForwardingCounter<TYPE> implements Counter<TYPE>, Serializ
 
   @Override
   public int size() {
+    if (delegate() == null) {
+      return 0;
+    }
     return delegate().size();
   }
 
   @Override
   public double standardDeviation() {
+    if (delegate() == null) {
+      return Double.NaN;
+    }
     return delegate().standardDeviation();
   }
 
   @Override
   public double sum() {
+    if (delegate() == null) {
+      return 0d;
+    }
     return delegate().sum();
   }
 
   @Override
   public double sumOfSquares() {
+    if (delegate() == null) {
+      return 0d;
+    }
     return delegate().sumOfSquares();
   }
 
   @Override
   public Counter<TYPE> topN(int n) {
+    if (delegate() == null) {
+      return this;
+    }
     return delegate().topN(n);
   }
 
   @Override
   public Counter<TYPE> filterByKey(@NonNull Predicate<TYPE> predicate) {
+    if (delegate() == null) {
+      return this;
+    }
     return delegate().filterByKey(predicate);
   }
 
   @Override
   public Counter<TYPE> filterByValue(@NonNull DoublePredicate doublePredicate) {
+    if (delegate() == null) {
+      return this;
+    }
     return delegate().filterByValue(doublePredicate);
   }
 
   @Override
   public String toString() {
+    if (delegate() == null) {
+      return "{}";
+    }
     return delegate().toString();
   }
 
   @Override
   public int hashCode() {
+    if (delegate() == null) {
+      return 0;
+    }
     return delegate().hashCode();
   }
 
   @Override
   public boolean equals(Object object) {
-    return delegate().equals(object);
+    return delegate() != null && delegate().equals(object);
   }
 
   @Override
   public Counter<TYPE> copy() {
+    if (delegate() == null) {
+      return this;
+    }
     return delegate().copy();
   }
+
 }//END OF ForwardingCounter
