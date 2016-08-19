@@ -19,10 +19,12 @@
  * under the License.
  */
 
-package com.davidbracewell.collection;
+package com.davidbracewell.collection.counter;
 
 
 import com.davidbracewell.Copyable;
+import com.davidbracewell.collection.Collect;
+import com.davidbracewell.collection.Sorting;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.StructuredFormat;

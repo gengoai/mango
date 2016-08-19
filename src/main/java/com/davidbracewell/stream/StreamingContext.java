@@ -22,6 +22,10 @@
 package com.davidbracewell.stream;
 
 import com.davidbracewell.collection.*;
+import com.davidbracewell.collection.counter.Counter;
+import com.davidbracewell.collection.counter.HashMapCounter;
+import com.davidbracewell.collection.counter.HashMapMultiCounter;
+import com.davidbracewell.collection.counter.MultiCounter;
 import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.SerializableSupplier;

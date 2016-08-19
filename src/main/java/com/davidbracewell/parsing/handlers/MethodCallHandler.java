@@ -27,8 +27,8 @@ import com.davidbracewell.parsing.ParserToken;
 import com.davidbracewell.parsing.ParserTokenType;
 import com.davidbracewell.parsing.expressions.Expression;
 import com.davidbracewell.parsing.expressions.MethodCallExpression;
-import com.google.common.collect.Lists;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -56,7 +56,7 @@ public class MethodCallHandler extends InfixHandler {
 
   @Override
   public Expression parse(Parser parser, Expression left, ParserToken token) throws ParseException {
-    List<Expression> args = Lists.newArrayList();
+    List<Expression> args = new ArrayList<>();
     if (!parser.tokenStream().match(methodParamEnd)) {
       do {
         args.add(parser.next());

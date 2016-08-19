@@ -21,14 +21,13 @@ package com.davidbracewell;/*
 
 import com.davidbracewell.application.JavaFXApplication;
 import com.davidbracewell.cli.Option;
-import com.davidbracewell.collection.Collect;
+import com.davidbracewell.collection.map.Maps;
 import com.davidbracewell.config.Config;
 import org.junit.Test;
 
 import java.util.Map;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * @author David B. Bracewell
@@ -65,7 +64,7 @@ public class JavaFXApplicationTest {
       assertEquals("John", name);
       assertEquals(35, age);
       assertEquals("UNKNOWN", phone);
-      assertEquals(Collect.map("ALPHA", 23d), map);
+      assertEquals(Maps.map("ALPHA", 23d), map);
 
       assertEquals("com.davidbracewell.test", getConfigPackageName());
 
@@ -73,14 +72,16 @@ public class JavaFXApplicationTest {
       assertEquals("John", Config.get("name").asString());
       assertEquals("UNKNOWN", Config.get("phone").asString());
       assertEquals(35, Config.get("age").asIntegerValue());
-      assertEquals(Collect.map("ALPHA", 23d), Config.get("map").asMap(String.class, Double.class));
+      assertEquals(Maps.map("ALPHA", 23d), Config.get("map").asMap(String.class, Double.class));
       //Test CLI can override config parameter
       assertEquals("update", Config.get("action").asString());
 
       //Make sure config was loaded
       assertEquals("up", Config.get("direction").asString());
 
-      assertArrayEquals(new String[]{"--name=John", "--age=", "35", "--map", "{ALPHA:23}", "--action", "update"}, getAllArguments());
+      assertArrayEquals(new String[]{"--name=John", "--age=", "35", "--map", "{ALPHA:23}", "--action", "update"},
+                        getAllArguments()
+      );
       assertArrayEquals(new String[]{"--action", "update"}, getNonParsableArguments());
     }
   }

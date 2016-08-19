@@ -22,12 +22,12 @@
 package com.davidbracewell;
 
 import com.davidbracewell.logging.Logger;
-import com.google.common.collect.Lists;
 
 import java.text.Collator;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -733,7 +733,7 @@ public enum Language {
     if (locales != null) {
       return locales;
     }
-    locales = Lists.newArrayList();
+    locales = new ArrayList<>();
     for (Locale locale : DateFormat.getAvailableLocales()) {
       if (locale.getLanguage().equalsIgnoreCase(code)) {
         locales.add(locale);

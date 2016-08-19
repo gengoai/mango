@@ -19,7 +19,7 @@
  * under the License.
  */
 
-package com.davidbracewell.collection;
+package com.davidbracewell.collection.list;
 
 import com.davidbracewell.conversion.Convert;
 import com.google.common.base.Throwables;

@@ -27,16 +27,18 @@ import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.spi.ClasspathResourceProvider;
 import com.davidbracewell.logging.Logger;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
+import lombok.NonNull;
 
 import java.io.*;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
+
+import static com.davidbracewell.Validations.validateState;
 
 /**
  * <p> A <code>Resource</code> implementation for resources that exist on the classpath. Resources are loaded either
@@ -67,16 +69,14 @@ public class ClasspathResource extends BaseResource {
    * @param resource    The path to the resource.
    * @param classLoader The class loader to use.
    */
-  public ClasspathResource(String resource, ClassLoader classLoader) {
-    Preconditions.checkNotNull(resource);
-    Preconditions.checkNotNull(classLoader);
+  public ClasspathResource(@NonNull String resource, @NonNull ClassLoader classLoader) {
     this.resource = FileUtils.toUnix(resource);
     this.classLoader = classLoader;
   }
 
   @Override
   public Resource append(byte[] byteArray) throws IOException {
-    Preconditions.checkState(canWrite(), "Unable to write to this resource");
+    validateState(canWrite(), "Unable to write to this resource");
     new FileResource(asFile().get()).append(byteArray);
     return this;
   }
@@ -107,7 +107,8 @@ public class ClasspathResource extends BaseResource {
 
   @Override
   public boolean isDirectory() {
-    return asFile().map(File::isDirectory).orElse(StringUtils.isNullOrBlank(FileUtils.extension(resource)) && !canRead());
+    return asFile().map(File::isDirectory)
+                   .orElse(StringUtils.isNullOrBlank(FileUtils.extension(resource)) && !canRead());
   }
 
   @Override
@@ -162,7 +163,7 @@ public class ClasspathResource extends BaseResource {
 
   @Override
   public List<Resource> getChildren(Pattern filePattern, boolean recursive) {
-    List<Resource> rval = Lists.newArrayList();
+    List<Resource> rval = new ArrayList<>();
 
     if (!isDirectory()) {
       return rval;
@@ -200,7 +201,7 @@ public class ClasspathResource extends BaseResource {
   @Override
   public InputStream inputStream() throws IOException {
     InputStream rawis = createInputStream();
-    Preconditions.checkState(rawis != null, "This resource cannot be read from.");
+    validateState(rawis != null, "This resource cannot be read from.");
     PushbackInputStream is = new PushbackInputStream(rawis, 2);
     if (FileUtils.isCompressed(is)) {
       setIsCompressed(true);
@@ -216,7 +217,7 @@ public class ClasspathResource extends BaseResource {
 
   @Override
   public OutputStream createOutputStream() throws IOException {
-    Preconditions.checkState(canWrite(), "Unable to write to this resource");
+    validateState(canWrite(), "Unable to write to this resource");
     return new FileOutputStream(this.asFile().get());
   }
 

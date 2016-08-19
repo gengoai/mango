@@ -21,6 +21,7 @@
 
 package com.davidbracewell.collection;
 
+import com.davidbracewell.collection.map.NormalizedStringMap;
 import com.google.common.collect.ImmutableMap;
 import org.junit.Before;
 import org.junit.Test;

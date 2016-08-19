@@ -373,7 +373,7 @@ public final class ReflectionUtils {
    * @return Null if there is no match, otherwise the Method which bests fits the given method name and types
    */
   public static Method bestMatchingMethod(Collection<Method> methods, String methodName, Class[] types) {
-    if (methods == null || StringUtils.isNotNullOrBlank(methodName) || types == null) {
+    if (methods == null || StringUtils.isNullOrBlank(methodName) || types == null) {
       return null;
     }
     for (Method method : methods) {

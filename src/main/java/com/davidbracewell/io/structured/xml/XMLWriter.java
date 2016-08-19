@@ -22,18 +22,16 @@
 package com.davidbracewell.io.structured.xml;
 
 import com.davidbracewell.DynamicEnum;
-import com.davidbracewell.collection.Counter;
-import com.davidbracewell.collection.MultiCounter;
+import com.davidbracewell.Validations;
+import com.davidbracewell.collection.counter.Counter;
+import com.davidbracewell.collection.counter.MultiCounter;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.ElementType;
-import com.davidbracewell.io.structured.StructuredWriter;
 import com.davidbracewell.io.structured.StructuredSerializable;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Iterators;
+import com.davidbracewell.io.structured.StructuredWriter;
+import com.davidbracewell.string.StringUtils;
 import com.google.common.collect.Multimap;
 
 import javax.xml.stream.XMLOutputFactory;
@@ -42,6 +40,9 @@ import javax.xml.stream.XMLStreamWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
+
+import static com.davidbracewell.collection.CollectionHelpers.asStream;
+import static com.davidbracewell.conversion.Cast.as;
 
 /**
  * An implementation of a StructuredWriter that writes xml.
@@ -75,7 +76,7 @@ public class XMLWriter extends StructuredWriter {
    */
   public XMLWriter(String documentTag, Resource resource) throws IOException {
     try {
-      Preconditions.checkArgument(!Strings.isNullOrEmpty(documentTag));
+      Validations.validateArgument(StringUtils.isNotNullOrBlank(documentTag), "Document tag must not be null or blank");
       stack = new Stack<>();
       this.documentTag = documentTag;
       this.os = resource.outputStream();
@@ -182,11 +183,11 @@ public class XMLWriter extends StructuredWriter {
         writeValue(object);
         writer.writeEndElement();
       } else if (object instanceof Collection) {
-        writeCollection(key, Cast.as(object));
+        writeCollection(key, as(object));
       } else if (object instanceof Map) {
-        writeMap(key, Cast.as(object));
+        writeMap(key, as(object));
       } else if (object.getClass().isArray()) {
-        writeArray(key, Cast.as(object));
+        writeArray(key, as(object));
       } else if (object instanceof Multimap) {
         writeMap(key, Cast.<Multimap>as(object).asMap());
       } else if (object instanceof Counter) {
@@ -202,19 +203,19 @@ public class XMLWriter extends StructuredWriter {
 
           @Override
           public int size() {
-            return Iterables.size(Cast.as(object));
+            return (int) asStream(Cast.<Iterable<Object>>as(object)).count();
           }
         });
       } else if (object instanceof Iterator) {
         writeCollection(key, new AbstractCollection<Object>() {
           @Override
           public Iterator<Object> iterator() {
-            return Cast.as(object);
+            return as(object);
           }
 
           @Override
           public int size() {
-            return Iterators.size(Cast.as(object));
+            return (int) asStream(this::iterator).count();
           }
         });
       } else if (object instanceof StructuredSerializable) {

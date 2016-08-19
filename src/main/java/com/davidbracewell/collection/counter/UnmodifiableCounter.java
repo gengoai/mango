@@ -19,7 +19,7 @@
  * under the License.
  */
 
-package com.davidbracewell.collection;
+package com.davidbracewell.collection.counter;
 
 import java.util.Collections;
 import java.util.Map;

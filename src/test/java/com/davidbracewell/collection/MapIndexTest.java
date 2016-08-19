@@ -21,6 +21,8 @@
 
 package com.davidbracewell.collection;
 
+import com.davidbracewell.collection.index.HashMapIndex;
+import com.davidbracewell.collection.index.Index;
 import org.junit.Before;
 import org.junit.Test;
 

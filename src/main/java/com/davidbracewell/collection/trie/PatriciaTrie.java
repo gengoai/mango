@@ -30,9 +30,9 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -186,7 +186,7 @@ public class PatriciaTrie<E> extends AbstractPatriciaTrie<String, E> {
    * @return A list of Tuple3s indicating <code>[start, end)</code> and the value associated with the match.
    */
   public List<TrieMatch<E>> findOccurrencesIn(String text, boolean prefixMatch, CharMatcher matcher) {
-    List<TrieMatch<E>> rval = Lists.newArrayList();
+    List<TrieMatch<E>> rval = new ArrayList<>();
 
     int len = text.length();
     StringBuilder key = new StringBuilder();

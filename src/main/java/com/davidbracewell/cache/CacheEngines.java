@@ -21,7 +21,7 @@
 
 package com.davidbracewell.cache;
 
-import com.davidbracewell.collection.NormalizedStringMap;
+import com.davidbracewell.collection.map.NormalizedStringMap;
 
 import java.util.Collection;
 import java.util.Collections;

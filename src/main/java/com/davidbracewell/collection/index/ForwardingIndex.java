@@ -19,7 +19,7 @@
  * under the License.
  */
 
-package com.davidbracewell.collection;
+package com.davidbracewell.collection.index;
 
 import java.io.Serializable;
 import java.util.Iterator;

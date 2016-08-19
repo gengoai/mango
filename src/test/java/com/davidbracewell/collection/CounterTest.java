@@ -21,6 +21,9 @@
 
 package com.davidbracewell.collection;
 
+import com.davidbracewell.collection.counter.Counter;
+import com.davidbracewell.collection.counter.Counters;
+import com.davidbracewell.collection.counter.HashMapCounter;
 import org.junit.Test;
 
 import java.util.Arrays;

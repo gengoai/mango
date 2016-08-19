@@ -21,7 +21,7 @@
 
 package com.davidbracewell.cache;
 
-import com.davidbracewell.collection.LRUMap;
+import com.davidbracewell.collection.map.LRUMap;
 import lombok.NonNull;
 
 import java.io.Serializable;

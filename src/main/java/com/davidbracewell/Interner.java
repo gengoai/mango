@@ -19,7 +19,7 @@
  * under the License.
  */
 
-package com.davidbracewell.collection;
+package com.davidbracewell;
 
 import lombok.EqualsAndHashCode;
 import lombok.ToString;

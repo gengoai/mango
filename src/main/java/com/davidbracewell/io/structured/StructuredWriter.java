@@ -1,8 +1,8 @@
 package com.davidbracewell.io.structured;
 
 import com.davidbracewell.DynamicEnum;
-import com.davidbracewell.collection.Counter;
-import com.davidbracewell.collection.MultiCounter;
+import com.davidbracewell.collection.counter.Counter;
+import com.davidbracewell.collection.counter.MultiCounter;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
 import com.google.common.collect.Iterables;

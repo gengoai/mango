@@ -21,6 +21,7 @@
 
 package com.davidbracewell.collection;
 
+import com.davidbracewell.collection.list.PrimitiveArrayList;
 import org.junit.Before;
 import org.junit.Test;
 

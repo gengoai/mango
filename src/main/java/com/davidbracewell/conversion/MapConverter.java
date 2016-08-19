@@ -21,7 +21,7 @@
 
 package com.davidbracewell.conversion;
 
-import com.davidbracewell.collection.Collect;
+import com.davidbracewell.collection.map.Maps;
 import com.davidbracewell.function.Serialized;
 import com.davidbracewell.logging.Logger;
 import com.davidbracewell.reflection.Reflect;
@@ -63,17 +63,17 @@ public class MapConverter<K, V, T extends Map<K, V>> implements Function<Object,
     this.keyConverter = keyConverter;
     this.valueConverter = valueConverter;
     this.mapSupplier = Serialized.<T>supplier(() -> {
-        if (BiMap.class.equals(mapClass)) {
-          return Cast.as(HashBiMap.create());
-        } else if (Map.class.equals(mapClass)) {
-          return Cast.as(new HashMap());
-        }
-        try {
-          return Reflect.onClass(mapClass).create().get();
-        } catch (ReflectionException e) {
-          throw Throwables.propagate(e);
-        }
-      }
+                                                if (BiMap.class.equals(mapClass)) {
+                                                  return Cast.as(HashBiMap.create());
+                                                } else if (Map.class.equals(mapClass)) {
+                                                  return Cast.as(new HashMap());
+                                                }
+                                                try {
+                                                  return Reflect.onClass(mapClass).create().get();
+                                                } catch (ReflectionException e) {
+                                                  throw Throwables.propagate(e);
+                                                }
+                                              }
     );
   }
 
@@ -93,7 +93,7 @@ public class MapConverter<K, V, T extends Map<K, V>> implements Function<Object,
     }
 
     if (obj instanceof CharSequence) {
-      return Cast.as(Collect.fromString(obj.toString(), keyConverter, valueConverter));
+      return Cast.as(Maps.parseString(obj.toString(), keyConverter, valueConverter));
     } else if (obj.getClass().isArray() && Map.Entry.class.isAssignableFrom(obj.getClass().getComponentType())) {
       for (Object o : Convert.convert(obj, Iterable.class)) {
         Map.Entry<?, ?> e = Cast.as(o);
@@ -116,7 +116,7 @@ public class MapConverter<K, V, T extends Map<K, V>> implements Function<Object,
     }
 
     try {
-      return Cast.as(Collect.fillMap(map, Convert.convert(obj, Iterable.class), keyConverter, valueConverter));
+      return Cast.as(Maps.fillMap(map, Convert.convert(obj, Iterable.class), keyConverter, valueConverter));
     } catch (Exception e) {
       //ignore
     }

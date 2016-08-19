@@ -21,15 +21,15 @@
 
 package com.davidbracewell.scripting;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
+import com.davidbracewell.Validations;
+import com.davidbracewell.string.StringUtils;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Manages scripting environments giving each language a singleton instance.
@@ -54,7 +54,7 @@ public final class ScriptEnvironmentManager {
   }
 
   private ScriptEnvironmentManager() {
-    environments = Maps.newConcurrentMap();
+    environments = new ConcurrentHashMap<>();
     engineManager = new ScriptEngineManager();
   }
 
@@ -65,7 +65,9 @@ public final class ScriptEnvironmentManager {
    * @return the scripting environment
    */
   public ScriptEnvironment getEnvironment(String environmentName) {
-    Preconditions.checkArgument(!Strings.isNullOrEmpty(environmentName), "Environment name cannot be null or empty");
+    Validations.validateArgument(StringUtils.isNotNullOrBlank(environmentName),
+                                 "Environment name cannot be null or empty"
+    );
     ScriptEngine engine = engineManager.getEngineByName(environmentName);
     environmentName = engine.getFactory().getEngineName();
     if (!environments.containsKey(environmentName)) {
@@ -81,7 +83,9 @@ public final class ScriptEnvironmentManager {
    * @return the scripting environment
    */
   public static ScriptEnvironment getTemporaryEnvironment(String environmentName) {
-    Preconditions.checkArgument(!Strings.isNullOrEmpty(environmentName), "Environment name cannot be null or empty");
+    Validations.validateArgument(StringUtils.isNotNullOrBlank(environmentName),
+                                 "Environment name cannot be null or empty"
+    );
     ScriptEngine engine = ScriptEnvironmentManager.getInstance().engineManager.getEngineByName(environmentName);
     return new ScriptEnvironment(engine);
   }
@@ -94,7 +98,7 @@ public final class ScriptEnvironmentManager {
    * @return the scripting environment
    */
   public ScriptEnvironment getEnvironmentForExtension(String extension) {
-    Preconditions.checkArgument(!Strings.isNullOrEmpty(extension), "Extension name cannot be null or empty");
+    Validations.validateArgument(StringUtils.isNotNullOrBlank(extension), "Extension name cannot be null or empty");
     return getEnvironment(getEnvironmentNameForExtension(extension));
   }
 
@@ -105,7 +109,7 @@ public final class ScriptEnvironmentManager {
    * @return the scripting environment
    */
   public static ScriptEnvironment getTemporaryEnvironmentForExtension(String extension) {
-    Preconditions.checkArgument(!Strings.isNullOrEmpty(extension), "Extension name cannot be null or empty");
+    Validations.validateArgument(StringUtils.isNotNullOrBlank(extension), "Extension name cannot be null or empty");
     return getTemporaryEnvironment(ScriptEnvironmentManager.getInstance().getEnvironmentNameForExtension(extension));
   }
 
@@ -117,7 +121,7 @@ public final class ScriptEnvironmentManager {
    * @return the scripting environment name
    */
   public String getEnvironmentNameForExtension(String extension) {
-    Preconditions.checkArgument(!Strings.isNullOrEmpty(extension), "Extension name cannot be null or empty");
+    Validations.validateArgument(StringUtils.isNotNullOrBlank(extension), "Extension name cannot be null or empty");
     ScriptEngine engine = engineManager.getEngineByExtension(extension);
     if (engine == null) {
       throw new IllegalStateException(extension + " is not a recognized scripting extension.");
@@ -130,7 +134,7 @@ public final class ScriptEnvironmentManager {
    * mechanism. </p>
    *
    * @return an array whose elements are instances of all the ScriptEngineFactory classes found by the discovery
-   *         mechanism.
+   * mechanism.
    * @see javax.script.ScriptEngineManager#getEngineFactories()
    */
   public List<ScriptEngineFactory> getAvailableEngines() {

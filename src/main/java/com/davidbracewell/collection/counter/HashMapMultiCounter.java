@@ -19,7 +19,7 @@
  * under the License.
  */
 
-package com.davidbracewell.collection;
+package com.davidbracewell.collection.counter;
 
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.tuple.Tuple2;
@@ -47,20 +47,94 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
   private final Map<K, Counter<V>> map = new HashMap<>();
 
 
+  /**
+   * Instantiates a new Hash map multi counter.
+   */
   public HashMapMultiCounter() {
 
   }
 
+  /**
+   * Create hash map multi counter.
+   *
+   * @param <K> the type parameter
+   * @param <V> the type parameter
+   * @return the hash map multi counter
+   */
+  public static <K, V> HashMapMultiCounter<K, V> create() {
+    return new HashMapMultiCounter<>();
+  }
+
+  /**
+   * Create hash map multi counter.
+   *
+   * @param <K>          the type parameter
+   * @param <V>          the type parameter
+   * @param multiCounter the multi counter
+   * @return the hash map multi counter
+   */
+  public static <K, V> HashMapMultiCounter<K, V> create(MultiCounter<? extends K, ? extends V> multiCounter) {
+    if (multiCounter == null) {
+      return new HashMapMultiCounter<>();
+    }
+    return new HashMapMultiCounter<>(multiCounter);
+  }
+
+  /**
+   * Create hash map multi counter.
+   *
+   * @param <K>     the type parameter
+   * @param <V>     the type parameter
+   * @param triples the triples
+   * @return the hash map multi counter
+   */
+  public static <K, V> HashMapMultiCounter<K, V> create(Tuple3<K, V, ? extends Number>... triples) {
+    if (triples == null) {
+      return new HashMapMultiCounter<>();
+    }
+    return new HashMapMultiCounter<>(triples);
+  }
+
+  /**
+   * Create hash map multi counter.
+   *
+   * @param <K>     the type parameter
+   * @param <V>     the type parameter
+   * @param triples the triples
+   * @return the hash map multi counter
+   */
+  public static <K, V> HashMapMultiCounter<K, V> create(Iterable<Tuple3<K, V, ? extends Number>> triples) {
+    if (triples == null) {
+      return new HashMapMultiCounter<>();
+    }
+    return new HashMapMultiCounter<>(triples);
+  }
+
+  /**
+   * Instantiates a new Hash map multi counter.
+   *
+   * @param multiCounter the multi counter
+   */
   public HashMapMultiCounter(@NonNull MultiCounter<? extends K, ? extends V> multiCounter) {
     multiCounter.entries().forEach(t -> increment(t.v1, t.v2, t.v3));
   }
 
 
+  /**
+   * Instantiates a new Hash map multi counter.
+   *
+   * @param triples the triples
+   */
   @SafeVarargs
   public HashMapMultiCounter(@NonNull Tuple3<K, V, ? extends Number>... triples) {
     this(Arrays.asList(triples));
   }
 
+  /**
+   * Instantiates a new Hash map multi counter.
+   *
+   * @param triples the triples
+   */
   public HashMapMultiCounter(@NonNull Iterable<Tuple3<K, V, ? extends Number>> triples) {
     triples.forEach(triple -> increment(triple.v1, triple.v2, triple.v3.doubleValue()));
   }

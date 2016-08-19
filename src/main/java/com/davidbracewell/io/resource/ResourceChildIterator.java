@@ -21,10 +21,10 @@
 
 package com.davidbracewell.io.resource;
 
-import com.google.common.collect.Lists;
 import lombok.NonNull;
 
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.regex.Pattern;
@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
 public class ResourceChildIterator implements Iterator<Resource> {
 
   private final Pattern filePattern;
-  private final Queue<Resource> queue = Lists.newLinkedList();
+  private final Queue<Resource> queue = new LinkedList<>();
   private final boolean recursive;
 
   /**

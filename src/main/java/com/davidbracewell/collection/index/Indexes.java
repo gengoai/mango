@@ -19,7 +19,7 @@
  * under the License.
  */
 
-package com.davidbracewell.collection;
+package com.davidbracewell.collection.index;
 
 
 import com.davidbracewell.conversion.Convert;

@@ -21,7 +21,7 @@
 
 package com.davidbracewell.io.structured.csv;
 
-import com.davidbracewell.collection.Collect;
+import com.davidbracewell.collection.map.Maps;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.resource.StringResource;
@@ -31,7 +31,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Arrays;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.*;
 
 /**
  * @author David B. Bracewell
@@ -96,8 +96,8 @@ public class CSVWriterTest {
       writer.writeValue("B");
       writer.writeValue("C");
       writer.endObject();
-      writer.writeMap(Collect.map("A", "D"));
-      writer.write(Collect.<String, String>map("A", "D"), ':');
+      writer.writeMap(Maps.map("A", "D"));
+      writer.write(Maps.map("A", "D"), ':');
       writer.endDocument();
     }
   }
@@ -105,8 +105,8 @@ public class CSVWriterTest {
   @Test
   public void structuredWrite2() throws IOException {
     try (CSVWriter writer = CSV.builder()
-      .header("One", "Two", "Three", "Four", "Five")
-      .writer(new StringResource())) {
+                               .header("One", "Two", "Three", "Four", "Five")
+                               .writer(new StringResource())) {
       writer.beginDocument();
       writer.beginArray();
       writer.writeValue("A");
@@ -118,8 +118,8 @@ public class CSVWriterTest {
       writer.writeValue("B");
       writer.writeValue("C");
       writer.endObject();
-      writer.writeMap(Collect.map("A", "D"));
-      writer.write(Collect.<String, String>map("A", "D"), ':');
+      writer.writeMap(Maps.map("A", "D"));
+      writer.write(Maps.map("A", "D"), ':');
       writer.beginArray();
       writer.writeKeyValue("One", 1);
       writer.writeKeyValue("Two", 1);
@@ -127,7 +127,7 @@ public class CSVWriterTest {
       writer.writeKeyValue("Four", 1);
       writer.writeKeyValue("Five", 1);
       writer.endArray();
-      writer.writeArray(new String[]{"A","B","C","D"});
+      writer.writeArray(new String[]{"A", "B", "C", "D"});
       writer.endDocument();
     }
   }

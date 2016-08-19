@@ -24,26 +24,44 @@ package com.davidbracewell;
 /**
  * @author David B. Bracewell
  */
-public final class Validation {
+public interface Validations {
 
 
-  public void validateUnchecked(boolean condition, String onFailMessage) {
+  static void validateUnchecked(boolean condition, String onFailMessage) {
     if (!condition) {
       throw new RuntimeException(onFailMessage);
     }
   }
 
-  public void validateArgument(boolean condition, String onFailMessage) {
+  static void validateArgument(boolean condition, String onFailMessage) {
     if (!condition) {
       throw new IllegalArgumentException(onFailMessage);
     }
   }
 
-  public void validateState(boolean condition, String onFailMessage) {
+  static void validateState(boolean condition, String onFailMessage) {
     if (!condition) {
       throw new IllegalStateException(onFailMessage);
     }
   }
 
+  static void validateUnchecked(boolean condition) {
+    if (!condition) {
+      throw new RuntimeException();
+    }
+  }
 
-}//END OF Validation
+  static void validateArgument(boolean condition) {
+    if (!condition) {
+      throw new IllegalArgumentException();
+    }
+  }
+
+  static void validateState(boolean condition) {
+    if (!condition) {
+      throw new IllegalStateException();
+    }
+  }
+
+
+}//END OF Validations

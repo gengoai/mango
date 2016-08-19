@@ -19,7 +19,7 @@
  * under the License.
  */
 
-package com.davidbracewell.collection;
+package com.davidbracewell.collection.map;
 
 import com.davidbracewell.tuple.Tuple2;
 import lombok.EqualsAndHashCode;

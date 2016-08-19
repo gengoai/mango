@@ -1,7 +1,7 @@
 package com.davidbracewell.stream.accumulator;
 
-import com.davidbracewell.collection.HashMapMultiCounter;
-import com.davidbracewell.collection.MultiCounter;
+import com.davidbracewell.collection.counter.HashMapMultiCounter;
+import com.davidbracewell.collection.counter.MultiCounter;
 
 /**
  * @author David B. Bracewell

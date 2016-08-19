@@ -1,10 +1,10 @@
 package com.davidbracewell.stream;
 
-import com.davidbracewell.collection.Collect;
-import com.davidbracewell.collection.Counter;
-import com.davidbracewell.collection.HashMapCounter;
-import com.davidbracewell.collection.HashMapMultiCounter;
-import com.davidbracewell.collection.MultiCounter;
+import com.davidbracewell.collection.counter.Counter;
+import com.davidbracewell.collection.counter.HashMapCounter;
+import com.davidbracewell.collection.counter.HashMapMultiCounter;
+import com.davidbracewell.collection.counter.MultiCounter;
+import com.davidbracewell.collection.map.Maps;
 import com.davidbracewell.config.Config;
 import com.davidbracewell.stream.accumulator.MAccumulator;
 import com.davidbracewell.string.StringUtils;
@@ -13,22 +13,13 @@ import com.davidbracewell.tuple.Tuple3;
 import com.google.common.collect.Lists;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static com.davidbracewell.collection.CollectionHelpers.asArrayList;
+import static com.davidbracewell.collection.CollectionHelpers.list;
+import static org.junit.Assert.*;
 
 /**
  * @author David B. Bracewell
@@ -158,7 +149,7 @@ public abstract class BaseMStreamTest {
 
   @Test
   public void iterator() throws Exception {
-    Iterator<String>  itr = sc.stream("A","B","C").iterator();
+    Iterator<String> itr = sc.stream("A", "B", "C").iterator();
     assertTrue(itr.hasNext());
     assertEquals("A", itr.next());
     assertTrue(itr.hasNext());
@@ -170,7 +161,7 @@ public abstract class BaseMStreamTest {
 
   @Test
   public void groupBy() throws Exception {
-    Map<Character, Iterable<String>> target = new TreeMap<>(Collect.map(
+    Map<Character, Iterable<String>> target = new TreeMap<>(Maps.map(
       'A', Arrays.asList("Abb", "Abc"),
       'B', Arrays.asList("Bbb", "Bbc"),
       'C', Arrays.asList("Cbb", "Cbb")
@@ -188,24 +179,26 @@ public abstract class BaseMStreamTest {
     });
   }
 
-  @Test(expected = Exception.class)
+  @Test
   public void groupByError() throws Exception {
-    assertEquals(
-      Collect.map(
-        'A', Arrays.asList("Abb", "Abc"),
-        'B', Arrays.asList("Bbb", "Bbc"),
-        'C', Arrays.asList("Cbb", "Cbb")
-      ),
-      sc.stream("Abb", "Abc", "Bbb", "Bbc", "Cbb", "Cbb", null)
-        .groupBy(s -> s.charAt(0))
-        .collectAsMap()
+    Map<Character, List<String>> gold = Maps.treeMap(
+      'A', list("Abb", "Abc"),
+      'B', list("Bbb", "Bbc"),
+      'C', list("Cbb", "Cbb")
     );
+    Map<Character, Iterable<String>> streamed = sc.stream("Abb", "Abc", "Bbb", "Bbc", "Cbb", "Cbb", null)
+                                                  .filter(Objects::nonNull)
+                                                  .groupBy(s -> s.charAt(0))
+                                                  .collectAsMap();
+    assertEquals(gold.get('A'), asArrayList(streamed.get('A')));
+    assertEquals(gold.get('B'), asArrayList(streamed.get('B')));
+    assertEquals(gold.get('C'), asArrayList(streamed.get('C')));
   }
 
   @Test
   public void countByValue() throws Exception {
     assertEquals(
-      Collect.map(
+      Maps.map(
         "A", 3L,
         "B", 1L,
         "C", 2L
@@ -230,7 +223,7 @@ public abstract class BaseMStreamTest {
   @Test
   public void zipWithIndex() throws Exception {
     List<Map.Entry<String, Long>> result = sc.stream("A", "B", "C").zipWithIndex()
-      .collectAsList();
+                                             .collectAsList();
     assertEquals("A", result.get(0).getKey());
     assertEquals("B", result.get(1).getKey());
     assertEquals("C", result.get(2).getKey());
@@ -310,12 +303,12 @@ public abstract class BaseMStreamTest {
 
   @Test
   public void sample() throws Exception {
-    assertEquals(10, sc.range(0, 100).sample(false,10).count());
-    assertEquals(0, sc.range(0, 100).sample(false,-1).count());
-    assertEquals(100, sc.range(0, 100).sample(false,200).count());
-    assertEquals(10, sc.range(0, 100).sample(true,10).count());
-    assertEquals(0, sc.range(0, 100).sample(true,-1).count());
-    assertEquals(100, sc.range(0, 100).sample(true,200).count());
+    assertEquals(10, sc.range(0, 100).sample(false, 10).count());
+    assertEquals(0, sc.range(0, 100).sample(false, -1).count());
+    assertEquals(100, sc.range(0, 100).sample(false, 200).count());
+    assertEquals(10, sc.range(0, 100).sample(true, 10).count());
+    assertEquals(0, sc.range(0, 100).sample(true, -1).count());
+    assertEquals(100, sc.range(0, 100).sample(true, 200).count());
   }
 
   @Test
@@ -374,12 +367,12 @@ public abstract class BaseMStreamTest {
   @Test
   public void flatMapToPair() throws Exception {
     Map<String, Boolean> g = sc.stream("AB", "BC", "Aa").flatMapToPair(s -> {
-        List<Map.Entry<String, Boolean>> result = new ArrayList<>();
-        for (char c : s.toCharArray()) {
-          result.add(Tuple2.of(Character.toString(c), Character.isUpperCase(c)));
-        }
-        return result;
-      }
+                                                                         List<Map.Entry<String, Boolean>> result = new ArrayList<>();
+                                                                         for (char c : s.toCharArray()) {
+                                                                           result.add(Tuple2.of(Character.toString(c), Character.isUpperCase(c)));
+                                                                         }
+                                                                         return result;
+                                                                       }
     ).collectAsMap();
 
     assertTrue(g.get("A"));
@@ -391,7 +384,9 @@ public abstract class BaseMStreamTest {
 
   @Test
   public void mapToPair() throws Exception {
-    Map<String, Boolean> g = sc.stream("AB", "BC", "Aa").mapToPair(s -> Tuple2.of(s, StringUtils.isUpperCase(s))).collectAsMap();
+    Map<String, Boolean> g = sc.stream("AB", "BC", "Aa")
+                               .mapToPair(s -> Tuple2.of(s, StringUtils.isUpperCase(s)))
+                               .collectAsMap();
     assertTrue(g.get("AB"));
     assertTrue(g.get("BC"));
     assertFalse(g.get("Aa"));
@@ -410,7 +405,7 @@ public abstract class BaseMStreamTest {
       dA.add((double) s.length());
       iA.add(s.length());
       sA.add(Collections.singleton(s));
-      mA.add(Collect.map(s, s.length()));
+      mA.add(Maps.map(s, s.length()));
       cA.add(new HashMapCounter<>(s));
       if (s.length() == 1) {
         mcA.add(new HashMapMultiCounter<>(Tuple3.of(s.charAt(0), ' ', 1)));
@@ -437,7 +432,7 @@ public abstract class BaseMStreamTest {
   public void mapToDouble() throws Exception {
     assertEquals(
       6.0,
-      sc.stream("1.0","2.0","3.0").mapToDouble(Double::parseDouble).sum(),
+      sc.stream("1.0", "2.0", "3.0").mapToDouble(Double::parseDouble).sum(),
       0.0
     );
   }

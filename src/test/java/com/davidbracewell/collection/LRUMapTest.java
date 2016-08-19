@@ -21,6 +21,7 @@
 
 package com.davidbracewell.collection;
 
+import com.davidbracewell.collection.map.LRUMap;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

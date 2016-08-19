@@ -21,7 +21,7 @@
 
 package com.davidbracewell.stream;
 
-import com.davidbracewell.collection.PrimitiveArrayList;
+import com.davidbracewell.collection.list.PrimitiveArrayList;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.function.SerializableDoubleBinaryOperator;

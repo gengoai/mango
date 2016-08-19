@@ -21,7 +21,7 @@
 
 package com.davidbracewell.conversion;
 
-import com.davidbracewell.collection.PrimitiveArrayList;
+import com.davidbracewell.collection.list.PrimitiveArrayList;
 import com.davidbracewell.logging.Logger;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;

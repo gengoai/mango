@@ -19,8 +19,9 @@
  * under the License.
  */
 
-package com.davidbracewell.collection;
+package com.davidbracewell.collection.counter;
 
+import com.davidbracewell.collection.Collect;
 import com.davidbracewell.conversion.Cast;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ForwardingIterator;

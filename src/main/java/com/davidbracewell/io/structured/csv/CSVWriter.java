@@ -22,8 +22,8 @@
 package com.davidbracewell.io.structured.csv;
 
 import com.davidbracewell.SystemInfo;
-import com.davidbracewell.collection.HashMapIndex;
-import com.davidbracewell.collection.Index;
+import com.davidbracewell.collection.index.HashMapIndex;
+import com.davidbracewell.collection.index.Index;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.CSV;
