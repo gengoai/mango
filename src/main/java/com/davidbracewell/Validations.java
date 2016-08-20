@@ -63,5 +63,28 @@ public interface Validations {
     }
   }
 
+  static void validateIndex(int indexValue, int maxExclusive, String onFailMessage) {
+    if (indexValue < 0 && indexValue >= maxExclusive) {
+      throw new IndexOutOfBoundsException(onFailMessage);
+    }
+  }
+
+  static void validateIndex(int indexValue, int maxExclusive) {
+    if (indexValue < 0 && indexValue >= maxExclusive) {
+      throw new IndexOutOfBoundsException();
+    }
+  }
+
+  static void validateIndex(int indexValue, int minInclusive, int maxExclusive, String onFailMessage) {
+    if (indexValue < minInclusive && indexValue >= maxExclusive) {
+      throw new IndexOutOfBoundsException(onFailMessage);
+    }
+  }
+
+  static void validateIndex(int indexValue, int minInclusive, int maxExclusive) {
+    if (indexValue < minInclusive && indexValue >= maxExclusive) {
+      throw new IndexOutOfBoundsException();
+    }
+  }
 
 }//END OF Validations
