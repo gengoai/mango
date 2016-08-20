@@ -22,6 +22,7 @@
 package com.davidbracewell.stream;
 
 import com.davidbracewell.collection.Collect;
+import com.davidbracewell.collection.Streams;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.*;
 import com.davidbracewell.io.resource.Resource;
@@ -40,8 +41,6 @@ import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static com.davidbracewell.collection.CollectionHelpers.asStream;
 
 /**
  * The type Java m stream.
@@ -93,7 +92,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
    * @param iterable the iterable
    */
   public LocalStream(@NonNull final Iterable<T> iterable) {
-    this.stream = asStream(iterable);
+    this.stream = Streams.asStream(iterable);
   }
 
 
@@ -120,13 +119,13 @@ public class LocalStream<T> implements MStream<T>, Serializable {
 
   @Override
   public <R> MStream<R> flatMap(@NonNull SerializableFunction<? super T, Iterable<? extends R>> mapper) {
-    return new LocalStream<>(stream.flatMap(t -> asStream(mapper.apply(t)).map(Cast::<R>as)));
+    return new LocalStream<>(stream.flatMap(t -> Streams.asStream(mapper.apply(t)).map(Cast::<R>as)));
   }
 
   @Override
   public <R, U> MPairStream<R, U> flatMapToPair(SerializableFunction<? super T, ? extends Iterable<? extends Map.Entry<? extends R, ? extends U>>> function) {
     return new LocalPairStream<>(
-      stream.flatMap(t -> asStream(Cast.<Iterable<Map.Entry<R, U>>>as(function.apply(t))))
+      stream.flatMap(t -> Streams.asStream(Cast.<Iterable<Map.Entry<R, U>>>as(function.apply(t))))
     );
   }
 

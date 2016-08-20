@@ -30,13 +30,7 @@ import com.davidbracewell.tuple.Tuple2;
 import com.google.common.base.Throwables;
 import lombok.NonNull;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -107,7 +101,9 @@ public class CommandLineParser {
         }
       });
     }
-    this.applicationDescription = StringUtils.isNullOrBlank(applicationDescription) ? "Help" : applicationDescription.trim();
+    this.applicationDescription = StringUtils.isNullOrBlank(applicationDescription)
+                                  ? "Help"
+                                  : applicationDescription.trim();
     addOption(NamedOption.HELP);
     addOption(NamedOption.CONFIG);
     addOption(NamedOption.CONFIG_EXPLAIN);
@@ -242,31 +238,31 @@ public class CommandLineParser {
 
     Map<NamedOption, String> optionNames = new HashMap<>();
     optionSet.stream()
-      .forEach(option -> {
-        String out = Stream.concat(
-          Stream.of(option.getAliasSpecifications()),
-          Stream.of(option.getSpecification())
-        ).sorted((s1, s2) -> Integer.compare(s1.length(), s2.length()))
-          .collect(Collectors.joining(", "));
-        if (option.isRequired()) {
-          out += " *";
-        }
-        optionNames.put(option, out);
-      });
+             .forEach(option -> {
+               String out = Stream.concat(
+                 Stream.of(option.getAliasSpecifications()),
+                 Stream.of(option.getSpecification())
+               ).sorted((s1, s2) -> Integer.compare(s1.length(), s2.length()))
+                                  .collect(Collectors.joining(", "));
+               if (option.isRequired()) {
+                 out += " *";
+               }
+               optionNames.put(option, out);
+             });
 
     int maxArgName = optionNames.values().stream().mapToInt(String::length).max().orElse(10);
 
     optionNames.entrySet().stream()
-      .sorted(Map.Entry.comparingByValue())
-      .forEach(entry -> {
-        String arg = entry.getValue();
-        boolean insertSpace = !arg.startsWith("--");
-        if (insertSpace) {
-          System.err.print(" ");
-        }
-        System.err.printf("%1$-" + maxArgName + "s\t", arg);
-        System.err.println(entry.getKey().getDescription());
-      });
+               .sorted(Map.Entry.comparingByValue())
+               .forEach(entry -> {
+                 String arg = entry.getValue();
+                 boolean insertSpace = !arg.startsWith("--");
+                 if (insertSpace) {
+                   System.err.print(" ");
+                 }
+                 System.err.printf("%1$-" + maxArgName + "s\t", arg);
+                 System.err.println(entry.getKey().getDescription());
+               });
 
     System.err.println("===============================================");
     System.err.println("* = Required");
@@ -372,9 +368,11 @@ public class CommandLineParser {
    */
   public Set<Map.Entry<String, String>> getSetEntries() {
     Set<Map.Entry<String, String>> entries = optionSet.stream()
-      .filter(this::isSet)
-      .map(no -> Tuple2.of(no.getName(), Convert.convert(no.getValue(), String.class)))
-      .collect(Collectors.toSet());
+                                                      .filter(this::isSet)
+                                                      .map(no -> Tuple2.of(no.getName(),
+                                                                           Convert.convert(no.getValue(), String.class)
+                                                      ))
+                                                      .collect(Collectors.toSet());
     entries.addAll(unamedOptions.entrySet());
     return entries;
   }

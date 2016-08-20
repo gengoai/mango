@@ -8,7 +8,6 @@ import com.google.common.base.CharMatcher;
 import java.io.Serializable;
 import java.util.*;
 
-import static com.davidbracewell.collection.CollectionHelpers.asStream;
 import static com.davidbracewell.tuple.Tuples.$;
 
 /**
@@ -152,7 +151,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
     return new AbstractSet<String>() {
       @Override
       public Iterator<String> iterator() {
-        return asStream(root.subTreeIterator()).map(Map.Entry::getKey).iterator();
+        return Streams.asStream(root.subTreeIterator()).map(Map.Entry::getKey).iterator();
       }
 
       @Override
@@ -167,7 +166,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
     return new AbstractCollection<V>() {
       @Override
       public Iterator<V> iterator() {
-        return asStream(root.subTreeIterator()).map(Map.Entry::getValue).iterator();
+        return Streams.asStream(root.subTreeIterator()).map(Map.Entry::getValue).iterator();
       }
 
       @Override

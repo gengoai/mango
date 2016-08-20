@@ -21,14 +21,9 @@
 
 package com.davidbracewell.stream;
 
-import com.davidbracewell.collection.EnhancedDoubleStatistics;
+import com.davidbracewell.EnhancedDoubleStatistics;
 import com.davidbracewell.conversion.Cast;
-import com.davidbracewell.function.SerializableDoubleBinaryOperator;
-import com.davidbracewell.function.SerializableDoubleConsumer;
-import com.davidbracewell.function.SerializableDoubleFunction;
-import com.davidbracewell.function.SerializableDoublePredicate;
-import com.davidbracewell.function.SerializableDoubleUnaryOperator;
-import com.davidbracewell.function.SerializableRunnable;
+import com.davidbracewell.function.*;
 import lombok.NonNull;
 
 import java.io.Serializable;

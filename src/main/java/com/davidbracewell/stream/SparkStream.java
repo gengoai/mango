@@ -21,6 +21,7 @@
 
 package com.davidbracewell.stream;
 
+import com.davidbracewell.collection.Streams;
 import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.*;
@@ -35,8 +36,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collector;
-
-import static com.davidbracewell.collection.CollectionHelpers.asStream;
 
 /**
  * The type Spark stream.
@@ -144,7 +143,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
   @Override
   public <R> R collect(Collector<? super T, T, R> collector) {
-    return asStream(rdd.toLocalIterator()).collect(collector);
+    return Streams.asStream(rdd.toLocalIterator()).collect(collector);
   }
 
   @Override

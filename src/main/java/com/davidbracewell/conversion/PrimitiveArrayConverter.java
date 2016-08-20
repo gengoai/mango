@@ -39,7 +39,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
-import static com.davidbracewell.collection.CollectionHelpers.asArrayList;
+import static com.davidbracewell.collection.list.Lists.asArrayList;
 
 /**
  * The type Primitive array converter.

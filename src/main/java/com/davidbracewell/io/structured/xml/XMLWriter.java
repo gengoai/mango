@@ -23,6 +23,7 @@ package com.davidbracewell.io.structured.xml;
 
 import com.davidbracewell.DynamicEnum;
 import com.davidbracewell.Validations;
+import com.davidbracewell.collection.Streams;
 import com.davidbracewell.collection.counter.Counter;
 import com.davidbracewell.collection.counter.MultiCounter;
 import com.davidbracewell.conversion.Cast;
@@ -41,7 +42,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
 
-import static com.davidbracewell.collection.CollectionHelpers.asStream;
 import static com.davidbracewell.conversion.Cast.as;
 
 /**
@@ -203,7 +203,7 @@ public class XMLWriter extends StructuredWriter {
 
           @Override
           public int size() {
-            return (int) asStream(Cast.<Iterable<Object>>as(object)).count();
+            return (int) Streams.asStream(Cast.<Iterable<Object>>as(object)).count();
           }
         });
       } else if (object instanceof Iterator) {
@@ -215,7 +215,7 @@ public class XMLWriter extends StructuredWriter {
 
           @Override
           public int size() {
-            return (int) asStream(this::iterator).count();
+            return (int) Streams.asStream(this::iterator).count();
           }
         });
       } else if (object instanceof StructuredSerializable) {

@@ -21,7 +21,7 @@
 
 package com.davidbracewell.collection.counter;
 
-import com.davidbracewell.collection.Collect;
+import com.davidbracewell.Math2;
 import com.davidbracewell.conversion.Cast;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ForwardingIterator;
@@ -32,13 +32,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
@@ -305,7 +299,7 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
   @Override
   public Counter<T> adjustValuesSelf(@NonNull DoubleUnaryOperator function) {
     map.entrySet().forEach(entry -> entry.setValue(function.applyAsDouble(entry.getValue())));
-    sum.set(Collect.sum(map.values()));
+    sum.set(Math2.sum(map.values()));
     return this;
   }
 

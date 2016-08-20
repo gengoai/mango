@@ -1,6 +1,6 @@
 package com.davidbracewell.stream.accumulator;
 
-import com.davidbracewell.collection.EnhancedDoubleStatistics;
+import com.davidbracewell.EnhancedDoubleStatistics;
 
 /**
  * @author David B. Bracewell

@@ -23,7 +23,7 @@ package com.davidbracewell.collection.counter;
 
 
 import com.davidbracewell.Copyable;
-import com.davidbracewell.collection.Collect;
+import com.davidbracewell.Math2;
 import com.davidbracewell.collection.Sorting;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.resource.Resource;
@@ -76,7 +76,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
    * @return The average count in the counter
    */
   default double average() {
-    return Collect.analyze(counts()).getAverage();
+    return Math2.analyze(counts()).getAverage();
   }
 
   /**
@@ -260,7 +260,10 @@ public interface Counter<T> extends Copyable<Counter<T>> {
    * @return The sorted list of items.
    */
   default List<T> itemsByCount(boolean ascending) {
-    return Sorting.sortMapEntriesByValue(asMap(), ascending).stream().map(Map.Entry::getKey).collect(Collectors.toList());
+    return Sorting.sortMapEntriesByValue(asMap(), ascending)
+                  .stream()
+                  .map(Map.Entry::getKey)
+                  .collect(Collectors.toList());
   }
 
   /**
@@ -287,7 +290,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
    * @return The item with max count
    */
   default T max() {
-    Optional<Map.Entry<T, Double>> max = Collect.argMax(asMap().entrySet());
+    Optional<Map.Entry<T, Double>> max = Math2.argMax(asMap().entrySet());
     return max.map(Map.Entry::getKey).orElse(null);
   }
 
@@ -325,7 +328,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
    * @return The item with min count
    */
   default T min() {
-    Optional<Map.Entry<T, Double>> min = Collect.argMin(asMap().entrySet());
+    Optional<Map.Entry<T, Double>> min = Math2.argMin(asMap().entrySet());
     return min.map(Map.Entry::getKey).orElse(null);
   }
 
@@ -411,7 +414,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
    * @return The standard deviation of the counts in the counter
    */
   default double standardDeviation() {
-    return Collect.analyze(counts()).getSampleStandardDeviation();
+    return Math2.analyze(counts()).getSampleStandardDeviation();
   }
 
   /**
@@ -420,7 +423,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
    * @return The sum of the counts in the counter
    */
   default double sum() {
-    return Collect.sum(counts());
+    return Math2.sum(counts());
   }
 
   /**
@@ -429,7 +432,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
    * @return The sum of squares for the values
    */
   default double sumOfSquares() {
-    return Collect.analyze(counts()).getSumOfSquares();
+    return Math2.analyze(counts()).getSumOfSquares();
   }
 
   /**

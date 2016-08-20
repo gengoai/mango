@@ -41,7 +41,8 @@ import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static com.davidbracewell.collection.CollectionHelpers.asArrayList;
+import static com.davidbracewell.collection.list.Lists.asArrayList;
+
 
 /**
  * @author David B. Bracewell

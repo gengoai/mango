@@ -17,8 +17,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
-import static com.davidbracewell.collection.CollectionHelpers.asArrayList;
-import static com.davidbracewell.collection.CollectionHelpers.list;
+import static com.davidbracewell.collection.list.Lists.asArrayList;
+import static com.davidbracewell.collection.list.Lists.list;
 import static org.junit.Assert.*;
 
 /**

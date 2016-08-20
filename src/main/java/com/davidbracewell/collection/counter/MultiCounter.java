@@ -21,7 +21,7 @@
 
 package com.davidbracewell.collection.counter;
 
-import com.davidbracewell.collection.Collect;
+import com.davidbracewell.Math2;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.StructuredFormat;
@@ -84,7 +84,7 @@ public interface MultiCounter<K, V> {
    * @return The average count in the counter
    */
   default double average() {
-    return Collect.analyze(counts()).getAverage();
+    return Math2.analyze(counts()).getAverage();
   }
 
   /**
@@ -317,7 +317,7 @@ public interface MultiCounter<K, V> {
    * @return The maximum count in the counter
    */
   default double maximumCount() {
-    return Collect.analyze(counts()).getMax();
+    return Math2.analyze(counts()).getMax();
   }
 
   /**
@@ -334,7 +334,7 @@ public interface MultiCounter<K, V> {
    * @return The minimum count in the counter
    */
   default double minimumCount() {
-    return Collect.analyze(counts()).getMin();
+    return Math2.analyze(counts()).getMin();
   }
 
   /**
@@ -399,7 +399,7 @@ public interface MultiCounter<K, V> {
    * @return The standard deviation of the counts in the counter
    */
   default double standardDeviation() {
-    return Collect.analyze(counts()).getSampleStandardDeviation();
+    return Math2.analyze(counts()).getSampleStandardDeviation();
   }
 
   /**
@@ -408,7 +408,7 @@ public interface MultiCounter<K, V> {
    * @return The sum of the counts in the counter
    */
   default double sum() {
-    return Collect.analyze(counts()).getSum();
+    return Math2.analyze(counts()).getSum();
   }
 
   /**
@@ -417,7 +417,7 @@ public interface MultiCounter<K, V> {
    * @return The sum of squares for the values
    */
   default double sumOfSquares() {
-    return Collect.analyze(counts()).getSumOfSquares();
+    return Math2.analyze(counts()).getSumOfSquares();
   }
 
   /**
@@ -442,7 +442,11 @@ public interface MultiCounter<K, V> {
    * @throws IOException the io exception
    */
   default void write(@NonNull StructuredFormat structuredFormat, @NonNull Resource output) throws IOException {
-    write(structuredFormat, output, item -> Convert.convert(item, String.class), item -> Convert.convert(item, String.class));
+    write(structuredFormat,
+          output,
+          item -> Convert.convert(item, String.class),
+          item -> Convert.convert(item, String.class)
+    );
   }
 
   /**

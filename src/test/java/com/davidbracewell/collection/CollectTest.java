@@ -29,7 +29,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.davidbracewell.collection.CollectionHelpers.list;
+import static com.davidbracewell.collection.list.Lists.list;
 import static org.junit.Assert.*;
 
 /**

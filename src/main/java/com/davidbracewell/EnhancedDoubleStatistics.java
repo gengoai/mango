@@ -19,7 +19,7 @@
  * under the License.
  */
 
-package com.davidbracewell.collection;
+package com.davidbracewell;
 
 import com.davidbracewell.function.SerializableDoubleConsumer;
 import lombok.ToString;
@@ -47,7 +47,7 @@ public final class EnhancedDoubleStatistics implements SerializableDoubleConsume
     count++;
   }
 
-  public void clear(){
+  public void clear() {
     this.min = Double.POSITIVE_INFINITY;
     this.max = Double.NEGATIVE_INFINITY;
     this.sum = 0;
@@ -130,7 +130,7 @@ public final class EnhancedDoubleStatistics implements SerializableDoubleConsume
   public double getSampleStandardDeviation() {
     if (getCount() <= 0) {
       return Double.NaN;
-    } else if ( getCount() == 1){
+    } else if (getCount() == 1) {
       return 0d;
     }
     return Math.sqrt(getSampleVariance());

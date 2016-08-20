@@ -1,20 +1,14 @@
 package com.davidbracewell.collection.set;
 
 import com.davidbracewell.collection.Collect;
+import com.davidbracewell.collection.Streams;
 import lombok.NonNull;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static com.davidbracewell.collection.CollectionHelpers.asStream;
 
 
 /**
@@ -145,7 +139,7 @@ public final class Sets {
     if (others == null) {
       return Collections.singleton(first);
     }
-    return createSet(supplier, Stream.concat(asStream(first), asStream(others)));
+    return createSet(supplier, Stream.concat(Streams.asStream(first), Streams.asStream(others)));
   }
 
   /**
@@ -175,7 +169,7 @@ public final class Sets {
    * @return the set
    */
   public static <T, Y extends T> Set<T> asSet(Iterator<Y> iterator) {
-    return createSet(HashSet::new, asStream(iterator));
+    return createSet(HashSet::new, Streams.asStream(iterator));
   }
 
   /**
@@ -187,7 +181,7 @@ public final class Sets {
    * @return the set
    */
   public static <T, Y extends T> Set<T> asTreeSet(Iterator<Y> iterator) {
-    return createSet(TreeSet::new, asStream(iterator));
+    return createSet(TreeSet::new, Streams.asStream(iterator));
   }
 
   /**
@@ -199,7 +193,7 @@ public final class Sets {
    * @return the set
    */
   public static <T, Y extends T> Set<T> asLinkedHashSet(Iterator<Y> iterator) {
-    return createSet(LinkedHashSet::new, asStream(iterator));
+    return createSet(LinkedHashSet::new, Streams.asStream(iterator));
   }
 
   /**
@@ -211,7 +205,7 @@ public final class Sets {
    * @return the set
    */
   public static <T, Y extends T> Set<T> asSet(Iterable<Y> iterable) {
-    return createSet(HashSet::new, asStream(iterable));
+    return createSet(HashSet::new, Streams.asStream(iterable));
   }
 
   /**
@@ -223,7 +217,7 @@ public final class Sets {
    * @return the set
    */
   public static <T, Y extends T> Set<T> asTreeSet(Iterable<Y> iterable) {
-    return createSet(TreeSet::new, asStream(iterable));
+    return createSet(TreeSet::new, Streams.asStream(iterable));
   }
 
   /**
@@ -235,7 +229,7 @@ public final class Sets {
    * @return the set
    */
   public static <T, Y extends T> Set<T> asLinkedHashSet(Iterable<Y> iterable) {
-    return createSet(LinkedHashSet::new, asStream(iterable));
+    return createSet(LinkedHashSet::new, Streams.asStream(iterable));
   }
 
   /**

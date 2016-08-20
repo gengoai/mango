@@ -21,6 +21,7 @@
 
 package com.davidbracewell.collection.map;
 
+import com.davidbracewell.collection.Streams;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.function.Unchecked;
 import com.davidbracewell.io.CSV;
@@ -35,18 +36,11 @@ import lombok.NonNull;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static com.davidbracewell.collection.CollectionHelpers.asStream;
 import static com.davidbracewell.tuple.Tuples.$;
 
 /**
@@ -333,6 +327,12 @@ public interface Maps {
                      $(key9, value9),
                      $(key10, value10)
     );
+  }
+
+  static <K, V> void put(@NonNull Map<K, V> map, Map.Entry<K, V> entry) {
+    if (entry != null) {
+      map.put(entry.getKey(), entry.getValue());
+    }
   }
 
 
@@ -920,7 +920,7 @@ public interface Maps {
       return Collections.emptyMap();
     }
     final Map<K, V> map = mapSupplier.get();
-    asStream(entries).forEach(e -> map.put(e.getKey(), e.getValue()));
+    Streams.asStream(entries).forEach(e -> map.put(e.getKey(), e.getValue()));
     return map;
   }
 

@@ -194,13 +194,19 @@ public final class NamedOption {
 
       if (Collection.class.isAssignableFrom(type)) {
 
-        Class<?> genericType = field == null ? String.class : (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
+        Class<?> genericType = field == null
+                               ? String.class
+                               : (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
         this.value = Convert.convert(optionValue, type, genericType);
 
       } else if (Map.class.isAssignableFrom(type)) {
 
-        Class<?> keyType = field == null ? String.class : (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
-        Class<?> valueType = field == null ? String.class : (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[1];
+        Class<?> keyType = field == null
+                           ? String.class
+                           : (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
+        Class<?> valueType = field == null
+                             ? String.class
+                             : (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[1];
         this.value = Convert.convert(optionValue, type, keyType, valueType);
 
       } else {
@@ -228,36 +234,37 @@ public final class NamedOption {
    * Shows help if <code>-h</code> or <code>--help</code> is given.</li>
    */
   public static final NamedOption HELP = NamedOption.builder()
-    .name("h")
-    .type(Boolean.class)
-    .description("Shows this help")
-    .alias("help")
-    .defaultValue(false)
-    .build();
+                                                    .name("h")
+                                                    .type(Boolean.class)
+                                                    .description("Shows this help")
+                                                    .alias("help")
+                                                    .defaultValue(false)
+                                                    .build();
 
   /**
    * Specifies a configuration resource to load when <code>--config</code> is given.
    */
   public static final NamedOption CONFIG = NamedOption.builder()
-    .name("config")
-    .type(Resource.class)
-    .description("Configuration file that can be specified on the command line.")
-    .build();
+                                                      .name("config")
+                                                      .type(Resource.class)
+                                                      .description(
+                                                        "Configuration file that can be specified on the command line.")
+                                                      .build();
 
   /**
    * Shows how the current configuration was created with the lineage of each
    * property when <code>--config-explain</code> is given.
    */
   public static final NamedOption CONFIG_EXPLAIN = NamedOption.builder()
-    .name("config-explain")
-    .type(Boolean.class)
-    .description("Explains how the config values were set.")
-    .defaultValue(false)
-    .alias("config_explain")
-    .alias("config_dump")
-    .alias("config-dump")
-    .alias("dump_config")
-    .alias("dump-config")
-    .build();
+                                                              .name("config-explain")
+                                                              .type(Boolean.class)
+                                                              .description("Explains how the config values were set.")
+                                                              .defaultValue(false)
+                                                              .alias("config_explain")
+                                                              .alias("config_dump")
+                                                              .alias("config-dump")
+                                                              .alias("dump_config")
+                                                              .alias("dump-config")
+                                                              .build();
 
 }//END OF NamedOption

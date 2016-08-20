@@ -29,29 +29,10 @@ import com.google.common.base.Throwables;
 import lombok.NonNull;
 
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Deque;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Queue;
-import java.util.Set;
-import java.util.Stack;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BinaryOperator;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static com.davidbracewell.collection.CollectionHelpers.asStream;
 
 /**
  * Static methods for working with collections and iterables.
@@ -59,12 +40,6 @@ import static com.davidbracewell.collection.CollectionHelpers.asStream;
  * @author David B. Bracewell
  */
 public interface Collect {
-
-  static <K, V> void put(@NonNull Map<K, V> map, Map.Entry<K, V> entry) {
-    if (entry != null) {
-      map.put(entry.getKey(), entry.getValue());
-    }
-  }
 
   /**
    * Wraps an <code>array</code> as an <code>Iterable</code>
@@ -79,7 +54,6 @@ public interface Collect {
     if (array.getClass().getComponentType().isPrimitive()) {
       return new PrimitiveArrayList<>(array, itemClass);
     }
-
     return () -> new Iterator<T>() {
       int pos = 0;
 
@@ -118,7 +92,7 @@ public interface Collect {
    * @return the optional
    */
   static <T> Optional<T> first(Iterable<T> iterable) {
-    return asStream(iterable).findFirst();
+    return Streams.asStream(iterable).findFirst();
   }
 
   /**
@@ -129,63 +103,9 @@ public interface Collect {
    * @return the optional
    */
   static <T> Optional<T> first(Iterator<T> iterator) {
-    return asStream(iterator).findFirst();
+    return Streams.asStream(iterator).findFirst();
   }
 
-
-  /**
-   * Sum double.
-   *
-   * @param iterable the iterable
-   * @return the double
-   */
-  static double sum(Iterable<? extends Number> iterable) {
-    return analyze(iterable).getSum();
-  }
-
-
-  static EnhancedDoubleStatistics analyze(Iterable<? extends Number> iterable) {
-    if (iterable == null) {
-      return new EnhancedDoubleStatistics();
-    }
-    return asStream(iterable)
-      .mapToDouble(Number::doubleValue)
-      .collect(EnhancedDoubleStatistics::new, EnhancedDoubleStatistics::accept, EnhancedDoubleStatistics::combine);
-  }
-
-  /**
-   * Arg max.
-   *
-   * @param <K>        the type parameter
-   * @param <V>        the type parameter
-   * @param <E>        the type parameter
-   * @param collection the collection
-   * @return the optional
-   */
-  static <K, V extends Comparable, E extends Map.Entry<K, V>> Optional<E> argMax(Collection<? extends E> collection) {
-    if (collection == null) {
-      return Optional.empty();
-    }
-    Comparator<Map.Entry<K, V>> comparator = Sorting.mapEntryComparator(false, true);
-    return collection.stream().reduce(BinaryOperator.maxBy(comparator)).map(Cast::as);
-  }
-
-  /**
-   * Arg min.
-   *
-   * @param <K>        the type parameter
-   * @param <V>        the type parameter
-   * @param <E>        the type parameter
-   * @param collection the collection
-   * @return the optional
-   */
-  static <K, V extends Comparable, E extends Map.Entry<K, V>> Optional<E> argMin(Collection<? extends E> collection) {
-    if (collection == null) {
-      return Optional.empty();
-    }
-    Comparator<Map.Entry<K, V>> comparator = Sorting.mapEntryComparator(false, true);
-    return collection.stream().reduce(BinaryOperator.minBy(comparator)).map(Cast::as);
-  }
 
   /**
    * <p>Creates a default instance of the collection type. If the passed in class is an implementation then that
@@ -274,37 +194,16 @@ public interface Collect {
     return Stream.concat(c1.stream(), c2.stream()).collect(Collectors.toCollection(supplier));
   }
 
-  /**
-   * Flatten list.
-   *
-   * @param <T>  the type parameter
-   * @param list the list
-   * @return the list
-   */
-  static <T> List<T> flatten(Collection<? extends Iterable<T>> list) {
-    if (list == null) {
-      return Collections.emptyList();
-    }
-    return list.stream()
-               .filter(Objects::nonNull)
-               .flatMap(CollectionHelpers::asStream)
-               .collect(Collectors.toList());
+  static <T> Collection<T> union(Collection<? extends T> c1, Collection<? extends T> c2) {
+    return union(ArrayList::new, c1, c2);
   }
 
-  /**
-   * Zip stream.
-   *
-   * @param <T>     the type parameter
-   * @param <U>     the type parameter
-   * @param stream1 the stream 1
-   * @param stream2 the stream 2
-   * @return the stream
-   */
-  static <T, U> Stream<Map.Entry<T, U>> zip(@NonNull final Stream<T> stream1, @NonNull final Stream<U> stream2) {
-    if (stream1 == null || stream2 == null) {
-      return Stream.empty();
-    }
-    return zip(stream1.iterator(), stream2.iterator());
+  static <T> Collection<T> difference(Collection<? extends T> c1, Collection<? extends T> c2) {
+    return difference(ArrayList::new, c1, c2);
+  }
+
+  static <T> Collection<T> intersection(Collection<? extends T> c1, Collection<? extends T> c2) {
+    return intersection(ArrayList::new, c1, c2);
   }
 
   /**
@@ -317,7 +216,7 @@ public interface Collect {
    * @return the stream
    */
   static <T, U> Stream<Map.Entry<T, U>> zip(@NonNull final Iterator<T> iterator1, @NonNull final Iterator<U> iterator2) {
-    return asStream(new Iterator<Map.Entry<T, U>>() {
+    return Streams.asStream(new Iterator<Map.Entry<T, U>>() {
       @Override
       public boolean hasNext() {
         return iterator1.hasNext() && iterator2.hasNext();
@@ -331,30 +230,6 @@ public interface Collect {
         return new Tuple2<>(iterator1.next(), iterator2.next());
       }
     });
-  }
-
-
-  /**
-   * Zip with index.
-   *
-   * @param <T>    the type parameter
-   * @param stream the stream
-   * @return the stream
-   */
-  static <T> Stream<Map.Entry<T, Integer>> zipWithIndex(Stream<T> stream) {
-    if (stream == null) {
-      return Stream.empty();
-    }
-    final AtomicInteger integer = new AtomicInteger();
-    return stream.map(t -> new Tuple2<>(t, integer.getAndIncrement()));
-  }
-
-
-  static <T> List<T> ensureSize(@NonNull List<T> list, int desiredSize, T defaultValue) {
-    while (list.size() <= desiredSize) {
-      list.add(defaultValue);
-    }
-    return list;
   }
 
 

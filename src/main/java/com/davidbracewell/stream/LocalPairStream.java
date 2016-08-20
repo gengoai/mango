@@ -21,6 +21,7 @@
 
 package com.davidbracewell.stream;
 
+import com.davidbracewell.collection.Streams;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.*;
 import com.davidbracewell.tuple.Tuple2;
@@ -31,8 +32,6 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static com.davidbracewell.collection.CollectionHelpers.asStream;
 
 /**
  * @author David B. Bracewell
@@ -109,7 +108,7 @@ public class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
 
   @Override
   public MPairStream<T, U> reduceByKey(SerializableBinaryOperator<U> operator) {
-    return groupByKey().mapToPair((t, u) -> Tuple2.of(t, asStream(u).reduce(operator).orElse(null)));
+    return groupByKey().mapToPair((t, u) -> Tuple2.of(t, Streams.asStream(u).reduce(operator).orElse(null)));
   }
 
 
