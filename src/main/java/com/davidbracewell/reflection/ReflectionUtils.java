@@ -21,10 +21,10 @@
 
 package com.davidbracewell.reflection;
 
+import com.davidbracewell.Primitives;
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.logging.Logger;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.primitives.Primitives;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 

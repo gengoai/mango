@@ -21,10 +21,10 @@
 
 package com.davidbracewell.conversion;
 
+import com.davidbracewell.Primitives;
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.*;
 import com.davidbracewell.logging.Logger;
-import com.google.common.primitives.Bytes;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -38,7 +38,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Blob;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.function.Function;
 
 /**
@@ -149,9 +148,9 @@ public final class IOConverter {
       } else if (input instanceof Character[]) {
         return new ByteArrayInputStream(new String(Convert.convert(input, char[].class)).getBytes());
       } else if (input instanceof byte[]) {
-        return new ByteArrayInputStream(Cast.<byte[]>as(input));
+        return new ByteArrayInputStream(Cast.as(input));
       } else if (input instanceof Byte[]) {
-        return new ByteArrayInputStream(Bytes.toArray(Arrays.asList(Cast.<Byte[]>as(input))));
+        return new ByteArrayInputStream(Primitives.toByteArray(Cast.<Byte[]>as(input)));
       } else if (input instanceof Blob) {
         try {
           return Cast.<Blob>as(input).getBinaryStream();

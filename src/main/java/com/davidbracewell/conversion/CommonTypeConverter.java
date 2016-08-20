@@ -22,13 +22,12 @@
 package com.davidbracewell.conversion;
 
 import com.davidbracewell.DateParser;
+import com.davidbracewell.Primitives;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.logging.Logger;
 import com.davidbracewell.reflection.ReflectionUtils;
 import com.davidbracewell.string.CSVFormatter;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.primitives.Bytes;
-import com.google.common.primitives.Chars;
 
 import java.io.File;
 import java.io.InputStream;
@@ -39,7 +38,10 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.sql.Blob;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -171,9 +173,9 @@ public class CommonTypeConverter {
       } else if (input instanceof byte[]) {
         return new String(Cast.as(input, byte[].class));
       } else if (input instanceof Character[]) {
-        return new String(Chars.toArray(Arrays.asList(Cast.as(input, Character[].class))));
+        return new String(Primitives.toCharArray(Cast.as(input, Character[].class)));
       } else if (input instanceof Byte[]) {
-        return new String(Bytes.toArray(Arrays.asList(Cast.as(input, Byte[].class))));
+        return new String(Primitives.toByteArray(Cast.as(input, Byte[].class)));
       } else if (input instanceof File || input instanceof Path || input instanceof URI || input instanceof URL || input instanceof InputStream || input instanceof Blob || input instanceof Reader) {
         byte[] bytes = PrimitiveArrayConverter.BYTE.apply(input);
         if (bytes != null) {
@@ -195,7 +197,7 @@ public class CommonTypeConverter {
         CSVFormatter mapFormat = CSV.builder().delimiter('=').formatter();
         Cast.<Map<?, ?>>as(input).forEach((o, o2) -> builder.append(
           mapFormat.format(Convert.convert(o, String.class), Convert.convert(o2, String.class))
-        ));
+                                                                   ));
         return builder.append("}").toString();
       }
 
