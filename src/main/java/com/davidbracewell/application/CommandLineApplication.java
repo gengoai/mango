@@ -37,7 +37,7 @@ import java.io.Serializable;
  * Child classes should implement the <code>programLogic</code> method and create the following main method:
  * <code>
  * public static void main(String[] args) {
- * new MyApplication.run(args);
+ *    new MyApplication.run(args);
  * }
  * </code>
  * where <code>MyApplication</code> is the name of your child class.

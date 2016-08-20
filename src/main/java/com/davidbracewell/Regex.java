@@ -1,7 +1,6 @@
 package com.davidbracewell;
 
 import com.davidbracewell.string.StringUtils;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -43,6 +42,7 @@ public final class Regex implements Serializable {
    * To chars string.
    *
    * @param p the p
+   *
    * @return the string
    */
   static String toChars(String p) {
@@ -56,6 +56,7 @@ public final class Regex implements Serializable {
    * Followed by regex.
    *
    * @param regex the regex
+   *
    * @return the regex
    */
   public Regex then(Regex regex) {
@@ -79,6 +80,7 @@ public final class Regex implements Serializable {
    * Or regex.
    *
    * @param others the others
+   *
    * @return the regex
    */
   public Regex or(@NonNull Regex... others) {
@@ -92,6 +94,7 @@ public final class Regex implements Serializable {
    * And regex.
    *
    * @param other the other
+   *
    * @return the regex
    */
   public Regex and(@NonNull Regex other) {
@@ -105,6 +108,7 @@ public final class Regex implements Serializable {
    * Group regex.
    *
    * @param name the name
+   *
    * @return the regex
    */
   public Regex group(String name) {
@@ -148,6 +152,7 @@ public final class Regex implements Serializable {
    * N times regex.
    *
    * @param n the n
+   *
    * @return the regex
    */
   public Regex nTimes(int n) {
@@ -159,6 +164,7 @@ public final class Regex implements Serializable {
    *
    * @param min the min
    * @param max the max
+   *
    * @return the regex
    */
   public Regex range(int min, int max) {
@@ -217,6 +223,7 @@ public final class Regex implements Serializable {
    * To pattern pattern.
    *
    * @param flags the flags
+   *
    * @return the pattern
    */
   public Pattern toPattern(int flags) {

@@ -51,7 +51,9 @@ public final class DateParser implements Serializable {
    * <p>Attempt to parse the date represented in the input string.</p>
    *
    * @param input the input string representing the date
+   *
    * @return the parsed date
+   *
    * @throws ParseException Couldn't parse the string into a valid date
    */
   public Date parse(String input) throws ParseException {
@@ -66,6 +68,7 @@ public final class DateParser implements Serializable {
    * <p>Attempt to parse the date represented in the input string suppressing an errors.</p>
    *
    * @param input the input string representing the date
+   *
    * @return An optional representing the parsed date or null if not parsable.
    */
   public Optional<Date> parseQuietly(String input) {
@@ -86,6 +89,7 @@ public final class DateParser implements Serializable {
    *
    * @param input       the input string representing the date
    * @param defaultDate the default date
+   *
    * @return The parsed date or the default if the input was not parsable.
    */
   public Date parseOrDefault(String input, @NonNull Date defaultDate) {

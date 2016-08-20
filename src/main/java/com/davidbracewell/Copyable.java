@@ -26,6 +26,7 @@ package com.davidbracewell;
  * to determine if the copy is deep or shallow.</p>
  *
  * @param <E> The type of object that being copied
+ *
  * @author David B. Bracewell
  */
 public interface Copyable<E> {

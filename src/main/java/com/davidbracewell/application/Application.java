@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
 
 /**
  * <p>Generic interface for building applications that use Mango's {@link Config} and {@link CommandLineParser} to
- * reduce the boilerplate of  application configuration and command line parsing.</p>
+ * reduce the boilerplate of application configuration and command line parsing.</p>
  *
  * @author David B. Bracewell
  */
