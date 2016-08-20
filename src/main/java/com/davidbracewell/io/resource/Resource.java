@@ -314,9 +314,7 @@ public interface Resource {
    * @throws IOException the io exception
    */
   default MStream<String> lines() throws IOException {
-    try (BufferedReader reader = new BufferedReader(reader())) {
-      return new LocalStream<>(reader.lines());
-    }
+    return new LocalStream<>(new BufferedReader(reader()).lines());
   }
 
 

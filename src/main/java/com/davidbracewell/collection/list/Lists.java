@@ -52,7 +52,7 @@ public final class Lists {
   }
 
   public static <T> List<T> ensureSize(@NonNull List<T> list, int desiredSize, T defaultValue) {
-    while (list.size() <= desiredSize) {
+    while (list.size() < desiredSize) {
       list.add(defaultValue);
     }
     return list;

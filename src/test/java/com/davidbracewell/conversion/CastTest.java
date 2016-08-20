@@ -25,8 +25,7 @@ import org.junit.Test;
 
 import java.util.*;
 
-import static com.davidbracewell.collection.Sets.asTreeSet;
-import static com.davidbracewell.collection.Sets.treeSet;
+import static com.davidbracewell.collection.Sets.*;
 import static com.davidbracewell.collection.list.Lists.asArrayList;
 import static com.davidbracewell.collection.list.Lists.list;
 import static com.davidbracewell.conversion.Cast.as;
@@ -85,7 +84,7 @@ public class CastTest {
     List<?> l = Arrays.asList(1.0, 2.0, 3.0);
     Collection<?> c = l;
     Iterable<?> i = l;
-    Set<?> s = new HashSet<>();
+    Set<?> s = asSet(l);
 
     assertEquals(list(1d, 2d, 3d), Cast.<Double>cast(l));
     assertEquals(list(1d, 2d, 3d), asArrayList(Cast.<Double>cast(l.iterator())));
