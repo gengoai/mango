@@ -21,9 +21,9 @@
 
 package com.davidbracewell.conversion;
 
+import com.davidbracewell.Defaults;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.logging.Logger;
-import com.google.common.base.Defaults;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -240,7 +240,10 @@ public final class Convert {
    */
   @SuppressWarnings("unchecked")
   public static <KEY, VALUE, MAP extends Map<KEY, VALUE>> MAP convert(Object object, Class<?> mapClass, Class<KEY> keyClass, Class<VALUE> valueClass) {
-    return Cast.as(new MapConverter<>(getConverter(keyClass), getConverter(valueClass), mapClass).apply(object));
+    return Cast.as(new MapConverter<KEY, VALUE, MAP>(getConverter(keyClass),
+                                                     getConverter(valueClass),
+                                                     Cast.as(mapClass)
+    ).apply(object));
   }
 
 

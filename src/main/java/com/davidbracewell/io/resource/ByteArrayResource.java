@@ -23,8 +23,8 @@ package com.davidbracewell.io.resource;
 
 import com.davidbracewell.stream.MStream;
 import com.davidbracewell.stream.StreamingContext;
-import com.google.common.base.Preconditions;
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
 import java.io.*;
 
@@ -52,8 +52,8 @@ public class ByteArrayResource extends BaseResource implements NonTraversableRes
    *
    * @param b an initial byte array
    */
-  public ByteArrayResource(byte[] b) {
-    this(Preconditions.checkNotNull(b), 0, b.length);
+  public ByteArrayResource(@NonNull byte[] b) {
+    this(b, 0, b.length);
   }
 
   /**
@@ -63,8 +63,7 @@ public class ByteArrayResource extends BaseResource implements NonTraversableRes
    * @param offset the offset into the byte array
    * @param len    the number of bytes to copy
    */
-  public ByteArrayResource(byte[] b, int offset, int len) {
-    Preconditions.checkNotNull(b);
+  public ByteArrayResource(@NonNull byte[] b, int offset, int len) {
     this.buffer = new ByteArrayOutputStream();
     this.buffer.write(b, offset, len);
   }

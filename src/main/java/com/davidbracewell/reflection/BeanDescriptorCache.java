@@ -22,12 +22,10 @@
 package com.davidbracewell.reflection;
 
 import com.davidbracewell.config.Config;
-import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-
-import java.util.concurrent.ExecutionException;
+import lombok.SneakyThrows;
 
 /**
  * A cache of {@link BeanDescriptor} to speed up performance of using {@link BeanMap}s. The cache specification be set
@@ -79,12 +77,9 @@ public class BeanDescriptorCache {
    * @param clazz The class for which a {@link BeanDescriptor} is to be created.
    * @return A {@link BeanDescriptor} for the given class
    */
+  @SneakyThrows
   public synchronized BeanDescriptor get(Class<?> clazz) {
-    try {
-      return cache.get(clazz);
-    } catch (ExecutionException e) {
-      throw Throwables.propagate(e);
-    }
+    return cache.get(clazz);
   }
 
 }// END OF CLASS BeanDescriptorCache

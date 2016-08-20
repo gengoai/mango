@@ -23,7 +23,6 @@ package com.davidbracewell.io.resource;
 
 import com.davidbracewell.io.FileUtils;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.*;
@@ -33,6 +32,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+
+import static com.davidbracewell.Validations.validateState;
 
 /**
  * @author David B. Bracewell
@@ -45,7 +46,7 @@ public abstract class BaseResource implements Resource, Serializable {
 
   @Override
   public final Charset getCharset() {
-    if( charset == null ){
+    if (charset == null) {
       return StandardCharsets.UTF_8;
     }
     return charset;
@@ -80,7 +81,7 @@ public abstract class BaseResource implements Resource, Serializable {
 
   @Override
   public InputStream inputStream() throws IOException {
-    Preconditions.checkState(canRead(), "This is resource cannot be read from.");
+    validateState(canRead(), "This is resource cannot be read from.");
     PushbackInputStream is = new PushbackInputStream(createInputStream(), 2);
     if (FileUtils.isCompressed(is)) {
       setIsCompressed(true);
@@ -91,7 +92,7 @@ public abstract class BaseResource implements Resource, Serializable {
 
   @Override
   public OutputStream outputStream() throws IOException {
-    Preconditions.checkState(canWrite(), "This is resource cannot be written to.");
+    validateState(canWrite(), "This is resource cannot be written to.");
     if (isCompressed) {
       return new GZIPOutputStream(createOutputStream());
     }

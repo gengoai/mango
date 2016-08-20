@@ -23,7 +23,6 @@ package com.davidbracewell.io;
 
 
 import com.davidbracewell.string.StringUtils;
-import com.google.common.base.Strings;
 
 import java.io.IOException;
 import java.io.PushbackInputStream;
@@ -42,7 +41,7 @@ public class FileUtils {
   private static final char WINDOWS_SEPARATOR = '\\';
 
   public static Pattern createFilePattern(String filePattern) {
-    filePattern = Strings.isNullOrEmpty(filePattern) ? "\\*" : filePattern;
+    filePattern = StringUtils.isNullOrBlank(filePattern) ? "\\*" : filePattern;
     filePattern = filePattern.replaceAll("\\.", "\\.");
     filePattern = filePattern.replaceAll("\\*", ".*");
     return Pattern.compile("^" + filePattern + "$");

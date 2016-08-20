@@ -22,14 +22,14 @@
 package com.davidbracewell.stream;
 
 import com.davidbracewell.collection.Collect;
+import com.davidbracewell.collection.Sorting;
 import com.davidbracewell.collection.Streams;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.*;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.tuple.Tuple2;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Ordering;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -208,11 +208,17 @@ public class LocalStream<T> implements MStream<T>, Serializable {
 
   @Override
   public MStream<T> limit(long number) {
+    if (number <= 0) {
+      return StreamingContext.local().empty();
+    }
     return new LocalStream<>(stream.limit(number));
   }
 
   @Override
   public List<T> take(int n) {
+    if (n <= 0) {
+      return Collections.emptyList();
+    }
     return stream.limit(n).collect(Collectors.toList());
   }
 
@@ -248,7 +254,10 @@ public class LocalStream<T> implements MStream<T>, Serializable {
   @Override
   public <U> MPairStream<U, Iterable<T>> groupBy(@NonNull SerializableFunction<? super T, ? extends U> function) {
     return new LocalPairStream<>(
-      stream.collect(Collectors.groupingBy(function)).entrySet().stream().map(e -> Tuple2.<U, Iterable<T>>of(e.getKey(), e.getValue()))
+      stream.collect(Collectors.groupingBy(function))
+            .entrySet()
+            .stream()
+            .map(e -> Tuple2.<U, Iterable<T>>of(e.getKey(), e.getValue()))
     );
   }
 
@@ -269,7 +278,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
 
   @Override
   public MStream<T> sorted(boolean ascending) {
-    Comparator<T> comparator = Cast.as(ascending ? Ordering.natural() : Ordering.natural().reverse());
+    Comparator<T> comparator = Cast.as(ascending ? Sorting.natural() : Sorting.natural().reversed());
     return new LocalStream<>(stream.sorted(comparator));
   }
 
@@ -303,15 +312,14 @@ public class LocalStream<T> implements MStream<T>, Serializable {
   }
 
   @Override
+  @SneakyThrows
   public void saveAsTextFile(@NonNull Resource location) {
     try (BufferedWriter writer = new BufferedWriter(location.writer())) {
       stream.forEach(Unchecked.consumer(o -> {
-          writer.write(o.toString());
-          writer.newLine();
-        }
-      ));
-    } catch (IOException e) {
-      throw Throwables.propagate(e);
+                                          writer.write(o.toString());
+                                          writer.newLine();
+                                        }
+                                       ));
     }
   }
 
@@ -328,8 +336,8 @@ public class LocalStream<T> implements MStream<T>, Serializable {
   public MStream<T> shuffle(@NonNull Random random) {
     return new LocalStream<>(
       stream.map(t -> Tuple2.of(random.nextDouble(), t))
-        .sorted(Map.Entry.comparingByKey())
-        .map(Tuple2::getValue)
+            .sorted(Map.Entry.comparingByKey())
+            .map(Tuple2::getValue)
     );
   }
 

@@ -25,7 +25,6 @@ import com.davidbracewell.collection.Collect;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.structured.csv.CSVReader;
 import com.davidbracewell.logging.Logger;
-import com.google.common.base.Throwables;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -42,6 +41,7 @@ public final class CollectionConverter {
   /**
    * Converts an object to an iterable. Will only return null if the input is null
    */
+
   public static final Function<Object, Iterable<?>> ITERABLE = object -> {
     if (object == null) {
       return Collections.emptyList();
@@ -62,7 +62,7 @@ public final class CollectionConverter {
         }
         return Cast.as(list);
       } catch (IOException e) {
-        throw Throwables.propagate(e);
+        throw new RuntimeException(e);
       }
     }
     return Cast.as(Collections.singletonList(object));

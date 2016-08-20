@@ -22,11 +22,11 @@
 
 package com.davidbracewell.cache;
 
-import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 
 import java.io.Serializable;
 import java.util.concurrent.ExecutionException;
@@ -65,12 +65,9 @@ public class GuavaLoadingCache<K, V> implements AutoCalculatingCache<K, V>, Seri
   }
 
   @Override
+  @SneakyThrows
   public V putIfAbsent(K key, final V value) {
-    try {
-      return cache.get(key, () -> value);
-    } catch (ExecutionException e) {
-      throw Throwables.propagate(e);
-    }
+    return cache.get(key, () -> value);
   }
 
   @Override
@@ -94,12 +91,9 @@ public class GuavaLoadingCache<K, V> implements AutoCalculatingCache<K, V>, Seri
   }
 
   @Override
+  @SneakyThrows
   public V get(K key) {
-    try {
-      return cache.get(key);
-    } catch (ExecutionException e) {
-      throw Throwables.propagate(e);
-    }
+    return cache.get(key);
   }
 
   @Override

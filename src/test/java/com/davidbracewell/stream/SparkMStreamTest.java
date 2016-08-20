@@ -15,7 +15,7 @@ public class SparkMStreamTest extends BaseMStreamTest {
     Config.setProperty("spark.master", "local[*]");
     sc = StreamingContext.distributed();
     Logger.getLogger("org.apache.spark").setLevel(Level.WARN);
-    Logger.getLogger("org.eclipse.jetty.server").setLevel(Level.OFF);
+    Logger.getLogger("org.eclipse.jetty.server").setLevel(Level.WARN);
   }
 
 }// END OF SparkMStreamTest

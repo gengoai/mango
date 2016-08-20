@@ -21,21 +21,14 @@
 
 package com.davidbracewell.conversion;
 
+import com.davidbracewell.collection.Collect;
 import com.davidbracewell.collection.map.Maps;
-import com.davidbracewell.function.Serialized;
+import com.davidbracewell.function.SerializableSupplier;
 import com.davidbracewell.logging.Logger;
-import com.davidbracewell.reflection.Reflect;
-import com.davidbracewell.reflection.ReflectionException;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.Iterables;
+import lombok.NonNull;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * <p> Converts an <code>Object</code> to a <code>Map</code>. </p> <p> If the object is a collection, array, iterator,
@@ -52,29 +45,13 @@ public class MapConverter<K, V, T extends Map<K, V>> implements Function<Object,
   private static final Logger log = Logger.getLogger(MapConverter.class);
 
   private final Function<Object, K> keyConverter;
-  private final Supplier<T> mapSupplier;
+  private final SerializableSupplier<T> mapSupplier;
   private final Function<Object, V> valueConverter;
 
-  public MapConverter(Function<Object, K> keyConverter, Function<Object, V> valueConverter, final Class<?> mapClass) {
-    Preconditions.checkNotNull(mapClass);
-    Preconditions.checkNotNull(keyConverter);
-    Preconditions.checkNotNull(valueConverter);
-    Preconditions.checkArgument(Map.class.isAssignableFrom(mapClass), "Must specify a class that implements Map.");
+  public MapConverter(@NonNull Function<Object, K> keyConverter, @NonNull Function<Object, V> valueConverter, @NonNull final Class<? extends Map> mapClass) {
     this.keyConverter = keyConverter;
     this.valueConverter = valueConverter;
-    this.mapSupplier = Serialized.<T>supplier(() -> {
-                                                if (BiMap.class.equals(mapClass)) {
-                                                  return Cast.as(HashBiMap.create());
-                                                } else if (Map.class.equals(mapClass)) {
-                                                  return Cast.as(new HashMap());
-                                                }
-                                                try {
-                                                  return Reflect.onClass(mapClass).create().get();
-                                                } catch (ReflectionException e) {
-                                                  throw Throwables.propagate(e);
-                                                }
-                                              }
-    );
+    this.mapSupplier = () -> Cast.as(Maps.create(Cast.as(mapClass)));
   }
 
   @Override
@@ -105,7 +82,7 @@ public class MapConverter<K, V, T extends Map<K, V>> implements Function<Object,
       map.put(keyConverter.apply(e.getKey()), valueConverter.apply(e.getValue()));
       return map;
     } else if (obj instanceof Iterable) {
-      Object o = Iterables.getFirst(Cast.as(obj, Iterable.class), null);
+      Object o = Collect.first(Cast.as(obj, Iterable.class)).orElse(null);
       if (o != null && o instanceof Map.Entry) {
         for (Object inner : Cast.as(obj, Iterable.class)) {
           Map.Entry<?, ?> e = Cast.as(inner);

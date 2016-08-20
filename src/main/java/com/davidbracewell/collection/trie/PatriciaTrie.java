@@ -25,16 +25,14 @@ import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.csv.CSVReader;
-import com.davidbracewell.string.StringUtils;
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Function;
-import com.google.common.base.Functions;
-import com.google.common.base.Preconditions;
+import com.davidbracewell.string.CharPredicate;
+import lombok.NonNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Implementation of a PATRICIA Trie (Practical Algorithm to Retrieve Information
@@ -119,7 +117,7 @@ public class PatriciaTrie<E> extends AbstractPatriciaTrie<String, E> {
    * @throws IOException the io exception
    */
   public static <V> PatriciaTrie<V> loadCSV(Resource resource, Class<V> valueType) throws IOException {
-    return loadCSV(resource, valueType, Functions.<String>identity());
+    return loadCSV(resource, valueType, Function.identity());
   }
 
   /**
@@ -133,10 +131,7 @@ public class PatriciaTrie<E> extends AbstractPatriciaTrie<String, E> {
    * @throws IOException the io exception
    */
   @SuppressWarnings("unchecked")
-  public static <V> PatriciaTrie<V> loadCSV(Resource resource, Class<V> valueType, Function<String, String> keyTransform) throws IOException {
-    Preconditions.checkNotNull(resource, "Resource cannot be null");
-    Preconditions.checkNotNull(valueType, "valueType cannot be null");
-    Preconditions.checkNotNull(keyTransform, "keyTransform cannot be null");
+  public static <V> PatriciaTrie<V> loadCSV(@NonNull Resource resource, @NonNull Class<V> valueType, @NonNull Function<String, String> keyTransform) throws IOException {
     PatriciaTrie<V> trie = new PatriciaTrie<>();
     try (CSVReader csv = CSV.builder().reader(resource)) {
       List<String> row;
@@ -162,7 +157,7 @@ public class PatriciaTrie<E> extends AbstractPatriciaTrie<String, E> {
    * @return A list of Tuple3s indicating <code>[start, end)</code> and the value associated with the match.
    */
   public List<TrieMatch<E>> findOccurrencesIn(String text) {
-    return findOccurrencesIn(text, false, StringUtils.NOT_LETTER_OR_DIGIT);
+    return findOccurrencesIn(text, false, CharPredicate.NOT_LETTER_OR_DIGIT);
   }
 
   /**
@@ -174,7 +169,7 @@ public class PatriciaTrie<E> extends AbstractPatriciaTrie<String, E> {
    * @return A list of Tuple3s indicating <code>[start, end)</code> and the value associated with the match.
    */
   public List<TrieMatch<E>> findOccurrencesIn(String text, boolean prefixMatch) {
-    return findOccurrencesIn(text, prefixMatch, StringUtils.NOT_LETTER_OR_DIGIT);
+    return findOccurrencesIn(text, prefixMatch, CharPredicate.NOT_LETTER_OR_DIGIT);
   }
 
   /**
@@ -185,7 +180,7 @@ public class PatriciaTrie<E> extends AbstractPatriciaTrie<String, E> {
    * @param matcher     The character matcher to use to mark end of word
    * @return A list of Tuple3s indicating <code>[start, end)</code> and the value associated with the match.
    */
-  public List<TrieMatch<E>> findOccurrencesIn(String text, boolean prefixMatch, CharMatcher matcher) {
+  public List<TrieMatch<E>> findOccurrencesIn(String text, boolean prefixMatch, CharPredicate matcher) {
     List<TrieMatch<E>> rval = new ArrayList<>();
 
     int len = text.length();

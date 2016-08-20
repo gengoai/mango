@@ -21,9 +21,8 @@
 
 package com.davidbracewell.concurrent;
 
+import com.davidbracewell.string.CharPredicate;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Strings;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -39,10 +38,10 @@ public class BrokerTest {
   public void runTest() throws Exception {
     StringConsumer consumer = new StringConsumer();
     Broker<String> pc = Broker.<String>builder()
-        .bufferSize(100)
-        .addConsumer(consumer)
-        .addProducer(new RandomStringProducer())
-        .build();
+      .bufferSize(100)
+      .addConsumer(consumer)
+      .addProducer(new RandomStringProducer())
+      .build();
     pc.run();
     assertEquals(100, consumer.ai.get());
   }
@@ -53,7 +52,7 @@ public class BrokerTest {
     public void produce() {
       start();
       for (int i = 0; i < 100; i++) {
-        String s = StringUtils.randomString(3, CharMatcher.JAVA_LETTER_OR_DIGIT);
+        String s = StringUtils.randomString(3, CharPredicate.LETTER_OR_DIGIT);
         yield(s);
       }
       stop();
@@ -66,7 +65,7 @@ public class BrokerTest {
 
     @Override
     public void accept(String input) {
-      if (!Strings.isNullOrEmpty(input)) {
+      if (StringUtils.isNotNullOrBlank(input)) {
         ai.incrementAndGet();
       }
     }

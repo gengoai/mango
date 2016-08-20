@@ -2,8 +2,8 @@ package com.davidbracewell.collection;
 
 import com.davidbracewell.collection.trie.TrieMatch;
 import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.string.CharPredicate;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.base.CharMatcher;
 
 import java.io.Serializable;
 import java.util.*;
@@ -42,7 +42,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
    * @param delimiter the delimiter
    * @return the list
    */
-  public List<TrieMatch<V>> findAll(String text, CharMatcher delimiter) {
+  public List<TrieMatch<V>> findAll(String text, CharPredicate delimiter) {
     int len = text.length();
     StringBuilder key = new StringBuilder();
     int start = 0;

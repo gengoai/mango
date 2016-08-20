@@ -24,15 +24,16 @@ package com.davidbracewell.collection;
 import com.davidbracewell.collection.list.PrimitiveArrayList;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.tuple.Tuple2;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.davidbracewell.Validations.validateArgument;
 
 /**
  * Static methods for working with collections and iterables.
@@ -50,7 +51,7 @@ public interface Collect {
    * @return An Iterable wrapping the iterator.
    */
   static <T> Iterable<T> asIterable(@NonNull final Object array, @NonNull final Class<T> itemClass) {
-    Preconditions.checkArgument(array.getClass().isArray());
+    validateArgument(array.getClass().isArray());
     if (array.getClass().getComponentType().isPrimitive()) {
       return new PrimitiveArrayList<>(array, itemClass);
     }
@@ -116,6 +117,7 @@ public interface Collect {
    * @param collectionClass the collection class
    * @return t
    */
+  @SneakyThrows
   static <T extends Collection> T create(Class<T> collectionClass) {
     if (collectionClass == null) {
       return null;
@@ -133,11 +135,7 @@ public interface Collect {
       return Cast.as(new Stack<>());
     }
 
-    try {
-      return collectionClass.newInstance();
-    } catch (InstantiationException | IllegalAccessException e) {
-      throw Throwables.propagate(e);
-    }
+    return collectionClass.newInstance();
   }
 
   /**

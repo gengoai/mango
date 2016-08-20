@@ -25,7 +25,7 @@ import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.logging.Logger;
 import com.davidbracewell.tuple.Tuple2;
-import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -48,8 +48,8 @@ public class BeanMap extends AbstractMap<String, Object> {
    *
    * @param bean The bean
    */
-  public BeanMap(Object bean) {
-    this.bean = Preconditions.checkNotNull(bean);
+  public BeanMap(@NonNull Object bean) {
+    this.bean = bean;
     this.beanDescriptor = BeanDescriptorCache.getInstance().get(bean.getClass());
   }
 
@@ -86,8 +86,8 @@ public class BeanMap extends AbstractMap<String, Object> {
   @Override
   public Set<Entry<String, Object>> entrySet() {
     return this.keySet().stream()
-        .map(key -> Cast.<Map.Entry<String, Object>>as(Tuple2.of(key, get(key))))
-        .collect(Collectors.toSet());
+               .map(key -> Cast.<Map.Entry<String, Object>>as(Tuple2.of(key, get(key))))
+               .collect(Collectors.toSet());
   }
 
   @Override

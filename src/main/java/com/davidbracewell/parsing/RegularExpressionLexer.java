@@ -26,13 +26,14 @@ import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.davidbracewell.Validations.validateArgument;
 
 
 /**
@@ -52,7 +53,7 @@ public class RegularExpressionLexer extends Lexer {
    * @param lexicalPatterns The lexical patterns to capture
    */
   public RegularExpressionLexer(@NonNull Collection<Tuple2<ParserTokenType, String>> lexicalPatterns) {
-    Preconditions.checkArgument(!lexicalPatterns.isEmpty());
+    validateArgument(!lexicalPatterns.isEmpty());
     types = new HashSet<>();
     StringBuilder pattern = new StringBuilder();
     for (Tuple2<ParserTokenType, String> Tuple2 : lexicalPatterns) {
@@ -183,7 +184,7 @@ public class RegularExpressionLexer extends Lexer {
      * @return The LexerBuilder
      */
     public Builder add(ParserTokenType type) {
-      Preconditions.checkArgument(type instanceof HasLexicalPattern, "Type must define its own lexical pattern");
+      validateArgument(type instanceof HasLexicalPattern, "Type must define its own lexical pattern");
       lexicalItems.add(Tuple2.of(type, Cast.<HasLexicalPattern>as(type).lexicalPattern()));
       return this;
     }

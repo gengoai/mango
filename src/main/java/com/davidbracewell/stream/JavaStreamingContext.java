@@ -24,13 +24,9 @@ package com.davidbracewell.stream;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.stream.accumulator.Accumulatable;
-import com.davidbracewell.stream.accumulator.DoubleAccumulatable;
-import com.davidbracewell.stream.accumulator.IntAccumulatable;
-import com.davidbracewell.stream.accumulator.JavaAccumulator;
-import com.davidbracewell.stream.accumulator.MAccumulator;
+import com.davidbracewell.stream.accumulator.*;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.base.Throwables;
+import lombok.SneakyThrows;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -157,6 +153,7 @@ public enum JavaStreamingContext implements StreamingContext, Serializable {
   }
 
   @Override
+  @SneakyThrows
   public MStream<String> textFile(Resource resource) {
     if (resource == null) {
       return empty();
@@ -164,22 +161,18 @@ public enum JavaStreamingContext implements StreamingContext, Serializable {
     if (resource.isDirectory()) {
       return new LocalStream<>(
         resource.getChildren(true).stream()
-          .filter(r -> !r.isDirectory())
-          .flatMap(r -> {
-              try {
-                return Cast.<LocalStream<String>>as(r.lines()).stream();
-              } catch (IOException e) {
-                throw Throwables.propagate(e);
-              }
-            }
-          )
+                .filter(r -> !r.isDirectory())
+                .flatMap(r -> {
+                           try {
+                             return Cast.<LocalStream<String>>as(r.lines()).stream();
+                           } catch (IOException e) {
+                             throw new RuntimeException(e);
+                           }
+                         }
+                        )
       );
     }
-    try {
-      return resource.lines();
-    } catch (IOException e) {
-      throw Throwables.propagate(e);
-    }
+    return resource.lines();
   }
 
 

@@ -26,10 +26,10 @@ import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.*;
 import com.davidbracewell.io.resource.Resource;
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.PairFunction;
 import scala.Tuple2;
 
 import java.io.IOException;
@@ -189,14 +189,15 @@ public class SparkStream<T> implements MStream<T>, Serializable {
     if (number <= 0) {
       return getContext().empty();
     }
-    double count = count();
-    if (count <= number) {
-      return this;
-    }
     if (withReplacement) {
-      return new SparkStream<>(
-        rdd.sample(true, 0.3)
-      ).limit(number);
+      MStream<T> sample = new SparkStream<>(rdd.sample(true, 0.5));
+      while (sample.count() < number) {
+        sample = sample.union(new SparkStream<>(rdd.sample(true, 0.5)));
+      }
+      if (sample.count() > number) {
+        sample = sample.limit(number);
+      }
+      return sample;
     }
     return shuffle().limit(number);
   }
@@ -223,13 +224,17 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
   @Override
   public MStream<T> limit(long number) {
-    Preconditions.checkArgument(number >= 0);
+    if (number <= 0) {
+      return SparkStreamingContext.INSTANCE.empty();
+    }
     return new SparkStream<>(rdd.zipWithIndex().filter(p -> p._2() < number).map(Tuple2::_1));
   }
 
   @Override
   public List<T> take(int n) {
-    Preconditions.checkArgument(n >= 0);
+    if (n <= 0) {
+      return Collections.emptyList();
+    }
     return rdd.take(n);
   }
 
@@ -317,10 +322,16 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
   @Override
   public MStream<T> shuffle(@NonNull Random random) {
-    return new SparkStream<>(
-      rdd.mapToPair(t -> new Tuple2<>(random.nextDouble(), t))
-        .sortByKey()
-        .map(Tuple2::_2)
+    return new SparkStream<T>(rdd.mapToPair(new PairFunction<T, Double, T>() {
+      private static final long serialVersionUID = -6899379026863558151L;
+
+      @Override
+      public Tuple2<Double, T> call(T t) throws Exception {
+        return new Tuple2<>(random.nextDouble(), t);
+      }
+    })
+                                 .sortByKey()
+                                 .values()
     );
   }
 

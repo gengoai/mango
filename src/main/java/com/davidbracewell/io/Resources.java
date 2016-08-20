@@ -21,13 +21,13 @@
 
 package com.davidbracewell.io;
 
+import com.davidbracewell.SystemInfo;
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.io.resource.*;
 import com.davidbracewell.io.resource.spi.ResourceProvider;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.base.Throwables;
-import com.google.common.io.Files;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 
 import java.io.*;
 import java.net.URI;
@@ -205,18 +205,23 @@ public final class Resources {
    * @return A resource which is a temporary directory on disk
    */
   public static Resource temporaryDirectory() {
-    return new FileResource(Files.createTempDir());
+    File tempDir = new File(SystemInfo.JAVA_IO_TMPDIR);
+    String baseName = System.currentTimeMillis() + "-";
+    for (int i = 0; i < 1_000_000; i++) {
+      File tmp = new File(tempDir, baseName + i);
+      if (tmp.mkdir()) {
+        return new FileResource(tmp);
+      }
+    }
+    throw new RuntimeException("Unable to create temp directory");
   }
 
   /**
    * @return A resource which is a temporary file on disk
    */
+  @SneakyThrows
   public static Resource temporaryFile() {
-    try {
-      return temporaryFile(UUID.randomUUID().toString(), "tmp");
-    } catch (IOException e) {
-      throw Throwables.propagate(e);
-    }
+    return temporaryFile(UUID.randomUUID().toString(), "tmp");
   }
 
   /**

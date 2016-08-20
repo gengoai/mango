@@ -23,7 +23,7 @@ package com.davidbracewell.conversion;
 
 
 import com.davidbracewell.logging.Loggable;
-import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 import java.util.function.Function;
 
@@ -41,8 +41,8 @@ public class EnumConverter<T extends Enum<T>> implements Function<Object, T>, Lo
    *
    * @param enumClass Class information for the type of enum we want to convert to
    */
-  public EnumConverter(Class<T> enumClass) {
-    this.enumClass = Preconditions.checkNotNull(enumClass);
+  public EnumConverter(@NonNull Class<T> enumClass) {
+    this.enumClass = enumClass;
   }
 
   @Override

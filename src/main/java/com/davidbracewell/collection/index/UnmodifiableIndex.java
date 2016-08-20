@@ -21,7 +21,8 @@
 
 package com.davidbracewell.collection.index;
 
-import com.google.common.collect.Iterators;
+
+import com.davidbracewell.collection.Iterators;
 
 import java.util.Iterator;
 

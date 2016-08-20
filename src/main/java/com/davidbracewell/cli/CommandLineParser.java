@@ -23,11 +23,10 @@ package com.davidbracewell.cli;
 
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
+import com.davidbracewell.function.Unchecked;
 import com.davidbracewell.reflection.Reflect;
-import com.davidbracewell.reflection.ReflectionException;
 import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
-import com.google.common.base.Throwables;
 import lombok.NonNull;
 
 import java.util.*;
@@ -205,7 +204,7 @@ public class CommandLineParser {
 
     }
 
-    optionSet.forEach(option -> {
+    optionSet.forEach(Unchecked.consumer(option -> {
       if (option.getName().equals("h") && Cast.<Boolean>as(option.getValue())) {
         showHelp();
         System.exit(0);
@@ -216,13 +215,9 @@ public class CommandLineParser {
       }
 
       if (owner != null && option.getField() != null) {
-        try {
-          Reflect.onObject(owner).allowPrivilegedAccess().set(option.getField().getName(), option.getValue());
-        } catch (ReflectionException e) {
-          throw Throwables.propagate(e);
-        }
+        Reflect.onObject(owner).allowPrivilegedAccess().set(option.getField().getName(), option.getValue());
       }
-    });
+    }));
 
     return filtered.toArray(new String[filtered.size()]);
   }
@@ -242,7 +237,7 @@ public class CommandLineParser {
                String out = Stream.concat(
                  Stream.of(option.getAliasSpecifications()),
                  Stream.of(option.getSpecification())
-               ).sorted((s1, s2) -> Integer.compare(s1.length(), s2.length()))
+                                         ).sorted((s1, s2) -> Integer.compare(s1.length(), s2.length()))
                                   .collect(Collectors.joining(", "));
                if (option.isRequired()) {
                  out += " *";
@@ -371,7 +366,7 @@ public class CommandLineParser {
                                                       .filter(this::isSet)
                                                       .map(no -> Tuple2.of(no.getName(),
                                                                            Convert.convert(no.getValue(), String.class)
-                                                      ))
+                                                                          ))
                                                       .collect(Collectors.toSet());
     entries.addAll(unamedOptions.entrySet());
     return entries;

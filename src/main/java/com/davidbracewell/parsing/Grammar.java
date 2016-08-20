@@ -24,7 +24,7 @@ package com.davidbracewell.parsing;
 import com.davidbracewell.parsing.expressions.Expression;
 import com.davidbracewell.parsing.handlers.InfixHandler;
 import com.davidbracewell.parsing.handlers.PrefixHandler;
-import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -61,8 +61,8 @@ public class Grammar {
    * @param handler The prefix handler
    * @return This grammar (for builder pattern)
    */
-  public Grammar register(ParserTokenType type, PrefixHandler handler) {
-    prefixHandlers.put(Preconditions.checkNotNull(type), Preconditions.checkNotNull(handler));
+  public Grammar register(@NonNull ParserTokenType type, @NonNull PrefixHandler handler) {
+    prefixHandlers.put(type, handler);
     return this;
   }
 
@@ -73,8 +73,8 @@ public class Grammar {
    * @param handler The infix handler
    * @return This grammar (for builder pattern)
    */
-  public Grammar register(ParserTokenType type, InfixHandler handler) {
-    infixHandlers.put(Preconditions.checkNotNull(type), Preconditions.checkNotNull(handler));
+  public Grammar register(@NonNull ParserTokenType type, @NonNull InfixHandler handler) {
+    infixHandlers.put(type, handler);
     return this;
   }
 
@@ -106,8 +106,7 @@ public class Grammar {
    * @return A parsed expression
    * @throws ParseException Something went wrong parsing.
    */
-  public Expression parse(Parser parser, ParserToken token) throws ParseException {
-    Preconditions.checkNotNull(token, "Token cannot be null");
+  public Expression parse(Parser parser, @NonNull ParserToken token) throws ParseException {
     PrefixHandler handler = prefixHandlers.containsKey(token.type) ? prefixHandlers.get(token.type) : prefixSkipHandler;
     if (handler == null) {
       throw new ParseException("No PrefixHandler registered for token type " + token.type);
@@ -124,8 +123,7 @@ public class Grammar {
    * @return A parsed expression
    * @throws ParseException Something went wrong parsing.
    */
-  public Expression parse(Parser parser, Expression left, ParserToken token) throws ParseException {
-    Preconditions.checkNotNull(token, "Token cannot be null");
+  public Expression parse(Parser parser, Expression left, @NonNull ParserToken token) throws ParseException {
     if (isInfix(token)) {
       return infixHandlers.get(token.type).parse(parser, left, token);
     }

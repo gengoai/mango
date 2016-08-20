@@ -24,14 +24,14 @@ package com.davidbracewell.cache;
 import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.reflection.Reflect;
-import com.davidbracewell.reflection.ReflectionException;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
+import lombok.SneakyThrows;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.davidbracewell.Validations.validateArgument;
 
 /**
  * Manages the creation and retrieval of caches. Caches are defined as specification {@link CacheSpec}. Additionally,
@@ -126,6 +126,7 @@ public final class CacheManager {
     return caches.keySet();
   }
 
+  @SneakyThrows
   private <K, V> CacheSpec<K, V> getCacheSpec(String property) {
 
     //Sanity check for the global cache. If one is not defined in the configuration create a default with max size 1,000
@@ -136,18 +137,14 @@ public final class CacheManager {
     String specString = Config.get(property).asString();
 
     //Make sure the cache is defined
-    if (Strings.isNullOrEmpty(specString)) {
-      throw new IllegalArgumentException(property + " is not a known cache and is not defined via a config file.");
-    }
+    validateArgument(StringUtils.isNotNullOrBlank(specString),
+                     property + " is not a known cache and is not defined via a config file."
+                    );
 
     CacheSpec<K, V> spec;
     //See if there is special implementation of the cache spec class
     if (Config.hasProperty(property + ".cacheSpecClass")) {
-      try {
-        spec = Reflect.onClass(Config.get(property + ".cacheSpecClass").asClass()).create().get();
-      } catch (ReflectionException e) {
-        throw Throwables.propagate(e);
-      }
+      spec = Reflect.onClass(Config.get(property + ".cacheSpecClass").asClass()).create().get();
     } else {
       spec = new CacheSpec<>();
     }

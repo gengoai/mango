@@ -24,12 +24,7 @@ package com.davidbracewell.config;
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.ClasspathResource;
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.parsing.Grammar;
-import com.davidbracewell.parsing.Lexer;
-import com.davidbracewell.parsing.ParseException;
-import com.davidbracewell.parsing.Parser;
-import com.davidbracewell.parsing.ParserToken;
-import com.davidbracewell.parsing.ParserTokenStream;
+import com.davidbracewell.parsing.*;
 import com.davidbracewell.parsing.expressions.Expression;
 import com.davidbracewell.parsing.expressions.PrefixExpression;
 import com.davidbracewell.parsing.expressions.ValueExpression;
@@ -38,9 +33,8 @@ import com.davidbracewell.parsing.handlers.ValueHandler;
 import com.davidbracewell.scripting.ScriptEnvironment;
 import com.davidbracewell.scripting.ScriptEnvironmentManager;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.base.Throwables;
+import lombok.SneakyThrows;
 
-import javax.script.ScriptException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
@@ -70,13 +64,10 @@ class ConfigParser extends Parser {
           ParserToken next = null;
 
           @Override
+          @SneakyThrows
           public boolean hasNext() {
             if (next == null) {
-              try {
-                next = backing.next();
-              } catch (IOException | ParseException e) {
-                throw Throwables.propagate(e);
-              }
+              next = backing.next();
             }
             return next != null;
           }
@@ -113,15 +104,12 @@ class ConfigParser extends Parser {
     this.resourceName = config.descriptor();
   }
 
+  @SneakyThrows
   private void importScript(String script) {
     Resource scriptResource = new ClasspathResource(script.trim(), Config.getDefaultClassLoader());
     String extension = script.substring(script.lastIndexOf('.') + 1);
     ScriptEnvironment env = ScriptEnvironmentManager.getInstance().getEnvironmentForExtension(extension);
-    try {
-      env.eval(scriptResource);
-    } catch (ScriptException | IOException e) {
-      throw Throwables.propagate(e);
-    }
+    env.eval(scriptResource);
   }
 
   private void importConfig(String importStatement) throws ParseException {
@@ -182,34 +170,29 @@ class ConfigParser extends Parser {
   @Override
   public List<Expression> parse() throws ParseException {
     Expression exp;
-    try {
+    while ((exp = next()) != null) {
 
-      while ((exp = next()) != null) {
+      if (exp.match(ConfigTokenizer.ConfigTokenType.IMPORT)) {
 
-        if (exp.match(ConfigTokenizer.ConfigTokenType.IMPORT)) {
+        importConfig(exp.as(PrefixExpression.class).right.toString().trim());
 
-          importConfig(exp.as(PrefixExpression.class).right.toString().trim());
+      } else if (exp.match(ConfigTokenizer.ConfigTokenType.SCRIPT)) {
 
-        } else if (exp.match(ConfigTokenizer.ConfigTokenType.SCRIPT)) {
+        importScript(exp.as(PrefixExpression.class).right.toString().trim());
 
-          importScript(exp.as(PrefixExpression.class).right.toString().trim());
+      } else if (exp.match(ConfigTokenizer.ConfigTokenType.APPEND_PROPERTY)) {
 
-        } else if (exp.match(ConfigTokenizer.ConfigTokenType.APPEND_PROPERTY)) {
+        setProperty(exp.as(PrefixExpression.class), "");
 
-          setProperty(exp.as(PrefixExpression.class), "");
+      } else if (exp.match(ConfigTokenizer.ConfigTokenType.PROPERTY)) {
 
-        } else if (exp.match(ConfigTokenizer.ConfigTokenType.PROPERTY)) {
+        setProperty(exp.as(PrefixExpression.class), "");
 
-          setProperty(exp.as(PrefixExpression.class), "");
+      } else if (exp.match(ConfigTokenizer.ConfigTokenType.SECTION_HEADER)) {
 
-        } else if (exp.match(ConfigTokenizer.ConfigTokenType.SECTION_HEADER)) {
+        handleSection(StringUtils.EMPTY, exp.as(SectionExpression.class));
 
-          handleSection(StringUtils.EMPTY, exp.as(SectionExpression.class));
-
-        }
       }
-    } catch (ParseException e) {
-      throw Throwables.propagate(e);
     }
 
     return Collections.emptyList();

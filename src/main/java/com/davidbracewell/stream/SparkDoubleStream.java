@@ -24,13 +24,7 @@ package com.davidbracewell.stream;
 import com.davidbracewell.collection.list.PrimitiveArrayList;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
-import com.davidbracewell.function.SerializableDoubleBinaryOperator;
-import com.davidbracewell.function.SerializableDoubleConsumer;
-import com.davidbracewell.function.SerializableDoubleFunction;
-import com.davidbracewell.function.SerializableDoublePredicate;
-import com.davidbracewell.function.SerializableDoubleUnaryOperator;
-import com.davidbracewell.function.SerializableRunnable;
-import com.google.common.base.Preconditions;
+import com.davidbracewell.function.*;
 import lombok.NonNull;
 import org.apache.spark.api.java.JavaDoubleRDD;
 import scala.Tuple2;
@@ -135,7 +129,9 @@ public class SparkDoubleStream implements MDoubleStream, Serializable {
 
   @Override
   public MDoubleStream limit(int n) {
-    Preconditions.checkArgument(n >= 0);
+    if (n <= 0) {
+      return SparkStreamingContext.INSTANCE.emptyDouble();
+    }
     return new SparkDoubleStream(doubleStream.zipWithIndex().filter(p -> p._2() < n).mapToDouble(Tuple2::_1));
   }
 
@@ -146,7 +142,7 @@ public class SparkDoubleStream implements MDoubleStream, Serializable {
     } else if (n <= 0) {
       return this;
     }
-    return new SparkDoubleStream(doubleStream.zipWithIndex().filter(p -> p._2() > n-1).mapToDouble(Tuple2::_1));
+    return new SparkDoubleStream(doubleStream.zipWithIndex().filter(p -> p._2() > n - 1).mapToDouble(Tuple2::_1));
   }
 
   @Override
@@ -182,7 +178,7 @@ public class SparkDoubleStream implements MDoubleStream, Serializable {
 
   @Override
   public OptionalDouble reduce(@NonNull SerializableDoubleBinaryOperator operator) {
-    if( doubleStream.isEmpty() ){
+    if (doubleStream.isEmpty()) {
       return OptionalDouble.empty();
     }
     return OptionalDouble.of(doubleStream.reduce(operator::applyAsDouble));
@@ -195,7 +191,7 @@ public class SparkDoubleStream implements MDoubleStream, Serializable {
 
   @Override
   public double reduce(double zeroValue, @NonNull SerializableDoubleBinaryOperator operator) {
-    if( doubleStream.isEmpty() ){
+    if (doubleStream.isEmpty()) {
       return zeroValue;
     }
     return zeroValue + doubleStream.reduce(operator::applyAsDouble);
@@ -203,7 +199,9 @@ public class SparkDoubleStream implements MDoubleStream, Serializable {
 
   @Override
   public MDoubleStream sorted() {
-    return new SparkDoubleStream(doubleStream.map(Double::valueOf).sortBy(d -> d, true, doubleStream.partitions().size()).mapToDouble(d -> d));
+    return new SparkDoubleStream(doubleStream.map(Double::valueOf)
+                                             .sortBy(d -> d, true, doubleStream.partitions().size())
+                                             .mapToDouble(d -> d));
   }
 
   @Override
@@ -213,7 +211,9 @@ public class SparkDoubleStream implements MDoubleStream, Serializable {
 
   @Override
   public MDoubleStream flatMap(@NonNull SerializableDoubleFunction<double[]> mapper) {
-    return new SparkDoubleStream(doubleStream.flatMapToDouble(d -> new PrimitiveArrayList<>(mapper.apply(d), Double.class).iterator()));
+    return new SparkDoubleStream(doubleStream.flatMapToDouble(d -> new PrimitiveArrayList<>(mapper.apply(d),
+                                                                                            Double.class
+    ).iterator()));
   }
 
   @Override

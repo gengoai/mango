@@ -1,12 +1,11 @@
 package com.davidbracewell.io.structured;
 
 import com.davidbracewell.DynamicEnum;
+import com.davidbracewell.collection.Iterators;
 import com.davidbracewell.collection.counter.Counter;
 import com.davidbracewell.collection.counter.MultiCounter;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Multimap;
 import lombok.NonNull;
 
@@ -230,7 +229,7 @@ public abstract class StructuredWriter implements Closeable {
 
         @Override
         public int size() {
-          return Iterables.size(Cast.as(object));
+          return Iterators.size(iterator());
         }
       });
     } else if (object instanceof Iterator) {

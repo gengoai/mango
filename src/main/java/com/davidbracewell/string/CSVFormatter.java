@@ -24,7 +24,7 @@ package com.davidbracewell.string;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.CSV;
-import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -32,6 +32,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import static com.davidbracewell.Validations.validateArgument;
 
 /**
  * <p> Formats a series of items in Delimited Separated Value format. </p>
@@ -54,8 +56,7 @@ public class CSVFormatter implements Serializable {
    *
    * @param csvFormat the csv format
    */
-  public CSVFormatter(CSV csvFormat) {
-    Preconditions.checkNotNull(csvFormat);
+  public CSVFormatter(@NonNull CSV csvFormat) {
     this.delimiter = Character.toString(csvFormat.getDelimiter());
     this.escape = Character.toString(csvFormat.getEscape());
     this.quote = Character.toString(csvFormat.getQuote());
@@ -169,8 +170,10 @@ public class CSVFormatter implements Serializable {
    * @return A String representing the single DSV formatted row of Map entries
    */
   public String format(Map<?, ?> map, char keyValueSeparator) {
-    Preconditions.checkNotNull(map);
-    Preconditions.checkArgument(keyValueSeparator != ' ');
+    if (map == null) {
+      return StringUtils.EMPTY;
+    }
+    validateArgument(keyValueSeparator != ' ');
 
     StringBuilder rowString = new StringBuilder();
     for (Iterator<?> itr = map.entrySet().iterator(); itr.hasNext(); ) {
@@ -185,7 +188,7 @@ public class CSVFormatter implements Serializable {
 
       if (key.indexOf(keyValueSeparator) >= 0) {
         rowString.append(doubleQuote).append(key.replaceAll(quote, doubleQuote))
-            .append(doubleQuote);
+                 .append(doubleQuote);
       } else {
         rowString.append(key.replaceAll(quote, doubleQuote));
       }
@@ -194,7 +197,7 @@ public class CSVFormatter implements Serializable {
 
       if (value.indexOf(keyValueSeparator) >= 0) {
         rowString.append(doubleQuote).append(value.replaceAll(quote, doubleQuote))
-            .append(doubleQuote);
+                 .append(doubleQuote);
       } else {
         rowString.append(value.replaceAll(quote, doubleQuote));
       }
@@ -217,7 +220,9 @@ public class CSVFormatter implements Serializable {
    * @return the string
    */
   public String format(Iterable<?> iterable) {
-    Preconditions.checkNotNull(iterable);
+    if (iterable == null) {
+      return StringUtils.EMPTY;
+    }
     return format(iterable.iterator());
   }
 
@@ -229,7 +234,9 @@ public class CSVFormatter implements Serializable {
    * @return A String representing the single DSV formatted row
    */
   public String format(Object... array) {
-    Preconditions.checkNotNull(array);
+    if (array == null) {
+      return StringUtils.EMPTY;
+    }
     if (array.length == 1 && array[0].getClass().isArray()) {
       return format(Convert.convert(array[0], Iterable.class));
     }

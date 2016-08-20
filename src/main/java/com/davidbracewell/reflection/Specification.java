@@ -27,7 +27,7 @@ import com.davidbracewell.function.Unchecked;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.structured.csv.CSVReader;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.base.Throwables;
+import lombok.SneakyThrows;
 
 import java.io.StringReader;
 import java.util.List;
@@ -43,6 +43,7 @@ public interface Specification {
    *
    * @param spec The specification
    */
+  @SneakyThrows
   default Specification fromString(String spec) {
     if (spec != null) {
       Reflect rThis = Reflect.onObject(this);
@@ -80,9 +81,6 @@ public interface Specification {
             }
           }
         }));
-      } catch (Exception e) {
-        e.printStackTrace();
-        throw Throwables.propagate(e);
       }
     }
     return Cast.as(this);

@@ -23,7 +23,7 @@ package com.davidbracewell.parsing;
 
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.Resource;
-import com.google.common.base.Throwables;
+import lombok.SneakyThrows;
 
 import java.io.IOException;
 
@@ -41,12 +41,9 @@ public abstract class Lexer {
    * @param input the input
    * @return the parser token stream
    */
+  @SneakyThrows
   public ParserTokenStream lex(final String input) {
-    try {
-      return lex(Resources.fromString(input));
-    } catch (IOException e) {
-      throw Throwables.propagate(e);
-    }
+    return lex(Resources.fromString(input));
   }
 
   /**

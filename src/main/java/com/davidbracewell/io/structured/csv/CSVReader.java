@@ -30,11 +30,11 @@ import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.QuietIO;
 import com.davidbracewell.io.structured.ElementType;
 import com.davidbracewell.io.structured.StructuredReader;
+import com.davidbracewell.string.CharPredicate;
 import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Throwables;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -335,7 +335,7 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
   }
 
   private void gobbleWhiteSpace() throws IOException {
-    while (bufferPeek() != -1 && Character.isWhitespace(bufferPeek()) && !CharMatcher.BREAKING_WHITESPACE.matches((char) bufferPeek())) {
+    while (bufferPeek() != -1 && Character.isWhitespace(bufferPeek()) && !CharPredicate.BREAKING_WHITESPACE.matches((char) bufferPeek())) {
       read();
     }
   }
@@ -571,13 +571,10 @@ public class CSVReader extends StructuredReader implements AutoCloseable, Iterab
      */
     List<String> row = null;
 
+    @SneakyThrows
     private boolean advance() {
       if (row == null) {
-        try {
-          row = nextRow();
-        } catch (IOException e) {
-          throw Throwables.propagate(e);
-        }
+        row = nextRow();
       }
       return row != null;
     }

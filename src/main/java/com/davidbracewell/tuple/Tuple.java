@@ -24,8 +24,7 @@ package com.davidbracewell.tuple;
 import com.davidbracewell.Copyable;
 import com.davidbracewell.collection.Sorting;
 import com.davidbracewell.conversion.Cast;
-import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
+import com.davidbracewell.string.StringUtils;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -33,6 +32,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.davidbracewell.Validations.validateArgument;
 
 /**
  * A tuple is a finite sequence of items.
@@ -147,12 +148,12 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
    * @return A new tuple of degree (end - start) with the elements of this tuple from start to end
    */
   public Tuple slice(int start, int end) {
-    Preconditions.checkArgument(start >= 0, "Start index must be >= 0");
-    Preconditions.checkArgument(start < end, "Start index must be < end index");
-    if( start >= degree() ){
+    validateArgument(start >= 0, "Start index must be >= 0");
+    validateArgument(start < end, "Start index must be < end index");
+    if (start >= degree()) {
       return Tuple0.INSTANCE;
     }
-    return new NTuple(Arrays.copyOfRange(array(), start, Math.min(end,degree())));
+    return new NTuple(Arrays.copyOfRange(array(), start, Math.min(end, degree())));
   }
 
   /**
@@ -205,7 +206,7 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
 
   @Override
   public String toString() {
-    return "(" + Joiner.on(',').join(array()) + ")";
+    return StringUtils.join(array(), ", ", "(", ")");
   }
 
 

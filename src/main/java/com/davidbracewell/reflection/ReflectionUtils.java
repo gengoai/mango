@@ -24,9 +24,9 @@ package com.davidbracewell.reflection;
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.logging.Logger;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.base.Throwables;
 import com.google.common.primitives.Primitives;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -44,11 +44,6 @@ public final class ReflectionUtils {
 
   private ReflectionUtils() {
   }
-
-
-//  public static Set<Method> getMethods(@NonNull Class<?> clazz, boolean recursive, boolean privileged) {
-//
-//  }
 
   /**
    * Gets fields.
@@ -269,19 +264,16 @@ public final class ReflectionUtils {
    * @param cz  The class
    * @return The singleton instance or null if the class is not a singleton.
    */
+  @SneakyThrows
   public static <T> T getSingletonFor(Class<?> cz) {
-    try {
-      if (Reflect.onClass(cz).containsMethod("getInstance")) {
-        return Reflect.onClass(cz).invoke("getInstance").get();
-      } else if (Reflect.onClass(cz).containsMethod("getSingleton")) {
-        return Reflect.onClass(cz).invoke("getSingleton").get();
-      } else if (Reflect.onClass(cz).containsMethod("createInstance")) {
-        return Reflect.onClass(cz).invoke("createInstance").get();
-      }
-      return null;
-    } catch (ReflectionException e) {
-      throw Throwables.propagate(e);
+    if (Reflect.onClass(cz).containsMethod("getInstance")) {
+      return Reflect.onClass(cz).invoke("getInstance").get();
+    } else if (Reflect.onClass(cz).containsMethod("getSingleton")) {
+      return Reflect.onClass(cz).invoke("getSingleton").get();
+    } else if (Reflect.onClass(cz).containsMethod("createInstance")) {
+      return Reflect.onClass(cz).invoke("createInstance").get();
     }
+    return null;
   }
 
   /**

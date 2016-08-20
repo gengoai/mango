@@ -23,12 +23,12 @@ package com.davidbracewell.cache;
 
 import com.davidbracewell.concurrent.Threads;
 import com.davidbracewell.config.Config;
-import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import static org.junit.Assert.*;
 

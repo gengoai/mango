@@ -21,8 +21,8 @@
 
 package com.davidbracewell;
 
-import com.google.common.base.Throwables;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -31,7 +31,6 @@ import javax.crypto.spec.DESKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.spec.KeySpec;
 import java.util.Arrays;
 import java.util.Base64;
@@ -44,17 +43,14 @@ import java.util.Base64;
 public enum EncryptionMethod {
   AES("AES", 16),
   DES("DES", 16) {
+    @SneakyThrows
     protected Cipher constructCipher(byte[] key, int mode) {
-      try {
-        SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(name);
-        KeySpec keySpec = new DESKeySpec(ensureKeyLength(key));
-        SecretKey secretkey = keyFactory.generateSecret(keySpec);
-        Cipher cipher = Cipher.getInstance(name);
-        cipher.init(mode, secretkey);
-        return cipher;
-      } catch (Exception e) {
-        throw Throwables.propagate(e);
-      }
+      SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(name);
+      KeySpec keySpec = new DESKeySpec(ensureKeyLength(key));
+      SecretKey secretkey = keyFactory.generateSecret(keySpec);
+      Cipher cipher = Cipher.getInstance(name);
+      cipher.init(mode, secretkey);
+      return cipher;
     }
   },
   TRIPLE_DES("DESede", 24),
@@ -73,16 +69,13 @@ public enum EncryptionMethod {
     this.keyLength = keyLength;
   }
 
+  @SneakyThrows
   protected final byte[] ensureKeyLength(byte[] key) {
     if (key.length == keyLength) {
       return key;
     }
     MessageDigest digest;
-    try {
-      digest = MessageDigest.getInstance("MD5");
-    } catch (NoSuchAlgorithmException e) {
-      throw Throwables.propagate(e);
-    }
+    digest = MessageDigest.getInstance("MD5");
     byte[] keyBytes = Arrays.copyOf(digest.digest(key), keyLength);
     for (int j = 0, k = 16; j < (keyLength - 16); ) {
       keyBytes[k++] = keyBytes[j++];
@@ -105,15 +98,12 @@ public enum EncryptionMethod {
     return EncryptionMethod.valueOf(name);
   }
 
+  @SneakyThrows
   protected Cipher constructCipher(byte[] key, int mode) {
-    try {
-      SecretKeySpec keySpec = new SecretKeySpec(ensureKeyLength(key), name);
-      Cipher cipher = Cipher.getInstance(name);
-      cipher.init(mode, keySpec);
-      return cipher;
-    } catch (Exception e) {
-      throw Throwables.propagate(e);
-    }
+    SecretKeySpec keySpec = new SecretKeySpec(ensureKeyLength(key), name);
+    Cipher cipher = Cipher.getInstance(name);
+    cipher.init(mode, keySpec);
+    return cipher;
   }
 
   /**
@@ -134,14 +124,11 @@ public enum EncryptionMethod {
    * @param key     The password
    * @return A Base64 encoded version of the encrypted content
    */
+  @SneakyThrows
   public String encrypt(byte[] content, byte[] key) {
-    try {
-      Cipher cipher = constructCipher(key, Cipher.ENCRYPT_MODE);
-      byte[] encryptedText = cipher.doFinal(content);
-      return new String(Base64.getEncoder().withoutPadding().encode(encryptedText));
-    } catch (Exception e) {
-      throw Throwables.propagate(e);
-    }
+    Cipher cipher = constructCipher(key, Cipher.ENCRYPT_MODE);
+    byte[] encryptedText = cipher.doFinal(content);
+    return new String(Base64.getEncoder().withoutPadding().encode(encryptedText));
   }
 
   /**
@@ -173,13 +160,10 @@ public enum EncryptionMethod {
    * @param key     The password
    * @return An unencrypted version of the content
    */
+  @SneakyThrows
   public byte[] decrypt(String content, byte[] key) {
-    try {
-      Cipher cipher = constructCipher(key, Cipher.DECRYPT_MODE);
-      return cipher.doFinal(Base64.getDecoder().decode(content.trim()));
-    } catch (Exception e) {
-      throw Throwables.propagate(e);
-    }
+    Cipher cipher = constructCipher(key, Cipher.DECRYPT_MODE);
+    return cipher.doFinal(Base64.getDecoder().decode(content.trim()));
   }
 
 }// END OF EncryptionMethod

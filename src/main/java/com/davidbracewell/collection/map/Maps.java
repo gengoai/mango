@@ -31,16 +31,19 @@ import com.davidbracewell.io.structured.csv.CSVWriter;
 import com.davidbracewell.reflection.Reflect;
 import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
-import com.google.common.base.Throwables;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static com.davidbracewell.reflection.Reflect.onClass;
 import static com.davidbracewell.tuple.Tuples.$;
 
 /**
@@ -49,6 +52,21 @@ import static com.davidbracewell.tuple.Tuples.$;
  * @author David B. Bracewell
  */
 public interface Maps {
+
+
+  @SneakyThrows
+  static <K, V> Map<K, V> create(@NonNull Class<? extends Map> clazz) {
+    if (clazz == Map.class || clazz == HashMap.class) {
+      return new HashMap<>();
+    } else if (clazz == LinkedHashMap.class) {
+      return new LinkedHashMap<>();
+    } else if (clazz == TreeMap.class) {
+      return new TreeMap<>();
+    } else if (clazz == ConcurrentMap.class || clazz == ConcurrentHashMap.class) {
+      return new ConcurrentHashMap<>();
+    }
+    return Reflect.onClass(clazz).create().get();
+  }
 
   /**
    * As map map.
@@ -60,7 +78,7 @@ public interface Maps {
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
-  static <K, V> Map<K, V> map(Map.Entry<K, V>... entries) {
+  static <K, V> Map<K, V> asMap(Map.Entry<K, V>... entries) {
     return createMap(HashMap::new, entries);
   }
 
@@ -176,7 +194,7 @@ public interface Maps {
                      $(key4, value4),
                      $(key5, value5),
                      $(key6, value6)
-    );
+                    );
   }
 
   /**
@@ -209,7 +227,7 @@ public interface Maps {
                      $(key5, value5),
                      $(key6, value6),
                      $(key7, value7)
-    );
+                    );
   }
 
   /**
@@ -245,7 +263,7 @@ public interface Maps {
                      $(key6, value6),
                      $(key7, value7),
                      $(key8, value8)
-    );
+                    );
   }
 
   /**
@@ -284,7 +302,7 @@ public interface Maps {
                      $(key7, value7),
                      $(key8, value8),
                      $(key9, value9)
-    );
+                    );
   }
 
   /**
@@ -326,7 +344,7 @@ public interface Maps {
                      $(key8, value8),
                      $(key9, value9),
                      $(key10, value10)
-    );
+                    );
   }
 
   static <K, V> void put(@NonNull Map<K, V> map, Map.Entry<K, V> entry) {
@@ -463,7 +481,7 @@ public interface Maps {
                      $(key4, value4),
                      $(key5, value5),
                      $(key6, value6)
-    );
+                    );
   }
 
   /**
@@ -496,7 +514,7 @@ public interface Maps {
                      $(key5, value5),
                      $(key6, value6),
                      $(key7, value7)
-    );
+                    );
   }
 
   /**
@@ -532,7 +550,7 @@ public interface Maps {
                      $(key6, value6),
                      $(key7, value7),
                      $(key8, value8)
-    );
+                    );
   }
 
   /**
@@ -571,7 +589,7 @@ public interface Maps {
                      $(key7, value7),
                      $(key8, value8),
                      $(key9, value9)
-    );
+                    );
   }
 
   /**
@@ -613,7 +631,7 @@ public interface Maps {
                      $(key8, value8),
                      $(key9, value9),
                      $(key10, value10)
-    );
+                    );
   }
 
 
@@ -705,7 +723,7 @@ public interface Maps {
                      $(key3, value3),
                      $(key4, value4),
                      $(key5, value5)
-    );
+                    );
   }
 
   /**
@@ -735,7 +753,7 @@ public interface Maps {
                      $(key4, value4),
                      $(key5, value5),
                      $(key6, value6)
-    );
+                    );
   }
 
   /**
@@ -768,7 +786,7 @@ public interface Maps {
                      $(key5, value5),
                      $(key6, value6),
                      $(key7, value7)
-    );
+                    );
   }
 
   /**
@@ -804,7 +822,7 @@ public interface Maps {
                      $(key6, value6),
                      $(key7, value7),
                      $(key8, value8)
-    );
+                    );
   }
 
   /**
@@ -843,7 +861,7 @@ public interface Maps {
                      $(key7, value7),
                      $(key8, value8),
                      $(key9, value9)
-    );
+                    );
   }
 
   /**
@@ -885,7 +903,7 @@ public interface Maps {
                      $(key8, value8),
                      $(key9, value9),
                      $(key10, value10)
-    );
+                    );
   }
 
 
@@ -956,6 +974,7 @@ public interface Maps {
    * @param valueConverter The function to convert an object to the value type
    * @return The resulting map
    */
+  @SneakyThrows
   static <K, V> Map<K, V> parseString(String input, @NonNull Function<Object, K> keyConverter, @NonNull Function<Object, V> valueConverter) {
     if (StringUtils.isNullOrBlank(input)) {
       return Collections.emptyMap();
@@ -974,11 +993,8 @@ public interface Maps {
                          String value = keyValuePair.size() > 1 ? keyValuePair.get(1) : null;
                          map.put(keyConverter.apply(key), valueConverter.apply(value));
                        })
-      );
-    } catch (IOException e) {
-      throw Throwables.propagate(e);
+                    );
     }
-
     return map;
   }
 
@@ -997,11 +1013,12 @@ public interface Maps {
     Map<K, V> map = new HashMap<>();
     try (CSVReader reader = CSV.builder().reader(input)) {
       reader.forEach(row -> row.forEach(cell -> {
-                       if (row.size() >= 2) {
-                         map.put(keyConverter.apply(row.get(0)), valueConverter.apply(row.get(1)));
-                       }
-                     })
-      );
+                                          if (row.size() >= 2) {
+                                            map.put(keyConverter.apply(row.get(0)), valueConverter.apply(row.get(1)));
+                                          }
+                                        }
+                                       )
+                    );
     }
     return map;
   }
@@ -1020,7 +1037,7 @@ public interface Maps {
       for (Map.Entry<K, V> kvEntry : map.entrySet()) {
         writer.write(Convert.convert(kvEntry.getKey(), String.class),
                      Convert.convert(kvEntry.getValue(), String.class)
-        );
+                    );
       }
     }
   }
@@ -1059,9 +1076,9 @@ public interface Maps {
               .collect(Collectors.toMap(Tuple2::getKey,
                                         Tuple2::getValue,
                                         (v1, v2) -> v1,
-                                        Unchecked.supplier(() -> Reflect.onClass(map.getClass()).create().get())
-                       )
-              );
+                                        Unchecked.supplier(() -> onClass(map.getClass()).create().get())
+                                       )
+                      );
   }
 
 
@@ -1071,9 +1088,9 @@ public interface Maps {
               .collect(Collectors.toMap(Tuple2::getKey,
                                         Tuple2::getValue,
                                         (v1, v2) -> v1,
-                                        Unchecked.supplier(() -> Reflect.onClass(map.getClass()).create().get())
-                       )
-              );
+                                        Unchecked.supplier(() -> onClass(map.getClass()).create().get())
+                                       )
+                      );
   }
 
 

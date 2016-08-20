@@ -23,18 +23,12 @@ package com.davidbracewell.collection.list;
 
 import com.davidbracewell.collection.Sorting;
 import com.davidbracewell.conversion.Cast;
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Objects;
+import java.util.*;
+
+import static com.davidbracewell.Validations.validateState;
 
 /**
  * The type Sorted array list.
@@ -48,15 +42,6 @@ public class SortedArrayList<E> implements List<E>, Serializable {
 
   private final Comparator<? super E> comparator;
   private final ArrayList<E> backing;
-
-
-  public static void main(String[] args) {
-    List<String> sorted = new SortedArrayList<>();
-    sorted.add("B");
-    sorted.add("C");
-    sorted.add("A");
-    System.out.println(sorted);
-  }
 
   /**
    * Instantiates a new Sorted array list.
@@ -169,7 +154,7 @@ public class SortedArrayList<E> implements List<E>, Serializable {
 
   @Override
   public List<E> subList(int fromIndex, int toIndex) {
-    Preconditions.checkState(toIndex > fromIndex, "Ending index must be greater than starting index.");
+    validateState(toIndex > fromIndex, "Ending index must be greater than starting index.");
     SortedArrayList<E> sub = new SortedArrayList<>(comparator, toIndex - fromIndex);
     sub.addAll(backing.subList(fromIndex, toIndex));
     return sub;

@@ -25,7 +25,7 @@ import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.io.resource.ByteArrayResource;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.reflection.BeanMap;
-import com.google.common.base.Strings;
+import com.davidbracewell.string.StringUtils;
 import org.kohsuke.MetaInfServices;
 
 import java.util.Map;
@@ -48,7 +48,7 @@ public class ByteArrayResourceProvider implements ResourceProvider {
   @Override
   public Resource createResource(String specification, Map<String, String> properties) {
     BeanMap beanMap;
-    if (Strings.isNullOrEmpty(specification)) {
+    if (StringUtils.isNullOrBlank(specification)) {
       beanMap = new BeanMap(new ByteArrayResource());
     } else {
       beanMap = new BeanMap(new ByteArrayResource(specification.getBytes()));

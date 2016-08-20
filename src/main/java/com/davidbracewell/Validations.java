@@ -26,6 +26,19 @@ package com.davidbracewell;
  */
 public interface Validations {
 
+  static <T> T validateNotNull(T o, String message) {
+    if (o == null) {
+      throw new NullPointerException(message);
+    }
+    return o;
+  }
+
+  static <T> T validateNotNull(T o) {
+    if (o == null) {
+      throw new NullPointerException();
+    }
+    return o;
+  }
 
   static void validateUnchecked(boolean condition, String onFailMessage) {
     if (!condition) {

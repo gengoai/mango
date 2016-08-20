@@ -21,16 +21,15 @@
 
 package com.davidbracewell.reflection;
 
-import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
+import com.davidbracewell.string.StringUtils;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 
 import java.io.Serializable;
 import java.lang.reflect.Array;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -62,7 +61,7 @@ class ClassDescriptorCache implements Serializable {
     .build(new CacheLoader<String, Class<?>>() {
       @Override
       public Class<?> load(String name) throws Exception {
-        if (Strings.isNullOrEmpty(name)) {
+        if (StringUtils.isNullOrBlank(name)) {
           throw new ClassNotFoundException();
         }
         name = name.trim();
@@ -130,12 +129,9 @@ class ClassDescriptorCache implements Serializable {
     return INSTANCE;
   }
 
+  @SneakyThrows
   public ClassDescriptor getClassDescriptor(@NonNull Class<?> clazz) {
-    try {
       return classDescriptorCache.get(clazz);
-    } catch (ExecutionException e) {
-      throw Throwables.propagate(e);
-    }
   }
 
   public Class<?> getClassForName(@NonNull String string) throws Exception {

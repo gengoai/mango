@@ -21,7 +21,7 @@
 
 package com.davidbracewell.io.resource;
 
-import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,8 +39,8 @@ public class InputStreamResource extends BaseResource implements ReadOnlyResourc
    *
    * @param stream The input stream
    */
-  public InputStreamResource(InputStream stream) {
-    this.inputStream = Preconditions.checkNotNull(stream);
+  public InputStreamResource(@NonNull InputStream stream) {
+    this.inputStream = stream;
   }
 
   @Override

@@ -21,26 +21,16 @@
 
 package com.davidbracewell.stream;
 
+import com.davidbracewell.collection.Sorting;
 import com.davidbracewell.conversion.Cast;
-import com.davidbracewell.function.SerializableBinaryOperator;
-import com.davidbracewell.function.SerializableComparator;
-import com.davidbracewell.function.SerializableConsumer;
-import com.davidbracewell.function.SerializableFunction;
-import com.davidbracewell.function.SerializablePredicate;
-import com.davidbracewell.function.SerializableRunnable;
-import com.davidbracewell.function.SerializableToDoubleFunction;
+import com.davidbracewell.function.*;
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.Resource;
-import com.google.common.collect.Ordering;
 import lombok.NonNull;
 import org.apache.spark.api.java.JavaRDD;
 
 import java.io.Closeable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collector;
 
 /**
@@ -246,7 +236,7 @@ public interface MStream<T> extends Closeable {
    * @return the optional
    */
   default Optional<T> max() {
-    return min((t1, t2) -> Ordering.natural().reverse().compare(Cast.as(t1), Cast.as(t2)));
+    return min((t1, t2) -> Sorting.natural().reversed().compare(Cast.as(t1), Cast.as(t2)));
   }
 
   /**
@@ -255,7 +245,7 @@ public interface MStream<T> extends Closeable {
    * @return the optional
    */
   default Optional<T> min() {
-    return min((t1, t2) -> Ordering.natural().compare(Cast.as(t1), Cast.as(t2)));
+    return min((t1, t2) -> Sorting.natural().compare(Cast.as(t1), Cast.as(t2)));
   }
 
   /**

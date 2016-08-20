@@ -21,10 +21,12 @@
 
 package com.davidbracewell.io;
 
-import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
+
+import static com.davidbracewell.Validations.validateArgument;
 
 /**
  * Convenience method for detecting the character set of a byte array
@@ -42,12 +44,11 @@ public class CharsetDetector {
    * @param length the length to read
    * @return The detected charset or null
    */
-  public static Charset detect(byte[] buffer, int offset, int length) {
-    Preconditions.checkNotNull(buffer);
-    Preconditions.checkArgument(length > 0);
-    Preconditions.checkArgument(offset >= 0);
+  public static Charset detect(@NonNull byte[] buffer, int offset, int length) {
+    validateArgument(length > 0);
+    validateArgument(offset >= 0);
 
-   final com.ibm.icu.text.CharsetDetector detector = new com.ibm.icu.text.CharsetDetector();
+    final com.ibm.icu.text.CharsetDetector detector = new com.ibm.icu.text.CharsetDetector();
     try {
       detector.setText(new ByteArrayInputStream(buffer, offset, length));
       return Charset.forName(detector.detect().getName());

@@ -27,8 +27,8 @@ import com.davidbracewell.io.structured.json.JSONReader;
 import com.davidbracewell.io.structured.json.JSONWriter;
 import com.davidbracewell.io.structured.xml.XMLReader;
 import com.davidbracewell.io.structured.xml.XMLWriter;
-import com.google.common.base.Throwables;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -68,7 +68,7 @@ public interface StructuredFormat extends Serializable {
    * @return the data in the resource as a map
    * @throws IOException something went wrong reading the resource
    */
-  default Map<String,?> loads(Resource resource) throws IOException {
+  default Map<String, ?> loads(Resource resource) throws IOException {
     return loads(resource.readToString());
   }
 
@@ -78,14 +78,13 @@ public interface StructuredFormat extends Serializable {
    * @param data the data
    * @return the data in the resource as a map
    */
-  default Map<String,?> loads(String data) {
-    Map<String,?> r;
-    try( StructuredReader reader = createReader(new StringResource(data))){
+  @SneakyThrows
+  default Map<String, ?> loads(String data) {
+    Map<String, ?> r;
+    try (StructuredReader reader = createReader(new StringResource(data))) {
       reader.beginDocument();
-      r= reader.nextMap();
-      reader.endDocument();;
-    }catch (IOException e ){
-      throw Throwables.propagate(e);
+      r = reader.nextMap();
+      reader.endDocument();
     }
     return r;
   }
@@ -96,22 +95,17 @@ public interface StructuredFormat extends Serializable {
    * @param map the map to dump
    * @return the string representation of the map
    */
-  default String dumps(@NonNull Map<String,?> map) {
+  @SneakyThrows
+  default String dumps(@NonNull Map<String, ?> map) {
     Resource strResource = new StringResource();
-    try( StructuredWriter writer = createWriter(strResource)){
+    try (StructuredWriter writer = createWriter(strResource)) {
       writer.beginDocument();
-      for( Map.Entry<String,?> entry : map.entrySet()){
-          writer.writeKeyValue(entry.getKey(), entry.getValue());
+      for (Map.Entry<String, ?> entry : map.entrySet()) {
+        writer.writeKeyValue(entry.getKey(), entry.getValue());
       }
       writer.endDocument();
-    } catch (IOException e ){
-      throw Throwables.propagate(e);
     }
-    try {
-      return strResource.readToString().trim();
-    } catch (IOException e) {
-      throw Throwables.propagate(e);
-    }
+    return strResource.readToString().trim();
   }
 
 

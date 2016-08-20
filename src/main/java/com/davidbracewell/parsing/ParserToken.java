@@ -21,10 +21,9 @@
 
 package com.davidbracewell.parsing;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Value;
 
 /**
  * A parse token from a Lexer to be used in a Parser
@@ -32,6 +31,7 @@ import lombok.NonNull;
  * @author David B. Bracewell
  */
 @Getter
+@Value
 public final class ParserToken {
 
   public final String text;
@@ -46,32 +46,6 @@ public final class ParserToken {
   public ParserToken(@NonNull String text, @NonNull ParserTokenType type) {
     this.text = text;
     this.type = type;
-  }
-
-
-  @Override
-  public String toString() {
-    return MoreObjects.toStringHelper(ParserToken.class)
-        .add("text", text)
-        .add("type", type)
-        .toString();
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hashCode(text, type);
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null || getClass() != obj.getClass()) {
-      return false;
-    }
-    final ParserToken other = (ParserToken) obj;
-    return Objects.equal(this.text, other.text) && Objects.equal(this.type, other.type);
   }
 
 }//END OF ParseToken

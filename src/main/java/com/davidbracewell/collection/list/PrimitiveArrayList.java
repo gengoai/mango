@@ -21,7 +21,6 @@
 
 package com.davidbracewell.collection.list;
 
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -30,6 +29,8 @@ import java.util.AbstractList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+
+import static com.davidbracewell.Validations.validateArgument;
 
 /**
  * <p> A fixed size list backed by a primitive array. The items in the array are converted through calling the {@link
@@ -57,8 +58,8 @@ public class PrimitiveArrayList<E> extends AbstractList<E> implements Serializab
    *                                  component type is not a primitive
    */
   public PrimitiveArrayList(@NonNull Object array, @NonNull Class<E> objectType) {
-    Preconditions.checkArgument(array.getClass().isArray(), "The object must be an array of primitives.");
-    Preconditions.checkArgument(array.getClass().getComponentType().isPrimitive(), "The object must be an array of primitives.");
+    validateArgument(array.getClass().isArray(), "The object must be an array of primitives.");
+    validateArgument(array.getClass().getComponentType().isPrimitive(), "The object must be an array of primitives.");
     this.array = array;
     this.arraySize = Array.getLength(array);
     this.objectType = objectType;

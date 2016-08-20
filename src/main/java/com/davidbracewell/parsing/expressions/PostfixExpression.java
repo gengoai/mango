@@ -22,7 +22,7 @@
 package com.davidbracewell.parsing.expressions;
 
 import com.davidbracewell.parsing.ParserToken;
-import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 /**
  * An <code>Expression</code> representing a postfix operator
@@ -47,10 +47,10 @@ public class PostfixExpression extends Expression {
    * @param operator The postfix operator
    * @param left     The expression on the right of the operator
    */
-  public PostfixExpression(ParserToken operator, Expression left) {
-    super(Preconditions.checkNotNull(operator).type);
+  public PostfixExpression(@NonNull ParserToken operator, @NonNull Expression left) {
+    super(operator.type);
     this.operator = operator;
-    this.left = Preconditions.checkNotNull(left);
+    this.left = left;
   }
 
   @Override

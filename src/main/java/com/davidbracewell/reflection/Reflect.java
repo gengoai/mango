@@ -21,11 +21,11 @@
 
 package com.davidbracewell.reflection;
 
+import com.davidbracewell.Defaults;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.base.Defaults;
 import lombok.NonNull;
 
 import java.lang.reflect.Constructor;
@@ -78,7 +78,7 @@ public class Reflect {
    * @return The Reflect object
    */
   public static Reflect onClass(@NonNull Class<?> clazz) {
-    return new Reflect(null,clazz);
+    return new Reflect(null, clazz);
   }
 
   /**
@@ -184,10 +184,10 @@ public class Reflect {
       return false;
     }
     return ClassDescriptorCache.getInstance()
-      .getClassDescriptor(clazz)
-      .getFields(accessAll)
-      .stream()
-      .anyMatch(f -> f.getName().equals(name));
+                               .getClassDescriptor(clazz)
+                               .getFields(accessAll)
+                               .stream()
+                               .anyMatch(f -> f.getName().equals(name));
   }
 
   /**
@@ -292,8 +292,8 @@ public class Reflect {
    */
   public Set<Constructor<?>> getConstructors() {
     return ClassDescriptorCache.getInstance()
-      .getClassDescriptor(clazz)
-      .getConstructors(accessAll);
+                               .getClassDescriptor(clazz)
+                               .getConstructors(accessAll);
   }
 
   /**
@@ -306,8 +306,8 @@ public class Reflect {
    */
   public Set<Method> getMethods() {
     return ClassDescriptorCache.getInstance()
-      .getClassDescriptor(clazz)
-      .getMethods(accessAll);
+                               .getClassDescriptor(clazz)
+                               .getMethods(accessAll);
   }
 
   public Method getMethod(String name) {
@@ -328,10 +328,10 @@ public class Reflect {
       return false;
     }
     return ClassDescriptorCache.getInstance()
-      .getClassDescriptor(clazz)
-      .getMethods(accessAll)
-      .stream()
-      .anyMatch(f -> f.getName().equals(name));
+                               .getClassDescriptor(clazz)
+                               .getMethods(accessAll)
+                               .stream()
+                               .anyMatch(f -> f.getName().equals(name));
   }
 
   /**
@@ -346,11 +346,11 @@ public class Reflect {
       return Collections.emptySet();
     }
     return ClassDescriptorCache.getInstance()
-      .getClassDescriptor(clazz)
-      .getMethods(accessAll)
-      .stream()
-      .filter(f -> f.getName().equals(name) && f.getParameterCount() == numParams)
-      .collect(Collectors.toSet());
+                               .getClassDescriptor(clazz)
+                               .getMethods(accessAll)
+                               .stream()
+                               .filter(f -> f.getName().equals(name) && f.getParameterCount() == numParams)
+                               .collect(Collectors.toSet());
   }
 
   /**
@@ -465,8 +465,8 @@ public class Reflect {
    */
   public Set<Field> getFields() {
     return ClassDescriptorCache.getInstance()
-      .getClassDescriptor(clazz)
-      .getFields(accessAll);
+                               .getClassDescriptor(clazz)
+                               .getFields(accessAll);
   }
 
   @Override

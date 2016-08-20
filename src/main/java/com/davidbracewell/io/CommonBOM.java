@@ -21,9 +21,8 @@
 
 package com.davidbracewell.io;
 
-import com.google.common.base.Charsets;
-
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Enumeration of common Unicode Byte Order Marks
@@ -34,15 +33,15 @@ public enum CommonBOM {
   /**
    * The UTF_8 BOM
    */
-  UTF_8(new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF}, Charsets.UTF_8),
+  UTF_8(new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF}, StandardCharsets.UTF_8),
   /**
    * The UTF_16BE BOM.
    */
-  UTF_16BE(new byte[]{(byte) 0xFE, (byte) 0xFF}, Charsets.UTF_16BE),
+  UTF_16BE(new byte[]{(byte) 0xFE, (byte) 0xFF}, StandardCharsets.UTF_16BE),
   /**
    * The UTF_16LE BOM.
    */
-  UTF_16LE(new byte[]{(byte) 0xFF, (byte) 0xFE}, Charsets.UTF_16LE),
+  UTF_16LE(new byte[]{(byte) 0xFF, (byte) 0xFE}, StandardCharsets.UTF_16LE),
   /**
    * The UTF_32BE BOM.
    */

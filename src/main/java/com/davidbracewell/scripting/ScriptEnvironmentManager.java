@@ -21,7 +21,6 @@
 
 package com.davidbracewell.scripting;
 
-import com.davidbracewell.Validations;
 import com.davidbracewell.string.StringUtils;
 
 import javax.script.ScriptEngine;
@@ -30,6 +29,8 @@ import javax.script.ScriptEngineManager;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.davidbracewell.Validations.validateArgument;
 
 /**
  * Manages scripting environments giving each language a singleton instance.
@@ -65,10 +66,11 @@ public final class ScriptEnvironmentManager {
    * @return the scripting environment
    */
   public ScriptEnvironment getEnvironment(String environmentName) {
-    Validations.validateArgument(StringUtils.isNotNullOrBlank(environmentName),
-                                 "Environment name cannot be null or empty"
-    );
+    validateArgument(StringUtils.isNotNullOrBlank(environmentName),
+                     "Environment name cannot be null or empty"
+                    );
     ScriptEngine engine = engineManager.getEngineByName(environmentName);
+    validateArgument(engine != null, environmentName + " is an unknown.");
     environmentName = engine.getFactory().getEngineName();
     if (!environments.containsKey(environmentName)) {
       environments.put(environmentName, new ScriptEnvironment(engine));
@@ -83,10 +85,11 @@ public final class ScriptEnvironmentManager {
    * @return the scripting environment
    */
   public static ScriptEnvironment getTemporaryEnvironment(String environmentName) {
-    Validations.validateArgument(StringUtils.isNotNullOrBlank(environmentName),
-                                 "Environment name cannot be null or empty"
-    );
+    validateArgument(StringUtils.isNotNullOrBlank(environmentName),
+                     "Environment name cannot be null or empty"
+                    );
     ScriptEngine engine = ScriptEnvironmentManager.getInstance().engineManager.getEngineByName(environmentName);
+    validateArgument(engine != null, environmentName + " is an unknown.");
     return new ScriptEnvironment(engine);
   }
 
@@ -98,7 +101,7 @@ public final class ScriptEnvironmentManager {
    * @return the scripting environment
    */
   public ScriptEnvironment getEnvironmentForExtension(String extension) {
-    Validations.validateArgument(StringUtils.isNotNullOrBlank(extension), "Extension name cannot be null or empty");
+    validateArgument(StringUtils.isNotNullOrBlank(extension), "Extension name cannot be null or empty");
     return getEnvironment(getEnvironmentNameForExtension(extension));
   }
 
@@ -109,7 +112,7 @@ public final class ScriptEnvironmentManager {
    * @return the scripting environment
    */
   public static ScriptEnvironment getTemporaryEnvironmentForExtension(String extension) {
-    Validations.validateArgument(StringUtils.isNotNullOrBlank(extension), "Extension name cannot be null or empty");
+    validateArgument(StringUtils.isNotNullOrBlank(extension), "Extension name cannot be null or empty");
     return getTemporaryEnvironment(ScriptEnvironmentManager.getInstance().getEnvironmentNameForExtension(extension));
   }
 
@@ -121,11 +124,9 @@ public final class ScriptEnvironmentManager {
    * @return the scripting environment name
    */
   public String getEnvironmentNameForExtension(String extension) {
-    Validations.validateArgument(StringUtils.isNotNullOrBlank(extension), "Extension name cannot be null or empty");
+    validateArgument(StringUtils.isNotNullOrBlank(extension), "Extension name cannot be null or empty");
     ScriptEngine engine = engineManager.getEngineByExtension(extension);
-    if (engine == null) {
-      throw new IllegalStateException(extension + " is not a recognized scripting extension.");
-    }
+    validateArgument(engine != null, extension + " is not a recognized scripting extension.");
     return engine.getFactory().getLanguageName();
   }
 

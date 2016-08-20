@@ -24,13 +24,13 @@ package com.davidbracewell.cache;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.reflection.Specification;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import com.google.common.cache.RemovalListener;
 
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+
+import static com.davidbracewell.Validations.validateArgument;
 
 /**
  * Common specification for a cache.
@@ -220,9 +220,7 @@ public class CacheSpec<K, V> implements Specification, Serializable {
    * @return the max size
    */
   public CacheSpec<K, V> maxSize(int maxSize) {
-    if (maxSize <= 0) {
-      throw new IllegalArgumentException("maxSize must be > 0");
-    }
+    validateArgument(maxSize > 0, "maxSize must be > 0");
     this.maxSize = maxSize;
     return this;
   }
@@ -235,7 +233,7 @@ public class CacheSpec<K, V> implements Specification, Serializable {
    * @return the t
    */
   public <T extends CacheSpec<K, V>> T concurrencyLevel(int concurrencyLevel) {
-    Preconditions.checkArgument(concurrencyLevel > 0);
+    validateArgument(concurrencyLevel > 0, "Concurrency Level must be > 0");
     this.concurrencyLevel = concurrencyLevel;
     return Cast.as(this);
   }
@@ -248,7 +246,7 @@ public class CacheSpec<K, V> implements Specification, Serializable {
    * @return This Cache spec
    */
   public <T extends CacheSpec<K, V>> T initialCapacity(int initialCapacity) {
-    Preconditions.checkArgument(initialCapacity > 0);
+    validateArgument(initialCapacity > 0, "Capacity must be > 0");
     this.initialCapacity = initialCapacity;
     return Cast.as(this);
   }
@@ -276,7 +274,7 @@ public class CacheSpec<K, V> implements Specification, Serializable {
   }
 
   private long convertStringToTime(String duration) {
-    Preconditions.checkArgument(!Strings.isNullOrEmpty(duration), "Duration cannot be null or empty");
+    validateArgument(StringUtils.isNotNullOrBlank(duration), "Duration cannot be null or empty");
     duration = duration.trim().toLowerCase();
     long time = Integer.valueOf(duration.substring(0, duration.length() - 1));
     switch (duration.charAt(duration.length() - 1)) {

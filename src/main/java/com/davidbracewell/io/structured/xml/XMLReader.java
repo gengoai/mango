@@ -28,15 +28,12 @@ import com.davidbracewell.io.structured.ElementType;
 import com.davidbracewell.io.structured.StructuredReader;
 import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import lombok.NonNull;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.EventFilter;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Characters;
 import javax.xml.stream.events.EndElement;
@@ -49,6 +46,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
+import static com.davidbracewell.Validations.validateArgument;
 import static com.davidbracewell.tuple.Tuples.$;
 
 /**
@@ -133,10 +131,12 @@ public class XMLReader extends StructuredReader {
    */
   public XMLReader(String documentTag, @NonNull Resource resource) throws IOException {
     try {
-      Preconditions.checkArgument(!Strings.isNullOrEmpty(documentTag));
+      validateArgument(StringUtils.isNotNullOrBlank(documentTag));
       this.documentTag = documentTag;
       XMLInputFactory factory = XMLInputFactory.newFactory();
-      this.reader = factory.createFilteredReader(factory.createXMLEventReader(resource.inputStream(), "UTF-8"), new WhitespaceFilter());
+      this.reader = factory.createFilteredReader(factory.createXMLEventReader(resource.inputStream(), "UTF-8"),
+                                                 new WhitespaceFilter()
+                                                );
       this.stack = new Stack<>();
     } catch (Exception e) {
       throw new IOException(e);
@@ -278,7 +278,10 @@ public class XMLReader extends StructuredReader {
   @Override
   public StructuredReader endObject() throws IOException {
     XMLEvent event = consume();
-    validate(event, ElementType.END_OBJECT, Tuple2.of(((EndElement) event).getName().getLocalPart(), ElementType.BEGIN_OBJECT));
+    validate(event,
+             ElementType.END_OBJECT,
+             Tuple2.of(((EndElement) event).getName().getLocalPart(), ElementType.BEGIN_OBJECT)
+            );
     stack.pop();
     return this;
   }
@@ -300,7 +303,10 @@ public class XMLReader extends StructuredReader {
   @Override
   public StructuredReader endArray() throws IOException {
     XMLEvent event = consume();
-    validate(event, ElementType.END_ARRAY, Tuple2.of(((EndElement) event).getName().getLocalPart(), ElementType.BEGIN_ARRAY));
+    validate(event,
+             ElementType.END_ARRAY,
+             Tuple2.of(((EndElement) event).getName().getLocalPart(), ElementType.BEGIN_ARRAY)
+            );
     stack.pop();
     return this;
   }

@@ -23,8 +23,8 @@ package com.davidbracewell.io;
 
 import com.davidbracewell.concurrent.Threads;
 import com.davidbracewell.logging.Logger;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
+import lombok.NonNull;
+import lombok.SneakyThrows;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -32,6 +32,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.davidbracewell.Validations.validateArgument;
 
 /**
  * <p>Wraps an underlying writer allowing multiple threads to write through buffering calls to a blocking queue.</p>
@@ -52,15 +54,15 @@ public class AsyncWriter extends Writer implements Runnable {
    *
    * @param wrap The writer being wrapped
    */
-  public AsyncWriter(Writer wrap) {
-    this.wrap = Preconditions.checkNotNull(wrap);
+  public AsyncWriter(@NonNull Writer wrap) {
+    this.wrap = wrap;
     thread = new Thread(this);
     thread.start();
   }
 
   @Override
   public void write(char[] cbuf, int off, int len) throws IOException {
-    Preconditions.checkArgument(!isStopped.get(), "Cannot write to a closed writer.");
+    validateArgument(!isStopped.get(), "Cannot write to a closed writer.");
     try {
       queue.put(new String(cbuf, off, len));
     } catch (InterruptedException e) {
@@ -92,6 +94,7 @@ public class AsyncWriter extends Writer implements Runnable {
   }
 
   @Override
+  @SneakyThrows
   public void run() {
     while (!Thread.currentThread().isInterrupted()) {
       try {
@@ -109,11 +112,7 @@ public class AsyncWriter extends Writer implements Runnable {
         break;
       }
     }
-    try {
-      wrap.flush();
-    } catch (IOException e) {
-      throw Throwables.propagate(e);
-    }
+    wrap.flush();
     QuietIO.closeQuietly(wrap);
     isTerminated.set(true);
   }

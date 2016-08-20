@@ -22,7 +22,6 @@
 package com.davidbracewell.string;
 
 import com.davidbracewell.function.SerializableFunction;
-import com.google.common.base.CharMatcher;
 import lombok.NonNull;
 
 import java.text.Normalizer;
@@ -87,7 +86,8 @@ public enum StringFunctions implements SerializableFunction<String, String> {
   TRIM {
     @Override
     public String apply(String input) {
-      return input == null ? null : CharMatcher.INVISIBLE.trimFrom(CharMatcher.WHITESPACE.trimFrom(input));
+      return input == null ? null : CharPredicate.INVISIBLE.and(CharPredicate.BREAKING_WHITESPACE)
+                                                           .and(CharPredicate.WHITESPACE).trimFrom(input);
     }
   },
   /**
@@ -106,10 +106,11 @@ public enum StringFunctions implements SerializableFunction<String, String> {
     @Override
     public String apply(String input) {
       return input == null ? null :
-        Normalizer.normalize(
-          Normalizer.normalize(input, Normalizer.Form.NFD)
-            .replaceAll("\\p{InCombiningDiacriticalMarks}+", ""),
-          Normalizer.Form.NFC);
+             Normalizer.normalize(
+               Normalizer.normalize(input, Normalizer.Form.NFD)
+                         .replaceAll("\\p{InCombiningDiacriticalMarks}+", ""),
+               Normalizer.Form.NFC
+                                 );
     }
   },
   LEFT_TRIM {
@@ -118,7 +119,9 @@ public enum StringFunctions implements SerializableFunction<String, String> {
       if (input == null) {
         return null;
       }
-      return CharMatcher.INVISIBLE.and(CharMatcher.BREAKING_WHITESPACE).and(CharMatcher.WHITESPACE).trimLeadingFrom(input);
+      return CharPredicate.INVISIBLE.and(CharPredicate.BREAKING_WHITESPACE)
+                                    .and(CharPredicate.WHITESPACE)
+                                    .trimLeadingFrom(input);
     }
   },
   RIGHT_TRIM {
@@ -127,7 +130,9 @@ public enum StringFunctions implements SerializableFunction<String, String> {
       if (input == null) {
         return null;
       }
-      return CharMatcher.INVISIBLE.and(CharMatcher.BREAKING_WHITESPACE).and(CharMatcher.WHITESPACE).trimTrailingFrom(input);
+      return CharPredicate.INVISIBLE.and(CharPredicate.BREAKING_WHITESPACE)
+                                    .and(CharPredicate.WHITESPACE)
+                                    .trimTrailingFrom(input);
     }
   },
   NULL_TO_EMPTY {
@@ -150,7 +155,7 @@ public enum StringFunctions implements SerializableFunction<String, String> {
     return REGEX_REPLACE(
       Pattern.compile(pattern),
       replacement
-    );
+                        );
   }
 
   /**

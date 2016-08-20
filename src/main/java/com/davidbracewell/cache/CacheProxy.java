@@ -28,8 +28,8 @@ import com.davidbracewell.reflection.Reflect;
 import com.davidbracewell.reflection.ReflectionUtils;
 import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
-import com.google.common.base.Throwables;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
@@ -91,18 +91,13 @@ public class CacheProxy<T> implements InvocationHandler, Serializable {
     return cache(object, null);
   }
 
+  @SneakyThrows
   public static <T> T cache(@NonNull Object object, String defaultCacheName) {
-    try {
-      return Cast.as(
-        Proxy.newProxyInstance(
-          object.getClass().getClassLoader(),
-          ReflectionUtils.getAllInterfaces(object).toArray(new Class[1]),
-          new CacheProxy<>(object, defaultCacheName)
-        )
-      );
-    } catch (Exception e) {
-      throw Throwables.propagate(e);
-    }
+    return Cast.as(Proxy.newProxyInstance(object.getClass().getClassLoader(),
+                                          ReflectionUtils.getAllInterfaces(object).toArray(new Class[1]),
+                                          new CacheProxy<>(object, defaultCacheName)
+                                         )
+                  );
   }
 
   private String method2String(Method method) {

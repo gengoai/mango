@@ -22,8 +22,8 @@
 package com.davidbracewell.collection.list;
 
 import com.davidbracewell.conversion.Convert;
-import com.google.common.base.Throwables;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 
 import java.lang.reflect.Array;
 import java.util.Iterator;
@@ -73,7 +73,8 @@ public class PrimitiveArrayIterator<E> implements Iterator<E> {
    * @return the primitive array iterator
    */
   public static PrimitiveArrayIterator<Integer> integerArrayIterator(
-      Object array) {
+    Object array
+                                                                    ) {
     return new PrimitiveArrayIterator<>(array, Integer.class);
   }
 
@@ -124,7 +125,8 @@ public class PrimitiveArrayIterator<E> implements Iterator<E> {
    * @return the primitive array iterator
    */
   public static PrimitiveArrayIterator<Boolean> booleanArrayIterator(
-      Object array) {
+    Object array
+                                                                    ) {
     return new PrimitiveArrayIterator<>(array, Boolean.class);
   }
 
@@ -144,17 +146,14 @@ public class PrimitiveArrayIterator<E> implements Iterator<E> {
   }
 
   @Override
+  @SneakyThrows
   public E next() {
     if (index >= length) {
       throw new NoSuchElementException();
     }
     Object val = Array.get(array, index);
     index++;
-    try {
-      return Convert.convert(val, rClass);
-    } catch (Exception e) {
-      throw Throwables.propagate(e);
-    }
+    return Convert.convert(val, rClass);
   }
 
   @Override

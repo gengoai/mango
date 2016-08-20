@@ -22,7 +22,6 @@
 package com.davidbracewell.conversion;
 
 import com.davidbracewell.io.resource.Resource;
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -81,8 +80,7 @@ public class Val implements Serializable {
    * @param clazz the clazz
    * @return the object
    */
-  public Object asObject(Class<?> clazz) {
-    Preconditions.checkNotNull(clazz, "The class cannot be null");
+  public Object asObject(@NonNull Class<?> clazz) {
     if (Map.class.isAssignableFrom(clazz)) {
       return asMap(clazz, String.class, String.class);
     } else if (Collection.class.isAssignableFrom(clazz)) {
@@ -109,12 +107,8 @@ public class Val implements Serializable {
    * @param genericClass    The class of the item in the collection
    * @return The object as a collection
    */
-  public <E, T extends Collection<E>> T asCollection(Class<?> collectionClass, Class<E> genericClass) {
-    return Convert.convert(
-        toConvert,
-        Preconditions.checkNotNull(collectionClass),
-        Preconditions.checkNotNull(genericClass)
-    );
+  public <E, T extends Collection<E>> T asCollection(@NonNull Class<?> collectionClass, @NonNull Class<E> genericClass) {
+    return Convert.convert(toConvert, collectionClass, genericClass);
   }
 
   /**
@@ -127,7 +121,7 @@ public class Val implements Serializable {
    * @param valueClass The value class
    * @return the object as a map
    */
-  public <K, V> Map<K, V> asMap(Class<?> mapClass, Class<K> keyClass, Class<V> valueClass) {
+  public <K, V> Map<K, V> asMap(@NonNull Class<?> mapClass, @NonNull Class<K> keyClass, @NonNull Class<V> valueClass) {
     return Convert.convert(toConvert, mapClass, keyClass, valueClass);
   }
 

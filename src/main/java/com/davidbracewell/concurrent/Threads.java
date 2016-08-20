@@ -22,7 +22,6 @@
 package com.davidbracewell.concurrent;
 
 import com.davidbracewell.logging.Logger;
-import com.google.common.base.Preconditions;
 
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -42,12 +41,15 @@ public interface Threads {
    * @param milliseconds The amount of time in milliseconds to sleep
    */
   static void sleep(long milliseconds) {
-    Preconditions.checkArgument(milliseconds >= 0);
+    if (milliseconds <= 0) {
+      return;
+    }
     try {
       if (log.isLoggable(Level.FINEST)) {
-        log.finest("Thread {0} is going to sleep for {1} milliseconds.", Thread.currentThread()
-                .getName(),
-            milliseconds);
+        log.finest("Thread {0} is going to sleep for {1} milliseconds.",
+                   Thread.currentThread().getName(),
+                   milliseconds
+                  );
       }
       Thread.sleep(milliseconds);
     } catch (InterruptedException e) {
@@ -62,7 +64,6 @@ public interface Threads {
    * @param timeUnit The TimeUnit that the time is in
    */
   static void sleep(long time, TimeUnit timeUnit) {
-    Preconditions.checkArgument(time >= 0);
     sleep(timeUnit.toMillis(time));
   }
 

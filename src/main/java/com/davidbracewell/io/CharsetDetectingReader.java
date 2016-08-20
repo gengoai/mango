@@ -21,10 +21,9 @@
 
 package com.davidbracewell.io;
 
-import com.google.common.base.Charsets;
-
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * <p>A reader that understands Unicode Byte Order Marks and can also guess the character set if a BOM is not present
@@ -86,7 +85,7 @@ public class CharsetDetectingReader extends Reader {
     if (charset == null && defaultCharset == null) {
       charset = CharsetDetector.detect(buffer, 0, read);
       if (charset == null) {
-        charset = Charsets.UTF_8;
+        charset = StandardCharsets.UTF_8;
       }
     } else if (charset == null) {
       charset = defaultCharset;

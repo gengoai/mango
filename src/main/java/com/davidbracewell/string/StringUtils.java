@@ -23,12 +23,16 @@ package com.davidbracewell.string;
 
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.structured.csv.CSVReader;
-import com.google.common.base.*;
+import lombok.SneakyThrows;
 
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
+
+import static com.davidbracewell.Validations.validateArgument;
+import static com.davidbracewell.collection.Streams.asStream;
 
 /**
  * String utility methods
@@ -38,22 +42,15 @@ import java.util.Random;
 public final class StringUtils {
 
   /**
-   * CharMatcher combining INVISIBLE, BREAKING_WHITESPACE, and WHITESPACE
+   * CharPredicate combining INVISIBLE, BREAKING_WHITESPACE, and WHITESPACE
    */
-  public static final CharMatcher WHITESPACE = CharMatcher.INVISIBLE.and(CharMatcher.BREAKING_WHITESPACE)
-                                                                    .and(CharMatcher.WHITESPACE);
+  public static final CharPredicate WHITESPACE = CharPredicate.INVISIBLE.and(CharPredicate.BREAKING_WHITESPACE)
+                                                                        .and(CharPredicate.WHITESPACE);
   /**
    * Empty String
    */
   public static final String EMPTY = "";
-  /**
-   * A CharMatcher that matches anything that is a letter or digit
-   */
-  public static final CharMatcher LETTER_OR_DIGIT = CharMatcher.forPredicate(Character::isLetterOrDigit);
-  /**
-   * A CharMatcher that matches anything that is not a letter or digit
-   */
-  public static final CharMatcher NOT_LETTER_OR_DIGIT = CharMatcher.forPredicate(Predicates.not(LETTER_OR_DIGIT));
+
   /**
    * The constant SINGLE_UNICODE_WHITESPACE.
    */
@@ -70,6 +67,24 @@ public final class StringUtils {
   private StringUtils() {
     throw new IllegalAccessError();
   }
+
+
+  public static String join(Iterable<?> iterable, CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
+    return asStream(iterable).map(Object::toString).collect(Collectors.joining(delimiter, prefix, suffix));
+  }
+
+  public static String join(Iterable<?> iterable, CharSequence delimiter) {
+    return asStream(iterable).map(Object::toString).collect(Collectors.joining(delimiter));
+  }
+
+  public static <T> String join(T[] values, CharSequence delimiter) {
+    return asStream(values).map(Object::toString).collect(Collectors.joining(delimiter));
+  }
+
+  public static <T> String join(T[] values, CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
+    return asStream(values).map(Object::toString).collect(Collectors.joining(delimiter, prefix, suffix));
+  }
+
 
   /**
    * <p>Abbreviates a string to a desired length and adds "..." at the end.</p>
@@ -88,6 +103,24 @@ public final class StringUtils {
     return input.substring(0, length) + "...";
   }
 
+  public static String padEnd(CharSequence sequence, int desiredLength, char paddingCharacter) {
+    if (sequence == null) {
+      return repeat(paddingCharacter, desiredLength);
+    } else if (sequence.length() == desiredLength) {
+      return sequence.toString();
+    }
+    return sequence.toString() + repeat(paddingCharacter, desiredLength - sequence.length());
+  }
+
+  public static String padStart(CharSequence sequence, int desiredLength, char paddingCharacter) {
+    if (sequence == null) {
+      return repeat(paddingCharacter, desiredLength);
+    } else if (sequence.length() == desiredLength) {
+      return sequence.toString();
+    }
+    return repeat(paddingCharacter, desiredLength - sequence.length()) + sequence.toString();
+  }
+
   /**
    * Center string.
    *
@@ -100,7 +133,7 @@ public final class StringUtils {
       return null;
     }
     int start = (int) Math.floor(Math.max(0, (length - s.length()) / 2d));
-    return Strings.padEnd(repeat(' ', start) + s, length, ' ');
+    return padEnd(repeat(' ', start) + s, length, ' ');
   }
 
   /**
@@ -311,7 +344,7 @@ public final class StringUtils {
    * @return the random string
    */
   public static String randomHexString(int length) {
-    return randomString(length, CharMatcher.anyOf("ABCDEF1234567890"));
+    return randomString(length, CharPredicate.anyOf("ABCDEF1234567890"));
   }
 
   /**
@@ -323,17 +356,17 @@ public final class StringUtils {
    * @return A string of random characters
    */
   public static String randomString(int length, int min, int max) {
-    return randomString(length, min, max, CharMatcher.ANY);
+    return randomString(length, min, max, CharPredicate.ANY);
   }
 
   /**
    * Generates a random string of a given length
    *
    * @param length    The length of the string
-   * @param validChar CharMatcher that must match for a character to be returned in the string
+   * @param validChar CharPredicate that must match for a character to be returned in the string
    * @return A string of random characters
    */
-  public static String randomString(int length, CharMatcher validChar) {
+  public static String randomString(int length, CharPredicate validChar) {
     return randomString(length, 0, Integer.MAX_VALUE, validChar);
   }
 
@@ -343,12 +376,11 @@ public final class StringUtils {
    * @param length    The length of the string
    * @param min       The min character in the string
    * @param max       The max character in the string
-   * @param validChar CharMatcher that must match for a character to be returned in the string
+   * @param validChar CharPredicate that must match for a character to be returned in the string
    * @return A string of random characters
    */
-  public static String randomString(int length, int min, int max, CharMatcher validChar) {
-    Preconditions.checkArgument(length >= 0, "Length must be non-negative");
-    if (length == 0) {
+  public static String randomString(int length, int min, int max, CharPredicate validChar) {
+    if (length <= 0) {
       return EMPTY;
     }
     Random random = new Random();
@@ -451,11 +483,12 @@ public final class StringUtils {
    * @param separator The separator
    * @return A list of all the cells in the input
    */
+  @SneakyThrows
   public static List<String> split(CharSequence input, char separator) {
     if (input == null) {
       return new ArrayList<>();
     }
-    Preconditions.checkArgument(separator != '"', "Separator cannot be a quote");
+    validateArgument(separator != '"', "Separator cannot be a quote");
     try (CSVReader reader = CSV.builder().delimiter(separator).reader(new StringReader(input.toString()))) {
       List<String> all = new ArrayList<>();
       List<String> row;
@@ -463,8 +496,6 @@ public final class StringUtils {
         all.addAll(row);
       }
       return all;
-    } catch (Exception e) {
-      throw Throwables.propagate(e);
     }
   }
 

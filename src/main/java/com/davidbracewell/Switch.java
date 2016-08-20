@@ -24,8 +24,8 @@ package com.davidbracewell;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.CheckedFunction;
 import com.davidbracewell.function.SerializablePredicate;
-import com.google.common.base.Throwables;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.Value;
 
 import java.io.Serializable;
@@ -79,22 +79,15 @@ public class Switch<T, R> implements Serializable {
    * @param argument the argument
    * @return the r
    */
+  @SneakyThrows
   public R switchOn(T argument) throws Exception {
     for (PredFunc<T, R> predFunc : statements) {
       if (predFunc.getPredicate().test(argument)) {
-        try {
-          return predFunc.getFunction().apply(argument);
-        } catch (Throwable throwable) {
-          throw toException(Throwables.getRootCause(throwable));
-        }
+        return predFunc.getFunction().apply(argument);
       }
     }
     if (defaultStmt != null) {
-      try {
-        return defaultStmt.apply(argument);
-      } catch (Throwable throwable) {
-        throw toException(Throwables.getRootCause(throwable));
-      }
+      return defaultStmt.apply(argument);
     }
     return null;
   }

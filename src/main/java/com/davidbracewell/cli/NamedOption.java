@@ -25,9 +25,8 @@ import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.resource.Resource;
+import com.davidbracewell.string.CharPredicate;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Preconditions;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -37,6 +36,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.Collection;
 import java.util.Map;
+
+import static com.davidbracewell.Validations.validateArgument;
+import static com.davidbracewell.Validations.validateNotNull;
 
 /**
  * <p>
@@ -80,21 +82,21 @@ public final class NamedOption {
    * @param field the field which contains an {@link Option} annotation
    */
   public NamedOption(@NonNull Field field) {
-    Option option = Preconditions.checkNotNull(field.getAnnotationsByType(Option.class))[0];
+    Option option = validateNotNull(field.getAnnotationsByType(Option.class))[0];
     this.field = field;
 
     this.name = StringUtils.isNullOrBlank(option.name()) ? field.getName() : option.name();
-    Preconditions.checkArgument(
-      !StringUtils.isNullOrBlank(this.name) && !CharMatcher.WHITESPACE.matchesAnyOf(this.name),
+    validateArgument(
+      !StringUtils.isNullOrBlank(this.name) && !CharPredicate.WHITESPACE.matchesAnyOf(this.name),
       "Option name must have at least one character and must not have a space"
-    );
+                    );
 
     this.type = field.getType();
 
-    Preconditions.checkArgument(
+    validateArgument(
       !StringUtils.isNullOrBlank(option.description()),
       "Description must not be blank"
-    );
+                    );
     this.description = option.description();
 
     if (!StringUtils.isNullOrBlank(option.defaultValue())) {
@@ -119,14 +121,14 @@ public final class NamedOption {
    */
   @Builder
   protected NamedOption(@NonNull String name, @NonNull Class<?> type, @NonNull String description, Object defaultValue, @Singular Collection<String> aliases, boolean required) {
-    Preconditions.checkArgument(
-      !StringUtils.isNullOrBlank(name) && !CharMatcher.WHITESPACE.matchesAnyOf(name),
+    validateArgument(
+      !StringUtils.isNullOrBlank(name) && !CharPredicate.WHITESPACE.matchesAnyOf(name),
       "Option name must have at least one character and must not have a space"
-    );
-    Preconditions.checkArgument(
+                    );
+    validateArgument(
       !StringUtils.isNullOrBlank(description),
       "Description must not be blank"
-    );
+                    );
 
     this.name = name;
     this.type = type;

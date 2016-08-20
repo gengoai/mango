@@ -22,7 +22,7 @@
 package com.davidbracewell.parsing.expressions;
 
 import com.davidbracewell.parsing.ParserToken;
-import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 /**
  * An <code>Expression</code> representing an prefix expression
@@ -46,10 +46,10 @@ public class PrefixExpression extends Expression {
    * @param operator The prefix operator
    * @param right    The expression on the right
    */
-  public PrefixExpression(ParserToken operator, Expression right) {
-    super(Preconditions.checkNotNull(operator).type);
+  public PrefixExpression(@NonNull ParserToken operator, @NonNull Expression right) {
+    super(operator.type);
     this.operator = operator;
-    this.right = Preconditions.checkNotNull(right);
+    this.right = right;
   }
 
   @Override

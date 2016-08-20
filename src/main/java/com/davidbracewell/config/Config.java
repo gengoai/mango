@@ -39,30 +39,15 @@ import com.davidbracewell.logging.LogManager;
 import com.davidbracewell.logging.Logger;
 import com.davidbracewell.parsing.ParseException;
 import com.davidbracewell.reflection.BeanUtils;
-import com.davidbracewell.reflection.ReflectionException;
 import com.davidbracewell.scripting.ScriptEnvironment;
 import com.davidbracewell.scripting.ScriptEnvironmentManager;
 import com.davidbracewell.string.StringPredicates;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.base.Joiner;
-import com.google.common.base.Throwables;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 
-import javax.script.ScriptException;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.io.*;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Predicate;
@@ -133,17 +118,14 @@ public final class Config implements Serializable {
     return getInstance().loaded.contains(configResource.path());
   }
 
+  @SneakyThrows
   private static Val getBean(String value) {
     List<String> parts = StringUtils.split(value, ',');
     List<Object> beans = new ArrayList<>();
     for (String beanName : parts) {
       Matcher m = BEAN_SUBSTITUTION.matcher(beanName);
       if (m.find()) {
-        try {
-          beans.add(BeanUtils.getNamedBean(m.group(1), Object.class));
-        } catch (ReflectionException e) {
-          throw Throwables.propagate(e);
-        }
+        beans.add(BeanUtils.getNamedBean(m.group(1), Object.class));
       } else {
         beans.add(beanName);
       }
@@ -190,7 +172,7 @@ public final class Config implements Serializable {
   public static boolean hasProperty(String propertyPrefix, String... propertyComponents) {
     String propertyName = propertyPrefix;
     if (propertyComponents != null && propertyComponents.length > 0) {
-      propertyName += "." + Joiner.on('.').join(propertyComponents);
+      propertyName += "." + StringUtils.join(propertyComponents, ".");
     }
     return getInstance().properties.containsKey(propertyName) || System.getProperties().contains(propertyName);
   }
@@ -255,7 +237,7 @@ public final class Config implements Serializable {
     }
 
 
-    String components = Joiner.on('.').join(propertyComponents);
+    String components = StringUtils.join(propertyComponents, ".");
 
     for (String key :
       new String[]{
@@ -342,7 +324,7 @@ public final class Config implements Serializable {
   public static Val get(String propertyPrefix, String... propertyComponents) {
     String propertyName = propertyPrefix;
     if (propertyComponents != null && propertyComponents.length > 0) {
-      propertyName += "." + Joiner.on('.').join(propertyComponents);
+      propertyName += "." + StringUtils.join(propertyComponents, ".");
     }
 
     if (StringUtils.isNullOrBlank(propertyName)) {
@@ -424,6 +406,7 @@ public final class Config implements Serializable {
    *
    * @param resource The config file
    */
+  @SneakyThrows
   public static void loadConfig(Resource resource) {
     if (resource == null || !resource.exists()) {
       return;
@@ -431,14 +414,9 @@ public final class Config implements Serializable {
     if (resource.path() != null && getInstance().loaded.contains(resource.path())) {
       return; //Only load once!
     }
-    try {
-      new ConfigParser(resource).parse();
-      if (resource.path() != null) {
-        getInstance().loaded.add(resource.path());
-      }
-    } catch (ParseException | IOException e) {
-      log.severe("ERROR LOADING CONFIG: '{0}'", resource.path());
-      throw Throwables.propagate(e);
+    new ConfigParser(resource).parse();
+    if (resource.path() != null) {
+      getInstance().loaded.add(resource.path());
     }
   }
 
@@ -468,16 +446,22 @@ public final class Config implements Serializable {
       CommandLineParser parser = new CommandLineParser();
       parser.parse(args);
       parser.getSetEntries().forEach(entry ->
-        getInstance().setterFunction.setProperty(entry.getKey(), entry.getValue(), "CommandLine")
-      );
+                                       getInstance().setterFunction.setProperty(entry.getKey(),
+                                                                                entry.getValue(),
+                                                                                "CommandLine"
+                                                                               )
+                                    );
     }
   }
 
   public static void setAllCommandLine(CommandLineParser parser) {
     if (parser != null) {
       parser.getSetEntries().forEach(entry ->
-        getInstance().setterFunction.setProperty(entry.getKey(), entry.getValue(), "CommandLine")
-      );
+                                       getInstance().setterFunction.setProperty(entry.getKey(),
+                                                                                entry.getValue(),
+                                                                                "CommandLine"
+                                                                               )
+                                    );
     }
   }
 
@@ -492,6 +476,7 @@ public final class Config implements Serializable {
    * @param parser      the                    to use for parsing the arguments
    * @return Non config/option parameters from command line
    */
+  @SneakyThrows
   public static String[] initialize(String programName, String[] args, CommandLineParser parser) {
     String rval[];
     if (args != null) {
@@ -512,11 +497,7 @@ public final class Config implements Serializable {
     String className = getCallingClass();
 
     if (className != null) {
-      try {
-        loadDefaultConf(className);
-      } catch (ParseException e) {
-        throw Throwables.propagate(e);
-      }
+      loadDefaultConf(className);
     }
 
 
@@ -526,12 +507,12 @@ public final class Config implements Serializable {
       Resources.fromFile(new File(SystemInfo.USER_HOME, programName + ".conf")),
       localConfigDirectory.getChild(programName + ".conf"),
       Resources.fromFile(new File(programName + ".conf"))
-    )
-      .filter(Resource::exists)
-      .forEach(resource -> {
-        log.finest("Loading {0}.conf from :", programName);
-        loadConfig(resource);
-      });
+             )
+          .filter(Resource::exists)
+          .forEach(resource -> {
+            log.finest("Loading {0}.conf from :", programName);
+            loadConfig(resource);
+          });
 
 
     // Store the command line arguments as a config settings.
@@ -585,18 +566,26 @@ public final class Config implements Serializable {
     packageName = packageName.replaceAll("\\$[0-9]+$", "");
 
 
-    Resource defaultConf = new ClasspathResource((packageName.replaceAll("\\.", "/") + "/" + DEFAULT_CONFIG_FILE_NAME).trim(), Config.getDefaultClassLoader());
+    Resource defaultConf = new ClasspathResource((packageName.replaceAll("\\.",
+                                                                         "/"
+                                                                        ) + "/" + DEFAULT_CONFIG_FILE_NAME).trim(),
+                                                 Config.getDefaultClassLoader()
+    );
 
     // Go through each level of the package until we find one that
     // has a default properties file or we cannot go any further.
     while (!defaultConf.exists()) {
       int idx = packageName.lastIndexOf('.');
       if (idx == -1) {
-        defaultConf = new ClasspathResource(packageName + "/" + DEFAULT_CONFIG_FILE_NAME, Config.getDefaultClassLoader());
+        defaultConf = new ClasspathResource(packageName + "/" + DEFAULT_CONFIG_FILE_NAME,
+                                            Config.getDefaultClassLoader()
+        );
         break;
       }
       packageName = packageName.substring(0, idx);
-      defaultConf = new ClasspathResource(packageName.replaceAll("\\.", "/") + "/" + DEFAULT_CONFIG_FILE_NAME, Config.getDefaultClassLoader());
+      defaultConf = new ClasspathResource(packageName.replaceAll("\\.", "/") + "/" + DEFAULT_CONFIG_FILE_NAME,
+                                          Config.getDefaultClassLoader()
+      );
     }
 
     if (defaultConf.exists()) {
@@ -639,6 +628,7 @@ public final class Config implements Serializable {
     return initialize(programName, args, new CommandLineParser());
   }
 
+  @SneakyThrows
   private static Object processScript(String scriptStatement) {
     int idx = scriptStatement.indexOf(']');
 
@@ -666,11 +656,7 @@ public final class Config implements Serializable {
     }
 
     String script = scriptStatement.substring(idx + 1).trim();
-    try {
-      return env.eval(script);
-    } catch (ScriptException e) {
-      throw Throwables.propagate(e);
-    }
+    return env.eval(script);
   }
 
   /**
@@ -704,6 +690,7 @@ public final class Config implements Serializable {
    * @param name  the name of the property
    * @param value the value of the property
    */
+  @SneakyThrows
   public static void setProperty(String name, String value) {
     getInstance().properties.put(name, value);
     if (name.toLowerCase().endsWith(".level")) {
@@ -711,12 +698,7 @@ public final class Config implements Serializable {
       LogManager.getLogManager().setLevel(className, Level.parse(value.trim().toUpperCase()));
     }
     if (name.equals("com.davidbracewell.logging.Logger.logfile")) {
-      FileHandler handler;
-      try {
-        handler = new FileHandler(value);
-      } catch (IOException e) {
-        throw Throwables.propagate(e);
-      }
+      FileHandler handler = new FileHandler(value);
       handler.setFormatter(new LogFormatter());
       LogManager.addHandler(handler);
     }
@@ -734,7 +716,8 @@ public final class Config implements Serializable {
    * @return True if the property exists and its value is a script
    */
   public static boolean valueIsScript(String propertyName) {
-    return (getInstance().properties.containsKey(propertyName) && getInstance().properties.get(propertyName).startsWith(SCRIPT_PROPERTY));
+    return (getInstance().properties.containsKey(propertyName) && getInstance().properties.get(propertyName)
+                                                                                          .startsWith(SCRIPT_PROPERTY));
   }
 
   /**

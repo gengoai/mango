@@ -21,13 +21,15 @@
 
 package com.davidbracewell.conversion;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import org.junit.Test;
 
 import java.util.*;
 
+import static com.davidbracewell.collection.Sets.asTreeSet;
+import static com.davidbracewell.collection.Sets.treeSet;
+import static com.davidbracewell.collection.list.Lists.asArrayList;
+import static com.davidbracewell.collection.list.Lists.list;
+import static com.davidbracewell.conversion.Cast.as;
 import static org.junit.Assert.*;
 
 public class CastTest {
@@ -49,26 +51,26 @@ public class CastTest {
 
   @Test
   public void testSafeAs() throws Exception {
-    assertEquals(1d, Cast.as(1d,Double.class), 0d);
+    assertEquals(1d, as(1d, Double.class), 0d);
   }
 
   @Test
   public void testBadSafeAs() throws Exception {
-    assertNull(Cast.as(1L, Double.class));
+    assertNull(as(1L, Double.class));
   }
 
   @Test
   public void testSafeNull() throws Exception {
-    assertNull(Cast.as(null,Double.class));
+    assertNull(as(null, Double.class));
   }
 
 
   @Test
   public void testAs() throws Exception {
-    Double d = Cast.as(1.0);
+    Double d = as(1.0);
     assertEquals(1d, d, 0);
 
-    d = Cast.as("no", Double.class);
+    d = as("no", Double.class);
     assertNull(d);
   }
 
@@ -83,19 +85,19 @@ public class CastTest {
     List<?> l = Arrays.asList(1.0, 2.0, 3.0);
     Collection<?> c = l;
     Iterable<?> i = l;
-    Set<?> s = Sets.newHashSet(l);
+    Set<?> s = new HashSet<>();
 
-    assertEquals(Arrays.asList(1d, 2d, 3d), Cast.<Double>cast(l));
-    assertEquals(Arrays.asList(1d, 2d, 3d), Lists.newArrayList(Cast.<Double>cast(l.iterator())));
-    assertEquals(Arrays.asList(1d, 2d, 3d), Lists.newArrayList(Cast.<Double>cast(c)));
-    assertEquals(Arrays.asList(1d, 2d, 3d), Lists.newArrayList(Cast.<Double>cast(i)));
-    assertEquals(Sets.newTreeSet(Arrays.asList(1d, 2d, 3d)), Sets.newTreeSet(Cast.<Double>cast(s)));
+    assertEquals(list(1d, 2d, 3d), Cast.<Double>cast(l));
+    assertEquals(list(1d, 2d, 3d), asArrayList(Cast.<Double>cast(l.iterator())));
+    assertEquals(list(1d, 2d, 3d), asArrayList(Cast.<Double>cast(c)));
+    assertEquals(list(1d, 2d, 3d), asArrayList(Cast.<Double>cast(i)));
+    assertEquals(treeSet(1d, 2d, 3d), asTreeSet(Cast.<Double>cast(s)));
 
   }
 
   @Test
   public void testMap() throws Exception {
-    Map<Object, Object> m = Maps.newHashMap();
+    Map<Object, Object> m = new HashMap<>();
     m.put(1, 2d);
     Map<Integer, Double> m2 = Cast.cast(m);
     for (Map.Entry<Integer, Double> e : m2.entrySet()) {

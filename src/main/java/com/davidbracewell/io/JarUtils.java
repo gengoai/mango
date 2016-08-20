@@ -25,20 +25,20 @@ import com.davidbracewell.SystemInfo;
 import com.davidbracewell.io.resource.ClasspathResource;
 import com.davidbracewell.io.resource.FileResource;
 import com.davidbracewell.io.resource.Resource;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.base.Throwables;
+import lombok.NonNull;
+import lombok.SneakyThrows;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+
+import static com.davidbracewell.Validations.validateArgument;
 
 /**
  * @author David B. Bracewell
@@ -54,8 +54,8 @@ public class JarUtils {
    * @param clazz The class whose associated jar file is descried.
    * @return The Resource (jar file) for the class
    */
-  public static Resource getJar(Class<?> clazz) {
-    URL fileURL = Preconditions.checkNotNull(clazz).getProtectionDomain().getCodeSource().getLocation();
+  public static Resource getJar(@NonNull Class<?> clazz) {
+    URL fileURL = clazz.getProtectionDomain().getCodeSource().getLocation();
     return new FileResource(fileURL.getFile());
   }
 
@@ -65,15 +65,12 @@ public class JarUtils {
    * @param resource The jar file to traverse
    * @return A Set of package names
    */
-  public static List<Resource> getJarContents(Resource resource) {
-    return getResourcesFromJar(resource, Predicates.alwaysTrue());
+  public static List<Resource> getJarContents(@NonNull Resource resource) {
+    return getResourcesFromJar(resource, v -> true);
   }
 
   private static List<Resource> getResourcesFromDirectory(Resource resource, Predicate<? super String> stringMatcher) {
-    Preconditions.checkNotNull(resource);
-    Preconditions.checkNotNull(stringMatcher);
-    Preconditions.checkArgument(resource.isDirectory());
-
+    validateArgument(resource.isDirectory());
     List<Resource> children = new ArrayList<>();
     for (Resource child : resource.getChildren()) {
       children.add(child);
@@ -81,10 +78,10 @@ public class JarUtils {
         children.addAll(getResourcesFromDirectory(child, stringMatcher));
       }
     }
-
     return children;
   }
 
+  @SneakyThrows
   private static List<Resource> getResourcesFromJar(Resource resource, Predicate<? super String> stringMatcher) {
     JarFile jf = null;
     List<Resource> resources = new ArrayList<>();
@@ -93,12 +90,10 @@ public class JarUtils {
       Enumeration<JarEntry> e = jf.entries();
       while (e.hasMoreElements()) {
         String name = e.nextElement().getName();
-        if (stringMatcher.apply(name)) {
+        if (stringMatcher.test(name)) {
           resources.add(new ClasspathResource(name));
         }
       }
-    } catch (IOException e) {
-      throw Throwables.propagate(e);
     } finally {
       QuietIO.closeQuietly(jf);
     }
@@ -106,8 +101,6 @@ public class JarUtils {
   }
 
   private static List<Resource> getJarContents(Resource resource, Predicate<? super String> stringMatcher) {
-    Preconditions.checkNotNull(resource);
-    Preconditions.checkNotNull(stringMatcher);
     if (resource.isDirectory()) {
       return getResourcesFromDirectory(resource, stringMatcher);
     } else {
@@ -127,7 +120,7 @@ public class JarUtils {
           if (file.isDirectory()) {
             classpathResources.addAll(new FileResource(file).getChildren(true));
           } else {
-            classpathResources.addAll(getJarContents(Resources.fromFile(jar), Predicates.alwaysTrue()));
+            classpathResources.addAll(getJarContents(Resources.fromFile(jar), v -> true));
           }
         }
       }
