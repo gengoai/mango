@@ -4,9 +4,11 @@ import com.davidbracewell.collection.trie.TrieMatch;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.string.CharPredicate;
 import com.davidbracewell.string.StringUtils;
+import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.davidbracewell.tuple.Tuples.$;
 
@@ -25,6 +27,11 @@ public class Trie<V> implements Serializable, Map<String, V> {
    */
   public Trie() {
     this.root = new TrieNode<>(null, null);
+  }
+
+  public Trie(@NonNull Map<String, V> map) {
+    this();
+    putAll(map);
   }
 
   private Trie(TrieNode<V> root) {
@@ -130,6 +137,11 @@ public class Trie<V> implements Serializable, Map<String, V> {
       return match.value;
     }
     return null;
+  }
+
+  @Override
+  public String toString() {
+    return entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.joining(", ", "{", "}"));
   }
 
   /**
