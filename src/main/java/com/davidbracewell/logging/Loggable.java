@@ -17,6 +17,7 @@ public interface Loggable {
    * @param args    the args
    */
   default void log(Level level, String message, Object... args) {
+    System.err.println(getClass().getName());
     Logger.getLogger(getClass()).log(level, message, args);
   }
 
