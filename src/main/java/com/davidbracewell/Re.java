@@ -6,6 +6,8 @@ import lombok.NonNull;
 import static com.davidbracewell.Regex.toChars;
 
 /**
+ * <p>DSL for building regular expressions.</p>
+ *
  * @author David B. Bracewell
  */
 public interface Re {

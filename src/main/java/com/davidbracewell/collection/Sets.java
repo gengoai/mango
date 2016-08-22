@@ -21,10 +21,16 @@
 
 package com.davidbracewell.collection;
 
+import com.davidbracewell.function.SerializableFunction;
 import lombok.NonNull;
 
-import java.util.*;
-import java.util.function.Function;
+import java.util.AbstractSet;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -41,11 +47,18 @@ public final class Sets {
     throw new IllegalAccessError();
   }
 
-  public static <E, R> Set<R> transform(Set<? extends E> set, @NonNull Function<? super E, R> mapper) {
-    if (set == null) {
-      return Collections.emptySet();
-    }
-    return set.stream().map(mapper).collect(Collectors.toCollection(bestSupplier(set, null)));
+  public static <E, R> Set<R> transform(@NonNull final Set<? extends E> set, @NonNull final SerializableFunction<? super E, R> mapper) {
+    return new AbstractSet<R>() {
+      @Override
+      public Iterator<R> iterator() {
+        return Iterators.transformedIterator(set.iterator(), mapper);
+      }
+
+      @Override
+      public int size() {
+        return set.size();
+      }
+    };
   }
 
   /**

@@ -24,7 +24,8 @@ package com.davidbracewell;
 import java.util.List;
 
 /**
- * <p>An {@link EnumValue} which has a tree structure.</p>
+ * <p>An {@link EnumValue} which has a tree-like structure. Note, that while individual enum values only have one
+ * parent, there may be multiple root values.</p>
  *
  * @author David B. Bracewell
  */

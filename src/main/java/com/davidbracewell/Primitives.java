@@ -25,10 +25,12 @@ import com.davidbracewell.conversion.Cast;
 import lombok.NonNull;
 
 import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.Collection;
 
 /**
- * The type Primitives.
+ * <p>Methods for converting to and from primitives and boxed types.</p>
+ *
  * @author David B. Bracewell
  */
 public final class Primitives {
@@ -332,7 +334,7 @@ public final class Primitives {
   /**
    * Wrap class.
    *
-   * @param <T>  the type parameter
+   * @param <T>       the type parameter
    * @param primitive the primitive
    * @return the class
    */
@@ -360,7 +362,7 @@ public final class Primitives {
   /**
    * Unwrap class.
    *
-   * @param <T>  the type parameter
+   * @param <T>    the type parameter
    * @param object the object
    * @return the class
    */

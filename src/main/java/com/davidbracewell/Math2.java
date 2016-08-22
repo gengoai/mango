@@ -30,8 +30,13 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 /**
+ * <p>Common math routines.</p>
+ *
  * @author David B. Bracewell
  */
 public interface Math2 {
@@ -46,14 +51,39 @@ public interface Math2 {
     return analyze(iterable).getSum();
   }
 
+  static int sum(int[] numbers) {
+    if (numbers == null) {
+      return 0;
+    }
+    return IntStream.of(numbers).sum();
+  }
+
+  static long sum(long[] numbers) {
+    if (numbers == null) {
+      return 0;
+    }
+    return LongStream.of(numbers).sum();
+  }
+
+
+  static double sum(double[] numbers) {
+    if (numbers == null) {
+      return 0d;
+    }
+    return DoubleStream.of(numbers).sum();
+  }
+
 
   static EnhancedDoubleStatistics analyze(Iterable<? extends Number> iterable) {
     if (iterable == null) {
       return new EnhancedDoubleStatistics();
     }
+
     return Streams.asStream(iterable)
                   .mapToDouble(Number::doubleValue)
-                  .collect(EnhancedDoubleStatistics::new, EnhancedDoubleStatistics::accept, EnhancedDoubleStatistics::combine);
+                  .collect(EnhancedDoubleStatistics::new,
+                           EnhancedDoubleStatistics::accept,
+                           EnhancedDoubleStatistics::combine);
   }
 
   /**

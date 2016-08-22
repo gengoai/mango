@@ -24,126 +24,147 @@ package com.davidbracewell;
 import lombok.NonNull;
 
 import java.io.Serializable;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.concurrent.TimeUnit;
+
+import static com.davidbracewell.Validations.validateState;
 
 /**
  * A simple stop watch to record time spans
  *
  * @author David B. Bracewell
- *
  */
 public final class Stopwatch implements Serializable {
-   private static final long serialVersionUID = 1L;
-   private volatile long startTime = 0L;
-   private volatile long endTime = 0L;
-   private volatile boolean isRunning = false;
-
-   public static Stopwatch createStarted() {
-      return new Stopwatch().start();
-   }
-
-   public static Stopwatch createStopped() {
-      return new Stopwatch();
-   }
+  private static final long serialVersionUID = 1L;
+  private volatile Instant startTime = null;
+  private volatile Instant endTime = null;
+  private volatile boolean isRunning = false;
 
 
-   /**
-    * Starts the stop watch
-    */
-   public Stopwatch start() {
-      isRunning = true;
-      startTime = System.nanoTime();
-      return this;
-   }
+  /**
+   * Create started stopwatch.
+   *
+   * @return the stopwatch
+   */
+  public static Stopwatch createStarted() {
+    return new Stopwatch().start();
+  }
 
-   /**
-    * Stops the stop watch
-    */
-   public Stopwatch stop() {
-      endTime = System.nanoTime();
-      isRunning = false;
-      return this;
-   }
+  /**
+   * Create stopped stopwatch.
+   *
+   * @return the stopwatch
+   */
+  public static Stopwatch createStopped() {
+    return new Stopwatch();
+  }
 
-   /**
-    * Resets the stop watch
-    */
-   public Stopwatch reset() {
-      isRunning = false;
-      startTime = 0L;
-      endTime = 0L;
-      return this;
-   }
+  private static String abbreviate(TimeUnit unit) {
+    switch (unit) {
+      case NANOSECONDS:
+        return "ns";
+      case MICROSECONDS:
+        return "μs";
+      case MILLISECONDS:
+        return "ms";
+      case SECONDS:
+        return "s";
+      case MINUTES:
+        return "min";
+      case HOURS:
+        return "h";
+      case DAYS:
+        return "d";
+      default:
+        throw new AssertionError();
+    }
+  }
 
-   /**
-    * @return The elapsed time in milliseconds
-    */
-   public long elapsedTime(@NonNull TimeUnit timeUnit) {
-      return timeUnit.convert(timeSpan(), TimeUnit.NANOSECONDS);
-   }
+  /**
+   * Starts the stop watch
+   *
+   * @return the stopwatch
+   */
+  public Stopwatch start() {
+    validateState(!isRunning, "Stopwatch is already running.");
+    isRunning = true;
+    startTime = Instant.now();
+    return this;
+  }
 
-   public long elapsedTime() {
-      return timeSpan();
-   }
+  /**
+   * Stops the stop watch
+   *
+   * @return the stopwatch
+   */
+  public Stopwatch stop() {
+    validateState(isRunning, "Stopwatch is not running.");
+    endTime = Instant.now();
+    isRunning = false;
+    return this;
+  }
 
-   private long timeSpan() {
-      if (isRunning) {
-         return System.nanoTime() - startTime;
-      }
-      return endTime - startTime;
-   }
-
-
-   private TimeUnit selectUnit(long time) {
-      if (TimeUnit.DAYS.convert(time, TimeUnit.NANOSECONDS) > 0) {
-         return TimeUnit.DAYS;
-      }
-      if (TimeUnit.HOURS.convert(time, TimeUnit.NANOSECONDS) > 0) {
-         return TimeUnit.HOURS;
-      }
-      if (TimeUnit.MINUTES.convert(time, TimeUnit.NANOSECONDS) > 0) {
-         return TimeUnit.MINUTES;
-      }
-      if (TimeUnit.SECONDS.convert(time, TimeUnit.NANOSECONDS) > 0) {
-         return TimeUnit.SECONDS;
-      }
-      if (TimeUnit.MILLISECONDS.convert(time, TimeUnit.NANOSECONDS) > 0) {
-         return TimeUnit.MILLISECONDS;
-      }
-      if (TimeUnit.MICROSECONDS.convert(time, TimeUnit.NANOSECONDS) > 0) {
-         return TimeUnit.MICROSECONDS;
-      }
-      return TimeUnit.NANOSECONDS;
-   }
+  /**
+   * Resets the stop watch
+   *
+   * @return the stopwatch
+   */
+  public Stopwatch reset() {
+    isRunning = false;
+    startTime = null;
+    endTime = null;
+    return this;
+  }
 
 
-   private static String abbreviate(TimeUnit unit) {
-      switch (unit) {
-         case NANOSECONDS:
-            return "ns";
-         case MICROSECONDS:
-            return "μs";
-         case MILLISECONDS:
-            return "ms";
-         case SECONDS:
-            return "s";
-         case MINUTES:
-            return "min";
-         case HOURS:
-            return "h";
-         case DAYS:
-            return "d";
-         default:
-            throw new AssertionError();
-      }
-   }
+  public Duration duration() {
+    validateState(startTime != null, "Stopwatch has not been started.");
+    return Duration.between(startTime, endTime != null ? endTime : Instant.now());
+  }
 
-   @Override
-   public String toString() {
-      long dif = timeSpan();
-      TimeUnit timeUnit = selectUnit(dif);
-      double time = (double) dif / (double) TimeUnit.NANOSECONDS.convert(1L, timeUnit);
-      return String.format("%.4g %s", time, abbreviate(timeUnit));
-   }
+  /**
+   * Elapsed time long.
+   *
+   * @param timeUnit the time unit
+   * @return The elapsed time in milliseconds
+   */
+  public long elapsedTime(@NonNull TemporalUnit timeUnit) {
+    return duration().get(timeUnit);
+  }
+
+  /**
+   * Elapsed time long.
+   *
+   * @return the long
+   */
+  public long elapsedTime() {
+    return duration().toNanos();
+  }
+
+  private TimeUnit selectUnit(Duration duration) {
+    if (duration.toDays() > 0) {
+      return TimeUnit.DAYS;
+    } else if (duration.toMinutes() > 0) {
+      return TimeUnit.MINUTES;
+    } else if (duration.getSeconds() > 0) {
+      return TimeUnit.SECONDS;
+    } else if (duration.toMillis() > 0) {
+      return TimeUnit.MILLISECONDS;
+    } else if (duration.get(ChronoUnit.MICROS) > 0) {
+      return TimeUnit.MICROSECONDS;
+    }
+    return TimeUnit.NANOSECONDS;
+  }
+
+  @Override
+  public String toString() {
+    Duration duration = duration();
+    TimeUnit timeUnit = selectUnit(duration);
+    double time = (double) duration.toNanos() / (double) TimeUnit.NANOSECONDS.convert(1L, timeUnit);
+    return String.format("%.4g %s", time, abbreviate(timeUnit));
+  }
 
 }// END OF CLASS StopWatch

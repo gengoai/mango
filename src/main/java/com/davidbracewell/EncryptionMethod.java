@@ -36,7 +36,7 @@ import java.util.Arrays;
 import java.util.Base64;
 
 /**
- * Constants for common encryption algorithms.
+ * <p>Convenience methods for encryption with common algorithms.</p>
  *
  * @author David B. Bracewell
  */
@@ -69,20 +69,6 @@ public enum EncryptionMethod {
     this.keyLength = keyLength;
   }
 
-  @SneakyThrows
-  protected final byte[] ensureKeyLength(byte[] key) {
-    if (key.length == keyLength) {
-      return key;
-    }
-    MessageDigest digest;
-    digest = MessageDigest.getInstance("MD5");
-    byte[] keyBytes = Arrays.copyOf(digest.digest(key), keyLength);
-    for (int j = 0, k = 16; j < (keyLength - 16); ) {
-      keyBytes[k++] = keyBytes[j++];
-    }
-    return keyBytes;
-  }
-
   /**
    * Parses a String to find the correct EncryptionMethod.
    *
@@ -96,6 +82,20 @@ public enum EncryptionMethod {
       }
     }
     return EncryptionMethod.valueOf(name);
+  }
+
+  @SneakyThrows
+  protected final byte[] ensureKeyLength(byte[] key) {
+    if (key.length == keyLength) {
+      return key;
+    }
+    MessageDigest digest;
+    digest = MessageDigest.getInstance("MD5");
+    byte[] keyBytes = Arrays.copyOf(digest.digest(key), keyLength);
+    for (int j = 0, k = 16; j < (keyLength - 16); ) {
+      keyBytes[k++] = keyBytes[j++];
+    }
+    return keyBytes;
   }
 
   @SneakyThrows

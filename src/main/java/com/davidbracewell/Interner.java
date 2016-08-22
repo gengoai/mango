@@ -25,19 +25,23 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import java.io.Serializable;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.WeakHashMap;
 
 /**
- * <p>Mimics {@link String#intern()} with any object using heap memory.</p>
+ * <p>Mimics {@link String#intern()} with any object using heap memory. Uses weak references so that objects no longer
+ * in memory can be reclaimed.</p>
  *
+ * @param <E> the type parameter
  * @author David B. Bracewell
  */
 @EqualsAndHashCode
 @ToString(includeFieldNames = false)
-public final class Interner<OBJECT> implements Serializable {
-
+public final class Interner<E> implements Serializable {
   private static final long serialVersionUID = 1L;
-  private volatile ConcurrentHashMap<OBJECT, OBJECT> map = new ConcurrentHashMap<>();
+  private volatile WeakHashMap<E, E> map = new WeakHashMap<>();
 
   /**
    * Adds or gets the cannoical version of the incoming object.
@@ -45,11 +49,35 @@ public final class Interner<OBJECT> implements Serializable {
    * @param object The object to itern
    * @return The interned value
    */
-  public OBJECT intern(final OBJECT object) {
+  public synchronized E intern(final E object) {
     if (object == null) {
       return null;
     }
-    return map.computeIfAbsent(object, o -> o);
+    return map.computeIfAbsent(object, o -> object);
+  }
+
+  /**
+   * Intern all set.
+   *
+   * @param set the set
+   * @return the set
+   */
+  public Set<E> internAll(final Set<E> set) {
+    if (set == null) {
+      return Collections.emptySet();
+    }
+    Set<E> rval = new LinkedHashSet<>();
+    set.forEach(e -> rval.add(intern(e)));
+    return rval;
+  }
+
+  /**
+   * Size int.
+   *
+   * @return the int
+   */
+  public int size() {
+    return map.size();
   }
 
 }//END OF Interner

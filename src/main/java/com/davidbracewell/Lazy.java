@@ -4,7 +4,6 @@ import com.davidbracewell.function.SerializableSupplier;
 import lombok.NonNull;
 
 import java.io.Serializable;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * <p>Lazily create a value in a thread safe manner.</p>
@@ -14,7 +13,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public final class Lazy<T> implements Serializable {
   private static final long serialVersionUID = 1L;
-  private volatile AtomicReference<T> atomicReference = new AtomicReference<>(null);
+  private volatile T object;
   private volatile SerializableSupplier<? extends T> supplier;
 
   /**
@@ -32,12 +31,16 @@ public final class Lazy<T> implements Serializable {
    * @return the value
    */
   public T get() {
-    T val = atomicReference.get();
-    if (val == null) {
-      atomicReference.compareAndSet(null, supplier.get());
-      val = atomicReference.get();
+    T value = object;
+    if (value == null) {
+      synchronized (this) {
+        value = object;
+        if (object == null) {
+          object = value = supplier.get();
+        }
+      }
     }
-    return val;
+    return value;
   }
 
 }// END OF Lazy

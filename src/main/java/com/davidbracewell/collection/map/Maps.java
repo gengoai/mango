@@ -21,29 +21,35 @@
 
 package com.davidbracewell.collection.map;
 
+import com.davidbracewell.collection.Sets;
 import com.davidbracewell.collection.Streams;
 import com.davidbracewell.conversion.Convert;
-import com.davidbracewell.function.Unchecked;
+import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.csv.CSVReader;
 import com.davidbracewell.io.structured.csv.CSVWriter;
 import com.davidbracewell.reflection.Reflect;
 import com.davidbracewell.string.StringUtils;
-import com.davidbracewell.tuple.Tuple2;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
-import static com.davidbracewell.reflection.Reflect.onClass;
 import static com.davidbracewell.tuple.Tuples.$;
 
 /**
@@ -54,6 +60,14 @@ import static com.davidbracewell.tuple.Tuples.$;
 public interface Maps {
 
 
+  /**
+   * Create map.
+   *
+   * @param <K>   the type parameter
+   * @param <V>   the type parameter
+   * @param clazz the clazz
+   * @return the map
+   */
   @SneakyThrows
   static <K, V> Map<K, V> create(@NonNull Class<? extends Map> clazz) {
     if (clazz == Map.class || clazz == HashMap.class) {
@@ -194,7 +208,7 @@ public interface Maps {
                      $(key4, value4),
                      $(key5, value5),
                      $(key6, value6)
-                    );
+    );
   }
 
   /**
@@ -227,7 +241,7 @@ public interface Maps {
                      $(key5, value5),
                      $(key6, value6),
                      $(key7, value7)
-                    );
+    );
   }
 
   /**
@@ -263,7 +277,7 @@ public interface Maps {
                      $(key6, value6),
                      $(key7, value7),
                      $(key8, value8)
-                    );
+    );
   }
 
   /**
@@ -302,7 +316,7 @@ public interface Maps {
                      $(key7, value7),
                      $(key8, value8),
                      $(key9, value9)
-                    );
+    );
   }
 
   /**
@@ -344,9 +358,17 @@ public interface Maps {
                      $(key8, value8),
                      $(key9, value9),
                      $(key10, value10)
-                    );
+    );
   }
 
+  /**
+   * Put.
+   *
+   * @param <K>   the type parameter
+   * @param <V>   the type parameter
+   * @param map   the map
+   * @param entry the entry
+   */
   static <K, V> void put(@NonNull Map<K, V> map, Map.Entry<K, V> entry) {
     if (entry != null) {
       map.put(entry.getKey(), entry.getValue());
@@ -481,7 +503,7 @@ public interface Maps {
                      $(key4, value4),
                      $(key5, value5),
                      $(key6, value6)
-                    );
+    );
   }
 
   /**
@@ -514,7 +536,7 @@ public interface Maps {
                      $(key5, value5),
                      $(key6, value6),
                      $(key7, value7)
-                    );
+    );
   }
 
   /**
@@ -550,7 +572,7 @@ public interface Maps {
                      $(key6, value6),
                      $(key7, value7),
                      $(key8, value8)
-                    );
+    );
   }
 
   /**
@@ -589,7 +611,7 @@ public interface Maps {
                      $(key7, value7),
                      $(key8, value8),
                      $(key9, value9)
-                    );
+    );
   }
 
   /**
@@ -631,7 +653,7 @@ public interface Maps {
                      $(key8, value8),
                      $(key9, value9),
                      $(key10, value10)
-                    );
+    );
   }
 
 
@@ -723,7 +745,7 @@ public interface Maps {
                      $(key3, value3),
                      $(key4, value4),
                      $(key5, value5)
-                    );
+    );
   }
 
   /**
@@ -753,7 +775,7 @@ public interface Maps {
                      $(key4, value4),
                      $(key5, value5),
                      $(key6, value6)
-                    );
+    );
   }
 
   /**
@@ -786,7 +808,7 @@ public interface Maps {
                      $(key5, value5),
                      $(key6, value6),
                      $(key7, value7)
-                    );
+    );
   }
 
   /**
@@ -822,7 +844,7 @@ public interface Maps {
                      $(key6, value6),
                      $(key7, value7),
                      $(key8, value8)
-                    );
+    );
   }
 
   /**
@@ -861,7 +883,7 @@ public interface Maps {
                      $(key7, value7),
                      $(key8, value8),
                      $(key9, value9)
-                    );
+    );
   }
 
   /**
@@ -903,7 +925,7 @@ public interface Maps {
                      $(key8, value8),
                      $(key9, value9),
                      $(key10, value10)
-                    );
+    );
   }
 
 
@@ -993,7 +1015,7 @@ public interface Maps {
                          String value = keyValuePair.size() > 1 ? keyValuePair.get(1) : null;
                          map.put(keyConverter.apply(key), valueConverter.apply(value));
                        })
-                    );
+      );
     }
     return map;
   }
@@ -1017,8 +1039,8 @@ public interface Maps {
                                             map.put(keyConverter.apply(row.get(0)), valueConverter.apply(row.get(1)));
                                           }
                                         }
-                                       )
-                    );
+                     )
+      );
     }
     return map;
   }
@@ -1037,7 +1059,7 @@ public interface Maps {
       for (Map.Entry<K, V> kvEntry : map.entrySet()) {
         writer.write(Convert.convert(kvEntry.getKey(), String.class),
                      Convert.convert(kvEntry.getValue(), String.class)
-                    );
+        );
       }
     }
   }
@@ -1070,27 +1092,42 @@ public interface Maps {
   }
 
 
-  static <K, V, R> Map<R, V> transformKeys(@NonNull Map<? extends K, ? extends V> map, @NonNull Function<? super K, ? extends R> transform) {
-    return map.entrySet().stream()
-              .map(e -> $(transform.apply(e.getKey()), e.getValue()))
-              .collect(Collectors.toMap(Tuple2::getKey,
-                                        Tuple2::getValue,
-                                        (v1, v2) -> v1,
-                                        Unchecked.supplier(() -> onClass(map.getClass()).create().get())
-                                       )
-                      );
+  /**
+   * Transform keys map.
+   *
+   * @param <K>       the type parameter
+   * @param <V>       the type parameter
+   * @param <R>       the type parameter
+   * @param map       the map
+   * @param transform the transform
+   * @return the map
+   */
+  static <K, V, R> Map<R, V> transformKeys(@NonNull final Map<? extends K, ? extends V> map, @NonNull final SerializableFunction<? super K, ? extends R> transform) {
+    return new AbstractMap<R, V>() {
+      @Override
+      public Set<Entry<R, V>> entrySet() {
+        return Sets.transform(map.entrySet(), e -> $(transform.apply(e.getKey()), e.getValue()));
+      }
+    };
   }
 
-
-  static <K, V, R> Map<K, R> transformValues(@NonNull Map<? extends K, ? extends V> map, @NonNull Function<? super V, ? extends R> transform) {
-    return map.entrySet().stream()
-              .map(e -> $(e.getKey(), transform.apply(e.getValue())))
-              .collect(Collectors.toMap(Tuple2::getKey,
-                                        Tuple2::getValue,
-                                        (v1, v2) -> v1,
-                                        Unchecked.supplier(() -> onClass(map.getClass()).create().get())
-                                       )
-                      );
+  /**
+   * Transform values map.
+   *
+   * @param <K>       the type parameter
+   * @param <V>       the type parameter
+   * @param <R>       the type parameter
+   * @param map       the map
+   * @param transform the transform
+   * @return the map
+   */
+  static <K, V, R> Map<K, R> transformValues(@NonNull final Map<? extends K, ? extends V> map, @NonNull final SerializableFunction<? super V, ? extends R> transform) {
+    return new AbstractMap<K, R>() {
+      @Override
+      public Set<Entry<K, R>> entrySet() {
+        return Sets.transform(map.entrySet(), e -> $(e.getKey(), transform.apply(e.getValue())));
+      }
+    };
   }
 
 

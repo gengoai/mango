@@ -32,8 +32,8 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Enumeration of world languages with helpful information on whether or not the language is Whitespace delimited or if
- * the language is read right to left (May not be complete).
+ * <p></p>Enumeration of world languages with helpful information on whether or not the language is Whitespace delimited
+ * or if the language is read right to left (May not be complete).</p>
  *
  * @author David B. Bracewell
  */
@@ -725,6 +725,25 @@ public enum Language {
   }
 
   /**
+   * From locale language.
+   *
+   * @param locale the locale
+   * @return the language
+   */
+  public static Language fromLocale(Locale locale) {
+    if (locale == null) {
+      locale = Locale.getDefault();
+    }
+    for (Language l : Language.values()) {
+      if (l.asLocale().getLanguage().equals(locale.getLanguage())) {
+        return l;
+      }
+    }
+    log.severe("{0} is an invalid language code", locale);
+    return UNKNOWN;
+  }
+
+  /**
    * Gets locales.
    *
    * @return The possible locales associated with the language.
@@ -768,7 +787,6 @@ public enum Language {
   public Locale asLocale() {
     return Locale.forLanguageTag(name());
   }
-
 
   /**
    * Gets number format.
@@ -828,25 +846,6 @@ public enum Language {
     collator.setStrength(strength);
     collator.setDecomposition(decomposition);
     return collator;
-  }
-
-  /**
-   * From locale language.
-   *
-   * @param locale the locale
-   * @return the language
-   */
-  public static Language fromLocale(Locale locale) {
-    if (locale == null) {
-      locale = Locale.getDefault();
-    }
-    for (Language l : Language.values()) {
-      if (l.asLocale().getLanguage().equals(locale.getLanguage())) {
-        return l;
-      }
-    }
-    log.severe("{0} is an invalid language code", locale);
-    return UNKNOWN;
   }
 
   /**

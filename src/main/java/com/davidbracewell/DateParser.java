@@ -16,14 +16,20 @@ import java.util.Optional;
  * @author David B. Bracewell
  */
 public final class DateParser implements Serializable {
+  /**
+   * ISO_8601 date format.
+   */
   public static final DateFormat ISO_8601 = new SimpleDateFormat("yyyy-MM-dd");
+  /**
+   * Standard format for dates used in the United States
+   */
   public static final DateFormat US_STANDARD = new SimpleDateFormat("MM/dd/yyyy");
 
   private static final long serialVersionUID = 1L;
   private final DateFormat[] formats;
 
   /**
-   * Instantiates a new Date parser.
+   * Instantiates a new Date parser using the default locale.
    */
   public DateParser() {
     this(Locale.getDefault());
@@ -51,9 +57,7 @@ public final class DateParser implements Serializable {
    * <p>Attempt to parse the date represented in the input string.</p>
    *
    * @param input the input string representing the date
-   *
    * @return the parsed date
-   *
    * @throws ParseException Couldn't parse the string into a valid date
    */
   public Date parse(String input) throws ParseException {
@@ -68,7 +72,6 @@ public final class DateParser implements Serializable {
    * <p>Attempt to parse the date represented in the input string suppressing an errors.</p>
    *
    * @param input the input string representing the date
-   *
    * @return An optional representing the parsed date or null if not parsable.
    */
   public Optional<Date> parseQuietly(String input) {
@@ -89,7 +92,6 @@ public final class DateParser implements Serializable {
    *
    * @param input       the input string representing the date
    * @param defaultDate the default date
-   *
    * @return The parsed date or the default if the input was not parsable.
    */
   public Date parseOrDefault(String input, @NonNull Date defaultDate) {

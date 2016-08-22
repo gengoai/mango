@@ -22,7 +22,7 @@
 package com.davidbracewell;
 
 /**
- * <p>Utility for getting statistics about memory consumption</p>
+ * <p>Utility for getting statistics about memory.</p>
  *
  * @author David B. Bracewell
  */

@@ -24,19 +24,17 @@ package com.davidbracewell;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.string.StringUtils;
 
-import java.util.*;
+import java.util.Map;
 
 import static com.davidbracewell.collection.map.Maps.asMap;
 import static com.davidbracewell.tuple.Tuples.$;
 
 /**
+ * <p>Provides default values for a number of different types including all primitives and their boxed variants.</p>
+ *
  * @author David B. Bracewell
  */
 public final class Defaults {
-
-  private Defaults() {
-    throw new IllegalAccessError();
-  }
 
   private final static Map<Class<?>, Object> values = asMap($(Short.class, (short) 0),
                                                             $(Long.class, 0L),
@@ -54,19 +52,25 @@ public final class Defaults {
                                                             $(float.class, 0f),
                                                             $(boolean.class, false),
                                                             $(char.class, (char) 0),
-                                                            $(String.class, StringUtils.EMPTY),
-                                                            $(List.class, Collections.emptyList()),
-                                                            $(Set.class, Collections.emptySet()),
-                                                            $(Map.class, Collections.emptyMap()),
-                                                            $(Iterator.class, Collections.emptyIterator()),
-                                                            $(NavigableSet.class, Collections.emptyNavigableSet()),
-                                                            $(NavigableMap.class, Collections.emptyNavigableMap())
-                                                           );
+                                                            $(String.class, StringUtils.EMPTY)
+  );
 
-
-  public static <T> T defaultValue(Class<T> clazz) {
-    return Cast.as(values.get(clazz));
+  private Defaults() {
+    throw new IllegalAccessError();
   }
 
+  /**
+   * Default value t.
+   *
+   * @param <T>   the type parameter
+   * @param clazz the clazz
+   * @return the t
+   */
+  public static <T> T defaultValue(Class<T> clazz) {
+    if (clazz == null) {
+      return null;
+    }
+    return Cast.as(values.get(clazz));
+  }
 
 }//END OF Defaults

@@ -23,20 +23,54 @@ package com.davidbracewell.collection.list;
 
 import com.davidbracewell.collection.Collect;
 import com.davidbracewell.collection.Streams;
+import com.davidbracewell.function.SerializableFunction;
 import lombok.NonNull;
 
-import java.util.*;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
+ * The type Lists.
+ *
  * @author David B. Bracewell
  */
 public final class Lists {
 
   private Lists() {
     throw new IllegalAccessError();
+  }
+
+
+  /**
+   * Transform list.
+   *
+   * @param <E>    the type parameter
+   * @param <R>    the type parameter
+   * @param list   the list
+   * @param mapper the mapper
+   * @return the list
+   */
+  public static <E, R> List<R> transform(@NonNull final List<? extends E> list, @NonNull final SerializableFunction<? super E, ? extends R> mapper) {
+    return new AbstractList<R>() {
+      @Override
+      public R get(int index) {
+        return mapper.apply(list.get(index));
+      }
+
+      @Override
+      public int size() {
+        return list.size();
+      }
+    };
   }
 
   /**
@@ -51,6 +85,15 @@ public final class Lists {
     return Collect.difference(bestSupplier(s1, s2), s1, s2);
   }
 
+  /**
+   * Ensure size list.
+   *
+   * @param <T>          the type parameter
+   * @param list         the list
+   * @param desiredSize  the desired size
+   * @param defaultValue the default value
+   * @return the list
+   */
   public static <T> List<T> ensureSize(@NonNull List<T> list, int desiredSize, T defaultValue) {
     while (list.size() < desiredSize) {
       list.add(defaultValue);

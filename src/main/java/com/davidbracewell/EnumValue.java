@@ -26,15 +26,16 @@ import lombok.EqualsAndHashCode;
 import java.io.Serializable;
 
 /**
- * <p>A value in a {@link DynamicEnum}</p>
+ * <p>A enum value associated with a {@link DynamicEnum}. Standard usage is for enum types to to extend
+ * {@link EnumValue} and have a static <code>DynamicEnum</code> field in the extended class. </p>
  *
  * @author David B. Bracewell
  */
 @EqualsAndHashCode
 public abstract class EnumValue implements Tag, Serializable, Comparable<EnumValue> {
-
   private static final long serialVersionUID = 1L;
   private final String name;
+  private final String fullName;
 
   /**
    * Instantiates a new Enum value.
@@ -43,12 +44,16 @@ public abstract class EnumValue implements Tag, Serializable, Comparable<EnumVal
    */
   protected EnumValue(String name) {
     this.name = DynamicEnum.normalize(name);
+    this.fullName = getClass().getSimpleName() + "." + name;
   }
-
 
   @Override
   public String name() {
     return name;
+  }
+
+  public String fullName() {
+    return fullName;
   }
 
   @Override
@@ -58,7 +63,10 @@ public abstract class EnumValue implements Tag, Serializable, Comparable<EnumVal
 
   @Override
   public int compareTo(EnumValue o) {
-    return o == null ? 1 : name.compareTo(o.name);
+    if (o == null) {
+      return -1;
+    }
+    return this.fullName.compareTo(o.fullName);
   }
 
   @Override

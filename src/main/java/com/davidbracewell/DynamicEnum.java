@@ -21,7 +21,6 @@
 
 package com.davidbracewell;
 
-import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.string.StringUtils;
 
 import java.io.Serializable;
@@ -30,8 +29,8 @@ import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * <p>Allows for additions to the set of enumed values. Standard usage is to extend {@link EnumValue}
- * and have a static <code>DynamicEnum</code> field in the extended class.</p>
+ * <p> A enum-like class that allows for the addition of enum constants. Standard usage is for enum types to to extend
+ * {@link EnumValue} and have a static <code>DynamicEnum</code> field in the extended class. </p>
  *
  * @param <E> the type parameter
  * @author David B. Bracewell
@@ -58,8 +57,9 @@ public final class DynamicEnum<E extends EnumValue> implements Serializable {
    * @return the e
    */
   public final E register(E value) {
-    values.putIfAbsent(value.name(), Cast.<E>as(value));
-    return values.get(value.name());
+    return values.computeIfAbsent(value.name(), v -> value);
+//    values.putIfAbsent(value.name(), value);
+//    return values.get(value.name());
   }
 
 
@@ -74,6 +74,11 @@ public final class DynamicEnum<E extends EnumValue> implements Serializable {
     String norm = normalize(name);
     if (values.containsKey(norm)) {
       return values.get(norm);
+    }
+    for (E v : values()) {
+      if (v.fullName().equals(name)) {
+        return v;
+      }
     }
     throw new IllegalArgumentException(norm + " is not a valid enum value");
   }
