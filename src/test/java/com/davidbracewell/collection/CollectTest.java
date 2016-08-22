@@ -23,7 +23,6 @@ package com.davidbracewell.collection;
 
 
 import com.davidbracewell.conversion.Cast;
-import com.google.common.collect.Iterables;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -37,20 +36,20 @@ import static org.junit.Assert.*;
  */
 public class CollectTest {
 
-  @Test
-  public void testAsIterable() throws Exception {
-    List<String> list = new ArrayList<>();
-    list.add("1");
-    assertEquals("1", Iterables.getFirst(Collect.asIterable(list.iterator()), null));
-  }
+   @Test
+   public void testAsIterable() throws Exception {
+      List<String> list = new ArrayList<>();
+      list.add("1");
+      assertEquals("1", Collect.first(list).orElse(null));
+   }
 
-  @Test
-  public void testCast() throws Exception {
-    List<Double> list = list(1.0, 2.5, 3.0);
-    List<Number> numList = Cast.cast(list);
-    assertEquals(1d, numList.get(0).doubleValue(), 0d);
-    assertEquals(2.5d, numList.get(1).doubleValue(), 0d);
-    assertEquals(3d, numList.get(2).doubleValue(), 0d);
-  }
+   @Test
+   public void testCast() throws Exception {
+      List<Double> list = list(1.0, 2.5, 3.0);
+      List<Number> numList = Cast.cast(list);
+      assertEquals(1d, numList.get(0).doubleValue(), 0d);
+      assertEquals(2.5d, numList.get(1).doubleValue(), 0d);
+      assertEquals(3d, numList.get(2).doubleValue(), 0d);
+   }
 
 }//END OF CollectionUtilsTest

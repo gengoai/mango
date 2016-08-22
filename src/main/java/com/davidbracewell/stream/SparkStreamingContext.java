@@ -21,6 +21,7 @@
 
 package com.davidbracewell.stream;
 
+import com.davidbracewell.collection.list.Lists;
 import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.io.resource.Resource;
@@ -40,8 +41,6 @@ import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
-import static com.davidbracewell.collection.list.Lists.asArrayList;
 
 
 /**
@@ -238,7 +237,7 @@ public enum SparkStreamingContext implements StreamingContext {
     } else if (iterable instanceof List) {
       rdd = getSparkContext().parallelize(Cast.<List<T>>as(iterable));
     } else {
-      rdd = getSparkContext().parallelize(asArrayList(iterable));
+      rdd = getSparkContext().parallelize(Lists.asArrayList(iterable));
     }
     return new SparkStream<>(rdd);
   }

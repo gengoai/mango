@@ -1,5 +1,5 @@
 /*
- *  * Take from Apache commons
+ * (c) 2005 David B. Bracewell
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,23 +18,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
+package com.davidbracewell.collection.map;
+
+import java.util.Map;
+
 /**
- * <b>Note this Package is taken from Apache Commons Collections project</b>
- * This package contains implementations of the
- * {@link com.davidbracewell.collection.trie.Trie} interface.
- * The implementations are in the form of direct implementations and decorators.
- * A decorator wraps another implementation of the interface to add some
- * specific additional functionality.
- * The following implementations are provided in the package:
- * <ul>
- * <li>PatriciaTrie - an implementation of a PATRICIA trie
- * </ul>
- * <p>
- * The following decorators are provided:
- * <ul>
- * <li>Unmodifiable - ensures the collection cannot be altered
- * </ul>
- *
- * @version $Id: package-info.java 1493523 2013-06-16 15:56:35Z tn $
+ * @author David B. Bracewell
  */
-package com.davidbracewell.collection.trie;
+public interface BiMap<K, V> extends Map<K, V> {
+
+   K getKey(V value);
+
+   K removeValue(Object value);
+
+
+}//END OF BiMap

@@ -18,11 +18,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
+package com.davidbracewell.collection;
+
+import lombok.Value;
+
+import java.io.Serializable;
+
 /**
- * <b>Note this Package is taken from Apache Commons Collections project</b>
- * This package contains various {@link com.davidbracewell.collection.trie.KeyAnalyzer}
- * implementations.
- *
- * @version $Id: package-info.java 1491615 2013-06-10 21:46:19Z tn $
+ * @author David B. Bracewell
  */
-package com.davidbracewell.collection.trie.analyzer;
+@Value
+public class TrieMatch<V> implements Serializable {
+   private static final long serialVersionUID = 1L;
+   public final int start;
+   public final int end;
+   public final V value;
+
+   public TrieMatch(int end, int start, V value) {
+      this.end = end;
+      this.start = start;
+      this.value = value;
+   }
+
+}//END OF TrieMatch

@@ -22,6 +22,7 @@
 package com.davidbracewell.conversion;
 
 import com.davidbracewell.Primitives;
+import com.davidbracewell.collection.list.Lists;
 import com.davidbracewell.collection.list.PrimitiveArrayList;
 import com.davidbracewell.logging.Logger;
 import com.google.common.io.ByteStreams;
@@ -36,8 +37,6 @@ import java.sql.Blob;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-
-import static com.davidbracewell.collection.list.Lists.asArrayList;
 
 /**
  * The type Primitive array converter.
@@ -299,7 +298,7 @@ public final class PrimitiveArrayConverter {
       return null;
     }
 
-    List<?> list = asArrayList(iterable);
+    List<?> list = Lists.asArrayList(iterable);
     Object array = Array.newInstance(itemClass, list.size());
     for (int i = 0; i < list.size(); i++) {
       Array.set(array, i, Convert.convert(list.get(i), itemClass));
