@@ -21,27 +21,29 @@
 
 package com.davidbracewell.application;
 
-import lombok.NonNull;
+import com.davidbracewell.string.StringUtils;
 
 import java.io.Serializable;
 
 /**
- * <p>
- * Abstract base class for an application. The Application class takes care of boilerplate command line and config
- * methodology. Calling the <code>run(String[] args)</code> method will parse the command line, set the values of the
- * associated fields and initialize the configuration. Non-named arguments are stored in a private array and can be
- * accessed through the <code>getOtherArguments</code> method. An <code>Description</code> annotation can be added to a
- * class extending Application to provide a short description of what the program does for use when displaying help.
- * </p>
- * <p>
- * Child classes should implement the <code>programLogic</code> method and create the following main method:
- * <code>
- * public static void main(String[] args) {
- *    new MyApplication.run(args);
+ * <p> Abstract base class for a command line application. Child classes should implement the <code>programLogic</code>
+ * method and create a main method calling the {@link #run(String[])} method. An example application is listed
+ * below.</p>
+ * <pre>
+ * {@code
+ *    public class MyApplication extends CommandLineApplication {
+ *
+ *      public static void main(String[] args)  {
+ *        new MyApplication().run(args);
+ *      }
+ *
+ *      public void programLogic() throws Exception {
+ *        //Logic goes here.
+ *      }
+ *
+ *    }
  * }
- * </code>
- * where <code>MyApplication</code> is the name of your child class.
- * </p>
+ * </pre>
  *
  * @author David B. Bracewell
  */
@@ -52,6 +54,10 @@ public abstract class CommandLineApplication implements Application, Serializabl
   private String[] nonNamedArguments;
   private String[] allArgs;
   private String packageName;
+
+  protected CommandLineApplication() {
+    this(null, null);
+  }
 
   /**
    * Instantiates a new Application.
@@ -69,8 +75,8 @@ public abstract class CommandLineApplication implements Application, Serializabl
    * @param packageName     the package name to use for the application, which is important for loading the correct
    *                        configuration.
    */
-  protected CommandLineApplication(@NonNull String applicationName, String packageName) {
-    this.applicationName = applicationName;
+  protected CommandLineApplication(String applicationName, String packageName) {
+    this.applicationName = StringUtils.isNullOrBlank(applicationName) ? getClass().getSimpleName() : applicationName;
     this.packageName = packageName;
   }
 
@@ -94,15 +100,14 @@ public abstract class CommandLineApplication implements Application, Serializabl
     return applicationName;
   }
 
-
   @Override
-  public final String[] getNonParsableArguments() {
+  public final String[] getNonSpecifiedArguments() {
     return nonNamedArguments;
   }
 
   @Override
-  public void setNonParsableArguments(String[] nonParsableArguments) {
-    this.nonNamedArguments = nonParsableArguments;
+  public void setNonSpecifiedArguments(String[] nonSpecifiedArguments) {
+    this.nonNamedArguments = nonSpecifiedArguments;
   }
 
   /**

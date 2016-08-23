@@ -82,7 +82,7 @@ public class JavaFXApplicationTest {
       assertArrayEquals(new String[]{"--name=John", "--age=", "35", "--map", "{ALPHA:23}", "--action", "update"},
                         getAllArguments()
       );
-      assertArrayEquals(new String[]{"--action", "update"}, getNonParsableArguments());
+      assertArrayEquals(new String[]{"--action", "update"}, getNonSpecifiedArguments());
     }
   }
 

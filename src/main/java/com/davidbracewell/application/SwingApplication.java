@@ -1,10 +1,27 @@
 package com.davidbracewell.application;
 
-import lombok.NonNull;
+import com.davidbracewell.string.StringUtils;
+import lombok.SneakyThrows;
 
 import javax.swing.*;
 
 /**
+ * <pre>
+ * {@code
+ *    public class MyApplication extends SwingApplication {
+ *
+ *      public static void main(String[] args)  {
+ *        new new MyApplication().run(args);
+ *      }
+ *
+ *      public void setup() throws Exception {
+ *        //GUI setup goes here.
+ *      }
+ *
+ *    }
+ * }*
+ * </pre>
+ *
  * @author David B. Bracewell
  */
 public abstract class SwingApplication extends JFrame implements Application {
@@ -16,7 +33,14 @@ public abstract class SwingApplication extends JFrame implements Application {
 
 
   /**
-   * Instantiates a new Java fx application.
+   * Instantiates a new Swing application.
+   */
+  public SwingApplication() {
+    this(null, null);
+  }
+
+  /**
+   * Instantiates a new SwingApplication.
    *
    * @param applicationName the application name
    */
@@ -25,25 +49,25 @@ public abstract class SwingApplication extends JFrame implements Application {
   }
 
   /**
-   * Instantiates a new Application.
+   * Instantiates a new SwingApplication.
    *
    * @param applicationName the application name
    * @param packageName     the package name to use for the application, which is important for loading the correct
    *                        configuration.
    */
-  protected SwingApplication(@NonNull String applicationName, String packageName) {
-    this.applicationName = applicationName;
+  protected SwingApplication(String applicationName, String packageName) {
+    this.applicationName = StringUtils.isNullOrBlank(applicationName) ? getClass().getSimpleName() : applicationName;
     this.packageName = packageName;
   }
 
   @Override
-  public String[] getNonParsableArguments() {
+  public String[] getNonSpecifiedArguments() {
     return nonNamedArguments;
   }
 
   @Override
-  public void setNonParsableArguments(String[] nonParsableArguments) {
-    this.nonNamedArguments = nonParsableArguments;
+  public void setNonSpecifiedArguments(String[] nonSpecifiedArguments) {
+    this.nonNamedArguments = nonSpecifiedArguments;
   }
 
   @Override
@@ -68,9 +92,15 @@ public abstract class SwingApplication extends JFrame implements Application {
 
   @Override
   public final void run() {
+    nativeLookAndFeel();
     SwingUtilities.invokeLater(
       () -> this.setVisible(true)
     );
+  }
+
+  @SneakyThrows
+  protected void nativeLookAndFeel() {
+    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
   }
 
 }// END OF SwingApplication

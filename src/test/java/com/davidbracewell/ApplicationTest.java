@@ -90,7 +90,7 @@ public class ApplicationTest {
       assertArrayEquals(new String[]{"--name=John", "--age=", "35", "--map", "{ALPHA:23}", "--action", "update", "-abc"},
                         getAllArguments()
       );
-      assertArrayEquals(new String[]{"--action", "update"}, getNonParsableArguments());
+      assertArrayEquals(new String[]{"--action", "update"}, getNonSpecifiedArguments());
     }
   }
 

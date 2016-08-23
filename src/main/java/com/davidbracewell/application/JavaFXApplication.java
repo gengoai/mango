@@ -22,14 +22,29 @@
 package com.davidbracewell.application;
 
 
+import com.davidbracewell.string.StringUtils;
 import javafx.stage.Stage;
-import lombok.NonNull;
 
 import java.util.List;
 
 /**
  * <p>An JavaFX {@link Application} implementation. Child classes should define their UI via the {@link #setup()}
  * method and should define a <code>main</code> method that calls {@link #launch(String...)}. </p>
+ * <pre>
+ * {@code
+ *    public class MyApplication extends JavaFXApplication {
+ *
+ *      public static void main(String[] args)  {
+ *        new launch(args);
+ *      }
+ *
+ *      public void setup() throws Exception {
+ *        //GUI setup goes here.
+ *      }
+ *
+ *    }
+ * }
+ * </pre>
  *
  * @author David B. Bracewell
  */
@@ -41,6 +56,14 @@ public abstract class JavaFXApplication extends javafx.application.Application i
   private String[] nonNamedArguments;
   private String[] allArgs;
   private Stage stage;
+
+
+  /**
+   * Instantiates a new Java fx application.
+   */
+  public JavaFXApplication() {
+    this(null, null);
+  }
 
   /**
    * Instantiates a new Java fx application.
@@ -58,8 +81,8 @@ public abstract class JavaFXApplication extends javafx.application.Application i
    * @param packageName     the package name to use for the application, which is important for loading the correct
    *                        configuration.
    */
-  protected JavaFXApplication(@NonNull String applicationName, String packageName) {
-    this.applicationName = applicationName;
+  protected JavaFXApplication(String applicationName, String packageName) {
+    this.applicationName = StringUtils.isNullOrBlank(applicationName) ? getClass().getSimpleName() : applicationName;
     this.packageName = packageName;
   }
 
@@ -85,13 +108,13 @@ public abstract class JavaFXApplication extends javafx.application.Application i
   }
 
   @Override
-  public final String[] getNonParsableArguments() {
+  public final String[] getNonSpecifiedArguments() {
     return nonNamedArguments;
   }
 
   @Override
-  public final void setNonParsableArguments(String[] nonParsableArguments) {
-    this.nonNamedArguments = nonParsableArguments;
+  public final void setNonSpecifiedArguments(String[] nonSpecifiedArguments) {
+    this.nonNamedArguments = nonSpecifiedArguments;
   }
 
   /**
