@@ -25,13 +25,13 @@ import com.davidbracewell.collection.map.BiMap;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.tuple.Tuple2;
-import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.davidbracewell.collection.map.Maps.map;
 import static org.junit.Assert.*;
 
 public class MapConverterTest {
@@ -41,8 +41,8 @@ public class MapConverterTest {
       assertNull(Convert.convert(null, BiMap.class, String.class, String.class));
 
       //Map Conversion
-      Map<String, Integer> gold = ImmutableMap.<String, Integer>builder().put("A", 1).build();
-      assertEquals(gold, Val.of(ImmutableMap.builder().put("A", "1").build()).asMap(String.class, Integer.class));
+      Map<String, Integer> gold = map("A", 1);
+      assertEquals(gold, Val.of(map("A", "1")).asMap(String.class, Integer.class));
 
       //String conversion
       assertEquals(gold, Val.of("{A=1}").asMap(String.class, Integer.class));
