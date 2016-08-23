@@ -131,8 +131,12 @@ public final class Stopwatch implements Serializable {
    * @param timeUnit the time unit
    * @return The elapsed time in milliseconds
    */
-  public long elapsedTime(@NonNull TemporalUnit timeUnit) {
+  public long elapsed(@NonNull TemporalUnit timeUnit) {
     return duration().get(timeUnit);
+  }
+
+  public long elapsed(@NonNull TimeUnit timeUnit) {
+    return timeUnit.convert(duration().toNanos(), TimeUnit.NANOSECONDS);
   }
 
   /**
@@ -140,7 +144,7 @@ public final class Stopwatch implements Serializable {
    *
    * @return the long
    */
-  public long elapsedTime() {
+  public long elapsed() {
     return duration().toNanos();
   }
 

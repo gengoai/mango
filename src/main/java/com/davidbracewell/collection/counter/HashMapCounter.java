@@ -22,14 +22,18 @@
 package com.davidbracewell.collection.counter;
 
 import com.davidbracewell.Math2;
-import com.davidbracewell.conversion.Cast;
-import com.google.common.collect.ForwardingIterator;
-import com.google.common.collect.ForwardingSet;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.AbstractSet;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
@@ -230,51 +234,36 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
 
   @Override
   public Set<Map.Entry<T, Double>> entries() {
-    return new ForwardingSet<Map.Entry<T, Double>>() {
-      @Override
-      protected Set<Map.Entry<T, Double>> delegate() {
-        return map.entrySet();
-      }
-
-      @Override
-      public boolean remove(Object object) {
-        if (super.remove(object)) {
-          sum += -Cast.<Map.Entry<T, Double>>as(object).getValue();
-          return true;
-        }
-        return false;
-      }
-
-      @Override
-      public boolean removeAll(Collection<?> collection) {
-        return standardRemoveAll(collection);
-      }
-
+    return new AbstractSet<Map.Entry<T, Double>>() {
       @Override
       public Iterator<Map.Entry<T, Double>> iterator() {
-        return new ForwardingIterator<Map.Entry<T, Double>>() {
+        return new Iterator<Map.Entry<T, Double>>() {
           final Iterator<Map.Entry<T, Double>> iterator = map.entrySet().iterator();
           Map.Entry<T, Double> entry;
 
           @Override
-          protected Iterator<Map.Entry<T, Double>> delegate() {
-            return iterator;
+          public boolean hasNext() {
+            return iterator.hasNext();
           }
 
           @Override
           public Map.Entry<T, Double> next() {
-            entry = super.next();
+            entry = iterator().next();
             return entry;
           }
 
           @Override
           public void remove() {
-            super.remove();
+            iterator.remove();
             sum -= entry.getValue();
           }
         };
       }
 
+      @Override
+      public int size() {
+        return HashMapCounter.this.size();
+      }
     };
   }
 

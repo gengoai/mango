@@ -21,13 +21,14 @@
 
 package com.davidbracewell.io;
 
-import com.google.common.io.CharStreams;
 import org.junit.Test;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class CharsetDetectingReaderTest {
 
@@ -54,9 +55,9 @@ public class CharsetDetectingReaderTest {
 
   public String read(String resourceName) throws IOException {
     try (InputStream stream = CharsetDetectingReaderTest.class.getResourceAsStream(resourceName);
-         CharsetDetectingReader reader = new CharsetDetectingReader(stream)
+         BufferedReader reader = new BufferedReader(new CharsetDetectingReader(stream))
     ) {
-      return CharStreams.toString(reader).trim();
+      return reader.lines().collect(Collectors.joining("\n")).trim();
     }
   }
 

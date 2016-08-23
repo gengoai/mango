@@ -21,12 +21,13 @@
 
 package com.davidbracewell.cache;
 
+import com.davidbracewell.Stopwatch;
 import com.davidbracewell.concurrent.Threads;
 import com.davidbracewell.config.Config;
-import com.google.common.base.Stopwatch;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -72,6 +73,6 @@ public class CacheProxyTest {
       func.apply(Integer.toString(i));
     }
     sw2.stop();
-    assertTrue(sw2.elapsed(TimeUnit.MILLISECONDS) <= sw1.elapsed(TimeUnit.MILLISECONDS));
+    assertTrue(sw2.elapsed(ChronoUnit.MILLIS) <= sw1.elapsed(ChronoUnit.MILLIS));
   }
 }

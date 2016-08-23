@@ -22,9 +22,15 @@
 package com.davidbracewell.collection;
 
 import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.io.CharsetDetectingReader;
+import com.davidbracewell.io.QuietIO;
 import com.davidbracewell.tuple.Tuple2;
 import lombok.NonNull;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Spliterator;
@@ -37,6 +43,28 @@ import java.util.stream.StreamSupport;
  * @author David B. Bracewell
  */
 public interface Streams {
+
+
+  static Stream<String> asStream(InputStream stream) throws IOException {
+    if (stream == null) {
+      return Stream.empty();
+    }
+    return asStream(new CharsetDetectingReader(stream));
+  }
+
+  static Stream<String> asStream(Reader reader) throws IOException {
+    if (reader == null) {
+      return Stream.empty();
+    }
+    Stream<String> result = ((reader instanceof BufferedReader) ?
+      Cast.<BufferedReader>as(reader) :
+      new BufferedReader(reader)
+    ).lines();
+    result.onClose(() -> QuietIO.closeQuietly(reader));
+    return result;
+  }
+
+
   /**
    * As parallel stream stream.
    *
