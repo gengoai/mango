@@ -24,6 +24,8 @@ package com.davidbracewell.collection.map;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static com.davidbracewell.Validations.validateArgument;
+
 /**
  * <p>
  * A Bounded map that keeps the last recently used items.
@@ -34,51 +36,51 @@ import java.util.Map;
  * @author David B. Bracewell
  */
 public class LRUMap<K, V> extends LinkedHashMap<K, V> {
+   private static final long serialVersionUID = 1L;
+   private final int maxSize;
 
-  private static final long serialVersionUID = -2207148975128355022L;
-  private final int maxSize;
+   /**
+    * Creates a new LRU Map.
+    *
+    * @param <K> the key type
+    * @param <V> the value type
+    * @return the map
+    */
+   public static <K, V> LRUMap<K, V> create(int maxSize) {
+      validateArgument(maxSize > 0, "Max size must be greater than zero.");
+      return new LRUMap<>(maxSize);
+   }
 
-  /**
-   * Creates a new LRU Map.
-   *
-   * @param <K> the key type
-   * @param <V> the value type
-   * @return the map
-   */
-  public static <K, V> LRUMap<K, V> create(int maxSize) {
-    return new LRUMap<>(maxSize);
-  }
+   /**
+    * Instantiates a new LRU map with a max size of
+    * <code>Integer.MAX_VALUE</code>.
+    */
+   public LRUMap() {
+      this.maxSize = Integer.MAX_VALUE;
+   }
 
-  /**
-   * Instantiates a new LRU map with a max size of
-   * <code>Integer.MAX_VALUE</code>.
-   */
-  public LRUMap() {
-    this.maxSize = Integer.MAX_VALUE;
-  }
+   /**
+    * Instantiates a new lRU map.
+    *
+    * @param maxSize the max size
+    */
+   public LRUMap(int maxSize) {
+      if (maxSize <= 0) {
+         throw new IllegalArgumentException("maxSize must be greater than 0.");
+      }
+      this.maxSize = maxSize;
+   }
 
-  /**
-   * Instantiates a new lRU map.
-   *
-   * @param maxSize the max size
-   */
-  public LRUMap(int maxSize) {
-    if (maxSize <= 0) {
-      throw new IllegalArgumentException("maxSize must be greater than 0.");
-    }
-    this.maxSize = maxSize;
-  }
+   @Override
+   protected boolean removeEldestEntry(final Map.Entry<K, V> eldest) {
+      return super.size() > maxSize;
+   }
 
-  @Override
-  protected boolean removeEldestEntry(final Map.Entry<K, V> eldest) {
-    return super.size() > maxSize;
-  }
-
-  /**
-   * @return The maximum size of the map
-   */
-  public int maxSize() {
-    return maxSize;
-  }
+   /**
+    * @return The maximum size of the map
+    */
+   public int maxSize() {
+      return maxSize;
+   }
 
 }// END OF CLASS LRUMap

@@ -23,7 +23,6 @@ package com.davidbracewell.io.resource;
 
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.io.Files;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,108 +32,107 @@ import static org.junit.Assert.*;
 
 public class FileResourceTest {
 
-  Resource tempDir;
+   Resource tempDir;
 
-  @Before
-  public void setUp() throws Exception {
-    tempDir = Resources.fromFile(Files.createTempDir());
-  }
-
-
-  @Test
-  public void testAsFile() throws Exception {
-    File tempFile = Files.createTempDir();
-    assertEquals(tempFile, Resources.fromFile(tempFile).asFile().get());
-  }
-
-  @Test
-  public void testAsURL() throws Exception {
-    File tempFile = Files.createTempDir();
-    assertEquals(tempFile.toURI().toURL(), Resources.fromFile(tempFile).asURL().get());
-  }
-
-  @Test
-  public void testCanReadAndWrite() throws Exception {
-    tempDir.delete(true);
-    assertFalse(tempDir.canRead());
-    assertTrue(tempDir.canWrite());
+   @Before
+   public void setUp() throws Exception {
+      tempDir = Resources.fromFile(Resources.temporaryDirectory().asFile().orElse(null));
+   }
 
 
+   @Test
+   public void testAsFile() throws Exception {
+      File tempFile = Resources.temporaryDirectory().asFile().orElse(null);
+      assertEquals(tempFile, Resources.fromFile(tempFile).asFile().get());
+   }
 
-    tempDir.mkdirs();
-    assertTrue(tempDir.canRead());
-    assertTrue(tempDir.canWrite());
-  }
+   @Test
+   public void testAsURL() throws Exception {
+      File tempFile = Resources.temporaryDirectory().asFile().orElse(null);
+      assertEquals(tempFile.toURI().toURL(), Resources.fromFile(tempFile).asURL().get());
+   }
+
+   @Test
+   public void testCanReadAndWrite() throws Exception {
+      tempDir.delete(true);
+      assertFalse(tempDir.canRead());
+      assertTrue(tempDir.canWrite());
 
 
-  @Test
-  public void testGetChildren() throws Exception {
-    tempDir.mkdirs();
-    tempDir.getChild("one").mkdirs();
-    tempDir.getChild("only").mkdirs();
-    tempDir.getChild("two").mkdirs();
-    tempDir.getChild("three").mkdirs();
+      tempDir.mkdirs();
+      assertTrue(tempDir.canRead());
+      assertTrue(tempDir.canWrite());
+   }
 
 
-    assertEquals(4, tempDir.getChildren().size());
-    assertEquals(2, tempDir.getChildren("on*").size());
+   @Test
+   public void testGetChildren() throws Exception {
+      tempDir.mkdirs();
+      tempDir.getChild("one").mkdirs();
+      tempDir.getChild("only").mkdirs();
+      tempDir.getChild("two").mkdirs();
+      tempDir.getChild("three").mkdirs();
 
-    tempDir.delete(true);
-  }
 
-  @Test
-  public void testFileNaming() throws Exception {
-    Resource file = Resources.fromFile("/home/test/test.txt");
-    assertEquals("test.txt", file.baseName());
-    assertEquals(Resources.fromFile("/home/test"), file.getParent());
-    assertEquals("/home/test/test.txt", file.path());
-    assertEquals("file:/home/test/test.txt", file.descriptor());
-  }
+      assertEquals(4, tempDir.getChildren().size());
+      assertEquals(2, tempDir.getChildren("on*").size());
 
-  @Test
-  public void testReadWriteAppend() throws Exception {
-    tempDir.mkdirs();
-    Resource tempFile = tempDir.getChild(StringUtils.randomHexString(10));
-    tempFile.write("This is output");
-    assertEquals("This is output", tempFile.readToString().trim());
+      tempDir.delete(true);
+   }
 
-    tempFile.append(". This a second");
-    assertEquals("This is output. This a second", tempFile.readToString().trim());
+   @Test
+   public void testFileNaming() throws Exception {
+      Resource file = Resources.fromFile("/home/test/test.txt");
+      assertEquals("test.txt", file.baseName());
+      assertEquals(Resources.fromFile("/home/test"), file.getParent());
+      assertEquals("/home/test/test.txt", file.path());
+      assertEquals("file:/home/test/test.txt", file.descriptor());
+   }
 
-    tempFile.append("\nSecond Line");
+   @Test
+   public void testReadWriteAppend() throws Exception {
+      tempDir.mkdirs();
+      Resource tempFile = tempDir.getChild(StringUtils.randomHexString(10));
+      tempFile.write("This is output");
+      assertEquals("This is output", tempFile.readToString().trim());
 
-    int i = 0;
-    for (String line : tempFile.readLines()) {
-      if (i == 0) {
-        assertEquals("This is output. This a second", line);
-      } else {
-        assertEquals("Second Line", line.trim());
+      tempFile.append(". This a second");
+      assertEquals("This is output. This a second", tempFile.readToString().trim());
+
+      tempFile.append("\nSecond Line");
+
+      int i = 0;
+      for (String line : tempFile.readLines()) {
+         if (i == 0) {
+            assertEquals("This is output. This a second", line);
+         } else {
+            assertEquals("Second Line", line.trim());
+         }
+         i++;
       }
-      i++;
-    }
 
 
-  }
+   }
 
 
-  @Test
-  public void testMkdirsAndDelete() throws Exception {
-    //Mkdirs
-    tempDir.mkdirs();
-    assertTrue(tempDir.exists());
+   @Test
+   public void testMkdirsAndDelete() throws Exception {
+      //Mkdirs
+      tempDir.mkdirs();
+      assertTrue(tempDir.exists());
 
-    assertTrue(tempDir.isDirectory());
+      assertTrue(tempDir.isDirectory());
 
-    //Mkdir with child
-    Resource tempChild = tempDir.getChild(StringUtils.randomHexString(10));
-    tempChild.mkdir();
-    assertTrue(tempChild.exists());
+      //Mkdir with child
+      Resource tempChild = tempDir.getChild(StringUtils.randomHexString(10));
+      tempChild.mkdir();
+      assertTrue(tempChild.exists());
 
-    assertTrue(tempChild.delete());
+      assertTrue(tempChild.delete());
 
-    //Delete recursively
-    tempDir.delete(true);
-    assertFalse(tempDir.exists());
-  }
+      //Delete recursively
+      tempDir.delete(true);
+      assertFalse(tempDir.exists());
+   }
 
 }//END OF FileResourceTest

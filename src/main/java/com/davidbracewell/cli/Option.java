@@ -37,29 +37,29 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Option {
 
-  /**
-   * @return The name of the command line option
-   */
-  String name() default "";
+   /**
+    * @return The name of the command line option
+    */
+   String name() default "";
 
-  /**
-   * @return The description for the command line option
-   */
-  String description();
+   /**
+    * @return The description for the command line option
+    */
+   String description();
 
-  /**
-   * @return The aliases for the command line option
-   */
-  String[] aliases() default {};
+   /**
+    * @return The aliases for the command line option
+    */
+   String[] aliases() default {};
 
-  /**
-   * @return The default value for the command line option
-   */
-  String defaultValue() default "";
+   /**
+    * @return The default value for the command line option
+    */
+   String defaultValue() default "";
 
-  /**
-   * @return True if the option is optional (This only needs to be set if the specification is not given)
-   */
-  boolean required() default false;
+   /**
+    * @return True if the option is optional (This only needs to be set if the specification is not given)
+    */
+   boolean required() default false;
 
 }//END OF CommandLine

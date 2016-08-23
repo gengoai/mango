@@ -42,65 +42,65 @@ import java.util.function.Function;
  */
 public class MapConverter<K, V, T extends Map<K, V>> implements Function<Object, T> {
 
-  private static final Logger log = Logger.getLogger(MapConverter.class);
+   private static final Logger log = Logger.getLogger(MapConverter.class);
 
-  private final Function<Object, K> keyConverter;
-  private final SerializableSupplier<T> mapSupplier;
-  private final Function<Object, V> valueConverter;
+   private final Function<Object, K> keyConverter;
+   private final SerializableSupplier<T> mapSupplier;
+   private final Function<Object, V> valueConverter;
 
-  public MapConverter(@NonNull Function<Object, K> keyConverter, @NonNull Function<Object, V> valueConverter, @NonNull final Class<? extends Map> mapClass) {
-    this.keyConverter = keyConverter;
-    this.valueConverter = valueConverter;
-    this.mapSupplier = () -> Cast.as(Maps.create(Cast.as(mapClass)));
-  }
+   public MapConverter(@NonNull Function<Object, K> keyConverter, @NonNull Function<Object, V> valueConverter, @NonNull final Class<? extends Map> mapClass) {
+      this.keyConverter = keyConverter;
+      this.valueConverter = valueConverter;
+      this.mapSupplier = () -> Cast.as(Maps.create(Cast.as(mapClass)));
+   }
 
-  @Override
-  @SuppressWarnings("unchecked")
-  public T apply(Object obj) {
-    if (obj == null) {
+   @Override
+   @SuppressWarnings("unchecked")
+   public T apply(Object obj) {
+      if (obj == null) {
+         return null;
+      }
+      T map = mapSupplier.get();
+
+      if (obj instanceof Map) {
+         for (Map.Entry<?, ?> entry : ((Map<?, ?>) obj).entrySet()) {
+            map.put(keyConverter.apply(entry.getKey()), valueConverter.apply(entry.getValue()));
+         }
+         return map;
+      }
+
+      if (obj instanceof CharSequence) {
+         return Cast.as(Maps.parseString(obj.toString(), keyConverter, valueConverter));
+      } else if (obj.getClass().isArray() && Map.Entry.class.isAssignableFrom(obj.getClass().getComponentType())) {
+         for (Object o : Convert.convert(obj, Iterable.class)) {
+            Map.Entry<?, ?> e = Cast.as(o);
+            map.put(keyConverter.apply(e.getKey()), valueConverter.apply(e.getValue()));
+         }
+         return map;
+      } else if (obj instanceof Map.Entry) {
+         Map.Entry<?, ?> e = Cast.as(obj);
+         map.put(keyConverter.apply(e.getKey()), valueConverter.apply(e.getValue()));
+         return map;
+      } else if (obj instanceof Iterable) {
+         Object o = Collect.first(Cast.as(obj, Iterable.class)).orElse(null);
+         if (o != null && o instanceof Map.Entry) {
+            for (Object inner : Cast.as(obj, Iterable.class)) {
+               Map.Entry<?, ?> e = Cast.as(inner);
+               map.put(keyConverter.apply(e.getKey()), valueConverter.apply(e.getValue()));
+            }
+            return map;
+         }
+      }
+
+      try {
+         return Cast.as(Maps.fillMap(map, Convert.convert(obj, Iterable.class), keyConverter, valueConverter));
+      } catch (Exception e) {
+         //ignore
+      }
+
+      log.fine("Cannot convert {0} to a Map.", obj.getClass());
       return null;
-    }
-    T map = mapSupplier.get();
-
-    if (obj instanceof Map) {
-      for (Map.Entry<?, ?> entry : ((Map<?, ?>) obj).entrySet()) {
-        map.put(keyConverter.apply(entry.getKey()), valueConverter.apply(entry.getValue()));
-      }
-      return map;
-    }
-
-    if (obj instanceof CharSequence) {
-      return Cast.as(Maps.parseString(obj.toString(), keyConverter, valueConverter));
-    } else if (obj.getClass().isArray() && Map.Entry.class.isAssignableFrom(obj.getClass().getComponentType())) {
-      for (Object o : Convert.convert(obj, Iterable.class)) {
-        Map.Entry<?, ?> e = Cast.as(o);
-        map.put(keyConverter.apply(e.getKey()), valueConverter.apply(e.getValue()));
-      }
-      return map;
-    } else if (obj instanceof Map.Entry) {
-      Map.Entry<?, ?> e = Cast.as(obj);
-      map.put(keyConverter.apply(e.getKey()), valueConverter.apply(e.getValue()));
-      return map;
-    } else if (obj instanceof Iterable) {
-      Object o = Collect.first(Cast.as(obj, Iterable.class)).orElse(null);
-      if (o != null && o instanceof Map.Entry) {
-        for (Object inner : Cast.as(obj, Iterable.class)) {
-          Map.Entry<?, ?> e = Cast.as(inner);
-          map.put(keyConverter.apply(e.getKey()), valueConverter.apply(e.getValue()));
-        }
-        return map;
-      }
-    }
-
-    try {
-      return Cast.as(Maps.fillMap(map, Convert.convert(obj, Iterable.class), keyConverter, valueConverter));
-    } catch (Exception e) {
-      //ignore
-    }
-
-    log.fine("Cannot convert {0} to a Map.", obj.getClass());
-    return null;
-  }
+   }
 
 }//END OF MapConverter
 

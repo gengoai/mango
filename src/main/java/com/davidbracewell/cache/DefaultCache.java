@@ -38,62 +38,62 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DefaultCache<K, V> implements Cache<K, V>, Serializable {
 
-  private static final long serialVersionUID = 1L;
-  private final Map<K, V> cache;
-  private final String name;
+   private static final long serialVersionUID = 1L;
+   private final Map<K, V> cache;
+   private final String name;
 
-  /**
-   * Default constructor
-   *
-   * @param specification The specification
-   */
-  public DefaultCache(@NonNull CacheSpec<K, V> specification) {
-    this.name = specification.getName();
-    if (specification.getMaxSize() < Integer.MAX_VALUE) {
-      cache = Collections.synchronizedMap(new LRUMap<>(specification.getMaxSize()));
-    } else {
-      cache = new ConcurrentHashMap<>();
-    }
-  }
+   /**
+    * Default constructor
+    *
+    * @param specification The specification
+    */
+   public DefaultCache(@NonNull CacheSpec<K, V> specification) {
+      this.name = specification.getName();
+      if (specification.getMaxSize() < Integer.MAX_VALUE) {
+         cache = Collections.synchronizedMap(new LRUMap<>(specification.getMaxSize()));
+      } else {
+         cache = new ConcurrentHashMap<>();
+      }
+   }
 
-  @Override
-  public boolean containsKey(K key) {
-    return cache.containsKey(key);
-  }
+   @Override
+   public boolean containsKey(K key) {
+      return cache.containsKey(key);
+   }
 
-  @Override
-  public V get(K key) {
-    return cache.get(key);
-  }
+   @Override
+   public V get(K key) {
+      return cache.get(key);
+   }
 
-  @Override
-  public String getName() {
-    return name;
-  }
+   @Override
+   public String getName() {
+      return name;
+   }
 
-  @Override
-  public V putIfAbsent(K key, V value) {
-    return cache.putIfAbsent(key, value);
-  }
+   @Override
+   public V putIfAbsent(K key, V value) {
+      return cache.putIfAbsent(key, value);
+   }
 
-  @Override
-  public void put(K key, V value) {
-    cache.put(key, value);
-  }
+   @Override
+   public void put(K key, V value) {
+      cache.put(key, value);
+   }
 
-  @Override
-  public long size() {
-    return cache.size();
-  }
+   @Override
+   public long size() {
+      return cache.size();
+   }
 
-  @Override
-  public void clear() {
-    cache.clear();
-  }
+   @Override
+   public void clear() {
+      cache.clear();
+   }
 
-  @Override
-  public void invalidate(K key) {
-    cache.remove(key);
-  }
+   @Override
+   public void invalidate(K key) {
+      cache.remove(key);
+   }
 
 }//END OF DefaultCache
