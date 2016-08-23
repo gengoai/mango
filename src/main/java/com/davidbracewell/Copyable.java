@@ -23,7 +23,7 @@ package com.davidbracewell;
 
 /**
  * <p> The Copyable interface defines a method for returning a copy of an object. Individual implementations are left
- * to determine if the copy is deep or shallow. However, a prefernce is for deep copies</p>
+ * to determine if the copy is deep or shallow. However, a prefernce is for deep copies.</p>
  *
  * @param <E> The type of object that being copied
  * @author David B. Bracewell

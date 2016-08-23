@@ -84,6 +84,12 @@ public enum EncryptionMethod {
     return EncryptionMethod.valueOf(name);
   }
 
+  /**
+   * <p>Ensures the the key is needed length for the encryption method.</p>
+   *
+   * @param key The key
+   * @return A key of the need length
+   */
   @SneakyThrows
   protected final byte[] ensureKeyLength(byte[] key) {
     if (key.length == keyLength) {
@@ -98,6 +104,13 @@ public enum EncryptionMethod {
     return keyBytes;
   }
 
+  /**
+   * <p>Constructs a cipher for the given key and mode.</p>
+   *
+   * @param key  The key
+   * @param mode The mode
+   * @return The Cipher
+   */
   @SneakyThrows
   protected Cipher constructCipher(byte[] key, int mode) {
     SecretKeySpec keySpec = new SecretKeySpec(ensureKeyLength(key), name);

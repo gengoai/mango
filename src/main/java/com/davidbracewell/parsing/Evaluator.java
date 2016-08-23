@@ -9,14 +9,16 @@ import lombok.NonNull;
 /**
  * <p>An evaluator provides a switch-like interface for evaluating expressions. Custom evaluators can be created as
  * follows:
- * <code>
- * Evaluator<Double> eval = new Evaluator<Double>() {
- * {
- * $(BinaryOperatorExpression.class, CommonTypes.PLUS, e -> eval(e.left) + eval(e.right));
- * $(ValueExpression.class, e -> Double.valueOf(e.toString()));
+ * <pre>
+ * {@code
+ *
+ * Evaluator<Double> eval = new Evaluator<Double>() {{
+ *      $(BinaryOperatorExpression.class, CommonTypes.PLUS, e -> eval(e.left) + eval(e.right));
+ *      $(ValueExpression.class, e -> Double.valueOf(e.toString()));
+ * }}
+ *
  * }
- * }
- * </code>
+ * </pre>
  * The various <code>$</code> methods allow easily adding if-like predicates and then-like functions. The {@link
  * #eval(Expression)} method can be used to make recursive evaluation calls.
  * </p>
@@ -31,9 +33,7 @@ public abstract class Evaluator<O> extends Switch<Expression, O> {
    * Instantiates a new Evaluator.
    */
   protected Evaluator() {
-    this.defaultStmt = exp -> {
-      throw new ParseException("Unknown Expression [" + exp + " : " + exp.getTokenType() + "]");
-    };
+    $default(exp -> {throw new ParseException("Unknown Expression [" + exp + " : " + exp.getTokenType() + "]");});
   }
 
   /**
@@ -43,10 +43,7 @@ public abstract class Evaluator<O> extends Switch<Expression, O> {
    * @return the result of evaluation
    * @throws Exception Something went wrong during evaluation
    */
-  public O eval(Expression expression) throws Exception {
-    if (expression == null) {
-      return null;
-    }
+  public final O eval(@NonNull Expression expression) throws Exception {
     return switchOn(expression);
   }
 
@@ -61,7 +58,7 @@ public abstract class Evaluator<O> extends Switch<Expression, O> {
    * @param function        the function to apply when the condition is met.
    */
   protected final <E extends Expression> void $(@NonNull Class<E> expressionClass, @NonNull ParserTokenType type, @NonNull CheckedFunction<E, ? extends O> function) {
-    $(
+    $case(
       e -> e.match(expressionClass, type),
       e -> Cast.as(e, expressionClass),
       function
@@ -77,7 +74,7 @@ public abstract class Evaluator<O> extends Switch<Expression, O> {
    * @param function        the function to apply when the condition is met.
    */
   protected final <E extends Expression> void $(@NonNull Class<E> expressionClass, @NonNull CheckedFunction<E, ? extends O> function) {
-    $(
+    $case(
       e -> e.isInstance(expressionClass),
       e -> Cast.as(e, expressionClass),
       function

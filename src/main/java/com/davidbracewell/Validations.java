@@ -239,7 +239,7 @@ public interface Validations {
    * @param message the on fail message
    * @param <E>     The element type
    * @return The element being validated
-   * @throws NoSuchElementException
+   * @throws NoSuchElementException when the element is null
    */
   static <E> E validateElement(E element, String message) {
     if (element == null) {
@@ -254,7 +254,7 @@ public interface Validations {
    * @param element the element being validated
    * @param <E>     The element type
    * @return The element being validated
-   * @throws NoSuchElementException
+   * @throws NoSuchElementException when the element is null
    */
   static <E> E validateElement(E element) {
     if (element == null) {
