@@ -22,6 +22,7 @@
 package com.davidbracewell.application;
 
 
+import com.davidbracewell.logging.Loggable;
 import com.davidbracewell.string.StringUtils;
 import javafx.stage.Stage;
 
@@ -29,7 +30,8 @@ import java.util.List;
 
 /**
  * <p>An JavaFX {@link Application} implementation. Child classes should define their UI via the {@link #setup()}
- * method and should define a <code>main</code> method that calls {@link #launch(String...)}. </p>
+ * method and should define a <code>main</code> method that calls {@link #launch(String...)}. An example application is
+ * listed below.</p>
  * <pre>
  * {@code
  *    public class MyApplication extends JavaFXApplication {
@@ -48,7 +50,7 @@ import java.util.List;
  *
  * @author David B. Bracewell
  */
-public abstract class JavaFXApplication extends javafx.application.Application implements Application {
+public abstract class JavaFXApplication extends javafx.application.Application implements Application, Loggable {
 
   private static final long serialVersionUID = 1L;
   private final String applicationName;

@@ -1,11 +1,15 @@
 package com.davidbracewell.application;
 
+import com.davidbracewell.logging.Loggable;
 import com.davidbracewell.string.StringUtils;
 import lombok.SneakyThrows;
 
 import javax.swing.*;
 
 /**
+ * <p> Abstract base class for a swing based applications. Child classes should define their UI via the {@link #setup()}
+ * method and should define a <code>main</code> method that calls {@link #run(String[])}. An example application is
+ * listed below.</p>
  * <pre>
  * {@code
  *    public class MyApplication extends SwingApplication {
@@ -24,7 +28,7 @@ import javax.swing.*;
  *
  * @author David B. Bracewell
  */
-public abstract class SwingApplication extends JFrame implements Application {
+public abstract class SwingApplication extends JFrame implements Application, Loggable {
   private static final long serialVersionUID = 1L;
   private final String applicationName;
   private final String packageName;

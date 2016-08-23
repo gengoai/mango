@@ -21,6 +21,7 @@
 
 package com.davidbracewell.application;
 
+import com.davidbracewell.logging.Loggable;
 import com.davidbracewell.string.StringUtils;
 
 import java.io.Serializable;
@@ -47,7 +48,7 @@ import java.io.Serializable;
  *
  * @author David B. Bracewell
  */
-public abstract class CommandLineApplication implements Application, Serializable {
+public abstract class CommandLineApplication implements Application, Serializable, Loggable {
   private static final long serialVersionUID = 1L;
 
   public final String applicationName;
