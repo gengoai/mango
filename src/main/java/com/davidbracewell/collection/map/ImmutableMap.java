@@ -1,6 +1,8 @@
 package com.davidbracewell.collection.map;
 
 import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.tuple.Tuple2;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 import java.util.AbstractCollection;
@@ -15,9 +17,14 @@ import java.util.stream.Collectors;
 import static com.davidbracewell.collection.Streams.asStream;
 
 /**
+ * The type Immutable map.
+ *
+ * @param <K> the type parameter
+ * @param <V> the type parameter
  * @author David B. Bracewell
  */
-public class ImmutableMap<K, V> implements Map<K, V>, Serializable {
+@EqualsAndHashCode
+public final class ImmutableMap<K, V> implements Map<K, V>, Serializable {
   private static final long serialVersionUID = 1L;
   private final AbstractMap.SimpleImmutableEntry[] entries;
   private final int size;
@@ -30,16 +37,63 @@ public class ImmutableMap<K, V> implements Map<K, V>, Serializable {
     }
   }
 
+  /**
+   * Of map.
+   *
+   * @param <K>    the type parameter
+   * @param <V>    the type parameter
+   * @param tuples the tuples
+   * @return the map
+   */
+  @SafeVarargs
+  public static <K, V> Map<K, V> of(Tuple2<? extends K, ? extends V>... tuples) {
+    if (tuples == null) {
+      return of();
+    }
+    return new ImmutableMap<>(
+      asStream(tuples)
+        .map(e -> new AbstractMap.SimpleEntry<>(e.getKey(), e.getValue()))
+        .toArray(AbstractMap.SimpleImmutableEntry[]::new)
+    );
+  }
+
+  /**
+   * Of map.
+   *
+   * @param <K> the type parameter
+   * @param <V> the type parameter
+   * @return the map
+   */
   public static <K, V> Map<K, V> of() {
     return new ImmutableMap<>(new AbstractMap.SimpleImmutableEntry[0]);
   }
 
+  /**
+   * Of map.
+   *
+   * @param <K>    the type parameter
+   * @param <V>    the type parameter
+   * @param key1   the key 1
+   * @param value1 the value 1
+   * @return the map
+   */
   public static <K, V> Map<K, V> of(K key1, V value1) {
     return new ImmutableMap<>(new AbstractMap.SimpleImmutableEntry[]{
       new AbstractMap.SimpleImmutableEntry(key1, value1)
     });
   }
 
+  /**
+   * Of map.
+   *
+   * @param <K>    the type parameter
+   * @param <V>    the type parameter
+   * @param key1   the key 1
+   * @param value1 the value 1
+   * @param key2   the key 2
+   * @param value2 the value 2
+   * @return the map
+   */
   public static <K, V> Map<K, V> of(K key1, V value1,
                                     K key2, V value2) {
     return new ImmutableMap<>(new AbstractMap.SimpleImmutableEntry[]{
@@ -48,6 +102,19 @@ public class ImmutableMap<K, V> implements Map<K, V>, Serializable {
     });
   }
 
+  /**
+   * Of map.
+   *
+   * @param <K>    the type parameter
+   * @param <V>    the type parameter
+   * @param key1   the key 1
+   * @param value1 the value 1
+   * @param key2   the key 2
+   * @param value2 the value 2
+   * @param key3   the key 3
+   * @param value3 the value 3
+   * @return the map
+   */
   public static <K, V> Map<K, V> of(K key1, V value1,
                                     K key2, V value2,
                                     K key3, V value3) {
@@ -58,6 +125,21 @@ public class ImmutableMap<K, V> implements Map<K, V>, Serializable {
     });
   }
 
+  /**
+   * Of map.
+   *
+   * @param <K>    the type parameter
+   * @param <V>    the type parameter
+   * @param key1   the key 1
+   * @param value1 the value 1
+   * @param key2   the key 2
+   * @param value2 the value 2
+   * @param key3   the key 3
+   * @param value3 the value 3
+   * @param key4   the key 4
+   * @param value4 the value 4
+   * @return the map
+   */
   public static <K, V> Map<K, V> of(K key1, V value1,
                                     K key2, V value2,
                                     K key3, V value3,
@@ -70,6 +152,23 @@ public class ImmutableMap<K, V> implements Map<K, V>, Serializable {
     });
   }
 
+  /**
+   * Of map.
+   *
+   * @param <K>    the type parameter
+   * @param <V>    the type parameter
+   * @param key1   the key 1
+   * @param value1 the value 1
+   * @param key2   the key 2
+   * @param value2 the value 2
+   * @param key3   the key 3
+   * @param value3 the value 3
+   * @param key4   the key 4
+   * @param value4 the value 4
+   * @param key5   the key 5
+   * @param value5 the value 5
+   * @return the map
+   */
   public static <K, V> Map<K, V> of(K key1, V value1,
                                     K key2, V value2,
                                     K key3, V value3,
@@ -81,6 +180,223 @@ public class ImmutableMap<K, V> implements Map<K, V>, Serializable {
       new AbstractMap.SimpleImmutableEntry(key3, value3),
       new AbstractMap.SimpleImmutableEntry(key4, value4),
       new AbstractMap.SimpleImmutableEntry(key5, value5)
+    });
+  }
+
+
+  /**
+   * Of map.
+   *
+   * @param <K>    the type parameter
+   * @param <V>    the type parameter
+   * @param key1   the key 1
+   * @param value1 the value 1
+   * @param key2   the key 2
+   * @param value2 the value 2
+   * @param key3   the key 3
+   * @param value3 the value 3
+   * @param key4   the key 4
+   * @param value4 the value 4
+   * @param key5   the key 5
+   * @param value5 the value 5
+   * @param key6   the key 6
+   * @param value6 the value 6
+   * @return the map
+   */
+  public static <K, V> Map<K, V> of(K key1, V value1,
+                                    K key2, V value2,
+                                    K key3, V value3,
+                                    K key4, V value4,
+                                    K key5, V value5,
+                                    K key6, V value6) {
+    return new ImmutableMap<>(new AbstractMap.SimpleImmutableEntry[]{
+      new AbstractMap.SimpleImmutableEntry(key1, value1),
+      new AbstractMap.SimpleImmutableEntry(key2, value2),
+      new AbstractMap.SimpleImmutableEntry(key3, value3),
+      new AbstractMap.SimpleImmutableEntry(key4, value4),
+      new AbstractMap.SimpleImmutableEntry(key5, value5),
+      new AbstractMap.SimpleImmutableEntry(key6, value6),
+    });
+  }
+
+  /**
+   * Of map.
+   *
+   * @param <K>    the type parameter
+   * @param <V>    the type parameter
+   * @param key1   the key 1
+   * @param value1 the value 1
+   * @param key2   the key 2
+   * @param value2 the value 2
+   * @param key3   the key 3
+   * @param value3 the value 3
+   * @param key4   the key 4
+   * @param value4 the value 4
+   * @param key5   the key 5
+   * @param value5 the value 5
+   * @param key6   the key 6
+   * @param value6 the value 6
+   * @param key7   the key 7
+   * @param value7 the value 7
+   * @return the map
+   */
+  public static <K, V> Map<K, V> of(K key1, V value1,
+                                    K key2, V value2,
+                                    K key3, V value3,
+                                    K key4, V value4,
+                                    K key5, V value5,
+                                    K key6, V value6,
+                                    K key7, V value7) {
+    return new ImmutableMap<>(new AbstractMap.SimpleImmutableEntry[]{
+      new AbstractMap.SimpleImmutableEntry(key1, value1),
+      new AbstractMap.SimpleImmutableEntry(key2, value2),
+      new AbstractMap.SimpleImmutableEntry(key3, value3),
+      new AbstractMap.SimpleImmutableEntry(key4, value4),
+      new AbstractMap.SimpleImmutableEntry(key5, value5),
+      new AbstractMap.SimpleImmutableEntry(key6, value6),
+      new AbstractMap.SimpleImmutableEntry(key7, value7),
+    });
+  }
+
+  /**
+   * Of map.
+   *
+   * @param <K>    the type parameter
+   * @param <V>    the type parameter
+   * @param key1   the key 1
+   * @param value1 the value 1
+   * @param key2   the key 2
+   * @param value2 the value 2
+   * @param key3   the key 3
+   * @param value3 the value 3
+   * @param key4   the key 4
+   * @param value4 the value 4
+   * @param key5   the key 5
+   * @param value5 the value 5
+   * @param key6   the key 6
+   * @param value6 the value 6
+   * @param key7   the key 7
+   * @param value7 the value 7
+   * @param key8   the key 8
+   * @param value8 the value 8
+   * @return the map
+   */
+  public static <K, V> Map<K, V> of(K key1, V value1,
+                                    K key2, V value2,
+                                    K key3, V value3,
+                                    K key4, V value4,
+                                    K key5, V value5,
+                                    K key6, V value6,
+                                    K key7, V value7,
+                                    K key8, V value8) {
+    return new ImmutableMap<>(new AbstractMap.SimpleImmutableEntry[]{
+      new AbstractMap.SimpleImmutableEntry(key1, value1),
+      new AbstractMap.SimpleImmutableEntry(key2, value2),
+      new AbstractMap.SimpleImmutableEntry(key3, value3),
+      new AbstractMap.SimpleImmutableEntry(key4, value4),
+      new AbstractMap.SimpleImmutableEntry(key5, value5),
+      new AbstractMap.SimpleImmutableEntry(key6, value6),
+      new AbstractMap.SimpleImmutableEntry(key7, value7),
+      new AbstractMap.SimpleImmutableEntry(key8, value8),
+    });
+  }
+
+  /**
+   * Of map.
+   *
+   * @param <K>    the type parameter
+   * @param <V>    the type parameter
+   * @param key1   the key 1
+   * @param value1 the value 1
+   * @param key2   the key 2
+   * @param value2 the value 2
+   * @param key3   the key 3
+   * @param value3 the value 3
+   * @param key4   the key 4
+   * @param value4 the value 4
+   * @param key5   the key 5
+   * @param value5 the value 5
+   * @param key6   the key 6
+   * @param value6 the value 6
+   * @param key7   the key 7
+   * @param value7 the value 7
+   * @param key8   the key 8
+   * @param value8 the value 8
+   * @param key9   the key 9
+   * @param value9 the value 9
+   * @return the map
+   */
+  public static <K, V> Map<K, V> of(K key1, V value1,
+                                    K key2, V value2,
+                                    K key3, V value3,
+                                    K key4, V value4,
+                                    K key5, V value5,
+                                    K key6, V value6,
+                                    K key7, V value7,
+                                    K key8, V value8,
+                                    K key9, V value9) {
+    return new ImmutableMap<>(new AbstractMap.SimpleImmutableEntry[]{
+      new AbstractMap.SimpleImmutableEntry(key1, value1),
+      new AbstractMap.SimpleImmutableEntry(key2, value2),
+      new AbstractMap.SimpleImmutableEntry(key3, value3),
+      new AbstractMap.SimpleImmutableEntry(key4, value4),
+      new AbstractMap.SimpleImmutableEntry(key5, value5),
+      new AbstractMap.SimpleImmutableEntry(key6, value6),
+      new AbstractMap.SimpleImmutableEntry(key7, value7),
+      new AbstractMap.SimpleImmutableEntry(key8, value8),
+      new AbstractMap.SimpleImmutableEntry(key9, value9),
+    });
+  }
+
+
+  /**
+   * Of map.
+   *
+   * @param <K>     the type parameter
+   * @param <V>     the type parameter
+   * @param key1    the key 1
+   * @param value1  the value 1
+   * @param key2    the key 2
+   * @param value2  the value 2
+   * @param key3    the key 3
+   * @param value3  the value 3
+   * @param key4    the key 4
+   * @param value4  the value 4
+   * @param key5    the key 5
+   * @param value5  the value 5
+   * @param key6    the key 6
+   * @param value6  the value 6
+   * @param key7    the key 7
+   * @param value7  the value 7
+   * @param key8    the key 8
+   * @param value8  the value 8
+   * @param key9    the key 9
+   * @param value9  the value 9
+   * @param key10   the key 10
+   * @param value10 the value 10
+   * @return the map
+   */
+  public static <K, V> Map<K, V> of(K key1, V value1,
+                                    K key2, V value2,
+                                    K key3, V value3,
+                                    K key4, V value4,
+                                    K key5, V value5,
+                                    K key6, V value6,
+                                    K key7, V value7,
+                                    K key8, V value8,
+                                    K key9, V value9,
+                                    K key10, V value10) {
+    return new ImmutableMap<>(new AbstractMap.SimpleImmutableEntry[]{
+      new AbstractMap.SimpleImmutableEntry(key1, value1),
+      new AbstractMap.SimpleImmutableEntry(key2, value2),
+      new AbstractMap.SimpleImmutableEntry(key3, value3),
+      new AbstractMap.SimpleImmutableEntry(key4, value4),
+      new AbstractMap.SimpleImmutableEntry(key5, value5),
+      new AbstractMap.SimpleImmutableEntry(key6, value6),
+      new AbstractMap.SimpleImmutableEntry(key7, value7),
+      new AbstractMap.SimpleImmutableEntry(key8, value8),
+      new AbstractMap.SimpleImmutableEntry(key9, value9),
+      new AbstractMap.SimpleImmutableEntry(key10, value10)
     });
   }
 
