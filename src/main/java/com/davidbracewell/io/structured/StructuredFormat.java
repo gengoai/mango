@@ -21,6 +21,10 @@
 
 package com.davidbracewell.io.structured;
 
+import com.davidbracewell.collection.map.Maps;
+import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.conversion.Val;
+import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.resource.StringResource;
 import com.davidbracewell.io.structured.json.JSONReader;
@@ -32,6 +36,9 @@ import lombok.SneakyThrows;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -80,10 +87,25 @@ public interface StructuredFormat extends Serializable {
    */
   @SneakyThrows
   default Map<String, ?> loads(String data) {
-    Map<String, ?> r;
+    Map<String, Object> r = new HashMap<>();
     try (StructuredReader reader = createReader(new StringResource(data))) {
       reader.beginDocument();
-      r = reader.nextMap();
+      while( reader.peek() != ElementType.END_DOCUMENT ){
+        String name = reader.peekName();
+        switch (reader.peek()){
+          case BEGIN_OBJECT:
+            r.put(name, reader.nextMap());
+            break;
+          case BEGIN_ARRAY:
+            r.put(name, reader.nextCollection(ArrayList::new));
+            break;
+          case NAME:
+            r.put(name, reader.nextKeyValue(name));
+            break;
+          default:
+            reader.skip();
+        }
+      }
       reader.endDocument();
     }
     return r;
