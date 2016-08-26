@@ -60,7 +60,7 @@ final class UnmodifiableIndex<TYPE> extends ForwardingIndex<TYPE> {
 
   @Override
   public Iterator<TYPE> iterator() {
-    return Iterators.unmodifiableIterator(super.iterator());
+    return Iterators.unmodifiable(super.iterator());
   }
 
   @Override

@@ -19,37 +19,39 @@
  * under the License.
  */
 
-package com.davidbracewell.collection;
+package com.davidbracewell.collection.map;
 
-
-import com.davidbracewell.conversion.Cast;
-import org.junit.Test;
+import com.davidbracewell.collection.Collect;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-
-import static com.davidbracewell.collection.list.Lists.list;
-import static org.junit.Assert.*;
 
 /**
  * @author David B. Bracewell
  */
-public class CollectTest {
+public interface ListMultimap<K, V> extends Multimap<K, V> {
 
-   @Test
-   public void testAsIterable() throws Exception {
-      List<String> list = new ArrayList<>();
-      list.add("1");
-      assertEquals("1", Collect.getFirst(list).orElse(null));
+   @Override
+   List<V> get(Object key);
+
+   @Override
+   default List<V> removeAll(Object key) {
+      List<V> list = get(key);
+      List<V> toReturn = new ArrayList<>(list);
+      list.clear();
+      return toReturn;
    }
 
-   @Test
-   public void testCast() throws Exception {
-      List<Double> list = list(1.0, 2.5, 3.0);
-      List<Number> numList = Cast.cast(list);
-      assertEquals(1d, numList.get(0).doubleValue(), 0d);
-      assertEquals(2.5d, numList.get(1).doubleValue(), 0d);
-      assertEquals(3d, numList.get(2).doubleValue(), 0d);
+   @Override
+   default Collection<V> replaceAll(K key, Iterable<? extends V> values) {
+      List<V> list = get(key);
+      List<V> toReturn = new ArrayList<>(list);
+      list.clear();
+      Collect.addAll(list, values);
+      return toReturn;
    }
 
-}//END OF CollectionUtilsTest
+   void trimToSize();
+
+}//END OF ListMultimap

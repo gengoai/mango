@@ -26,7 +26,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static com.davidbracewell.collection.Sets.set;
+import static com.davidbracewell.collection.set.Sets.set;
 
 /**
  * @author David B. Bracewell

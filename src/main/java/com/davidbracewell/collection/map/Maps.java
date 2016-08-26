@@ -21,8 +21,8 @@
 
 package com.davidbracewell.collection.map;
 
-import com.davidbracewell.collection.Sets;
 import com.davidbracewell.collection.Streams;
+import com.davidbracewell.collection.set.Sets;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.io.CSV;
@@ -36,15 +36,7 @@ import lombok.SneakyThrows;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.AbstractMap;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;

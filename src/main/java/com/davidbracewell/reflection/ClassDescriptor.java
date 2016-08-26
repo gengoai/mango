@@ -21,7 +21,7 @@
 
 package com.davidbracewell.reflection;
 
-import com.davidbracewell.collection.Sets;
+import com.davidbracewell.collection.set.Sets;
 import com.davidbracewell.conversion.Cast;
 import lombok.NonNull;
 

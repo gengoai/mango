@@ -23,82 +23,160 @@ package com.davidbracewell.collection;
 
 import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.function.SerializablePredicate;
+import com.davidbracewell.tuple.Tuple2;
 import lombok.NonNull;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Stream;
 
 import static com.davidbracewell.Validations.validateState;
+import static com.davidbracewell.collection.Streams.asStream;
 
 /**
+ * The interface Iterators.
  * @author David B. Bracewell
  */
 public interface Iterators {
 
+   /**
+    * Filtered iterator iterator.
+    *
+    * @param <E>  the type parameter
+    * @param backing the backing
+    * @param predicate the predicate
+    * @return the iterator
+    */
+   static <E> Iterator<E> filter(@NonNull final Iterator<E> backing, @NonNull SerializablePredicate<? super E> predicate) {
+      return new Iterator<E>() {
+         List<E> buffer;
 
-  static <E> Iterator<E> unmodifiableIterator(@NonNull final Iterator<E> backing) {
-    return new Iterator<E>() {
-      @Override
-      public boolean hasNext() {
-        return backing.hasNext();
+         @Override
+         public boolean hasNext() {
+            while (buffer == null && backing.hasNext()) {
+               E next = backing.next();
+               if (predicate.test(next)) {
+                  buffer = Collections.singletonList(next);
+               }
+            }
+            return buffer != null && !buffer.isEmpty();
+         }
+
+         @Override
+         public E next() {
+            validateState(hasNext(), "No such element");
+            E rval = buffer.get(0);
+            buffer = null;
+            return rval;
+         }
+      };
+   }
+
+   /**
+    * First optional.
+    *
+    * @param <T>      the type parameter
+    * @param iterator the iterator
+    * @return the optional
+    */
+   static <T> Optional<T> getFirst(@NonNull Iterator<T> iterator) {
+      return asStream(iterator).findFirst();
+   }
+
+   static <T> Optional<T> getLast(@NonNull Iterator<T> iterator) {
+      T object = null;
+      while (iterator.hasNext()) {
+         object = iterator.next();
       }
+      return Optional.ofNullable(object);
+   }
 
-      @Override
-      public E next() {
-        return backing.next();
-      }
-    };
-  }
+   /**
+    * Size int.
+    *
+    * @param iterator the iterator
+    * @return the int
+    */
+   static int size(Iterator<?> iterator) {
+      return (int) asStream(iterator).count();
+   }
 
-  static <E, R> Iterator<R> transformedIterator(@NonNull final Iterator<E> backing, @NonNull SerializableFunction<? super E, ? extends R> mapper) {
-    return new Iterator<R>() {
-      @Override
-      public boolean hasNext() {
-        return backing.hasNext();
-      }
+   /**
+    * Transformed iterator iterator.
+    *
+    * @param <E>  the type parameter
+    * @param <R>  the type parameter
+    * @param backing the backing
+    * @param mapper the mapper
+    * @return the iterator
+    */
+   static <E, R> Iterator<R> transform(@NonNull final Iterator<E> backing, @NonNull SerializableFunction<? super E, ? extends R> mapper) {
+      return new Iterator<R>() {
+         @Override
+         public boolean hasNext() {
+            return backing.hasNext();
+         }
 
-      @Override
-      public R next() {
-        return mapper.apply(backing.next());
-      }
+         @Override
+         public R next() {
+            return mapper.apply(backing.next());
+         }
 
-      @Override
-      public void remove() {
-        backing.remove();
-      }
-    };
-  }
+         @Override
+         public void remove() {
+            backing.remove();
+         }
+      };
+   }
 
+   /**
+    * Unmodifiable iterator iterator.
+    *
+    * @param <E>  the type parameter
+    * @param backing the backing
+    * @return the iterator
+    */
+   static <E> Iterator<E> unmodifiable(@NonNull final Iterator<E> backing) {
+      return new Iterator<E>() {
+         @Override
+         public boolean hasNext() {
+            return backing.hasNext();
+         }
 
-  static <E> Iterator<E> filteredIterator(@NonNull final Iterator<E> backing, @NonNull SerializablePredicate<? super E> predicate) {
-    return new Iterator<E>() {
-      List<E> buffer;
+         @Override
+         public E next() {
+            return backing.next();
+         }
+      };
+   }
 
-      @Override
-      public boolean hasNext() {
-        while (buffer == null && backing.hasNext()) {
-          E next = backing.next();
-          if (predicate.test(next)) {
-            buffer = Collections.singletonList(next);
-          }
-        }
-        return buffer != null && !buffer.isEmpty();
-      }
-
-      @Override
-      public E next() {
-        validateState(hasNext(), "No such element");
-        E rval = buffer.get(0);
-        buffer = null;
-        return rval;
-      }
-    };
-  }
-
-  static int size(Iterator<?> iterator) {
-    return (int) Streams.asStream(iterator).count();
-  }
+   static <E> Iterator<E> concat(@NonNull Iterator<? extends E> iterator1, @NonNull Iterator<? extends E> iterator2) {
+      return Stream.concat(asStream(iterator1), asStream(iterator2)).iterator();
+   }
 
 
+   /**
+    * Zip stream.
+    *
+    * @param <T>       the type parameter
+    * @param <U>       the type parameter
+    * @param iterator1 the iterator 1
+    * @param iterator2 the iterator 2
+    * @return the stream
+    */
+   static <T, U> Stream<Map.Entry<T, U>> zip(@NonNull final Iterator<T> iterator1, @NonNull final Iterator<U> iterator2) {
+      return asStream(new Iterator<Map.Entry<T, U>>() {
+         @Override
+         public boolean hasNext() {
+            return iterator1.hasNext() && iterator2.hasNext();
+         }
+
+         @Override
+         public Map.Entry<T, U> next() {
+            if (!iterator1.hasNext() || !iterator2.hasNext()) {
+               throw new NoSuchElementException();
+            }
+            return new Tuple2<>(iterator1.next(), iterator2.next());
+         }
+      });
+   }
 }//END OF Iterators

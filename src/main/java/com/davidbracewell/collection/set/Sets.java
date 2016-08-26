@@ -19,8 +19,11 @@
  * under the License.
  */
 
-package com.davidbracewell.collection;
+package com.davidbracewell.collection.set;
 
+import com.davidbracewell.collection.Collect;
+import com.davidbracewell.collection.Iterators;
+import com.davidbracewell.collection.Streams;
 import com.davidbracewell.function.SerializableFunction;
 import lombok.NonNull;
 
@@ -68,7 +71,7 @@ public final class Sets {
       return new AbstractSet<R>() {
          @Override
          public Iterator<R> iterator() {
-            return Iterators.transformedIterator(set.iterator(), mapper);
+            return Iterators.transform(set.iterator(), mapper);
          }
 
          @Override
