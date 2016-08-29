@@ -46,8 +46,20 @@ import com.davidbracewell.string.StringUtils;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Predicate;
@@ -66,783 +78,784 @@ import java.util.stream.Stream;
  */
 public final class Config implements Serializable {
 
-   private static final String BEAN_PROPERTY = "@{";
-   private static final Pattern BEAN_SUBSTITUTION = Pattern.compile(Pattern.quote(BEAN_PROPERTY) + "(.+?)\\}");
-   private static final String DEFAULT_CONFIG_FILE_NAME = "default.conf";
-   private static final String SCRIPT_PROPERTY = "script[";
-   private static final Pattern STRING_SUBSTITUTION = Pattern.compile("\\$\\{(.+?)\\}");
-   private static final String SYSTEM_PROPERTY = "system.";
-   private static final long serialVersionUID = 6875819132224789761L;
-   private static final Logger log = Logger.getLogger(Config.class);
-   private static Resource localConfigDirectory = Resources.fromFile(SystemInfo.USER_HOME + "/config/");
-   private static ClassLoader defaultClassLoader = Config.class.getClassLoader();
-   private volatile static Config INSTANCE;
-   private final Map<String, String> properties = new ConcurrentHashMap<>();
-   private final Set<String> loaded = new ConcurrentSkipListSet<>();
-   ConfigPropertySetter setterFunction = ConfigSettingError.INSTANCE;
+  private static final String BEAN_PROPERTY = "@{";
+  private static final Pattern BEAN_SUBSTITUTION = Pattern.compile(Pattern.quote(BEAN_PROPERTY) + "(.+?)\\}");
+  private static final String DEFAULT_CONFIG_FILE_NAME = "default.conf";
+  private static final String SCRIPT_PROPERTY = "script[";
+  private static final Pattern STRING_SUBSTITUTION = Pattern.compile("\\$\\{(.+?)\\}");
+  private static final String SYSTEM_PROPERTY = "system.";
+  private static final long serialVersionUID = 6875819132224789761L;
+  private static final Logger log = Logger.getLogger(Config.class);
+  private static Resource localConfigDirectory = Resources.fromFile(SystemInfo.USER_HOME + "/config/");
+  private static ClassLoader defaultClassLoader = Config.class.getClassLoader();
+  private volatile static Config INSTANCE;
+  private final Map<String, String> properties = new ConcurrentHashMap<>();
+  private final Set<String> loaded = new ConcurrentSkipListSet<>();
+  ConfigPropertySetter setterFunction = ConfigSettingError.INSTANCE;
 
-   /**
-    * Gets instance.
-    *
-    * @return the instance
-    */
-   public static Config getInstance() {
-      if (INSTANCE == null) {
-         synchronized (Config.class) {
-            INSTANCE = new Config();
-         }
-      }
-      return INSTANCE;
-   }
-
-   /**
-    * Sets instance.
-    *
-    * @param config the config
-    * @return the instance
-    */
-   public static Config setInstance(Config config) {
+  /**
+   * Gets instance.
+   *
+   * @return the instance
+   */
+  public static Config getInstance() {
+    if (INSTANCE == null) {
       synchronized (Config.class) {
-         INSTANCE = config;
+        INSTANCE = new Config();
       }
-      return INSTANCE;
-   }
+    }
+    return INSTANCE;
+  }
 
-   /**
-    * Is config loaded.
-    *
-    * @param configResource the config resource
-    * @return the boolean
-    */
-   public static boolean isConfigLoaded(Resource configResource) {
-      return getInstance().loaded.contains(configResource.path());
-   }
+  /**
+   * Sets instance.
+   *
+   * @param config the config
+   * @return the instance
+   */
+  public static Config setInstance(Config config) {
+    synchronized (Config.class) {
+      INSTANCE = config;
+    }
+    return INSTANCE;
+  }
 
-   @SneakyThrows
-   private static Val getBean(String value) {
-      List<String> parts = StringUtils.split(value, ',');
-      List<Object> beans = new ArrayList<>();
-      for (String beanName : parts) {
-         Matcher m = BEAN_SUBSTITUTION.matcher(beanName);
-         if (m.find()) {
-            beans.add(BeanUtils.getNamedBean(m.group(1), Object.class));
-         } else {
-            beans.add(beanName);
-         }
+  /**
+   * Is config loaded.
+   *
+   * @param configResource the config resource
+   * @return the boolean
+   */
+  public static boolean isConfigLoaded(Resource configResource) {
+    return getInstance().loaded.contains(configResource.path());
+  }
+
+  @SneakyThrows
+  private static Val getBean(String value) {
+    List<String> parts = StringUtils.split(value, ',');
+    List<Object> beans = new ArrayList<>();
+    for (String beanName : parts) {
+      Matcher m = BEAN_SUBSTITUTION.matcher(beanName);
+      if (m.find()) {
+        beans.add(BeanUtils.getNamedBean(m.group(1), Object.class));
+      } else {
+        beans.add(beanName);
       }
-      return beans.size() == 1 ? Val.of(beans.get(0)) : Val.of(beans);
-   }
+    }
+    return beans.size() == 1 ? Val.of(beans.get(0)) : Val.of(beans);
+  }
 
-   /**
-    * Clears all set properties
-    */
-   public static void clear() {
-      getInstance().loaded.clear();
-      getInstance().properties.clear();
-   }
-
-
-   /**
-    * Gets map.
-    *
-    * @param <K>        the type parameter
-    * @param <V>        the type parameter
-    * @param prefix     the prefix
-    * @param keyClass   the key class
-    * @param valueClass the value class
-    * @return the map
-    */
-   public static <K, V> Map<K, V> getMap(String prefix, Class<K> keyClass, Class<V> valueClass) {
-      Map<K, V> map = new HashMap<>();
-      getPropertiesMatching(StringPredicates.STARTS_WITH(prefix, true)).forEach(property -> {
-         String k = property.substring(prefix.length() + 1);
-         map.put(Convert.convert(k, keyClass), get(property).as(valueClass));
-      });
-      return map;
-   }
-
-   /**
-    * Checks if a property is in the config or or set on the system. The property name is constructed as
-    * <code>propertyPrefix + . + propertyComponent[0] + . + propertyComponent[1] + ...</code>
-    *
-    * @param propertyPrefix     The prefix
-    * @param propertyComponents The components.
-    * @return True if the property is known, false if not.
-    */
-   public static boolean hasProperty(String propertyPrefix, String... propertyComponents) {
-      String propertyName = propertyPrefix;
-      if (propertyComponents != null && propertyComponents.length > 0) {
-         propertyName += "." + StringUtils.join(propertyComponents, ".");
-      }
-      return getInstance().properties.containsKey(propertyName) || System.getProperties().contains(propertyName);
-   }
-
-   /**
-    * Checks if a property is in the config or or set on the system. The property name is constructed as
-    * <code>clazz.getName() + . + propertyComponent[0] + . + propertyComponent[1] + ...</code>
-    *
-    * @param clazz              The class with which the property is associated.
-    * @param propertyComponents The components.
-    * @return True if the property is known, false if not.
-    */
-   public static boolean hasProperty(Class<?> clazz, String... propertyComponents) {
-      return hasProperty(clazz.getName(), propertyComponents);
-   }
-
-   /**
-    * <p>Checks if a property is in the config or or set on the system. The property name is constructed as
-    * <code>clazz.getName() + . + propertyComponent[0] + . + propertyComponent[1] + ... +
-    * (language.toString()|language.getCode().toLowerCase())</code> This will return true if the language specific config
-    * option is set or a default (i.e. no-language specified) version is set. </p>
-    *
-    * @param propertyPrefix     The prefix
-    * @param language           The language we would like the config for
-    * @param propertyComponents The components.
-    * @return True if the property is known, false if not.
-    */
-   public static boolean hasProperty(String propertyPrefix, Language language, String... propertyComponents) {
-      return findKey(propertyPrefix, language, propertyComponents) != null;
-   }
-
-   /**
-    * Closest key.
-    *
-    * @param propertyPrefix     the property prefix
-    * @param language           the language
-    * @param propertyComponents the property components
-    * @return the string
-    */
-   public static String closestKey(String propertyPrefix, Language language, String... propertyComponents) {
-      return findKey(propertyPrefix, language, propertyComponents);
-   }
-
-   private static String findKey(String propertyPrefix, Language language, String... propertyComponents) {
-
-      if (propertyComponents == null || propertyComponents.length == 0) {
-         for (String key :
-               new String[]{
-                     propertyPrefix + "." + language,
-                     propertyPrefix + "." + language.toString().toLowerCase(),
-                     propertyPrefix + "." + language.getCode(),
-                     propertyPrefix + "." + language.getCode().toLowerCase(),
-                     propertyPrefix
-               }
-               ) {
-            if (hasProperty(key)) {
-               return key;
-            }
-         }
-
-         return null;
-      }
+  /**
+   * Clears all set properties
+   */
+  public static void clear() {
+    getInstance().loaded.clear();
+    getInstance().properties.clear();
+  }
 
 
-      String components = StringUtils.join(propertyComponents, ".");
+  /**
+   * Gets map.
+   *
+   * @param <K>        the type parameter
+   * @param <V>        the type parameter
+   * @param prefix     the prefix
+   * @param keyClass   the key class
+   * @param valueClass the value class
+   * @return the map
+   */
+  public static <K, V> Map<K, V> getMap(String prefix, Class<K> keyClass, Class<V> valueClass) {
+    Map<K, V> map = new HashMap<>();
+    getPropertiesMatching(StringPredicates.STARTS_WITH(prefix, true)).forEach(property -> {
+      String k = property.substring(prefix.length() + 1);
+      map.put(Convert.convert(k, keyClass), get(property).as(valueClass));
+    });
+    return map;
+  }
 
+  /**
+   * Checks if a property is in the config or or set on the system. The property name is constructed as
+   * <code>propertyPrefix + . + propertyComponent[0] + . + propertyComponent[1] + ...</code>
+   *
+   * @param propertyPrefix     The prefix
+   * @param propertyComponents The components.
+   * @return True if the property is known, false if not.
+   */
+  public static boolean hasProperty(String propertyPrefix, String... propertyComponents) {
+    String propertyName = propertyPrefix;
+    if (propertyComponents != null && propertyComponents.length > 0) {
+      propertyName += "." + StringUtils.join(propertyComponents, ".");
+    }
+    return getInstance().properties.containsKey(propertyName) || System.getProperties().contains(propertyName);
+  }
+
+  /**
+   * Checks if a property is in the config or or set on the system. The property name is constructed as
+   * <code>clazz.getName() + . + propertyComponent[0] + . + propertyComponent[1] + ...</code>
+   *
+   * @param clazz              The class with which the property is associated.
+   * @param propertyComponents The components.
+   * @return True if the property is known, false if not.
+   */
+  public static boolean hasProperty(Class<?> clazz, String... propertyComponents) {
+    return hasProperty(clazz.getName(), propertyComponents);
+  }
+
+  /**
+   * <p>Checks if a property is in the config or or set on the system. The property name is constructed as
+   * <code>clazz.getName() + . + propertyComponent[0] + . + propertyComponent[1] + ... +
+   * (language.toString()|language.getCode().toLowerCase())</code> This will return true if the language specific config
+   * option is set or a default (i.e. no-language specified) version is set. </p>
+   *
+   * @param propertyPrefix     The prefix
+   * @param language           The language we would like the config for
+   * @param propertyComponents The components.
+   * @return True if the property is known, false if not.
+   */
+  public static boolean hasProperty(String propertyPrefix, Language language, String... propertyComponents) {
+    return findKey(propertyPrefix, language, propertyComponents) != null;
+  }
+
+  /**
+   * Closest key.
+   *
+   * @param propertyPrefix     the property prefix
+   * @param language           the language
+   * @param propertyComponents the property components
+   * @return the string
+   */
+  public static String closestKey(String propertyPrefix, Language language, String... propertyComponents) {
+    return findKey(propertyPrefix, language, propertyComponents);
+  }
+
+  private static String findKey(String propertyPrefix, Language language, String... propertyComponents) {
+
+    if (propertyComponents == null || propertyComponents.length == 0) {
       for (String key :
-            new String[]{
-                  propertyPrefix + "." + language + "." + components,
-                  propertyPrefix + "." + language.toString().toLowerCase() + "." + components,
-                  propertyPrefix + "." + language.getCode() + "." + components,
-                  propertyPrefix + "." + language.getCode().toLowerCase() + "." + components,
-                  propertyPrefix + "." + components + "." + language,
-                  propertyPrefix + "." + components + "." + language.toString().toLowerCase(),
-                  propertyPrefix + "." + components + "." + language.getCode(),
-                  propertyPrefix + "." + components + "." + language.getCode().toLowerCase(),
-                  propertyPrefix + "." + components
-            }
-            ) {
-         if (hasProperty(key)) {
-            return key;
-         }
+        new String[]{
+          propertyPrefix + "." + language,
+          propertyPrefix + "." + language.toString().toLowerCase(),
+          propertyPrefix + "." + language.getCode(),
+          propertyPrefix + "." + language.getCode().toLowerCase(),
+          propertyPrefix
+        }
+        ) {
+        if (hasProperty(key)) {
+          return key;
+        }
       }
 
       return null;
-   }
-
-   /**
-    * <p>Checks if a property is in the config or or set on the system. The property name is constructed as
-    * <code>clazz.getName() + . + propertyComponent[0] + . + propertyComponent[1] + ... +
-    * (language.toString()|language.getCode().toLowerCase())</code> This will return true if the language specific config
-    * option is set or a default (i.e. no-language specified) version is set. </p>
-    *
-    * @param clazz              The class with which the property is associated.
-    * @param language           The language we would like the config for
-    * @param propertyComponents The components.
-    * @return True if the property is known, false if not.
-    */
-   public static boolean hasProperty(Class<?> clazz, Language language, String... propertyComponents) {
-      return hasProperty(clazz.getName(), language, propertyComponents);
-   }
+    }
 
 
-   /**
-    * Gets the value of a property for a given class and language (the language is optional)
-    *
-    * @param clazz              The class
-    * @param language           The language
-    * @param propertyComponents The components.
-    * @return The value associated with clazz.propertyName.language exists or clazz.propertyName
-    */
-   public static Val get(Class<?> clazz, Language language, String... propertyComponents) {
-      return get(clazz.getName(), language, propertyComponents);
-   }
+    String components = StringUtils.join(propertyComponents, ".");
 
-   /**
-    * Gets the value of a property for a given class
-    *
-    * @param clazz              The class
-    * @param propertyComponents The components
-    * @return The value associated with clazz.propertyName
-    */
-   public static Val get(Class<?> clazz, String... propertyComponents) {
-      return get(clazz.getName(), propertyComponents);
-   }
-
-
-   /**
-    * Gets the value of a property for a given class and language (the language is optional)
-    *
-    * @param propertyPrefix     The prefix
-    * @param language           The language
-    * @param propertyComponents The components.
-    * @return The value associated with clazz.propertyName.language exists or clazz.propertyName
-    */
-   public static Val get(String propertyPrefix, Language language, String... propertyComponents) {
-      String key = findKey(propertyPrefix, language, propertyComponents);
-      return key == null ? Val.of(null) : get(key);
-   }
-
-   /**
-    * <p>Gets the value associated with a property. The property name is constructed as <code>propertyPrefix + . +
-    * propertyComponent[0] + . + propertyComponent[1] + ...</code></p>
-    *
-    * @param propertyPrefix     The prefix
-    * @param propertyComponents The components
-    * @return The value for the property
-    */
-   public static Val get(String propertyPrefix, String... propertyComponents) {
-      String propertyName = propertyPrefix;
-      if (propertyComponents != null && propertyComponents.length > 0) {
-         propertyName += "." + StringUtils.join(propertyComponents, ".");
+    for (String key :
+      new String[]{
+        propertyPrefix + "." + language + "." + components,
+        propertyPrefix + "." + language.toString().toLowerCase() + "." + components,
+        propertyPrefix + "." + language.getCode() + "." + components,
+        propertyPrefix + "." + language.getCode().toLowerCase() + "." + components,
+        propertyPrefix + "." + components + "." + language,
+        propertyPrefix + "." + components + "." + language.toString().toLowerCase(),
+        propertyPrefix + "." + components + "." + language.getCode(),
+        propertyPrefix + "." + components + "." + language.getCode().toLowerCase(),
+        propertyPrefix + "." + components
       }
-
-      if (StringUtils.isNullOrBlank(propertyName)) {
-         return new Val(null);
+      ) {
+      if (hasProperty(key)) {
+        return key;
       }
+    }
 
-      String value;
-      if (getInstance().properties.containsKey(propertyName)) {
-         value = getInstance().properties.get(propertyName);
-      } else if (System.getProperty(propertyName) != null) {
-         value = System.getProperty(propertyName);
-      } else {
-         value = System.getenv(propertyName);
-      }
+    return null;
+  }
 
-      if (value == null) {
-         return new Val(null);
-      }
-
-      //resolve variables
-      if (STRING_SUBSTITUTION.matcher(value).find()) {
-         value = resolveVariables(getInstance().properties.get(propertyName));
-      }
-
-      if (value == null) {
-         return new Val(null);
-      }
-
-      //If the value is a script then process it
-      if (value.startsWith(SCRIPT_PROPERTY)) {
-         return Val.of(processScript(value));
-      }
-
-      if (value.contains(BEAN_PROPERTY)) {
-         return getBean(value);
-      }
-
-      return Val.of(value);
-   }
+  /**
+   * <p>Checks if a property is in the config or or set on the system. The property name is constructed as
+   * <code>clazz.getName() + . + propertyComponent[0] + . + propertyComponent[1] + ... +
+   * (language.toString()|language.getCode().toLowerCase())</code> This will return true if the language specific config
+   * option is set or a default (i.e. no-language specified) version is set. </p>
+   *
+   * @param clazz              The class with which the property is associated.
+   * @param language           The language we would like the config for
+   * @param propertyComponents The components.
+   * @return True if the property is known, false if not.
+   */
+  public static boolean hasProperty(Class<?> clazz, Language language, String... propertyComponents) {
+    return hasProperty(clazz.getName(), language, propertyComponents);
+  }
 
 
-   /**
-    * <p> Gets a <code>list</code> of properties whose name is matched using the supplied <code>StringMatcher</code>.
-    * </p>
-    *
-    * @param matcher The <code>StringMatcher</code> to use for matching property names.
-    * @return A <code>List</code> of properties matched using the <code>StringMatcher</code>.
-    */
-   public static List<String> getPropertiesMatching(Predicate<? super String> matcher) {
-      if (matcher != null) {
-         return getInstance().properties.keySet().parallelStream().filter(matcher).collect(Collectors.toList());
-      }
-      return Collections.emptyList();
-   }
+  /**
+   * Gets the value of a property for a given class and language (the language is optional)
+   *
+   * @param clazz              The class
+   * @param language           The language
+   * @param propertyComponents The components.
+   * @return The value associated with clazz.propertyName.language exists or clazz.propertyName
+   */
+  public static Val get(Class<?> clazz, Language language, String... propertyComponents) {
+    return get(clazz.getName(), language, propertyComponents);
+  }
+
+  /**
+   * Gets the value of a property for a given class
+   *
+   * @param clazz              The class
+   * @param propertyComponents The components
+   * @return The value associated with clazz.propertyName
+   */
+  public static Val get(Class<?> clazz, String... propertyComponents) {
+    return get(clazz.getName(), propertyComponents);
+  }
 
 
-   /**
-    * Load package config.
-    *
-    * @param packageName the package name
-    */
-   public static void loadPackageConfig(@NonNull String packageName) {
-      loadConfig(Resources.fromClasspath(packageName.replace('.', '/') + "/default.conf"));
-   }
+  /**
+   * Gets the value of a property for a given class and language (the language is optional)
+   *
+   * @param propertyPrefix     The prefix
+   * @param language           The language
+   * @param propertyComponents The components.
+   * @return The value associated with clazz.propertyName.language exists or clazz.propertyName
+   */
+  public static Val get(String propertyPrefix, Language language, String... propertyComponents) {
+    String key = findKey(propertyPrefix, language, propertyComponents);
+    return key == null ? Val.of(null) : get(key);
+  }
 
-   /**
-    * Loads a config file
-    *
-    * @param resource The config file
-    */
+  /**
+   * <p>Gets the value associated with a property. The property name is constructed as <code>propertyPrefix + . +
+   * propertyComponent[0] + . + propertyComponent[1] + ...</code></p>
+   *
+   * @param propertyPrefix     The prefix
+   * @param propertyComponents The components
+   * @return The value for the property
+   */
+  public static Val get(String propertyPrefix, String... propertyComponents) {
+    String propertyName = propertyPrefix;
+    if (propertyComponents != null && propertyComponents.length > 0) {
+      propertyName += "." + StringUtils.join(propertyComponents, ".");
+    }
+
+    if (StringUtils.isNullOrBlank(propertyName)) {
+      return new Val(null);
+    }
+
+    String value;
+    if (getInstance().properties.containsKey(propertyName)) {
+      value = getInstance().properties.get(propertyName);
+    } else if (System.getProperty(propertyName) != null) {
+      value = System.getProperty(propertyName);
+    } else {
+      value = System.getenv(propertyName);
+    }
+
+    if (value == null) {
+      return new Val(null);
+    }
+
+    //resolve variables
+    if (STRING_SUBSTITUTION.matcher(value).find()) {
+      value = resolveVariables(getInstance().properties.get(propertyName));
+    }
+
+    if (value == null) {
+      return new Val(null);
+    }
+
+    //If the value is a script then process it
+    if (value.startsWith(SCRIPT_PROPERTY)) {
+      return Val.of(processScript(value));
+    }
+
+    if (value.contains(BEAN_PROPERTY)) {
+      return getBean(value);
+    }
+
+    return Val.of(value);
+  }
+
+
+  /**
+   * <p> Gets a <code>list</code> of properties whose name is matched using the supplied <code>StringMatcher</code>.
+   * </p>
+   *
+   * @param matcher The <code>StringMatcher</code> to use for matching property names.
+   * @return A <code>List</code> of properties matched using the <code>StringMatcher</code>.
+   */
+  public static List<String> getPropertiesMatching(Predicate<? super String> matcher) {
+    if (matcher != null) {
+      return getInstance().properties.keySet().parallelStream().filter(matcher).collect(Collectors.toList());
+    }
+    return Collections.emptyList();
+  }
+
+
+  /**
+   * Load package config.
+   *
+   * @param packageName the package name
+   */
+  public static void loadPackageConfig(@NonNull String packageName) {
+    loadConfig(Resources.fromClasspath(packageName.replace('.', '/') + "/default.conf"));
+  }
+
+  /**
+   * Loads a config file
+   *
+   * @param resource The config file
+   */
 //  public static void loadConfig(Resource resource) {
 //    if (resource != null && resource.exists()) {
 //      loadConfig(resource);
 //    }
 //  }
 
-   /**
-    * Loads a config file
-    *
-    * @param resource The config file
-    */
-   @SneakyThrows
-   public static void loadConfig(Resource resource) {
-      if (resource == null || !resource.exists()) {
-         return;
+  /**
+   * Loads a config file
+   *
+   * @param resource The config file
+   */
+  @SneakyThrows
+  public static void loadConfig(Resource resource) {
+    if (resource == null || !resource.exists()) {
+      return;
+    }
+    if (resource.path() != null && getInstance().loaded.contains(resource.path())) {
+      return; //Only load once!
+    }
+    new ConfigParser(resource).parse();
+    if (resource.path() != null) {
+      getInstance().loaded.add(resource.path());
+    }
+  }
+
+  private static String getCallingClass() {
+    // Auto-discover the package of the calling class.
+    StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+    for (int i = 1; i < stackTrace.length; i++) {
+      StackTraceElement ste = stackTrace[i];
+      // ignore the config class
+      if (!ste.getClassName().equals(Config.class.getName()) &&
+        !ste.getClassName().equals(CommandLineApplication.class.getName())
+        && !ste.getClassName().equals(Application.class.getName())
+        ) {
+        return ste.getClassName();
       }
-      if (resource.path() != null && getInstance().loaded.contains(resource.path())) {
-         return; //Only load once!
-      }
-      new ConfigParser(resource).parse();
-      if (resource.path() != null) {
-         getInstance().loaded.add(resource.path());
-      }
-   }
+    }
+    return null;
+  }
 
-   private static String getCallingClass() {
-      // Auto-discover the package of the calling class.
-      StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-      for (int i = 1; i < stackTrace.length; i++) {
-         StackTraceElement ste = stackTrace[i];
-         // ignore the config class
-         if (!ste.getClassName().equals(Config.class.getName()) &&
-               !ste.getClassName().equals(CommandLineApplication.class.getName())
-               && !ste.getClassName().equals(Application.class.getName())
-               ) {
-            return ste.getClassName();
-         }
-      }
-      return null;
-   }
-
-   /**
-    * Sets all command line.
-    *
-    * @param args the args
-    */
-   public static void setAllCommandLine(String[] args) {
-      if (args != null) {
-         CommandLineParser parser = new CommandLineParser();
-         parser.parse(args);
-         parser.getSetEntries().forEach(entry ->
-                                              getInstance().setterFunction.setProperty(entry.getKey(),
-                                                                                       entry.getValue(),
-                                                                                       "CommandLine"
-                                                                                      )
-                                       );
-      }
-   }
-
-   public static void setAllCommandLine(CommandLineParser parser) {
-      if (parser != null) {
-         parser.getSetEntries().forEach(entry ->
-                                              getInstance().setterFunction.setProperty(entry.getKey(),
-                                                                                       entry.getValue(),
-                                                                                       "CommandLine"
-                                                                                      )
-                                       );
-      }
-   }
-
-
-   /**
-    * <p> Initializes the configuration. </p> <p> Looks for a properties (programName.conf) in the classpath, the user
-    * home directory, and in the run directory to load </p> <p> The command line arguments are parsed and added to the
-    * configuration. </p>
-    *
-    * @param programName the program name
-    * @param args        the command line arguments
-    * @param parser      the                    to use for parsing the arguments
-    * @return Non config/option parameters from command line
-    */
-   @SneakyThrows
-   public static String[] initialize(String programName, String[] args, CommandLineParser parser) {
-      String rval[];
-      if (args != null) {
-         rval = parser.parse(args);
-      } else {
-         rval = new String[0];
-      }
-
-
-      //Check if we should only explain the config
-      if (NamedOption.CONFIG_EXPLAIN.<Boolean>getValue()) {
-         getInstance().setterFunction = ConfigExplainSettingFunction.INSTANCE;
-      } else {
-         getInstance().setterFunction = ConfigSettingFunction.INSTANCE;
-      }
-
-      // Auto-discover the package of the calling class.
-      String className = getCallingClass();
-
-      if (className != null) {
-         loadDefaultConf(className);
-      }
-
-
-      //Look for application specific properties
-      Stream.of(
-            new ClasspathResource(programName.replace(".", "/") + ".conf", defaultClassLoader),
-            Resources.fromFile(new File(SystemInfo.USER_HOME, programName + ".conf")),
-            localConfigDirectory.getChild(programName + ".conf"),
-            Resources.fromFile(new File(programName + ".conf"))
-               )
-            .filter(Resource::exists)
-            .forEach(resource -> {
-               log.finest("Loading {0}.conf from :", programName);
-               loadConfig(resource);
-            });
-
-
-      // Store the command line arguments as a config settings.
-      if (args != null) {
-         parser.getSetEntries().forEach(entry -> {
-            ConfigSettingFunction.INSTANCE.setProperty(entry.getKey(), entry.getValue(), "CommandLine");
-         });
-      }
-
-      if (parser.isSet(NamedOption.CONFIG)) {
-         loadConfig(NamedOption.CONFIG.getValue());
-      }
-
-
-      setAllCommandLine(parser);
-
-      // If config-explain was set then output the config recording and then quit
-      if (parser.isSet(NamedOption.CONFIG_EXPLAIN)) {
-         ConfigExplainSettingFunction settings = (ConfigExplainSettingFunction) getInstance().setterFunction;
-         for (String key : new TreeSet<>(settings.properties.keySet())) {
-            System.err.println(key);
-            int max = settings.properties.get(key).size();
-            int i = 1;
-            for (String prop : settings.properties.get(key)) {
-               System.err.println("\t" + (i == max ? "*" : "") + prop.replaceAll("\r?\n", "  "));
-               i++;
-            }
-            System.err.println("--------------------------------------------------");
-         }
-         System.exit(0);
-      }
-
-
-      return rval;
-   }
-
-
-   /**
-    * Load default conf.
-    *
-    * @param packageName the package name
-    * @return the boolean
-    * @throws ParseException the parse exception
-    */
-   protected static boolean loadDefaultConf(String packageName) throws ParseException {
-
-      if (packageName.endsWith(".conf")) {
-         return false;
-      }
-
-      packageName = packageName.replaceAll("\\$[0-9]+$", "");
-
-
-      Resource defaultConf = new ClasspathResource((packageName.replaceAll("\\.",
-                                                                           "/"
-                                                                          ) + "/" + DEFAULT_CONFIG_FILE_NAME).trim(),
-                                                   Config.getDefaultClassLoader()
+  /**
+   * Sets all command line.
+   *
+   * @param args the args
+   */
+  public static void setAllCommandLine(String[] args) {
+    if (args != null) {
+      CommandLineParser parser = new CommandLineParser();
+      parser.parse(args);
+      parser.getSetEntries().forEach(entry ->
+                                       getInstance().setterFunction.setProperty(entry.getKey(),
+                                                                                entry.getValue(),
+                                                                                "CommandLine"
+                                       )
       );
+    }
+  }
 
-      // Go through each level of the package until we find one that
-      // has a default properties file or we cannot go any further.
-      while (!defaultConf.exists()) {
-         int idx = packageName.lastIndexOf('.');
-         if (idx == -1) {
-            defaultConf = new ClasspathResource(packageName + "/" + DEFAULT_CONFIG_FILE_NAME,
-                                                Config.getDefaultClassLoader()
-            );
-            break;
-         }
-         packageName = packageName.substring(0, idx);
-         defaultConf = new ClasspathResource(packageName.replaceAll("\\.", "/") + "/" + DEFAULT_CONFIG_FILE_NAME,
-                                             Config.getDefaultClassLoader()
-         );
+  public static void setAllCommandLine(CommandLineParser parser) {
+    if (parser != null) {
+      parser.getSetEntries().forEach(entry ->
+                                       getInstance().setterFunction.setProperty(entry.getKey(),
+                                                                                entry.getValue(),
+                                                                                "CommandLine"
+                                       )
+      );
+    }
+  }
+
+
+  /**
+   * <p> Initializes the configuration. </p> <p> Looks for a properties (programName.conf) in the classpath, the user
+   * home directory, and in the run directory to load </p> <p> The command line arguments are parsed and added to the
+   * configuration. </p>
+   *
+   * @param programName the program name
+   * @param args        the command line arguments
+   * @param parser      the                    to use for parsing the arguments
+   * @return Non config/option parameters from command line
+   */
+  @SneakyThrows
+  public static String[] initialize(String programName, String[] args, CommandLineParser parser) {
+    Preloader.preload();
+    String rval[];
+    if (args != null) {
+      rval = parser.parse(args);
+    } else {
+      rval = new String[0];
+    }
+
+
+    //Check if we should only explain the config
+    if (NamedOption.CONFIG_EXPLAIN.<Boolean>getValue()) {
+      getInstance().setterFunction = ConfigExplainSettingFunction.INSTANCE;
+    } else {
+      getInstance().setterFunction = ConfigSettingFunction.INSTANCE;
+    }
+
+    // Auto-discover the package of the calling class.
+    String className = getCallingClass();
+
+    if (className != null) {
+      loadDefaultConf(className);
+    }
+
+
+    //Look for application specific properties
+    Stream.of(
+      new ClasspathResource(programName.replace(".", "/") + ".conf", defaultClassLoader),
+      Resources.fromFile(new File(SystemInfo.USER_HOME, programName + ".conf")),
+      localConfigDirectory.getChild(programName + ".conf"),
+      Resources.fromFile(new File(programName + ".conf"))
+    )
+          .filter(Resource::exists)
+          .forEach(resource -> {
+            log.finest("Loading {0}.conf from :", programName);
+            loadConfig(resource);
+          });
+
+
+    // Store the command line arguments as a config settings.
+    if (args != null) {
+      parser.getSetEntries().forEach(entry -> {
+        ConfigSettingFunction.INSTANCE.setProperty(entry.getKey(), entry.getValue(), "CommandLine");
+      });
+    }
+
+    if (parser.isSet(NamedOption.CONFIG)) {
+      loadConfig(NamedOption.CONFIG.getValue());
+    }
+
+
+    setAllCommandLine(parser);
+
+    // If config-explain was set then output the config recording and then quit
+    if (parser.isSet(NamedOption.CONFIG_EXPLAIN)) {
+      ConfigExplainSettingFunction settings = (ConfigExplainSettingFunction) getInstance().setterFunction;
+      for (String key : new TreeSet<>(settings.properties.keySet())) {
+        System.err.println(key);
+        int max = settings.properties.get(key).size();
+        int i = 1;
+        for (String prop : settings.properties.get(key)) {
+          System.err.println("\t" + (i == max ? "*" : "") + prop.replaceAll("\r?\n", "  "));
+          i++;
+        }
+        System.err.println("--------------------------------------------------");
       }
-
-      if (defaultConf.exists()) {
-         loadConfig(defaultConf);
-         return true;
-      }
+      System.exit(0);
+    }
 
 
+    return rval;
+  }
+
+
+  /**
+   * Load default conf.
+   *
+   * @param packageName the package name
+   * @return the boolean
+   * @throws ParseException the parse exception
+   */
+  protected static boolean loadDefaultConf(String packageName) throws ParseException {
+
+    if (packageName.endsWith(".conf")) {
       return false;
-   }
+    }
 
-   /**
-    * Initializes the config file without specifying any command line arguments
-    *
-    * @param programName The program name
-    * @return An empty array
-    */
-   public static String[] initialize(String programName) {
-      return initialize(programName, new String[0], new CommandLineParser());
-   }
+    packageName = packageName.replaceAll("\\$[0-9]+$", "");
 
-   /**
-    * Initialize test.
-    */
-   public static void initializeTest() {
-      clear();
-      initialize("Test");
-   }
 
-   /**
-    * <p> Initializes the configuration. </p> <p> Looks for a properties (programName.conf) in the classpath, the user
-    * home directory, and in the run directory to load </p> <p> The command line arguments are parsed and added to the
-    * configuration. </p>
-    *
-    * @param programName the program name
-    * @param args        the command line arguments
-    * @return Non config/option parameters from command line
-    */
-   public static String[] initialize(String programName, String[] args) {
-      return initialize(programName, args, new CommandLineParser());
-   }
+    Resource defaultConf = new ClasspathResource((packageName.replaceAll("\\.",
+                                                                         "/"
+    ) + "/" + DEFAULT_CONFIG_FILE_NAME).trim(),
+                                                 Config.getDefaultClassLoader()
+    );
 
-   @SneakyThrows
-   private static Object processScript(String scriptStatement) {
-      int idx = scriptStatement.indexOf(']');
-
+    // Go through each level of the package until we find one that
+    // has a default properties file or we cannot go any further.
+    while (!defaultConf.exists()) {
+      int idx = packageName.lastIndexOf('.');
       if (idx == -1) {
-         throw new RuntimeException(scriptStatement + " is malformed (missing closing ']'')");
+        defaultConf = new ClasspathResource(packageName + "/" + DEFAULT_CONFIG_FILE_NAME,
+                                            Config.getDefaultClassLoader()
+        );
+        break;
       }
+      packageName = packageName.substring(0, idx);
+      defaultConf = new ClasspathResource(packageName.replaceAll("\\.", "/") + "/" + DEFAULT_CONFIG_FILE_NAME,
+                                          Config.getDefaultClassLoader()
+      );
+    }
 
-      String extension = scriptStatement.substring(SCRIPT_PROPERTY.length(), idx).trim();
+    if (defaultConf.exists()) {
+      loadConfig(defaultConf);
+      return true;
+    }
 
-      String objectName = null;
-      if (extension.contains(",")) {
-         String[] splits = extension.split(",");
-         extension = splits[0].trim();
-         objectName = splits[1].trim();
+
+    return false;
+  }
+
+  /**
+   * Initializes the config file without specifying any command line arguments
+   *
+   * @param programName The program name
+   * @return An empty array
+   */
+  public static String[] initialize(String programName) {
+    return initialize(programName, new String[0], new CommandLineParser());
+  }
+
+  /**
+   * Initialize test.
+   */
+  public static void initializeTest() {
+    clear();
+    initialize("Test");
+  }
+
+  /**
+   * <p> Initializes the configuration. </p> <p> Looks for a properties (programName.conf) in the classpath, the user
+   * home directory, and in the run directory to load </p> <p> The command line arguments are parsed and added to the
+   * configuration. </p>
+   *
+   * @param programName the program name
+   * @param args        the command line arguments
+   * @return Non config/option parameters from command line
+   */
+  public static String[] initialize(String programName, String[] args) {
+    return initialize(programName, args, new CommandLineParser());
+  }
+
+  @SneakyThrows
+  private static Object processScript(String scriptStatement) {
+    int idx = scriptStatement.indexOf(']');
+
+    if (idx == -1) {
+      throw new RuntimeException(scriptStatement + " is malformed (missing closing ']'')");
+    }
+
+    String extension = scriptStatement.substring(SCRIPT_PROPERTY.length(), idx).trim();
+
+    String objectName = null;
+    if (extension.contains(",")) {
+      String[] splits = extension.split(",");
+      extension = splits[0].trim();
+      objectName = splits[1].trim();
+    }
+
+    ScriptEnvironment env = ScriptEnvironmentManager.getInstance().getEnvironment(extension);
+    if (!StringUtils.isNullOrBlank(objectName)) {
+      return env.getObject(objectName);
+    }
+
+    idx = scriptStatement.indexOf(':');
+    if (idx == -1) {
+      throw new RuntimeException(scriptStatement + " is malformed (missing :)");
+    }
+
+    String script = scriptStatement.substring(idx + 1).trim();
+    return env.eval(script);
+  }
+
+  /**
+   * Resolve variables string.
+   *
+   * @param string the string
+   * @return the string
+   */
+  static String resolveVariables(String string) {
+    if (string == null) {
+      return null;
+    }
+
+    String rval = string;
+    Matcher m = STRING_SUBSTITUTION.matcher(string);
+    while (m.find()) {
+      if (getInstance().properties.containsKey(m.group(1))) {
+        rval = rval.replaceAll(Pattern.quote(m.group(0)), get(m.group(1)).asString());
+      } else if (System.getProperties().contains(m.group(1))) {
+        rval = rval.replaceAll(Pattern.quote(m.group(0)), System.getProperties().get(m.group(1)).toString());
+      } else if (System.getenv().containsKey(m.group(1))) {
+        rval = rval.replaceAll(Pattern.quote(m.group(0)), System.getenv().get(m.group(1)));
       }
+    }
+    return rval;
+  }
 
-      ScriptEnvironment env = ScriptEnvironmentManager.getInstance().getEnvironment(extension);
-      if (!StringUtils.isNullOrBlank(objectName)) {
-         return env.getObject(objectName);
+  /**
+   * Sets the value of a property.
+   *
+   * @param name  the name of the property
+   * @param value the value of the property
+   */
+  @SneakyThrows
+  public static void setProperty(String name, String value) {
+    getInstance().properties.put(name, value);
+    if (name.toLowerCase().endsWith(".level")) {
+      String className = name.substring(0, name.length() - ".level".length());
+      LogManager.getLogManager().setLevel(className, Level.parse(value.trim().toUpperCase()));
+    }
+    if (name.equals("com.davidbracewell.logging.Logger.logfile")) {
+      FileHandler handler = new FileHandler(value);
+      handler.setFormatter(new LogFormatter());
+      LogManager.addHandler(handler);
+    }
+    if (name.toLowerCase().startsWith(SYSTEM_PROPERTY)) {
+      String systemSetting = name.substring(SYSTEM_PROPERTY.length());
+      System.setProperty(systemSetting, value);
+    }
+    log.finest("Setting property {0} to value of {1}", name, value);
+  }
+
+  /**
+   * Determines if the value of the given property is a script or not
+   *
+   * @param propertyName The name of the property to check
+   * @return True if the property exists and its value is a script
+   */
+  public static boolean valueIsScript(String propertyName) {
+    return (getInstance().properties.containsKey(propertyName) && getInstance().properties.get(propertyName)
+                                                                                          .startsWith(SCRIPT_PROPERTY));
+  }
+
+  /**
+   * Gets default class loader.
+   *
+   * @return the default class loader
+   */
+  public static ClassLoader getDefaultClassLoader() {
+    return defaultClassLoader;
+  }
+
+  /**
+   * Sets the default <code>ClassLoader</code> to use with Classpath resources
+   *
+   * @param newDefaultClassLoader The new ClassLoader
+   */
+  public static void setDefaultClassLoader(@NonNull ClassLoader newDefaultClassLoader) {
+    defaultClassLoader = newDefaultClassLoader;
+  }
+
+  public static Resource toPythonConfigParser(@NonNull Resource output) throws IOException {
+    return toPythonConfigParser("default", output);
+  }
+
+  public static Resource toPythonConfigParser(@NonNull String sectionName, @NonNull Resource output) throws IOException {
+    try (BufferedWriter writer = new BufferedWriter(output.writer())) {
+      writer.write("[");
+      writer.write(sectionName);
+      writer.write("]\n");
+      for (Map.Entry<String, String> e : Sorting.sortMapEntries(getInstance().properties,
+                                                                Map.Entry.comparingByKey())) {
+        writer.write(e.getKey());
+        writer.write(" : ");
+        writer.write(e.getValue().replaceAll("\n", "\n\t\t\t"));
+        writer.write("\n");
       }
+    }
+    return output;
+  }
 
-      idx = scriptStatement.indexOf(':');
-      if (idx == -1) {
-         throw new RuntimeException(scriptStatement + " is malformed (missing :)");
+  private void writeObject(ObjectOutputStream out) throws IOException {
+    out.defaultWriteObject();
+    out.writeObject(properties);
+    out.writeObject(loaded);
+  }
+
+  private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+    in.defaultReadObject();
+    getInstance().properties.putAll(Cast.<Map<String, String>>as(in.readObject()));
+    getInstance().loaded.addAll(Cast.<Set<String>>as(in.readObject()));
+  }
+
+  /**
+   * A ConfigPropertySetter implementation that records which config file set a property. This class is used with the
+   * <code>config-explain</code> command line option.
+   */
+  enum ConfigExplainSettingFunction implements ConfigPropertySetter {
+    /**
+     * The INSTANCE.
+     */
+    INSTANCE;
+    /**
+     * The Properties.
+     */
+    final Map<String, Set<String>> properties = new HashMap<>();
+
+    @Override
+    public void setProperty(String name, String value, String resourceName) {
+      Config.setProperty(name, value);
+      if (!properties.containsKey(name)) {
+        properties.put(name, new LinkedHashSet<>());
       }
+      properties.get(name).add(resourceName + "::" + value);
+    }
 
-      String script = scriptStatement.substring(idx + 1).trim();
-      return env.eval(script);
-   }
-
-   /**
-    * Resolve variables string.
-    *
-    * @param string the string
-    * @return the string
-    */
-   static String resolveVariables(String string) {
-      if (string == null) {
-         return null;
-      }
-
-      String rval = string;
-      Matcher m = STRING_SUBSTITUTION.matcher(string);
-      while (m.find()) {
-         if (getInstance().properties.containsKey(m.group(1))) {
-            rval = rval.replaceAll(Pattern.quote(m.group(0)), get(m.group(1)).asString());
-         } else if (System.getProperties().contains(m.group(1))) {
-            rval = rval.replaceAll(Pattern.quote(m.group(0)), System.getProperties().get(m.group(1)).toString());
-         } else if (System.getenv().containsKey(m.group(1))) {
-            rval = rval.replaceAll(Pattern.quote(m.group(0)), System.getenv().get(m.group(1)));
-         }
-      }
-      return rval;
-   }
-
-   /**
-    * Sets the value of a property.
-    *
-    * @param name  the name of the property
-    * @param value the value of the property
-    */
-   @SneakyThrows
-   public static void setProperty(String name, String value) {
-      getInstance().properties.put(name, value);
-      if (name.toLowerCase().endsWith(".level")) {
-         String className = name.substring(0, name.length() - ".level".length());
-         LogManager.getLogManager().setLevel(className, Level.parse(value.trim().toUpperCase()));
-      }
-      if (name.equals("com.davidbracewell.logging.Logger.logfile")) {
-         FileHandler handler = new FileHandler(value);
-         handler.setFormatter(new LogFormatter());
-         LogManager.addHandler(handler);
-      }
-      if (name.toLowerCase().startsWith(SYSTEM_PROPERTY)) {
-         String systemSetting = name.substring(SYSTEM_PROPERTY.length());
-         System.setProperty(systemSetting, value);
-      }
-      log.finest("Setting property {0} to value of {1}", name, value);
-   }
-
-   /**
-    * Determines if the value of the given property is a script or not
-    *
-    * @param propertyName The name of the property to check
-    * @return True if the property exists and its value is a script
-    */
-   public static boolean valueIsScript(String propertyName) {
-      return (getInstance().properties.containsKey(propertyName) && getInstance().properties.get(propertyName)
-                                                                                            .startsWith(SCRIPT_PROPERTY));
-   }
-
-   /**
-    * Gets default class loader.
-    *
-    * @return the default class loader
-    */
-   public static ClassLoader getDefaultClassLoader() {
-      return defaultClassLoader;
-   }
-
-   /**
-    * Sets the default <code>ClassLoader</code> to use with Classpath resources
-    *
-    * @param newDefaultClassLoader The new ClassLoader
-    */
-   public static void setDefaultClassLoader(@NonNull ClassLoader newDefaultClassLoader) {
-      defaultClassLoader = newDefaultClassLoader;
-   }
-
-   public static Resource toPythonConfigParser(@NonNull Resource output) throws IOException {
-      return toPythonConfigParser("default", output);
-   }
-
-   public static Resource toPythonConfigParser(@NonNull String sectionName, @NonNull Resource output) throws IOException {
-      try (BufferedWriter writer = new BufferedWriter(output.writer())) {
-         writer.write("[");
-         writer.write(sectionName);
-         writer.write("]\n");
-         for (Map.Entry<String, String> e : Sorting.sortMapEntries(getInstance().properties,
-                                                                   Map.Entry.comparingByKey())) {
-            writer.write(e.getKey());
-            writer.write(" : ");
-            writer.write(e.getValue().replaceAll("\n", "\n\t\t\t"));
-            writer.write("\n");
-         }
-      }
-      return output;
-   }
-
-   private void writeObject(ObjectOutputStream out) throws IOException {
-      out.defaultWriteObject();
-      out.writeObject(properties);
-      out.writeObject(loaded);
-   }
-
-   private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-      in.defaultReadObject();
-      getInstance().properties.putAll(Cast.<Map<String, String>>as(in.readObject()));
-      getInstance().loaded.addAll(Cast.<Set<String>>as(in.readObject()));
-   }
-
-   /**
-    * A ConfigPropertySetter implementation that records which config file set a property. This class is used with the
-    * <code>config-explain</code> command line option.
-    */
-   enum ConfigExplainSettingFunction implements ConfigPropertySetter {
-      /**
-       * The INSTANCE.
-       */
-      INSTANCE;
-      /**
-       * The Properties.
-       */
-      final Map<String, Set<String>> properties = new HashMap<>();
-
-      @Override
-      public void setProperty(String name, String value, String resourceName) {
-         Config.setProperty(name, value);
-         if (!properties.containsKey(name)) {
-            properties.put(name, new LinkedHashSet<>());
-         }
-         properties.get(name).add(resourceName + "::" + value);
-      }
-
-   }
+  }
 
 
-   /**
-    * Standard implementation of ConfigPropertySetter
-    */
-   enum ConfigSettingFunction implements ConfigPropertySetter {
-      /**
-       * The INSTANCE.
-       */
-      INSTANCE;
+  /**
+   * Standard implementation of ConfigPropertySetter
+   */
+  enum ConfigSettingFunction implements ConfigPropertySetter {
+    /**
+     * The INSTANCE.
+     */
+    INSTANCE;
 
-      @Override
-      public void setProperty(String name, String value, String resourceName) {
-         Config.setProperty(name, value);
-      }
+    @Override
+    public void setProperty(String name, String value, String resourceName) {
+      Config.setProperty(name, value);
+    }
 
-   }
+  }
 
-   enum ConfigSettingError implements ConfigPropertySetter {
-      /**
-       * The INSTANCE.
-       */
-      INSTANCE;
+  enum ConfigSettingError implements ConfigPropertySetter {
+    /**
+     * The INSTANCE.
+     */
+    INSTANCE;
 
-      @Override
-      public void setProperty(String name, String value, String resourceName) {
-         throw new IllegalStateException("Config not initialized");
-      }
+    @Override
+    public void setProperty(String name, String value, String resourceName) {
+      throw new IllegalStateException("Config not initialized");
+    }
 
-   }
+  }
 
 
-   /**
-    * A <code>ConfigPropertySetter</code> takes care of setting properties and their values are they are parsed by the
-    * {@link ConfigParser}.
-    *
-    * @author David B. Bracewell
-    */
-   interface ConfigPropertySetter {
+  /**
+   * A <code>ConfigPropertySetter</code> takes care of setting properties and their values are they are parsed by the
+   * {@link ConfigParser}.
+   *
+   * @author David B. Bracewell
+   */
+  interface ConfigPropertySetter {
 
-      /**
-       * Sets a property
-       *
-       * @param name         The name of the property
-       * @param value        The value of the property
-       * @param resourceName The resource that is responsible for this property
-       */
-      void setProperty(String name, String value, String resourceName);
+    /**
+     * Sets a property
+     *
+     * @param name         The name of the property
+     * @param value        The value of the property
+     * @param resourceName The resource that is responsible for this property
+     */
+    void setProperty(String name, String value, String resourceName);
 
-   }// END OF ConfigPropertySetter
+  }// END OF ConfigPropertySetter
 
 }// END OF Config

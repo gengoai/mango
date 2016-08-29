@@ -22,9 +22,12 @@
 package com.davidbracewell.conversion;
 
 import com.davidbracewell.DateParser;
+import com.davidbracewell.EnumValue;
 import com.davidbracewell.Primitives;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.logging.Logger;
+import com.davidbracewell.reflection.Reflect;
+import com.davidbracewell.reflection.ReflectionException;
 import com.davidbracewell.reflection.ReflectionUtils;
 import com.davidbracewell.string.CSVFormatter;
 import com.davidbracewell.string.StringUtils;
@@ -51,80 +54,6 @@ import java.util.function.Function;
  */
 public class CommonTypeConverter {
 
-  public static final Function<Object, Date> JAVA_DATE = new Function<Object, Date>() {
-    private final DateParser dateParser = new DateParser();
-
-    @Override
-    public Date apply(Object input) {
-      if (input == null) {
-        return null;
-      } else if (input instanceof Date) {
-        return Cast.as(input);
-      } else if (input instanceof Number) {
-        return new Date(Cast.as(input, Number.class).longValue());
-      } else if (input instanceof Calendar) {
-        return Cast.as(input, Calendar.class).getTime();
-      }
-
-      String string = STRING.apply(input);
-      if (string != null) {
-        string = StringUtils.trim(string.replaceAll(StringUtils.MULTIPLE_WHITESPACE, " "));
-
-        Optional<Date> date = dateParser.parseQuietly(string);
-        if (date.isPresent()) {
-          return date.get();
-        }
-      }
-
-      log.fine("Could not convert {0} into java.util.Date", input.getClass());
-      return null;
-    }
-  };
-
-  public static final Function<Object, java.sql.Date> SQL_DATE = new Function<Object, java.sql.Date>() {
-
-    @Override
-    public java.sql.Date apply(Object input) {
-      if (input == null) {
-        return null;
-      } else if (input instanceof java.sql.Date) {
-        return Cast.as(input);
-      }
-
-      Date date = JAVA_DATE.apply(input);
-      if (date != null) {
-        return new java.sql.Date(date.getTime());
-      }
-
-      log.fine("Could not convert {0} into java.util.Date", input.getClass());
-      return null;
-    }
-  };
-
-  /**
-   * Converts objects to characters
-   */
-  public static final Function<Object, Character> CHARACTER = new Function<Object, Character>() {
-
-    @Override
-    public Character apply(Object input) {
-      if (input == null) {
-        return null;
-      } else if (input instanceof Character) {
-        return Cast.as(input);
-      } else if (input instanceof Number) {
-        return (char) Cast.as(input, Number.class).intValue();
-      } else if (input instanceof CharSequence) {
-        CharSequence sequence = Cast.as(input);
-        if (sequence.length() == 1) {
-          return sequence.charAt(0);
-        }
-      }
-
-      log.fine("Could not convert {0} into Character.", input.getClass());
-      return null;
-    }
-  };
   /**
    * Converts an object to a Class will try to get the class represented in a char sequence. Will only return null when
    * the input is null.
@@ -197,11 +126,114 @@ public class CommonTypeConverter {
         CSVFormatter mapFormat = CSV.builder().delimiter('=').formatter();
         Cast.<Map<?, ?>>as(input).forEach((o, o2) -> builder.append(
           mapFormat.format(Convert.convert(o, String.class), Convert.convert(o2, String.class))
-                                                                   ));
+        ));
         return builder.append("}").toString();
       }
 
       return input.toString();
+    }
+  };
+  public static final Function<Object, EnumValue> DYNAMIC_ENUM = new Function<Object, EnumValue>() {
+    @Override
+    public EnumValue apply(Object o) {
+      if (o == null) {
+        return null;
+      } else if (o instanceof EnumValue) {
+        return Cast.as(o);
+      } else if (o instanceof CharSequence) {
+
+        String string = o.toString();
+        if (StringUtils.isNullOrBlank(string)) {
+          return null;
+        }
+
+        int index = string.lastIndexOf('.');
+        if (index == -1) {
+          return null;
+        }
+        Class<?> clazz = ReflectionUtils.getClassForNameQuietly(string.substring(0, index));
+        if (clazz != null) {
+          try {
+            return Reflect.onClass(clazz).allowPrivilegedAccess().get(string.substring(index + 1)).get();
+          } catch (ReflectionException e) {
+            return null;
+          }
+        }
+      }
+      return null;
+    }
+  };
+  private static Logger log = Logger.getLogger(CommonTypeConverter.class);
+  public static final Function<Object, Date> JAVA_DATE = new Function<Object, Date>() {
+    private final DateParser dateParser = new DateParser();
+
+    @Override
+    public Date apply(Object input) {
+      if (input == null) {
+        return null;
+      } else if (input instanceof Date) {
+        return Cast.as(input);
+      } else if (input instanceof Number) {
+        return new Date(Cast.as(input, Number.class).longValue());
+      } else if (input instanceof Calendar) {
+        return Cast.as(input, Calendar.class).getTime();
+      }
+
+      String string = STRING.apply(input);
+      if (string != null) {
+        string = StringUtils.trim(string.replaceAll(StringUtils.MULTIPLE_WHITESPACE, " "));
+
+        Optional<Date> date = dateParser.parseQuietly(string);
+        if (date.isPresent()) {
+          return date.get();
+        }
+      }
+
+      log.fine("Could not convert {0} into java.util.Date", input.getClass());
+      return null;
+    }
+  };
+  public static final Function<Object, java.sql.Date> SQL_DATE = new Function<Object, java.sql.Date>() {
+
+    @Override
+    public java.sql.Date apply(Object input) {
+      if (input == null) {
+        return null;
+      } else if (input instanceof java.sql.Date) {
+        return Cast.as(input);
+      }
+
+      Date date = JAVA_DATE.apply(input);
+      if (date != null) {
+        return new java.sql.Date(date.getTime());
+      }
+
+      log.fine("Could not convert {0} into java.util.Date", input.getClass());
+      return null;
+    }
+  };
+  /**
+   * Converts objects to characters
+   */
+  public static final Function<Object, Character> CHARACTER = new Function<Object, Character>() {
+
+    @Override
+    public Character apply(Object input) {
+      if (input == null) {
+        return null;
+      } else if (input instanceof Character) {
+        return Cast.as(input);
+      } else if (input instanceof Number) {
+        return (char) Cast.as(input, Number.class).intValue();
+      } else if (input instanceof CharSequence) {
+        CharSequence sequence = Cast.as(input);
+        if (sequence.length() == 1) {
+          return sequence.charAt(0);
+        }
+      }
+
+      log.fine("Could not convert {0} into Character.", input.getClass());
+      return null;
     }
   };
   /**
@@ -225,8 +257,5 @@ public class CommonTypeConverter {
       return null;
     }
   };
-
-  private static Logger log = Logger.getLogger(CommonTypeConverter.class);
-
 
 }//END OF CommonTypeConverter

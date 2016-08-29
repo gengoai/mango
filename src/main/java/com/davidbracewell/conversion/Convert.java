@@ -22,6 +22,8 @@
 package com.davidbracewell.conversion;
 
 import com.davidbracewell.Defaults;
+import com.davidbracewell.DynamicEnum;
+import com.davidbracewell.EnumValue;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.logging.Logger;
 
@@ -117,6 +119,9 @@ public final class Convert {
 
     register(Class.class, CommonTypeConverter.CLASS);
 
+
+    register(EnumValue.class, CommonTypeConverter.DYNAMIC_ENUM);
+
   }
 
 
@@ -177,6 +182,10 @@ public final class Convert {
         return Defaults.defaultValue(desiredType);
       }
       return null;
+    }
+
+    if( EnumValue.class.isAssignableFrom(desiredType) ){
+      return Cast.as(CommonTypeConverter.DYNAMIC_ENUM.apply(object));
     }
 
     if (object instanceof Val) {

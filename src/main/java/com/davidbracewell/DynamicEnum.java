@@ -29,8 +29,28 @@ import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * <p> A enum-like class that allows for the addition of enum constants. Standard usage is for enum types to to extend
+ * <p> A enum-like class that allows for the addition of enum constants. Standard usage is for enum types to extend
  * {@link EnumValue} and have a static <code>DynamicEnum</code> field in the extended class. </p>
+ * <pre>
+ * {@code
+ *  public class MyEnum extends EnumValue {
+ *    private static final DynamicEnum<MyEnum> index = new DynamicEnum<>();
+ *
+ *    private MyEnum(String name){
+ *      super(name);
+ *      index.register(this);
+ *    }
+ *
+ *    public static MyEnum create(String name){
+ *      if( index.isDefined(name) ){
+ *        return index.valueOf(name);
+ *      }
+ *      return new MyEnum(name);
+ *    }
+ *
+ *  }
+ * }
+ * </pre>
  *
  * @param <E> the type parameter
  * @author David B. Bracewell
@@ -58,8 +78,6 @@ public final class DynamicEnum<E extends EnumValue> implements Serializable {
    */
   public final E register(E value) {
     return values.computeIfAbsent(value.name(), v -> value);
-//    values.putIfAbsent(value.name(), value);
-//    return values.get(value.name());
   }
 
 
@@ -91,7 +109,7 @@ public final class DynamicEnum<E extends EnumValue> implements Serializable {
    * @return True if an enum value exists with the given name, False otherwise
    */
   public final boolean isDefined(String name) {
-    return values.containsKey(normalize(name));
+    return name != null && values.containsKey(normalize(name));
   }
 
   /**

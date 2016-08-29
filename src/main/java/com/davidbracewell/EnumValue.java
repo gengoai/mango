@@ -22,6 +22,7 @@
 package com.davidbracewell;
 
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
 import java.io.Serializable;
 
