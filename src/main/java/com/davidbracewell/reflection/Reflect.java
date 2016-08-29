@@ -21,11 +21,11 @@
 
 package com.davidbracewell.reflection;
 
-import com.davidbracewell.Defaults;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.string.StringUtils;
+import com.google.common.base.Defaults;
 import lombok.NonNull;
 
 import java.lang.reflect.Constructor;
@@ -285,9 +285,7 @@ public class Reflect {
   /**
    * Gets constructors.
    *
-   * @return The set of constructors for the object which is a combination of
-   * and
-   * if <code>allowPrivilegedAccess</code>
+   * @return The set of constructors for the object which is a combination of and if <code>allowPrivilegedAccess</code>
    * was called.
    */
   public Set<Constructor<?>> getConstructors() {
@@ -299,10 +297,8 @@ public class Reflect {
   /**
    * Gets methods.
    *
-   * @return The set of methods for the object which is a combination of
-   * and
-   * if <code>allowPrivilegedAccess</code>
-   * was called.
+   * @return The set of methods for the object which is a combination of and if <code>allowPrivilegedAccess</code> was
+   * called.
    */
   public Set<Method> getMethods() {
     return ClassDescriptorCache.getInstance()
@@ -458,10 +454,8 @@ public class Reflect {
   /**
    * Gets fields.
    *
-   * @return The set of fields for the object which is a combination of
-   * and
-   * if <code>allowPrivilegedAccess</code>
-   * was called.
+   * @return The set of fields for the object which is a combination of and if <code>allowPrivilegedAccess</code> was
+   * called.
    */
   public Set<Field> getFields() {
     return ClassDescriptorCache.getInstance()

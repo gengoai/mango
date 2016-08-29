@@ -11,7 +11,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 /**
- * <p>Attempts to parse a date from a string using a number of different formats.</p>
+ * <p>Attempts to parse a date from a string using a number of different <code>DateFormat</code> formats.</p>
  *
  * @author David B. Bracewell
  */
@@ -39,6 +39,7 @@ public final class DateParser implements Serializable {
    * Instantiates a new Date parser.
    *
    * @param locale the locale to focus the parser on
+   * @throws NullPointerException when the locale is null
    */
   public DateParser(@NonNull Locale locale) {
     formats = new DateFormat[]{
@@ -58,12 +59,12 @@ public final class DateParser implements Serializable {
    *
    * @param input the input string representing the date
    * @return the parsed date
-   * @throws ParseException Couldn't parse the string into a valid date
+   * @throws ParseException       Couldn't parse the string into a valid date
+   * @throws NullPointerException when the input is null
    */
-  public Date parse(String input) throws ParseException {
-    Optional<Date> date = parseQuietly(input);
-    if (date.isPresent()) {
-      return date.get();
+  public Date parse(@NonNull String input) throws ParseException {
+    for (DateFormat format : formats) {
+      return format.parse(input);
     }
     throw new ParseException(input, 0);
   }

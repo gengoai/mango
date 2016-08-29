@@ -21,9 +21,9 @@
 
 package com.davidbracewell.conversion.impl;
 
-import com.davidbracewell.Defaults;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.conversion.Val;
+import com.google.common.base.Defaults;
 import org.junit.Test;
 
 import java.io.StringReader;

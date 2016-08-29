@@ -21,20 +21,35 @@
 
 package com.davidbracewell.conversion;
 
-import com.davidbracewell.Defaults;
-import com.davidbracewell.DynamicEnum;
 import com.davidbracewell.EnumValue;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.logging.Logger;
+import com.google.common.base.Defaults;
 
-import java.io.*;
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.Stack;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
@@ -184,7 +199,7 @@ public final class Convert {
       return null;
     }
 
-    if( EnumValue.class.isAssignableFrom(desiredType) ){
+    if (EnumValue.class.isAssignableFrom(desiredType)) {
       return Cast.as(CommonTypeConverter.DYNAMIC_ENUM.apply(object));
     }
 

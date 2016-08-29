@@ -407,17 +407,6 @@ public final class Config implements Serializable {
    *
    * @param resource The config file
    */
-//  public static void loadConfig(Resource resource) {
-//    if (resource != null && resource.exists()) {
-//      loadConfig(resource);
-//    }
-//  }
-
-  /**
-   * Loads a config file
-   *
-   * @param resource The config file
-   */
   @SneakyThrows
   public static void loadConfig(Resource resource) {
     if (resource == null || !resource.exists()) {
@@ -483,13 +472,14 @@ public final class Config implements Serializable {
    * home directory, and in the run directory to load </p> <p> The command line arguments are parsed and added to the
    * configuration. </p>
    *
-   * @param programName the program name
-   * @param args        the command line arguments
-   * @param parser      the                    to use for parsing the arguments
+   * @param programName   the program name
+   * @param args          the command line arguments
+   * @param parser        the                    to use for parsing the arguments
+   * @param otherPackages Other packages whose configs we should load
    * @return Non config/option parameters from command line
    */
   @SneakyThrows
-  public static String[] initialize(String programName, String[] args, CommandLineParser parser) {
+  public static String[] initialize(String programName, String[] args, CommandLineParser parser, String... otherPackages) {
     Preloader.preload();
     String rval[];
     if (args != null) {
@@ -504,6 +494,12 @@ public final class Config implements Serializable {
       getInstance().setterFunction = ConfigExplainSettingFunction.INSTANCE;
     } else {
       getInstance().setterFunction = ConfigSettingFunction.INSTANCE;
+    }
+
+    if (otherPackages != null) {
+      for (String otherPackage : otherPackages) {
+        loadPackageConfig(otherPackage);
+      }
     }
 
     // Auto-discover the package of the calling class.
@@ -635,10 +631,11 @@ public final class Config implements Serializable {
    *
    * @param programName the program name
    * @param args        the command line arguments
+   * @param otherPackages Other packages whose configs we should load
    * @return Non config/option parameters from command line
    */
-  public static String[] initialize(String programName, String[] args) {
-    return initialize(programName, args, new CommandLineParser());
+  public static String[] initialize(String programName, String[] args, String... otherPackages) {
+    return initialize(programName, args, new CommandLineParser(), otherPackages);
   }
 
   @SneakyThrows
