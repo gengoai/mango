@@ -95,7 +95,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * @author David B. Bracewell
+ * Auto generated using enumGen.py
+ * The type {{CLASS_NAME}}.
  */
 public final class {{CLASS_NAME}} extends HierarchicalEnumValue implements Comparable<{{CLASS_NAME}}> {
   private static final long serialVersionUID = 1L;
