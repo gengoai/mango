@@ -21,10 +21,12 @@
 
 package com.davidbracewell;
 
-import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
+import java.io.ObjectStreamException;
 import java.io.Serializable;
+
+import static com.davidbracewell.DynamicEnum.register;
 
 /**
  * <p>A enum value associated with a {@link DynamicEnum}. Standard usage is for enum types to to extend
@@ -32,8 +34,7 @@ import java.io.Serializable;
  *
  * @author David B. Bracewell
  */
-@EqualsAndHashCode
-public abstract class EnumValue implements Tag, Serializable, Comparable<EnumValue> {
+public abstract class EnumValue implements Tag, Serializable, Cloneable {
   private static final long serialVersionUID = 1L;
   private final String name;
   private final String fullName;
@@ -44,8 +45,29 @@ public abstract class EnumValue implements Tag, Serializable, Comparable<EnumVal
    * @param name the name of the enum value
    */
   protected EnumValue(String name) {
-    this.name = DynamicEnum.normalize(name);
-    this.fullName = getClass().getSimpleName() + "." + name;
+    this.name = normalize(name);
+    this.fullName = getClass().getCanonicalName() + "." + name;
+  }
+
+  /**
+   * Normalize string.
+   *
+   * @param name the name
+   * @return the string
+   */
+  static String normalize(@NonNull String name) {
+    return name.toUpperCase().replaceAll("\\s+", "_");
+  }
+
+  /**
+   * To key string.
+   *
+   * @param enumClass the enum class
+   * @param name      the name
+   * @return the string
+   */
+  static String toKey(@NonNull Class<? extends EnumValue> enumClass, String name) {
+    return enumClass.getCanonicalName() + "." + normalize(name);
   }
 
   @Override
@@ -53,7 +75,12 @@ public abstract class EnumValue implements Tag, Serializable, Comparable<EnumVal
     return name;
   }
 
-  public String fullName() {
+  /**
+   * Canonical name string.
+   *
+   * @return the string
+   */
+  public String canonicalName() {
     return fullName;
   }
 
@@ -63,16 +90,34 @@ public abstract class EnumValue implements Tag, Serializable, Comparable<EnumVal
   }
 
   @Override
-  public int compareTo(EnumValue o) {
-    if (o == null) {
-      return -1;
-    }
-    return this.fullName.compareTo(o.fullName);
-  }
-
-  @Override
   public boolean isInstance(Tag value) {
     return value != null && this.equals(value);
   }
+
+  /**
+   * Read resolve object.
+   *
+   * @return the object
+   * @throws ObjectStreamException the object stream exception
+   */
+  protected final Object readResolve() throws ObjectStreamException {
+    return register(this);
+  }
+
+  @Override
+  public final int hashCode() {
+    return canonicalName().hashCode();
+  }
+
+  @Override
+  public final boolean equals(Object obj) {
+    return this == obj;
+  }
+
+  @Override
+  protected final Object clone() throws CloneNotSupportedException {
+    throw new CloneNotSupportedException();
+  }
+
 
 }//END OF EnumValue

@@ -21,59 +21,32 @@ package com.davidbracewell;/*
 
 import org.junit.Test;
 
-import java.util.Collection;
-
 import static com.davidbracewell.collection.set.Sets.set;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 public class DynamicEnumTest {
 
 
-   @Test
-   public void testStaticDeclerations() throws Exception {
-      assertEquals(NamesEnum.PEDRO, NamesEnum.valueOf("pedro"));
-      assertEquals(NamesEnum.AKI, NamesEnum.valueOf("AkI"));
-      assertEquals("PABLO", NamesEnum.PABLO.name());
-   }
+  @Test
+  public void testStaticDeclerations() throws Exception {
+    assertEquals(NamesEnum.PEDRO, NamesEnum.valueOf("pedro"));
+    assertEquals(NamesEnum.AKI, NamesEnum.valueOf("AkI"));
+    assertEquals("PABLO", NamesEnum.PABLO.name());
+  }
 
-   @Test(expected = IllegalArgumentException.class)
-   public void testBadValue() throws Exception {
-      assertNotEquals(NamesEnum.PEDRO, NamesEnum.valueOf("pEdRos"));
-   }
+  @Test(expected = IllegalArgumentException.class)
+  public void testBadValue() throws Exception {
+    assertNotEquals(NamesEnum.PEDRO, NamesEnum.valueOf("pEdRos"));
+  }
 
-   @Test
-   public void testValues() throws Exception {
-      assertEquals(
-            set(NamesEnum.PEDRO, NamesEnum.PABLO, NamesEnum.AKI),
-            set(NamesEnum.values())
-                  );
-   }
-
-   private static class NamesEnum extends EnumValue {
-      private static final DynamicEnum<NamesEnum> ENUM = new DynamicEnum<>();
-      private static final long serialVersionUID = -2068686615518994186L;
-
-      public NamesEnum(String name) {
-         super(name);
-      }
-
-      public static NamesEnum create(String name) {
-         return ENUM.register(new NamesEnum(name));
-      }
-
-      public static NamesEnum valueOf(String name) {
-         return ENUM.valueOf(name);
-      }
-
-      public static Collection<NamesEnum> values() {
-         return ENUM.values();
-      }
-
-      public static final NamesEnum AKI = create("AKI");
-      public static final NamesEnum PABLO = create("PABLO");
-      public static final NamesEnum PEDRO = create("PEDRO");
-
-   }
+  @Test
+  public void testValues() throws Exception {
+    assertEquals(
+      set(NamesEnum.PEDRO, NamesEnum.PABLO, NamesEnum.AKI),
+      NamesEnum.values()
+    );
+  }
 
 
 }

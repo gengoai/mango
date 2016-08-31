@@ -21,6 +21,8 @@
 
 package com.davidbracewell;
 
+import com.davidbracewell.config.Config;
+
 import java.util.List;
 
 /**
@@ -31,20 +33,7 @@ import java.util.List;
  */
 public abstract class HierarchicalEnumValue extends EnumValue {
   private static final long serialVersionUID = 1L;
-
-  /**
-   * The Parent.
-   */
   protected volatile HierarchicalEnumValue parent = null;
-
-  /**
-   * Instantiates a new Enum value.
-   *
-   * @param name the name of the enum value
-   */
-  protected HierarchicalEnumValue(String name) {
-    super(name);
-  }
 
   /**
    * Instantiates a new Hierarchical enum value.
@@ -93,7 +82,11 @@ public abstract class HierarchicalEnumValue extends EnumValue {
     if (parent == null) {
       synchronized (this) {
         if (parent == null) {
-          parent = getParentConfig();
+          HierarchicalEnumValue ev = getParentConfig();
+          if (ev != null) {
+            parent = ev;
+          }
+          return ev;
         }
       }
     }
@@ -101,7 +94,7 @@ public abstract class HierarchicalEnumValue extends EnumValue {
   }
 
   @Override
-  public boolean isInstance(Tag value) {
+  public final boolean isInstance(Tag value) {
     if (value == null) {
       return false;
     }
@@ -120,7 +113,9 @@ public abstract class HierarchicalEnumValue extends EnumValue {
    *
    * @return the parent config
    */
-  protected abstract HierarchicalEnumValue getParentConfig();
+  protected HierarchicalEnumValue getParentConfig() {
+    return Config.get(canonicalName(), "parent").as(getClass(), null);
+  }
 
 
 }//END OF HierarchicalEnumValue

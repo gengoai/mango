@@ -125,15 +125,6 @@ public final class Stopwatch implements Serializable {
     return Duration.between(startTime, endTime != null ? endTime : Instant.now());
   }
 
-  /**
-   * Elapsed time long.
-   *
-   * @param timeUnit the time unit
-   * @return The elapsed time in milliseconds
-   */
-  public long elapsed(@NonNull TemporalUnit timeUnit) {
-    return duration().get(timeUnit);
-  }
 
   public long elapsed(@NonNull TimeUnit timeUnit) {
     return timeUnit.convert(duration().toNanos(), TimeUnit.NANOSECONDS);

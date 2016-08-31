@@ -238,7 +238,7 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
       @Override
       public Iterator<Map.Entry<T, Double>> iterator() {
         return new Iterator<Map.Entry<T, Double>>() {
-          final Iterator<Map.Entry<T, Double>> iterator = map.entrySet().iterator();
+          final Iterator<Map.Entry<T, Double>> iterator = HashMapCounter.this.map.entrySet().iterator();
           Map.Entry<T, Double> entry;
 
           @Override
@@ -248,7 +248,7 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
 
           @Override
           public Map.Entry<T, Double> next() {
-            entry = iterator().next();
+            entry = iterator.next();
             return entry;
           }
 

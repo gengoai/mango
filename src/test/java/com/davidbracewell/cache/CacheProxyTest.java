@@ -73,6 +73,6 @@ public class CacheProxyTest {
       func.apply(Integer.toString(i));
     }
     sw2.stop();
-    assertTrue(sw2.elapsed(ChronoUnit.MILLIS) <= sw1.elapsed(ChronoUnit.MILLIS));
+    assertTrue(sw2.elapsed(TimeUnit.MILLISECONDS) <= sw1.elapsed(TimeUnit.MILLISECONDS));
   }
 }
