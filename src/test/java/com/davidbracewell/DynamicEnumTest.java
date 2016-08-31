@@ -21,12 +21,20 @@ package com.davidbracewell;/*
 
 import org.junit.Test;
 
+import static com.davidbracewell.collection.list.Lists.list;
 import static com.davidbracewell.collection.set.Sets.set;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 
 public class DynamicEnumTest {
 
+  @Test
+  public void testHierarchy() throws Exception {
+    assertEquals(RanksEnum.PRESIDENT, RanksEnum.GENERAL.getParent());
+    assertEquals(list(RanksEnum.GENERAL), RanksEnum.PRESIDENT.getChildren());
+    assertNull(RanksEnum.PRESIDENT.getParent());
+  }
 
   @Test
   public void testStaticDeclerations() throws Exception {

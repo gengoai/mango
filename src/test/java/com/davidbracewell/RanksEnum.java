@@ -17,6 +17,9 @@ public final class RanksEnum extends HierarchicalEnumValue implements Comparable
   private static final long serialVersionUID = 1L;
   private static final Set<RanksEnum> values = Sets.newConcurrentHashSet();
 
+  public static final RanksEnum PRESIDENT = RanksEnum.create("PRESIDENT");
+  public static final RanksEnum GENERAL = RanksEnum.create("GENERAL", PRESIDENT);
+  public static final RanksEnum COLONEL = RanksEnum.create("COLONEL", GENERAL);
 
   private RanksEnum(String name, RanksEnum parent) {
     super(name, parent);
@@ -48,6 +51,11 @@ public final class RanksEnum extends HierarchicalEnumValue implements Comparable
     return toReturn;
   }
 
+  @Override
+  public RanksEnum getParent() {
+    return Cast.as(super.getParent());
+  }
+
   /**
    * <p>Retrieves all currently known values of RanksEnum.</p>
    *
@@ -75,7 +83,7 @@ public final class RanksEnum extends HierarchicalEnumValue implements Comparable
 
   @Override
   public List<RanksEnum> getChildren() {
-    return values().stream().filter(v -> RanksEnum.this == getParent()).collect(Collectors.toList());
+    return values().stream().filter(v -> this == v.getParent()).collect(Collectors.toList());
   }
 
   @Override

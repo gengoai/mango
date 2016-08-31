@@ -141,6 +141,12 @@ public final class {{CLASS_NAME}} extends HierarchicalEnumValue implements Compa
     return Collections.unmodifiableSet(values);
   }
 
+  @Override
+  public {{CLASS_NAME}} getParent() {
+    return Cast.as(super.getParent());
+  }
+
+
   /**
    * <p>Returns the constant of {{CLASS_NAME}} with the specified name.The normalized version of the specified name will
    * be matched allowing for case and space variations.</p>
@@ -159,7 +165,7 @@ public final class {{CLASS_NAME}} extends HierarchicalEnumValue implements Compa
 
   @Override
   public List<{{CLASS_NAME}}> getChildren() {
-    return values().stream().filter(v -> {{CLASS_NAME}}.this == getParent()).collect(Collectors.toList());
+    return values().stream().filter(v -> this == v.getParent()).collect(Collectors.toList());
   }
 
   @Override
