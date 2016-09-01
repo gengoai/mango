@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * <p></p>Enumeration of world languages with helpful information on whether or not the language is Whitespace delimited
+ * <p>Enumeration of world languages with helpful information on whether or not the language is Whitespace delimited
  * or if the language is read right to left (May not be complete).</p>
  *
  * @author David B. Bracewell

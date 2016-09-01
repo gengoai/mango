@@ -21,11 +21,12 @@
 
 package com.davidbracewell;
 
+import com.davidbracewell.reflection.Reflect;
+import com.davidbracewell.reflection.ReflectionException;
 import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.NonNull;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -38,15 +39,14 @@ import java.util.WeakHashMap;
  * @author David B. Bracewell
  */
 @EqualsAndHashCode
-@ToString(includeFieldNames = false)
 public final class Interner<E> implements Serializable {
   private static final long serialVersionUID = 1L;
   private volatile WeakHashMap<E, E> map = new WeakHashMap<>();
 
   /**
-   * Adds or gets the cannoical version of the incoming object.
+   * <p>Adds or gets the canoical version of the incoming object.</p>
    *
-   * @param object The object to itern
+   * @param object The object to intern
    * @return The interned value
    */
   public synchronized E intern(final E object) {
@@ -57,24 +57,35 @@ public final class Interner<E> implements Serializable {
   }
 
   /**
-   * Intern all set.
+   * <p>Interns all elements in the given set.</p>
    *
-   * @param set the set
-   * @return the set
+   * @param set the set of elements to intern.
+   * @return the interned elements stored using the same type of set as was passed in or a LinkedHashSet if that class
+   * cannot be instantiated using a no-arg constructor.
    */
-  public Set<E> internAll(final Set<E> set) {
-    if (set == null) {
-      return Collections.emptySet();
-    }
-    Set<E> rval = new LinkedHashSet<>();
+  public Set<E> internAll(@NonNull final Set<E> set) {
+    final Set<E> rval = generate(set.getClass());
     set.forEach(e -> rval.add(intern(e)));
     return rval;
   }
 
+  private <T extends Set<E>> Set<E> generate(Class<T> clazz) {
+    try {
+      return Reflect.onClass(clazz).create().get();
+    } catch (ReflectionException e) {
+      return new LinkedHashSet<>();
+    }
+  }
+
+  @Override
+  public String toString() {
+    return map.toString();
+  }
+
   /**
-   * Size int.
+   * <p>The number of items that have been interned.</p>
    *
-   * @return the int
+   * @return the number of items that have been interned.
    */
   public int size() {
     return map.size();

@@ -51,6 +51,12 @@ public interface Math2 {
     return analyze(iterable).getSum();
   }
 
+  /**
+   * Sum int.
+   *
+   * @param numbers the numbers
+   * @return the int
+   */
   static int sum(int[] numbers) {
     if (numbers == null) {
       return 0;
@@ -58,6 +64,12 @@ public interface Math2 {
     return IntStream.of(numbers).sum();
   }
 
+  /**
+   * Sum long.
+   *
+   * @param numbers the numbers
+   * @return the long
+   */
   static long sum(long[] numbers) {
     if (numbers == null) {
       return 0;
@@ -66,6 +78,12 @@ public interface Math2 {
   }
 
 
+  /**
+   * Sum double.
+   *
+   * @param numbers the numbers
+   * @return the double
+   */
   static double sum(double[] numbers) {
     if (numbers == null) {
       return 0d;
@@ -74,6 +92,12 @@ public interface Math2 {
   }
 
 
+  /**
+   * Analyze enhanced double statistics.
+   *
+   * @param iterable the iterable
+   * @return the enhanced double statistics
+   */
   static EnhancedDoubleStatistics analyze(Iterable<? extends Number> iterable) {
     if (iterable == null) {
       return new EnhancedDoubleStatistics();
