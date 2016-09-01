@@ -25,7 +25,15 @@ import com.davidbracewell.function.SerializableFunction;
 import lombok.NonNull;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.AbstractCollection;
+import java.util.AbstractList;
+import java.util.AbstractMap;
+import java.util.AbstractSet;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * <p>A collection of static methods making casting from one type to another a bit easier. Note that the standard use
@@ -39,6 +47,7 @@ import java.util.*;
 public final class Cast {
 
   private Cast() {
+    throw new IllegalAccessError();
   }
 
   /**

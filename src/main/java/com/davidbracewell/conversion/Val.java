@@ -26,7 +26,12 @@ import lombok.NonNull;
 
 import java.io.Serializable;
 import java.lang.reflect.Array;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -36,20 +41,19 @@ import java.util.function.Supplier;
  */
 public class Val implements Serializable {
 
-  private static final long serialVersionUID = 1303236922605307700L;
   /**
    * False value
    */
-  public static Val FALSE = Val.of(false);
-
+  public static final Val FALSE = Val.of(false);
   /**
    * Null value
    */
-  public static Val NULL = Val.of(null);
+  public static final Val NULL = Val.of(null);
   /**
    * True value
    */
-  public static Val TRUE = Val.of(true);
+  public static final Val TRUE = Val.of(true);
+  private static final long serialVersionUID = 1303236922605307700L;
   private final Object toConvert;
 
   /**

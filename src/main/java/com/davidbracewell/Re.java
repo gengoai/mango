@@ -11,7 +11,9 @@ import static com.davidbracewell.Regex.toChars;
  * @author David B. Bracewell
  */
 public interface Re {
-
+  /**
+   * The constant QUOTE.
+   */
   Regex QUOTE = re("\"");
 
   /**
@@ -344,6 +346,12 @@ public interface Re {
     return re(pattern.toString());
   }
 
+  /**
+   * Not regex.
+   *
+   * @param regex the regex
+   * @return the regex
+   */
   static Regex not(Regex regex) {
     return regex.not();
   }
