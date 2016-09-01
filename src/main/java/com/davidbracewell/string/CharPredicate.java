@@ -30,6 +30,7 @@ import static com.davidbracewell.Validations.validateArgument;
 
 /**
  * The interface Char predicate.
+ *
  * @author David B. Bracewell
  */
 @FunctionalInterface
@@ -50,10 +51,7 @@ public interface CharPredicate extends Serializable {
    * @return the boolean
    */
   default boolean matchesAnyOf(CharSequence charSequence) {
-    if (charSequence == null) {
-      return false;
-    }
-    return charSequence.chars().anyMatch(i -> matches((char) i));
+    return charSequence != null && charSequence.chars().anyMatch(i -> matches((char) i));
   }
 
   /**
@@ -63,10 +61,7 @@ public interface CharPredicate extends Serializable {
    * @return the boolean
    */
   default boolean matchesAllOf(CharSequence charSequence) {
-    if (charSequence == null) {
-      return false;
-    }
-    return charSequence.chars().allMatch(i -> matches((char) i));
+    return charSequence != null && charSequence.chars().allMatch(i -> matches((char) i));
   }
 
   /**
@@ -76,10 +71,7 @@ public interface CharPredicate extends Serializable {
    * @return the boolean
    */
   default boolean matchesNoneOf(CharSequence charSequence) {
-    if (charSequence == null) {
-      return false;
-    }
-    return charSequence.chars().noneMatch(i -> matches((char) i));
+    return charSequence != null && charSequence.chars().noneMatch(i -> matches((char) i));
   }
 
   /**
@@ -138,7 +130,7 @@ public interface CharPredicate extends Serializable {
    * Index in int.
    *
    * @param sequence the sequence
-   * @param start the start
+   * @param start    the start
    * @return the int
    */
   default int indexIn(CharSequence sequence, int start) {
@@ -221,7 +213,7 @@ public interface CharPredicate extends Serializable {
   /**
    * Replace from string.
    *
-   * @param sequence the sequence
+   * @param sequence    the sequence
    * @param replacement the replacement
    * @return the string
    */
@@ -243,7 +235,7 @@ public interface CharPredicate extends Serializable {
   /**
    * Replace from string.
    *
-   * @param sequence the sequence
+   * @param sequence    the sequence
    * @param replacement the replacement
    * @return the string
    */
@@ -347,16 +339,36 @@ public interface CharPredicate extends Serializable {
   }
 
 
+  /**
+   * Range char predicate.
+   *
+   * @param low  the low
+   * @param high the high
+   * @return the char predicate
+   */
   static CharPredicate range(int low, int high) {
     validateArgument(high > low);
     return c -> c >= low && c < high;
   }
 
+  /**
+   * Pattern char predicate.
+   *
+   * @param pattern the pattern
+   * @return the char predicate
+   */
   static CharPredicate pattern(@NonNull String pattern) {
     final Pattern regex = Pattern.compile(pattern);
     return c -> regex.matcher(Character.toString(c)).find();
   }
 
+  /**
+   * Range char predicate.
+   *
+   * @param start the start
+   * @param end   the end
+   * @return the char predicate
+   */
   static CharPredicate range(final char[] start, final char end[]) {
     validateArgument(start.length == end.length);
     validateArgument(start.length > 0);
@@ -370,18 +382,57 @@ public interface CharPredicate extends Serializable {
     };
   }
 
+  /**
+   * The constant ASCII.
+   */
   CharPredicate ASCII = range(0, 127);
+  /**
+   * The constant EXTENDED_ASCII.
+   */
   CharPredicate EXTENDED_ASCII = range(0, 255);
+  /**
+   * The constant NONE.
+   */
   CharPredicate NONE = c -> false;
+  /**
+   * The constant ANY.
+   */
   CharPredicate ANY = c -> true;
+  /**
+   * The constant WHITESPACE.
+   */
   CharPredicate WHITESPACE = Character::isWhitespace;
+  /**
+   * The constant JAVA_LETTER.
+   */
   CharPredicate JAVA_LETTER = Character::isLetter;
+  /**
+   * The constant JAVA_DIGIT.
+   */
   CharPredicate JAVA_DIGIT = Character::isDigit;
+  /**
+   * The constant IDEOGRAPHIC.
+   */
   CharPredicate IDEOGRAPHIC = Character::isIdeographic;
+  /**
+   * The constant ALPHABETIC.
+   */
   CharPredicate ALPHABETIC = Character::isAlphabetic;
+  /**
+   * The constant LETTER_OR_DIGIT.
+   */
   CharPredicate LETTER_OR_DIGIT = Character::isLetterOrDigit;
+  /**
+   * The constant NOT_LETTER_OR_DIGIT.
+   */
   CharPredicate NOT_LETTER_OR_DIGIT = LETTER_OR_DIGIT.negate();
+  /**
+   * The constant UPPERCASE.
+   */
   CharPredicate UPPERCASE = Character::isUpperCase;
+  /**
+   * The constant LOWERCASE.
+   */
   CharPredicate LOWERCASE = Character::isLowerCase;
   /**
    * Taken from Guava (c) Google

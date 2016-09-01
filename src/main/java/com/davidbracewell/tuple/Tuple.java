@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 import static com.davidbracewell.Validations.validateArgument;
 
 /**
- * A tuple is a finite sequence of items.
+ * <p>A tuple is a finite sequence of items.</p>
  *
  * @author David B. Bracewell
  */
@@ -81,7 +81,7 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
    * elements.
    */
   public Tuple mapValues(@NonNull Function<Object, ? extends Object> function) {
-    return NTuple.of(Arrays.asList(array()).stream().map(function).collect(Collectors.toList()));
+    return NTuple.of(Arrays.stream(array()).map(function).collect(Collectors.toList()));
   }
 
   /**
@@ -175,10 +175,8 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
 
 
   @Override
-  public int compareTo(Tuple o) {
-    if (o == null) {
-      return 1;
-    } else if (degree() < o.degree()) {
+  public final int compareTo(@NonNull Tuple o) {
+    if (degree() < o.degree()) {
       return -1;
     } else if (degree() > o.degree()) {
       return 1;
@@ -195,8 +193,14 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
   }
 
   @Override
-  public boolean equals(Object obj) {
-    return obj != null && obj instanceof Tuple && Arrays.equals(array(), Cast.as(obj, Tuple.class).array());
+  public final boolean equals(Object obj) {
+    if (obj == null) {
+      return false;
+    } else if (obj instanceof Tuple) {
+      Tuple tuple = Cast.as(obj);
+      return degree() == tuple.degree() && Arrays.equals(array(), tuple.array());
+    }
+    return false;
   }
 
   @Override

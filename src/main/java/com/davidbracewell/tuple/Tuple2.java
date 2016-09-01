@@ -59,6 +59,7 @@ public class Tuple2<K, V> extends Tuple implements Map.Entry<K, V> {
     this.v2 = v2;
   }
 
+
   @Override
   public Tuple2<K, V> copy() {
     return new Tuple2<>(this.v1, this.v2);
@@ -133,7 +134,7 @@ public class Tuple2<K, V> extends Tuple implements Map.Entry<K, V> {
       case 0: return Cast.as(v1);
       case 1: return Cast.as(v2);
       default:
-        throw new ArrayIndexOutOfBoundsException();
+        throw new ArrayIndexOutOfBoundsException(i);
     }
   }
 
