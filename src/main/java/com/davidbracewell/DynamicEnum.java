@@ -28,10 +28,12 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.davidbracewell.EnumValue.toKey;
+import static com.davidbracewell.EnumValue.normalize;
 
 /**
- * The type Dynamic enum.
+ * <p>Acts a global repository for dynamically generated {@link EnumValue}s. Each EnumValue acts like a Java
+ * <code>enum</code> that can have elements created at runtime. Most interactions should be done with {@link EnumValue}
+ * implementations.</p>
  *
  * @author David B. Bracewell
  */
@@ -45,24 +47,32 @@ public final class DynamicEnum implements Serializable {
     throw new IllegalAccessError();
   }
 
+  private static String toKey(@NonNull Class<? extends EnumValue> enumClass, String name) {
+    return enumClass.getCanonicalName() + "." + normalize(name);
+  }
+
   /**
-   * Is defined boolean.
+   * <p>Determines if the specified name is a defined value of the specified {@link EnumValue} class}.</p>
    *
-   * @param enumClass the enum class
-   * @param name      the name
-   * @return the boolean
+   * @param enumClass Class information for the EnumValue that we will check.
+   * @param name      the name of the specified value
+   * @return True if the specified value has been defined for the given EnumValue class
+   * @throws NullPointerException if either the enumClass or name are null
    */
   public static boolean isDefined(@NonNull Class<? extends EnumValue> enumClass, @NonNull String name) {
     return GLOBAL_REPOSITORY.containsKey(toKey(enumClass, name));
   }
 
   /**
-   * Value of t.
+   * <p>Returns the constant of the given {@link EnumValue} class  with the specified name.The normalized version of the
+   * specified name will be matched allowing for case and space variations.</p>
    *
-   * @param <T>       the type parameter
-   * @param enumClass the enum class
-   * @param name      the name
-   * @return the t
+   * @param <T>       Specific type of EnumValue being looked up
+   * @param enumClass Class information for the EnumValue that we will check.
+   * @param name      the name of the specified value
+   * @return The constant of enumClass with the specified name
+   * @throws IllegalArgumentException if the specified name is not a member of enumClass.
+   * @throws NullPointerException     if either the enumClass or name are null
    */
   public static <T extends EnumValue> T valueOf(@NonNull Class<T> enumClass, @NonNull String name) {
     String key = toKey(enumClass, name);
@@ -74,11 +84,13 @@ public final class DynamicEnum implements Serializable {
   }
 
   /**
-   * Register t.
+   * <p>Attempts to register a given {@link EnumValue} instance to its associated class type. If an instance with the
+   * same name has already been registered, that instance will be returned.</p>
    *
-   * @param <T>       the type parameter
-   * @param enumValue the enum value
-   * @return the t
+   * @param <T>       Specific type of EnumValue being registered
+   * @param enumValue the value to register
+   * @return the previously defined EnumValue with specified name and type or the one passed into register
+   * @throws NullPointerException if enumValue is null
    */
   public static <T extends EnumValue> T register(@NonNull T enumValue) {
     return Cast.as(GLOBAL_REPOSITORY.computeIfAbsent(enumValue.canonicalName(), s -> enumValue));

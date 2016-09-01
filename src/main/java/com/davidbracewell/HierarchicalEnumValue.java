@@ -22,88 +22,153 @@
 package com.davidbracewell;
 
 import com.davidbracewell.config.Config;
+import com.davidbracewell.conversion.Cast;
+import lombok.NonNull;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
- * <p>An {@link EnumValue} which has a tree-like structure. Note, that while individual enum values only have one
- * parent, there may be multiple root values.</p>
+ * <p>A enum like object that can have elements created at runtime as needed and which have a parent associated with
+ * them. As with EnumValues, elements are singleton objects and can have their equality safely checked using the
+ * <code>==</code> operator. Hierarchical enums may have multiple roots, but each element may only have one parent.
+ * Their implementation of {@link Tag#isInstance(Tag)} returns true if the element is equal to or a descendant of the
+ * tag being compared against. Elements can have their parents assigned at later time as long up until a non-null
+ * parent
+ * has been set.</p>
  *
+ * <p>The python script in the mango tools directory (<code>tools/enumGen.py</code>) bootstraps the creation of basic
+ * HierarchicalEnumValue. As with enum values the names associated with EnumValues are normalized to be uppercase and
+ * have all whitespace replaced by underscores with consecutive whitespace becoming a  single underscore.</p>
+ *
+ * <p>Examples of common usage patterns for HierarchicalEnumValue types generated using <code>tools/enumGen.py</code>
+ * are as
+ * follows:</p>
+ *
+ * <pre>
+ * {@code
+ *    //Enum values can be retrieved or created using the create method.
+ *    MyEnum animal = MyEnum.create("animal");
+ *    MyEnum dog = MyEnum.create("dog", animal);
+ *    MyEnum pug = MyEnum.create("pug", dog);
+ *
+ *    MyEnum thing = MyEnum.create("thing");
+ *
+ *    //Now we want to set the parent of animal to thing. This is ok, because we did not set the parent yet, and
+ *    // do not have one defined via a configuration property.
+ *    MyEnum.create("animal", thing);
+ *
+ *    //Will evaluate isInstance using the hierarchy
+ *    boolean isAnimal = pug.isInstance(animal);
+ *
+ *    //A leaf element is one that doesn't have children
+ *    boolean isLeaf = pug.isLeaf();
+ *
+ *    //A root element is one that doesn't have a parent.
+ *    //Note: this can change since parents can be updated.
+ *    boolean isRoot = thing.isRoot();
+ *
+ *    //Can get the children of an element using the getChildren method
+ *    List<MyEnum> typesOfAnimals = animal.getChildren();
+ *
+ *    //Can emulate Java enum using the valueOf method
+ *    MyEnum cat = MyEnum.valueOf("cat");
+ *
+ *    //Can retrieve all instances in an unmodifiable set using the values method
+ *    Set<MyEnum> allThings = MyEnum.values();
+ *
+ *    //Will result in [dog, animal, thing]
+ *    List<MyEnum> ancestors = pug.getAncestors();
+ * }*
+ * </pre>
+ *
+ *
+ * <p>
+ * If your HierarchicalEnumValue stores other information and want to ensure that declared instances are loaded in
+ * memory you can use Mango's {@link com.davidbracewell.config.Preloader} to load during application startup.
+ * </p>
+ *
+ * @param <T> the type parameter
  * @author David B. Bracewell
  */
-public abstract class HierarchicalEnumValue extends EnumValue {
+public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> extends EnumValue {
   private static final long serialVersionUID = 1L;
-  protected volatile HierarchicalEnumValue parent = null;
+  /**
+   * The Parent.
+   */
+  protected volatile T parent = null;
+
 
   /**
    * Instantiates a new Hierarchical enum value.
    *
-   * @param name   the name
-   * @param parent the parent
+   * @param name   the specified name of the element
+   * @param parent the parent of element (possibly null)
    */
-  protected HierarchicalEnumValue(String name, HierarchicalEnumValue parent) {
+  protected HierarchicalEnumValue(String name, T parent) {
     super(name);
     this.parent = parent;
   }
 
   /**
-   * Determines if this enum is the root
+   * <p>Determines if this element is as root.</p>
    *
-   * @return True if it is the root, False otherwise
+   * @return True if it is a root, False otherwise
    */
-  public boolean isRoot() {
-    return getParent() == null;
+  public final boolean isRoot() {
+    return !getParent().isPresent();
   }
 
 
   /**
-   * Gets children.
+   * <p>Gets the immediate children of this element or an empty list if none.</p>
    *
-   * @param <T> the type parameter
-   * @return the children
+   * @return the immediate children of this element.
    */
-  public abstract <T extends HierarchicalEnumValue> List<T> getChildren();
+  public abstract List<T> getChildren();
 
   /**
-   * Is leaf boolean.
+   * <p>Determines if this element is a leaf, i.e. has no children.</p>
    *
-   * @return the boolean
+   * @return True if it is a leaf, False otherwise
    */
-  public boolean isLeaf() {
+  public final boolean isLeaf() {
     return getChildren().isEmpty();
   }
 
   /**
-   * Gets parent.
+   * <p>Gets the parent of this element. It first checks if a parent has been explicitly set and if not will attempt to
+   * determine the parent using the configuration property <code>canonical.name.parent</code> where the canonical name
+   * is determined using {@link #canonicalName()}.</p>
    *
-   * @return the parent
+   * @return the parent of this element as an Optional
    */
-  public HierarchicalEnumValue getParent() {
+  public final Optional<T> getParent() {
     if (parent == null) {
       synchronized (this) {
         if (parent == null) {
-          HierarchicalEnumValue ev = getParentConfig();
+          T ev = getParentFromConfig();
           if (ev != null) {
             parent = ev;
           }
-          return ev;
         }
       }
     }
-    return parent;
+    return Optional.ofNullable(parent);
   }
 
   @Override
-  public final boolean isInstance(Tag value) {
-    if (value == null) {
-      return false;
-    }
+  public final boolean isInstance(@NonNull Tag value) {
     HierarchicalEnumValue hev = this;
-    while (hev != null && hev != hev.getParent()) {
+    while (hev != null) {
       if (hev.equals(value)) {
         return true;
       }
-      hev = hev.getParent();
+      final HierarchicalEnumValue pHev = hev;
+      hev = Cast.as(hev.getParent()
+                       .filter(v -> v != pHev)
+                       .orElse(null));
     }
     return false;
   }
@@ -111,10 +176,33 @@ public abstract class HierarchicalEnumValue extends EnumValue {
   /**
    * Determines the parent via a configuration setting.
    *
-   * @return the parent config
+   * @return the parent via the configuration property or null
    */
-  protected HierarchicalEnumValue getParentConfig() {
-    return Config.get(canonicalName(), "parent").as(getClass(), null);
+  protected T getParentFromConfig() {
+    return Cast.as(Config.get(canonicalName(), "parent").as(getClass(), null));
+  }
+
+
+  /**
+   * <p>Gets the path from this element's parent to a root, i.e. its ancestors in the tree.</p>
+   *
+   * @return the list of ancestors with this element's parent in position 0 or an empty list if this element is a root.
+   */
+  public final List<T> getAncestors() {
+    List<T> path = new ArrayList<>();
+    T hev = Cast.as(this);
+    do {
+      final HierarchicalEnumValue pHev = hev;
+      hev = Cast.as(hev.getParent()
+                       .filter(v -> v != pHev)
+                       .orElse(null));
+
+      if (hev != null) {
+        path.add(hev);
+      }
+
+    } while (hev != null);
+    return path;
   }
 
 

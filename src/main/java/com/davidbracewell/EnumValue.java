@@ -29,8 +29,34 @@ import java.io.Serializable;
 import static com.davidbracewell.DynamicEnum.register;
 
 /**
- * <p>A enum value associated with a {@link DynamicEnum}. Standard usage is for enum types to to extend
- * {@link EnumValue} and have a static <code>DynamicEnum</code> field in the extended class. </p>
+ * <p>A enum like object that can have elements created at runtime as needed. Elements are singleton objects and can
+ * have their equality safely checked using the <code>==</code> operator. A python script in the mango tools directory
+ * (<code>tools/enumGen.py</code>) bootstraps the creation of basic EnumValues. Names associated with EnumValues are
+ * normalized to be uppercase and have all whitespace replaced by underscores with consecutive whitespace becoming a
+ * single underscore.</p>
+ *
+ * <p>Examples of common usage patterns for EnumValue types generated using <code>tools/enumGen.py</code> are as
+ * follows:</p>
+ *
+ * <pre>
+ * {@code
+ *    //Enum values can be retrieved or created using the create method.
+ *    MyEnum red = MyEnum.create("red");
+ *    MyEnum blue = MyEnum.create("blue);
+ *
+ *    //Can emulate Java enum using the valueOf method
+ *    MyEnum green = MyEnum.valueOf("gReEn");
+ *
+ *    //Can retrieve all instances in an unmodifiable set using the values method
+ *    Set<MyEnum> allColors = MyEnum.values();
+ * }
+ * </pre>
+ *
+ *
+ * <p>
+ * If your EnumValue stores other information and want to ensure that declared instances are loaded in memory you can
+ * use Mango's {@link com.davidbracewell.config.Preloader} to load during application startup.
+ * </p>
  *
  * @author David B. Bracewell
  */
@@ -40,7 +66,7 @@ public abstract class EnumValue implements Tag, Serializable, Cloneable {
   private final String fullName;
 
   /**
-   * Instantiates a new Enum value.
+   * Instantiates a new enum value.
    *
    * @param name the name of the enum value
    */
@@ -50,25 +76,16 @@ public abstract class EnumValue implements Tag, Serializable, Cloneable {
   }
 
   /**
-   * Normalize string.
+   * <p>Normalizes a string to be uppercase and use and underscore in place of whitespace.</p>
    *
-   * @param name the name
-   * @return the string
+   * @param name the name to be normalized
+   * @return the normalized version of the name
+   * @throws NullPointerException if the name is null
    */
   static String normalize(@NonNull String name) {
     return name.toUpperCase().replaceAll("\\s+", "_");
   }
 
-  /**
-   * To key string.
-   *
-   * @param enumClass the enum class
-   * @param name      the name
-   * @return the string
-   */
-  static String toKey(@NonNull Class<? extends EnumValue> enumClass, String name) {
-    return enumClass.getCanonicalName() + "." + normalize(name);
-  }
 
   @Override
   public String name() {
@@ -76,16 +93,17 @@ public abstract class EnumValue implements Tag, Serializable, Cloneable {
   }
 
   /**
-   * Canonical name string.
+   * <p>Retrieves the canonical name of the enum value, which is the canonical name of the enum class and the specified
+   * name of the enum value.</p>
    *
-   * @return the string
+   * @return the canonical name of the enum value
    */
-  public String canonicalName() {
+  public final String canonicalName() {
     return fullName;
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return name;
   }
 
@@ -95,10 +113,11 @@ public abstract class EnumValue implements Tag, Serializable, Cloneable {
   }
 
   /**
-   * Read resolve object.
+   * <p>Resolves the deserialized object by calling {@link DynamicEnum#register(EnumValue)} ensuring that only one
+   * reference exists for this enum value.</p>
    *
-   * @return the object
-   * @throws ObjectStreamException the object stream exception
+   * @return the new or existing enum value
+   * @throws ObjectStreamException if there is an error in the object stream
    */
   protected final Object readResolve() throws ObjectStreamException {
     return register(this);

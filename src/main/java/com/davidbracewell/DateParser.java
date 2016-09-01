@@ -6,12 +6,15 @@ import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Optional;
 
 /**
- * <p>Attempts to parse a date from a string using a number of different <code>DateFormat</code> formats.</p>
+ * <p>Attempts to parse a date from a string using the following formats in order. <code>DateFormat.SHORT</code>,
+ * <code>DateFormat.MEDIUM</code>, <code>DateFormat.LONG</code>, <code>DateFormat.FULL</code>,
+ * <code>DateParser.ISO_8601</code>, and <code>DateParser.US_STANDARD</code>. </p>
  *
  * @author David B. Bracewell
  */
@@ -64,7 +67,11 @@ public final class DateParser implements Serializable {
    */
   public Date parse(@NonNull String input) throws ParseException {
     for (DateFormat format : formats) {
-      return format.parse(input);
+      try {
+        return format.parse(input);
+      } catch (ParseException e) {
+
+      }
     }
     throw new ParseException(input, 0);
   }

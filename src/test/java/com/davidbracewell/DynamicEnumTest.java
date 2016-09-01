@@ -21,19 +21,29 @@ package com.davidbracewell;/*
 
 import org.junit.Test;
 
+import java.util.List;
+
 import static com.davidbracewell.collection.list.Lists.list;
 import static com.davidbracewell.collection.set.Sets.set;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class DynamicEnumTest {
 
   @Test
   public void testHierarchy() throws Exception {
-    assertEquals(RanksEnum.PRESIDENT, RanksEnum.GENERAL.getParent());
+    assertTrue(RanksEnum.GENERAL.getParent().filter(v -> v == RanksEnum.PRESIDENT).isPresent());
     assertEquals(list(RanksEnum.GENERAL), RanksEnum.PRESIDENT.getChildren());
-    assertNull(RanksEnum.PRESIDENT.getParent());
+    assertFalse(RanksEnum.PRESIDENT.getParent().isPresent());
+  }
+
+  @Test
+  public void testAncesors(){
+    List<RanksEnum> ancestors = RanksEnum.COLONEL.getAncestors();
+    System.out.println(ancestors);
   }
 
   @Test

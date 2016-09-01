@@ -1,6 +1,5 @@
 package com.davidbracewell;
 
-import com.davidbracewell.conversion.Cast;
 import com.google.common.collect.Sets;
 import lombok.NonNull;
 
@@ -13,7 +12,7 @@ import java.util.stream.Collectors;
 /**
  * @author David B. Bracewell
  */
-public final class RanksEnum extends HierarchicalEnumValue implements Comparable<RanksEnum> {
+public final class RanksEnum extends HierarchicalEnumValue<RanksEnum> implements Comparable<RanksEnum> {
   private static final long serialVersionUID = 1L;
   private static final Set<RanksEnum> values = Sets.newConcurrentHashSet();
 
@@ -44,16 +43,11 @@ public final class RanksEnum extends HierarchicalEnumValue implements Comparable
    */
   public static RanksEnum create(@NonNull String name, RanksEnum parent) {
     RanksEnum toReturn = DynamicEnum.register(new RanksEnum(name, parent));
-    if (toReturn.getParent() == null && parent != null) {
+    if (!toReturn.getParent().isPresent() && parent != null) {
       toReturn.parent = parent;
     }
     values.add(toReturn);
     return toReturn;
-  }
-
-  @Override
-  public RanksEnum getParent() {
-    return Cast.as(super.getParent());
   }
 
   /**
@@ -77,13 +71,8 @@ public final class RanksEnum extends HierarchicalEnumValue implements Comparable
   }
 
   @Override
-  protected RanksEnum getParentConfig() {
-    return Cast.as(super.getParentConfig());
-  }
-
-  @Override
   public List<RanksEnum> getChildren() {
-    return values().stream().filter(v -> this == v.getParent()).collect(Collectors.toList());
+    return values().stream().filter(v -> this != v && v.getParent().filter(p -> p == this).isPresent()).collect(Collectors.toList());
   }
 
   @Override

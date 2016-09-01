@@ -98,7 +98,7 @@ import java.util.stream.Collectors;
  * Auto generated using enumGen.py
  * The type {{CLASS_NAME}}.
  */
-public final class {{CLASS_NAME}} extends HierarchicalEnumValue implements Comparable<{{CLASS_NAME}}> {
+public final class {{CLASS_NAME}} extends HierarchicalEnumValue<{{CLASS_NAME}}> implements Comparable<{{CLASS_NAME}}> {
   private static final long serialVersionUID = 1L;
   private static final Set<{{CLASS_NAME}}> values = Sets.newConcurrentHashSet();
 
@@ -126,7 +126,7 @@ public final class {{CLASS_NAME}} extends HierarchicalEnumValue implements Compa
    */
   public static {{CLASS_NAME}} create(@NonNull String name, {{CLASS_NAME}} parent) {
     {{CLASS_NAME}} toReturn = DynamicEnum.register(new {{CLASS_NAME}}(name, parent));
-    if (toReturn.getParent() == null && parent != null) {
+    if (!toReturn.getParent().isPresent() && parent != null) {
       toReturn.parent = parent;
     }
     values.add(toReturn);
@@ -142,12 +142,6 @@ public final class {{CLASS_NAME}} extends HierarchicalEnumValue implements Compa
     return Collections.unmodifiableSet(values);
   }
 
-  @Override
-  public {{CLASS_NAME}} getParent() {
-    return Cast.as(super.getParent());
-  }
-
-
   /**
    * <p>Returns the constant of {{CLASS_NAME}} with the specified name.The normalized version of the specified name will
    * be matched allowing for case and space variations.</p>
@@ -160,13 +154,8 @@ public final class {{CLASS_NAME}} extends HierarchicalEnumValue implements Compa
   }
 
   @Override
-  protected {{CLASS_NAME}} getParentConfig() {
-    return Cast.as(super.getParentConfig());
-  }
-
-  @Override
   public List<{{CLASS_NAME}}> getChildren() {
-    return values().stream().filter(v -> this == v.getParent()).collect(Collectors.toList());
+    return values().stream().filter(v -> this != v && v.getParent().filter(p -> p == this).isPresent()).collect(Collectors.toList());
   }
 
   @Override
@@ -186,7 +175,6 @@ else:
 
 template = re.sub(r'{{PACKAGE_NAME}}', options.package_name, template)
 template = re.sub(r'{{CLASS_NAME}}', options.class_name, template)
-
 
 file = codecs.open(options.file + '/' + options.class_name +".java", "w", "utf-8")
 file.write(unicode(template))
