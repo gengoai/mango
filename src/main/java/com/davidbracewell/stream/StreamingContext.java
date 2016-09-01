@@ -21,7 +21,7 @@
 
 package com.davidbracewell.stream;
 
-import com.davidbracewell.collection.*;
+import com.davidbracewell.collection.Collect;
 import com.davidbracewell.collection.counter.Counter;
 import com.davidbracewell.collection.counter.HashMapCounter;
 import com.davidbracewell.collection.counter.HashMapMultiCounter;
@@ -30,7 +30,12 @@ import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.SerializableSupplier;
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.stream.accumulator.*;
+import com.davidbracewell.stream.accumulator.Accumulatable;
+import com.davidbracewell.stream.accumulator.CollectionAccumulatable;
+import com.davidbracewell.stream.accumulator.CounterAccumulatable;
+import com.davidbracewell.stream.accumulator.MAccumulator;
+import com.davidbracewell.stream.accumulator.MapAccumulatable;
+import com.davidbracewell.stream.accumulator.MultiCounterAccumulatable;
 import com.davidbracewell.tuple.Tuple2;
 import lombok.NonNull;
 
@@ -295,11 +300,12 @@ public interface StreamingContext extends AutoCloseable {
    * @param tuples the tuples
    * @return the m pair stream
    */
-  default <K, V> MPairStream<K, V> pairStream(Tuple2<K,V>... tuples) {
+  default <K, V> MPairStream<K, V> pairStream(Tuple2... tuples) {
     if (tuples == null) {
       return emptyPair();
     }
-    return pairStream(Arrays.asList(tuples));
+    Collection<Tuple2> collection = Arrays.asList(tuples);
+    return pairStream(Cast.cast(collection));
   }
 
   /**

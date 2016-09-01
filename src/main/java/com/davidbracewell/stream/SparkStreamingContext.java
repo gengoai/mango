@@ -36,7 +36,12 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
@@ -44,20 +49,24 @@ import java.util.stream.Stream;
 
 
 /**
+ * The enum Spark streaming context.
+ *
  * @author David B. Bracewell
  */
 public enum SparkStreamingContext implements StreamingContext {
+  /**
+   * Instance spark streaming context.
+   */
   INSTANCE;
-
 
   /**
    * The constant SPARK_MASTER.
    */
-  public static String SPARK_MASTER = "spark.master";
+  public static final String SPARK_MASTER = "spark.master";
   /**
    * The constant SPARK_APPNAME.
    */
-  public static String SPARK_APPNAME = "spark.appName";
+  public static final String SPARK_APPNAME = "spark.appName";
 
   private static volatile JavaSparkContext context;
 
@@ -78,6 +87,12 @@ public enum SparkStreamingContext implements StreamingContext {
     return context;
   }
 
+  /**
+   * Context of spark streaming context.
+   *
+   * @param stream the stream
+   * @return the spark streaming context
+   */
   public static SparkStreamingContext contextOf(@NonNull SparkStream<?> stream) {
     if (context == null) {
       synchronized (SparkStreamingContext.class) {
@@ -89,6 +104,12 @@ public enum SparkStreamingContext implements StreamingContext {
     return SparkStreamingContext.INSTANCE;
   }
 
+  /**
+   * Context of spark streaming context.
+   *
+   * @param stream the stream
+   * @return the spark streaming context
+   */
   public static SparkStreamingContext contextOf(@NonNull SparkDoubleStream stream) {
     if (context == null) {
       synchronized (SparkStreamingContext.class) {
@@ -100,6 +121,12 @@ public enum SparkStreamingContext implements StreamingContext {
     return SparkStreamingContext.INSTANCE;
   }
 
+  /**
+   * Context of spark streaming context.
+   *
+   * @param stream the stream
+   * @return the spark streaming context
+   */
   public static SparkStreamingContext contextOf(@NonNull SparkPairStream<?, ?> stream) {
     if (context == null) {
       synchronized (SparkStreamingContext.class) {
@@ -111,6 +138,11 @@ public enum SparkStreamingContext implements StreamingContext {
     return SparkStreamingContext.INSTANCE;
   }
 
+  /**
+   * Spark context java spark context.
+   *
+   * @return the java spark context
+   */
   public JavaSparkContext sparkContext() {
     return getSparkContext();
   }
@@ -182,12 +214,13 @@ public enum SparkStreamingContext implements StreamingContext {
 
   @Override
   public MStream<Integer> range(int startInclusive, int endExclusive) {
-    return new SparkStream<Integer>(
+    return new SparkStream<>(
       IntStream.range(startInclusive, endExclusive).boxed().collect(Collectors.toList())
     );
   }
 
   @Override
+  @SafeVarargs
   public final <T> MStream<T> stream(T... items) {
     if (items == null) {
       return empty();
@@ -259,6 +292,13 @@ public enum SparkStreamingContext implements StreamingContext {
     return textFile(location.path());
   }
 
+  /**
+   * Broadcast broadcast.
+   *
+   * @param <T>    the type parameter
+   * @param object the object
+   * @return the broadcast
+   */
   public <T> Broadcast<T> broadcast(T object) {
     return getSparkContext().broadcast(object);
   }

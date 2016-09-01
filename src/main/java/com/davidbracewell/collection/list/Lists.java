@@ -23,6 +23,7 @@ package com.davidbracewell.collection.list;
 
 import com.davidbracewell.collection.Collect;
 import com.davidbracewell.collection.Streams;
+import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.SerializableFunction;
 import lombok.NonNull;
 
@@ -146,9 +147,9 @@ public final class Lists {
     if (list1 == null && list2 == null) {
       return ArrayList::new;
     } else if (list1 == null) {
-      return () -> Collect.create(list2.getClass());
+      return () -> Cast.as(Collect.create(list2.getClass()));
     }
-    return () -> Collect.create(list1.getClass());
+    return () -> Cast.as(Collect.create(list1.getClass()));
   }
 
   /**

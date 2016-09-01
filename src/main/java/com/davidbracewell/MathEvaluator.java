@@ -41,27 +41,32 @@ import com.davidbracewell.parsing.handlers.ValueHandler;
 import com.davidbracewell.reflection.Reflect;
 import lombok.NonNull;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.NumberFormat;
 
 /**
- * <p>Evaluates mathematical expressions in strings allowing using of all methods on {@link Math}.</p>
+ * <p>Evaluates mathematical expressions in strings allowing using of all methods on {@link Math}. Serves as a simple
+ * example of using the Mango parsing framework. In addition, a main method is defined that allows the class to be used
+ * as a command line calculator.</p>
  *
  * @author David B. Bracewell
  */
 public final class MathEvaluator {
 
   private static final RegularExpressionLexer lexer = RegularExpressionLexer.builder()
-    .add(CommonTypes.OPENPARENS)
-    .add(CommonTypes.CLOSEPARENS)
-    .add(CommonTypes.NUMBER)
-    .add(CommonTypes.PLUS)
-    .add(CommonTypes.MINUS)
-    .add(CommonTypes.MULTIPLY)
-    .add(CommonTypes.DIVIDE)
-    .add(CommonTypes.CARROT)
-    .add(CommonTypes.COMMA)
-    .add(CommonTypes.WORD, "[a-zA-z]\\w*")
-    .build();
+                                                                            .add(CommonTypes.OPENPARENS)
+                                                                            .add(CommonTypes.CLOSEPARENS)
+                                                                            .add(CommonTypes.NUMBER)
+                                                                            .add(CommonTypes.PLUS)
+                                                                            .add(CommonTypes.MINUS)
+                                                                            .add(CommonTypes.MULTIPLY)
+                                                                            .add(CommonTypes.DIVIDE)
+                                                                            .add(CommonTypes.CARROT)
+                                                                            .add(CommonTypes.COMMA)
+                                                                            .add(CommonTypes.WORD, "[a-zA-z]\\w*")
+                                                                            .build();
 
   private static final Evaluator<Double> evaluator = new Evaluator<Double>() {
     {
@@ -115,6 +120,23 @@ public final class MathEvaluator {
       throw new ParseException("Invalid expression: " + expression);
     }
     return evaluator.eval(next);
+  }
+
+  public static void main(String[] args) {
+    try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
+      String line;
+      System.out.print("> ");
+      while ((line = reader.readLine()) != null) {
+        try {
+          System.out.println(evaluate(line));
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+        System.out.print("> ");
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
 

@@ -163,6 +163,21 @@ public final class {{CLASS_NAME}} extends HierarchicalEnumValue<{{CLASS_NAME}}> 
     return canonicalName().compareTo(o.canonicalName());
   }
 
+  @Override
+  public Optional<{{CLASS_NAME}}> getParent() {
+    return super.getParent();
+  }
+
+  @Override
+  protected {{CLASS_NAME}} getParentFromConfig() {
+    return super.getParentFromConfig();
+  }
+
+  @Override
+  public List<{{CLASS_NAME}}> getAncestors() {
+    return super.getAncestors();
+  }
+
 }// END OF {{CLASS_NAME}}
 
 """

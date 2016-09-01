@@ -24,6 +24,7 @@ package com.davidbracewell;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.CheckedFunction;
 import com.davidbracewell.function.SerializablePredicate;
+import com.google.common.base.Throwables;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -31,6 +32,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * <p>Converts a value to another based on a series of predicates. In essence allows for <code>switch</code> statements
@@ -65,7 +67,7 @@ import java.util.List;
  * @param <R> the type parameter returned from the switch operation
  * @author David B. Bracewell
  */
-public class Switch<T, R> implements Serializable {
+public class Switch<T, R> implements Serializable, Function<T,R> {
    private static final long serialVersionUID = 1L;
 
    private final ArrayList<PredFunc<T, R>> statements = new ArrayList<>();
@@ -158,6 +160,15 @@ public class Switch<T, R> implements Serializable {
          return Cast.as(throwable);
       }
       return new Exception(throwable);
+   }
+
+   @Override
+   public final R apply(T t) {
+      try {
+         return switchOn(t);
+      } catch (Exception e) {
+         throw Throwables.propagate(e);
+      }
    }
 
    /**

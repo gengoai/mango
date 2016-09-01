@@ -69,7 +69,7 @@ public final class Interner<E> implements Serializable {
     return rval;
   }
 
-  private <T extends Set<E>> Set<E> generate(Class<T> clazz) {
+  private Set<E> generate(Class<?> clazz) {
     try {
       return Reflect.onClass(clazz).create().get();
     } catch (ReflectionException e) {

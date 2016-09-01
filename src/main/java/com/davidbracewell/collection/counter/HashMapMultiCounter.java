@@ -77,6 +77,7 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
    *
    * @param triples the triples
    */
+
   public HashMapMultiCounter(@NonNull Iterable<Tuple3<K, V, ? extends Number>> triples) {
     triples.forEach(triple -> increment(triple.v1, triple.v2, triple.v3.doubleValue()));
   }
@@ -115,6 +116,7 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
    * @param triples the triples
    * @return the hash map multi counter
    */
+  @SafeVarargs
   public static <K, V> HashMapMultiCounter<K, V> create(Tuple3<K, V, ? extends Number>... triples) {
     if (triples == null) {
       return new HashMapMultiCounter<>();

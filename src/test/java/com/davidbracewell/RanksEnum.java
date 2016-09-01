@@ -6,13 +6,14 @@ import lombok.NonNull;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
  * @author David B. Bracewell
  */
-public final class RanksEnum extends HierarchicalEnumValue<RanksEnum> implements Comparable<RanksEnum> {
+public final class RanksEnum extends HierarchicalEnumValue implements Comparable<RanksEnum> {
   private static final long serialVersionUID = 1L;
   private static final Set<RanksEnum> values = Sets.newConcurrentHashSet();
 
@@ -80,5 +81,19 @@ public final class RanksEnum extends HierarchicalEnumValue<RanksEnum> implements
     return canonicalName().compareTo(o.canonicalName());
   }
 
+  @Override
+  public Optional<RanksEnum> getParent() {
+    return super.getParent();
+  }
+
+  @Override
+  protected RanksEnum getParentFromConfig() {
+    return super.getParentFromConfig();
+  }
+
+  @Override
+  public List<RanksEnum> getAncestors() {
+    return super.getAncestors();
+  }
 }// END OF RanksEnum
 

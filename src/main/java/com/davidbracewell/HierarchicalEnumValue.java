@@ -89,15 +89,14 @@ import java.util.Optional;
  * memory you can use Mango's {@link com.davidbracewell.config.Preloader} to load during application startup.
  * </p>
  *
- * @param <T> the type parameter
  * @author David B. Bracewell
  */
-public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> extends EnumValue {
+public abstract class HierarchicalEnumValue extends EnumValue {
   private static final long serialVersionUID = 1L;
   /**
    * The Parent.
    */
-  protected volatile T parent = null;
+  protected volatile HierarchicalEnumValue parent = null;
 
 
   /**
@@ -106,7 +105,7 @@ public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> ext
    * @param name   the specified name of the element
    * @param parent the parent of element (possibly null)
    */
-  protected HierarchicalEnumValue(String name, T parent) {
+  protected HierarchicalEnumValue(String name, HierarchicalEnumValue parent) {
     super(name);
     this.parent = parent;
   }
@@ -126,7 +125,7 @@ public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> ext
    *
    * @return the immediate children of this element.
    */
-  public abstract List<T> getChildren();
+  public abstract <T extends HierarchicalEnumValue> List<T> getChildren();
 
   /**
    * <p>Determines if this element is a leaf, i.e. has no children.</p>
@@ -144,7 +143,7 @@ public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> ext
    *
    * @return the parent of this element as an Optional
    */
-  public final Optional<T> getParent() {
+  public <T extends HierarchicalEnumValue> Optional<T> getParent() {
     if (parent == null) {
       synchronized (this) {
         if (parent == null) {
@@ -155,7 +154,7 @@ public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> ext
         }
       }
     }
-    return Optional.ofNullable(parent);
+    return Optional.ofNullable(Cast.as(parent));
   }
 
   @Override
@@ -178,7 +177,7 @@ public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> ext
    *
    * @return the parent via the configuration property or null
    */
-  protected T getParentFromConfig() {
+  protected <T extends HierarchicalEnumValue> T getParentFromConfig() {
     return Cast.as(Config.get(canonicalName(), "parent").as(getClass(), null));
   }
 
@@ -188,7 +187,7 @@ public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> ext
    *
    * @return the list of ancestors with this element's parent in position 0 or an empty list if this element is a root.
    */
-  public final List<T> getAncestors() {
+  public <T extends HierarchicalEnumValue> List<T> getAncestors() {
     List<T> path = new ArrayList<>();
     T hev = Cast.as(this);
     do {
