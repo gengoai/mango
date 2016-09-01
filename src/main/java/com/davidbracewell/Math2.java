@@ -24,6 +24,7 @@ package com.davidbracewell;
 import com.davidbracewell.collection.Sorting;
 import com.davidbracewell.collection.Streams;
 import com.davidbracewell.conversion.Cast;
+import lombok.NonNull;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -41,56 +42,155 @@ import java.util.stream.LongStream;
  */
 public interface Math2 {
 
+
+  /**
+   * Rescale double.
+   *
+   * @param value       the value
+   * @param originalMin the original min
+   * @param originalMax the original max
+   * @param newMin      the new min
+   * @param newMax      the new max
+   * @return the double
+   */
+  static double rescale(double value, double originalMin, double originalMax, double newMin, double newMax) {
+    return ((value - originalMin) / (originalMax - originalMin)) * (newMax - newMin) + newMin;
+  }
+
+  /**
+   * Clip double.
+   *
+   * @param value the value
+   * @param min   the min
+   * @param max   the max
+   * @return the double
+   */
+  static double clip(double value, double min, double max) {
+    if (value < min) {
+      return min;
+    } else if (value > max) {
+      return max;
+    }
+    return value;
+  }
+
+
+  /**
+   * Clip int.
+   *
+   * @param value the value
+   * @param min   the min
+   * @param max   the max
+   * @return the int
+   */
+  static int clip(int value, int min, int max) {
+    if (value < min) {
+      return min;
+    } else if (value > max) {
+      return max;
+    }
+    return value;
+  }
+
+
+  /**
+   * Clip long.
+   *
+   * @param value the value
+   * @param min   the min
+   * @param max   the max
+   * @return the long
+   */
+  static long clip(long value, long min, long max) {
+    if (value < min) {
+      return min;
+    } else if (value > max) {
+      return max;
+    }
+    return value;
+  }
+
   /**
    * Sum double.
    *
    * @param iterable the iterable
    * @return the double
    */
-  static double sum(Iterable<? extends Number> iterable) {
-    return analyze(iterable).getSum();
-  }
-
-  /**
-   * Sum int.
-   *
-   * @param numbers the numbers
-   * @return the int
-   */
-  static int sum(int[] numbers) {
-    if (numbers == null) {
-      return 0;
-    }
-    return IntStream.of(numbers).sum();
-  }
-
-  /**
-   * Sum long.
-   *
-   * @param numbers the numbers
-   * @return the long
-   */
-  static long sum(long[] numbers) {
-    if (numbers == null) {
-      return 0;
-    }
-    return LongStream.of(numbers).sum();
+  static double sum(@NonNull Iterable<? extends Number> iterable) {
+    return summaryStatistics(iterable).getSum();
   }
 
 
   /**
    * Sum double.
    *
-   * @param numbers the numbers
+   * @param doubles the doubles
    * @return the double
    */
-  static double sum(double[] numbers) {
-    if (numbers == null) {
-      return 0d;
-    }
-    return DoubleStream.of(numbers).sum();
+  static double sum(double... doubles) {
+    return summaryStatistics(doubles).getSum();
   }
 
+  /**
+   * Sum double.
+   *
+   * @param ints the ints
+   * @return the double
+   */
+  static double sum(int... ints) {
+    return summaryStatistics(ints).getSum();
+  }
+
+  /**
+   * Sum double.
+   *
+   * @param longs the longs
+   * @return the double
+   */
+  static double sum(long... longs) {
+    return summaryStatistics(longs).getSum();
+  }
+
+
+  /**
+   * Summary statistics double summary statistics.
+   *
+   * @param doubles the doubles
+   * @return the double summary statistics
+   */
+  static EnhancedDoubleStatistics summaryStatistics(double... doubles) {
+    DoubleStream stream = doubles == null ? DoubleStream.empty() : DoubleStream.of(doubles);
+    return stream.collect(EnhancedDoubleStatistics::new,
+                          EnhancedDoubleStatistics::accept,
+                          EnhancedDoubleStatistics::combine);
+  }
+
+
+  /**
+   * Summary statistics double summary statistics.
+   *
+   * @param ints the ints
+   * @return the double summary statistics
+   */
+  static EnhancedDoubleStatistics summaryStatistics(int... ints) {
+    DoubleStream stream = ints == null ? DoubleStream.empty() : IntStream.of(ints).mapToDouble(i -> i);
+    return stream.collect(EnhancedDoubleStatistics::new,
+                          EnhancedDoubleStatistics::accept,
+                          EnhancedDoubleStatistics::combine);
+  }
+
+  /**
+   * Summary statistics double summary statistics.
+   *
+   * @param longs the longs
+   * @return the double summary statistics
+   */
+  static EnhancedDoubleStatistics summaryStatistics(long... longs) {
+    DoubleStream stream = longs == null ? DoubleStream.empty() : LongStream.of(longs).mapToDouble(i -> i);
+    return stream.collect(EnhancedDoubleStatistics::new,
+                          EnhancedDoubleStatistics::accept,
+                          EnhancedDoubleStatistics::combine);
+  }
 
   /**
    * Analyze enhanced double statistics.
@@ -98,7 +198,7 @@ public interface Math2 {
    * @param iterable the iterable
    * @return the enhanced double statistics
    */
-  static EnhancedDoubleStatistics analyze(Iterable<? extends Number> iterable) {
+  static EnhancedDoubleStatistics summaryStatistics(Iterable<? extends Number> iterable) {
     if (iterable == null) {
       return new EnhancedDoubleStatistics();
     }
@@ -108,6 +208,44 @@ public interface Math2 {
                   .collect(EnhancedDoubleStatistics::new,
                            EnhancedDoubleStatistics::accept,
                            EnhancedDoubleStatistics::combine);
+  }
+
+
+  /**
+   * Arg max long.
+   *
+   * @param doubles the doubles
+   * @return the long
+   */
+  static long argMax(@NonNull double... doubles) {
+    double max = Double.NEGATIVE_INFINITY;
+    int index = -1;
+    for (int i = 0; i < doubles.length; i++) {
+      if (doubles[i] > max) {
+        index = i;
+        max = doubles[i];
+      }
+    }
+    return index;
+  }
+
+
+  /**
+   * Arg min long.
+   *
+   * @param doubles the doubles
+   * @return the long
+   */
+  static long argMin(@NonNull double... doubles) {
+    double min = Double.POSITIVE_INFINITY;
+    int index = -1;
+    for (int i = 0; i < doubles.length; i++) {
+      if (doubles[i] < min) {
+        index = i;
+        min = doubles[i];
+      }
+    }
+    return index;
   }
 
   /**

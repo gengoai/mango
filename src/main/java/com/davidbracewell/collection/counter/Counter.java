@@ -76,7 +76,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
    * @return The average count in the counter
    */
   default double average() {
-    return Math2.analyze(counts()).getAverage();
+    return Math2.summaryStatistics(counts()).getAverage();
   }
 
   /**
@@ -414,7 +414,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
    * @return The standard deviation of the counts in the counter
    */
   default double standardDeviation() {
-    return Math2.analyze(counts()).getSampleStandardDeviation();
+    return Math2.summaryStatistics(counts()).getSampleStandardDeviation();
   }
 
   /**
@@ -432,7 +432,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
    * @return The sum of squares for the values
    */
   default double sumOfSquares() {
-    return Math2.analyze(counts()).getSumOfSquares();
+    return Math2.summaryStatistics(counts()).getSumOfSquares();
   }
 
   /**

@@ -84,7 +84,7 @@ public interface MultiCounter<K, V> {
    * @return The average count in the counter
    */
   default double average() {
-    return Math2.analyze(counts()).getAverage();
+    return Math2.summaryStatistics(counts()).getAverage();
   }
 
   /**
@@ -317,7 +317,7 @@ public interface MultiCounter<K, V> {
    * @return The maximum count in the counter
    */
   default double maximumCount() {
-    return Math2.analyze(counts()).getMax();
+    return Math2.summaryStatistics(counts()).getMax();
   }
 
   /**
@@ -334,7 +334,7 @@ public interface MultiCounter<K, V> {
    * @return The minimum count in the counter
    */
   default double minimumCount() {
-    return Math2.analyze(counts()).getMin();
+    return Math2.summaryStatistics(counts()).getMin();
   }
 
   /**
@@ -399,7 +399,7 @@ public interface MultiCounter<K, V> {
    * @return The standard deviation of the counts in the counter
    */
   default double standardDeviation() {
-    return Math2.analyze(counts()).getSampleStandardDeviation();
+    return Math2.summaryStatistics(counts()).getSampleStandardDeviation();
   }
 
   /**
@@ -408,7 +408,7 @@ public interface MultiCounter<K, V> {
    * @return The sum of the counts in the counter
    */
   default double sum() {
-    return Math2.analyze(counts()).getSum();
+    return Math2.summaryStatistics(counts()).getSum();
   }
 
   /**
@@ -417,7 +417,7 @@ public interface MultiCounter<K, V> {
    * @return The sum of squares for the values
    */
   default double sumOfSquares() {
-    return Math2.analyze(counts()).getSumOfSquares();
+    return Math2.summaryStatistics(counts()).getSumOfSquares();
   }
 
   /**
