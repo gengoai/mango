@@ -92,117 +92,116 @@ import java.util.Optional;
  * @author David B. Bracewell
  */
 public abstract class HierarchicalEnumValue extends EnumValue {
-  private static final long serialVersionUID = 1L;
-  /**
-   * The Parent.
-   */
-  protected volatile HierarchicalEnumValue parent = null;
+   private static final long serialVersionUID = 1L;
+   /**
+    * The Parent.
+    */
+   protected volatile HierarchicalEnumValue parent = null;
 
 
-  /**
-   * Instantiates a new Hierarchical enum value.
-   *
-   * @param name   the specified name of the element
-   * @param parent the parent of element (possibly null)
-   */
-  protected HierarchicalEnumValue(String name, HierarchicalEnumValue parent) {
-    super(name);
-    this.parent = parent;
-  }
+   /**
+    * Instantiates a new Hierarchical enum value.
+    *
+    * @param name   the specified name of the element
+    * @param parent the parent of element (possibly null)
+    */
+   protected HierarchicalEnumValue(String name, HierarchicalEnumValue parent) {
+      super(name);
+      this.parent = parent;
+   }
 
-  /**
-   * <p>Determines if this element is as root.</p>
-   *
-   * @return True if it is a root, False otherwise
-   */
-  public final boolean isRoot() {
-    return !getParent().isPresent();
-  }
+   /**
+    * <p>Determines if this element is as root.</p>
+    *
+    * @return True if it is a root, False otherwise
+    */
+   public final boolean isRoot() {
+      return !getParent().isPresent();
+   }
 
 
-  /**
-   * <p>Gets the immediate children of this element or an empty list if none.</p>
-   *
-   * @return the immediate children of this element.
-   */
-  public abstract <T extends HierarchicalEnumValue> List<T> getChildren();
+   /**
+    * <p>Gets the immediate children of this element or an empty list if none.</p>
+    *
+    * @return the immediate children of this element.
+    */
+   public abstract <T extends HierarchicalEnumValue> List<T> getChildren();
 
-  /**
-   * <p>Determines if this element is a leaf, i.e. has no children.</p>
-   *
-   * @return True if it is a leaf, False otherwise
-   */
-  public final boolean isLeaf() {
-    return getChildren().isEmpty();
-  }
+   /**
+    * <p>Determines if this element is a leaf, i.e. has no children.</p>
+    *
+    * @return True if it is a leaf, False otherwise
+    */
+   public final boolean isLeaf() {
+      return getChildren().isEmpty();
+   }
 
-  /**
-   * <p>Gets the parent of this element. It first checks if a parent has been explicitly set and if not will attempt to
-   * determine the parent using the configuration property <code>canonical.name.parent</code> where the canonical name
-   * is determined using {@link #canonicalName()}.</p>
-   *
-   * @return the parent of this element as an Optional
-   */
-  public <T extends HierarchicalEnumValue> Optional<T> getParent() {
-    if (parent == null) {
-      synchronized (this) {
-        if (parent == null) {
-          T ev = getParentFromConfig();
-          if (ev != null) {
-            parent = ev;
-          }
-        }
+   /**
+    * <p>Gets the parent of this element. It first checks if a parent has been explicitly set and if not will attempt to
+    * determine the parent using the configuration property <code>canonical.name.parent</code> where the canonical name
+    * is determined using {@link #canonicalName()}.</p>
+    *
+    * @return the parent of this element as an Optional
+    */
+   public <T extends HierarchicalEnumValue> Optional<T> getParent() {
+      if (parent == null) {
+         synchronized (this) {
+            if (parent == null) {
+               T ev = getParentFromConfig();
+               if (ev != null) {
+                  parent = ev;
+               }
+            }
+         }
       }
-    }
-    return Optional.ofNullable(Cast.as(parent));
-  }
+      return Optional.ofNullable(Cast.as(parent));
+   }
 
-  @Override
-  public final boolean isInstance(@NonNull Tag value) {
-    HierarchicalEnumValue hev = this;
-    while (hev != null) {
-      if (hev.equals(value)) {
-        return true;
+   @Override
+   public final boolean isInstance(@NonNull Tag value) {
+      HierarchicalEnumValue hev = this;
+      while (hev != null) {
+         if (hev.equals(value)) {
+            return true;
+         }
+         final HierarchicalEnumValue pHev = hev;
+         hev = Cast.as(hev.getParent()
+                          .filter(v -> v != pHev)
+                          .orElse(null));
       }
-      final HierarchicalEnumValue pHev = hev;
-      hev = Cast.as(hev.getParent()
-                       .filter(v -> v != pHev)
-                       .orElse(null));
-    }
-    return false;
-  }
+      return false;
+   }
 
-  /**
-   * Determines the parent via a configuration setting.
-   *
-   * @return the parent via the configuration property or null
-   */
-  protected <T extends HierarchicalEnumValue> T getParentFromConfig() {
-    return Cast.as(Config.get(canonicalName(), "parent").as(getClass(), null));
-  }
+   /**
+    * Determines the parent via a configuration setting.
+    *
+    * @return the parent via the configuration property or null
+    */
+   protected <T extends HierarchicalEnumValue> T getParentFromConfig() {
+      return Cast.as(Config.get(canonicalName(), "parent").as(getClass(), null));
+   }
 
 
-  /**
-   * <p>Gets the path from this element's parent to a root, i.e. its ancestors in the tree.</p>
-   *
-   * @return the list of ancestors with this element's parent in position 0 or an empty list if this element is a root.
-   */
-  public <T extends HierarchicalEnumValue> List<T> getAncestors() {
-    List<T> path = new ArrayList<>();
-    T hev = Cast.as(this);
-    do {
-      final HierarchicalEnumValue pHev = hev;
-      hev = Cast.as(hev.getParent()
-                       .filter(v -> v != pHev)
-                       .orElse(null));
+   /**
+    * <p>Gets the path from this element's parent to a root, i.e. its ancestors in the tree.</p>
+    *
+    * @return the list of ancestors with this element's parent in position 0 or an empty list if this element is a root.
+    */
+   public <T extends HierarchicalEnumValue> List<T> getAncestors() {
+      List<T> path = new ArrayList<>();
+      T hev = Cast.as(this);
+      do {
+         final HierarchicalEnumValue pHev = hev;
+         hev = Cast.as(hev.getParent()
+                          .filter(v -> v != pHev)
+                          .orElse(null));
 
-      if (hev != null) {
-        path.add(hev);
-      }
+         if (hev != null) {
+            path.add(hev);
+         }
 
-    } while (hev != null);
-    return path;
-  }
-
+      } while (hev != null);
+      return path;
+   }
 
 }//END OF HierarchicalEnumValue

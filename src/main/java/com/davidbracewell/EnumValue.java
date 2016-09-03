@@ -21,6 +21,7 @@
 
 package com.davidbracewell;
 
+import com.davidbracewell.conversion.Cast;
 import lombok.NonNull;
 
 import java.io.ObjectStreamException;
@@ -61,82 +62,82 @@ import static com.davidbracewell.DynamicEnum.register;
  * @author David B. Bracewell
  */
 public abstract class EnumValue implements Tag, Serializable, Cloneable {
-  private static final long serialVersionUID = 1L;
-  private final String name;
-  private final String fullName;
+   private static final long serialVersionUID = 1L;
+   private final String name;
+   private final String fullName;
 
-  /**
-   * Instantiates a new enum value.
-   *
-   * @param name the name of the enum value
-   */
-  protected EnumValue(String name) {
-    this.name = normalize(name);
-    this.fullName = getClass().getCanonicalName() + "." + name;
-  }
+   /**
+    * Instantiates a new enum value.
+    *
+    * @param name the name of the enum value
+    */
+   protected EnumValue(String name) {
+      this.name = normalize(name);
+      this.fullName = getClass().getCanonicalName() + "." + name;
+   }
 
-  /**
-   * <p>Normalizes a string to be uppercase and use and underscore in place of whitespace.</p>
-   *
-   * @param name the name to be normalized
-   * @return the normalized version of the name
-   * @throws NullPointerException if the name is null
-   */
-  static String normalize(@NonNull String name) {
-    return name.toUpperCase().replaceAll("\\s+", "_");
-  }
+   /**
+    * <p>Normalizes a string to be uppercase and use and underscore in place of whitespace.</p>
+    *
+    * @param name the name to be normalized
+    * @return the normalized version of the name
+    * @throws NullPointerException if the name is null
+    */
+   static String normalize(@NonNull String name) {
+      return name.toUpperCase().replaceAll("\\s+", "_").replace(".", "~");
+   }
 
 
-  @Override
-  public String name() {
-    return name;
-  }
+   @Override
+   public String name() {
+      return name;
+   }
 
-  /**
-   * <p>Retrieves the canonical name of the enum value, which is the canonical name of the enum class and the specified
-   * name of the enum value.</p>
-   *
-   * @return the canonical name of the enum value
-   */
-  public final String canonicalName() {
-    return fullName;
-  }
+   /**
+    * <p>Retrieves the canonical name of the enum value, which is the canonical name of the enum class and the specified
+    * name of the enum value.</p>
+    *
+    * @return the canonical name of the enum value
+    */
+   public final String canonicalName() {
+      return fullName;
+   }
 
-  @Override
-  public final String toString() {
-    return name;
-  }
+   @Override
+   public final String toString() {
+      return name;
+   }
 
-  @Override
-  public boolean isInstance(Tag value) {
-    return value != null && this.equals(value);
-  }
+   @Override
+   public boolean isInstance(Tag value) {
+      return value != null && this.equals(value);
+   }
 
-  /**
-   * <p>Resolves the deserialized object by calling {@link DynamicEnum#register(EnumValue)} ensuring that only one
-   * reference exists for this enum value.</p>
-   *
-   * @return the new or existing enum value
-   * @throws ObjectStreamException if there is an error in the object stream
-   */
-  protected final Object readResolve() throws ObjectStreamException {
-    return register(this);
-  }
+   /**
+    * <p>Resolves the deserialized object by calling {@link DynamicEnum#register(EnumValue)} ensuring that only one
+    * reference exists for this enum value.</p>
+    *
+    * @return the new or existing enum value
+    * @throws ObjectStreamException if there is an error in the object stream
+    */
+   protected final Object readResolve() throws ObjectStreamException {
+      return register(this);
+   }
 
-  @Override
-  public final int hashCode() {
-    return canonicalName().hashCode();
-  }
+   @Override
+   public final int hashCode() {
+      return canonicalName().hashCode();
+   }
 
-  @Override
-  public final boolean equals(Object obj) {
-    return this == obj;
-  }
+   @Override
+   public final boolean equals(Object obj) {
+      return obj != null && obj instanceof EnumValue && canonicalName().equals(Cast.<EnumValue>as(obj).canonicalName());
+   }
 
-  @Override
-  protected final Object clone() throws CloneNotSupportedException {
-    throw new CloneNotSupportedException();
-  }
+   @Override
+   protected final Object clone() throws CloneNotSupportedException {
+      throw new CloneNotSupportedException();
+   }
 
 
 }//END OF EnumValue

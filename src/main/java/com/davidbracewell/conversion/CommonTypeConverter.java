@@ -54,186 +54,186 @@ import java.util.function.Function;
  */
 public class CommonTypeConverter {
 
-  /**
-   * Converts an object to a Class will try to get the class represented in a char sequence. Will only return null when
-   * the input is null.
-   */
-  public static final Function<Object, Class<?>> CLASS = input -> {
-    if (input == null) {
-      return null;
-    } else if (input instanceof Class) {
-      return Cast.as(input);
-    } else if (input instanceof CharSequence) {
-      Class<?> clazz = ReflectionUtils.getClassForNameQuietly(input.toString());
-      if (clazz != null) {
-        return clazz;
-      }
-    }
-    return input.getClass();
-  };
-  /**
-   * Identity function
-   */
-  public static final Function<Object, Object> OBJECT = input -> input;
-  /**
-   * The constant DYNAMIC_ENUM.
-   */
-  public static final Function<Object, EnumValue> DYNAMIC_ENUM = o -> {
-    if (o == null) {
-      return null;
-    } else if (o instanceof EnumValue) {
-      return Cast.as(o);
-    } else if (o instanceof CharSequence) {
-
-      String string = o.toString();
-      if (StringUtils.isNullOrBlank(string)) {
-        return null;
-      }
-
-      int index = string.lastIndexOf('.');
-      if (index == -1) {
-        return null;
-      }
-      Class<?> clazz = ReflectionUtils.getClassForNameQuietly(string.substring(0, index));
-      if (clazz != null) {
-        try {
-          return Reflect.onClass(clazz).allowPrivilegedAccess().get(string.substring(index + 1)).get();
-        } catch (ReflectionException e) {
-          return null;
-        }
-      }
-    }
-    return null;
-  };
-  /**
-   * Converts objects to strings. Handles collections, arrays, and varios io related objects (e.g. File, URI,
-   * InputStream, etc.)
-   */
-  public static final Function<Object, String> STRING = input -> {
-    if (input == null) {
-      return null;
-    } else if (input instanceof CharSequence) {
-      return input.toString();
-    } else if (input instanceof char[]) {
-      return new String(Cast.as(input, char[].class));
-    } else if (input instanceof byte[]) {
-      return new String(Cast.as(input, byte[].class));
-    } else if (input instanceof Character[]) {
-      return new String(Primitives.toCharArray(Cast.as(input, Character[].class)));
-    } else if (input instanceof Byte[]) {
-      return new String(Primitives.toByteArray(Cast.as(input, Byte[].class)));
-    } else if (input instanceof File || input instanceof Path || input instanceof URI || input instanceof URL || input instanceof InputStream || input instanceof Blob || input instanceof Reader) {
-      byte[] bytes = PrimitiveArrayConverter.BYTE.apply(input);
-      if (bytes != null) {
-        return new String(bytes);
-      }
-    } else if (input.getClass().isArray()) {
-      String array = "[";
-      for (int i = 0; i < Array.getLength(input); i++) {
-        if (i != 0) {
-          array += ", ";
-        }
-        array += Convert.convert(Array.get(input, i), String.class);
-      }
-      return array + "]";
-    } else if (input instanceof Date) {
-      return SimpleDateFormat.getDateTimeInstance().format(input);
-    } else if (input instanceof Map) {
-      StringBuilder builder = new StringBuilder("{");
-      CSVFormatter mapFormat = CSV.builder().delimiter('=').formatter();
-      Cast.<Map<?, ?>>as(input).forEach((o, o2) -> builder.append(
-        mapFormat.format(Convert.convert(o, String.class), Convert.convert(o2, String.class))
-      ));
-      return builder.append("}").toString();
-    }
-
-    return input.toString();
-  };
-  private static Logger log = Logger.getLogger(CommonTypeConverter.class);
-  public static final Function<Object, Date> JAVA_DATE = new Function<Object, Date>() {
-    private final DateParser dateParser = new DateParser();
-
-    @Override
-    public Date apply(Object input) {
+   /**
+    * Converts an object to a Class will try to get the class represented in a char sequence. Will only return null when
+    * the input is null.
+    */
+   public static final Function<Object, Class<?>> CLASS = input -> {
       if (input == null) {
-        return null;
+         return null;
+      } else if (input instanceof Class) {
+         return Cast.as(input);
+      } else if (input instanceof CharSequence) {
+         Class<?> clazz = ReflectionUtils.getClassForNameQuietly(input.toString());
+         if (clazz != null) {
+            return clazz;
+         }
+      }
+      return input.getClass();
+   };
+   /**
+    * Identity function
+    */
+   public static final Function<Object, Object> OBJECT = input -> input;
+   /**
+    * The constant DYNAMIC_ENUM.
+    */
+   public static final Function<Object, EnumValue> DYNAMIC_ENUM = o -> {
+      if (o == null) {
+         return null;
+      } else if (o instanceof EnumValue) {
+         return Cast.as(o);
+      } else if (o instanceof CharSequence) {
+
+         String string = o.toString();
+         if (StringUtils.isNullOrBlank(string)) {
+            return null;
+         }
+
+         int index = string.lastIndexOf('.');
+         if (index == -1) {
+            return null;
+         }
+         Class<?> clazz = ReflectionUtils.getClassForNameQuietly(string.substring(0, index));
+         if (clazz != null) {
+            try {
+               return Reflect.onClass(clazz).allowPrivilegedAccess().get(string.substring(index + 1)).get();
+            } catch (ReflectionException e) {
+               return null;
+            }
+         }
+      }
+      return null;
+   };
+   /**
+    * Converts objects to strings. Handles collections, arrays, and varios io related objects (e.g. File, URI,
+    * InputStream, etc.)
+    */
+   public static final Function<Object, String> STRING = input -> {
+      if (input == null) {
+         return null;
+      } else if (input instanceof CharSequence) {
+         return input.toString();
+      } else if (input instanceof char[]) {
+         return new String(Cast.as(input, char[].class));
+      } else if (input instanceof byte[]) {
+         return new String(Cast.as(input, byte[].class));
+      } else if (input instanceof Character[]) {
+         return new String(Primitives.toCharArray(Cast.as(input, Character[].class)));
+      } else if (input instanceof Byte[]) {
+         return new String(Primitives.toByteArray(Cast.as(input, Byte[].class)));
+      } else if (input instanceof File || input instanceof Path || input instanceof URI || input instanceof URL || input instanceof InputStream || input instanceof Blob || input instanceof Reader) {
+         byte[] bytes = PrimitiveArrayConverter.BYTE.apply(input);
+         if (bytes != null) {
+            return new String(bytes);
+         }
+      } else if (input.getClass().isArray()) {
+         String array = "[";
+         for (int i = 0; i < Array.getLength(input); i++) {
+            if (i != 0) {
+               array += ", ";
+            }
+            array += Convert.convert(Array.get(input, i), String.class);
+         }
+         return array + "]";
       } else if (input instanceof Date) {
-        return Cast.as(input);
-      } else if (input instanceof Number) {
-        return new Date(Cast.as(input, Number.class).longValue());
-      } else if (input instanceof Calendar) {
-        return Cast.as(input, Calendar.class).getTime();
+         return SimpleDateFormat.getDateTimeInstance().format(input);
+      } else if (input instanceof Map) {
+         StringBuilder builder = new StringBuilder("{");
+         CSVFormatter mapFormat = CSV.builder().delimiter('=').formatter();
+         Cast.<Map<?, ?>>as(input).forEach((o, o2) -> builder.append(
+               mapFormat.format(Convert.convert(o, String.class), Convert.convert(o2, String.class))
+                                                                    ));
+         return builder.append("}").toString();
       }
 
-      String string = STRING.apply(input);
-      if (string != null) {
-        string = StringUtils.trim(string.replaceAll(StringUtils.MULTIPLE_WHITESPACE, " "));
+      return input.toString();
+   };
+   private static Logger log = Logger.getLogger(CommonTypeConverter.class);
+   public static final Function<Object, Date> JAVA_DATE = new Function<Object, Date>() {
+      private final DateParser dateParser = new DateParser();
 
-        Optional<Date> date = dateParser.parseQuietly(string);
-        if (date.isPresent()) {
-          return date.get();
-        }
+      @Override
+      public Date apply(Object input) {
+         if (input == null) {
+            return null;
+         } else if (input instanceof Date) {
+            return Cast.as(input);
+         } else if (input instanceof Number) {
+            return new Date(Cast.as(input, Number.class).longValue());
+         } else if (input instanceof Calendar) {
+            return Cast.as(input, Calendar.class).getTime();
+         }
+
+         String string = STRING.apply(input);
+         if (string != null) {
+            string = StringUtils.trim(string.replaceAll(StringUtils.MULTIPLE_WHITESPACE, " "));
+
+            Optional<Date> date = dateParser.parseQuietly(string);
+            if (date.isPresent()) {
+               return date.get();
+            }
+         }
+
+         log.fine("Could not convert {0} into java.util.Date", input.getClass());
+         return null;
+      }
+   };
+   public static final Function<Object, java.sql.Date> SQL_DATE = input -> {
+      if (input == null) {
+         return null;
+      } else if (input instanceof java.sql.Date) {
+         return Cast.as(input);
+      }
+
+      Date date = JAVA_DATE.apply(input);
+      if (date != null) {
+         return new java.sql.Date(date.getTime());
       }
 
       log.fine("Could not convert {0} into java.util.Date", input.getClass());
       return null;
-    }
-  };
-  public static final Function<Object, java.sql.Date> SQL_DATE = input -> {
-    if (input == null) {
-      return null;
-    } else if (input instanceof java.sql.Date) {
-      return Cast.as(input);
-    }
-
-    Date date = JAVA_DATE.apply(input);
-    if (date != null) {
-      return new java.sql.Date(date.getTime());
-    }
-
-    log.fine("Could not convert {0} into java.util.Date", input.getClass());
-    return null;
-  };
-  /**
-   * Converts objects to characters
-   */
-  public static final Function<Object, Character> CHARACTER = input -> {
-    if (input == null) {
-      return null;
-    } else if (input instanceof Character) {
-      return Cast.as(input);
-    } else if (input instanceof Number) {
-      return (char) Cast.as(input, Number.class).intValue();
-    } else if (input instanceof CharSequence) {
-      CharSequence sequence = Cast.as(input);
-      if (sequence.length() == 1) {
-        return sequence.charAt(0);
+   };
+   /**
+    * Converts objects to characters
+    */
+   public static final Function<Object, Character> CHARACTER = input -> {
+      if (input == null) {
+         return null;
+      } else if (input instanceof Character) {
+         return Cast.as(input);
+      } else if (input instanceof Number) {
+         return (char) Cast.as(input, Number.class).intValue();
+      } else if (input instanceof CharSequence) {
+         CharSequence sequence = Cast.as(input);
+         if (sequence.length() == 1) {
+            return sequence.charAt(0);
+         }
       }
-    }
 
-    log.fine("Could not convert {0} into Character.", input.getClass());
-    return null;
-  };
-  /**
-   * Converts objects to <code>StringBuilder</code>. It uses the {@link #STRING} function to convert items to Strings.
-   */
-  public static final Function<Object, StringBuilder> STRING_BUILDER = input -> {
-    if (input == null) {
+      log.fine("Could not convert {0} into Character.", input.getClass());
       return null;
-    } else if (input instanceof StringBuilder) {
-      return Cast.as(input);
-    }
-    String string = STRING.apply(input);
-    if (string != null) {
-      return new StringBuilder(string);
-    }
+   };
+   /**
+    * Converts objects to <code>StringBuilder</code>. It uses the {@link #STRING} function to convert items to Strings.
+    */
+   public static final Function<Object, StringBuilder> STRING_BUILDER = input -> {
+      if (input == null) {
+         return null;
+      } else if (input instanceof StringBuilder) {
+         return Cast.as(input);
+      }
+      String string = STRING.apply(input);
+      if (string != null) {
+         return new StringBuilder(string);
+      }
 
-    log.fine("Could not convert {0} into StringBuilder.", input.getClass());
-    return null;
-  };
+      log.fine("Could not convert {0} into StringBuilder.", input.getClass());
+      return null;
+   };
 
-  private CommonTypeConverter() {
-    throw new IllegalAccessError();
-  }
+   private CommonTypeConverter() {
+      throw new IllegalAccessError();
+   }
 
 }//END OF CommonTypeConverter

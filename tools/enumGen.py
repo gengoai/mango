@@ -23,8 +23,7 @@ elif options.file is None:
     print "No File Path Given"
     sys.exit(-1)
 
-flat = """
-{{PACKAGE_NAME}}
+flat = """package {{PACKAGE_NAME}}
 
 import com.google.common.collect.Sets;
 import com.davidbracewell.DynamicEnum;
@@ -35,7 +34,7 @@ import lombok.NonNull;
 * Auto generated using enumGen.py
 * The type {{CLASS_NAME}}. 
 */
-public final class {{CLASS_NAME}} extends EnumValue implements Tag, Comparable<{{CLASS_NAME}}> {
+public final class {{CLASS_NAME}} extends EnumValue implements Comparable<{{CLASS_NAME}}> {
     private static final long serialVersionUID = 1L;
     private static final Set<{{CLASS_NAME}}> values = Sets.newConcurrentHashSet();
 
@@ -82,23 +81,21 @@ public final class {{CLASS_NAME}} extends EnumValue implements Tag, Comparable<{
 }//END OF {{CLASS_NAME}}
 """
 
-hierarchical = """{{PACKAGE_NAME}};
+hierarchical = """package {{PACKAGE_NAME}};
 
-import com.davidbracewell.conversion.Cast;
+
+import com.davidbracewell.DynamicEnum;
+import com.davidbracewell.HierarchicalEnumValue;
 import com.google.common.collect.Sets;
 import lombok.NonNull;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * Auto generated using enumGen.py
  * The type {{CLASS_NAME}}.
  */
-public final class {{CLASS_NAME}} extends HierarchicalEnumValue<{{CLASS_NAME}}> implements Comparable<{{CLASS_NAME}}> {
+public final class {{CLASS_NAME}} extends HierarchicalEnumValue implements Comparable<{{CLASS_NAME}}> {
   private static final long serialVersionUID = 1L;
   private static final Set<{{CLASS_NAME}}> values = Sets.newConcurrentHashSet();
 
@@ -128,6 +125,9 @@ public final class {{CLASS_NAME}} extends HierarchicalEnumValue<{{CLASS_NAME}}> 
     {{CLASS_NAME}} toReturn = DynamicEnum.register(new {{CLASS_NAME}}(name, parent));
     if (!toReturn.getParent().isPresent() && parent != null) {
       toReturn.parent = parent;
+    } else if( toReturn.getParent().map(p -> p.equals(parent)).orElse(false) ) {
+       throw new IllegalArgumentException("Attempting to change parent of " + toReturn.name() + " from " +
+       toReturn.getParent().orElse("") + " to " + parent);
     }
     values.add(toReturn);
     return toReturn;
@@ -154,6 +154,7 @@ public final class {{CLASS_NAME}} extends HierarchicalEnumValue<{{CLASS_NAME}}> 
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<{{CLASS_NAME}}> getChildren() {
     return values().stream().filter(v -> this != v && v.getParent().filter(p -> p == this).isPresent()).collect(Collectors.toList());
   }
@@ -164,16 +165,19 @@ public final class {{CLASS_NAME}} extends HierarchicalEnumValue<{{CLASS_NAME}}> 
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public Optional<{{CLASS_NAME}}> getParent() {
     return super.getParent();
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   protected {{CLASS_NAME}} getParentFromConfig() {
     return super.getParentFromConfig();
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<{{CLASS_NAME}}> getAncestors() {
     return super.getAncestors();
   }
