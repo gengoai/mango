@@ -95,7 +95,7 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
    }
 
    @Override
-   public final void run() {
+   public void run() {
       nativeLookAndFeel();
       SwingUtilities.invokeLater(() -> this.setVisible(true));
    }

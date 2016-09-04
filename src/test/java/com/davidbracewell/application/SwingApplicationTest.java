@@ -108,10 +108,16 @@ public class SwingApplicationTest {
          assertEquals("up", Config.get("direction").asString());
 
 
-         assertArrayEquals(new String[]{"--name=John", "--age=", "35", "--map", "{ALPHA:23}", "--action", "update", "-abc"},
-                           getAllArguments()
+         assertArrayEquals(
+            new String[]{"--name=John", "--age=", "35", "--map", "{ALPHA:23}", "--action", "update", "-abc"},
+            getAllArguments()
                           );
          assertArrayEquals(new String[]{"--action", "update"}, getNonSpecifiedArguments());
+      }
+
+      @Override
+      public void run() {
+
       }
    }
 
