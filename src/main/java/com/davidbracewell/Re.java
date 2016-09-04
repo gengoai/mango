@@ -12,158 +12,151 @@ import static com.davidbracewell.Regex.toChars;
  */
 public interface Re {
    /**
-    * The constant QUOTE.
+    * The quote character.
     */
    Regex QUOTE = re("\"");
 
    /**
-    * The constant ANY.
+    * An unescaped period representing match anything.
     */
    Regex ANY = re(".");
 
    /**
-    * The constant WHITESPACE.
+    * matches unicode whitespace.
     */
    Regex WHITESPACE = re("\\p{Z}\t\n\r\f");
    /**
-    * The constant LETTER.
+    * Unicode letter
     */
    Regex LETTER = re("\\p{L}");
    /**
-    * The constant LOWERCASE_LETTER.
+    * Unicode lowercase letter
     */
    Regex LOWERCASE_LETTER = re("\\p{Ll}");
    /**
-    * The constant UPPERCASE_LETTER.
+    * Unicode uppercase letter
     */
    Regex UPPERCASE_LETTER = re("\\p{Lu}");
    /**
-    * The constant MARK.
+    * Unicode mark characters.
     */
    Regex MARK = re("\\p{m}");
    /**
-    * The constant SYMBOL.
+    * Unicode symbol characters
     */
    Regex SYMBOL = re("\\p{S}");
    /**
-    * The constant MATH_SYMBOL.
+    * Unicode math symbols
     */
    Regex MATH_SYMBOL = re("\\p{Sm}");
    /**
-    * The constant CURRENCY_SYMBOL.
+    * Unicode currency characters
     */
    Regex CURRENCY_SYMBOL = re("\\p{Sc}");
    /**
-    * The constant MODIFIER_SYMBOL.
+    * Unicode modifier symbols
     */
    Regex MODIFIER_SYMBOL = re("\\p{Sk}");
    /**
-    * The constant OTHER_SYMBOL.
+    * Unicode other symbols
     */
    Regex OTHER_SYMBOL = re("\\p{So}");
    /**
-    * The constant NUMBER.
+    * Unicode numbers
     */
    Regex NUMBER = re("\\p{N}");
    /**
-    * The constant DIGIT.
+    * Unicode digits
     */
    Regex DIGIT = re("\\p{Nd}");
    /**
-    * The constant PUNCTUATION.
+    * Unicode punctuation
     */
    Regex PUNCTUATION = re("\\p{P}");
    /**
-    * The constant DASH_PUNCTUATION.
+    * Unicode dash punctuation
     */
    Regex DASH_PUNCTUATION = re("\\p{Pd}");
    /**
-    * The constant OPEN_PUNCTUATION.
+    * Unicode open punctuation
     */
    Regex OPEN_PUNCTUATION = re("\\p{Ps}");
    /**
-    * The constant CLOSE_PUNCTUATION.
+    * Unicode close punctuation
     */
    Regex CLOSE_PUNCTUATION = re("\\p{Pe}");
    /**
-    * The constant INITIAL_PUNCTUATION.
+    * Unicode initial punctuation
     */
    Regex INITIAL_PUNCTUATION = re("\\p{Pi}");
    /**
-    * The constant FINAL_PUNCTUATION.
+    * Unicode final punctuation
     */
    Regex FINAL_PUNCTUATION = re("\\p{Pf}");
    /**
-    * The constant CONNECTOR_PUNCTUATION.
+    * Unicode connector punctuation
     */
    Regex CONNECTOR_PUNCTUATION = re("\\p{Pc}");
    /**
-    * The constant BACKSLASH.
+    * Backlash character
     */
    Regex BACKSLASH = re("\\");
-
    /**
-    * The constant DOUBLE_BACKSLASH.
+    * Escaped backslash
     */
-   Regex DOUBLE_BACKSLASH = re("\\\\");
-
+   Regex ESC_BACKSLASH = re("\\\\");
    /**
-    * The constant WORD_BOUNDRY.
+    * Word boundary
     */
-   Regex WORD_BOUNDRY = re("\b");
+   Regex WORD_BOUNDARY = re("\b");
 
    /**
-    * The constant NON_WORD_BOUNDRY.
-    */
-   Regex NON_WORD_BOUNDRY = re("\\B");
-
-   /**
-    * Pos look ahead regex.
+    * Non-consuming positive lookahead
     *
     * @param regex the regex
     * @return the regex
     */
-   static Regex posLookAhead(@NonNull Regex regex) {
+   static Regex posLookahead(@NonNull Regex regex) {
       return re("(?=" + regex.toString() + ")");
    }
 
    /**
-    * Neg look ahead regex.
+    * Non-consuming negative lookahead
     *
     * @param regex the regex
     * @return the regex
     */
-   static Regex negLookAhead(@NonNull Regex regex) {
+   static Regex negLookahead(@NonNull Regex regex) {
       return re("(?!" + regex.toString() + ")");
    }
 
    /**
-    * Pos look behind regex.
+    * Non-consuming positive lookbehind
     *
     * @param regex the regex
     * @return the regex
     */
-   static Regex posLookBehind(@NonNull Regex regex) {
+   static Regex posLookbehind(@NonNull Regex regex) {
       return re("(?<=" + regex.toString() + ")");
    }
 
    /**
-    * Neg look behind regex.
+    * Non-consuming negative lookbehind
     *
     * @param regex the regex
     * @return the regex
     */
-   static Regex negLookBehind(@NonNull Regex regex) {
+   static Regex negLookbehind(@NonNull Regex regex) {
       return re("(?<!" + regex.toString() + ")");
    }
 
 
    /**
-    * Chars regex.
+    * Creates character class out of the supplied regular expressions.
     *
-    * @param first  the first
-    * @param others the others
-    * @return the regex
+    * @param first  the first (at least one is required) regex
+    * @param others the other regex making up the character class
+    * @return the character class regex
     */
    static Regex chars(@NonNull Regex first, Regex... others) {
       StringBuilder p = new StringBuilder(toChars(first.toString()));
@@ -179,23 +172,23 @@ public interface Re {
 
 
    /**
-    * Chars regex.
+    * Creates character class out of the supplied regular expressions.
     *
-    * @param chars the chars
-    * @return the regex
+    * @param chars the string of characters making up the character class
+    * @return the character class regex
     */
-   static Regex chars(String chars) {
+   static Regex chars(@NonNull String chars) {
       return chars(chars, false);
    }
 
    /**
-    * Chars regex.
+    * Creates character class out of the supplied regular expressions.
     *
-    * @param chars  the chars
-    * @param negate the negate
-    * @return the regex
+    * @param chars  the string of characters making up the character class
+    * @param negate true if the character class should be negated, false if not negated
+    * @return the character class regex
     */
-   static Regex chars(String chars, boolean negate) {
+   static Regex chars(@NonNull String chars, boolean negate) {
       if (chars != null) {
          return new Regex("[" + (negate ? "^" : "") + chars + "]", false);
       }
@@ -203,51 +196,48 @@ public interface Re {
    }
 
    /**
-    * Re regex.
+    * Creates a regex object for the supplied pattern
     *
-    * @param pattern the pattern
+    * @param pattern the regular expression pattern
     * @return the regex
     */
-   static Regex re(String pattern) {
+   static Regex re(@NonNull String pattern) {
       return new Regex(pattern, false);
    }
 
 
    /**
-    * Begin line regex.
+    * Creates a regex that must match at the beginning of the line.
     *
-    * @param regex the regex
+    * @param regex the regex to match starting at the beginning of the line
     * @return the regex
     */
-   static Regex beginLine(Regex regex) {
-      if (regex == null) {
-         return re("^");
-      }
+   static Regex beginLine(@NonNull Regex regex) {
       return re("^" + regex.toString());
    }
 
 
    /**
-    * Quote regex.
+    * Creates a regular expression that is a quoted version of the supplied pattern.
     *
-    * @param word the word
-    * @return the regex
+    * @param pattern the regular expression pattern
+    * @return the regex with the supplied pattern quoted
     */
-   static Regex quote(String word) {
-      return new Regex(word, true);
+   static Regex quote(@NonNull String pattern) {
+      return new Regex(pattern, true);
    }
 
    /**
-    * Or regex.
+    * Creates a non-matching group of the supplied regex ored together.
     *
-    * @param first   the first
-    * @param regexes the regexes
-    * @return the regex
+    * @param first  the first (at least one is required) regex
+    * @param others the other regex making up the or group
+    * @return the non-matching group of regex that are ored together
     */
-   static Regex or(@NonNull Regex first, Regex... regexes) {
+   static Regex or(@NonNull Regex first, Regex... others) {
       StringBuilder pattern = new StringBuilder(first.toString());
-      if (regexes != null) {
-         for (Regex rp : regexes) {
+      if (others != null) {
+         for (Regex rp : others) {
             if (rp != null) {
                pattern.append("|").append(rp.toString());
             }
@@ -257,16 +247,16 @@ public interface Re {
    }
 
    /**
-    * And regex.
+    * Ands together the supplied regular expression
     *
-    * @param first   the first
-    * @param regexes the regexes
-    * @return the regex
+    * @param first  the first (at least one is required) regex
+    * @param others the other regex making up the or group
+    * @return the regular expression anded together
     */
-   static Regex and(@NonNull Regex first, Regex... regexes) {
+   static Regex and(@NonNull Regex first, Regex... others) {
       StringBuilder pattern = new StringBuilder(first.toString());
-      if (regexes != null) {
-         for (Regex rp : regexes) {
+      if (others != null) {
+         for (Regex rp : others) {
             if (rp != null) {
                pattern.append("&&").append(rp.toString());
             }
@@ -276,27 +266,27 @@ public interface Re {
    }
 
    /**
-    * Group regex.
+    * Creates a matching group of the supplied regular expressions
     *
-    * @param first   the first
-    * @param regexes the regexes
+    * @param first  the first (at least one is required) regex
+    * @param others the other regex making up the or group
     * @return the regex
     */
-   static Regex group(@NonNull Regex first, Regex... regexes) {
-      return group(null, first, regexes);
+   static Regex group(@NonNull Regex first, Regex... others) {
+      return group(null, first, others);
    }
 
    /**
-    * Non matching group regex.
+    * Creates a non-matching group of the supplied regular expressions
     *
-    * @param first   the first
-    * @param regexes the regexes
+    * @param first  the first (at least one is required) regex
+    * @param others the other regex making up the or group
     * @return the regex
     */
-   static Regex nmGroup(@NonNull Regex first, Regex... regexes) {
+   static Regex nmGroup(@NonNull Regex first, Regex... others) {
       String pattern = first.toString();
-      if (regexes != null) {
-         for (Regex rp : regexes) {
+      if (others != null) {
+         for (Regex rp : others) {
             if (rp != null) {
                pattern += rp.toString();
             }
@@ -307,17 +297,17 @@ public interface Re {
 
 
    /**
-    * Group regex.
+    * Creates a matching group of the supplied regular expressions. If the supplied name is not null or blank, the group
+    * will be named.
     *
-    * @param name    the name
-    * @param first   the first
-    * @param regexes the regexes
+    * @param first  the first (at least one is required) regex
+    * @param others the other regex making up the or group
     * @return the regex
     */
-   static Regex group(String name, @NonNull Regex first, Regex... regexes) {
+   static Regex group(String name, @NonNull Regex first, Regex... others) {
       String pattern = first.toString();
-      if (regexes != null) {
-         for (Regex rp : regexes) {
+      if (others != null) {
+         for (Regex rp : others) {
             if (rp != null) {
                pattern += rp.toString();
             }
@@ -327,16 +317,16 @@ public interface Re {
    }
 
    /**
-    * Seq regex.
+    * Creates a sequence (i.e. concatenation) of the supplied regular expressions.
     *
-    * @param first   the first
-    * @param regexes the regexes
+    * @param first  the first (at least one is required) regex
+    * @param others the other regex making up the or sequence
     * @return the regex
     */
-   static Regex seq(@NonNull Regex first, Regex... regexes) {
+   static Regex seq(@NonNull Regex first, Regex... others) {
       StringBuilder pattern = new StringBuilder(first.toString());
-      if (regexes != null) {
-         for (Regex rp : regexes) {
+      if (others != null) {
+         for (Regex rp : others) {
             if (rp != null) {
                pattern.append(rp.toString());
             }
@@ -346,12 +336,12 @@ public interface Re {
    }
 
    /**
-    * Not regex.
+    * Negates the supplied regular expression.
     *
-    * @param regex the regex
-    * @return the regex
+    * @param regex the regular expression
+    * @return the negated regex
     */
-   static Regex not(Regex regex) {
+   static Regex not(@NonNull Regex regex) {
       return regex.not();
    }
 

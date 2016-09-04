@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 import static com.davidbracewell.Re.re;
 
 /**
- * The type Regex.
+ * <p>Fluent style regular expression builder.</p>
  *
  * @author David B. Bracewell
  */
@@ -52,9 +52,9 @@ public final class Regex implements Serializable {
    }
 
    /**
-    * Followed by regex.
+    * Concatenates the given regex with this one.
     *
-    * @param regex the regex
+    * @param regex the regex to concatenate with this one
     * @return the regex
     */
    public Regex then(Regex regex) {
@@ -65,7 +65,7 @@ public final class Regex implements Serializable {
    }
 
    /**
-    * End line regex.
+    * Appends a dollar sign to the end of the regex signifying that the pattern must match to the end of line.
     *
     * @return the regex
     */
@@ -75,9 +75,9 @@ public final class Regex implements Serializable {
 
 
    /**
-    * Or regex.
+    * Ors together this regex with the supplied other regular expressions
     *
-    * @param others the others
+    * @param others the other regular expressions to be ored with this one
     * @return the regex
     */
    public Regex or(@NonNull Regex... others) {
@@ -88,9 +88,9 @@ public final class Regex implements Serializable {
    }
 
    /**
-    * And regex.
+    * Ands together this regex with the supplied regular expression
     *
-    * @param other the other
+    * @param other the other regular expression to be anded to this one
     * @return the regex
     */
    public Regex and(@NonNull Regex other) {
@@ -101,9 +101,9 @@ public final class Regex implements Serializable {
    }
 
    /**
-    * Group regex.
+    * Converts the regex into a group. If the supplied name is not null or blank, the group will be named.
     *
-    * @param name the name
+    * @param name the name of the group
     * @return the regex
     */
    public Regex group(String name) {
@@ -111,7 +111,7 @@ public final class Regex implements Serializable {
    }
 
    /**
-    * Non matching group regex.
+    * Converts the regex into a non-matching group
     *
     * @return the regex
     */
@@ -120,7 +120,7 @@ public final class Regex implements Serializable {
    }
 
    /**
-    * Group regex.
+    * Converts the regex into a group
     *
     * @return the regex
     */
@@ -129,9 +129,9 @@ public final class Regex implements Serializable {
    }
 
    /**
-    * Not regex.
+    * Negates the regex
     *
-    * @return the regex
+    * @return the negated regex
     */
    public Regex not() {
       if (this.pattern.length() > 0) {
@@ -144,9 +144,9 @@ public final class Regex implements Serializable {
    }
 
    /**
-    * N times regex.
+    * Specifies the number of times for this regex to repeat.
     *
-    * @param n the n
+    * @param n the number of times the pattern should repeat
     * @return the regex
     */
    public Regex nTimes(int n) {
@@ -154,10 +154,10 @@ public final class Regex implements Serializable {
    }
 
    /**
-    * Range regex.
+    * Specifies the minimum and maximum times for this regex to repeat.
     *
-    * @param min the min
-    * @param max the max
+    * @param min the minimum times the pattern should repeat
+    * @param max the maximum times the pattern should repeat
     * @return the regex
     */
    public Regex range(int min, int max) {
@@ -165,16 +165,7 @@ public final class Regex implements Serializable {
    }
 
    /**
-    * Greedy regex.
-    *
-    * @return the regex
-    */
-   public Regex reluctant() {
-      return re(this.pattern + "?");
-   }
-
-   /**
-    * One or more regex.
+    * Appends a plus sign to the end of the regex. Typically this is used to designate a match of one or more.
     *
     * @return the regex
     */
@@ -183,7 +174,7 @@ public final class Regex implements Serializable {
    }
 
    /**
-    * Zero or more regex.
+    * Appends a asterisks to the end of the regex. Typically this is used to designate a match of zero or more.
     *
     * @return the regex
     */
@@ -193,7 +184,7 @@ public final class Regex implements Serializable {
 
 
    /**
-    * Zero or one regex.
+    * Appends a question mark to the end of the regex. Typically this is used to designate a match of zero or one.
     *
     * @return the regex
     */
@@ -203,9 +194,9 @@ public final class Regex implements Serializable {
 
 
    /**
-    * To pattern pattern.
+    * Converts the regex object to a Java pattern with the specified flags.
     *
-    * @return the pattern
+    * @return the Java regular expression pattern
     */
    public Pattern toPattern() {
       return Pattern.compile(pattern);
@@ -213,10 +204,10 @@ public final class Regex implements Serializable {
 
 
    /**
-    * To pattern pattern.
+    * Converts the regex object to a Java pattern with the specified flags.
     *
-    * @param flags the flags
-    * @return the pattern
+    * @param flags the flags for the pattern creation see {@link Pattern}
+    * @return the Java regular expression pattern
     */
    public Pattern toPattern(int flags) {
       return Pattern.compile(pattern, flags);
@@ -228,18 +219,18 @@ public final class Regex implements Serializable {
    }
 
    /**
-    * Match line regex.
+    * Converts this regex to match an entire line.
     *
-    * @return the regex
+    * @return the regex that matches entire lines.
     */
    public Regex matchLine() {
       return re("^" + this.pattern + "$");
    }
 
    /**
-    * Chars regex.
+    * Converts this regex into a character class.
     *
-    * @return the regex
+    * @return the character class regex
     */
    public Regex chars() {
       return Re.chars(this);

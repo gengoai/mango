@@ -61,7 +61,7 @@ public class ReTest {
 
    @Test
    public void lookBehind() throws Exception {
-      Regex r = seq(negLookBehind(quote("$")),
+      Regex r = seq(negLookbehind(quote("$")),
                     LETTER.plus()
                    ).endLine();
       Pattern p = r.toPattern();
@@ -75,7 +75,7 @@ public class ReTest {
       assertEquals("BBA", m.group());
 
 
-      r = seq(posLookBehind(quote("$")),
+      r = seq(posLookbehind(quote("$")),
               LETTER.plus()
              ).endLine();
 
@@ -89,7 +89,7 @@ public class ReTest {
 
    @Test
    public void lookAhead() throws Exception {
-      Regex r = LETTER.plus().then(negLookAhead(DIGIT));
+      Regex r = LETTER.plus().then(negLookahead(DIGIT));
       Pattern p = r.toPattern();
 
       Matcher m = p.matcher("A1");
@@ -99,7 +99,7 @@ public class ReTest {
       assertEquals("A", m.group());
 
 
-      r = LETTER.plus().then(posLookAhead(DIGIT));
+      r = LETTER.plus().then(posLookahead(DIGIT));
       p = r.toPattern();
 
       m = p.matcher("AB1");
