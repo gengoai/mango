@@ -21,11 +21,13 @@
 
 package com.davidbracewell.conversion;
 
-import com.davidbracewell.Primitives;
 import com.davidbracewell.collection.list.Lists;
 import com.davidbracewell.collection.list.PrimitiveArrayList;
 import com.davidbracewell.io.IOUtils;
 import com.davidbracewell.logging.Logger;
+import com.google.common.primitives.Bytes;
+import com.google.common.primitives.Chars;
+import scala.actors.threadpool.Arrays;
 
 import java.io.*;
 import java.lang.reflect.Array;
@@ -66,6 +68,7 @@ public final class PrimitiveArrayConverter {
    /**
     * The constant BYTE.
     */
+   @SuppressWarnings("unchecked")
    public static final Function<Object, byte[]> BYTE = new Function<Object, byte[]>() {
 
 
@@ -78,11 +81,11 @@ public final class PrimitiveArrayConverter {
          if (o instanceof byte[]) {
             return Cast.as(o);
          } else if (o instanceof Byte[]) {
-            return Primitives.toByteArray(Cast.<Byte[]>as(o));
+            return Bytes.toArray(Arrays.asList((Byte[]) o));
          } else if (o instanceof CharSequence) {
             return o.toString().getBytes();
          } else if (o.getClass().isArray() && o.getClass().getComponentType().isPrimitive()) {
-            return Primitives.toByteArray(new PrimitiveArrayList<>(o, Byte.class));
+            return Bytes.toArray(new PrimitiveArrayList<>(o, Byte.class));
          } else if (o.getClass().isArray()) {
             byte[] bytes = new byte[Array.getLength(o)];
             for (int i = 0; i < bytes.length; i++) {
@@ -123,7 +126,7 @@ public final class PrimitiveArrayConverter {
                }
             }
             if (!bytes.isEmpty()) {
-               return Primitives.toByteArray(bytes);
+               return Bytes.toArray(bytes);
             }
          }
 
@@ -135,6 +138,7 @@ public final class PrimitiveArrayConverter {
    /**
     * The constant CHAR.
     */
+   @SuppressWarnings("unchecked")
    public static final Function<Object, char[]> CHAR = new Function<Object, char[]>() {
 
 
@@ -147,11 +151,11 @@ public final class PrimitiveArrayConverter {
          if (o instanceof char[]) {
             return Cast.as(o);
          } else if (o instanceof Character[]) {
-            return Primitives.toCharArray(Cast.<Character[]>as(o));
+            return Chars.toArray(Arrays.asList(Cast.<Character[]>as(o)));
          } else if (o instanceof CharSequence) {
             return o.toString().toCharArray();
          } else if (o.getClass().isArray() && o.getClass().getComponentType().isPrimitive()) {
-            return Primitives.toCharArray(new PrimitiveArrayList<>(o, Character.class));
+            return Chars.toArray(new PrimitiveArrayList<>(o, Character.class));
          } else if (o.getClass().isArray()) {
             char[] chars = new char[Array.getLength(o)];
             for (int i = 0; i < chars.length; i++) {
@@ -181,7 +185,7 @@ public final class PrimitiveArrayConverter {
                }
             }
             if (!chars.isEmpty()) {
-               return Primitives.toCharArray(chars);
+               return Chars.toArray(chars);
             }
          }
 

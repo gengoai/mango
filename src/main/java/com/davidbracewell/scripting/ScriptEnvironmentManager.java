@@ -22,6 +22,7 @@
 package com.davidbracewell.scripting;
 
 import com.davidbracewell.string.StringUtils;
+import com.google.common.base.Preconditions;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
@@ -30,8 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.davidbracewell.Validations.validateArgument;
-
 /**
  * Manages scripting environments giving each language a singleton instance.
  *
@@ -39,109 +38,109 @@ import static com.davidbracewell.Validations.validateArgument;
  */
 public final class ScriptEnvironmentManager {
 
-  private final Map<String, ScriptEnvironment> environments;
-  private final ScriptEngineManager engineManager;
+   private final Map<String, ScriptEnvironment> environments;
+   private final ScriptEngineManager engineManager;
 
-  private static ScriptEnvironmentManager INSTANCE;
+   private static ScriptEnvironmentManager INSTANCE;
 
-  /**
-   * @return The instance of ScriptEnvironmentManager
-   */
-  public static synchronized ScriptEnvironmentManager getInstance() {
-    if (INSTANCE == null) {
-      INSTANCE = new ScriptEnvironmentManager();
-    }
-    return INSTANCE;
-  }
+   /**
+    * @return The instance of ScriptEnvironmentManager
+    */
+   public static synchronized ScriptEnvironmentManager getInstance() {
+      if (INSTANCE == null) {
+         INSTANCE = new ScriptEnvironmentManager();
+      }
+      return INSTANCE;
+   }
 
-  private ScriptEnvironmentManager() {
-    environments = new ConcurrentHashMap<>();
-    engineManager = new ScriptEngineManager();
-  }
+   private ScriptEnvironmentManager() {
+      environments = new ConcurrentHashMap<>();
+      engineManager = new ScriptEngineManager();
+   }
 
-  /**
-   * Gets the scripting environment given the environment name.
-   *
-   * @param environmentName the scripting environment name
-   * @return the scripting environment
-   */
-  public ScriptEnvironment getEnvironment(String environmentName) {
-    validateArgument(StringUtils.isNotNullOrBlank(environmentName),
-                     "Environment name cannot be null or empty"
-                    );
-    ScriptEngine engine = engineManager.getEngineByName(environmentName);
-    validateArgument(engine != null, environmentName + " is an unknown.");
-    environmentName = engine.getFactory().getEngineName();
-    if (!environments.containsKey(environmentName)) {
-      environments.put(environmentName, new ScriptEnvironment(engine));
-    }
-    return environments.get(environmentName);
-  }
+   /**
+    * Gets the scripting environment given the environment name.
+    *
+    * @param environmentName the scripting environment name
+    * @return the scripting environment
+    */
+   public ScriptEnvironment getEnvironment(String environmentName) {
+      Preconditions.checkArgument(StringUtils.isNotNullOrBlank(environmentName),
+                                  "Environment name cannot be null or empty"
+                                 );
+      ScriptEngine engine = engineManager.getEngineByName(environmentName);
+      Preconditions.checkArgument(engine != null, environmentName + " is an unknown.");
+      environmentName = engine.getFactory().getEngineName();
+      if (!environments.containsKey(environmentName)) {
+         environments.put(environmentName, new ScriptEnvironment(engine));
+      }
+      return environments.get(environmentName);
+   }
 
-  /**
-   * Gets a temporary scripting environment given the environment name.
-   *
-   * @param environmentName the scripting environment name
-   * @return the scripting environment
-   */
-  public static ScriptEnvironment getTemporaryEnvironment(String environmentName) {
-    validateArgument(StringUtils.isNotNullOrBlank(environmentName),
-                     "Environment name cannot be null or empty"
-                    );
-    ScriptEngine engine = ScriptEnvironmentManager.getInstance().engineManager.getEngineByName(environmentName);
-    validateArgument(engine != null, environmentName + " is an unknown.");
-    return new ScriptEnvironment(engine);
-  }
-
-
-  /**
-   * Gets the scripting environment given the script extension.
-   *
-   * @param extension the scripting environment extension
-   * @return the scripting environment
-   */
-  public ScriptEnvironment getEnvironmentForExtension(String extension) {
-    validateArgument(StringUtils.isNotNullOrBlank(extension), "Extension name cannot be null or empty");
-    return getEnvironment(getEnvironmentNameForExtension(extension));
-  }
-
-  /**
-   * Gets the scripting environment given the script extension.
-   *
-   * @param extension the scripting environment extension
-   * @return the scripting environment
-   */
-  public static ScriptEnvironment getTemporaryEnvironmentForExtension(String extension) {
-    validateArgument(StringUtils.isNotNullOrBlank(extension), "Extension name cannot be null or empty");
-    return getTemporaryEnvironment(ScriptEnvironmentManager.getInstance().getEnvironmentNameForExtension(extension));
-  }
+   /**
+    * Gets a temporary scripting environment given the environment name.
+    *
+    * @param environmentName the scripting environment name
+    * @return the scripting environment
+    */
+   public static ScriptEnvironment getTemporaryEnvironment(String environmentName) {
+      Preconditions.checkArgument(StringUtils.isNotNullOrBlank(environmentName),
+                                  "Environment name cannot be null or empty"
+                                 );
+      ScriptEngine engine = ScriptEnvironmentManager.getInstance().engineManager.getEngineByName(environmentName);
+      Preconditions.checkArgument(engine != null, environmentName + " is an unknown.");
+      return new ScriptEnvironment(engine);
+   }
 
 
-  /**
-   * Gets the scripting environment name given the script extension.
-   *
-   * @param extension the scripting environment extension
-   * @return the scripting environment name
-   */
-  public String getEnvironmentNameForExtension(String extension) {
-    validateArgument(StringUtils.isNotNullOrBlank(extension), "Extension name cannot be null or empty");
-    ScriptEngine engine = engineManager.getEngineByExtension(extension);
-    validateArgument(engine != null, extension + " is not a recognized scripting extension.");
-    return engine.getFactory().getLanguageName();
-  }
+   /**
+    * Gets the scripting environment given the script extension.
+    *
+    * @param extension the scripting environment extension
+    * @return the scripting environment
+    */
+   public ScriptEnvironment getEnvironmentForExtension(String extension) {
+      Preconditions.checkArgument(StringUtils.isNotNullOrBlank(extension), "Extension name cannot be null or empty");
+      return getEnvironment(getEnvironmentNameForExtension(extension));
+   }
 
-  /**
-   * <p> Returns an array whose elements are instances of all the ScriptEngineFactory classes found by the discovery
-   * mechanism. </p>
-   *
-   * @return an array whose elements are instances of all the ScriptEngineFactory classes found by the discovery
-   * mechanism.
-   * @see javax.script.ScriptEngineManager#getEngineFactories()
-   */
-  public List<ScriptEngineFactory> getAvailableEngines() {
-    ScriptEngineManager engineManager = new ScriptEngineManager();
-    return engineManager.getEngineFactories();
-  }
+   /**
+    * Gets the scripting environment given the script extension.
+    *
+    * @param extension the scripting environment extension
+    * @return the scripting environment
+    */
+   public static ScriptEnvironment getTemporaryEnvironmentForExtension(String extension) {
+      Preconditions.checkArgument(StringUtils.isNotNullOrBlank(extension), "Extension name cannot be null or empty");
+      return getTemporaryEnvironment(ScriptEnvironmentManager.getInstance().getEnvironmentNameForExtension(extension));
+   }
+
+
+   /**
+    * Gets the scripting environment name given the script extension.
+    *
+    * @param extension the scripting environment extension
+    * @return the scripting environment name
+    */
+   public String getEnvironmentNameForExtension(String extension) {
+      Preconditions.checkArgument(StringUtils.isNotNullOrBlank(extension), "Extension name cannot be null or empty");
+      ScriptEngine engine = engineManager.getEngineByExtension(extension);
+      Preconditions.checkArgument(engine != null, extension + " is not a recognized scripting extension.");
+      return engine.getFactory().getLanguageName();
+   }
+
+   /**
+    * <p> Returns an array whose elements are instances of all the ScriptEngineFactory classes found by the discovery
+    * mechanism. </p>
+    *
+    * @return an array whose elements are instances of all the ScriptEngineFactory classes found by the discovery
+    * mechanism.
+    * @see javax.script.ScriptEngineManager#getEngineFactories()
+    */
+   public List<ScriptEngineFactory> getAvailableEngines() {
+      ScriptEngineManager engineManager = new ScriptEngineManager();
+      return engineManager.getEngineFactories();
+   }
 
 }//END OF ScriptEnvironmentManager
 

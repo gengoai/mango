@@ -24,6 +24,7 @@ package com.davidbracewell.string;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.CSV;
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -32,8 +33,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-
-import static com.davidbracewell.Validations.validateArgument;
 
 /**
  * <p> Formats a series of items in Delimited Separated Value format. </p>
@@ -173,7 +172,7 @@ public class CSVFormatter implements Serializable {
     if (map == null) {
       return StringUtils.EMPTY;
     }
-    validateArgument(keyValueSeparator != ' ');
+    Preconditions.checkArgument(keyValueSeparator != ' ');
 
     StringBuilder rowString = new StringBuilder();
     for (Iterator<?> itr = map.entrySet().iterator(); itr.hasNext(); ) {

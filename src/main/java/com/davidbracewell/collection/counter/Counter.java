@@ -47,439 +47,428 @@ import java.util.stream.Collectors;
  */
 public interface Counter<T> extends Copyable<Counter<T>> {
 
-  /**
-   * Constructs a new counter made up of counts that are adjusted using a <code>Function</code>.
-   *
-   * @param function The function to use to adjust the counts
-   * @return The new counter with adjusted counts.
-   */
-  Counter<T> adjustValues(DoubleUnaryOperator function);
+   /**
+    * Constructs a new counter made up of counts that are adjusted using a <code>Function</code>.
+    *
+    * @param function The function to use to adjust the counts
+    * @return The new counter with adjusted counts.
+    */
+   Counter<T> adjustValues(DoubleUnaryOperator function);
 
-  /**
-   * Adjust values self.
-   *
-   * @param function the function
-   * @return the counter
-   */
-  Counter<T> adjustValuesSelf(DoubleUnaryOperator function);
+   /**
+    * Adjust values self.
+    *
+    * @param function the function
+    * @return the counter
+    */
+   Counter<T> adjustValuesSelf(DoubleUnaryOperator function);
 
-  /**
-   * As map.
-   *
-   * @return The counter as a <code>Map</code>
-   */
-  Map<T, Double> asMap();
+   /**
+    * As map.
+    *
+    * @return The counter as a <code>Map</code>
+    */
+   Map<T, Double> asMap();
 
-  /**
-   * Average double.
-   *
-   * @return The average count in the counter
-   */
-  default double average() {
-    return Math2.summaryStatistics(counts()).getAverage();
-  }
+   /**
+    * Average double.
+    *
+    * @return The average count in the counter
+    */
+   default double average() {
+      return Math2.summaryStatistics(counts()).getAverage();
+   }
 
-  /**
-   * Bottom n.
-   *
-   * @param n the n
-   * @return the counter
-   */
-  Counter<T> bottomN(int n);
+   /**
+    * Bottom n.
+    *
+    * @param n the n
+    * @return the counter
+    */
+   Counter<T> bottomN(int n);
 
-  /**
-   * Clears the counter
-   */
-  void clear();
+   /**
+    * Clears the counter
+    */
+   void clear();
 
-  /**
-   * Determines if the item is in the counter
-   *
-   * @param item item to check
-   * @return True if item is in the counter, false otherwise
-   */
-  boolean contains(T item);
+   /**
+    * Determines if the item is in the counter
+    *
+    * @param item item to check
+    * @return True if item is in the counter, false otherwise
+    */
+   boolean contains(T item);
 
-  /**
-   * Counts collection.
-   *
-   * @return The counts of the items in the counter.
-   */
-  Collection<Double> counts();
+   /**
+    * Counts collection.
+    *
+    * @return The counts of the items in the counter.
+    */
+   Collection<Double> counts();
 
-  /**
-   * Decrements the count of the item by one.
-   *
-   * @param item The item to increment
-   * @return the counter
-   */
-  default Counter<T> decrement(T item) {
-    return decrement(item, 1);
-  }
+   /**
+    * Decrements the count of the item by one.
+    *
+    * @param item The item to increment
+    * @return the counter
+    */
+   default Counter<T> decrement(T item) {
+      return decrement(item, 1);
+   }
 
-  /**
-   * Decrements the count of the item by a given amount
-   *
-   * @param item   The item to increment
-   * @param amount The amount to decrement
-   * @return the counter
-   */
-  default Counter<T> decrement(T item, double amount) {
-    return increment(item, -amount);
-  }
+   /**
+    * Decrements the count of the item by a given amount
+    *
+    * @param item   The item to increment
+    * @param amount The amount to decrement
+    * @return the counter
+    */
+   default Counter<T> decrement(T item, double amount) {
+      return increment(item, -amount);
+   }
 
-  /**
-   * Decrements all items in a given iterable by 1
-   *
-   * @param iterable The iterable of items to decrement
-   * @return the counter
-   */
-  default Counter<T> decrementAll(Iterable<? extends T> iterable) {
-    if (iterable != null) {
-      iterable.forEach(this::decrement);
-    }
-    return this;
-  }
-
-  /**
-   * Decrements all items in a given iterable by a given amount
-   *
-   * @param iterable The iterable of items to decrement
-   * @param amount   The amount to decrement
-   * @return the counter
-   */
-  default Counter<T> decrementAll(Iterable<? extends T> iterable, double amount) {
-    if (iterable != null) {
-      iterable.forEach(i -> decrement(i, amount));
-    }
-    return this;
-  }
-
-  /**
-   * Divides the values in the counter by the sum and sets the sum to 1.0
-   *
-   * @return the counter
-   */
-  Counter<T> divideBySum();
-
-  /**
-   * Entries set.
-   *
-   * @return the set
-   */
-  Set<Map.Entry<T, Double>> entries();
-
-  /**
-   * Filter by key.
-   *
-   * @param predicate the predicate
-   * @return the counter
-   */
-  Counter<T> filterByKey(Predicate<T> predicate);
-
-  /**
-   * Filter by value.
-   *
-   * @param doublePredicate the double predicate
-   * @return the counter
-   */
-  Counter<T> filterByValue(DoublePredicate doublePredicate);
-
-  /**
-   * Returns the count for the given item
-   *
-   * @param item The item we want the count for
-   * @return The count of the item or 0 if it is not in the counter.
-   */
-  double get(T item);
-
-  /**
-   * Increments the count of the item by one.
-   *
-   * @param item The item to increment
-   * @return the counter
-   */
-  default Counter<T> increment(T item) {
-    return increment(item, 1);
-  }
-
-  /**
-   * Increments the count of the item by a given amount
-   *
-   * @param item   The item to increment
-   * @param amount The amount to increment
-   * @return the counter
-   */
-  Counter<T> increment(T item, double amount);
-
-  /**
-   * Increments all items in a given iterable by 1
-   *
-   * @param iterable The iterable of items to increment
-   * @return the counter
-   */
-  default Counter<T> incrementAll(Iterable<? extends T> iterable) {
-    if (iterable != null) {
-      iterable.forEach(this::increment);
-    }
-    return this;
-  }
-
-  /**
-   * Increments all items in a given iterable by a given amount
-   *
-   * @param iterable The iterable of items to increment
-   * @param amount   The amount to increment
-   * @return the counter
-   */
-  default Counter<T> incrementAll(Iterable<? extends T> iterable, double amount) {
-    if (iterable != null) {
-      iterable.forEach(i -> increment(i, amount));
-    }
-    return this;
-  }
-
-  /**
-   * Is empty.
-   *
-   * @return True if the counter is empty
-   */
-  boolean isEmpty();
-
-  /**
-   * Items set.
-   *
-   * @return The items in the counter
-   */
-  Set<T> items();
-
-  /**
-   * Returns the items as a sorted list by their counts.
-   *
-   * @param ascending True if the counts are sorted in ascending order, False if in descending order.
-   * @return The sorted list of items.
-   */
-  default List<T> itemsByCount(boolean ascending) {
-    return Sorting.sortMapEntriesByValue(asMap(), ascending)
-                  .stream()
-                  .map(Map.Entry::getKey)
-                  .collect(Collectors.toList());
-  }
-
-  /**
-   * Calculates the magnitude (square root of sum of squares) of the items in the Counter.
-   *
-   * @return the magnitude
-   */
-  default double magnitude() {
-    return Math.sqrt(sumOfSquares());
-  }
-
-  /**
-   * Map keys counter.
-   *
-   * @param <R>      the type parameter
-   * @param function the function
-   * @return the counter
-   */
-  <R> Counter<R> mapKeys(Function<T, R> function);
-
-  /**
-   * Max t.
-   *
-   * @return The item with max count
-   */
-  default T max() {
-    Optional<Map.Entry<T, Double>> max = Math2.argMax(asMap().entrySet());
-    return max.map(Map.Entry::getKey).orElse(null);
-  }
-
-  /**
-   * Maximum count.
-   *
-   * @return The maximum count in the counter
-   */
-  default double maximumCount() {
-    if (isEmpty()) {
-      return 0d;
-    }
-    return Collections.max(counts());
-  }
-
-  /**
-   * Merges the counts in one counter with this one.
-   *
-   * @param other The other counter to merge.
-   * @return the counter
-   */
-  Counter<T> merge(Counter<? extends T> other);
-
-  /**
-   * Merges the counts in a map with this counter.
-   *
-   * @param other The other counter to merge.
-   * @return the counter
-   */
-  Counter<T> merge(Map<? extends T, ? extends Number> other);
-
-  /**
-   * Min t.
-   *
-   * @return The item with min count
-   */
-  default T min() {
-    Optional<Map.Entry<T, Double>> min = Math2.argMin(asMap().entrySet());
-    return min.map(Map.Entry::getKey).orElse(null);
-  }
-
-  /**
-   * Minimum count.
-   *
-   * @return The minimum count in the counter
-   */
-  default double minimumCount() {
-    if (isEmpty()) {
-      return 0d;
-    }
-    return Collections.min(counts());
-  }
-
-  /**
-   * Removes an item from the counter
-   *
-   * @param item The item to remove
-   * @return the count of the removed item
-   */
-  double remove(T item);
-
-  /**
-   * Removes all the given items from the counter
-   *
-   * @param items The items to remove
-   * @return the counter
-   */
-  default Counter<T> removeAll(Iterable<T> items) {
-    if (items != null) {
-      items.forEach(this::remove);
-    }
-    return this;
-  }
-
-  /**
-   * removes all items whose count is zero
-   *
-   * @return the counter
-   */
-  Counter<T> removeZeroCounts();
-
-  /**
-   * Sample an item based on its count.
-   *
-   * @return the sampled item
-   */
-  default T sample() {
-    Random rnd = new Random();
-    double i = rnd.nextDouble() * sum();
-    double sum = 0;
-    T last = null;
-    for (T item : items()) {
-      sum += get(item);
-      if (i <= sum) {
-        return item;
+   /**
+    * Decrements all items in a given iterable by 1
+    *
+    * @param iterable The iterable of items to decrement
+    * @return the counter
+    */
+   default Counter<T> decrementAll(Iterable<? extends T> iterable) {
+      if (iterable != null) {
+         iterable.forEach(this::decrement);
       }
-      last = item;
-    }
-    return last;
-  }
+      return this;
+   }
 
-  /**
-   * Sets the value of an item in the counter
-   *
-   * @param item  The item
-   * @param count The count
-   * @return the counter
-   */
-  Counter<T> set(T item, double count);
-
-  /**
-   * Size int.
-   *
-   * @return The number of items in the counter
-   */
-  int size();
-
-  /**
-   * Standard deviation.
-   *
-   * @return The standard deviation of the counts in the counter
-   */
-  default double standardDeviation() {
-    return Math2.summaryStatistics(counts()).getSampleStandardDeviation();
-  }
-
-  /**
-   * Sum double.
-   *
-   * @return The sum of the counts in the counter
-   */
-  default double sum() {
-    return Math2.sum(counts());
-  }
-
-  /**
-   * Sum of squares.
-   *
-   * @return The sum of squares for the values
-   */
-  default double sumOfSquares() {
-    return Math2.summaryStatistics(counts()).getSumOfSquares();
-  }
-
-  /**
-   * Top n.
-   *
-   * @param n the n
-   * @return the counter
-   */
-  Counter<T> topN(int n);
-
-  /**
-   * Write csv.
-   *
-   * @param output the output
-   * @throws IOException the io exception
-   */
-  default void writeCSV(@NonNull Resource output) throws IOException {
-    write(StructuredFormat.CSV, output);
-  }
-
-  /**
-   * Write.
-   *
-   * @param structuredFormat the structured format
-   * @param output           the output
-   * @throws IOException the io exception
-   */
-  default void write(@NonNull StructuredFormat structuredFormat, @NonNull Resource output) throws IOException {
-    write(structuredFormat, output, item -> Convert.convert(item, String.class));
-  }
-
-  /**
-   * Write.
-   *
-   * @param structuredFormat the structured format
-   * @param output           the output
-   * @param keySerializer    the key serializer
-   * @throws IOException the io exception
-   */
-  default void write(@NonNull StructuredFormat structuredFormat, @NonNull Resource output, @NonNull Function<? super T, String> keySerializer) throws IOException {
-    try (StructuredWriter writer = structuredFormat.createWriter(output)) {
-      writer.beginDocument();
-      for (Map.Entry<T, Double> entry : entries()) {
-        writer.writeKeyValue(keySerializer.apply(entry.getKey()), entry.getValue());
+   /**
+    * Decrements all items in a given iterable by a given amount
+    *
+    * @param iterable The iterable of items to decrement
+    * @param amount   The amount to decrement
+    * @return the counter
+    */
+   default Counter<T> decrementAll(Iterable<? extends T> iterable, double amount) {
+      if (iterable != null) {
+         iterable.forEach(i -> decrement(i, amount));
       }
-      writer.endDocument();
-    }
-  }
+      return this;
+   }
+
+   /**
+    * Divides the values in the counter by the sum and sets the sum to 1.0
+    *
+    * @return the counter
+    */
+   Counter<T> divideBySum();
+
+   /**
+    * Entries set.
+    *
+    * @return the set
+    */
+   Set<Map.Entry<T, Double>> entries();
+
+   /**
+    * Filter by key.
+    *
+    * @param predicate the predicate
+    * @return the counter
+    */
+   Counter<T> filterByKey(Predicate<T> predicate);
+
+   /**
+    * Filter by value.
+    *
+    * @param doublePredicate the double predicate
+    * @return the counter
+    */
+   Counter<T> filterByValue(DoublePredicate doublePredicate);
+
+   /**
+    * Returns the count for the given item
+    *
+    * @param item The item we want the count for
+    * @return The count of the item or 0 if it is not in the counter.
+    */
+   double get(T item);
+
+   /**
+    * Increments the count of the item by one.
+    *
+    * @param item The item to increment
+    * @return the counter
+    */
+   default Counter<T> increment(T item) {
+      return increment(item, 1);
+   }
+
+   /**
+    * Increments the count of the item by a given amount
+    *
+    * @param item   The item to increment
+    * @param amount The amount to increment
+    * @return the counter
+    */
+   Counter<T> increment(T item, double amount);
+
+   /**
+    * Increments all items in a given iterable by 1
+    *
+    * @param iterable The iterable of items to increment
+    * @return the counter
+    */
+   default Counter<T> incrementAll(Iterable<? extends T> iterable) {
+      if (iterable != null) {
+         iterable.forEach(this::increment);
+      }
+      return this;
+   }
+
+   /**
+    * Increments all items in a given iterable by a given amount
+    *
+    * @param iterable The iterable of items to increment
+    * @param amount   The amount to increment
+    * @return the counter
+    */
+   default Counter<T> incrementAll(Iterable<? extends T> iterable, double amount) {
+      if (iterable != null) {
+         iterable.forEach(i -> increment(i, amount));
+      }
+      return this;
+   }
+
+   /**
+    * Is empty.
+    *
+    * @return True if the counter is empty
+    */
+   boolean isEmpty();
+
+   /**
+    * Items set.
+    *
+    * @return The items in the counter
+    */
+   Set<T> items();
+
+   /**
+    * Returns the items as a sorted list by their counts.
+    *
+    * @param ascending True if the counts are sorted in ascending order, False if in descending order.
+    * @return The sorted list of items.
+    */
+   default List<T> itemsByCount(boolean ascending) {
+      return Sorting.sortMapEntriesByValue(asMap(), ascending)
+                    .stream()
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.toList());
+   }
+
+   /**
+    * Calculates the magnitude (square root of sum of squares) of the items in the Counter.
+    *
+    * @return the magnitude
+    */
+   default double magnitude() {
+      return Math.sqrt(Math2.summaryStatistics(counts()).getSumOfSquares());
+   }
+
+   /**
+    * Map keys counter.
+    *
+    * @param <R>      the type parameter
+    * @param function the function
+    * @return the counter
+    */
+   <R> Counter<R> mapKeys(Function<T, R> function);
+
+   /**
+    * Max t.
+    *
+    * @return The item with max count
+    */
+   default T max() {
+      return Collections.max(asMap().entrySet(), Map.Entry.comparingByValue()).getKey();
+   }
+
+   /**
+    * Maximum count.
+    *
+    * @return The maximum count in the counter
+    */
+   default double maximumCount() {
+      if (isEmpty()) {
+         return 0d;
+      }
+      return Collections.max(counts());
+   }
+
+   /**
+    * Merges the counts in one counter with this one.
+    *
+    * @param other The other counter to merge.
+    * @return the counter
+    */
+   Counter<T> merge(Counter<? extends T> other);
+
+   /**
+    * Merges the counts in a map with this counter.
+    *
+    * @param other The other counter to merge.
+    * @return the counter
+    */
+   Counter<T> merge(Map<? extends T, ? extends Number> other);
+
+   /**
+    * Min t.
+    *
+    * @return The item with min count
+    */
+   default T min() {
+      return Collections.min(asMap().entrySet(), Map.Entry.comparingByValue()).getKey();
+   }
+
+   /**
+    * Minimum count.
+    *
+    * @return The minimum count in the counter
+    */
+   default double minimumCount() {
+      if (isEmpty()) {
+         return 0d;
+      }
+      return Collections.min(counts());
+   }
+
+   /**
+    * Removes an item from the counter
+    *
+    * @param item The item to remove
+    * @return the count of the removed item
+    */
+   double remove(T item);
+
+   /**
+    * Removes all the given items from the counter
+    *
+    * @param items The items to remove
+    * @return the counter
+    */
+   default Counter<T> removeAll(Iterable<T> items) {
+      if (items != null) {
+         items.forEach(this::remove);
+      }
+      return this;
+   }
+
+   /**
+    * removes all items whose count is zero
+    *
+    * @return the counter
+    */
+   Counter<T> removeZeroCounts();
+
+   /**
+    * Sample an item based on its count.
+    *
+    * @return the sampled item
+    */
+   default T sample() {
+      Random rnd = new Random();
+      double i = rnd.nextDouble() * sum();
+      double sum = 0;
+      T last = null;
+      for (T item : items()) {
+         sum += get(item);
+         if (i <= sum) {
+            return item;
+         }
+         last = item;
+      }
+      return last;
+   }
+
+   /**
+    * Sets the value of an item in the counter
+    *
+    * @param item  The item
+    * @param count The count
+    * @return the counter
+    */
+   Counter<T> set(T item, double count);
+
+   /**
+    * Size int.
+    *
+    * @return The number of items in the counter
+    */
+   int size();
+
+   /**
+    * Standard deviation.
+    *
+    * @return The standard deviation of the counts in the counter
+    */
+   default double standardDeviation() {
+      return Math2.summaryStatistics(counts()).getSampleStandardDeviation();
+   }
+
+   /**
+    * Sum double.
+    *
+    * @return The sum of the counts in the counter
+    */
+   default double sum() {
+      return Math2.sum(counts());
+   }
+
+   /**
+    * Top n.
+    *
+    * @param n the n
+    * @return the counter
+    */
+   Counter<T> topN(int n);
+
+   /**
+    * Write csv.
+    *
+    * @param output the output
+    * @throws IOException the io exception
+    */
+   default void writeCSV(@NonNull Resource output) throws IOException {
+      write(StructuredFormat.CSV, output);
+   }
+
+   /**
+    * Write.
+    *
+    * @param structuredFormat the structured format
+    * @param output           the output
+    * @throws IOException the io exception
+    */
+   default void write(@NonNull StructuredFormat structuredFormat, @NonNull Resource output) throws IOException {
+      write(structuredFormat, output, item -> Convert.convert(item, String.class));
+   }
+
+   /**
+    * Write.
+    *
+    * @param structuredFormat the structured format
+    * @param output           the output
+    * @param keySerializer    the key serializer
+    * @throws IOException the io exception
+    */
+   default void write(@NonNull StructuredFormat structuredFormat, @NonNull Resource output, @NonNull Function<? super T, String> keySerializer) throws IOException {
+      try (StructuredWriter writer = structuredFormat.createWriter(output)) {
+         writer.beginDocument();
+         for (Map.Entry<T, Double> entry : entries()) {
+            writer.writeKeyValue(keySerializer.apply(entry.getKey()), entry.getValue());
+         }
+         writer.endDocument();
+      }
+   }
 
 }//END OF Counter

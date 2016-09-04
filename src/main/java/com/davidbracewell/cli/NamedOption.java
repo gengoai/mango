@@ -37,8 +37,8 @@ import java.lang.reflect.ParameterizedType;
 import java.util.Collection;
 import java.util.Map;
 
-import static com.davidbracewell.Validations.validateArgument;
-import static com.davidbracewell.Validations.validateNotNull;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * <p>
@@ -82,18 +82,18 @@ public final class NamedOption {
     * @param field the field which contains an {@link Option} annotation
     */
    public NamedOption(@NonNull Field field) {
-      Option option = validateNotNull(field.getAnnotationsByType(Option.class))[0];
+      Option option = checkNotNull(field.getAnnotationsByType(Option.class))[0];
       this.field = field;
 
       this.name = StringUtils.isNullOrBlank(option.name()) ? field.getName() : option.name();
 
-      validateArgument(!StringUtils.isNullOrBlank(this.name) && !CharPredicate.WHITESPACE.matchesAnyOf(this.name),
-                       "Option name must have at least one character and must not have a space");
+      checkArgument(!StringUtils.isNullOrBlank(this.name) && !CharPredicate.WHITESPACE.matchesAnyOf(this.name),
+                    "Option name must have at least one character and must not have a space");
 
       this.type = field.getType();
 
-      validateArgument(!StringUtils.isNullOrBlank(option.description()),
-                       "Description must not be blank");
+      checkArgument(!StringUtils.isNullOrBlank(option.description()),
+                    "Description must not be blank");
 
       this.description = option.description();
 
@@ -110,18 +110,18 @@ public final class NamedOption {
    /**
     * Instantiates a new Named option.
     *
-    * @param name the name
-    * @param type the type
-    * @param description the description
+    * @param name         the name
+    * @param type         the type
+    * @param description  the description
     * @param defaultValue the default value
-    * @param aliases the aliases
-    * @param required the required
+    * @param aliases      the aliases
+    * @param required     the required
     */
    @Builder
    protected NamedOption(@NonNull String name, @NonNull Class<?> type, @NonNull String description, Object defaultValue, @Singular Collection<String> aliases, boolean required) {
-      validateArgument(!StringUtils.isNullOrBlank(name) && !CharPredicate.WHITESPACE.matchesAnyOf(name),
-                       "Option name must have at least one character and must not have a space");
-      validateArgument(!StringUtils.isNullOrBlank(description), "Description must not be blank");
+      checkArgument(!StringUtils.isNullOrBlank(name) && !CharPredicate.WHITESPACE.matchesAnyOf(name),
+                    "Option name must have at least one character and must not have a space");
+      checkArgument(!StringUtils.isNullOrBlank(description), "Description must not be blank");
 
       this.name = name;
       this.type = type;
@@ -174,7 +174,7 @@ public final class NamedOption {
    /**
     * Gets the value of the option.
     *
-    * @param <T>  the type parameter
+    * @param <T> the type parameter
     * @return the value op the option
     */
    public <T> T getValue() {

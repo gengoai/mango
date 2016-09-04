@@ -30,7 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-import static com.davidbracewell.Validations.validateArgument;
+import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * <p> A fixed size list backed by a primitive array. The items in the array are converted through calling the {@link
@@ -58,8 +58,8 @@ public class PrimitiveArrayList<E> extends AbstractList<E> implements Serializab
    *                                  component type is not a primitive
    */
   public PrimitiveArrayList(@NonNull Object array, @NonNull Class<E> objectType) {
-    validateArgument(array.getClass().isArray(), "The object must be an array of primitives.");
-    validateArgument(array.getClass().getComponentType().isPrimitive(), "The object must be an array of primitives.");
+    checkArgument(array.getClass().isArray(), "The object must be an array of primitives.");
+    checkArgument(array.getClass().getComponentType().isPrimitive(), "The object must be an array of primitives.");
     this.array = array;
     this.arraySize = Array.getLength(array);
     this.objectType = objectType;

@@ -21,27 +21,44 @@
 
 package com.davidbracewell;
 
+import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Collection;
+
+import static com.davidbracewell.collection.list.Lists.list;
 import static org.junit.Assert.*;
 
 /**
  * @author David B. Bracewell
  */
-public class EncryptionUtilsTest {
+public class InternerTest {
 
-  @Test
-  public void testEncrypt() throws Exception {
-    String content = "all things come to an end.";
-    String key = "ABCDEF1234567890ABCDEF";
-    String encryptedContent = EncryptionMethod.DES.encrypt(content, key);
-    assertEquals(content, new String(EncryptionMethod.DES.decrypt(encryptedContent, key)));
-    encryptedContent = EncryptionMethod.AES.encrypt(content, key);
-    assertEquals(content, new String(EncryptionMethod.AES.decrypt(encryptedContent, key)));
-    encryptedContent = EncryptionMethod.TRIPLE_DES.encrypt(content, key);
-    assertEquals(content, new String(EncryptionMethod.TRIPLE_DES.decrypt(encryptedContent, key)));
-    encryptedContent = EncryptionMethod.BLOWFISH.encrypt(content, key);
-    assertEquals(content, new String(EncryptionMethod.BLOWFISH.decrypt(encryptedContent, key)));
-  }
+   Interner<String> interner = new Interner<>();
+   String A;
+   String B;
+   String C;
+
+   @Before
+   public void setUp() throws Exception {
+      A = interner.intern("A");
+      B = interner.intern("B");
+      C = interner.intern("C");
+   }
+
+   @Test
+   public void intern() throws Exception {
+      assertTrue(A == interner.intern("A"));
+      assertTrue(B == interner.intern("B"));
+      assertTrue(C == interner.intern("C"));
+      assertNotNull(interner.intern("D"));
+   }
+
+   @Test
+   public void internAll() throws Exception {
+      Collection<String> result = interner.internAll(list("A","B","C","D"));
+      assertEquals(4, result.size());
+   }
+
 
 }

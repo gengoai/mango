@@ -1,10 +1,9 @@
 #! /usr/bin/env python
 
-from optparse import OptionParser
-import sys
-import re
 import codecs
-import os
+import re
+import sys
+from optparse import OptionParser
 
 parser = OptionParser()
 parser.add_option("-p", "--package", dest="package_name", help="The package name the class will be in")
@@ -95,14 +94,20 @@ import java.util.stream.Collectors;
  * Auto generated using enumGen.py
  * The type {{CLASS_NAME}}.
  */
-public final class {{CLASS_NAME}} extends HierarchicalEnumValue implements Comparable<{{CLASS_NAME}}> {
+public final class {{CLASS_NAME}} extends HierarchicalEnumValue<{{CLASS_NAME}}> implements Comparable<{{CLASS_NAME}}> {
   private static final long serialVersionUID = 1L;
   private static final Set<{{CLASS_NAME}}> values = Sets.newConcurrentHashSet();
 
+  public static final {{CLASS_NAME}} ROOT = RanksEnum.create("{{CLASS_NAME}}_ROOT");
 
   private {{CLASS_NAME}}(String name, {{CLASS_NAME}} parent) {
     super(name, parent);
   }
+
+   @Override
+   protected {{CLASS_NAME}} getSingleRoot() {
+      return ROOT;
+   }
 
   /**
    * <p>Creates a new or retrieves an existing instance of {{CLASS_NAME}} with the given name.</p>
@@ -123,12 +128,7 @@ public final class {{CLASS_NAME}} extends HierarchicalEnumValue implements Compa
    */
   public static {{CLASS_NAME}} create(@NonNull String name, {{CLASS_NAME}} parent) {
     {{CLASS_NAME}} toReturn = DynamicEnum.register(new {{CLASS_NAME}}(name, parent));
-    if (!toReturn.getParent().isPresent() && parent != null) {
-      toReturn.parent = parent;
-    } else if( toReturn.getParent().map(p -> p.equals(parent)).orElse(false) ) {
-       throw new IllegalArgumentException("Attempting to change parent of " + toReturn.name() + " from " +
-       toReturn.getParent().orElse("") + " to " + parent);
-    }
+    toReturn.setParentIfAbsent(parent);
     values.add(toReturn);
     return toReturn;
   }
@@ -153,33 +153,14 @@ public final class {{CLASS_NAME}} extends HierarchicalEnumValue implements Compa
     return DynamicEnum.valueOf({{CLASS_NAME}}.class, name);
   }
 
-  @Override
-  @SuppressWarnings("unchecked")
-  public List<{{CLASS_NAME}}> getChildren() {
-    return values().stream().filter(v -> this != v && v.getParent().filter(p -> p == this).isPresent()).collect(Collectors.toList());
-  }
+   @Override
+   public List<{{CLASS_NAME}}> getChildren() {
+      return values().stream().filter(v -> this != v && v.getParent() == this).collect(Collectors.toList());
+   }
 
   @Override
   public int compareTo(@NonNull {{CLASS_NAME}} o) {
     return canonicalName().compareTo(o.canonicalName());
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public Optional<{{CLASS_NAME}}> getParent() {
-    return super.getParent();
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  protected {{CLASS_NAME}} getParentFromConfig() {
-    return super.getParentFromConfig();
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public List<{{CLASS_NAME}}> getAncestors() {
-    return super.getAncestors();
   }
 
 }// END OF {{CLASS_NAME}}

@@ -1,13 +1,12 @@
 package com.davidbracewell.stream.accumulator.v2;
 
 import com.davidbracewell.conversion.Cast;
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import org.apache.spark.util.AccumulatorV2;
 import scala.runtime.AbstractFunction0;
 
 import java.util.Optional;
-
-import static com.davidbracewell.Validations.validateArgument;
 
 /**
  * @author David B. Bracewell
@@ -32,7 +31,7 @@ public class BaseSparkAccumulator<IN, OUT> implements MAccumulator<IN, OUT> {
 
   @Override
   public void merge(@NonNull MAccumulator<IN, OUT> other) {
-    validateArgument(other instanceof BaseSparkAccumulator);
+    Preconditions.checkArgument(other instanceof BaseSparkAccumulator);
     accumulatorV2.merge(Cast.as(other));
   }
 

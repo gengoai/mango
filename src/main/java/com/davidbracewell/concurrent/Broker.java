@@ -22,6 +22,7 @@
 package com.davidbracewell.concurrent;
 
 import com.davidbracewell.logging.Loggable;
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -33,8 +34,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static com.davidbracewell.Validations.validateArgument;
 
 /**
  * <p>An implementation of the Producer Consumer problem in which one or more producers are generating data for one or
@@ -241,7 +240,7 @@ public class Broker<V> implements Serializable, Loggable {
      * @return the builder
      */
     public Builder<V> bufferSize(int size) {
-      validateArgument(size > 0);
+      Preconditions.checkArgument(size > 0);
       queue = new ArrayBlockingQueue<>(size);
       return this;
     }
@@ -253,8 +252,8 @@ public class Broker<V> implements Serializable, Loggable {
      * @return the producer consumer
      */
     public Broker<V> build() {
-      validateArgument(producers.size() > 0);
-      validateArgument(consumers.size() > 0);
+      Preconditions.checkArgument(producers.size() > 0);
+      Preconditions.checkArgument(consumers.size() > 0);
       if (queue == null) {
         queue = new ArrayBlockingQueue<>(2 * (producers.size() + consumers.size()));
       }

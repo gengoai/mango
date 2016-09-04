@@ -24,11 +24,7 @@ package com.davidbracewell.collection.counter;
 import lombok.NonNull;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
@@ -317,14 +313,6 @@ public abstract class ForwardingCounter<TYPE> implements Counter<TYPE>, Serializ
       return 0d;
     }
     return delegate().sum();
-  }
-
-  @Override
-  public double sumOfSquares() {
-    if (delegate() == null) {
-      return 0d;
-    }
-    return delegate().sumOfSquares();
   }
 
   @Override

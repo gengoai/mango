@@ -61,7 +61,7 @@ public class CounterTest {
     Counter<String> counterOne = Counters.synchronizedCounter(new HashMapCounter<>(Arrays.asList("a", "b", "c", "a", "b", "a")));
     assertEquals((Double) counterOne.average(), (Double) 2.0d);
     counterOne.increment("d", 2.0);
-    assertEquals((Double) counterOne.average(), (Double) 2.0d);
+    assertEquals(2.0, counterOne.average(), 0.01);
     counterOne.increment("c", -1.0);
     counterOne.increment("d", -2.0);
     assertEquals((Double) counterOne.average(), (Double) 2.5d);

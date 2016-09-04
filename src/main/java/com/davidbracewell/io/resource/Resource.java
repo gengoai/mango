@@ -29,6 +29,7 @@ import com.davidbracewell.io.FileUtils;
 import com.davidbracewell.io.serialization.JavaSerializer;
 import com.davidbracewell.stream.LocalStream;
 import com.davidbracewell.stream.MStream;
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.*;
@@ -41,8 +42,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
-
-import static com.davidbracewell.Validations.validateState;
 
 /**
  * <p> Information about a resource, which abstracts away the specific details on working with the resource. Gives the
@@ -66,7 +65,7 @@ public interface Resource {
    * @throws IOException the io exception
    */
   default Resource append(String content) throws IOException {
-    validateState(canWrite(), "This is resource cannot be written to.");
+    Preconditions.checkState(canWrite(), "This is resource cannot be written to.");
     if (content == null) {
       return this;
     }
@@ -325,7 +324,7 @@ public interface Resource {
    * @throws IOException the io exception
    */
   default void forEach(@NonNull SerializableConsumer<String> consumer) throws IOException {
-    validateState(canRead(), "This is resource cannot be read from.");
+    Preconditions.checkState(canRead(), "This is resource cannot be read from.");
     try (MStream<String> stream = lines()) {
       stream.forEach(consumer);
     } catch (IOException ioe) {
@@ -362,7 +361,7 @@ public interface Resource {
    * @throws IOException the io exception
    */
   default Writer writer() throws IOException {
-    validateState(canWrite(), "This is resource cannot be written to.");
+    Preconditions.checkState(canWrite(), "This is resource cannot be written to.");
     return new OutputStreamWriter(outputStream(), getCharset());
   }
 
@@ -388,7 +387,7 @@ public interface Resource {
    * @throws IOException the io exception
    */
   default byte[] readBytes() throws IOException {
-    validateState(canRead(), "This is resource cannot be read from.");
+    Preconditions.checkState(canRead(), "This is resource cannot be read from.");
     try (ByteArrayOutputStream byteWriter = new ByteArrayOutputStream();
          BufferedInputStream byteReader = new BufferedInputStream(inputStream())) {
       int bytesRead;
@@ -407,7 +406,7 @@ public interface Resource {
    * @throws IOException the io exception
    */
   default List<String> readLines() throws IOException {
-    validateState(canRead(), "This is resource cannot be read from.");
+    Preconditions.checkState(canRead(), "This is resource cannot be read from.");
     try (MStream<String> stream = lines()) {
       return stream.collect();
     } catch (IOException e) {
@@ -425,7 +424,7 @@ public interface Resource {
    * @throws Exception the exception
    */
   default <T> T readObject() throws Exception {
-    validateState(canRead(), "This is resource cannot be read from.");
+    Preconditions.checkState(canRead(), "This is resource cannot be read from.");
     return Cast.as(new JavaSerializer().deserialize(this, Object.class));
   }
 
@@ -436,7 +435,7 @@ public interface Resource {
    * @throws IOException the io exception
    */
   default String readToString() throws IOException {
-    validateState(canRead(), "This is resource cannot be read from.");
+    Preconditions.checkState(canRead(), "This is resource cannot be read from.");
     return new String(readBytes(), getCharset());
   }
 
@@ -447,7 +446,7 @@ public interface Resource {
    * @throws IOException the io exception
    */
   default Reader reader() throws IOException {
-    validateState(canRead(), "This is resource cannot be read from.");
+    Preconditions.checkState(canRead(), "This is resource cannot be read from.");
     CharsetDetectingReader reader = new CharsetDetectingReader(inputStream(), getCharset());
     return reader;
   }
@@ -475,7 +474,7 @@ public interface Resource {
    * @throws IOException the io exception
    */
   default Resource write(byte[] content) throws IOException {
-    validateState(canWrite(), "This is resource cannot be written to.");
+    Preconditions.checkState(canWrite(), "This is resource cannot be written to.");
     if (content != null) {
       try (OutputStream os = outputStream()) {
         os.write(content);
@@ -492,7 +491,7 @@ public interface Resource {
    * @throws IOException the io exception
    */
   default Resource write(String content) throws IOException {
-    validateState(canWrite(), "This is resource cannot be written to.");
+    Preconditions.checkState(canWrite(), "This is resource cannot be written to.");
     if (content != null) {
       write(content.getBytes(getCharset()));
     }
@@ -507,7 +506,7 @@ public interface Resource {
    * @throws Exception the exception
    */
   default Resource writeObject(Object object) throws Exception {
-    validateState(canWrite(), "This is resource cannot be written to.");
+    Preconditions.checkState(canWrite(), "This is resource cannot be written to.");
     new JavaSerializer().serialize(object, this);
     return this;
   }

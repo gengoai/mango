@@ -24,13 +24,12 @@ package com.davidbracewell.io.structured.json;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.ElementType;
 import com.davidbracewell.io.structured.StructuredWriter;
+import com.google.common.base.Preconditions;
 import com.google.gson.stream.JsonWriter;
 import lombok.NonNull;
 
 import java.io.IOException;
 import java.util.Stack;
-
-import static com.davidbracewell.Validations.validateState;
 
 /**
  * The type JSON writer.
@@ -193,9 +192,9 @@ public class JSONWriter extends StructuredWriter {
   @Override
   public StructuredWriter writeValue(Object value) throws IOException {
     if (!inArray()) {
-      validateState(writeStack.peek() == ElementType.NAME,
-                    "Expecting an array or a name, but found " + writeStack.peek()
-                   );
+      Preconditions.checkState(writeStack.peek() == ElementType.NAME,
+                               "Expecting an array or a name, but found " + writeStack.peek()
+                              );
     }
     super.writeValue(value);
     popIf(ElementType.NAME);

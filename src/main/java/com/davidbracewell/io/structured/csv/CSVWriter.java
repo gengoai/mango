@@ -31,6 +31,7 @@ import com.davidbracewell.io.structured.StructuredSerializable;
 import com.davidbracewell.io.structured.StructuredWriter;
 import com.davidbracewell.string.CSVFormatter;
 import com.davidbracewell.string.StringUtils;
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.BufferedWriter;
@@ -39,8 +40,6 @@ import java.io.Writer;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static com.davidbracewell.Validations.validateState;
 
 /**
  * <p> Wraps writing collections and maps in DSV format to resources. </p>
@@ -179,7 +178,7 @@ public class CSVWriter extends StructuredWriter {
 
   @Override
   public StructuredWriter beginDocument(boolean isArray) throws IOException {
-    validateState(!endOfDocument, "endDocument() has been called");
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
     return this;
   }
 
@@ -193,19 +192,19 @@ public class CSVWriter extends StructuredWriter {
 
   @Override
   public StructuredWriter beginObject(String name) throws IOException {
-    validateState(!endOfDocument, "endDocument() has been called");
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
     return this;
   }
 
   @Override
   public StructuredWriter beginObject() throws IOException {
-    validateState(!endOfDocument, "endDocument() has been called");
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
     return this;
   }
 
   @Override
   public StructuredWriter endObject() throws IOException {
-    validateState(!endOfDocument, "endDocument() has been called");
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
     write(row);
     row.clear();
     return this;
@@ -213,19 +212,19 @@ public class CSVWriter extends StructuredWriter {
 
   @Override
   public StructuredWriter beginArray(String name) throws IOException {
-    validateState(!endOfDocument, "endDocument() has been called");
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
     return this;
   }
 
   @Override
   public StructuredWriter beginArray() throws IOException {
-    validateState(!endOfDocument, "endDocument() has been called");
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
     return this;
   }
 
   @Override
   public StructuredWriter endArray() throws IOException {
-    validateState(!endOfDocument, "endDocument() has been called");
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
     write(row);
     row.clear();
     return this;
@@ -243,7 +242,7 @@ public class CSVWriter extends StructuredWriter {
 
   @Override
   public StructuredWriter writeValue(Object value) throws IOException {
-    validateState(!endOfDocument, "endDocument() has been called");
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
     if (value instanceof StructuredSerializable) {
       Cast.<StructuredSerializable>as(value).write(this);
     } else {
@@ -254,7 +253,7 @@ public class CSVWriter extends StructuredWriter {
 
   @Override
   protected StructuredWriter writeObject(@NonNull Object value) throws IOException {
-    validateState(!endOfDocument, "endDocument() has been called");
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
     if (value instanceof StructuredSerializable) {
       Cast.<StructuredSerializable>as(value).write(this);
     } else {
@@ -265,7 +264,7 @@ public class CSVWriter extends StructuredWriter {
 
   @Override
   protected StructuredWriter writeMap(@NonNull Map<?, ?> map) throws IOException {
-    validateState(!endOfDocument, "endDocument() has been called");
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
     map.entrySet().forEach(entry ->
                              row.put(Convert.convert(entry.getKey(), String.class),
                                      Convert.convert(entry.getValue(), String.class)
@@ -276,7 +275,7 @@ public class CSVWriter extends StructuredWriter {
 
   @Override
   protected StructuredWriter writeCollection(@NonNull Collection<?> collection) throws IOException {
-    validateState(!endOfDocument, "endDocument() has been called");
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
     collection.forEach(value ->
                          row.put("___UNNAMED___[" + row.size() + "]", value)
                       );
@@ -285,7 +284,7 @@ public class CSVWriter extends StructuredWriter {
 
   @Override
   protected StructuredWriter writeArray(@NonNull Object[] array) throws IOException {
-    validateState(!endOfDocument, "endDocument() has been called");
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
     for (Object value : array) {
       row.put("___UNNAMED___[" + row.size() + "]", value);
     }
@@ -294,7 +293,7 @@ public class CSVWriter extends StructuredWriter {
 
   @Override
   public StructuredWriter writeKeyValue(String key, Object value) throws IOException {
-    validateState(!endOfDocument, "endDocument() has been called");
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
     if (value instanceof StructuredSerializable) {
       Cast.<StructuredSerializable>as(value).write(this);
     } else {
@@ -305,28 +304,28 @@ public class CSVWriter extends StructuredWriter {
 
   @Override
   protected StructuredWriter writeNull() throws IOException {
-    validateState(!endOfDocument, "endDocument() has been called");
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
     row.put("___UNNAMED___[" + row.size() + "]", null);
     return this;
   }
 
   @Override
   protected StructuredWriter writeNumber(Number number) throws IOException {
-    validateState(!endOfDocument, "endDocument() has been called");
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
     row.put("___UNNAMED___[" + row.size() + "]", number.toString());
     return this;
   }
 
   @Override
   protected StructuredWriter writeString(String string) throws IOException {
-    validateState(!endOfDocument, "endDocument() has been called");
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
     row.put("___UNNAMED___[" + row.size() + "]", string);
     return this;
   }
 
   @Override
   protected StructuredWriter writeBoolean(boolean value) throws IOException {
-    validateState(!endOfDocument, "endDocument() has been called");
+    Preconditions.checkState(!endOfDocument, "endDocument() has been called");
     row.put("___UNNAMED___[" + row.size() + "]", Boolean.toString(value));
     return this;
   }

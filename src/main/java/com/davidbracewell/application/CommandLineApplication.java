@@ -49,88 +49,88 @@ import java.io.Serializable;
  * @author David B. Bracewell
  */
 public abstract class CommandLineApplication implements Application, Serializable, Loggable {
-  private static final long serialVersionUID = 1L;
+   private static final long serialVersionUID = 1L;
 
-  public final String applicationName;
-  private String[] nonNamedArguments;
-  private String[] allArgs;
-  private String packageName;
+   public final String applicationName;
+   private String[] nonNamedArguments;
+   private String[] allArgs;
+   private String packageName;
 
-  protected CommandLineApplication() {
-    this(null, null);
-  }
+   protected CommandLineApplication() {
+      this(null, null);
+   }
 
-  /**
-   * Instantiates a new Application.
-   *
-   * @param applicationName the application name
-   */
-  protected CommandLineApplication(String applicationName) {
-    this(applicationName, null);
-  }
+   /**
+    * Instantiates a new Application.
+    *
+    * @param applicationName the application name
+    */
+   protected CommandLineApplication(String applicationName) {
+      this(applicationName, null);
+   }
 
-  /**
-   * Instantiates a new Application.
-   *
-   * @param applicationName the application name
-   * @param packageName     the package name to use for the application, which is important for loading the correct
-   *                        configuration.
-   */
-  protected CommandLineApplication(String applicationName, String packageName) {
-    this.applicationName = StringUtils.isNullOrBlank(applicationName) ? getClass().getSimpleName() : applicationName;
-    this.packageName = packageName;
-  }
+   /**
+    * Instantiates a new Application.
+    *
+    * @param applicationName the application name
+    * @param packageName     the package name to use for the application, which is important for loading the correct
+    *                        configuration.
+    */
+   protected CommandLineApplication(String applicationName, String packageName) {
+      this.applicationName = StringUtils.isNullOrBlank(applicationName) ? getClass().getSimpleName() : applicationName;
+      this.packageName = packageName;
+   }
 
-  @Override
-  public final String[] getAllArguments() {
-    return allArgs;
-  }
+   @Override
+   public final String[] getAllArguments() {
+      return allArgs;
+   }
 
-  @Override
-  public void setAllArguments(String[] allArguments) {
-    this.allArgs = allArguments;
-  }
+   @Override
+   public void setAllArguments(String[] allArguments) {
+      this.allArgs = allArguments;
+   }
 
-  @Override
-  public String getConfigPackageName() {
-    return packageName;
-  }
+   @Override
+   public String getConfigPackageName() {
+      return packageName;
+   }
 
-  @Override
-  public String getName() {
-    return applicationName;
-  }
+   @Override
+   public String getName() {
+      return applicationName;
+   }
 
-  @Override
-  public final String[] getNonSpecifiedArguments() {
-    return nonNamedArguments;
-  }
+   @Override
+   public final String[] getNonSpecifiedArguments() {
+      return nonNamedArguments;
+   }
 
-  @Override
-  public void setNonSpecifiedArguments(String[] nonSpecifiedArguments) {
-    this.nonNamedArguments = nonSpecifiedArguments;
-  }
+   @Override
+   public void setNonSpecifiedArguments(String[] nonSpecifiedArguments) {
+      this.nonNamedArguments = nonSpecifiedArguments;
+   }
 
-  /**
-   * Child classes override this method adding their program logic.
-   *
-   * @throws Exception Something abnormal happened.
-   */
-  protected abstract void programLogic() throws Exception;
+   /**
+    * Child classes override this method adding their program logic.
+    *
+    * @throws Exception Something abnormal happened.
+    */
+   protected abstract void programLogic() throws Exception;
 
-  @Override
-  public final void run() {
-    try {
-      programLogic();
-    } catch (Exception e) {
-      logSevere(e);
-      System.exit(-1);
-    }
-  }
+   @Override
+   public final void run() {
+      try {
+         programLogic();
+      } catch (Exception e) {
+         logSevere(e);
+         System.exit(-1);
+      }
+   }
 
-  @Override
-  public void setup() throws Exception {
+   @Override
+   public void setup() throws Exception {
 
-  }
+   }
 
 }//END OF Application

@@ -32,7 +32,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.davidbracewell.Validations.validateArgument;
+import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * Static methods for working with collections and iterables.
@@ -69,7 +69,7 @@ public interface Collect {
     * @return An Iterable wrapping the iterator.
     */
    static <T> Iterable<T> asIterable(@NonNull final Object array, @NonNull final Class<T> itemClass) {
-      validateArgument(array.getClass().isArray());
+      checkArgument(array.getClass().isArray());
       if (array.getClass().getComponentType().isPrimitive()) {
          return new PrimitiveArrayList<>(array, itemClass);
       }

@@ -67,7 +67,7 @@ import java.util.function.Function;
  * @param <R> the type parameter returned from the switch operation
  * @author David B. Bracewell
  */
-public class Switch<T, R> implements Serializable, Function<T,R> {
+public class Switch<T, R> implements Serializable, Function<T, R> {
    private static final long serialVersionUID = 1L;
 
    private final ArrayList<PredFunc<T, R>> statements = new ArrayList<>();

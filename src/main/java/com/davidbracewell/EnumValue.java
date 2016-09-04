@@ -22,6 +22,8 @@
 package com.davidbracewell;
 
 import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.string.StringUtils;
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.ObjectStreamException;
@@ -34,7 +36,7 @@ import static com.davidbracewell.DynamicEnum.register;
  * have their equality safely checked using the <code>==</code> operator. A python script in the mango tools directory
  * (<code>tools/enumGen.py</code>) bootstraps the creation of basic EnumValues. Names associated with EnumValues are
  * normalized to be uppercase and have all whitespace replaced by underscores with consecutive whitespace becoming a
- * single underscore.</p>
+ * single underscore. Names must not contain a period (.) or be blank.</p>
  *
  * <p>Examples of common usage patterns for EnumValue types generated using <code>tools/enumGen.py</code> are as
  * follows:</p>
@@ -72,8 +74,10 @@ public abstract class EnumValue implements Tag, Serializable, Cloneable {
     * @param name the name of the enum value
     */
    protected EnumValue(String name) {
+      Preconditions.checkArgument(StringUtils.isNotNullOrBlank(name), name + " is invalid.");
       this.name = normalize(name);
-      this.fullName = getClass().getCanonicalName() + "." + name;
+      Preconditions.checkArgument(!name.contains(".") && name.length() > 0, name + " is invalid.");
+      this.fullName = getClass().getCanonicalName() + "." + this.name;
    }
 
    /**
@@ -84,7 +88,7 @@ public abstract class EnumValue implements Tag, Serializable, Cloneable {
     * @throws NullPointerException if the name is null
     */
    static String normalize(@NonNull String name) {
-      return name.toUpperCase().replaceAll("\\s+", "_").replace(".", "~");
+      return name.toUpperCase().replaceAll("\\s+", "_");
    }
 
 

@@ -21,12 +21,11 @@
 
 package com.davidbracewell.string;
 
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.regex.Pattern;
-
-import static com.davidbracewell.Validations.validateArgument;
 
 /**
  * The interface Char predicate.
@@ -134,7 +133,7 @@ public interface CharPredicate extends Serializable {
    * @return the int
    */
   default int indexIn(CharSequence sequence, int start) {
-    validateArgument(start >= 0);
+    Preconditions.checkArgument(start >= 0);
     if (sequence == null) {
       return 0;
     }
@@ -347,7 +346,7 @@ public interface CharPredicate extends Serializable {
    * @return the char predicate
    */
   static CharPredicate range(int low, int high) {
-    validateArgument(high > low);
+    Preconditions.checkArgument(high > low);
     return c -> c >= low && c < high;
   }
 
@@ -370,8 +369,8 @@ public interface CharPredicate extends Serializable {
    * @return the char predicate
    */
   static CharPredicate range(final char[] start, final char end[]) {
-    validateArgument(start.length == end.length);
-    validateArgument(start.length > 0);
+    Preconditions.checkArgument(start.length == end.length);
+    Preconditions.checkArgument(start.length > 0);
     return c -> {
       for (int i = 0; i < start.length; i++) {
         if (c >= start[i] && c <= end[i]) {

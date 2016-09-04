@@ -23,12 +23,11 @@ package com.davidbracewell.collection.list;
 
 import com.davidbracewell.collection.Sorting;
 import com.davidbracewell.conversion.Cast;
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.*;
-
-import static com.davidbracewell.Validations.validateState;
 
 /**
  * The type Sorted array list.
@@ -154,7 +153,7 @@ public class SortedArrayList<E> implements List<E>, Serializable {
 
   @Override
   public List<E> subList(int fromIndex, int toIndex) {
-    validateState(toIndex > fromIndex, "Ending index must be greater than starting index.");
+    Preconditions.checkState(toIndex > fromIndex, "Ending index must be greater than starting index.");
     SortedArrayList<E> sub = new SortedArrayList<>(comparator, toIndex - fromIndex);
     sub.addAll(backing.subList(fromIndex, toIndex));
     return sub;

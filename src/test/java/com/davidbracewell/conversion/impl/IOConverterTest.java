@@ -146,7 +146,7 @@ public class IOConverterTest {
 
       //Collection
       assertEquals("This is a test",
-                   readStringInputStream(com.davidbracewell.Primitives.toByteArray("This is a test".getBytes())));
+                   readStringInputStream("This is a test".getBytes()));
 
       //other
       assertNull(Convert.convert(new Object[0], InputStream.class));

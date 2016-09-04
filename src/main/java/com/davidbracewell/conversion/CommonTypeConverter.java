@@ -21,9 +21,7 @@
 
 package com.davidbracewell.conversion;
 
-import com.davidbracewell.DateParser;
 import com.davidbracewell.EnumValue;
-import com.davidbracewell.Primitives;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.logging.Logger;
 import com.davidbracewell.reflection.Reflect;
@@ -31,6 +29,9 @@ import com.davidbracewell.reflection.ReflectionException;
 import com.davidbracewell.reflection.ReflectionUtils;
 import com.davidbracewell.string.CSVFormatter;
 import com.davidbracewell.string.StringUtils;
+import com.google.common.primitives.Bytes;
+import com.google.common.primitives.Chars;
+import scala.actors.threadpool.Arrays;
 
 import java.io.File;
 import java.io.InputStream;
@@ -40,12 +41,15 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.sql.Blob;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
+
+import static com.davidbracewell.conversion.Cast.as;
 
 /**
  * Functions for converting objects to common types in Java e.g. Class, Object, Character, and String
@@ -62,7 +66,7 @@ public class CommonTypeConverter {
       if (input == null) {
          return null;
       } else if (input instanceof Class) {
-         return Cast.as(input);
+         return as(input);
       } else if (input instanceof CharSequence) {
          Class<?> clazz = ReflectionUtils.getClassForNameQuietly(input.toString());
          if (clazz != null) {
@@ -82,7 +86,7 @@ public class CommonTypeConverter {
       if (o == null) {
          return null;
       } else if (o instanceof EnumValue) {
-         return Cast.as(o);
+         return as(o);
       } else if (o instanceof CharSequence) {
 
          String string = o.toString();
@@ -109,19 +113,32 @@ public class CommonTypeConverter {
     * Converts objects to strings. Handles collections, arrays, and varios io related objects (e.g. File, URI,
     * InputStream, etc.)
     */
+   @SuppressWarnings("unchecked")
    public static final Function<Object, String> STRING = input -> {
       if (input == null) {
          return null;
       } else if (input instanceof CharSequence) {
          return input.toString();
       } else if (input instanceof char[]) {
-         return new String(Cast.as(input, char[].class));
+
+         char[] chars = Cast.as(input);
+         return new String(chars);
+
       } else if (input instanceof byte[]) {
-         return new String(Cast.as(input, byte[].class));
+
+         byte[] bytes = Cast.as(input);
+         return new String(bytes);
+
       } else if (input instanceof Character[]) {
-         return new String(Primitives.toCharArray(Cast.as(input, Character[].class)));
+
+         Character[] characters = Cast.as(input);
+         return new String(Chars.toArray(Arrays.asList(characters)));
+
       } else if (input instanceof Byte[]) {
-         return new String(Primitives.toByteArray(Cast.as(input, Byte[].class)));
+
+         Byte[] bytes = Cast.as(input);
+         return new String(Bytes.toArray(Arrays.asList(bytes)));
+
       } else if (input instanceof File || input instanceof Path || input instanceof URI || input instanceof URL || input instanceof InputStream || input instanceof Blob || input instanceof Reader) {
          byte[] bytes = PrimitiveArrayConverter.BYTE.apply(input);
          if (bytes != null) {
@@ -149,41 +166,50 @@ public class CommonTypeConverter {
 
       return input.toString();
    };
+
    private static Logger log = Logger.getLogger(CommonTypeConverter.class);
-   public static final Function<Object, Date> JAVA_DATE = new Function<Object, Date>() {
-      private final DateParser dateParser = new DateParser();
 
-      @Override
-      public Date apply(Object input) {
-         if (input == null) {
-            return null;
-         } else if (input instanceof Date) {
-            return Cast.as(input);
-         } else if (input instanceof Number) {
-            return new Date(Cast.as(input, Number.class).longValue());
-         } else if (input instanceof Calendar) {
-            return Cast.as(input, Calendar.class).getTime();
-         }
+   public static final Function<Object, Date> JAVA_DATE = input -> {
+      if (input == null) {
+         return null;
+      } else if (input instanceof Date) {
+         return as(input);
+      } else if (input instanceof Number) {
+         return new Date(as(input, Number.class).longValue());
+      } else if (input instanceof Calendar) {
+         return as(input, Calendar.class).getTime();
+      }
 
-         String string = STRING.apply(input);
-         if (string != null) {
-            string = StringUtils.trim(string.replaceAll(StringUtils.MULTIPLE_WHITESPACE, " "));
+      String string = STRING.apply(input);
+      if (string != null) {
+         string = StringUtils.trim(string.replaceAll(StringUtils.MULTIPLE_WHITESPACE, " "));
 
-            Optional<Date> date = dateParser.parseQuietly(string);
-            if (date.isPresent()) {
-               return date.get();
+         for (DateFormat format : new DateFormat[]{
+               SimpleDateFormat.getDateTimeInstance(),
+               DateFormat.getDateInstance(DateFormat.SHORT),
+               DateFormat.getDateInstance(DateFormat.MEDIUM),
+               DateFormat.getDateInstance(DateFormat.LONG),
+               DateFormat.getDateInstance(DateFormat.FULL),
+               new SimpleDateFormat("yyyy-MM-dd"),
+               new SimpleDateFormat("MM/dd/yyyy")}
+               ) {
+            try {
+               return format.parse(string);
+            } catch (ParseException e) {
+               //no op
             }
          }
 
-         log.fine("Could not convert {0} into java.util.Date", input.getClass());
-         return null;
       }
+
+      log.fine("Could not convert {0} into java.util.Date", input.getClass());
+      return null;
    };
    public static final Function<Object, java.sql.Date> SQL_DATE = input -> {
       if (input == null) {
          return null;
       } else if (input instanceof java.sql.Date) {
-         return Cast.as(input);
+         return as(input);
       }
 
       Date date = JAVA_DATE.apply(input);
@@ -201,11 +227,11 @@ public class CommonTypeConverter {
       if (input == null) {
          return null;
       } else if (input instanceof Character) {
-         return Cast.as(input);
+         return as(input);
       } else if (input instanceof Number) {
-         return (char) Cast.as(input, Number.class).intValue();
+         return (char) as(input, Number.class).intValue();
       } else if (input instanceof CharSequence) {
-         CharSequence sequence = Cast.as(input);
+         CharSequence sequence = as(input);
          if (sequence.length() == 1) {
             return sequence.charAt(0);
          }
@@ -221,7 +247,7 @@ public class CommonTypeConverter {
       if (input == null) {
          return null;
       } else if (input instanceof StringBuilder) {
-         return Cast.as(input);
+         return as(input);
       }
       String string = STRING.apply(input);
       if (string != null) {

@@ -22,6 +22,7 @@
 package com.davidbracewell.concurrent;
 
 import com.davidbracewell.config.Config;
+import com.google.common.base.Preconditions;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,8 +30,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import static com.davidbracewell.Validations.validateArgument;
 
 /**
  * Class allowing a resource to have multiple {@link java.util.concurrent.locks.ReentrantLock} locks using a round robin
@@ -104,7 +103,7 @@ public final class MultiLock {
    * @param newSize The new size of the multi lock
    */
   public void setSize(int newSize) {
-    validateArgument(newSize > 0, "The number of locks must be greater than zero.");
+    Preconditions.checkArgument(newSize > 0, "The number of locks must be greater than zero.");
 
     if (newSize > locks.size()) {
       // We just need to add locks

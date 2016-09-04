@@ -23,6 +23,7 @@ package com.davidbracewell.io;
 
 import com.davidbracewell.concurrent.Threads;
 import com.davidbracewell.logging.Logger;
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
@@ -32,8 +33,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static com.davidbracewell.Validations.validateArgument;
 
 /**
  * <p>Wraps an underlying writer allowing multiple threads to write through buffering calls to a blocking queue.</p>
@@ -62,7 +61,7 @@ public class AsyncWriter extends Writer implements Runnable {
 
   @Override
   public void write(char[] cbuf, int off, int len) throws IOException {
-    validateArgument(!isStopped.get(), "Cannot write to a closed writer.");
+    Preconditions.checkArgument(!isStopped.get(), "Cannot write to a closed writer.");
     try {
       queue.put(new String(cbuf, off, len));
     } catch (InterruptedException e) {

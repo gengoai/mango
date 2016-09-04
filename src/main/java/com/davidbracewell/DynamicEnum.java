@@ -48,6 +48,9 @@ public final class DynamicEnum implements Serializable {
    }
 
    private static String toKey(@NonNull Class<? extends EnumValue> enumClass, String name) {
+      if( name.startsWith(enumClass.getCanonicalName())){
+         return name;
+      }
       return enumClass.getCanonicalName() + "." + normalize(name);
    }
 

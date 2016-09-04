@@ -23,6 +23,7 @@ package com.davidbracewell.string;
 
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.structured.csv.CSVReader;
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
@@ -32,7 +33,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-import static com.davidbracewell.Validations.validateArgument;
 import static com.davidbracewell.collection.Streams.asStream;
 
 /**
@@ -507,7 +507,7 @@ public final class StringUtils {
       if (input == null) {
          return new ArrayList<>();
       }
-      validateArgument(separator != '"', "Separator cannot be a quote");
+      Preconditions.checkArgument(separator != '"', "Separator cannot be a quote");
       try (CSVReader reader = CSV.builder().delimiter(separator).reader(new StringReader(input.toString()))) {
          List<String> all = new ArrayList<>();
          List<String> row;

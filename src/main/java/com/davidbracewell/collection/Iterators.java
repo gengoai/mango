@@ -29,11 +29,12 @@ import lombok.NonNull;
 import java.util.*;
 import java.util.stream.Stream;
 
-import static com.davidbracewell.Validations.validateState;
 import static com.davidbracewell.collection.Streams.asStream;
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * The interface Iterators.
+ *
  * @author David B. Bracewell
  */
 public interface Iterators {
@@ -41,8 +42,8 @@ public interface Iterators {
    /**
     * Filtered iterator iterator.
     *
-    * @param <E>  the type parameter
-    * @param backing the backing
+    * @param <E>       the type parameter
+    * @param backing   the backing
     * @param predicate the predicate
     * @return the iterator
     */
@@ -63,7 +64,7 @@ public interface Iterators {
 
          @Override
          public E next() {
-            validateState(hasNext(), "No such element");
+            checkState(hasNext(), "No such element");
             E rval = buffer.get(0);
             buffer = null;
             return rval;
@@ -103,10 +104,10 @@ public interface Iterators {
    /**
     * Transformed iterator iterator.
     *
-    * @param <E>  the type parameter
-    * @param <R>  the type parameter
+    * @param <E>     the type parameter
+    * @param <R>     the type parameter
     * @param backing the backing
-    * @param mapper the mapper
+    * @param mapper  the mapper
     * @return the iterator
     */
    static <E, R> Iterator<R> transform(@NonNull final Iterator<E> backing, @NonNull SerializableFunction<? super E, ? extends R> mapper) {
@@ -131,7 +132,7 @@ public interface Iterators {
    /**
     * Unmodifiable iterator iterator.
     *
-    * @param <E>  the type parameter
+    * @param <E>     the type parameter
     * @param backing the backing
     * @return the iterator
     */

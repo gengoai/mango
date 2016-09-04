@@ -715,7 +715,7 @@ public enum Language {
          Locale toFind;
          if (code.contains("_") || code.contains("-")) {
             String[] parts = code.split("[_\\-]");
-            if (parts.length > 2) {
+            if (parts.length >= 2) {
                toFind = new Locale(parts[0], parts[1]);
             } else {
                toFind = new Locale(code);

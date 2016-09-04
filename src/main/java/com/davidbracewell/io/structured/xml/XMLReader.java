@@ -28,6 +28,7 @@ import com.davidbracewell.io.structured.ElementType;
 import com.davidbracewell.io.structured.StructuredReader;
 import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import javax.xml.namespace.QName;
@@ -46,7 +47,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
-import static com.davidbracewell.Validations.validateArgument;
 import static com.davidbracewell.tuple.Tuples.$;
 
 /**
@@ -131,7 +131,7 @@ public class XMLReader extends StructuredReader {
    */
   public XMLReader(String documentTag, @NonNull Resource resource) throws IOException {
     try {
-      validateArgument(StringUtils.isNotNullOrBlank(documentTag));
+      Preconditions.checkArgument(StringUtils.isNotNullOrBlank(documentTag));
       this.documentTag = documentTag;
       XMLInputFactory factory = XMLInputFactory.newFactory();
       this.reader = factory.createFilteredReader(factory.createXMLEventReader(resource.inputStream(), "UTF-8"),

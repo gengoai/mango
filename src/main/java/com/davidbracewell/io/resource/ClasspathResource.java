@@ -27,6 +27,7 @@ import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.spi.ClasspathResourceProvider;
 import com.davidbracewell.logging.Logger;
 import com.davidbracewell.string.StringUtils;
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.*;
@@ -37,8 +38,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
-
-import static com.davidbracewell.Validations.validateState;
 
 /**
  * <p> A <code>Resource</code> implementation for resources that exist on the classpath. Resources are loaded either
@@ -76,7 +75,7 @@ public class ClasspathResource extends BaseResource {
 
   @Override
   public Resource append(byte[] byteArray) throws IOException {
-    validateState(canWrite(), "Unable to write to this resource");
+    Preconditions.checkState(canWrite(), "Unable to write to this resource");
     new FileResource(asFile().get()).append(byteArray);
     return this;
   }
@@ -201,7 +200,7 @@ public class ClasspathResource extends BaseResource {
   @Override
   public InputStream inputStream() throws IOException {
     InputStream rawis = createInputStream();
-    validateState(rawis != null, "This resource cannot be read from.");
+    Preconditions.checkState(rawis != null, "This resource cannot be read from.");
     PushbackInputStream is = new PushbackInputStream(rawis, 2);
     if (FileUtils.isCompressed(is)) {
       setIsCompressed(true);
@@ -217,7 +216,7 @@ public class ClasspathResource extends BaseResource {
 
   @Override
   public OutputStream createOutputStream() throws IOException {
-    validateState(canWrite(), "Unable to write to this resource");
+    Preconditions.checkState(canWrite(), "Unable to write to this resource");
     return new FileOutputStream(this.asFile().get());
   }
 

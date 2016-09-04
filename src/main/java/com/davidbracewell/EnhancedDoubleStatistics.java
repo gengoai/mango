@@ -22,155 +22,167 @@
 package com.davidbracewell;
 
 import com.davidbracewell.function.SerializableDoubleConsumer;
+import lombok.NonNull;
 import lombok.ToString;
 
 /**
- * The type Enhanced double statistics.
+ * <p>Enhanced version of {@link java.util.DoubleSummaryStatistics} that provides average, variance, and standard
+ * deviation.</p>
  *
  * @author David B. Bracewell
  */
 @ToString(exclude = "sumOfSq")
 public final class EnhancedDoubleStatistics implements SerializableDoubleConsumer {
-  private static final long serialVersionUID = 1L;
-  private double min = Double.POSITIVE_INFINITY;
-  private double max = Double.NEGATIVE_INFINITY;
-  private double sum = 0;
-  private double sumOfSq = 0;
-  private int count = 0;
+   private static final long serialVersionUID = 1L;
+   private double min = Double.POSITIVE_INFINITY;
+   private double max = Double.NEGATIVE_INFINITY;
+   private double sum = 0;
+   private double sumOfSq = 0;
+   private int count = 0;
 
-  @Override
-  public void accept(double value) {
-    min = Math.min(min, value);
-    max = Math.max(max, value);
-    sum += value;
-    sumOfSq += value * value;
-    count++;
-  }
+   @Override
+   public void accept(double value) {
+      min = Math.min(min, value);
+      max = Math.max(max, value);
+      sum += value;
+      sumOfSq += value * value;
+      count++;
+   }
 
-  public void clear() {
-    this.min = Double.POSITIVE_INFINITY;
-    this.max = Double.NEGATIVE_INFINITY;
-    this.sum = 0;
-    this.sumOfSq = 0;
-    this.count = 0;
-  }
+   /**
+    * Clears the accumulated values.
+    */
+   public void clear() {
+      this.min = Double.POSITIVE_INFINITY;
+      this.max = Double.NEGATIVE_INFINITY;
+      this.sum = 0;
+      this.sumOfSq = 0;
+      this.count = 0;
+   }
 
-  /**
-   * Combine void.
-   *
-   * @param other the other
-   */
-  public void combine(EnhancedDoubleStatistics other) {
-    count += other.count;
-    sum += other.sum;
-    sumOfSq += other.sumOfSq;
-    min = Math.min(min, other.min);
-    max = Math.max(max, other.max);
-  }
+   /**
+    * <p>Adds the statistics collected by another EnhancedDoubleStatistics object</p>
+    *
+    * @param other the other EnhancedDoubleStatistics to combine
+    * @throws NullPointerException if the other EnhancedDoubleStatistics is null
+    */
+   public void combine(@NonNull EnhancedDoubleStatistics other) {
+      count += other.count;
+      sum += other.sum;
+      sumOfSq += other.sumOfSq;
+      min = Math.min(min, other.min);
+      max = Math.max(max, other.max);
+   }
 
-  /**
-   * Gets count.
-   *
-   * @return the count
-   */
-  public double getCount() {
-    return count;
-  }
+   /**
+    * Gets the number items accepted.
+    *
+    * @return the count
+    */
+   public double getCount() {
+      return count;
+   }
 
-  /**
-   * Gets sum.
-   *
-   * @return the sum
-   */
-  public double getSum() {
-    return sum;
-  }
+   /**
+    * Gets the sum.
+    *
+    * @return the sum
+    */
+   public double getSum() {
+      return sum;
+   }
 
-  /**
-   * Gets sum of squares.
-   *
-   * @return the sum of squares
-   */
-  public double getSumOfSquares() {
-    return sumOfSq;
-  }
+   /**
+    * Gets the sum of squares.
+    *
+    * @return the sum of squares
+    */
+   public double getSumOfSquares() {
+      return sumOfSq;
+   }
 
-  /**
-   * Gets average.
-   *
-   * @return the average
-   */
-  public double getAverage() {
-    return getCount() > 0 ? getSum() / getCount() : 0;
-  }
+   /**
+    * Gets the  average.
+    *
+    * @return the average
+    */
+   public double getAverage() {
+      return getCount() > 0 ? getSum() / getCount() : 0;
+   }
 
-  /**
-   * Gets min.
-   *
-   * @return the min
-   */
-  public double getMin() {
-    return min;
-  }
+   /**
+    * Gets the min.
+    *
+    * @return the min
+    */
+   public double getMin() {
+      return min;
+   }
 
-  /**
-   * Gets max.
-   *
-   * @return the max
-   */
-  public double getMax() {
-    return max;
-  }
+   /**
+    * Gets the max.
+    *
+    * @return the max
+    */
+   public double getMax() {
+      return max;
+   }
 
-  /**
-   * Gets sample standard deviation.
-   *
-   * @return the sample standard deviation
-   */
-  public double getSampleStandardDeviation() {
-    if (getCount() <= 0) {
-      return Double.NaN;
-    } else if (getCount() == 1) {
-      return 0d;
-    }
-    return Math.sqrt(getSampleVariance());
-  }
+   /**
+    * Gets the sample standard deviation.
+    *
+    * @return the sample standard deviation
+    */
+   public double getSampleStandardDeviation() {
+      if (getCount() <= 0) {
+         return Double.NaN;
+      } else if (getCount() == 1) {
+         return 0d;
+      }
+      return Math.sqrt(getSampleVariance());
+   }
 
-  /**
-   * Gets sample variance.
-   *
-   * @return the sample variance
-   */
-  public double getSampleVariance() {
-    if (getCount() <= 1) {
-      return 0d;
-    }
-    return Math.abs(getSumOfSquares() - getAverage() * getSum()) / (getCount() - 1);
-  }
+   /**
+    * Gets the sample variance.
+    *
+    * @return the sample variance
+    */
+   public double getSampleVariance() {
+      if (getCount() <= 0) {
+         return Double.NaN;
+      } else if (getCount() == 1) {
+         return 0d;
+      }
+      return Math.abs(getSumOfSquares() - getAverage() * getSum()) / (getCount() - 1);
+   }
 
-  /**
-   * Gets population standard deviation.
-   *
-   * @return the population standard deviation
-   */
-  public double getPopulationStandardDeviation() {
-    if (getCount() <= 1) {
-      return 0d;
-    }
-    return Math.sqrt(getPopulationVariance());
-  }
+   /**
+    * Gets the population standard deviation.
+    *
+    * @return the population standard deviation
+    */
+   public double getPopulationStandardDeviation() {
+      if (getCount() <= 0) {
+         return Double.NaN;
+      } else if (getCount() == 1) {
+         return 0d;
+      }
+      return Math.sqrt(getPopulationVariance());
+   }
 
-  /**
-   * Gets population variance.
-   *
-   * @return the population variance
-   */
-  public double getPopulationVariance() {
-    if (getCount() <= 1) {
-      return 0d;
-    }
-    return Math.abs(getSumOfSquares() - getAverage() * getSum()) / getCount();
-  }
+   /**
+    * Gets the population variance.
+    *
+    * @return the population variance
+    */
+   public double getPopulationVariance() {
+      if (getCount() <= 0) {
+         return Double.NaN;
+      } else if (getCount() == 1) {
+         return 0d;
+      }
+      return Math.abs(getSumOfSquares() - getAverage() * getSum()) / getCount();
+   }
 
 
 }//END OF EnhancedDoubleStatistics

@@ -21,26 +21,14 @@
 
 package com.davidbracewell;
 
-import com.davidbracewell.collection.Sorting;
 import com.davidbracewell.collection.Streams;
-import com.davidbracewell.conversion.Cast;
-import com.davidbracewell.tuple.Tuple2;
 import lombok.NonNull;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.BinaryOperator;
-import java.util.function.DoubleUnaryOperator;
-import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
-import static com.davidbracewell.Validations.validateArgument;
-import static com.davidbracewell.tuple.Tuples.$;
+import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * <p>Commonly needed math routines and methods that work over arrays and iterable. </p>
@@ -50,246 +38,144 @@ import static com.davidbracewell.tuple.Tuples.$;
 public interface Math2 {
 
 
-  /**
-   * <p>Adjusts the values in a given double array using the supplied operator. </p>
-   *
-   * @param operator the operator to use for adjusting a value
-   * @param values   the values to be adjusted
-   * @return An array of doubles containing f(x) where f is the operator and x is a value in the supplied array.
-   * @throws NullPointerException if the operator or values are null
-   */
-  static double[] adjust(@NonNull DoubleUnaryOperator operator, @NonNull double... values) {
-    return DoubleStream.of(values).map(operator).toArray();
-  }
+   /**
+    * <p>Rescales a value from an old range to a new range, e.g. change the value 2 in a 1 to 5 scale to the value 3.25
+    * in a 1 to 10 scale</p>
+    *
+    * @param value       the value to rescale
+    * @param originalMin the lower bound of the original range
+    * @param originalMax the upper bound of the original range
+    * @param newMin      the lower bound of the new range
+    * @param newMax      the upper bound of the new range
+    * @return the given value rescaled to fall between newMin and new Max
+    * @throws IllegalArgumentException if originalMax <= originalMin or newMax <= newMin
+    */
+   static double rescale(double value, double originalMin, double originalMax, double newMin, double newMax) {
+      checkArgument(originalMax > originalMin, "original upper bound must be > original lower bound");
+      checkArgument(newMax > newMin, "new upper bound must be > new lower bound");
+      return ((value - originalMin) / (originalMax - originalMin)) * (newMax - newMin) + newMin;
+   }
 
-
-  /**
-   * <p>Adjusts the numbers in a given iterable using the supplied operator. </p>
-   *
-   * @param operator the operator to use for adjusting a value
-   * @param values   the values to be adjusted
-   * @return A List of Double containing f(x) where f is the operator and x is a value in the supplied iterable.
-   * @throws NullPointerException if the operator or values are null
-   */
-  static List<Double> adjust(@NonNull DoubleUnaryOperator operator, @NonNull Iterable<? extends Number> values) {
-    return Streams.asStream(values)
-                  .mapToDouble(n -> operator.applyAsDouble(n.doubleValue()))
-                  .mapToObj(d -> d)
-                  .collect(Collectors.toList());
-  }
-
-
-  /**
-   * <p>Determines the maximum value and its index in supplied array of doubles</p>
-   *
-   * @param values the values to find the arg max of
-   * @return A tuple of (index, max value) or (-1, NEGATIVE_INFINITY) if the supplied array is empty.
-   * @throws NullPointerException if the values are null
-   */
-  static Tuple2<Integer, Double> argMax(@NonNull double... values) {
-    double max = Double.NEGATIVE_INFINITY;
-    int index = -1;
-    for (int i = 0; i < values.length; i++) {
-      if (values[i] > max) {
-        index = i;
-        max = values[i];
+   /**
+    * <p>Clips a value to ensure it falls between the lower or upper bound of range.</p>
+    *
+    * @param value the value to clip
+    * @param min   the lower bound of the range
+    * @param max   the upper bound of the range
+    * @return the clipped value
+    */
+   static double clip(double value, double min, double max) {
+      checkArgument(max > min, "upper bound must be > lower bound");
+      if (value < min) {
+         return min;
+      } else if (value > max) {
+         return max;
       }
-    }
-    return $(index, max);
-  }
+      return value;
+   }
 
 
-  /**
-   * <p>Determines the minimum value and its index in supplied array of doubles</p>
-   *
-   * @param values the values to find the arg min of
-   * @return A tuple of (index, min value) or (-1, POSITIVE_INFINITY) if the supplied array is empty.
-   * @throws NullPointerException if the values are null
-   */
-  static Tuple2<Integer, Double> argMin(@NonNull double... values) {
-    double min = Double.POSITIVE_INFINITY;
-    int index = -1;
-    for (int i = 0; i < values.length; i++) {
-      if (values[i] < min) {
-        index = i;
-        min = values[i];
-      }
-    }
-    return $(index, min);
-  }
-
-  /**
-   * Arg max.
-   *
-   * @param <K>        the type parameter
-   * @param <V>        the type parameter
-   * @param <E>        the type parameter
-   * @param collection the collection
-   * @return the optional
-   */
-  static <K, V extends Comparable, E extends Map.Entry<K, V>> Optional<E> argMax(Collection<? extends E> collection) {
-    if (collection == null) {
-      return Optional.empty();
-    }
-    Comparator<Map.Entry<K, V>> comparator = Sorting.mapEntryComparator(false, true);
-    return collection.stream().reduce(BinaryOperator.maxBy(comparator)).map(Cast::as);
-  }
-
-  /**
-   * Arg min.
-   *
-   * @param <K>        the type parameter
-   * @param <V>        the type parameter
-   * @param <E>        the type parameter
-   * @param collection the collection
-   * @return the optional
-   */
-  static <K, V extends Comparable, E extends Map.Entry<K, V>> Optional<E> argMin(Collection<? extends E> collection) {
-    if (collection == null) {
-      return Optional.empty();
-    }
-    Comparator<Map.Entry<K, V>> comparator = Sorting.mapEntryComparator(false, true);
-    return collection.stream().reduce(BinaryOperator.minBy(comparator)).map(Cast::as);
-  }
+   /**
+    * <p>Sums the numbers in a given iterable treating them as doubles.</p>
+    *
+    * @param values the iterable of numbers to sum
+    * @return the sum of the iterable
+    * @throws NullPointerException if the values are null
+    */
+   static double sum(@NonNull Iterable<? extends Number> values) {
+      return summaryStatistics(values).getSum();
+   }
 
 
-  /**
-   * <p>Rescales a value from an old range to a new range, e.g. change the value 2 in a 1 to 5 scale to the value 3.25
-   * in a 1 to 10 scale</p>
-   *
-   * @param value       the value to rescale
-   * @param originalMin the lower bound of the original range
-   * @param originalMax the upper bound of the original range
-   * @param newMin      the lower bound of the new range
-   * @param newMax      the upper bound of the new range
-   * @return the given value rescaled to fall between newMin and new Max
-   * @throws IllegalArgumentException if originalMax <= originalMin or newMax <= newMin
-   */
-  static double rescale(double value, double originalMin, double originalMax, double newMin, double newMax) {
-    validateArgument(originalMax > originalMin, "original upper bound must be > original lower bound");
-    validateArgument(newMax > newMin, "new upper bound must be > new lower bound");
-    return ((value - originalMin) / (originalMax - originalMin)) * (newMax - newMin) + newMin;
-  }
+   /**
+    * <p>Sums the numbers in the given array.</p>
+    *
+    * @param values the values to sum
+    * @return the sum of the values
+    * @throws NullPointerException if the values are null
+    */
+   static double sum(@NonNull double... values) {
+      return DoubleStream.of(values).sum();
+   }
 
-  /**
-   * <p>Clips a value to ensure it falls between the lower or upper bound of range.</p>
-   *
-   * @param value the value to clip
-   * @param min   the lower bound of the range
-   * @param max   the upper bound of the range
-   * @return the clipped value
-   */
-  static double clip(double value, double min, double max) {
-    validateArgument(max > min, "upper bound must be > lower bound");
-    if (value < min) {
-      return min;
-    } else if (value > max) {
-      return max;
-    }
-    return value;
-  }
+   /**
+    * <p>Sums the numbers in the given array.</p>
+    *
+    * @param values the values to sum
+    * @return the sum of the values
+    * @throws NullPointerException if the values are null
+    */
+   static int sum(@NonNull int... values) {
+      return IntStream.of(values).sum();
+   }
+
+   /**
+    * <p>Sums the numbers in the given array.</p>
+    *
+    * @param values the values to sum
+    * @return the sum of the values
+    * @throws NullPointerException if the values are null
+    */
+   static long sum(@NonNull long... values) {
+      return LongStream.of(values).sum();
+   }
 
 
-  /**
-   * <p>Sums the numbers in a given iterable treating them as doubles.</p>
-   *
-   * @param values the iterable of numbers to sum
-   * @return the sum of the iterable
-   * @throws NullPointerException if the values are null
-   */
-  static double sum(@NonNull Iterable<? extends Number> values) {
-    return summaryStatistics(values).getSum();
-  }
+   /**
+    * <p>Calculates the summary statistics for the values in the given array.</p>
+    *
+    * @param values the values to calculate summary statistics over
+    * @return the summary statistics of the given array
+    * @throws NullPointerException if the values are null
+    */
+   static EnhancedDoubleStatistics summaryStatistics(@NonNull double... values) {
+      return DoubleStream.of(values).parallel().collect(EnhancedDoubleStatistics::new,
+                                                        EnhancedDoubleStatistics::accept,
+                                                        EnhancedDoubleStatistics::combine);
+   }
 
 
-  /**
-   * <p>Sums the numbers in the given array.</p>
-   *
-   * @param values the values to sum
-   * @return the sum of the values
-   * @throws NullPointerException if the values are null
-   */
-  static double sum(@NonNull double... values) {
-    return DoubleStream.of(values).sum();
-  }
+   /**
+    * <p>Calculates the summary statistics for the values in the given array.</p>
+    *
+    * @param values the values to calculate summary statistics over
+    * @return the summary statistics of the given array
+    * @throws NullPointerException if the values are null
+    */
+   static EnhancedDoubleStatistics summaryStatistics(@NonNull int... values) {
+      return IntStream.of(values).parallel().mapToDouble(i -> i).collect(EnhancedDoubleStatistics::new,
+                                                                         EnhancedDoubleStatistics::accept,
+                                                                         EnhancedDoubleStatistics::combine);
+   }
 
-  /**
-   * <p>Sums the numbers in the given array.</p>
-   *
-   * @param values the values to sum
-   * @return the sum of the values
-   * @throws NullPointerException if the values are null
-   */
-  static int sum(@NonNull int... values) {
-    return IntStream.of(values).sum();
-  }
+   /**
+    * <p>Calculates the summary statistics for the values in the given array.</p>
+    *
+    * @param values the values to calculate summary statistics over
+    * @return the summary statistics of the given array
+    * @throws NullPointerException if the values are null
+    */
+   static EnhancedDoubleStatistics summaryStatistics(@NonNull long... values) {
+      return LongStream.of(values).parallel().mapToDouble(i -> i).collect(EnhancedDoubleStatistics::new,
+                                                                          EnhancedDoubleStatistics::accept,
+                                                                          EnhancedDoubleStatistics::combine);
+   }
 
-  /**
-   * <p>Sums the numbers in the given array.</p>
-   *
-   * @param values the values to sum
-   * @return the sum of the values
-   * @throws NullPointerException if the values are null
-   */
-  static long sum(@NonNull long... values) {
-    return LongStream.of(values).sum();
-  }
-
-
-  /**
-   * <p>Calculates the summary statistics for the values in the given array.</p>
-   *
-   * @param values the values to calculate summary statistics over
-   * @return the summary statistics of the given array
-   * @throws NullPointerException if the values are null
-   */
-  static EnhancedDoubleStatistics summaryStatistics(@NonNull double... values) {
-    return DoubleStream.of(values).collect(EnhancedDoubleStatistics::new,
-                                           EnhancedDoubleStatistics::accept,
-                                           EnhancedDoubleStatistics::combine);
-  }
-
-
-  /**
-   * <p>Calculates the summary statistics for the values in the given array.</p>
-   *
-   * @param values the values to calculate summary statistics over
-   * @return the summary statistics of the given array
-   * @throws NullPointerException if the values are null
-   */
-  static EnhancedDoubleStatistics summaryStatistics(@NonNull int... values) {
-    return IntStream.of(values).mapToDouble(i -> i).collect(EnhancedDoubleStatistics::new,
-                                                            EnhancedDoubleStatistics::accept,
-                                                            EnhancedDoubleStatistics::combine);
-  }
-
-  /**
-   * <p>Calculates the summary statistics for the values in the given array.</p>
-   *
-   * @param values the values to calculate summary statistics over
-   * @return the summary statistics of the given array
-   * @throws NullPointerException if the values are null
-   */
-  static EnhancedDoubleStatistics summaryStatistics(@NonNull long... values) {
-    return LongStream.of(values).mapToDouble(i -> i).collect(EnhancedDoubleStatistics::new,
-                                                             EnhancedDoubleStatistics::accept,
-                                                             EnhancedDoubleStatistics::combine);
-  }
-
-  /**
-   * <p>Calculates the summary statistics for the values in the given iterable.</p>
-   *
-   * @param values the values to calculate summary statistics over
-   * @return the summary statistics of the given iterable
-   * @throws NullPointerException if the iterable is null
-   */
-  static EnhancedDoubleStatistics summaryStatistics(@NonNull Iterable<? extends Number> values) {
-    return Streams.asStream(values)
-                  .mapToDouble(Number::doubleValue)
-                  .collect(EnhancedDoubleStatistics::new,
-                           EnhancedDoubleStatistics::accept,
-                           EnhancedDoubleStatistics::combine);
-  }
+   /**
+    * <p>Calculates the summary statistics for the values in the given iterable.</p>
+    *
+    * @param values the values to calculate summary statistics over
+    * @return the summary statistics of the given iterable
+    * @throws NullPointerException if the iterable is null
+    */
+   static EnhancedDoubleStatistics summaryStatistics(@NonNull Iterable<? extends Number> values) {
+      return Streams.asStream(values)
+                    .parallel()
+                    .mapToDouble(Number::doubleValue)
+                    .collect(EnhancedDoubleStatistics::new,
+                             EnhancedDoubleStatistics::accept,
+                             EnhancedDoubleStatistics::combine);
+   }
 
 
 }//END OF Math2

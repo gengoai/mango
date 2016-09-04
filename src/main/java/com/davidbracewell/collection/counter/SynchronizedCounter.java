@@ -236,11 +236,6 @@ final class SynchronizedCounter<TYPE> implements Counter<TYPE>, Serializable {
   }
 
   @Override
-  public synchronized double sumOfSquares() {
-    return delegate.sumOfSquares();
-  }
-
-  @Override
   public synchronized Counter<TYPE> topN(int n) {
     return delegate.topN(n);
   }

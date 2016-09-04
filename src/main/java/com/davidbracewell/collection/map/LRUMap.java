@@ -21,10 +21,10 @@
 
 package com.davidbracewell.collection.map;
 
+import com.google.common.base.Preconditions;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import static com.davidbracewell.Validations.validateArgument;
 
 /**
  * <p>
@@ -47,7 +47,7 @@ public class LRUMap<K, V> extends LinkedHashMap<K, V> {
     * @return the map
     */
    public static <K, V> LRUMap<K, V> create(int maxSize) {
-      validateArgument(maxSize > 0, "Max size must be greater than zero.");
+      Preconditions.checkArgument(maxSize > 0, "Max size must be greater than zero.");
       return new LRUMap<>(maxSize);
    }
 

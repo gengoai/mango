@@ -23,28 +23,27 @@ package com.davidbracewell;
 
 import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.reflection.Reflect;
+import com.davidbracewell.reflection.ReflectionException;
 import lombok.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.regex.Pattern;
 
 /**
  * <p>A enum like object that can have elements created at runtime as needed and which have a parent associated with
  * them. As with EnumValues, elements are singleton objects and can have their equality safely checked using the
- * <code>==</code> operator. Hierarchical enums may have multiple roots, but each element may only have one parent.
- * Their implementation of {@link Tag#isInstance(Tag)} returns true if the element is equal to or a descendant of the
- * tag being compared against. Elements can have their parents assigned at later time as long up until a non-null
- * parent
- * has been set.</p>
+ * <code>==</code> operator. Their implementation of {@link Tag#isInstance(Tag)} returns true if the element is equal to
+ * or a descendant of the tag being compared against. Elements can have their parents assigned at later time as long up
+ * until a non-null parent has been set.</p>
  *
  * <p>The python script in the mango tools directory (<code>tools/enumGen.py</code>) bootstraps the creation of basic
  * HierarchicalEnumValue. As with enum values the names associated with EnumValues are normalized to be uppercase and
  * have all whitespace replaced by underscores with consecutive whitespace becoming a  single underscore.</p>
  *
  * <p>Examples of common usage patterns for HierarchicalEnumValue types generated using <code>tools/enumGen.py</code>
- * are as
- * follows:</p>
+ * are as follows:</p>
  *
  * <pre>
  * {@code
@@ -84,19 +83,32 @@ import java.util.Optional;
  * </pre>
  *
  *
- * <p>
- * If your HierarchicalEnumValue stores other information and want to ensure that declared instances are loaded in
- * memory you can use Mango's {@link com.davidbracewell.config.Preloader} to load during application startup.
- * </p>
+ * <p> If your HierarchicalEnumValue stores other information and want to ensure that declared instances are loaded in
+ * memory you can use Mango's {@link com.davidbracewell.config.Preloader} to load during application startup. </p>
  *
  * @author David B. Bracewell
  */
-public abstract class HierarchicalEnumValue extends EnumValue {
+public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> extends EnumValue {
    private static final long serialVersionUID = 1L;
-   /**
-    * The Parent.
-    */
-   protected volatile HierarchicalEnumValue parent = null;
+   private volatile T parent = null;
+
+
+   protected boolean setParentIfAbsent(T newParent) {
+      if (newParent == null || this == getSingleRoot()) {
+         return false;
+      }
+      T oldParent = getParent();
+      if (oldParent == null || oldParent == getSingleRoot()) {
+         this.parent = newParent;
+         return true;
+      }
+      if (oldParent != newParent) {
+         throw new IllegalArgumentException("Attempting to reassign " + name() + "'s parent from " + oldParent + " to " + newParent);
+      }
+      return false;
+   }
+
+   protected abstract T getSingleRoot();
 
 
    /**
@@ -105,27 +117,26 @@ public abstract class HierarchicalEnumValue extends EnumValue {
     * @param name   the specified name of the element
     * @param parent the parent of element (possibly null)
     */
-   protected HierarchicalEnumValue(String name, HierarchicalEnumValue parent) {
+   protected HierarchicalEnumValue(String name, T parent) {
       super(name);
       this.parent = parent;
    }
 
    /**
-    * <p>Determines if this element is as root.</p>
+    * <p>Determines if this element is the root.</p>
     *
-    * @return True if it is a root, False otherwise
+    * @return True if it is the root, False otherwise
     */
    public final boolean isRoot() {
-      return !getParent().isPresent();
+      return this == getSingleRoot();
    }
-
 
    /**
     * <p>Gets the immediate children of this element or an empty list if none.</p>
     *
     * @return the immediate children of this element.
     */
-   public abstract <T extends HierarchicalEnumValue> List<T> getChildren();
+   public abstract List<T> getChildren();
 
    /**
     * <p>Determines if this element is a leaf, i.e. has no children.</p>
@@ -143,31 +154,28 @@ public abstract class HierarchicalEnumValue extends EnumValue {
     *
     * @return the parent of this element as an Optional
     */
-   public <T extends HierarchicalEnumValue> Optional<T> getParent() {
+   public final T getParent() {
       if (parent == null) {
          synchronized (this) {
             if (parent == null) {
                T ev = getParentFromConfig();
-               if (ev != null) {
-                  parent = ev;
+               if (ev != null && ev != getSingleRoot()) {
+                  parent = Cast.as(ev);
                }
             }
          }
       }
-      return Optional.ofNullable(Cast.as(parent));
+      return parent == null ? getSingleRoot() : parent;
    }
 
    @Override
    public final boolean isInstance(@NonNull Tag value) {
-      HierarchicalEnumValue hev = this;
-      while (hev != null) {
+      HierarchicalEnumValue<T> hev = this;
+      while (hev != null && hev != getSingleRoot()) {
          if (hev.equals(value)) {
             return true;
          }
-         final HierarchicalEnumValue pHev = hev;
-         hev = Cast.as(hev.getParent()
-                          .filter(v -> v != pHev)
-                          .orElse(null));
+         hev = Cast.as(hev.getParent());
       }
       return false;
    }
@@ -177,8 +185,20 @@ public abstract class HierarchicalEnumValue extends EnumValue {
     *
     * @return the parent via the configuration property or null
     */
-   protected <T extends HierarchicalEnumValue> T getParentFromConfig() {
-      return Cast.as(Config.get(canonicalName(), "parent").as(getClass(), null));
+   protected T getParentFromConfig() {
+      //TODO: Move this to a converter
+      String parentName = Config.get(canonicalName(), "parent").asString(null);
+      if (parentName != null && DynamicEnum.isDefined(Cast.as(getClass()), parentName)) {
+         return DynamicEnum.valueOf(Cast.as(getClass()), parentName);
+      } else if (parentName != null) {
+         try {
+            parentName = parentName.replaceFirst(Pattern.quote(getClass().getCanonicalName()), "");
+            DynamicEnum.register(Cast.as(Reflect.onClass(getClass()).invoke("create", parentName).get()));
+         } catch (ReflectionException e) {
+            return null;
+         }
+      }
+      return null;
    }
 
 
@@ -187,20 +207,15 @@ public abstract class HierarchicalEnumValue extends EnumValue {
     *
     * @return the list of ancestors with this element's parent in position 0 or an empty list if this element is a root.
     */
-   public <T extends HierarchicalEnumValue> List<T> getAncestors() {
+   public final List<T> getAncestors() {
       List<T> path = new ArrayList<>();
-      T hev = Cast.as(this);
+      HierarchicalEnumValue<T> hev = Cast.as(this);
       do {
-         final HierarchicalEnumValue pHev = hev;
-         hev = Cast.as(hev.getParent()
-                          .filter(v -> v != pHev)
-                          .orElse(null));
-
-         if (hev != null) {
-            path.add(hev);
+         hev = Cast.as(hev.getParent());
+         if (hev != null && hev != getSingleRoot()) {
+            path.add(Cast.as(hev));
          }
-
-      } while (hev != null);
+      } while (hev != null && hev != getSingleRoot());
       return path;
    }
 

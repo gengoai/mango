@@ -28,20 +28,14 @@ import static org.junit.Assert.*;
 /**
  * @author David B. Bracewell
  */
-public class EncryptionUtilsTest {
+public class LazyTest {
 
-  @Test
-  public void testEncrypt() throws Exception {
-    String content = "all things come to an end.";
-    String key = "ABCDEF1234567890ABCDEF";
-    String encryptedContent = EncryptionMethod.DES.encrypt(content, key);
-    assertEquals(content, new String(EncryptionMethod.DES.decrypt(encryptedContent, key)));
-    encryptedContent = EncryptionMethod.AES.encrypt(content, key);
-    assertEquals(content, new String(EncryptionMethod.AES.decrypt(encryptedContent, key)));
-    encryptedContent = EncryptionMethod.TRIPLE_DES.encrypt(content, key);
-    assertEquals(content, new String(EncryptionMethod.TRIPLE_DES.decrypt(encryptedContent, key)));
-    encryptedContent = EncryptionMethod.BLOWFISH.encrypt(content, key);
-    assertEquals(content, new String(EncryptionMethod.BLOWFISH.decrypt(encryptedContent, key)));
-  }
+   @Test
+   public void get() throws Exception {
+      Lazy<String> lazy = new Lazy<>(() -> "ABBA DABBA DOOO");
+      String call1 = lazy.get();
+      String call2 = lazy.get();
+      assertTrue(call1 == call2);
+   }
 
 }

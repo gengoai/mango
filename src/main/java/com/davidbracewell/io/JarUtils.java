@@ -25,6 +25,7 @@ import com.davidbracewell.SystemInfo;
 import com.davidbracewell.io.resource.ClasspathResource;
 import com.davidbracewell.io.resource.FileResource;
 import com.davidbracewell.io.resource.Resource;
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
@@ -37,8 +38,6 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-
-import static com.davidbracewell.Validations.validateArgument;
 
 /**
  * @author David B. Bracewell
@@ -70,7 +69,7 @@ public class JarUtils {
   }
 
   private static List<Resource> getResourcesFromDirectory(Resource resource, Predicate<? super String> stringMatcher) {
-    validateArgument(resource.isDirectory());
+    Preconditions.checkArgument(resource.isDirectory());
     List<Resource> children = new ArrayList<>();
     for (Resource child : resource.getChildren()) {
       children.add(child);

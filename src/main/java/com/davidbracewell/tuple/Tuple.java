@@ -25,6 +25,7 @@ import com.davidbracewell.Copyable;
 import com.davidbracewell.collection.Sorting;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.string.StringUtils;
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -32,8 +33,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static com.davidbracewell.Validations.validateArgument;
 
 /**
  * <p>A tuple is a finite sequence of items.</p>
@@ -148,8 +147,8 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
    * @return A new tuple of degree (end - start) with the elements of this tuple from start to end
    */
   public Tuple slice(int start, int end) {
-    validateArgument(start >= 0, "Start index must be >= 0");
-    validateArgument(start < end, "Start index must be < end index");
+    Preconditions.checkArgument(start >= 0, "Start index must be >= 0");
+    Preconditions.checkArgument(start < end, "Start index must be < end index");
     if (start >= degree()) {
       return Tuple0.INSTANCE;
     }
