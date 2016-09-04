@@ -39,6 +39,24 @@ public class ReTest {
       Regex r = or(re("A"), re("B"), re("C"));
       Pattern p = r.toPattern();
       assertTrue(p.matcher("ZDEFA").find());
+      assertFalse(p.matcher("zdefa").find());
+
+      p = r.toPattern(Pattern.CASE_INSENSITIVE);
+      assertTrue(p.matcher("ZDEFA").find());
+      assertTrue(p.matcher("zdefa").find());
+
+
+      p = r.star().matchLine().toPattern(Pattern.CASE_INSENSITIVE);
+      assertFalse(p.matcher("ZDEFA").find());
+      assertFalse(p.matcher("zdefa").find());
+      assertTrue(p.matcher("abcabc").find());
+      assertTrue(p.matcher("cBAbc").find());
+
+      p = r.not().chars().star().matchLine().toPattern(Pattern.CASE_INSENSITIVE);
+      assertTrue(p.matcher("ZDEFT").find());
+      assertTrue(p.matcher("zdeft").find());
+      assertFalse(p.matcher("abcabc").find());
+      assertFalse(p.matcher("cBAbc").find());
    }
 
    @Test
@@ -119,11 +137,28 @@ public class ReTest {
          Re.chars("\\w"),
          Re.chars(LETTER),
          Re.chars(LETTER, DIGIT),
+         Re.chars("\\s").not(),
+         LETTER.chars(),
          Re.chars("\\s").not()
       };
 
       for (Regex r : matchLetter) {
          Matcher m1 = r.toPattern().matcher(" A ");
+         assertTrue(r.toPattern() + " failed", m1.find());
+         assertEquals(r.toPattern() + " failed", "A", m1.group());
+      }
+   }
+
+
+   @Test
+   public void quantifiers() throws Exception {
+      Regex[] matchLetter = {
+         LETTER.question(),
+         LETTER.star(),
+         LETTER.plus(),
+      };
+      for (Regex r : matchLetter) {
+         Matcher m1 = r.toPattern().matcher("A");
          assertTrue(r.toPattern() + " failed", m1.find());
          assertEquals(r.toPattern() + " failed", "A", m1.group());
       }
