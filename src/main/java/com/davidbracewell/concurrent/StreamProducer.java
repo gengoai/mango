@@ -32,22 +32,22 @@ import java.util.stream.Stream;
  * @author David B. Bracewell
  */
 public class StreamProducer<V> extends Broker.Producer<V> {
-  private final Stream<V> stream;
+   private final Stream<V> stream;
 
-  /**
-   * Instantiates a new Stream producer.
-   *
-   * @param stream the stream
-   */
-  public StreamProducer(@NonNull Stream<V> stream) {
-    this.stream = stream;
-  }
+   /**
+    * Instantiates a new Stream producer.
+    *
+    * @param stream the stream
+    */
+   public StreamProducer(@NonNull Stream<V> stream) {
+      this.stream = stream;
+   }
 
-  @Override
-  public void produce() {
-    start();
-    stream.sequential().forEach(this::yield);
-    stop();
-  }
+   @Override
+   public void produce() {
+      start();
+      stream.forEach(this::yield);
+      stop();
+   }
 
 }//END OF StreamProducer

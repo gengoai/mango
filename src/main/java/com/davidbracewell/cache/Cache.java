@@ -71,9 +71,7 @@ public interface Cache<K, V> {
     *
     * @param keys The keys to remove
     */
-   default void invalidateAll(@NonNull Iterable<? extends K> keys) {
-      keys.forEach(this::invalidate);
-   }
+   void invalidateAll(@NonNull Iterable<? extends K> keys);
 
 
    /**
@@ -114,8 +112,6 @@ public interface Cache<K, V> {
    default boolean isEmpty() {
       return size() == 0;
    }
-
-
 
 
 }//END OF Cache

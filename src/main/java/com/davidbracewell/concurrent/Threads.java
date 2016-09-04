@@ -21,10 +21,7 @@
 
 package com.davidbracewell.concurrent;
 
-import com.davidbracewell.logging.Logger;
-
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 /**
  * The type Threads.
@@ -32,40 +29,32 @@ import java.util.logging.Level;
  * @author David B. Bracewell
  */
 public interface Threads {
-  Logger log = Logger.getLogger(Threads.class);
 
-
-  /**
-   * <p> Sleeps the thread suppressing any errors. </p>
-   *
-   * @param milliseconds The amount of time in milliseconds to sleep
-   */
-  static void sleep(long milliseconds) {
-    if (milliseconds <= 0) {
-      return;
-    }
-    try {
-      if (log.isLoggable(Level.FINEST)) {
-        log.finest("Thread {0} is going to sleep for {1} milliseconds.",
-                   Thread.currentThread().getName(),
-                   milliseconds
-                  );
+   /**
+    * <p> Sleeps the thread suppressing any errors. </p>
+    *
+    * @param milliseconds The amount of time in milliseconds to sleep
+    */
+   static void sleep(long milliseconds) {
+      if (milliseconds <= 0) {
+         return;
       }
-      Thread.sleep(milliseconds);
-    } catch (InterruptedException e) {
-      log.warn(e);
-    }
-  }
+      try {
+         Thread.sleep(milliseconds);
+      } catch (InterruptedException e) {
+         //no op
+      }
+   }
 
-  /**
-   * <p> Sleeps the thread suppressing any errors for a given time unit. </p>
-   *
-   * @param time     The amount of time to sleep
-   * @param timeUnit The TimeUnit that the time is in
-   */
-  static void sleep(long time, TimeUnit timeUnit) {
-    sleep(timeUnit.toMillis(time));
-  }
+   /**
+    * <p> Sleeps the thread suppressing any errors for a given time unit. </p>
+    *
+    * @param time     The amount of time to sleep
+    * @param timeUnit The TimeUnit that the time is in
+    */
+   static void sleep(long time, TimeUnit timeUnit) {
+      sleep(timeUnit.toMillis(time));
+   }
 
 
 }// END OF INTERFACE Threads
