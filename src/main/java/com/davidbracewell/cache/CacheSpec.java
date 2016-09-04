@@ -127,7 +127,7 @@ public class CacheSpec<K, V> implements Specification, Serializable {
     */
    public CacheEngine getEngine() {
       if (StringUtils.isNullOrBlank(cacheEngine)) {
-         return CacheEngines.get("Default");
+         return CacheEngines.get("Guava");
       }
       return CacheEngines.get(cacheEngine);
    }

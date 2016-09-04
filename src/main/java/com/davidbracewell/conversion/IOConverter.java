@@ -25,7 +25,6 @@ import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.*;
 import com.davidbracewell.logging.Logger;
 import com.google.common.primitives.Bytes;
-import scala.actors.threadpool.Arrays;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -39,6 +38,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Blob;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.function.Function;
 
 /**

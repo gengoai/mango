@@ -27,7 +27,6 @@ import com.davidbracewell.io.IOUtils;
 import com.davidbracewell.logging.Logger;
 import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Chars;
-import scala.actors.threadpool.Arrays;
 
 import java.io.*;
 import java.lang.reflect.Array;
@@ -36,6 +35,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.sql.Blob;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 

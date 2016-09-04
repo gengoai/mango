@@ -35,14 +35,14 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Cached {
 
-  /**
-   * @return The KeyMaker to use for converting the arguments to a key
-   */
-  Class<? extends KeyMaker> keyMaker() default KeyMaker.DefaultKeyMaker.class;
+   /**
+    * @return The KeyMaker to use for converting the arguments to a key
+    */
+   Class<? extends KeyMaker> keyMaker() default KeyMaker.DefaultKeyMaker.class;
 
-  /**
-   * @return The name of the cache to use defaults to Global cache
-   */
-  String name() default "";
+   /**
+    * @return The name of the cache to use defaults to Global cache
+    */
+   String name() default "";
 
 }//END OF Cached

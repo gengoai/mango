@@ -31,7 +31,6 @@ import com.davidbracewell.string.CSVFormatter;
 import com.davidbracewell.string.StringUtils;
 import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Chars;
-import scala.actors.threadpool.Arrays;
 
 import java.io.File;
 import java.io.InputStream;
@@ -44,6 +43,7 @@ import java.sql.Blob;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;

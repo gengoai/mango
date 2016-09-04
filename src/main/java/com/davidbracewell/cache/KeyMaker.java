@@ -30,44 +30,46 @@ import java.util.Arrays;
  *
  * @author David B. Bracewell
  */
-public interface KeyMaker extends Serializable{
+public interface KeyMaker extends Serializable {
 
-  /**
-   * Make object.
-   *
-   * @param clazz  the clazz
-   * @param method the method
-   * @param args   the args
-   * @return the object
-   */
-  Object make(Class<?> clazz, Method method, Object[] args);
+   /**
+    * Make object.
+    *
+    * @param clazz  the clazz
+    * @param method the method
+    * @param args   the args
+    * @return the object
+    */
+   Object make(Class<?> clazz, Method method, Object[] args);
 
-  /**
-   * Implementation of a <code>KeyMaker</code> that uses {@link java.util.Objects#hash(Object...)}
-   */
-  class HashCodeKeyMaker implements KeyMaker {
-    private static final long serialVersionUID = 1L;
-    @Override
-    public Object make(Class<?> clazz, Method method, Object[] args) {
-      Object[] tmp = new Object[args.length+2];
-      tmp[0] = clazz;
-      tmp[1] = method;
-      if( args.length > 0 ) {
-        System.arraycopy(args,0,tmp,2,args.length);
+   /**
+    * Implementation of a <code>KeyMaker</code> that uses {@link java.util.Objects#hash(Object...)}
+    */
+   class HashCodeKeyMaker implements KeyMaker {
+      private static final long serialVersionUID = 1L;
+
+      @Override
+      public Object make(Class<?> clazz, Method method, Object[] args) {
+         Object[] tmp = new Object[args.length + 2];
+         tmp[0] = clazz;
+         tmp[1] = method;
+         if (args.length > 0) {
+            System.arraycopy(args, 0, tmp, 2, args.length);
+         }
+         return Arrays.hashCode(tmp);
       }
-      return Arrays.hashCode(tmp);
-    }
-  }//END OF KeyMaker$HashCodeKeyMaker
+   }//END OF KeyMaker$HashCodeKeyMaker
 
-  /**
-   * Default implementation that should never be used
-   */
-  class DefaultKeyMaker implements KeyMaker {
-    private static final long serialVersionUID = 1L;
-    @Override
-    public Object make(Class<?> clazz, Method method, Object[] args) {
-      return null;
-    }
-  }//END OF KeyMaker$DefaultKeyMaker
+   /**
+    * Default implementation that should never be used
+    */
+   class DefaultKeyMaker implements KeyMaker {
+      private static final long serialVersionUID = 1L;
+
+      @Override
+      public Object make(Class<?> clazz, Method method, Object[] args) {
+         return null;
+      }
+   }//END OF KeyMaker$DefaultKeyMaker
 
 }//END OF KeyMaker

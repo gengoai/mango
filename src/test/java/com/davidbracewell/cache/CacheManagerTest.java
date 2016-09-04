@@ -33,29 +33,39 @@ import static org.junit.Assert.*;
 public class CacheManagerTest {
 
 
-  @Before
-  public void setUp() throws Exception {
-    Config.initializeTest();
-  }
+   @Before
+   public void setUp() throws Exception {
+      Config.initializeTest();
+   }
 
-  @Test
-  public void testGetGlobalCache() throws Exception {
-    assertTrue(CacheManager.getInstance().getGlobalCache() != null);
-  }
+   @Test
+   public void testGetGlobalCache() throws Exception {
+      assertTrue(CacheManager.getGlobalCache() != null);
+   }
 
-  @Test
-  public void testGetCacheNames() throws Exception {
-    CacheManager.getInstance().getGlobalCache(); //Make sure the cache is loaded.
-    assertTrue(CacheManager.getInstance().contains(CacheManager.GLOBAL_CACHE));
-    assertTrue(CacheManager.getInstance().getCacheNames().contains(CacheManager.GLOBAL_CACHE));
-  }
+   @Test
+   public void testGetCacheNames() throws Exception {
+      CacheManager.getGlobalCache(); //Make sure the cache is loaded.
+      assertTrue(CacheManager.exists(CacheManager.GLOBAL_CACHE));
+      assertTrue(CacheManager.existing().contains(CacheManager.GLOBAL_CACHE));
+   }
 
-  @Test
-  public void testGetCache() throws Exception {
-    Config.setProperty("testCache", "maxSize:1000");
-    Cache<String, String> cache = CacheManager.getInstance().get("testCache");
-    cache.put("element", "value");
-    assertTrue(cache.containsKey("element"));
-    assertEquals(1, cache.size());
-  }
+   @Test
+   public void testGetCache() throws Exception {
+      Config.setProperty("testCache", "maxSize:1000");
+      Cache<String, String> cache = CacheManager.get("testCache");
+      cache.put("element", "value");
+      assertTrue(cache.containsKey("element"));
+      assertEquals(1, cache.size());
+   }
+
+   @Test
+   public void register() throws Exception {
+      Cache<String, String> cache = CacheManager.register(CacheSpec.<String, String>create()
+                                                             .engine("Guava")
+                                                         );
+      cache.put("A", "D");
+      cache.get("A", () -> "B");
+      assertEquals("D", cache.get("A"));
+   }
 }

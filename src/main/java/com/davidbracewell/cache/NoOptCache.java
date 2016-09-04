@@ -21,9 +21,11 @@
 
 package com.davidbracewell.cache;
 
+import com.davidbracewell.function.SerializableSupplier;
 import lombok.NonNull;
 
 import java.io.Serializable;
+import java.util.concurrent.ExecutionException;
 
 /**
  * The type No opt cache.
@@ -33,59 +35,59 @@ import java.io.Serializable;
  * @author David B. Bracewell
  */
 public class NoOptCache<K, V> implements Cache<K, V>, Serializable {
-  private static final long serialVersionUID = 1L;
-  private final String name;
+   private static final long serialVersionUID = 1L;
+   private final String name;
 
 
-  /**
-   * Default Constructor
-   *
-   * @param specification The cache specification
-   */
-  public NoOptCache(@NonNull CacheSpec<K, V> specification) {
-    this.name = specification.getName();
-  }
+   /**
+    * Default Constructor
+    *
+    * @param specification The cache specification
+    */
+   public NoOptCache(@NonNull CacheSpec<K, V> specification) {
+      this.name = specification.getName();
+   }
 
-  @Override
-  public boolean containsKey(K key) {
-    return false;
-  }
+   @Override
+   public boolean containsKey(K key) {
+      return false;
+   }
 
-  @Override
-  public V get(K key) {
-    return null;
-  }
+   @Override
+   public V get(K key) {
+      return null;
+   }
 
-  @Override
-  public String getName() {
-    return name;
-  }
+   @Override
+   public String getName() {
+      return name;
+   }
 
-  @Override
-  public void put(K key, V value) {
+   @Override
+   public void put(K key, V value) {
 
-  }
+   }
 
-  @Override
-  public V putIfAbsent(K key, V value) {
-    return null;
-  }
+   @Override
+   public V get(K key, @NonNull SerializableSupplier<? extends V> supplier) throws ExecutionException {
+      return supplier.get();
+   }
 
-  @Override
-  public long size() {
-    return 0;
-  }
+   @Override
+   public long size() {
+      return 0;
+   }
 
-  @Override
-  public void clear() {
-  }
+   @Override
+   public void invalidateAll(Iterable<? extends K> keys) {
+   }
 
-  @Override
-  public void invalidateAll(Iterable<? extends K> keys) {
-  }
+   @Override
+   public void invalidate(K key) {
+   }
 
-  @Override
-  public void invalidate(K key) {
-  }
+   @Override
+   public void invalidateAll() {
+   }
 
 }//END OF NoOptCache

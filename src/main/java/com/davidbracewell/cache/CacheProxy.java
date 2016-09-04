@@ -27,9 +27,9 @@ import com.davidbracewell.logging.Logger;
 import com.davidbracewell.reflection.Reflect;
 import com.davidbracewell.reflection.ReflectionUtils;
 import com.davidbracewell.string.StringUtils;
-import com.davidbracewell.tuple.Tuple2;
 import lombok.NonNull;
 import lombok.SneakyThrows;
+import lombok.Value;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
@@ -37,7 +37,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 
 /**
  * Wraps an object automatically caching calls to methods with the <code>Cached</code> annotation.
@@ -46,91 +45,88 @@ import java.util.logging.Level;
  * @author David B. Bracewell
  */
 public class CacheProxy<T> implements InvocationHandler, Serializable {
-  private static final long serialVersionUID = 1L;
-  private static final Logger log = Logger.getLogger(CacheProxy.class);
-  private final T object;
-  private final Map<String, Tuple2<Cached, KeyMaker>> cachedMethods = new HashMap<>();
-  private final String defaultCacheName;
-  private final KeyMaker defaultKeyMaker;
+   private static final long serialVersionUID = 1L;
+   private static final Logger log = Logger.getLogger(CacheProxy.class);
+   private final T object;
+   private final Map<String, CacheInfo> cachedMethods = new HashMap<>();
+   private final String defaultCacheName;
+   private final KeyMaker defaultKeyMaker;
 
-  protected CacheProxy(T object, String cacheName) throws Exception {
-    this.object = object;
-    Reflect r = Reflect.onObject(object).allowPrivilegedAccess();
+   protected CacheProxy(T object, String cacheName) throws Exception {
+      this.object = object;
+      Reflect r = Reflect.onObject(object).allowPrivilegedAccess();
 
 
-    if (r.getReflectedClass().isAnnotationPresent(Cached.class)) {
-      Cached cached = r.getReflectedClass().getAnnotation(Cached.class);
-      defaultCacheName = StringUtils.firstNonNullOrBlank(cacheName, cached.name(), CacheManager.GLOBAL_CACHE);
-      defaultKeyMaker = cached.keyMaker() == KeyMaker.DefaultKeyMaker.class
-                        ? new KeyMaker.HashCodeKeyMaker()
-                        : Reflect.onClass(cached.keyMaker()).create().get();
-    } else {
-      defaultCacheName = StringUtils.firstNonNullOrBlank(cacheName, CacheManager.GLOBAL_CACHE);
-      defaultKeyMaker = new KeyMaker.HashCodeKeyMaker();
-    }
-
-    r.getMethods().forEach(Unchecked.consumer(method -> {
-      if (method.isAnnotationPresent(Cached.class)) {
-        Cached cached = method.getAnnotation(Cached.class);
-        KeyMaker keyMaker = cached.keyMaker() == KeyMaker.DefaultKeyMaker.class
-                            ? defaultKeyMaker
-                            : Reflect.onClass(cached.keyMaker()).create().get();
-        cachedMethods.put(method2String(method), Tuple2.of(cached, keyMaker));
+      if (r.getReflectedClass().isAnnotationPresent(Cached.class)) {
+         Cached cached = r.getReflectedClass().getAnnotation(Cached.class);
+         defaultCacheName = StringUtils.firstNonNullOrBlank(cacheName, cached.name(), CacheManager.GLOBAL_CACHE);
+         defaultKeyMaker = cached.keyMaker() == KeyMaker.DefaultKeyMaker.class
+                           ? new KeyMaker.HashCodeKeyMaker()
+                           : Reflect.onClass(cached.keyMaker()).create().get();
+      } else {
+         defaultCacheName = StringUtils.firstNonNullOrBlank(cacheName, CacheManager.GLOBAL_CACHE);
+         defaultKeyMaker = new KeyMaker.HashCodeKeyMaker();
       }
-    }));
-  }
 
-  /**
-   * Creates a proxy object that automatically caches calls to methods with the <code>Cached</code> annotation.
-   *
-   * @param <T>    The type of the object
-   * @param object The object being wrapped
-   * @return The wrapped object
-   */
-  public static <T> T cache(Object object) {
-    return cache(object, null);
-  }
+      r.getMethods().forEach(Unchecked.consumer(method -> {
+         if (method.isAnnotationPresent(Cached.class)) {
+            Cached cached = method.getAnnotation(Cached.class);
+            KeyMaker keyMaker = cached.keyMaker() == KeyMaker.DefaultKeyMaker.class
+                                ? defaultKeyMaker
+                                : Reflect.onClass(cached.keyMaker()).create().get();
+            cachedMethods.put(method.toGenericString(),
+                              new CacheInfo(
+                                              CacheManager.get(
+                                                 StringUtils.firstNonNullOrBlank(cached.name(), defaultCacheName)),
+                                              keyMaker)
+                             );
+         }
+      }));
+   }
 
-  @SneakyThrows
-  public static <T> T cache(@NonNull Object object, String defaultCacheName) {
-    return Cast.as(Proxy.newProxyInstance(object.getClass().getClassLoader(),
-                                          ReflectionUtils.getAllInterfaces(object).toArray(new Class[1]),
-                                          new CacheProxy<>(object, defaultCacheName)
-                                         )
-                  );
-  }
+   /**
+    * Creates a proxy object that automatically caches calls to methods with the <code>Cached</code> annotation.
+    *
+    * @param <T>    The type of the object
+    * @param object The object being wrapped
+    * @return The wrapped object
+    */
+   public static <T> T cache(Object object) {
+      return cache(object, null);
+   }
 
-  private String method2String(Method method) {
-    return method.getName() + "::" + method.getParameterCount();
-  }
+   @SneakyThrows
+   public static <T> T cache(@NonNull Object object, String defaultCacheName) {
+      return Cast.as(Proxy.newProxyInstance(object.getClass().getClassLoader(),
+                                            ReflectionUtils.getAllInterfaces(object).toArray(new Class[1]),
+                                            new CacheProxy<>(object, defaultCacheName)
+                                           )
+                    );
+   }
 
-  @Override
-  public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-    Tuple2<Cached, KeyMaker> tuple = cachedMethods.get(method2String(method));
-    if (tuple == null) {
+   @Override
+   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+      //If this is a cached method then do the caching...
+      if (cachedMethods.containsKey(method.toGenericString())) {
+         CacheInfo cacheInfo = cachedMethods.get(method.toGenericString());
+         Object key = cacheInfo.getKeyMaker().make(object.getClass(), method, args);
+         try {
+            return cacheInfo.getCache().get(key, Unchecked.supplier(() -> method.invoke(object, args)));
+         } catch (RuntimeException e) {
+            throw e.getCause();
+         }
+      }
+      //Otherwise just invoke it
       return method.invoke(object, args);
-    }
+   }
 
-    String cacheName = StringUtils.firstNonNullOrBlank(tuple.v1.name(), defaultCacheName);
-    KeyMaker keyMaker = tuple.v2;
-    Object key = keyMaker.make(object.getClass(), method, args);
-    Cache<Object, Object> cache = CacheManager.getInstance().get(cacheName);
 
-    if (cache.containsKey(key)) {
-      if (log.isLoggable(Level.FINEST)) {
-        log.finest("Cache contained key: '{0}' '{1}'", method.getName(), key);
-      }
-      return cache.get(key);
-    } else if (cache instanceof AutoCalculatingCache) {
-      return cache.get(key);
-    }
+   @Value
+   private static class CacheInfo implements Serializable {
+      private static final long serialVersionUID = 1L;
+      public Cache<Object, Object> cache;
+      public KeyMaker keyMaker;
+   }
 
-    Object result = method.invoke(object, args);
-    cache.putIfAbsent(key, result);
-    if (log.isLoggable(Level.FINEST)) {
-      log.finest("Adding to cache '{0}' key : '{1}'", cache.getName(), key);
-    }
-    return result;
-  }
 
 }//END OF CacheProxy

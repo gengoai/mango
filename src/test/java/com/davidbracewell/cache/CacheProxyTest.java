@@ -27,7 +27,6 @@ import com.google.common.base.Stopwatch;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -57,7 +56,7 @@ public class CacheProxyTest {
     Config.setProperty("com.davidbracewell.cache.globalCache.class", "com.davidbracewell.cache.impl.GuavaCache");
     Config.setProperty("com.davidbracewell.cache.globalCache.constructor.param1.type", "String");
     Config.setProperty("com.davidbracewell.cache.globalCache.constructor.param1.value", "maximumSize=10000");
-    CacheManager.getInstance().getGlobalCache().clear();
+    CacheManager.getGlobalCache().invalidateAll();
   }
 
   @Test

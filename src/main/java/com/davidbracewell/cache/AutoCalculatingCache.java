@@ -35,12 +35,12 @@ import java.util.concurrent.ExecutionException;
  */
 public interface AutoCalculatingCache<K, V> extends Cache<K, V> {
 
-  /**
-   * Re-calculates the value associated with a key or calculates it
-   *
-   * @param key The key
-   */
-  void refresh(K key) throws ExecutionException;
+   /**
+    * Re-calculates the value associated with a key or calculates it
+    *
+    * @param key The key
+    */
+   void refresh(K key) throws ExecutionException;
 
 
 }//END OF AutoLoadingCache

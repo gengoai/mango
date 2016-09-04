@@ -21,29 +21,35 @@
 
 package com.davidbracewell.cache;
 
-import lombok.NonNull;
-import org.kohsuke.MetaInfServices;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.Arrays;
+
+import static org.junit.Assert.*;
 
 /**
  * @author David B. Bracewell
  */
-@MetaInfServices
-public class DefaultCacheEngine implements CacheEngine {
+public class NoOptCacheTest {
 
-  @Override
-  public String name() {
-    return "Default";
-  }
+   private Cache<String, String> cache;
 
-  @Override
-  public <K, V> Cache<K, V> create(@NonNull CacheSpec<K, V> cacheSpec) {
-    Cache<K, V> cache;
-    if (cacheSpec.getLoadingFunction() != null) {
-      cache = new DefaultAutoCalculatingCache<>(cacheSpec);
-    } else {
-      cache = new DefaultCache<>(cacheSpec);
-    }
-    return cache;
-  }
+   @Before
+   public void setUp() throws Exception {
+      cache = new NoOptCache<>(new CacheSpec<String, String>().name("test"));
+      cache.put("var", "element");
+   }
 
-}//END OF DefaultCacheEngine
+   @Test
+   public void testCache() throws Exception {
+      assertEquals(0, cache.size());
+      cache.invalidateAll();
+      cache.invalidateAll(Arrays.asList("A"));
+      cache.invalidate("A");
+      assertFalse(cache.containsKey("var"));
+      assertNull(cache.get("A"));
+      assertEquals("test", cache.getName());
+   }
+
+}

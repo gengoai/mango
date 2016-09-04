@@ -22,6 +22,7 @@
 
 package com.davidbracewell.cache;
 
+import com.davidbracewell.function.SerializableSupplier;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -40,70 +41,77 @@ import java.util.function.Function;
  * @author David B. Bracewell
  */
 public class GuavaLoadingCache<K, V> implements AutoCalculatingCache<K, V>, Serializable {
-  private static final long serialVersionUID = 1L;
-  private final LoadingCache<K, V> cache;
-  private final String name;
+   private static final long serialVersionUID = 1L;
+   private final LoadingCache<K, V> cache;
+   private final String name;
 
-  public GuavaLoadingCache(@NonNull String name, @NonNull CacheBuilder<K, V> builder, @NonNull final Function<K, V> cacheLoader) {
-    this.name = name;
-    this.cache = builder.build(new CacheLoader<K, V>() {
-      @Override
-      public V load(K key) throws Exception {
-        return cacheLoader.apply(key);
-      }
-    });
-  }
+   /**
+    * Instantiates a new Guava loading cache.
+    *
+    * @param name        the name
+    * @param builder     the builder
+    * @param cacheLoader the cache loader
+    */
+   public GuavaLoadingCache(@NonNull String name, @NonNull CacheBuilder<K, V> builder, @NonNull final Function<K, V> cacheLoader) {
+      this.name = name;
+      this.cache = builder.build(new CacheLoader<K, V>() {
+         @Override
+         public V load(K key) throws Exception {
+            return cacheLoader.apply(key);
+         }
+      });
+   }
 
-  @Override
-  public void clear() {
-    cache.invalidateAll();
-  }
+   @Override
+   public boolean containsKey(K key) {
+      return cache.asMap().containsKey(key);
+   }
 
-  @Override
-  public boolean containsKey(K key) {
-    return cache.asMap().containsKey(key);
-  }
+   @Override
+   public V get(K key, SerializableSupplier<? extends V> supplier) throws ExecutionException {
+      return cache.get(key, supplier::get);
+   }
 
-  @Override
-  @SneakyThrows
-  public V putIfAbsent(K key, final V value) {
-    return cache.get(key, () -> value);
-  }
+   @Override
+   public void put(K key, final V value) {
+      cache.put(key, value);
+   }
 
-  @Override
-  public void put(K key, final V value) {
-    cache.put(key, value);
-  }
+   @Override
+   public long size() {
+      return cache.size();
+   }
 
-  @Override
-  public long size() {
-    return cache.size();
-  }
+   @Override
+   public void invalidateAll(Iterable<? extends K> keys) {
+      cache.invalidateAll(keys);
+   }
 
-  @Override
-  public void invalidateAll(Iterable<? extends K> keys) {
-    cache.invalidateAll(keys);
-  }
+   @Override
+   public void invalidate(K key) {
+      cache.invalidate(key);
+   }
 
-  @Override
-  public void invalidate(K key) {
-    cache.invalidate(key);
-  }
+   @Override
+   @SneakyThrows
+   public V get(K key) {
+      return cache.get(key);
+   }
 
-  @Override
-  @SneakyThrows
-  public V get(K key) {
-    return cache.get(key);
-  }
+   @Override
+   public String getName() {
+      return name;
+   }
 
-  @Override
-  public String getName() {
-    return name;
-  }
+   @Override
+   public void refresh(K key) throws ExecutionException {
+      cache.refresh(key);
+   }
 
-  @Override
-  public void refresh(K key) throws ExecutionException {
-    cache.refresh(key);
-  }
+   @Override
+   public void invalidateAll() {
+      cache.invalidateAll();
+   }
+
 
 }//END OF GuavaCache
