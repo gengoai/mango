@@ -21,87 +21,93 @@
 
 package com.davidbracewell.cli;
 
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
 public class CommandLineParserTest {
 
-//  final CommandLineParser cmd = new CommandLineParser();
-//
-//  @Before
-//  public void setUp() throws Exception {
-//    cmd.addOption("--arg1=ARG+", "");
-//    cmd.addOption("--arg2", "");
-//    cmd.addOption("--arg3=ARG", "");
-//    cmd.addOption("-a=ARG", "");
-//    cmd.addOption("-b=ARG+", "", "--blong");
-//    cmd.addOption("-c", "");
-//  }
-//
-//  @Test
-//  public void correctOptions() {
-//    CommandLineOption o = cmd.getOption("--arg1");
-//    assertEquals("long option argument name", "--arg1", o.getName());
-//    assertEquals("long option argument hasArgument", true, o.isArgumentRequired());
-//    assertEquals("long option argument required", true, o.isRequired());
-//
-//    o = cmd.getOption("--arg2");
-//    assertEquals("long option argument name", "--arg2", o.getName());
-//    assertEquals("long option argument hasArgument", false, o.isArgumentRequired());
-//    assertEquals("long option argument required", false, o.isRequired());
-//
-//    o = cmd.getOption("--arg3");
-//    assertEquals("long option argument name", "--arg3", o.getName());
-//    assertEquals("long option argument hasArgument", true, o.isArgumentRequired());
-//    assertEquals("long option argument required", false, o.isRequired());
-//
-//    o = cmd.getOption("-a");
-//    assertEquals("short option argument name", "-a", o.getName());
-//    assertEquals("short option argument hasArgument", true, o.isArgumentRequired());
-//    assertEquals("short option argument required", false, o.isRequired());
-//
-//    o = cmd.getOption("-b");
-//    assertEquals("short option argument name", "-b", o.getName());
-//    assertEquals("short option argument hasArgument", true, o.isArgumentRequired());
-//    assertEquals("short option argument required", true, o.isRequired());
-//
-//    o = cmd.getOption("-c");
-//    assertEquals("short option argument name", "-c", o.getName());
-//    assertEquals("short option argument hasArgument", false, o.isArgumentRequired());
-//    assertEquals("short option argument required", false, o.isRequired());
-//  }
-//
-//  @Test
-//  public void parseTest() {
-//    String[] args = {"-c", "-b=arg", "--arg1=arg", "-l"};
-//    cmd.parse(args);
-//    assertTrue(cmd.get("-b").asString().equals("arg"));
-//    assertTrue(cmd.getOption("-b").wasSeen(cmd));
-//    assertTrue(cmd.getOption("-b").getValue(cmd).asString().equals("arg"));
-//  }
-//
-//  @Test(expected = CommandLineParserException.class)
-//  public void parseError1() {
-//    String[] args = {"--"};
-//    cmd.parse(args);
-//  }
-//
-//  @Test(expected = CommandLineParserException.class)
-//  public void parseError2() {
-//    String[] args = {"-", "Space"};
-//    cmd.parse(args);
-//  }
-//
-//  @Test(expected = IllegalArgumentException.class)
-//  public void incorrectLongOption1() {
-//    cmd.addOption("-arg1=ARG+", "");
-//  }
-//
-//  @Test(expected = IllegalArgumentException.class)
-//  public void incorrectLongOption2() {
-//    cmd.addOption("--arg 1=ARG+", "");
-//  }
-//
-//  @Test(expected = IllegalArgumentException.class)
-//  public void incorrectLongOption3() {
-//    cmd.addOption("--arg1=AR+", "");
-//  }
+   CommandLineParser cmd;
 
+   @Before
+   public void setUp() throws Exception {
+      cmd = new CommandLineParser();
+      cmd.addOption(NamedOption.builder()
+                               .name("arg1")
+                               .description("dummy")
+                               .required(true)
+                               .type(String.class)
+                               .build()
+                   );
+      cmd.addOption(NamedOption.builder()
+                               .name("arg2")
+                               .description("dummy")
+                               .type(Boolean.class)
+                               .build()
+                   );
+      cmd.addOption(NamedOption.builder()
+                               .name("arg3")
+                               .description("dummy")
+                               .type(String.class)
+                               .build()
+                   );
+      cmd.addOption(NamedOption.builder()
+                               .name("a")
+                               .description("dummy")
+                               .type(String.class)
+                               .build()
+                   );
+      cmd.addOption(NamedOption.builder()
+                               .name("b")
+                               .type(String.class)
+                               .description("dummy")
+                               .alias("blong")
+                               .build()
+                   );
+      cmd.addOption(NamedOption.builder()
+                               .name("z")
+                               .description("dummy")
+                               .type(Boolean.class)
+                               .build()
+                   );
+
+   }
+
+   @Test
+   public void cleanParse() throws Exception {
+      cmd.parse(new String[]{"--arg1=ALPHA", "--arg2", "-a", "BETA", "--blong", "=", "GAMMA", "-z"});
+      assertEquals("ALPHA", cmd.get("arg1"));
+      assertEquals(true, cmd.get("arg2"));
+      assertEquals("BETA", cmd.get("a"));
+      assertEquals("GAMMA", cmd.get("b"));
+      assertEquals(true, cmd.get("z"));
+   }
+
+   @Test
+   public void notSet() throws Exception {
+      cmd.parse(new String[]{"--arg1=ALPHA", "-a", "BETA", "--blong", "=", "GAMMA"});
+      assertEquals("ALPHA", cmd.get("arg1"));
+      assertEquals(false, cmd.get("arg2"));
+      assertEquals("BETA", cmd.get("a"));
+      assertEquals("GAMMA", cmd.get("b"));
+      assertEquals(false, cmd.get("z"));
+   }
+
+   @Test
+   public void explicitFalse() throws Exception {
+      cmd.parse(new String[]{"--arg1=ALPHA", "-a", "BETA", "--blong", "=", "GAMMA", "-z=FALSE", "--arg2", "false"});
+      assertEquals("ALPHA", cmd.get("arg1"));
+      assertEquals(false, cmd.get("arg2"));
+      assertEquals("BETA", cmd.get("a"));
+      assertEquals("GAMMA", cmd.get("b"));
+      assertEquals(false, cmd.get("z"));
+   }
+
+   @Test
+   public void notSpecified() throws Exception {
+      cmd.parse(new String[]{"--arg1=ALPHA", "--unknown", "SIGMA"});
+      assertEquals("ALPHA", cmd.get("arg1"));
+      assertEquals("SIGMA", cmd.get("unknown"));
+   }
 }

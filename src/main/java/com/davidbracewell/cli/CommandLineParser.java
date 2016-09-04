@@ -35,20 +35,25 @@ import java.util.stream.Stream;
 
 
 /**
- * <p> A simple command line parser. </p> <p> Options (flags) are added via the <code>addOption</code> method and have
- * the following specification: <p/>
- * <pre>
- * --longOption=ARG
- * </pre>
- * <p/>
- * <pre>
- * -s ARG
- * </pre>
- * <p/> where ARG means the option requires an argument. An option can have an unlimited number of aliases. </p>
+ * <p>A command line parser that can handle non-specified arguments. Arguments can be specified by manually adding
+ * {@link NamedOption}s via the {@link #addOption(NamedOption)} method or by setting the parser's owner object via the
+ * constructor which will look for fields annotated with {@link Option}. All parsers will have  help (-h or --help),
+ * config (--config), and explain config (--config-explain) options added.</p>
+ *
+ * <p>The parser accepts long (e.g. --longOption) and short (e.g. -s) arguments. Multiple short (e.g. single character)
+ * arguments can be specified at one time (e.g. -xzf would set the x, z, and f options to true). Short arguments may
+ * have values (e.g. -f FILENAME).</p>
+ *
+ * <p>Long arguments whose are defined as being boolean require their value to be set. Boolean valued long arguments can
+ * specified without the true/false value.</p>
+ *
+ * <p>Values for options will be specified on the corresponding {@link NamedOption} instance. The value can be retrieved
+ * either directly from the NamedOption or by using the {@link #get(String)} method. Argument names need not specify the
+ * "--" or "-" prefix.</p>
  *
  * @author David B. Bracewell
  */
-public class CommandLineParser {
+public final class CommandLineParser {
 
    private static final String KEY_VALUE_SEPARATOR = "=";
    private static final String LONG = "--";
@@ -65,24 +70,6 @@ public class CommandLineParser {
     */
    public CommandLineParser() {
       this(null, StringUtils.EMPTY);
-   }
-
-   /**
-    * Instantiates a new Command line parser.
-    *
-    * @param applicationDescription the application description
-    */
-   public CommandLineParser(String applicationDescription) {
-      this(null, applicationDescription);
-   }
-
-   /**
-    * Instantiates a new Command line parser.
-    *
-    * @param owner the owner
-    */
-   public CommandLineParser(Object owner) {
-      this(owner, StringUtils.EMPTY);
    }
 
    /**
@@ -143,16 +130,23 @@ public class CommandLineParser {
    public String[] parse(@NonNull String[] args) {
       List<String> filtered = new ArrayList<>();
       List<String> cleanedArgs = new ArrayList<>();
+
+      //Pass through the args once to do a clean up will make the next round easier to parser.
       for (String c : args) {
          if (c.endsWith(KEY_VALUE_SEPARATOR) && isOptionName(c)) {
+            //If it is ends with a key/value separator and is an option
+            //lets separate them into two tokens.
             cleanedArgs.add(c.substring(0, c.length() - 1));
             cleanedArgs.add(KEY_VALUE_SEPARATOR);
          } else if (c.contains(KEY_VALUE_SEPARATOR) && isOptionName(c)) {
+            //If it contains a key/value separator, but doesn't end in one and is an option
+            //then we have a key value pair that will split into three tokens [key, =, value]
             int index = c.lastIndexOf(KEY_VALUE_SEPARATOR);
             cleanedArgs.add(c.substring(0, index));
             cleanedArgs.add(KEY_VALUE_SEPARATOR);
             cleanedArgs.add(c.substring(index + KEY_VALUE_SEPARATOR.length()));
-         } else {
+         } else if (StringUtils.isNotNullOrBlank(c)) {
+            //Anything else that isn't null or blank we keep as is
             cleanedArgs.add(c);
          }
       }
@@ -160,27 +154,34 @@ public class CommandLineParser {
       for (int i = 0; i < cleanedArgs.size(); i++) {
          String current = cleanedArgs.get(i);
 
-         if (StringUtils.isNullOrBlank(current)) {
-            continue;
-         } else if (LONG.equals(current) || SHORT.equals(current)) {
+         //Check that the token isn't just a long or short argument marker.
+         if (LONG.equals(current) || SHORT.equals(current)) {
             throw new CommandLineParserException(current, null);
          }
 
          if (current.startsWith(LONG)) {
+            //We have a long form argument.
             String value = "true";
             String next = peek(cleanedArgs, i + 1);
             if (next.equalsIgnoreCase(KEY_VALUE_SEPARATOR)) {
+               //If are peeked at value is our key value separator then lets set the value to what comes after.
                value = peek(cleanedArgs, i + 2);
+               if (isOptionName(value)) {
+                  //If the value is an option name, we have an error
+                  throw new CommandLineParserException(current, null);
+               }
                i += 2;
             } else if (!isOptionName(next)) {
+               //If are peeked at value isn't our key value separator and isn't another option name, lets set the value to what comes after.
                i++;
                value = next;
             }
             setValue(current, value, filtered);
          } else if (current.startsWith(SHORT)) {
-
+            //We have a short form argument.
             //Are we setting multiple "boolean" values?
             if (current.length() > 2) {
+               //All of these will be set to true
                char[] opts = current.substring(1).toCharArray();
                for (char c : opts) {
                   setValue("-" + c, "true", filtered);
@@ -189,9 +190,15 @@ public class CommandLineParser {
                String value = "true";
                String next = peek(cleanedArgs, i + 1);
                if (next.equalsIgnoreCase(KEY_VALUE_SEPARATOR)) {
+                  //If are peeked at value is our key value separator then lets set the value to what comes after.
                   value = peek(cleanedArgs, i + 2);
+                  if (isOptionName(value)) {
+                     //If the value is an option name, we have an error
+                     throw new CommandLineParserException(current, null);
+                  }
                   i += 2;
                } else if (!isOptionName(next)) {
+                  //If are peeked at value isn't our key value separator and isn't another option name, lets set the value to what comes after.
                   i++;
                   value = next;
                }
@@ -199,11 +206,13 @@ public class CommandLineParser {
             }
 
          } else {
+            //Not a long, not a short, we got an error
             throw new CommandLineParserException(current, null);
          }
 
       }
 
+      //Check if the help was set, if a required argument was not set, and try to set the associated field on the owner object if one is set.
       optionSet.forEach(Unchecked.consumer(option -> {
          if (option.getName().equals("h") && Cast.<Boolean>as(option.getValue())) {
             showHelp();
@@ -224,9 +233,9 @@ public class CommandLineParser {
 
 
    /**
-    * Prints help to standard error
+    * Prints help to standard error showing the application description, if set, and the list of valid command line
+    * arguments with those required arguments marked with an asterisk.
     */
-
    public void showHelp() {
       System.err.println(applicationDescription);
       System.err.println("===============================================");
@@ -234,8 +243,8 @@ public class CommandLineParser {
       Map<NamedOption, String> optionNames = new HashMap<>();
       optionSet.forEach(option -> {
          String out = Stream.concat(
-               Stream.of(option.getAliasSpecifications()),
-               Stream.of(option.getSpecification()))
+            Stream.of(option.getAliasSpecifications()),
+            Stream.of(option.getSpecification()))
                             .sorted((s1, s2) -> Integer.compare(s1.length(), s2.length()))
                             .collect(Collectors.joining(", "));
          if (option.isRequired()) {
@@ -265,13 +274,16 @@ public class CommandLineParser {
 
 
    private String setValue(String key, String value, List<String> filtered) {
+      //look up the option
       NamedOption option = options.get(key.replaceAll("^-+", ""));
 
       if (option == null) {
+         //We have a non-specified argument, so add it to the filter list and check the value.
          filtered.add(key);
-         if (value == null) {
+         if (StringUtils.isNullOrBlank(value)) {
             value = "true";
          } else {
+            //if one was specified, add it
             filtered.add(value);
          }
          unamedOptions.put(key.replaceAll("^-+", ""), value);
@@ -279,13 +291,13 @@ public class CommandLineParser {
 
       } else if (option.isBoolean()) {
 
-         if (value == null || value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
-            option.setValue(value);
+         if (StringUtils.isNullOrBlank(value) || value.equalsIgnoreCase("true")) {
+            option.setValue(Boolean.toString(true));
+            return null;
+         } else {
+            option.setValue(Boolean.toString(false));
             return null;
          }
-
-         option.setValue(null);
-         return value;
 
       } else {
 
@@ -306,43 +318,52 @@ public class CommandLineParser {
     * @param optionName the option name
     * @return True if it was set (boolean options must be true), False otherwise
     */
-   public boolean isSet(String optionName) {
-      if (!options.containsKey(optionName)) {
-         return unamedOptions.containsKey(optionName);
-      }
+   public boolean isSet(@NonNull String optionName) {
+      optionName = optionName.replaceAll("^-+", "");
       NamedOption option = options.get(optionName);
-      if (option.isBoolean()) {
-         return option.getValue() != null && Cast.<Boolean>as(option.getValue());
-      }
-      return option.getValue() != null;
-   }
 
-   public boolean isSet(NamedOption option) {
       if (option == null) {
-         return false;
+         return unamedOptions.containsKey(optionName) &&
+                   !unamedOptions.get(optionName).equalsIgnoreCase("false");
       }
-      return isSet(option.getName());
+
+      return isSet(option);
    }
 
    /**
-    * Get t.
+    * Determines if an option was set or not.
     *
-    * @param <T>        the type parameter
-    * @param optionName the option name
-    * @return the t
+    * @param option the option to check
+    * @return True if it was set (boolean options must be true), False otherwise
     */
-   public <T> T get(String optionName) {
-      if (!options.containsKey(optionName)) {
+   public boolean isSet(@NonNull NamedOption option) {
+      if (option.isBoolean()) {
+         return option.getValue() != null && option.<Boolean>getValue();
+      }
+
+      return option.getValue() != null;
+   }
+
+   /**
+    * Gets the value for the specified option
+    *
+    * @param <T>        the type of the value for the option
+    * @param optionName the name of the option whose value we want to retrieve
+    * @return the value of the option or null if not set
+    */
+   public <T> T get(@NonNull String optionName) {
+      optionName = optionName.replaceAll("^-+", "");
+      NamedOption option = options.get(optionName);
+
+      if (option == null) {
          return Cast.as(unamedOptions.get(optionName));
       }
-      NamedOption option = options.get(optionName);
+
       if (option.isBoolean()) {
-         if (option.getValue() == null) {
-            return Cast.as(Boolean.FALSE);
-         }
-         return Cast.as(option.getValue());
+         return option.getValue() == null ? Cast.as(Boolean.FALSE) : option.getValue();
       }
-      return options.get(optionName).getValue();
+
+      return option.getValue();
    }
 
    /**
