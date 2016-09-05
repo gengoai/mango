@@ -19,10 +19,8 @@
  * under the License.
  */
 
-package com.davidbracewell.collection;
+package com.davidbracewell.collection.index;
 
-import com.davidbracewell.collection.index.HashMapIndex;
-import com.davidbracewell.collection.index.Index;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -19,11 +19,8 @@
  * under the License.
  */
 
-package com.davidbracewell.collection;
+package com.davidbracewell.collection.counter;
 
-import com.davidbracewell.collection.counter.Counter;
-import com.davidbracewell.collection.counter.Counters;
-import com.davidbracewell.collection.counter.HashMapCounter;
 import org.junit.Test;
 
 import java.util.Arrays;

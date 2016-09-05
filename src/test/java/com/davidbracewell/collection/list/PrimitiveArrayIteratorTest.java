@@ -19,9 +19,8 @@
  * under the License.
  */
 
-package com.davidbracewell.collection;
+package com.davidbracewell.collection.list;
 
-import com.davidbracewell.collection.list.PrimitiveArrayIterator;
 import org.junit.Test;
 
 import java.util.Iterator;

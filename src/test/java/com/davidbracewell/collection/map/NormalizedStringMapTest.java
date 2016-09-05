@@ -19,10 +19,8 @@
  * under the License.
  */
 
-package com.davidbracewell.collection;
+package com.davidbracewell.collection.map;
 
-import com.davidbracewell.collection.map.Maps;
-import com.davidbracewell.collection.map.NormalizedStringMap;
 import org.junit.Before;
 import org.junit.Test;
 

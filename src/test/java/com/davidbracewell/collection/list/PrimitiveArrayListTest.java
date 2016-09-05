@@ -19,9 +19,8 @@
  * under the License.
  */
 
-package com.davidbracewell.collection;
+package com.davidbracewell.collection.list;
 
-import com.davidbracewell.collection.list.PrimitiveArrayList;
 import org.junit.Before;
 import org.junit.Test;
 

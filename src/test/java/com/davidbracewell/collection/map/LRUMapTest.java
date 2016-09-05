@@ -19,9 +19,8 @@
  * under the License.
  */
 
-package com.davidbracewell.collection;
+package com.davidbracewell.collection.map;
 
-import com.davidbracewell.collection.map.LRUMap;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
