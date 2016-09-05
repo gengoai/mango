@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.util.AbstractMap;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,6 +51,8 @@ public class StreamsTest {
 
    @Test
    public void iterator() throws Exception {
+      Iterator<String> it = null;
+      assertEquals(0, Streams.asStream(it).count());
       assertEquals("A, B, C",
                    Streams.asStream(Arrays.asList("A", "B", "C").iterator()).collect(Collectors.joining(", "))
                   );
@@ -61,6 +64,8 @@ public class StreamsTest {
 
    @Test
    public void iterable() throws Exception {
+      Iterable<String> it = null;
+      assertEquals(0, Streams.asStream(it).count());
       assertEquals("A, B, C",
                    Streams.asStream(Arrays.asList("A", "B", "C")).collect(Collectors.joining(", "))
                   );

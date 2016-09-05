@@ -21,6 +21,7 @@
 
 package com.davidbracewell.collection;
 
+import lombok.NonNull;
 import lombok.Value;
 
 import java.io.Serializable;
@@ -34,5 +35,15 @@ public class TrieMatch<V> implements Serializable {
    public final int start;
    public final int end;
    public final V value;
+
+   public TrieMatch(int start, int end, V value) {
+      this.end = end;
+      this.start = start;
+      this.value = value;
+   }
+
+   public String getMatch(@NonNull String content) {
+      return content.substring(start, end);
+   }
 
 }//END OF TrieMatch

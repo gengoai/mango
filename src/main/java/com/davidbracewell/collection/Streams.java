@@ -138,6 +138,9 @@ public interface Streams {
     * @return the stream
     */
    static <T> Stream<T> asStream(Iterator<? extends T> iterator, boolean parallel) {
+      if (iterator == null) {
+         return Stream.empty();
+      }
       return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), parallel);
    }
 
@@ -161,6 +164,9 @@ public interface Streams {
     * @return the stream
     */
    static <T> Stream<T> asStream(Iterable<? extends T> iterable, boolean parallel) {
+      if (iterable == null) {
+         return Stream.empty();
+      }
       return StreamSupport.stream(Cast.as(iterable.spliterator()), parallel);
    }
 

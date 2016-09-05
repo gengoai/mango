@@ -9,8 +9,6 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.davidbracewell.tuple.Tuples.$;
-
 /**
  * The type Trie.
  *
@@ -54,6 +52,13 @@ public class Trie<V> implements Serializable, Map<String, V> {
     * @return the list
     */
    public List<TrieMatch<V>> findAll(String text, CharPredicate delimiter) {
+      if (StringUtils.isNullOrBlank(text)) {
+         return Collections.emptyList();
+      }
+      if (delimiter == null) {
+         delimiter = CharPredicate.ANY;
+      }
+
       int len = text.length();
       StringBuilder key = new StringBuilder();
       int start = 0;
@@ -61,49 +66,53 @@ public class Trie<V> implements Serializable, Map<String, V> {
       List<TrieMatch<V>> results = new ArrayList<>();
 
       for (int i = 0; i < len; i++) {
+
          key.append(text.charAt(i));
+
          //We have a key match
          if (containsKey(key.toString())) {
-            int nextI = i + 1;
-            lastMatch = i + 1;
+            int nextI = lastMatch = i + 1;
 
             //There is something longer!
-            if (nextI < len && !prefix(key.toString() + text.charAt(i + 1)).isEmpty()) {
+            if (nextI < len && prefix(key.toString() + text.charAt(i + 1)).size() > 0) {
                continue;
             }
 
-            lastMatch = -1;
 
+            lastMatch = -1;
             //check if we accept
             if (delimiter.matches(text.charAt(nextI))) {
                V value = get(key.toString());
-               results.add(new TrieMatch<>(i + 1, start, value));
-               start = i + 1;
-               continue;
+               results.add(new TrieMatch<>(start, nextI, value));
+               start = nextI;
             }
-         }
 
-         if (prefix(key.toString()).isEmpty()) {
+         } else if (prefix(key.toString()).isEmpty()) {
+
+            //We cannot possibly match anything
             if (lastMatch != -1) {
+               //We have a good match, so lets use it
                int nextI = lastMatch;
                if (nextI >= 1 && delimiter.matches(text.charAt(nextI))) {
                   key = new StringBuilder(text.substring(start, nextI));
                   V value = get(key.toString());
-                  results.add(new TrieMatch<>(nextI, start, value));
-                  i = lastMatch;
+                  results.add(new TrieMatch<>(start, nextI, value));
+                  i = nextI;
                   lastMatch = -1;
+                  start = nextI;
+               } else {
+                  start = i;
                }
-
+            } else {
+               start = i;
             }
 
-            start = i;
-            if (key.length() > 1) {
+            if (start < len) {
                key.setLength(1);
-               key.setCharAt(0, text.charAt(i));
+               key.setCharAt(0, text.charAt(start));
             } else {
                key.setLength(0);
             }
-
          }
 
       }
@@ -165,6 +174,13 @@ public class Trie<V> implements Serializable, Map<String, V> {
    @Override
    public Set<String> keySet() {
       return new AbstractSet<String>() {
+
+         @Override
+         public boolean contains(Object o) {
+            return Trie.this.containsKey(o);
+         }
+
+
          @Override
          public Iterator<String> iterator() {
             return Streams.asStream(root.subTreeIterator()).map(Map.Entry::getKey).iterator();
@@ -174,6 +190,8 @@ public class Trie<V> implements Serializable, Map<String, V> {
          public int size() {
             return root.size;
          }
+
+
       };
    }
 
@@ -195,6 +213,16 @@ public class Trie<V> implements Serializable, Map<String, V> {
    @Override
    public Set<Entry<String, V>> entrySet() {
       return new AbstractSet<Entry<String, V>>() {
+
+         @Override
+         public boolean contains(Object o) {
+            if (o instanceof Entry) {
+               Entry entry = Cast.as(o);
+               return Trie.this.containsKey(entry.getKey()) && Trie.this.get(entry.getKey()).equals(entry.getValue());
+            }
+            return false;
+         }
+
          @Override
          public Iterator<Entry<String, V>> iterator() {
             return root.subTreeIterator();
@@ -208,7 +236,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
    }
 
    @Override
-   public V put(String key, V value) {
+   public V put(@NonNull String key, V value) {
       return root.extend(key.toCharArray(), 0, value);
    }
 
@@ -220,6 +248,9 @@ public class Trie<V> implements Serializable, Map<String, V> {
          node.matches = null;
          value = node.value;
          node.value = null;
+         if (value != null) {
+            node.size--;
+         }
          node.prune();
       }
       return value;
@@ -385,7 +416,40 @@ public class Trie<V> implements Serializable, Map<String, V> {
                throw new NoSuchElementException();
             }
             current = null;
-            return $(old.matches, old.value);
+            return new Map.Entry<String, V>() {
+               @Override
+               public String getKey() {
+                  return node.matches;
+               }
+
+               @Override
+               public V getValue() {
+                  return node.value;
+               }
+
+               @Override
+               public V setValue(V value) {
+                  V oldValue = node.value;
+                  node.value = value;
+                  return oldValue;
+               }
+
+               TrieNode<V> node = old;
+
+               @Override
+               public String toString() {
+                  return node.matches + "=" + node.value;
+               }
+
+               @Override
+               public boolean equals(Object obj) {
+                  if (obj == null || !(obj instanceof Entry)) {
+                     return false;
+                  }
+                  Entry e = Cast.as(obj);
+                  return e.getKey().equals(node.matches) && e.getValue().equals(node.value);
+               }
+            };
          }
 
          @Override
