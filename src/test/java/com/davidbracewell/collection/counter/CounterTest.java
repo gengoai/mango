@@ -21,11 +21,18 @@
 
 package com.davidbracewell.collection.counter;
 
+import com.davidbracewell.Math2;
+import com.davidbracewell.collection.Sets;
+import com.davidbracewell.collection.list.Lists;
+import com.davidbracewell.collection.map.Maps;
+import com.davidbracewell.io.resource.Resource;
+import com.davidbracewell.io.resource.StringResource;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Random;
 
 import static org.junit.Assert.*;
 
@@ -34,157 +41,244 @@ import static org.junit.Assert.*;
  */
 public class CounterTest {
 
-  @Test
-  public void testContainsAndItems() throws Exception {
-    Counter<String> counterOne = new HashMapCounter<>(Arrays.asList("a", "b", "c", "a", "b", "a"));
-    counterOne.set("e", 2.0);
+   @Test
+   public void valueChange() throws Exception {
+      Counter<String> counter = Counters.newHashMapCounter(Maps.map("A", 1.0, "B", 2.0, "C", 1.0));
 
-    Set<String> items = counterOne.items();
-    assertTrue(items.contains("a"));
-    assertTrue(items.contains("b"));
-    assertTrue(items.contains("c"));
-    assertTrue(items.contains("e"));
-    assertFalse(items.contains("d"));
+      counter.decrement("A");
+      assertEquals(0, counter.get("A"), 0);
 
-    assertFalse(counterOne.contains("d"));
-    assertTrue(counterOne.contains("a"));
-    assertTrue(counterOne.contains("b"));
-    assertTrue(counterOne.contains("c"));
-    assertTrue(counterOne.contains("e"));
-  }
+      counter.increment("A");
+      assertEquals(1, counter.get("A"), 0);
 
-  @Test
-  public void testGetAverageValue() throws Exception {
-    Counter<String> counterOne = Counters.synchronizedCounter(new HashMapCounter<>(Arrays.asList("a", "b", "c", "a", "b", "a")));
-    assertEquals((Double) counterOne.average(), (Double) 2.0d);
-    counterOne.increment("d", 2.0);
-    assertEquals(2.0, counterOne.average(), 0.01);
-    counterOne.increment("c", -1.0);
-    counterOne.increment("d", -2.0);
-    assertEquals((Double) counterOne.average(), (Double) 2.5d);
-    counterOne.removeZeroCounts();
-    assertEquals((Double) counterOne.average(), (Double) 2.5d);
-  }
+      counter.increment("A", 0);
+      assertEquals(1, counter.get("A"), 0);
 
-  @Test
-  public void testGetMaximumValue() throws Exception {
-    assertEquals((Double) new HashMapCounter<>().maximumCount(), (Double) 0.0d);
-    Counter<String> counterOne = new HashMapCounter<>(Arrays.asList("a", "b", "c", "a", "b", "a"));
-    assertEquals((Double) counterOne.maximumCount(), (Double) 3.0d);
-    counterOne.increment("d");
-    counterOne.increment("d", 10);
-    assertEquals((Double) counterOne.maximumCount(), (Double) 11.0d);
-  }
+      counter.increment("Z", 100);
+      assertEquals(100, counter.get("Z"), 0);
 
-  @Test
-  public void testGetMinimumValue() throws Exception {
-    assertEquals((Double) new HashMapCounter<>().minimumCount(), (Double) 0.0d);
-    Counter<String> counterOne = new HashMapCounter<>(Arrays.asList("a", "b", "c", "a", "b", "a"));
-    assertEquals((Double) counterOne.minimumCount(), (Double) 1.0d);
-    counterOne.increment("a", -4);
-    assertEquals((Double) counterOne.minimumCount(), (Double) (-1.0d));
-  }
+      counter.decrement("Z", 100);
+      assertEquals(0, counter.get("Z"), 0);
 
-  @Test
-  public void testCopyConstructor() throws Exception {
-    Counter<String> counterOne = new HashMapCounter<>(Arrays.asList("a", "b", "c", "a", "b", "a"));
-    Counter<String> counterTwo = counterOne.copy();
+      counter.decrement("Z", 0);
+      assertEquals(0, counter.get("Z"), 0);
 
-    counterOne.increment("a");
-    counterOne.increment("D");
-    assertEquals((Double) counterOne.get("a"), (Double) 4.0d);
-    assertEquals((Double) counterOne.get("D"), (Double) 1.0d);
+      counter.decrementAll(Arrays.asList("B", "C"));
+      assertEquals(0, counter.get("C"), 0);
+      assertEquals(1, counter.get("B"), 0);
 
-    assertEquals((Double) 3.0d, (Double) counterTwo.get("a"));
-    assertEquals((Double) 0.0d, (Double) counterTwo.get("D"));
-    assertEquals((Double) 2.0d, (Double) counterTwo.get("b"));
-    assertEquals((Double) 1.0d, (Double) counterTwo.get("c"));
+      counter.incrementAll(Arrays.asList("B", "C"));
+      assertEquals(1, counter.get("C"), 0);
+      assertEquals(2, counter.get("B"), 0);
+
+      counter.incrementAll(Arrays.asList("B", "C"), 4);
+      assertEquals(5, counter.get("C"), 0);
+      assertEquals(6, counter.get("B"), 0);
+
+      counter.decrementAll(Arrays.asList("B", "C"), 4);
+      assertEquals(1, counter.get("C"), 0);
+      assertEquals(2, counter.get("B"), 0);
+   }
+
+   @Test
+   public void minMax() throws Exception {
+      Counter<String> counter = Counters.newHashMapCounter(Maps.map("A", 2.0, "B", 5.0, "C", 1.0));
+      assertEquals("B", counter.max());
+      assertEquals(5, counter.maximumCount(), 0);
+      assertEquals("C", counter.min());
+      assertEquals(1, counter.minimumCount(), 0);
+
+      assertEquals(5.0, counter.topN(1).get("B"), 0.0);
+      assertEquals(1.0, counter.bottomN(1).get("C"), 0.0);
+   }
+
+   @Test
+   public void stats() throws Exception {
+      Counter<String> counter = Counters.newHashMapCounter(Maps.map("A", 2.0, "B", 5.0, "C", 3.0));
+      assertEquals(3.3, counter.average(), 0.04);
+      assertEquals(10.0, counter.sum(), 0.0);
+      assertEquals(1.5, counter.standardDeviation(), 0.03);
+      assertEquals(6.16, counter.magnitude(), 0.01);
+   }
+
+   @Test
+   public void itemsByCount() throws Exception {
+      Counter<String> counter = Counters.newHashMapCounter(Maps.map("A", 2.0, "B", 5.0, "C", 1.0));
+      assertEquals(Lists.list("B", "A", "C"), counter.itemsByCount(false));
+      assertEquals(Lists.list("C", "A", "B"), counter.itemsByCount(true));
+   }
+
+   @Test
+   public void remove() throws Exception {
+      Counter<String> counter = Counters.newHashMapCounter(Arrays.asList("A", "A", "B"));
+      counter.removeAll(null);
+      assertEquals(3, counter.sum(), 0);
+      counter.removeAll(Collections.singleton("A"));
+      assertEquals(1, counter.sum(), 0);
+      assertEquals(1, counter.remove("B"), 0);
+      assertEquals(0, counter.remove("Z"), 0);
+      assertEquals(0, counter.remove(null), 0);
+      assertTrue(counter.isEmpty());
+   }
+
+   @Test
+   public void sample() throws Exception {
+      Counter<String> counter = Counters.newHashMapCounter(Maps.map("A", 4.0, "B", 5.0, "C", 1.0));
+      assertTrue(counter.contains(counter.sample()));
+      double bCount = 0;
+      Random rnd = new Random(1234);
+      for (int i = 0; i < 50; i++) {
+         if (counter.sample(rnd).equals("B")) {
+            bCount++;
+         }
+      }
+      assertTrue(bCount / 50.0 >= 0.10);
+   }
+
+   @Test
+   public void csv() throws Exception {
+      Counter<String> counter = Counters.newHashMapCounter(Maps.map("A", 4.0, "B", 5.0, "C", 1.0));
+      Resource r = new StringResource();
+      counter.writeCsv(r);
+      Counter<String> fromCSV = Counters.readCsv(r, String.class);
+      assertEquals(counter, fromCSV);
+   }
+
+   @Test
+   public void json() throws Exception {
+      Counter<String> counter = Counters.newHashMapCounter(Maps.map("A", 4.0, "B", 5.0, "C", 1.0));
+      Resource r = new StringResource();
+      counter.writeJson(r);
+      Counter<String> fromJSON = Counters.readJson(r, String.class);
+      assertEquals(counter, fromJSON);
+   }
+
+   @Test
+   public void contains() throws Exception {
+      Counter<String> counterOne = Counters.newHashMapCounter("a", "b", "c", "a", "b", "a");
+      assertFalse(counterOne.contains("d"));
+      assertTrue(counterOne.contains("a"));
+      assertTrue(counterOne.contains("b"));
+      assertTrue(counterOne.contains("c"));
+   }
+
+   @Test
+   public void items() throws Exception {
+      Counter<String> counterOne = Counters.newHashMapCounter("a", "b", "c", "a", "b", "a");
+      assertEquals(Sets.set("a", "b", "c"), counterOne.items());
+   }
+
+   @Test
+   public void values() throws Exception {
+      Counter<String> counterOne = Counters.newHashMapCounter("a", "b", "c", "a", "b", "a");
+      Collection<Double> values = counterOne.values();
+      assertEquals(3, values.size(), 0);
+      assertEquals(6, Math2.sum(values), 0);
+
+      assertEquals(3, counterOne.get("a"), 0);
+      assertEquals(2, counterOne.get("b"), 0);
+      assertEquals(1, counterOne.get("c"), 0);
+      assertEquals(0, counterOne.get("z"), 0);
+
+      assertEquals(6, counterOne.sum(), 0);
+   }
+
+   @Test
+   public void merge() throws Exception {
+      Counter<String> c1 = Counters.newHashMapCounter();
+
+      assertTrue(c1.isEmpty());
+
+      Counter<String> c2 = Counters.newHashMapCounter("a");
+
+      c1.merge(c2);
+      assertEquals(1.0, c1.get("a"), 0.0);
+
+      c1.merge(c2.asMap());
+      assertEquals(2.0, c1.get("a"), 0.0);
 
 
-    counterTwo = new HashMapCounter<>(counterOne.asMap());
-    assertEquals((Double) counterTwo.get("a"), (Double) 4.0d);
-    assertEquals((Double) counterTwo.get("D"), (Double) 1.0d);
-    assertEquals((Double) counterTwo.get("b"), (Double) 2.0d);
-    assertEquals((Double) counterTwo.get("c"), (Double) 1.0d);
-  }
+      assertEquals(1, c1.size());
+   }
 
-  @Test
-  public void testGetStandardDeviation() throws Exception {
-    Counter<String> counterOne = new HashMapCounter<>(Arrays.asList("a", "b", "c", "a", "b", "a", "c", "c", "b"));
-    assertEquals((Double) counterOne.standardDeviation(), (Double) (0.0d));
-  }
+   @Test
+   public void clear() throws Exception {
+      Counter<String> counterOne = Counters.newHashMapCounter("a", "b", "c", "a", "b", "a");
+      counterOne.clear();
+      assertEquals(0, counterOne.size());
+      assertEquals(0.0, counterOne.sum(), 0.0);
+   }
 
-  @Test
-  public void testGetTotalCount() throws Exception {
-    Counter<String> counterOne = new HashMapCounter<>(Arrays.asList("a", "b", "c", "a", "b", "a"));
-    assertEquals((Double) counterOne.sum(), (Double) (6.0d));
-  }
+   @Test
+   public void set() throws Exception {
+      Counter<String> counter = Counters.newHashMapCounter();
 
-  @Test
-  public void testIncrementAll() throws Exception {
-    Counter<String> counterOne = new HashMapCounter<>(Arrays.asList("a", "b", "c", "a", "b", "a"));
-    counterOne.incrementAll(Arrays.asList("a", "d", "e", "e"));
-    assertEquals((Double) counterOne.get("a"), (Double) 4.0d);
-    assertEquals((Double) counterOne.get("b"), (Double) 2.0d);
-    assertEquals((Double) counterOne.get("c"), (Double) 1.0d);
-    assertEquals((Double) counterOne.get("d"), (Double) 1.0d);
-    assertEquals((Double) counterOne.get("e"), (Double) 2.0d);
-  }
+      counter.set("A", 100);
+      assertEquals(100, counter.get("A"), 0);
 
-  @Test
-  public void testIsEmpty() throws Exception {
-    Counter<String> counterOne = new HashMapCounter<>(Arrays.asList("a", "b", "c", "a", "b", "a"));
-    assertFalse(counterOne.isEmpty());
-    counterOne.clear();
-    assertTrue(counterOne.isEmpty());
-  }
-
-  @Test
-  public void testKeysByValue() throws Exception {
-    Counter<String> counterOne = new HashMapCounter<>(Arrays.asList("a", "b", "c", "a", "b", "a"));
-    List<String> asc = counterOne.itemsByCount(true);
-    assertEquals(asc.get(0), "c");
-    assertEquals(asc.get(1), "b");
-    assertEquals(asc.get(2), "a");
-    List<String> desc = counterOne.itemsByCount(false);
-    assertEquals(desc.get(2), "c");
-    assertEquals(desc.get(1), "b");
-    assertEquals(desc.get(0), "a");
-  }
+      counter.set("Z", 0);
+      assertEquals(0, counter.get("Z"), 0);
+   }
 
 
-  @Test
-  public void testMagnitude() throws Exception {
-    Counter<String> counterOne = new HashMapCounter<>(Arrays.asList("a", "b", "c", "a", "b", "a"));
-    assertTrue((counterOne.magnitude() - 3.7417) < 0.001);
-  }
+   @Test
+   public void divideBySum() throws Exception {
+      Counter<String> counter = Counters.newHashMapCounter(Maps.map("A", 4.0, "B", 5.0, "C", 1.0));
+      counter.divideBySum();
+      assertEquals(1.0, counter.sum(), 0.0);
+      assertEquals(.5, counter.get("B"), 0.0);
+      assertEquals(.4, counter.get("A"), 0.0);
+      assertEquals(.1, counter.get("C"), 0.0);
 
+      counter.clear();
+      counter.divideBySum();
+      assertEquals(0, counter.sum(), 0);
+   }
 
-  @Test
-  public void testMerge() throws Exception {
-    Counter<String> counterOne = new HashMapCounter<>(Arrays.asList("a", "b", "c", "a", "b", "a"));
-    Counter<String> counterTwo = new HashMapCounter<>(Arrays.asList("c", "c", "c", "b"));
-    counterOne.merge(counterTwo);
-    assertEquals((Double) counterOne.get("c"), (Double) 4.0d);
-    assertEquals((Double) counterOne.get("a"), (Double) 3.0d);
-    assertEquals((Double) counterOne.get("b"), (Double) 3.0d);
-  }
+   @Test
+   public void adjustValues() throws Exception {
+      Counter<String> counter = Counters.newHashMapCounter(Maps.map("A", 4.0, "B", 5.0, "C", 1.0));
 
-  @Test
-  public void testRemove() throws Exception {
-    Counter<String> counterOne = new HashMapCounter<>(Arrays.asList("a", "b", "c", "a", "b", "a"));
-    counterOne.remove("c");
-    assertEquals((Double) counterOne.get("c"), (Double) 0.0d);
-    counterOne.remove("d");
-  }
+      Counter<String> adjusted = counter.adjustValues(d -> d * d);
+      assertEquals(42, adjusted.sum(), 0.0);
+      assertEquals(25, adjusted.get("B"), 0.0);
+      assertEquals(16, adjusted.get("A"), 0.0);
+      assertEquals(1, adjusted.get("C"), 0.0);
 
-  @Test
-  public void testSize() throws Exception {
-    Counter<String> counterOne = new HashMapCounter<>(Arrays.asList("a", "b", "c", "a", "b", "a"));
-    assertEquals(counterOne.size(), 3);
-    counterOne.clear();
-    assertEquals(counterOne.size(), 0);
-  }
+      counter.adjustValuesSelf(d -> d * d);
+      assertEquals(42, counter.sum(), 0.0);
+      assertEquals(25, counter.get("B"), 0.0);
+      assertEquals(16, counter.get("A"), 0.0);
+      assertEquals(1, counter.get("C"), 0.0);
+   }
 
+   @Test
+   public void filterByValue() throws Exception {
+      Counter<String> counter = Counters.newHashMapCounter(Maps.map("A", 4.0, "B", 5.0, "C", 1.0));
+      Counter<String> filtered = counter.filterByValue(d -> d < 5.0);
+      assertEquals(5, filtered.sum(), 0.0);
+      assertEquals(0, filtered.get("B"), 0.0);
+      assertEquals(4, filtered.get("A"), 0.0);
+      assertEquals(1, filtered.get("C"), 0.0);
+   }
 
+   @Test
+   public void filterByKey() throws Exception {
+      Counter<String> counter = Counters.newHashMapCounter(Maps.map("A", 4.0, "B", 5.0, "C", 1.0));
+      Counter<String> filtered = counter.filterByKey(d -> !d.equals("B"));
+      assertEquals(5, filtered.sum(), 0.0);
+      assertEquals(0, filtered.get("B"), 0.0);
+      assertEquals(4, filtered.get("A"), 0.0);
+      assertEquals(1, filtered.get("C"), 0.0);
+   }
+
+   @Test
+   public void mapKeys() throws Exception {
+      Counter<String> counter = Counters.newHashMapCounter(Maps.map("A", 4.0, "B", 5.0, "C", 1.0));
+      Counter<String> mapped = counter.mapKeys(String::toLowerCase);
+      assertEquals(10, mapped.sum(), 0.0);
+      assertEquals(5, mapped.get("b"), 0.0);
+      assertEquals(4, mapped.get("a"), 0.0);
+      assertEquals(1, mapped.get("c"), 0.0);
+   }
 }

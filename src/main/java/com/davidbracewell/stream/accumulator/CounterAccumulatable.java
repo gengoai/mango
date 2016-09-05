@@ -22,28 +22,28 @@
 package com.davidbracewell.stream.accumulator;
 
 import com.davidbracewell.collection.counter.Counter;
-import com.davidbracewell.collection.counter.HashMapCounter;
+import com.davidbracewell.collection.counter.Counters;
 
 /**
  * @author David B. Bracewell
  */
 public class CounterAccumulatable<E> implements Accumulatable<Counter<E>> {
-  private static final long serialVersionUID = 1L;
+   private static final long serialVersionUID = 1L;
 
-  @Override
-  public Counter<E> addInPlace(Counter<E> t1, Counter<E> t2) {
-    return t1.merge(t2);
-  }
+   @Override
+   public Counter<E> addInPlace(Counter<E> t1, Counter<E> t2) {
+      return t1.merge(t2);
+   }
 
-  @Override
-  public Counter<E> addAccumulator(Counter<E> t1, Counter<E> t2) {
-    Counter<E> copy = new HashMapCounter<>(t1);
-    return copy.merge(t2);
-  }
+   @Override
+   public Counter<E> addAccumulator(Counter<E> t1, Counter<E> t2) {
+      Counter<E> copy = Counters.newHashMapCounter(t1);
+      return copy.merge(t2);
+   }
 
-  @Override
-  public Counter<E> zero(Counter<E> zeroValue) {
-    return zeroValue;
-  }
+   @Override
+   public Counter<E> zero(Counter<E> zeroValue) {
+      return zeroValue;
+   }
 
 }//END OF CounterAccumulatable

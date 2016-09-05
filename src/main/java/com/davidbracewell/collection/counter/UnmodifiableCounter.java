@@ -122,11 +122,6 @@ final class UnmodifiableCounter<TYPE> extends ForwardingCounter<TYPE> {
   }
 
   @Override
-  public Counter<TYPE> removeZeroCounts() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public Counter<TYPE> set(TYPE item, double count) {
     throw new UnsupportedOperationException();
   }

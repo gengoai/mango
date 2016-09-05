@@ -23,19 +23,14 @@ package com.davidbracewell.stream;
 
 import com.davidbracewell.collection.Collect;
 import com.davidbracewell.collection.counter.Counter;
-import com.davidbracewell.collection.counter.HashMapCounter;
+import com.davidbracewell.collection.counter.Counters;
 import com.davidbracewell.collection.counter.HashMapMultiCounter;
 import com.davidbracewell.collection.counter.MultiCounter;
 import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.SerializableSupplier;
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.stream.accumulator.Accumulatable;
-import com.davidbracewell.stream.accumulator.CollectionAccumulatable;
-import com.davidbracewell.stream.accumulator.CounterAccumulatable;
-import com.davidbracewell.stream.accumulator.MAccumulator;
-import com.davidbracewell.stream.accumulator.MapAccumulatable;
-import com.davidbracewell.stream.accumulator.MultiCounterAccumulatable;
+import com.davidbracewell.stream.accumulator.*;
 import com.davidbracewell.tuple.Tuple2;
 import lombok.NonNull;
 
@@ -55,349 +50,349 @@ import java.util.stream.Stream;
  */
 public interface StreamingContext extends AutoCloseable {
 
-  /**
-   * Get streaming context.
-   *
-   * @return the streaming context
-   */
-  static StreamingContext get() {
-    return get(Config.get("streams.distributed").asBooleanValue(false));
-  }
+   /**
+    * Get streaming context.
+    *
+    * @return the streaming context
+    */
+   static StreamingContext get() {
+      return get(Config.get("streams.distributed").asBooleanValue(false));
+   }
 
-  /**
-   * Get streaming context.
-   *
-   * @param distributed the distributed
-   * @return the streaming context
-   */
-  static StreamingContext get(boolean distributed) {
-    if (distributed) {
-      return distributed();
-    }
-    return local();
-  }
+   /**
+    * Get streaming context.
+    *
+    * @param distributed the distributed
+    * @return the streaming context
+    */
+   static StreamingContext get(boolean distributed) {
+      if (distributed) {
+         return distributed();
+      }
+      return local();
+   }
 
-  /**
-   * Local streaming context.
-   *
-   * @return the streaming context
-   */
-  static StreamingContext local() {
-    return JavaStreamingContext.INSTANCE;
-  }
+   /**
+    * Local streaming context.
+    *
+    * @return the streaming context
+    */
+   static StreamingContext local() {
+      return JavaStreamingContext.INSTANCE;
+   }
 
-  /**
-   * Distributed streaming context.
-   *
-   * @return the streaming context
-   */
-  static StreamingContext distributed() {
-    return SparkStreamingContext.INSTANCE;
-  }
-
-
-  /**
-   * Double accumulator m accumulator.
-   *
-   * @param initialValue the initial value
-   * @return the m accumulator
-   */
-  default MAccumulator<Double> accumulator(double initialValue) {
-    return accumulator(initialValue, null);
-  }
-
-  /**
-   * Double accumulator m accumulator.
-   *
-   * @param initialValue the initial value
-   * @param name         the name
-   * @return the m accumulator
-   */
-  MAccumulator<Double> accumulator(double initialValue, String name);
-
-  /**
-   * Int accumulator m accumulator.
-   *
-   * @param initialValue the initial value
-   * @return the m accumulator
-   */
-  default MAccumulator<Integer> accumulator(int initialValue) {
-    return accumulator(initialValue, null);
-  }
-
-  /**
-   * Int accumulator m accumulator.
-   *
-   * @param initialValue the initial value
-   * @param name         the name
-   * @return the m accumulator
-   */
-  MAccumulator<Integer> accumulator(int initialValue, String name);
-
-  /**
-   * Accumulator m accumulator.
-   *
-   * @param <T>           the type parameter
-   * @param initialValue  the initial value
-   * @param accumulatable the accumulatable
-   * @return the m accumulator
-   */
-  default <T> MAccumulator<T> accumulator(T initialValue, Accumulatable<T> accumulatable) {
-    return accumulator(initialValue, accumulatable, null);
-  }
-
-  /**
-   * Accumulator m accumulator.
-   *
-   * @param <T>           the type parameter
-   * @param initialValue  the initial value
-   * @param accumulatable the accumulatable
-   * @param name          the name
-   * @return the m accumulator
-   */
-  <T> MAccumulator<T> accumulator(T initialValue, Accumulatable<T> accumulatable, String name);
-
-  /**
-   * Collection accumulator m accumulator.
-   *
-   * @param <E>                the type parameter
-   * @param <C>                the type parameter
-   * @param collectionSupplier the collection supplier
-   * @param name               the name
-   * @return the m accumulator
-   */
-  default <E, C extends Collection<E>> MAccumulator<C> accumulator(Supplier<C> collectionSupplier, String name) {
-    return accumulator(collectionSupplier.get(), new CollectionAccumulatable<>(), name);
-  }
-
-  /**
-   * Collection accumulator m accumulator.
-   *
-   * @param <E>                the type parameter
-   * @param <C>                the type parameter
-   * @param collectionSupplier the collection supplier
-   * @return the m accumulator
-   */
-  default <E, C extends Collection<E>> MAccumulator<C> accumulator(Supplier<C> collectionSupplier) {
-    return accumulator(collectionSupplier.get(), new CollectionAccumulatable<>());
-  }
+   /**
+    * Distributed streaming context.
+    *
+    * @return the streaming context
+    */
+   static StreamingContext distributed() {
+      return SparkStreamingContext.INSTANCE;
+   }
 
 
-  /**
-   * Map accumulator m accumulator.
-   *
-   * @param <K>      the type parameter
-   * @param <V>      the type parameter
-   * @param supplier the supplier
-   * @return the m accumulator
-   */
-  default <K, V> MAccumulator<Map<K, V>> mapAccumulator(@NonNull SerializableSupplier<Map<K, V>> supplier) {
-    return accumulator(null, new MapAccumulatable<>(supplier));
-  }
+   /**
+    * Double accumulator m accumulator.
+    *
+    * @param initialValue the initial value
+    * @return the m accumulator
+    */
+   default MAccumulator<Double> accumulator(double initialValue) {
+      return accumulator(initialValue, null);
+   }
 
-  /**
-   * Map accumulator m accumulator.
-   *
-   * @param <K>      the type parameter
-   * @param <V>      the type parameter
-   * @param supplier the supplier
-   * @param name     the name
-   * @return the m accumulator
-   */
-  default <K, V> MAccumulator<Map<K, V>> mapAccumulator(@NonNull SerializableSupplier<Map<K, V>> supplier, String name) {
-    return accumulator(null, new MapAccumulatable<>(supplier), name);
-  }
+   /**
+    * Double accumulator m accumulator.
+    *
+    * @param initialValue the initial value
+    * @param name         the name
+    * @return the m accumulator
+    */
+   MAccumulator<Double> accumulator(double initialValue, String name);
 
-  /**
-   * Counter accumulator m accumulator.
-   *
-   * @param <E> the type parameter
-   * @return the m accumulator
-   */
-  default <E> MAccumulator<Counter<E>> counterAccumulator() {
-    return accumulator(new HashMapCounter<E>(), new CounterAccumulatable<>());
-  }
+   /**
+    * Int accumulator m accumulator.
+    *
+    * @param initialValue the initial value
+    * @return the m accumulator
+    */
+   default MAccumulator<Integer> accumulator(int initialValue) {
+      return accumulator(initialValue, null);
+   }
 
-  /**
-   * Multi counter accumulator m accumulator.
-   *
-   * @param <K> the type parameter
-   * @param <V> the type parameter
-   * @return the m accumulator
-   */
-  default <K, V> MAccumulator<MultiCounter<K, V>> multiCounterAccumulator() {
-    return accumulator(new HashMapMultiCounter<K, V>(), new MultiCounterAccumulatable<>());
-  }
+   /**
+    * Int accumulator m accumulator.
+    *
+    * @param initialValue the initial value
+    * @param name         the name
+    * @return the m accumulator
+    */
+   MAccumulator<Integer> accumulator(int initialValue, String name);
 
+   /**
+    * Accumulator m accumulator.
+    *
+    * @param <T>           the type parameter
+    * @param initialValue  the initial value
+    * @param accumulatable the accumulatable
+    * @return the m accumulator
+    */
+   default <T> MAccumulator<T> accumulator(T initialValue, Accumulatable<T> accumulatable) {
+      return accumulator(initialValue, accumulatable, null);
+   }
 
-  /**
-   * Multi counter accumulator m accumulator.
-   *
-   * @param <K>  the type parameter
-   * @param <V>  the type parameter
-   * @param name the name
-   * @return the m accumulator
-   */
-  default <K, V> MAccumulator<MultiCounter<K, V>> multiCounterAccumulator(String name) {
-    return accumulator(new HashMapMultiCounter<K, V>(), new MultiCounterAccumulatable<>(), name);
-  }
+   /**
+    * Accumulator m accumulator.
+    *
+    * @param <T>           the type parameter
+    * @param initialValue  the initial value
+    * @param accumulatable the accumulatable
+    * @param name          the name
+    * @return the m accumulator
+    */
+   <T> MAccumulator<T> accumulator(T initialValue, Accumulatable<T> accumulatable, String name);
 
-  /**
-   * Counter accumulator m accumulator.
-   *
-   * @param <E>  the type parameter
-   * @param name the name
-   * @return the m accumulator
-   */
-  default <E> MAccumulator<Counter<E>> counterAccumulator(String name) {
-    return accumulator(new HashMapCounter<E>(), new CounterAccumulatable<>(), name);
-  }
+   /**
+    * Collection accumulator m accumulator.
+    *
+    * @param <E>                the type parameter
+    * @param <C>                the type parameter
+    * @param collectionSupplier the collection supplier
+    * @param name               the name
+    * @return the m accumulator
+    */
+   default <E, C extends Collection<E>> MAccumulator<C> accumulator(Supplier<C> collectionSupplier, String name) {
+      return accumulator(collectionSupplier.get(), new CollectionAccumulatable<>(), name);
+   }
 
-  /**
-   * Of m stream.
-   *
-   * @param <T>   the type parameter
-   * @param items the items
-   * @return the m stream
-   */
-  <T> MStream<T> stream(T... items);
-
-  /**
-   * Of m stream.
-   *
-   * @param <T>    the type parameter
-   * @param stream the stream
-   * @return the m stream
-   */
-  <T> MStream<T> stream(Stream<T> stream);
+   /**
+    * Collection accumulator m accumulator.
+    *
+    * @param <E>                the type parameter
+    * @param <C>                the type parameter
+    * @param collectionSupplier the collection supplier
+    * @return the m accumulator
+    */
+   default <E, C extends Collection<E>> MAccumulator<C> accumulator(Supplier<C> collectionSupplier) {
+      return accumulator(collectionSupplier.get(), new CollectionAccumulatable<>());
+   }
 
 
-  /**
-   * Stream m pair stream.
-   *
-   * @param <K> the type parameter
-   * @param <V> the type parameter
-   * @param map the map
-   * @return the m pair stream
-   */
-  <K, V> MPairStream<K, V> pairStream(Map<? extends K, ? extends V> map);
+   /**
+    * Map accumulator m accumulator.
+    *
+    * @param <K>      the type parameter
+    * @param <V>      the type parameter
+    * @param supplier the supplier
+    * @return the m accumulator
+    */
+   default <K, V> MAccumulator<Map<K, V>> mapAccumulator(@NonNull SerializableSupplier<Map<K, V>> supplier) {
+      return accumulator(null, new MapAccumulatable<>(supplier));
+   }
 
-  /**
-   * Pair stream m pair stream.
-   *
-   * @param <K>    the type parameter
-   * @param <V>    the type parameter
-   * @param tuples the tuples
-   * @return the m pair stream
-   */
-  <K, V> MPairStream<K, V> pairStream(Collection<Entry<K, V>> tuples);
+   /**
+    * Map accumulator m accumulator.
+    *
+    * @param <K>      the type parameter
+    * @param <V>      the type parameter
+    * @param supplier the supplier
+    * @param name     the name
+    * @return the m accumulator
+    */
+   default <K, V> MAccumulator<Map<K, V>> mapAccumulator(@NonNull SerializableSupplier<Map<K, V>> supplier, String name) {
+      return accumulator(null, new MapAccumulatable<>(supplier), name);
+   }
 
-  /**
-   * Pair stream m pair stream.
-   *
-   * @param <K>    the type parameter
-   * @param <V>    the type parameter
-   * @param tuples the tuples
-   * @return the m pair stream
-   */
-  default <K, V> MPairStream<K, V> pairStream(Tuple2... tuples) {
-    if (tuples == null) {
-      return emptyPair();
-    }
-    Collection<Tuple2> collection = Arrays.asList(tuples);
-    return pairStream(Cast.cast(collection));
-  }
+   /**
+    * Counter accumulator m accumulator.
+    *
+    * @param <E> the type parameter
+    * @return the m accumulator
+    */
+   default <E> MAccumulator<Counter<E>> counterAccumulator() {
+      return accumulator(Counters.newHashMapCounter(), new CounterAccumulatable<>());
+   }
 
-  /**
-   * Stream m stream.
-   *
-   * @param <T>        the type parameter
-   * @param collection the collection
-   * @return the m stream
-   */
-  <T> MStream<T> stream(Collection<? extends T> collection);
+   /**
+    * Multi counter accumulator m accumulator.
+    *
+    * @param <K> the type parameter
+    * @param <V> the type parameter
+    * @return the m accumulator
+    */
+   default <K, V> MAccumulator<MultiCounter<K, V>> multiCounterAccumulator() {
+      return accumulator(new HashMapMultiCounter<K, V>(), new MultiCounterAccumulatable<>());
+   }
 
 
-  /**
-   * Stream m stream.
-   *
-   * @param <T>      the type parameter
-   * @param iterable the iterable
-   * @return the m stream
-   */
-  <T> MStream<T> stream(Iterable<? extends T> iterable);
+   /**
+    * Multi counter accumulator m accumulator.
+    *
+    * @param <K>  the type parameter
+    * @param <V>  the type parameter
+    * @param name the name
+    * @return the m accumulator
+    */
+   default <K, V> MAccumulator<MultiCounter<K, V>> multiCounterAccumulator(String name) {
+      return accumulator(new HashMapMultiCounter<K, V>(), new MultiCounterAccumulatable<>(), name);
+   }
 
-  /**
-   * Stream m stream.
-   *
-   * @param <T>      the type parameter
-   * @param iterator the iterator
-   * @return the m stream
-   */
-  default <T> MStream<T> stream(Iterator<? extends T> iterator) {
-    if (iterator == null) {
-      return empty();
-    }
-    return stream(Cast.<Iterable<T>>as(Collect.asIterable(iterator)));
-  }
+   /**
+    * Counter accumulator m accumulator.
+    *
+    * @param <E>  the type parameter
+    * @param name the name
+    * @return the m accumulator
+    */
+   default <E> MAccumulator<Counter<E>> counterAccumulator(String name) {
+      return accumulator(Counters.newHashMapCounter(), new CounterAccumulatable<>(), name);
+   }
 
-  /**
-   * Double stream m double stream.
-   *
-   * @param doubleStream the double stream
-   * @return the m double stream
-   */
-  MDoubleStream doubleStream(DoubleStream doubleStream);
+   /**
+    * Of m stream.
+    *
+    * @param <T>   the type parameter
+    * @param items the items
+    * @return the m stream
+    */
+   <T> MStream<T> stream(T... items);
 
-  /**
-   * Double stream m double stream.
-   *
-   * @param values the values
-   * @return the m double stream
-   */
-  MDoubleStream doubleStream(double... values);
+   /**
+    * Of m stream.
+    *
+    * @param <T>    the type parameter
+    * @param stream the stream
+    * @return the m stream
+    */
+   <T> MStream<T> stream(Stream<T> stream);
 
-  /**
-   * Text file m stream.
-   *
-   * @param location the location
-   * @return the m stream
-   */
-  MStream<String> textFile(String location);
 
-  MStream<String> textFile(Resource location);
+   /**
+    * Stream m pair stream.
+    *
+    * @param <K> the type parameter
+    * @param <V> the type parameter
+    * @param map the map
+    * @return the m pair stream
+    */
+   <K, V> MPairStream<K, V> pairStream(Map<? extends K, ? extends V> map);
 
-  /**
-   * Range m stream.
-   *
-   * @param startInclusive the start inclusive
-   * @param endExclusive   the end exclusive
-   * @return the m stream
-   */
-  MStream<Integer> range(int startInclusive, int endExclusive);
+   /**
+    * Pair stream m pair stream.
+    *
+    * @param <K>    the type parameter
+    * @param <V>    the type parameter
+    * @param tuples the tuples
+    * @return the m pair stream
+    */
+   <K, V> MPairStream<K, V> pairStream(Collection<Entry<K, V>> tuples);
 
-  /**
-   * Empty m stream.
-   *
-   * @param <T> the type parameter
-   * @return the m stream
-   */
-  <T> MStream<T> empty();
+   /**
+    * Pair stream m pair stream.
+    *
+    * @param <K>    the type parameter
+    * @param <V>    the type parameter
+    * @param tuples the tuples
+    * @return the m pair stream
+    */
+   default <K, V> MPairStream<K, V> pairStream(Tuple2... tuples) {
+      if (tuples == null) {
+         return emptyPair();
+      }
+      Collection<Tuple2> collection = Arrays.asList(tuples);
+      return pairStream(Cast.cast(collection));
+   }
 
-  /**
-   * Empty pair m pair stream.
-   *
-   * @param <K> the type parameter
-   * @param <V> the type parameter
-   * @return the m pair stream
-   */
-  default <K, V> MPairStream<K, V> emptyPair() {
-    return empty().mapToPair(k -> null);
-  }
+   /**
+    * Stream m stream.
+    *
+    * @param <T>        the type parameter
+    * @param collection the collection
+    * @return the m stream
+    */
+   <T> MStream<T> stream(Collection<? extends T> collection);
 
-  default MDoubleStream emptyDouble() {
-    return empty().mapToDouble(u -> Double.NaN);
-  }
+
+   /**
+    * Stream m stream.
+    *
+    * @param <T>      the type parameter
+    * @param iterable the iterable
+    * @return the m stream
+    */
+   <T> MStream<T> stream(Iterable<? extends T> iterable);
+
+   /**
+    * Stream m stream.
+    *
+    * @param <T>      the type parameter
+    * @param iterator the iterator
+    * @return the m stream
+    */
+   default <T> MStream<T> stream(Iterator<? extends T> iterator) {
+      if (iterator == null) {
+         return empty();
+      }
+      return stream(Cast.<Iterable<T>>as(Collect.asIterable(iterator)));
+   }
+
+   /**
+    * Double stream m double stream.
+    *
+    * @param doubleStream the double stream
+    * @return the m double stream
+    */
+   MDoubleStream doubleStream(DoubleStream doubleStream);
+
+   /**
+    * Double stream m double stream.
+    *
+    * @param values the values
+    * @return the m double stream
+    */
+   MDoubleStream doubleStream(double... values);
+
+   /**
+    * Text file m stream.
+    *
+    * @param location the location
+    * @return the m stream
+    */
+   MStream<String> textFile(String location);
+
+   MStream<String> textFile(Resource location);
+
+   /**
+    * Range m stream.
+    *
+    * @param startInclusive the start inclusive
+    * @param endExclusive   the end exclusive
+    * @return the m stream
+    */
+   MStream<Integer> range(int startInclusive, int endExclusive);
+
+   /**
+    * Empty m stream.
+    *
+    * @param <T> the type parameter
+    * @return the m stream
+    */
+   <T> MStream<T> empty();
+
+   /**
+    * Empty pair m pair stream.
+    *
+    * @param <K> the type parameter
+    * @param <V> the type parameter
+    * @return the m pair stream
+    */
+   default <K, V> MPairStream<K, V> emptyPair() {
+      return empty().mapToPair(k -> null);
+   }
+
+   default MDoubleStream emptyDouble() {
+      return empty().mapToDouble(u -> Double.NaN);
+   }
 
 
 }//END OF StreamingContext

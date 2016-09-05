@@ -26,9 +26,11 @@ import com.davidbracewell.Copyable;
 import com.davidbracewell.Math2;
 import com.davidbracewell.collection.Sorting;
 import com.davidbracewell.conversion.Convert;
+import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.StructuredFormat;
 import com.davidbracewell.io.structured.StructuredWriter;
+import com.davidbracewell.io.structured.csv.CSVWriter;
 import lombok.NonNull;
 
 import java.io.IOException;
@@ -40,9 +42,9 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * <p> Provides double-based counts for items. </p>
+ * <p>A specialized object to double map that allows basic statistics over the objects and their values.</p>
  *
- * @param <T> Type of item.
+ * @param <T> Component type being counted.
  * @author David B. Bracewell
  */
 public interface Counter<T> extends Copyable<Counter<T>> {
@@ -56,34 +58,34 @@ public interface Counter<T> extends Copyable<Counter<T>> {
    Counter<T> adjustValues(DoubleUnaryOperator function);
 
    /**
-    * Adjust values self.
+    * Adjust the values in-place using the supplied function
     *
-    * @param function the function
-    * @return the counter
+    * @param function The function to use to adjust the counts
+    * @return this counter
     */
    Counter<T> adjustValuesSelf(DoubleUnaryOperator function);
 
    /**
-    * As map.
+    * Provides a map view of this counter
     *
     * @return The counter as a <code>Map</code>
     */
    Map<T, Double> asMap();
 
    /**
-    * Average double.
+    * Calculates the average of the values in the counter
     *
     * @return The average count in the counter
     */
    default double average() {
-      return Math2.summaryStatistics(counts()).getAverage();
+      return Math2.summaryStatistics(values()).getAverage();
    }
 
    /**
-    * Bottom n.
+    * Creates a new counter containing the N items with lowest values
     *
-    * @param n the n
-    * @return the counter
+    * @param n the number of items desired
+    * @return a counter containing the N items with lowest values from this counter
     */
    Counter<T> bottomN(int n);
 
@@ -101,11 +103,11 @@ public interface Counter<T> extends Copyable<Counter<T>> {
    boolean contains(T item);
 
    /**
-    * Counts collection.
+    * The values associated with the items in the counter
     *
-    * @return The counts of the items in the counter.
+    * @return The values of the items in the counter.
     */
-   Collection<Double> counts();
+   Collection<Double> values();
 
    /**
     * Decrements the count of the item by one.
@@ -163,33 +165,33 @@ public interface Counter<T> extends Copyable<Counter<T>> {
    Counter<T> divideBySum();
 
    /**
-    * Entries set.
+    * A set of object - double entries making up the counter
     *
-    * @return the set
+    * @return the set of entries
     */
    Set<Map.Entry<T, Double>> entries();
 
    /**
-    * Filter by key.
+    * Creates a new counter containing only those items that evaluate true for the given predicate
     *
-    * @param predicate the predicate
-    * @return the counter
+    * @param predicate the predicate to use to filter the keys
+    * @return A new counter containing only those items that evaluate true for the given predicate
     */
    Counter<T> filterByKey(Predicate<T> predicate);
 
    /**
-    * Filter by value.
+    * Creates a new counter containing only those items whose value evaluate true for the given predicate
     *
-    * @param doublePredicate the double predicate
-    * @return the counter
+    * @param doublePredicate the predicate to use to filter the keys
+    * @return A new counter containing only those items whose value evaluate true for the given predicate
     */
    Counter<T> filterByValue(DoublePredicate doublePredicate);
 
    /**
-    * Returns the count for the given item
+    * Returns the value for the given item
     *
     * @param item The item we want the count for
-    * @return The count of the item or 0 if it is not in the counter.
+    * @return The value of the item or 0 if it is not in the counter.
     */
    double get(T item);
 
@@ -240,14 +242,14 @@ public interface Counter<T> extends Copyable<Counter<T>> {
    }
 
    /**
-    * Is empty.
+    * Determines if the counter is empty or not
     *
     * @return True if the counter is empty
     */
    boolean isEmpty();
 
    /**
-    * Items set.
+    * The items in the counter
     *
     * @return The items in the counter
     */
@@ -272,20 +274,20 @@ public interface Counter<T> extends Copyable<Counter<T>> {
     * @return the magnitude
     */
    default double magnitude() {
-      return Math.sqrt(Math2.summaryStatistics(counts()).getSumOfSquares());
+      return Math.sqrt(Math2.summaryStatistics(values()).getSumOfSquares());
    }
 
    /**
-    * Map keys counter.
+    * Creates a new counter by mapping the items of this counter using the supplied function
     *
-    * @param <R>      the type parameter
-    * @param function the function
-    * @return the counter
+    * @param <R>      The component type of the new counter
+    * @param function the function to use to transform the keys
+    * @return A new counter containing only those items that evaluate true for the given predicate
     */
-   <R> Counter<R> mapKeys(Function<T, R> function);
+   <R> Counter<R> mapKeys(Function<? super T, ? extends R> function);
 
    /**
-    * Max t.
+    * Determines the item with the maximum value in the counter
     *
     * @return The item with max count
     */
@@ -294,7 +296,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
    }
 
    /**
-    * Maximum count.
+    * Determines the maximum value in the counter
     *
     * @return The maximum count in the counter
     */
@@ -302,7 +304,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
       if (isEmpty()) {
          return 0d;
       }
-      return Collections.max(counts());
+      return Collections.max(values());
    }
 
    /**
@@ -322,7 +324,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
    Counter<T> merge(Map<? extends T, ? extends Number> other);
 
    /**
-    * Min t.
+    * Determines the item with the minimum value in the counter
     *
     * @return The item with min count
     */
@@ -331,7 +333,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
    }
 
    /**
-    * Minimum count.
+    * Determines the minimum value in the counter
     *
     * @return The minimum count in the counter
     */
@@ -339,7 +341,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
       if (isEmpty()) {
          return 0d;
       }
-      return Collections.min(counts());
+      return Collections.min(values());
    }
 
    /**
@@ -356,19 +358,27 @@ public interface Counter<T> extends Copyable<Counter<T>> {
     * @param items The items to remove
     * @return the counter
     */
-   default Counter<T> removeAll(Iterable<T> items) {
-      if (items != null) {
-         items.forEach(this::remove);
-      }
-      return this;
-   }
+   Counter<T> removeAll(Iterable<T> items);
 
    /**
-    * removes all items whose count is zero
+    * Sample an item based on its count.
     *
-    * @return the counter
+    * @param rnd The random number generator
+    * @return the sampled item
     */
-   Counter<T> removeZeroCounts();
+   default T sample(@NonNull Random rnd) {
+      double target = rnd.nextDouble() * sum();
+      double runningSum = 0;
+      T lastEntry = null;
+      for (Map.Entry<T, Double> entry : entries()) {
+         runningSum += entry.getValue();
+         if (target <= runningSum) {
+            return entry.getKey();
+         }
+         lastEntry = entry.getKey();
+      }
+      return lastEntry;
+   }
 
    /**
     * Sample an item based on its count.
@@ -376,18 +386,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
     * @return the sampled item
     */
    default T sample() {
-      Random rnd = new Random();
-      double i = rnd.nextDouble() * sum();
-      double sum = 0;
-      T last = null;
-      for (T item : items()) {
-         sum += get(item);
-         if (i <= sum) {
-            return item;
-         }
-         last = item;
-      }
-      return last;
+      return sample(new Random());
    }
 
    /**
@@ -400,72 +399,61 @@ public interface Counter<T> extends Copyable<Counter<T>> {
    Counter<T> set(T item, double count);
 
    /**
-    * Size int.
+    * The total number of items in the counter
     *
     * @return The number of items in the counter
     */
    int size();
 
    /**
-    * Standard deviation.
+    * Calculates the standard deviation of the items in the counter
     *
     * @return The standard deviation of the counts in the counter
     */
    default double standardDeviation() {
-      return Math2.summaryStatistics(counts()).getSampleStandardDeviation();
+      return Math2.summaryStatistics(values()).getSampleStandardDeviation();
    }
 
    /**
-    * Sum double.
+    * The sum of values in the counter
     *
     * @return The sum of the counts in the counter
     */
-   default double sum() {
-      return Math2.sum(counts());
-   }
+   double sum();
 
    /**
-    * Top n.
+    * Creates a new counter containing the N items with highest values
     *
-    * @param n the n
-    * @return the counter
+    * @param n the number of items desired
+    * @return a counter containing the N items with highest values from this counter
     */
    Counter<T> topN(int n);
 
    /**
-    * Write csv.
+    * Writes the counter items and values to CSV
     *
-    * @param output the output
-    * @throws IOException the io exception
+    * @param output the resource to write to
+    * @throws IOException Something went wrong writing
     */
-   default void writeCSV(@NonNull Resource output) throws IOException {
-      write(StructuredFormat.CSV, output);
+   default void writeCsv(@NonNull Resource output) throws IOException {
+      try (CSVWriter writer = CSV.builder().writer(output)) {
+         for (Map.Entry<T, Double> entry : entries()) {
+            writer.write(entry.getKey(), entry.getValue());
+         }
+      }
    }
 
    /**
-    * Write.
+    * Writes the counter items and values to Json
     *
-    * @param structuredFormat the structured format
-    * @param output           the output
-    * @throws IOException the io exception
+    * @param output the resource to write to
+    * @throws IOException Something went wrong writing
     */
-   default void write(@NonNull StructuredFormat structuredFormat, @NonNull Resource output) throws IOException {
-      write(structuredFormat, output, item -> Convert.convert(item, String.class));
-   }
-
-   /**
-    * Write.
-    *
-    * @param structuredFormat the structured format
-    * @param output           the output
-    * @param keySerializer    the key serializer
-    * @throws IOException the io exception
-    */
-   default void write(@NonNull StructuredFormat structuredFormat, @NonNull Resource output, @NonNull Function<? super T, String> keySerializer) throws IOException {
-      try (StructuredWriter writer = structuredFormat.createWriter(output)) {
+   default void writeJson(@NonNull Resource output) throws IOException {
+      try (StructuredWriter writer = StructuredFormat.JSON.createWriter(output)) {
          writer.beginDocument();
          for (Map.Entry<T, Double> entry : entries()) {
-            writer.writeKeyValue(keySerializer.apply(entry.getKey()), entry.getValue());
+            writer.writeKeyValue(Convert.convert(entry.getKey(), String.class), entry.getValue());
          }
          writer.endDocument();
       }
