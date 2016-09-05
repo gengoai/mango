@@ -34,7 +34,6 @@ import com.davidbracewell.conversion.Val;
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.ClasspathResource;
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.logging.LogFormatter;
 import com.davidbracewell.logging.LogManager;
 import com.davidbracewell.logging.Logger;
 import com.davidbracewell.parsing.ParseException;
@@ -51,7 +50,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Predicate;
-import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -695,10 +693,8 @@ public final class Config implements Serializable {
          String className = name.substring(0, name.length() - ".level".length());
          LogManager.getLogManager().setLevel(className, Level.parse(value.trim().toUpperCase()));
       }
-      if (name.equals("com.davidbracewell.logging.Logger.logfile")) {
-         FileHandler handler = new FileHandler(value);
-         handler.setFormatter(new LogFormatter());
-         LogManager.addHandler(handler);
+      if (name.equals("com.davidbracewell.logging.logfile")) {
+         LogManager.addFileHandler(value);
       }
       if (name.toLowerCase().startsWith(SYSTEM_PROPERTY)) {
          String systemSetting = name.substring(SYSTEM_PROPERTY.length());

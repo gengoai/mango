@@ -92,7 +92,7 @@ public class Broker<V> implements Serializable, Loggable {
     try {
       executors.awaitTermination(Integer.MAX_VALUE, TimeUnit.SECONDS);
     } catch (InterruptedException e) {
-      logWarning(e);
+      logWarn(e);
       return false;
     }
     return true;
@@ -148,7 +148,7 @@ public class Broker<V> implements Serializable, Loggable {
       try {
         owner.queue.put(object);
       } catch (InterruptedException e) {
-        logWarning(e);
+        logWarn(e);
       }
     }
 
@@ -276,7 +276,7 @@ public class Broker<V> implements Serializable, Loggable {
         try {
           producer.produce();
         } catch (Exception e) {
-          logWarning(e);
+          logWarn(e);
         }
       }
     }
@@ -305,7 +305,7 @@ public class Broker<V> implements Serializable, Loggable {
         } catch (InterruptedException e) {
           break;
         } catch (Exception e) {
-          logWarning(e);
+          logWarn(e);
         }
       }
     }
