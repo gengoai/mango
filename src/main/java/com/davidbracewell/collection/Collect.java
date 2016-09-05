@@ -175,7 +175,7 @@ public interface Collect {
     * @param iterable2 the iterator making up the value in the resulting entries
     * @return A stream of entries whose keys are taken from iterable1 and values are taken from iterable2
     */
-   static <T, U> Stream<Map.Entry<T, U>> zip(@NonNull final Iterable<T> iterable1, @NonNull final Iterable<U> iterable2) {
+   static <T, U> Stream<Map.Entry<T, U>> zip(@NonNull final Iterable<? extends T> iterable1, @NonNull final Iterable<? extends U> iterable2) {
       return zip(iterable1.iterator(), iterable2.iterator());
    }
 
@@ -190,7 +190,7 @@ public interface Collect {
     * @param iterator2 the iterator making up the value in the resulting entries
     * @return A stream of entries whose keys are taken from iterator1 and values are taken from iterator2
     */
-   static <T, U> Stream<Map.Entry<T, U>> zip(@NonNull final Iterator<T> iterator1, @NonNull final Iterator<U> iterator2) {
+   static <T, U> Stream<Map.Entry<T, U>> zip(@NonNull final Iterator<? extends T> iterator1, @NonNull final Iterator<? extends U> iterator2) {
       return asStream(new Iterator<Map.Entry<T, U>>() {
          @Override
          public boolean hasNext() {

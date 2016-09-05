@@ -35,10 +35,4 @@ public class TrieMatch<V> implements Serializable {
    public final int end;
    public final V value;
 
-   public TrieMatch(int end, int start, V value) {
-      this.end = end;
-      this.start = start;
-      this.value = value;
-   }
-
 }//END OF TrieMatch

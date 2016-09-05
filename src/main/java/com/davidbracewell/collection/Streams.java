@@ -25,7 +25,6 @@ import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.io.CharsetDetectingReader;
 import com.davidbracewell.io.QuietIO;
 import com.davidbracewell.tuple.Tuple2;
-import lombok.NonNull;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -89,9 +88,6 @@ public interface Streams {
     * @return the stream
     */
    static <T> Stream<T> asParallelStream(Iterator<? extends T> iterator) {
-      if (iterator == null) {
-         return Stream.empty();
-      }
       return asStream(iterator, true);
    }
 
@@ -103,9 +99,6 @@ public interface Streams {
     * @return the stream
     */
    static <T> Stream<T> asParallelStream(Iterable<? extends T> iterable) {
-      if (iterable == null) {
-         return Stream.empty();
-      }
       return asStream(iterable, true);
    }
 
@@ -128,28 +121,11 @@ public interface Streams {
    /**
     * As stream stream.
     *
-    * @param <T>   the type parameter
-    * @param value the value
-    * @return the stream
-    */
-   static <T> Stream<T> asStream(T value) {
-      if (value == null) {
-         return Stream.empty();
-      }
-      return Stream.of(value);
-   }
-
-   /**
-    * As stream stream.
-    *
     * @param <T>      the type parameter
     * @param iterator the iterator
     * @return the stream
     */
    static <T> Stream<T> asStream(Iterator<? extends T> iterator) {
-      if (iterator == null) {
-         return Stream.empty();
-      }
       return asStream(iterator, false);
    }
 
@@ -162,9 +138,6 @@ public interface Streams {
     * @return the stream
     */
    static <T> Stream<T> asStream(Iterator<? extends T> iterator, boolean parallel) {
-      if (iterator == null) {
-         return Stream.empty();
-      }
       return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), parallel);
    }
 
@@ -176,9 +149,6 @@ public interface Streams {
     * @return the stream
     */
    static <T> Stream<T> asStream(Iterable<? extends T> iterable) {
-      if (iterable == null) {
-         return Stream.empty();
-      }
       return asStream(iterable, false);
    }
 
@@ -191,9 +161,6 @@ public interface Streams {
     * @return the stream
     */
    static <T> Stream<T> asStream(Iterable<? extends T> iterable, boolean parallel) {
-      if (iterable == null) {
-         return Stream.empty();
-      }
       return StreamSupport.stream(Cast.as(iterable.spliterator()), parallel);
    }
 
@@ -206,7 +173,7 @@ public interface Streams {
     * @param stream2 the stream 2
     * @return the stream
     */
-   static <T, U> Stream<Map.Entry<T, U>> zip(@NonNull final Stream<T> stream1, @NonNull final Stream<U> stream2) {
+   static <T, U> Stream<Map.Entry<T, U>> zip(final Stream<? extends T> stream1, final Stream<? extends U> stream2) {
       if (stream1 == null || stream2 == null) {
          return Stream.empty();
       }

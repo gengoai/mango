@@ -28,6 +28,11 @@ public class Trie<V> implements Serializable, Map<String, V> {
       this.root = new TrieNode<>(null, null);
    }
 
+   /**
+    * Instantiates a new Trie.
+    *
+    * @param map the map
+    */
    public Trie(@NonNull Map<String, V> map) {
       this();
       putAll(map);
