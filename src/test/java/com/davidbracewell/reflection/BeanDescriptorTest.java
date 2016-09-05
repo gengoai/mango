@@ -24,7 +24,7 @@ package com.davidbracewell.reflection;
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.davidbracewell.collection.set.Sets.set;
+import static com.davidbracewell.collection.Sets.set;
 import static org.junit.Assert.*;
 
 public class BeanDescriptorTest {

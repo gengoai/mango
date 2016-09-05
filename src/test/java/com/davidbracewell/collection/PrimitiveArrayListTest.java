@@ -88,7 +88,7 @@ public class PrimitiveArrayListTest {
 
     assertTrue(itr.hasPrevious());
     assertEquals((Double) 34.0, itr.previous());
-
+    assertEquals((Double) 34.0, itr.next());
     assertEquals((Double) 2.0, itr.next());
 
 

@@ -23,15 +23,18 @@ package com.davidbracewell.collection;
 
 import com.davidbracewell.collection.list.PrimitiveArrayList;
 import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.tuple.Tuple2;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
 import java.lang.reflect.Array;
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.davidbracewell.collection.Streams.asStream;
 import static com.google.common.base.Preconditions.checkArgument;
 
 /**
@@ -41,31 +44,36 @@ import static com.google.common.base.Preconditions.checkArgument;
  */
 public interface Collect {
 
-   static <T> boolean addAll(@NonNull Collection<? super T> collection, @NonNull Iterator<? extends T> iterator) {
-      return addAll(collection, asIterable(iterator));
+
+   /**
+    * <p>Sorts the items of an iterable returning an array of the sorted items.</p>
+    *
+    * @param iterable The iterable instance to sort
+    * @param <E>      The component type of the iterable which implements the <code>Comparable</code> interface.
+    * @return A list of the items in the given iterable sorted using the items natural comparator.
+    */
+   static <E extends Comparable<? super E>> List<E> sort(@NonNull Iterable<E> iterable) {
+      return asStream(iterable).sorted().collect(Collectors.toList());
    }
 
-   static <T> boolean addAll(@NonNull Collection<? super T> collection, @NonNull Iterable<? extends T> iterable) {
-      boolean allAdded = true;
-      for (T t : iterable) {
-         if (!collection.add(t)) {
-            allAdded = false;
-         }
-      }
-      return allAdded;
+   /**
+    * <p>Sorts the items of an iterable returning an array of the sorted items.</p>
+    *
+    * @param iterable   The iterable instance to sort
+    * @param comparator The comparator to use for sorting
+    * @param <E>        The component type of the iterable.
+    * @return A list of the items in the given iterable sorted using the given comparator.
+    */
+   static <E> List<E> sort(@NonNull Iterable<E> iterable, @NonNull Comparator<? super E> comparator) {
+      return asStream(iterable).sorted(comparator).collect(Collectors.toList());
    }
-
-   static <T> boolean addAll(@NonNull Collection<? super T> collection, @NonNull Stream<? extends T> stream) {
-      return addAll(collection, asIterable(stream.iterator()));
-   }
-
 
    /**
     * Wraps an <code>array</code> as an <code>Iterable</code>
     *
-    * @param <T>       the type parameter
+    * @param <T>       the component type of the array
     * @param array     The array to wrap
-    * @param itemClass the type of item in the array
+    * @param itemClass the component type of the array
     * @return An Iterable wrapping the iterator.
     */
    static <T> Iterable<T> asIterable(@NonNull final Object array, @NonNull final Class<T> itemClass) {
@@ -83,6 +91,7 @@ public interface Collect {
 
          @Override
          public T next() {
+            Preconditions.checkElementIndex(pos, Array.getLength(array));
             return itemClass.cast(Array.get(array, pos++));
          }
       };
@@ -95,35 +104,41 @@ public interface Collect {
     * @param iterator The iterator to wrap
     * @return An Iterable wrapping the iterator.
     */
-   static <T> Iterable<T> asIterable(final Iterator<T> iterator) {
+   static <T> Iterable<T> asIterable(final Iterator<? extends T> iterator) {
       if (iterator == null) {
          return () -> Cast.as(Collections.emptyIterator());
       }
-      return () -> iterator;
+      return () -> Cast.as(iterator);
    }
 
 
    /**
-    * First optional.
+    * <p>Returns the first item in an iterable. </p>
     *
-    * @param <T>      the type parameter
+    * @param <T>      the type of element in the iterable
     * @param iterable the iterable
-    * @return the optional
+    * @return An optional containing the first element in the iterable or null if none
     */
-   static <T> Optional<T> getFirst(@NonNull Iterable<T> iterable) {
-      return Iterators.getFirst(iterable.iterator());
+   static <T> Optional<T> getFirst(@NonNull Iterable<? extends T> iterable) {
+      return Optional.ofNullable(Iterables.getFirst(iterable, null));
    }
 
+   /**
+    * <p>Returns the last item in an iterable. </p>
+    *
+    * @param <T>      the type of element in the iterable
+    * @param iterable the iterable
+    * @return An optional containing the last element in the iterable or null if none
+    */
    static <T> Optional<T> getLast(@NonNull Iterable<T> iterable) {
-      return Iterators.getLast(iterable.iterator());
+      return Optional.ofNullable(Iterables.getLast(iterable, null));
    }
 
 
    /**
-    * <p>Creates a default instance of the collection type. If the passed in class is an implementation then that
-    * implementation is created using the no-arg constructor.</p> <table> <tr><td>Set</td><td>HashSet</td></tr>
-    * <tr><td>List</td><td>ArrayList</td></tr> <tr><td>Queue</td><td>LinkedList</td></tr>
-    * <tr><td>Deque</td><td>LinkedList</td></tr> <tr><td>Stack</td><td>Stack</td></tr> </table>
+    * <p>Creates a default instance of a collection type. If the passed in class is an implementation then that
+    * implementation is created using the no-arg constructor. Interfaces (e.g. Set and List) have default
+    * implementations assigned and returned. </p>
     *
     * @param collectionClass the collection class
     * @return t
@@ -133,7 +148,6 @@ public interface Collect {
       if (collectionClass == null) {
          return null;
       }
-
       if (Set.class.equals(collectionClass)) {
          return Cast.as(new HashSet<>());
       } else if (List.class.equals(collectionClass)) {
@@ -144,75 +158,53 @@ public interface Collect {
          return Cast.as(new LinkedList<>());
       } else if (Stack.class.equals(collectionClass)) {
          return Cast.as(new Stack<>());
+      } else if (NavigableSet.class.equals(collectionClass)) {
+         return Cast.as(new TreeSet<>());
       }
-
       return collectionClass.newInstance();
    }
 
    /**
-    * Difference collection.
+    * <p>Zips (combines) two iterators together. For example, if iterable 1 contained [1,2,3] and iterable 2 contained
+    * [4,5,6] the result would be [(1,4), (2,5), (3,6)]. Note that the length of the resulting stream will be the
+    * minimum of the two iterables.</p>
     *
-    * @param <T> the type parameter
-    * @param c1  the c 1
-    * @param c2  the c 2
-    * @return the collection
+    * @param <T>       the component type of the first iterator
+    * @param <U>       the component type of the second iterator
+    * @param iterable1 the iterator making up the key in the resulting entries
+    * @param iterable2 the iterator making up the value in the resulting entries
+    * @return A stream of entries whose keys are taken from iterable1 and values are taken from iterable2
     */
-   static <T, C extends Collection<T>> C difference(@NonNull Supplier<C> supplier, Collection<? extends T> c1, Collection<? extends T> c2) {
-      if (c1 == null && c2 == null) {
-         return supplier.get();
-      } else if (c1 == null) {
-         return c2.stream().collect(Collectors.toCollection(supplier));
-      } else if (c2 == null) {
-         return c1.stream().collect(Collectors.toCollection(supplier));
-      }
-      return c1.stream().filter(v -> !c2.contains(v)).collect(Collectors.toCollection(supplier));
+   static <T, U> Stream<Map.Entry<T, U>> zip(@NonNull final Iterable<T> iterable1, @NonNull final Iterable<U> iterable2) {
+      return zip(iterable1.iterator(), iterable2.iterator());
    }
 
    /**
-    * Intersection collection.
+    * <p>Zips (combines) two iterators together. For example, if iterator 1 contained [1,2,3] and iterator 2 contained
+    * [4,5,6] the result would be [(1,4), (2,5), (3,6)]. Note that the length of the resulting stream will be the
+    * minimum of the two iterators.</p>
     *
-    * @param <T> the type parameter
-    * @param c1  the c 1
-    * @param c2  the c 2
-    * @return the collection
+    * @param <T>       the component type of the first iterator
+    * @param <U>       the component type of the second iterator
+    * @param iterator1 the iterator making up the key in the resulting entries
+    * @param iterator2 the iterator making up the value in the resulting entries
+    * @return A stream of entries whose keys are taken from iterator1 and values are taken from iterator2
     */
-   static <T, C extends Collection<T>> C intersection(@NonNull Supplier<C> supplier, Collection<? extends T> c1, Collection<? extends T> c2) {
-      if (c1 == null || c2 == null || c1.isEmpty() || c2.isEmpty()) {
-         return supplier.get();
-      }
-      return c1.stream().filter(c2::contains).collect(Collectors.toCollection(supplier));
+   static <T, U> Stream<Map.Entry<T, U>> zip(@NonNull final Iterator<T> iterator1, @NonNull final Iterator<U> iterator2) {
+      return asStream(new Iterator<Map.Entry<T, U>>() {
+         @Override
+         public boolean hasNext() {
+            return iterator1.hasNext() && iterator2.hasNext();
+         }
 
-   }
-
-   /**
-    * Union collection.
-    *
-    * @param <T> the type parameter
-    * @param c1  the c 1
-    * @param c2  the c 2
-    * @return the collection
-    */
-   static <T, C extends Collection<T>> C union(@NonNull Supplier<C> supplier, Collection<? extends T> c1, Collection<? extends T> c2) {
-      if (c1 == null && c2 == null) {
-         return supplier.get();
-      } else if (c1 == null) {
-         return c2.stream().collect(Collectors.toCollection(supplier));
-      } else if (c2 == null) {
-         return c1.stream().collect(Collectors.toCollection(supplier));
-      }
-      return Stream.concat(c1.stream(), c2.stream()).collect(Collectors.toCollection(supplier));
-   }
-
-   static <T> Collection<T> union(Collection<? extends T> c1, Collection<? extends T> c2) {
-      return union(ArrayList::new, c1, c2);
-   }
-
-   static <T> Collection<T> difference(Collection<? extends T> c1, Collection<? extends T> c2) {
-      return difference(ArrayList::new, c1, c2);
-   }
-
-   static <T> Collection<T> intersection(Collection<? extends T> c1, Collection<? extends T> c2) {
-      return intersection(ArrayList::new, c1, c2);
+         @Override
+         public Map.Entry<T, U> next() {
+            if (!iterator1.hasNext() || !iterator2.hasNext()) {
+               throw new NoSuchElementException();
+            }
+            return new Tuple2<>(iterator1.next(), iterator2.next());
+         }
+      });
    }
 
 

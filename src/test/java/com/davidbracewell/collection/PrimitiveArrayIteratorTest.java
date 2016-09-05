@@ -24,73 +24,75 @@ package com.davidbracewell.collection;
 import com.davidbracewell.collection.list.PrimitiveArrayIterator;
 import org.junit.Test;
 
+import java.util.Iterator;
+
 import static org.junit.Assert.*;
 
 /**
  * @author David B. Bracewell
  */
 public class PrimitiveArrayIteratorTest {
-  @Test
-  public void testDoubleArrayIterator() throws Exception {
-    PrimitiveArrayIterator<Double> itr = PrimitiveArrayIterator.doubleArrayIterator(new double[]{2.0, 1.0});
-    assertEquals((Double) 2.0, itr.next());
-    assertEquals((Double) 1.0, itr.next());
-    assertFalse(itr.hasNext());
-  }
+   @Test
+   public void testDoubleArrayIterator() throws Exception {
+      Iterator<Double> itr = PrimitiveArrayIterator.doubleArrayIterator(new double[]{2.0, 1.0});
+      assertEquals((Double) 2.0, itr.next());
+      assertEquals((Double) 1.0, itr.next());
+      assertFalse(itr.hasNext());
+   }
 
-  @Test
-  public void testIntegerArrayIterator() throws Exception {
-    PrimitiveArrayIterator<Integer> itr = PrimitiveArrayIterator.integerArrayIterator(new int[]{2, 1});
-    assertEquals((Integer) 2, itr.next());
-    assertEquals((Integer) 1, itr.next());
-    assertFalse(itr.hasNext());
-  }
+   @Test
+   public void testIntegerArrayIterator() throws Exception {
+      Iterator<Integer> itr = PrimitiveArrayIterator.integerArrayIterator(new int[]{2, 1});
+      assertEquals((Integer) 2, itr.next());
+      assertEquals((Integer) 1, itr.next());
+      assertFalse(itr.hasNext());
+   }
 
-  @Test
-  public void testShortArrayIterator() throws Exception {
-    PrimitiveArrayIterator<Short> itr = PrimitiveArrayIterator.shortArrayIterator(new short[]{2, 1});
-    assertEquals(Short.valueOf((short) 2), itr.next());
-    assertEquals(Short.valueOf((short) 1), itr.next());
-    assertFalse(itr.hasNext());
-  }
+   @Test
+   public void testShortArrayIterator() throws Exception {
+      Iterator<Short> itr = PrimitiveArrayIterator.shortArrayIterator(new short[]{2, 1});
+      assertEquals(Short.valueOf((short) 2), itr.next());
+      assertEquals(Short.valueOf((short) 1), itr.next());
+      assertFalse(itr.hasNext());
+   }
 
-  @Test
-  public void testLongArrayIterator() throws Exception {
-    PrimitiveArrayIterator<Long> itr = PrimitiveArrayIterator.longArrayIterator(new long[]{2L, 1L});
-    assertEquals((Long) 2L, itr.next());
-    assertEquals((Long) 1L, itr.next());
-    assertFalse(itr.hasNext());
-  }
+   @Test
+   public void testLongArrayIterator() throws Exception {
+      Iterator<Long> itr = PrimitiveArrayIterator.longArrayIterator(new long[]{2L, 1L});
+      assertEquals((Long) 2L, itr.next());
+      assertEquals((Long) 1L, itr.next());
+      assertFalse(itr.hasNext());
+   }
 
-  @Test
-  public void testFloatArrayIterator() throws Exception {
-    PrimitiveArrayIterator<Float> itr = PrimitiveArrayIterator.floatArrayIterator(new float[]{2.0f, 1.0f});
-    assertEquals((Float) 2.0f, itr.next());
-    assertEquals((Float) 1.0f, itr.next());
-    assertFalse(itr.hasNext());
-  }
+   @Test
+   public void testFloatArrayIterator() throws Exception {
+      Iterator<Float> itr = PrimitiveArrayIterator.floatArrayIterator(new float[]{2.0f, 1.0f});
+      assertEquals((Float) 2.0f, itr.next());
+      assertEquals((Float) 1.0f, itr.next());
+      assertFalse(itr.hasNext());
+   }
 
-  @Test
-  public void testByteArrayIterator() throws Exception {
-    PrimitiveArrayIterator<Byte> itr = PrimitiveArrayIterator.byteArrayIterator(new byte[]{2, 1});
-    assertEquals(Byte.valueOf((byte) 2), itr.next());
-    assertEquals(Byte.valueOf((byte) 1), itr.next());
-    assertFalse(itr.hasNext());
-  }
+   @Test
+   public void testByteArrayIterator() throws Exception {
+      Iterator<Byte> itr = PrimitiveArrayIterator.byteArrayIterator(new byte[]{2, 1});
+      assertEquals(Byte.valueOf((byte) 2), itr.next());
+      assertEquals(Byte.valueOf((byte) 1), itr.next());
+      assertFalse(itr.hasNext());
+   }
 
-  @Test
-  public void testBooleanArrayIterator() throws Exception {
-    PrimitiveArrayIterator<Boolean> itr = PrimitiveArrayIterator.booleanArrayIterator(new boolean[]{false, true});
-    assertEquals(false, itr.next());
-    assertEquals(true, itr.next());
-    assertFalse(itr.hasNext());
-  }
+   @Test
+   public void testBooleanArrayIterator() throws Exception {
+      Iterator<Boolean> itr = PrimitiveArrayIterator.booleanArrayIterator(new boolean[]{false, true});
+      assertEquals(false, itr.next());
+      assertEquals(true, itr.next());
+      assertFalse(itr.hasNext());
+   }
 
-  @Test
-  public void testCharacterArrayIterator() throws Exception {
-    PrimitiveArrayIterator<Character> itr = PrimitiveArrayIterator.characterArrayIterator("ab".toCharArray());
-    assertEquals((Character) 'a', itr.next());
-    assertEquals((Character) 'b', itr.next());
-    assertFalse(itr.hasNext());
-  }
+   @Test
+   public void testCharacterArrayIterator() throws Exception {
+      Iterator<Character> itr = PrimitiveArrayIterator.characterArrayIterator("ab".toCharArray());
+      assertEquals((Character) 'a', itr.next());
+      assertEquals((Character) 'b', itr.next());
+      assertFalse(itr.hasNext());
+   }
 }

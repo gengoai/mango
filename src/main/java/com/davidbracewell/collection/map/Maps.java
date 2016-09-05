@@ -21,8 +21,8 @@
 
 package com.davidbracewell.collection.map;
 
+import com.davidbracewell.collection.Sets;
 import com.davidbracewell.collection.Streams;
-import com.davidbracewell.collection.set.Sets;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.io.CSV;

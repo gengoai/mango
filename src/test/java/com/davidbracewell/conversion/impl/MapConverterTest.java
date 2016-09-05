@@ -21,10 +21,10 @@
 
 package com.davidbracewell.conversion.impl;
 
-import com.davidbracewell.collection.map.BiMap;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.tuple.Tuple2;
+import com.google.common.collect.BiMap;
 import org.junit.Test;
 
 import java.util.ArrayList;

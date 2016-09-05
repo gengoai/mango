@@ -22,12 +22,13 @@
 package com.davidbracewell.collection.list;
 
 import com.davidbracewell.conversion.Convert;
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 /**
  * <p>
@@ -37,128 +38,116 @@ import java.util.NoSuchElementException;
  * @param <E> The type to convert the primitive to
  * @author David B. Bracewell
  */
-public class PrimitiveArrayIterator<E> implements Iterator<E> {
+public final class PrimitiveArrayIterator<E> implements Iterator<E>, Serializable {
+   private static final long serialVersionUID = 1L;
 
-  private final Object array;
-  private final int length;
-  private final Class<E> rClass;
-  private int index = 0;
+   private final Object array;
+   private final int length;
+   private final Class<E> rClass;
+   private int index = 0;
 
-  protected PrimitiveArrayIterator(@NonNull Object array, @NonNull Class<E> rClass) {
-    if (!array.getClass().isArray()) {
-      throw new IllegalArgumentException("Must pass an array");
-    }
-    if (!array.getClass().getComponentType().isPrimitive()) {
-      throw new IllegalArgumentException("Object must be a primitive array");
-    }
-    this.array = array;
-    this.length = Array.getLength(array);
-    this.rClass = rClass;
-  }
+   protected PrimitiveArrayIterator(@NonNull Object array, @NonNull Class<E> rClass) {
+      Preconditions.checkArgument(array.getClass().isArray(), "Object must be an array.");
+      Preconditions.checkArgument(array.getClass().getComponentType().isPrimitive(),
+                                  "Object must be a primitive array.");
+      this.array = array;
+      this.length = Array.getLength(array);
+      this.rClass = rClass;
+   }
 
-  /**
-   * Double array iterator.
-   *
-   * @param array the array
-   * @return the primitive array iterator
-   */
-  public static PrimitiveArrayIterator<Double> doubleArrayIterator(Object array) {
-    return new PrimitiveArrayIterator<>(array, Double.class);
-  }
+   /**
+    * Double array iterator.
+    *
+    * @param array the array
+    * @return the primitive array iterator
+    */
+   public static Iterator<Double> doubleArrayIterator(Object array) {
+      return new PrimitiveArrayIterator<>(array, Double.class);
+   }
 
-  /**
-   * Integer array iterator.
-   *
-   * @param array the array
-   * @return the primitive array iterator
-   */
-  public static PrimitiveArrayIterator<Integer> integerArrayIterator(
-    Object array
-                                                                    ) {
-    return new PrimitiveArrayIterator<>(array, Integer.class);
-  }
+   /**
+    * Integer array iterator.
+    *
+    * @param array the array
+    * @return the primitive array iterator
+    */
+   public static Iterator<Integer> integerArrayIterator(Object array) {
+      return new PrimitiveArrayIterator<>(array, Integer.class);
+   }
 
-  /**
-   * Short array iterator.
-   *
-   * @param array the array
-   * @return the primitive array iterator
-   */
-  public static PrimitiveArrayIterator<Short> shortArrayIterator(Object array) {
-    return new PrimitiveArrayIterator<>(array, Short.class);
-  }
+   /**
+    * Short array iterator.
+    *
+    * @param array the array
+    * @return the primitive array iterator
+    */
+   public static Iterator<Short> shortArrayIterator(Object array) {
+      return new PrimitiveArrayIterator<>(array, Short.class);
+   }
 
-  /**
-   * Long array iterator.
-   *
-   * @param array the array
-   * @return the primitive array iterator
-   */
-  public static PrimitiveArrayIterator<Long> longArrayIterator(Object array) {
-    return new PrimitiveArrayIterator<>(array, Long.class);
-  }
+   /**
+    * Long array iterator.
+    *
+    * @param array the array
+    * @return the primitive array iterator
+    */
+   public static Iterator<Long> longArrayIterator(Object array) {
+      return new PrimitiveArrayIterator<>(array, Long.class);
+   }
 
-  /**
-   * Float array iterator.
-   *
-   * @param array the array
-   * @return the primitive array iterator
-   */
-  public static PrimitiveArrayIterator<Float> floatArrayIterator(Object array) {
-    return new PrimitiveArrayIterator<>(array, Float.class);
-  }
+   /**
+    * Float array iterator.
+    *
+    * @param array the array
+    * @return the primitive array iterator
+    */
+   public static Iterator<Float> floatArrayIterator(Object array) {
+      return new PrimitiveArrayIterator<>(array, Float.class);
+   }
 
-  /**
-   * Byte array iterator.
-   *
-   * @param array the array
-   * @return the primitive array iterator
-   */
-  public static PrimitiveArrayIterator<Byte> byteArrayIterator(Object array) {
-    return new PrimitiveArrayIterator<>(array, Byte.class);
-  }
+   /**
+    * Byte array iterator.
+    *
+    * @param array the array
+    * @return the primitive array iterator
+    */
+   public static Iterator<Byte> byteArrayIterator(Object array) {
+      return new PrimitiveArrayIterator<>(array, Byte.class);
+   }
 
-  /**
-   * Boolean array iterator.
-   *
-   * @param array the array
-   * @return the primitive array iterator
-   */
-  public static PrimitiveArrayIterator<Boolean> booleanArrayIterator(
-    Object array
-                                                                    ) {
-    return new PrimitiveArrayIterator<>(array, Boolean.class);
-  }
+   /**
+    * Boolean array iterator.
+    *
+    * @param array the array
+    * @return the primitive array iterator
+    */
+   public static Iterator<Boolean> booleanArrayIterator(Object array) {
+      return new PrimitiveArrayIterator<>(array, Boolean.class);
+   }
 
-  /**
-   * Character array iterator.
-   *
-   * @param array the array
-   * @return the primitive array iterator
-   */
-  public static PrimitiveArrayIterator<Character> characterArrayIterator(Object array) {
-    return new PrimitiveArrayIterator<>(array, Character.class);
-  }
+   /**
+    * Character array iterator.
+    *
+    * @param array the array
+    * @return the primitive array iterator
+    */
+   public static Iterator<Character> characterArrayIterator(Object array) {
+      return new PrimitiveArrayIterator<>(array, Character.class);
+   }
 
-  @Override
-  public boolean hasNext() {
-    return (index < length);
-  }
+   @Override
+   public boolean hasNext() {
+      return (index < length);
+   }
 
-  @Override
-  @SneakyThrows
-  public E next() {
-    if (index >= length) {
-      throw new NoSuchElementException();
-    }
-    Object val = Array.get(array, index);
-    index++;
-    return Convert.convert(val, rClass);
-  }
+   @Override
+   @SneakyThrows
+   public E next() {
+      Preconditions.checkElementIndex(index, length);
+      Object val = Array.get(array, index);
+      index++;
+      return Convert.convert(val, rClass);
+   }
 
-  @Override
-  public void remove() {
-    throw new UnsupportedOperationException();
-  }
 
 }//END OF PrimitiveArrayIterator

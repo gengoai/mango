@@ -194,7 +194,7 @@ public interface Streams {
     if (stream1 == null || stream2 == null) {
       return Stream.empty();
     }
-    return Iterators.zip(stream1.iterator(), stream2.iterator());
+    return Collect.zip(stream1.iterator(), stream2.iterator());
   }
 
   /**

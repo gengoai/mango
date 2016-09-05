@@ -25,9 +25,9 @@ import org.junit.Test;
 
 import java.util.*;
 
+import static com.davidbracewell.collection.Sets.*;
 import static com.davidbracewell.collection.list.Lists.asArrayList;
 import static com.davidbracewell.collection.list.Lists.list;
-import static com.davidbracewell.collection.set.Sets.*;
 import static com.davidbracewell.conversion.Cast.as;
 import static org.junit.Assert.*;
 

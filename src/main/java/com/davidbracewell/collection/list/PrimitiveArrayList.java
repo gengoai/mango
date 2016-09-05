@@ -41,102 +41,102 @@ import static com.google.common.base.Preconditions.checkArgument;
  * @author David B. Bracewell
  * @version $Id$
  */
-public class PrimitiveArrayList<E> extends AbstractList<E> implements Serializable {
+public final class PrimitiveArrayList<E> extends AbstractList<E> implements Serializable {
 
-  private static final long serialVersionUID = -2756365804776754936L;
-  private Object array = null;
-  private Class<E> objectType = null;
-  private int arraySize = 0;
+   private static final long serialVersionUID = -2756365804776754936L;
+   private Object array = null;
+   private Class<E> objectType = null;
+   private int arraySize = 0;
 
-  /**
-   * Constructs a fixed size primitive backed list.
-   *
-   * @param array      The primitive array
-   * @param objectType Class information for the object to convert the                   primitive to
-   * @throws NullPointerException     if either of the arguments are null
-   * @throws IllegalArgumentException if the array object is not an array or                                  the
-   *                                  component type is not a primitive
-   */
-  public PrimitiveArrayList(@NonNull Object array, @NonNull Class<E> objectType) {
-    checkArgument(array.getClass().isArray(), "The object must be an array of primitives.");
-    checkArgument(array.getClass().getComponentType().isPrimitive(), "The object must be an array of primitives.");
-    this.array = array;
-    this.arraySize = Array.getLength(array);
-    this.objectType = objectType;
-  }
+   /**
+    * Constructs a fixed size primitive backed list.
+    *
+    * @param array      The primitive array
+    * @param objectType Class information for the object to convert the                   primitive to
+    * @throws NullPointerException     if either of the arguments are null
+    * @throws IllegalArgumentException if the array object is not an array or                                  the
+    *                                  component type is not a primitive
+    */
+   public PrimitiveArrayList(@NonNull Object array, @NonNull Class<E> objectType) {
+      checkArgument(array.getClass().isArray(), "The object must be an array of primitives.");
+      checkArgument(array.getClass().getComponentType().isPrimitive(), "The object must be an array of primitives.");
+      this.array = array;
+      this.arraySize = Array.getLength(array);
+      this.objectType = objectType;
+   }
 
-  @Override
-  public E get(int index) {
-    Object o = Array.get(array, index);
-    if (o instanceof Number) {
-      Number num = (Number) o;
-      if (objectType.equals(Double.class)) {
-        return objectType.cast(num.doubleValue());
-      } else if (objectType.equals(Integer.class)) {
-        return objectType.cast(num.intValue());
-      } else if (objectType.equals(Short.class)) {
-        return objectType.cast(num.shortValue());
-      } else if (objectType.equals(Long.class)) {
-        return objectType.cast(num.longValue());
-      } else if (objectType.equals(Float.class)) {
-        return objectType.cast(num.floatValue());
+   @Override
+   public E get(int index) {
+      Object o = Array.get(array, index);
+      if (o instanceof Number) {
+         Number num = (Number) o;
+         if (objectType.equals(Double.class)) {
+            return objectType.cast(num.doubleValue());
+         } else if (objectType.equals(Integer.class)) {
+            return objectType.cast(num.intValue());
+         } else if (objectType.equals(Short.class)) {
+            return objectType.cast(num.shortValue());
+         } else if (objectType.equals(Long.class)) {
+            return objectType.cast(num.longValue());
+         } else if (objectType.equals(Float.class)) {
+            return objectType.cast(num.floatValue());
+         }
       }
-    }
-    return objectType.cast(Array.get(array, index));
-  }
+      return objectType.cast(Array.get(array, index));
+   }
 
-  @Override
-  public boolean isEmpty() {
-    return arraySize == 0;
-  }
+   @Override
+   public boolean isEmpty() {
+      return arraySize == 0;
+   }
 
-  @Override
-  public Iterator<E> iterator() {
-    return new PrimitiveArrayIterator<>(array, objectType);
-  }
+   @Override
+   public Iterator<E> iterator() {
+      return new PrimitiveArrayIterator<>(array, objectType);
+   }
 
-  @Override
-  public ListIterator<E> listIterator() {
-    return new PrimitiveArrayListIterator<>(array);
-  }
+   @Override
+   public ListIterator<E> listIterator() {
+      return new PrimitiveArrayListIterator<>(array);
+   }
 
-  @Override
-  public ListIterator<E> listIterator(int index) {
-    return new PrimitiveArrayListIterator<>(array, index);
-  }
+   @Override
+   public ListIterator<E> listIterator(int index) {
+      return new PrimitiveArrayListIterator<>(array, index);
+   }
 
-  @Override
-  public E set(int index, E element) {
-    E old = get(index);
-    Array.set(array, index, element);
-    return old;
-  }
+   @Override
+   public E set(int index, E element) {
+      E old = get(index);
+      Array.set(array, index, element);
+      return old;
+   }
 
-  @Override
-  public int size() {
-    return arraySize;
-  }
+   @Override
+   public int size() {
+      return arraySize;
+   }
 
-  @Override
-  public List<E> subList(int fromIndex, int toIndex) {
-    Object a2 = Array.newInstance(array.getClass().getComponentType(), (toIndex - fromIndex));
-    System.arraycopy(array, fromIndex, a2, 0, (toIndex - fromIndex));
-    return new PrimitiveArrayList<>(a2, objectType);
-  }
+   @Override
+   public List<E> subList(int fromIndex, int toIndex) {
+      Object a2 = Array.newInstance(array.getClass().getComponentType(), (toIndex - fromIndex));
+      System.arraycopy(array, fromIndex, a2, 0, (toIndex - fromIndex));
+      return new PrimitiveArrayList<>(a2, objectType);
+   }
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("[");
-    for (int i = 0; i < size(); i++) {
-      sb.append(get(i));
-      if (i > 0) {
-        sb.append(",");
+   @Override
+   public String toString() {
+      StringBuilder sb = new StringBuilder("[");
+      for (int i = 0; i < size(); i++) {
+         sb.append(get(i));
+         if (i > 0) {
+            sb.append(",");
+         }
+         if (i < (size() - 1)) {
+            sb.append(" ");
+         }
       }
-      if (i < (size() - 1)) {
-        sb.append(" ");
-      }
-    }
-    return sb.append("]").toString();
-  }
+      return sb.append("]").toString();
+   }
 
 }// END OF CLASS PrimitiveArrayList

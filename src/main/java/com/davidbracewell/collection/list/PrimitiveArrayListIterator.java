@@ -22,11 +22,14 @@
 package com.davidbracewell.collection.list;
 
 import com.davidbracewell.conversion.Cast;
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.ListIterator;
-import java.util.NoSuchElementException;
+
+import static com.davidbracewell.conversion.Cast.as;
 
 /**
  * <p>
@@ -42,102 +45,86 @@ import java.util.NoSuchElementException;
  * @author David B. Bracewell
  * @version $Id$
  */
-public class PrimitiveArrayListIterator<E> implements ListIterator<E> {
+public final class PrimitiveArrayListIterator<E> implements ListIterator<E>, Serializable {
+   private static final long serialVersionUID = 1L;
 
-  private Object array;
-  private int index = 0;
-  private int last = 0;
-  private int length = 0;
+   private Object array;
+   private int index = 0;
+   private int length = 0;
 
-  /**
-   * Instantiates a new Primitive array list iterator.
-   *
-   * @param array the array
-   */
-  public PrimitiveArrayListIterator(@NonNull Object array) {
-    if (!array.getClass().isArray()) {
-      throw new IllegalArgumentException("Must pass an array");
-    }
-    if (!array.getClass().getComponentType().isPrimitive()) {
-      throw new IllegalArgumentException("Object must be a primitive array");
-    }
-    this.array = array;
-    this.length = Array.getLength(array);
-  }
+   /**
+    * Instantiates a new Primitive array list iterator.
+    *
+    * @param array the array
+    */
+   public PrimitiveArrayListIterator(@NonNull Object array) {
+      this(array, 0);
+   }
 
-  /**
-   * Instantiates a new Primitive array list iterator.
-   *
-   * @param array the array
-   * @param index the index
-   */
-  public PrimitiveArrayListIterator(@NonNull Object array, int index) {
-    if (!array.getClass().isArray()) {
-      throw new IllegalArgumentException("Must pass an array");
-    }
-    if (!array.getClass().getComponentType().isPrimitive()) {
-      throw new IllegalArgumentException("Object must be a primitive array");
-    }
-    if (index < 0) {
-      throw new IllegalArgumentException("The starting index should be non-negative.");
-    }
-    this.array = array;
-    this.index = index;
-    this.last = index;
-    this.length = Array.getLength(array);
-  }
+   /**
+    * Instantiates a new Primitive array list iterator.
+    *
+    * @param array the array
+    * @param index the index
+    */
+   public PrimitiveArrayListIterator(@NonNull Object array, int index) {
+      Preconditions.checkArgument(array.getClass().isArray(), "Object must be an array.");
+      Preconditions.checkArgument(array.getClass().getComponentType().isPrimitive(),
+                                  "Object must be a primitive array.");
+      Preconditions.checkArgument(index >= 0, "The starting index should be non-negative.");
+      this.array = array;
+      this.index = index;
+      this.length = Array.getLength(array);
+   }
 
-  @Override
-  public void add(E arg0) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public void add(E arg0) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public boolean hasNext() {
-    return index < length;
-  }
+   @Override
+   public boolean hasNext() {
+      return index < length;
+   }
 
-  @Override
-  public boolean hasPrevious() {
-    return index > 0;
-  }
+   @Override
+   public boolean hasPrevious() {
+      return index > 0;
+   }
 
-  @Override
-  public E next() {
-    if (!hasNext()) {
-      throw new NoSuchElementException();
-    }
-    last = index;
-    return Cast.as(Array.get(array, index++));
-  }
+   @Override
+   public E next() {
+      Preconditions.checkElementIndex(index, length);
+      E next = Cast.as(Array.get(array, index));
+      index++;
+      return next;
+   }
 
-  @Override
-  public int nextIndex() {
-    return index;
-  }
+   @Override
+   public int nextIndex() {
+      return index;
+   }
 
-  @Override
-  public E previous() {
-    if (!hasPrevious()) {
-      throw new NoSuchElementException();
-    }
-    last = index;
-    return Cast.as(Array.get(array, index - 1));
-  }
+   @Override
+   public E previous() {
+      Preconditions.checkElementIndex(index - 1, length);
+      index--;
+      return as(Array.get(array, index));
+   }
 
-  @Override
-  public int previousIndex() {
-    return index == 0 ? -1 : index;
-  }
+   @Override
+   public int previousIndex() {
+      return index == 0 ? -1 : index;
+   }
 
-  @Override
-  public void remove() {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public void remove() {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public void set(E arg0) {
-    Array.set(array, last, arg0);
-  }
+   @Override
+   public void set(E arg0) {
+      Array.set(array, index - 1, arg0);
+   }
 
 }// END OF CLASS ArrayListIterator

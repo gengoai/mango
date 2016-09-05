@@ -21,7 +21,7 @@
 
 package com.davidbracewell.stream;
 
-import com.davidbracewell.collection.Iterators;
+import com.davidbracewell.collection.Collect;
 import com.davidbracewell.collection.Sorting;
 import com.davidbracewell.collection.Streams;
 import com.davidbracewell.conversion.Cast;
@@ -284,7 +284,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
 
   @Override
   public <U> MPairStream<T, U> zip(@NonNull MStream<U> other) {
-    return new LocalPairStream<>(Iterators.zip(iterator(), other.iterator()));
+    return new LocalPairStream<>(Collect.zip(iterator(), other.iterator()));
   }
 
   @Override

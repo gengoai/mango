@@ -27,9 +27,9 @@ import org.junit.Test;
 
 import java.util.*;
 
+import static com.davidbracewell.collection.Sets.asLinkedHashSet;
+import static com.davidbracewell.collection.Sets.asSet;
 import static com.davidbracewell.collection.list.Lists.list;
-import static com.davidbracewell.collection.set.Sets.asLinkedHashSet;
-import static com.davidbracewell.collection.set.Sets.asSet;
 import static org.junit.Assert.*;
 
 public class CollectionConverterTest {

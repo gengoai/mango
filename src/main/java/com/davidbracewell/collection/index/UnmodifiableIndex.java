@@ -22,7 +22,7 @@
 package com.davidbracewell.collection.index;
 
 
-import com.davidbracewell.collection.Iterators;
+import com.google.common.collect.Iterators;
 
 import java.util.Iterator;
 
@@ -31,51 +31,51 @@ import java.util.Iterator;
  */
 final class UnmodifiableIndex<TYPE> extends ForwardingIndex<TYPE> {
 
-  private static final long serialVersionUID = -3044104679509123935L;
-  private final Index<TYPE> backing;
+   private static final long serialVersionUID = -3044104679509123935L;
+   private final Index<TYPE> backing;
 
-  UnmodifiableIndex(Index<TYPE> backing) {
-    this.backing = backing;
-  }
+   UnmodifiableIndex(Index<TYPE> backing) {
+      this.backing = backing;
+   }
 
-  @Override
-  public int add(TYPE item) {
-    throw new UnsupportedOperationException("Cannot modify a read only index.");
-  }
+   @Override
+   public int add(TYPE item) {
+      throw new UnsupportedOperationException("Cannot modify a read only index.");
+   }
 
-  @Override
-  public void addAll(Iterable<TYPE> items) {
-    throw new UnsupportedOperationException("Cannot modify a read only index.");
-  }
+   @Override
+   public void addAll(Iterable<TYPE> items) {
+      throw new UnsupportedOperationException("Cannot modify a read only index.");
+   }
 
-  @Override
-  public void clear() {
-    throw new UnsupportedOperationException("Cannot modify a read only index.");
-  }
+   @Override
+   public void clear() {
+      throw new UnsupportedOperationException("Cannot modify a read only index.");
+   }
 
-  @Override
-  protected Index<TYPE> delegate() {
-    return backing;
-  }
+   @Override
+   protected Index<TYPE> delegate() {
+      return backing;
+   }
 
-  @Override
-  public Iterator<TYPE> iterator() {
-    return Iterators.unmodifiable(super.iterator());
-  }
+   @Override
+   public Iterator<TYPE> iterator() {
+      return Iterators.unmodifiableIterator(super.iterator());
+   }
 
-  @Override
-  public int remove(TYPE item) {
-    throw new UnsupportedOperationException("Cannot modify a read only index.");
-  }
+   @Override
+   public int remove(TYPE item) {
+      throw new UnsupportedOperationException("Cannot modify a read only index.");
+   }
 
-  @Override
-  public TYPE remove(int id) {
-    throw new UnsupportedOperationException("Cannot modify a read only index.");
-  }
+   @Override
+   public TYPE remove(int id) {
+      throw new UnsupportedOperationException("Cannot modify a read only index.");
+   }
 
-  @Override
-  public TYPE set(int index, TYPE newValue) {
-    throw new UnsupportedOperationException("Cannot modify a read only index.");
-  }
+   @Override
+   public TYPE set(int index, TYPE newValue) {
+      throw new UnsupportedOperationException("Cannot modify a read only index.");
+   }
 }
 //END OF UnmodifiableIndex
