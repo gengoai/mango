@@ -341,19 +341,6 @@ public abstract class ForwardingCounter<TYPE> implements Counter<TYPE>, Serializ
    }
 
    @Override
-   public int hashCode() {
-      if (delegate() == null) {
-         return 0;
-      }
-      return delegate().hashCode();
-   }
-
-   @Override
-   public boolean equals(Object object) {
-      return delegate() != null && delegate().equals(object);
-   }
-
-   @Override
    public Counter<TYPE> copy() {
       if (delegate() == null) {
          return this;

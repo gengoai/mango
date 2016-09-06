@@ -35,10 +35,7 @@ import lombok.NonNull;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.function.DoublePredicate;
-import java.util.function.DoubleUnaryOperator;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.function.*;
 import java.util.stream.Collectors;
 
 /**
@@ -457,6 +454,15 @@ public interface Counter<T> extends Copyable<Counter<T>> {
          }
          writer.endDocument();
       }
+   }
+
+   /**
+    * For each.
+    *
+    * @param consumer the consumer
+    */
+   default void forEach(@NonNull BiConsumer<? super T, ? super Double> consumer){
+      entries().forEach(e -> consumer.accept(e.getKey(),e.getValue()));
    }
 
 }//END OF Counter

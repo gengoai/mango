@@ -21,6 +21,7 @@
 
 package com.davidbracewell.collection.counter;
 
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -36,6 +37,7 @@ import java.util.function.Predicate;
 /**
  * @author David B. Bracewell
  */
+@EqualsAndHashCode
 final class SynchronizedCounter<TYPE> implements Counter<TYPE>, Serializable {
    private static final long serialVersionUID = 1L;
 
@@ -205,7 +207,7 @@ final class SynchronizedCounter<TYPE> implements Counter<TYPE>, Serializable {
       return delegate.removeAll(items);
    }
 
-     @Override
+   @Override
    public synchronized TYPE sample() {
       return delegate.sample();
    }
@@ -255,13 +257,5 @@ final class SynchronizedCounter<TYPE> implements Counter<TYPE>, Serializable {
       return delegate.toString();
    }
 
-   @Override
-   public int hashCode() {
-      return delegate.hashCode();
-   }
 
-   @Override
-   public synchronized boolean equals(Object object) {
-      return delegate.equals(object);
-   }
 }//END OF ForwardingCounter
