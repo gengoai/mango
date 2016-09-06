@@ -21,6 +21,8 @@
 
 package com.davidbracewell.collection.counter;
 
+import lombok.EqualsAndHashCode;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -28,117 +30,109 @@ import java.util.Set;
 /**
  * @author David B. Bracewell
  */
+@EqualsAndHashCode(callSuper = false)
 final class UnmodifiableCounter<TYPE> extends ForwardingCounter<TYPE> {
-  private static final long serialVersionUID = 1L;
-  private final Counter<TYPE> backing;
+   private static final long serialVersionUID = 1L;
+   private final Counter<TYPE> backing;
 
-  UnmodifiableCounter(Counter<TYPE> backing) {
-    this.backing = backing;
-  }
+   UnmodifiableCounter(Counter<TYPE> backing) {
+      this.backing = backing;
+   }
 
-  @Override
-  public Map<TYPE, Double> asMap() {
-    return Collections.unmodifiableMap(super.asMap());
-  }
+   @Override
+   public Map<TYPE, Double> asMap() {
+      return Collections.unmodifiableMap(super.asMap());
+   }
 
-  @Override
-  public Counter<TYPE> decrement(TYPE item) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public Counter<TYPE> decrement(TYPE item) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public Counter<TYPE> decrement(TYPE item, double amount) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public Counter<TYPE> decrement(TYPE item, double amount) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public Counter<TYPE> decrementAll(Iterable<? extends TYPE> iterable) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public Counter<TYPE> decrementAll(Iterable<? extends TYPE> iterable) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public Counter<TYPE> decrementAll(Iterable<? extends TYPE> iterable, double amount) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public Counter<TYPE> decrementAll(Iterable<? extends TYPE> iterable, double amount) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  protected Counter<TYPE> delegate() {
-    return backing;
-  }
+   @Override
+   protected Counter<TYPE> delegate() {
+      return backing;
+   }
 
-  @Override
-  public Counter<TYPE> divideBySum() {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public Counter<TYPE> divideBySum() {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public Counter<TYPE> increment(TYPE item) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public Counter<TYPE> increment(TYPE item) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public Counter<TYPE> increment(TYPE item, double amount) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public Counter<TYPE> increment(TYPE item, double amount) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public Counter<TYPE> incrementAll(Iterable<? extends TYPE> iterable) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public Counter<TYPE> incrementAll(Iterable<? extends TYPE> iterable) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public Counter<TYPE> incrementAll(Iterable<? extends TYPE> iterable, double amount) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public Counter<TYPE> incrementAll(Iterable<? extends TYPE> iterable, double amount) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public Set<TYPE> items() {
-    return Collections.unmodifiableSet(super.items());
-  }
+   @Override
+   public Set<TYPE> items() {
+      return Collections.unmodifiableSet(super.items());
+   }
 
-  @Override
-  public Set<Map.Entry<TYPE, Double>> entries() {
-    return Collections.unmodifiableSet(delegate().entries());
-  }
+   @Override
+   public Set<Map.Entry<TYPE, Double>> entries() {
+      return Collections.unmodifiableSet(delegate().entries());
+   }
 
-  @Override
-  public Counter<TYPE> merge(Counter<? extends TYPE> other) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public Counter<TYPE> merge(Counter<? extends TYPE> other) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public Counter<TYPE> merge(Map<? extends TYPE, ? extends Number> other) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public Counter<TYPE> merge(Map<? extends TYPE, ? extends Number> other) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public double remove(TYPE item) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public double remove(TYPE item) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public Counter<TYPE> removeAll(Iterable<TYPE> items) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public Counter<TYPE> removeAll(Iterable<TYPE> items) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public Counter<TYPE> set(TYPE item, double count) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public Counter<TYPE> set(TYPE item, double count) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public String toString() {
-    return delegate().toString();
-  }
+   @Override
+   public String toString() {
+      return delegate().toString();
+   }
 
-  @Override
-  public boolean equals(Object o) {
-    return delegate().equals(o);
-  }
-
-  @Override
-  public int hashCode() {
-    return delegate().hashCode();
-  }
 
 }//END OF UnmodifiableCounter

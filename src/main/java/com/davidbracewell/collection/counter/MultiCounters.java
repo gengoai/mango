@@ -60,7 +60,7 @@ public interface MultiCounters {
    * @return the multi counter
    */
   static <K1, K2> MultiCounter<K1, K2> synchronizedMultiCounter(@NonNull MultiCounter<K1, K2> multiCounter) {
-    return new SynchronizedMutliCounter<>(multiCounter);
+    return new SynchronizedMultiCounter<>(multiCounter);
   }
 
 

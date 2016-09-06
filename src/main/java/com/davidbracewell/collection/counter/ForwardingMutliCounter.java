@@ -41,128 +41,118 @@ import java.util.function.Predicate;
  * @author David B. Bracewell
  */
 public abstract class ForwardingMutliCounter<K, V> implements MultiCounter<K, V>, Serializable {
-  private static final long serialVersionUID = 1L;
+   private static final long serialVersionUID = 1L;
 
-  protected abstract MultiCounter<K, V> delegate();
+   protected abstract MultiCounter<K, V> delegate();
 
-  @Override
-  public MultiCounter<K, V> adjustValues(@NonNull DoubleUnaryOperator function) {
-    return delegate().adjustValues(function);
-  }
+   @Override
+   public MultiCounter<K, V> adjustValues(@NonNull DoubleUnaryOperator function) {
+      return delegate().adjustValues(function);
+   }
 
-  @Override
-  public MultiCounter<K, V> adjustValuesSelf(@NonNull DoubleUnaryOperator function) {
-    return delegate().adjustValuesSelf(function);
-  }
+   @Override
+   public MultiCounter<K, V> adjustValuesSelf(@NonNull DoubleUnaryOperator function) {
+      return delegate().adjustValuesSelf(function);
+   }
 
-  @Override
-  public Collection<Double> counts() {
-    return delegate().counts();
-  }
+   @Override
+   public Collection<Double> counts() {
+      return delegate().counts();
+   }
 
-  @Override
-  public Map<K, Counter<V>> asMap() {
-    return delegate().asMap();
-  }
+   @Override
+   public Map<K, Counter<V>> asMap() {
+      return delegate().asMap();
+   }
 
-  @Override
-  public void clear() {
-    delegate().clear();
-  }
+   @Override
+   public void clear() {
+      delegate().clear();
+   }
 
-  @Override
-  public boolean contains(K item) {
-    return delegate().contains(item);
-  }
+   @Override
+   public boolean contains(K item) {
+      return delegate().contains(item);
+   }
 
-  @Override
-  public boolean contains(K item1, V item2) {
-    return delegate().contains(item1, item2);
-  }
+   @Override
+   public boolean contains(K item1, V item2) {
+      return delegate().contains(item1, item2);
+   }
 
-  @Override
-  public Counter<V> get(K item) {
-    return delegate().get(item);
-  }
+   @Override
+   public Counter<V> get(K item) {
+      return delegate().get(item);
+   }
 
-  @Override
-  public boolean isEmpty() {
-    return delegate().isEmpty();
-  }
+   @Override
+   public boolean isEmpty() {
+      return delegate().isEmpty();
+   }
 
-  @Override
-  public Set<K> items() {
-    return delegate().items();
-  }
+   @Override
+   public Set<K> items() {
+      return delegate().items();
+   }
 
-  @Override
-  public List<Map.Entry<K, V>> itemsByCount(boolean ascending) {
-    return delegate().itemsByCount(ascending);
-  }
+   @Override
+   public List<Map.Entry<K, V>> itemsByCount(boolean ascending) {
+      return delegate().itemsByCount(ascending);
+   }
 
-  @Override
-  public MultiCounter<K, V> filterByValue(@NonNull DoublePredicate predicate) {
-    return delegate().filterByValue(predicate);
-  }
+   @Override
+   public MultiCounter<K, V> filterByValue(@NonNull DoublePredicate predicate) {
+      return delegate().filterByValue(predicate);
+   }
 
-  @Override
-  public MultiCounter<K, V> filterByFirstKey(@NonNull Predicate<K> predicate) {
-    return delegate().filterByFirstKey(predicate);
-  }
+   @Override
+   public MultiCounter<K, V> filterByFirstKey(@NonNull Predicate<K> predicate) {
+      return delegate().filterByFirstKey(predicate);
+   }
 
-  @Override
-  public MultiCounter<K, V> filterBySecondKey(@NonNull Predicate<V> predicate) {
-    return delegate().filterBySecondKey(predicate);
-  }
+   @Override
+   public MultiCounter<K, V> filterBySecondKey(@NonNull Predicate<V> predicate) {
+      return delegate().filterBySecondKey(predicate);
+   }
 
-  @Override
-  public Set<Tuple3<K, V, Double>> entries() {
-    return delegate().entries();
-  }
+   @Override
+   public Set<Tuple3<K, V, Double>> entries() {
+      return delegate().entries();
+   }
 
-  @Override
-  public MultiCounter<K, V> merge(MultiCounter<K, V> other) {
-    return delegate().merge(other);
-  }
+   @Override
+   public MultiCounter<K, V> merge(MultiCounter<K, V> other) {
+      return delegate().merge(other);
+   }
 
-  @Override
-  public Counter<V> remove(K item) {
-    return delegate().remove(item);
-  }
+   @Override
+   public Counter<V> remove(K item) {
+      return delegate().remove(item);
+   }
 
-  @Override
-  public double remove(K item1, V item2) {
-    return delegate().remove(item1, item2);
-  }
+   @Override
+   public double remove(K item1, V item2) {
+      return delegate().remove(item1, item2);
+   }
 
-  @Override
-  public MultiCounter<K, V> set(K item1, V item2, double count) {
-    return delegate().set(item1, item2, count);
-  }
+   @Override
+   public MultiCounter<K, V> set(K item1, V item2, double count) {
+      return delegate().set(item1, item2, count);
+   }
 
-  @Override
-  public MultiCounter<K, V> set(K item, @NonNull Counter<V> counter) {
-    return delegate().set(item, counter);
-  }
+   @Override
+   public MultiCounter<K, V> set(K item, @NonNull Counter<V> counter) {
+      return delegate().set(item, counter);
+   }
 
-  @Override
-  public int size() {
-    return delegate().size();
-  }
+   @Override
+   public int size() {
+      return delegate().size();
+   }
 
-  @Override
-  public String toString() {
-    return delegate().toString();
-  }
-
-  @Override
-  public int hashCode() {
-    return delegate().hashCode();
-  }
-
-  @Override
-  public boolean equals(Object object) {
-    return delegate().equals(object);
-  }
+   @Override
+   public String toString() {
+      return delegate().toString();
+   }
 
 }//END OF ForwardingMultiCounter

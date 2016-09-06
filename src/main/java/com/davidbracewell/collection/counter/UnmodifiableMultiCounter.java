@@ -21,6 +21,7 @@
 
 package com.davidbracewell.collection.counter;
 
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 import java.util.Map;
@@ -29,86 +30,87 @@ import java.util.function.DoubleUnaryOperator;
 /**
  * @author David B. Bracewell
  */
+@EqualsAndHashCode(callSuper = false)
 final class UnmodifiableMultiCounter<K, V> extends ForwardingMutliCounter<K, V> {
-  private static final long serialVersionUID = 292069831932346092L;
-  final MultiCounter<K, V> backing;
+   private static final long serialVersionUID = 292069831932346092L;
+   final MultiCounter<K, V> backing;
 
-  public UnmodifiableMultiCounter(@NonNull MultiCounter<K, V> backing) {
-    this.backing = backing;
-  }
+   public UnmodifiableMultiCounter(@NonNull MultiCounter<K, V> backing) {
+      this.backing = backing;
+   }
 
-  @Override
-  protected MultiCounter<K, V> delegate() {
-    return backing;
-  }
+   @Override
+   protected MultiCounter<K, V> delegate() {
+      return backing;
+   }
 
-  @Override
-  public MultiCounter<K, V> adjustValuesSelf(@NonNull DoubleUnaryOperator function) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public MultiCounter<K, V> adjustValuesSelf(@NonNull DoubleUnaryOperator function) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public MultiCounter<K, V> set(K item1, V item2, double count) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public MultiCounter<K, V> set(K item1, V item2, double count) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public MultiCounter<K, V> set(K item, @NonNull Counter<V> counter) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public MultiCounter<K, V> set(K item, @NonNull Counter<V> counter) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public MultiCounter<K, V> decrement(K item1, V item2) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public MultiCounter<K, V> decrement(K item1, V item2) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public MultiCounter<K, V> decrement(K item1, V item2, double amount) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public MultiCounter<K, V> decrement(K item1, V item2, double amount) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public MultiCounter<K, V> decrementAll(K item, Iterable<? extends V> iterable) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public MultiCounter<K, V> decrementAll(K item, Iterable<? extends V> iterable) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public MultiCounter<K, V> decrementAll(Iterable<? extends Map.Entry<K, V>> iterable) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public MultiCounter<K, V> decrementAll(Iterable<? extends Map.Entry<K, V>> iterable) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public MultiCounter<K, V> divideBySum() {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public MultiCounter<K, V> divideBySum() {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public MultiCounter<K, V> divideByKeySum() {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public MultiCounter<K, V> divideByKeySum() {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public MultiCounter<K, V> increment(K item1, V item2) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public MultiCounter<K, V> increment(K item1, V item2) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public MultiCounter<K, V> increment(K item1, V item2, double amount) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public MultiCounter<K, V> increment(K item1, V item2, double amount) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public MultiCounter<K, V> incrementAll(K item, Iterable<? extends V> iterable) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public MultiCounter<K, V> incrementAll(K item, Iterable<? extends V> iterable) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public MultiCounter<K, V> incrementAll(Iterable<? extends Map.Entry<K, V>> iterable) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public MultiCounter<K, V> incrementAll(Iterable<? extends Map.Entry<K, V>> iterable) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public MultiCounter<K, V> removeAll(Iterable<K> items) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public MultiCounter<K, V> removeAll(Iterable<K> items) {
+      throw new UnsupportedOperationException();
+   }
 }//END OF UnmodifiableMultiCounter
