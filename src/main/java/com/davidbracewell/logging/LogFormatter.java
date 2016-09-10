@@ -40,7 +40,8 @@ import java.util.logging.LogRecord;
 
 
 /**
- * <p> Custom logging formatter. </p>
+ * <p>Custom logging formatter in the form <code>[time] [level] [class:line] message</code>. The class name and line
+ * number only show on warning and severe level.</p>
  *
  * @author David B. Bracewell
  */

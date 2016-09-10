@@ -29,9 +29,10 @@ import java.util.logging.LogRecord;
 
 
 /**
- * <p>
- * Espresso Logger wrapping the <code>java.util.logging</code> framework
- * </p>
+ * <p> Logger wrapping the <code>java.util.logging</code> framework making certain operations much easier. In
+ * particular, methods such as {@link #info(String, Object...)} provide easier ways to call {@link
+ * java.util.logging.Logger#log(Level, String, Object[])}. Additionally, the level of individual loggers can be set
+ * using {@link com.davidbracewell.config.Config} settings in the form of <code>fully.qualified.name.level=LEVEL</code>.</p>
  *
  * @author David B. Bracewell
  */

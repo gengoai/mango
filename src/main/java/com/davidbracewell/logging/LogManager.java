@@ -35,7 +35,11 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 
 /**
- * Wrapper around the Java LogManager that does default setup if no logging config file is defined.
+ * Wrapper around the Java LogManager that does default setup if no logging config file is defined. Note: that if a
+ * config file for java.util.logging is specified default initialization will not place. File handlers can be added
+ * using a common based name and the log directory will be read from the config property
+ * <code>com.davidbracewell.logging.dir</code> and default to <code>%HOME/logs/</code>. The file handler will produce up
+ * to 100MB logs and rotate over 50 log files.
  *
  * @author David B. Bracewell
  */
