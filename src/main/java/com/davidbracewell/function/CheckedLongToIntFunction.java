@@ -24,11 +24,11 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of LongToIntFunction that is serializable
+ * Version of LongToIntFunction that is serializable and checked
  */
 @FunctionalInterface
 public interface CheckedLongToIntFunction extends Serializable {
 
-  int applyAsInt(long t) throws Throwable;
+   int applyAsInt(long t) throws Throwable;
 
 }//END OF CheckedLongToIntFunction

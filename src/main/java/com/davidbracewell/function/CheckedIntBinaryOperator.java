@@ -24,11 +24,11 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of IntBinaryOperator that is serializable
+ * Version of IntBinaryOperator that is serializable and checked
  */
 @FunctionalInterface
 public interface CheckedIntBinaryOperator extends Serializable {
 
-  int applyAsInt(int t, int u) throws Throwable;
+   int applyAsInt(int t, int u) throws Throwable;
 
 }//END OF CheckedIntBinaryOperator

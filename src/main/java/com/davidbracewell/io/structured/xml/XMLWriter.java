@@ -174,11 +174,11 @@ public class XMLWriter extends StructuredWriter {
       try {
 
          if (object == null ||
-               object instanceof Number ||
-               object instanceof String ||
-               object instanceof Boolean ||
-               object instanceof Enum ||
-               object instanceof DynamicEnum) {
+                object instanceof Number ||
+                object instanceof String ||
+                object instanceof Boolean ||
+                object instanceof Enum ||
+                object instanceof DynamicEnum) {
             writer.writeStartElement(key);
             writeValue(object);
             writer.writeEndElement();

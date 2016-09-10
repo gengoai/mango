@@ -23,7 +23,7 @@ package com.davidbracewell.conversion;
 
 import com.davidbracewell.collection.Collect;
 import com.davidbracewell.io.CSV;
-import com.davidbracewell.io.structured.csv.CSVReader;
+import com.davidbracewell.io.CSVReader;
 import com.davidbracewell.logging.Logger;
 
 import java.io.IOException;

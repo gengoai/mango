@@ -39,7 +39,6 @@ import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 /**
  * <p> A <code>Resource</code> wrapper for a URL. </p>
@@ -49,157 +48,157 @@ import java.util.stream.Stream;
 @EqualsAndHashCode(callSuper = false)
 public class URLResource extends BaseResource {
 
-  private static final long serialVersionUID = -5874490341557934277L;
-  private URL url;
-  private String userAgent = "Mozilla/5.0 (Windows NT 5.1; rv:31.0) Gecko/20100101 Firefox/31.0";
-  private int connectionTimeOut = 30000;
+   private static final long serialVersionUID = -5874490341557934277L;
+   private URL url;
+   private String userAgent = "Mozilla/5.0 (Windows NT 5.1; rv:31.0) Gecko/20100101 Firefox/31.0";
+   private int connectionTimeOut = 30000;
 
-  /**
-   * Instantiates a new uRL resource.
-   *
-   * @param url the url
-   * @throws java.net.MalformedURLException the malformed url exception
-   */
-  public URLResource(@NonNull String url) throws MalformedURLException {
-    this.url = new URL(url);
-  }
+   /**
+    * Instantiates a new uRL resource.
+    *
+    * @param url the url
+    * @throws java.net.MalformedURLException the malformed url exception
+    */
+   public URLResource(@NonNull String url) throws MalformedURLException {
+      this.url = new URL(url);
+   }
 
-  public URLResource(@NonNull URL url) {
-    this.url = url;
-  }
+   public URLResource(@NonNull URL url) {
+      this.url = url;
+   }
 
-  @Override
-  public String descriptor() {
-    return url.toString();
-  }
+   @Override
+   public String descriptor() {
+      return url.toString();
+   }
 
-  @Override
-  public Optional<File> asFile() {
-    if (url.getProtocol().equalsIgnoreCase("file")) {
-      return Optional.of(new File(url.getFile()));
-    }
-    return super.asFile();
-  }
+   @Override
+   public Optional<File> asFile() {
+      if (url.getProtocol().equalsIgnoreCase("file")) {
+         return Optional.of(new File(url.getFile()));
+      }
+      return super.asFile();
+   }
 
-  @Override
-  public String path() {
-    return url.getPath();
-  }
+   @Override
+   public String path() {
+      return url.getPath();
+   }
 
-  @Override
-  public String baseName() {
-    return url.getFile();
-  }
+   @Override
+   public String baseName() {
+      return url.getFile();
+   }
 
-  @Override
-  public Optional<URL> asURL() {
-    return Optional.of(url);
-  }
+   @Override
+   public Optional<URL> asURL() {
+      return Optional.of(url);
+   }
 
-  @Override
-  public Resource getChild(String relativePath) {
-    try {
-      return new URLResource(new URL(url, relativePath));
-    } catch (MalformedURLException e) {
-      return EmptyResource.INSTANCE;
-    }
-  }
+   @Override
+   public Resource getChild(String relativePath) {
+      try {
+         return new URLResource(new URL(url, relativePath));
+      } catch (MalformedURLException e) {
+         return EmptyResource.INSTANCE;
+      }
+   }
 
-  @Override
-  public Resource getParent() {
-    try {
-      return new URLResource(FileUtils.parent(url.toString()));
-    } catch (MalformedURLException e) {
-      return EmptyResource.INSTANCE;
-    }
-  }
+   @Override
+   public Resource getParent() {
+      try {
+         return new URLResource(FileUtils.parent(url.toString()));
+      } catch (MalformedURLException e) {
+         return EmptyResource.INSTANCE;
+      }
+   }
 
-  @Override
-  public Resource append(String content) throws IOException {
-    throw new UnsupportedOperationException("URLResource does not support appending");
-  }
+   @Override
+   public Resource append(String content) throws IOException {
+      throw new UnsupportedOperationException("URLResource does not support appending");
+   }
 
-  @Override
-  public Resource append(byte[] byteArray) throws IOException {
-    throw new UnsupportedOperationException("URLResource does not support appending");
-  }
+   @Override
+   public Resource append(byte[] byteArray) throws IOException {
+      throw new UnsupportedOperationException("URLResource does not support appending");
+   }
 
-  @Override
-  public boolean exists() {
-    boolean exists = true;
-    InputStream is = null;
-    try {
-      URLConnection connection = createConnection();
-      connection.setConnectTimeout(5 * 1000);
-      is = connection.getInputStream();
-    } catch (Exception e) {
-      exists = false;
-    } finally {
-      QuietIO.closeQuietly(is);
-    }
-    return exists;
-  }
+   @Override
+   public boolean exists() {
+      boolean exists = true;
+      InputStream is = null;
+      try {
+         URLConnection connection = createConnection();
+         connection.setConnectTimeout(5 * 1000);
+         is = connection.getInputStream();
+      } catch (Exception e) {
+         exists = false;
+      } finally {
+         QuietIO.closeQuietly(is);
+      }
+      return exists;
+   }
 
-  @Override
-  public List<String> readLines() throws IOException {
-    return Arrays.asList(readToString().split("\\r?\\n"));
-  }
+   @Override
+   public List<String> readLines() throws IOException {
+      return Arrays.asList(readToString().split("\\r?\\n"));
+   }
 
-  @Override
-  public MStream<String> lines() throws IOException {
-    return StreamingContext.local().stream(readLines());
-  }
+   @Override
+   public MStream<String> lines() throws IOException {
+      return StreamingContext.local().stream(readLines());
+   }
 
-  @Override
-  public InputStream createInputStream() throws IOException {
-    return createConnection().getInputStream();
-  }
+   @Override
+   public InputStream createInputStream() throws IOException {
+      return createConnection().getInputStream();
+   }
 
-  private URLConnection createConnection() throws IOException {
-    URLConnection connection = url.openConnection();
-    if (!StringUtils.isNullOrBlank(userAgent)) {
-      connection.setRequestProperty("User-Agent", userAgent);
-    }
-    connection.setConnectTimeout(connectionTimeOut);
-    return connection;
-  }
+   private URLConnection createConnection() throws IOException {
+      URLConnection connection = url.openConnection();
+      if (!StringUtils.isNullOrBlank(userAgent)) {
+         connection.setRequestProperty("User-Agent", userAgent);
+      }
+      connection.setConnectTimeout(connectionTimeOut);
+      return connection;
+   }
 
-  @Override
-  public OutputStream createOutputStream() throws IOException {
-    return createConnection().getOutputStream();
-  }
+   @Override
+   public OutputStream createOutputStream() throws IOException {
+      return createConnection().getOutputStream();
+   }
 
-  /**
-   * @return The user agent string to pass along to the web server
-   */
-  public String getUserAgent() {
-    return userAgent;
-  }
+   /**
+    * @return The user agent string to pass along to the web server
+    */
+   public String getUserAgent() {
+      return userAgent;
+   }
 
-  /**
-   * Sets The user agent string to pass along to the web server
-   *
-   * @param userAgent the user agent
-   */
-  public void setUserAgent(String userAgent) {
-    this.userAgent = userAgent;
-  }
+   /**
+    * Sets The user agent string to pass along to the web server
+    *
+    * @param userAgent the user agent
+    */
+   public void setUserAgent(String userAgent) {
+      this.userAgent = userAgent;
+   }
 
-  /**
-   * @return the amount of time to wait in connecting to the host before giving up
-   */
-  public int getConnectionTimeOut() {
-    return connectionTimeOut;
-  }
+   /**
+    * @return the amount of time to wait in connecting to the host before giving up
+    */
+   public int getConnectionTimeOut() {
+      return connectionTimeOut;
+   }
 
-  /**
-   * Sets the amount of time to wait in connecting to the host before giving up
-   *
-   * @param connectionTimeOut The connectionTimeOut
-   */
-  public void setConnectionTimeOut(int connectionTimeOut) {
-    this.connectionTimeOut = connectionTimeOut;
-  }
+   /**
+    * Sets the amount of time to wait in connecting to the host before giving up
+    *
+    * @param connectionTimeOut The connectionTimeOut
+    */
+   public void setConnectionTimeOut(int connectionTimeOut) {
+      this.connectionTimeOut = connectionTimeOut;
+   }
 
 
 }//END OF URLResource

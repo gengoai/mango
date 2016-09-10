@@ -31,26 +31,26 @@ import java.io.InputStream;
  */
 public class InputStreamResource extends BaseResource implements ReadOnlyResource, NonTraversableResource {
 
-  private static final long serialVersionUID = -4341744444291053097L;
-  private final InputStream inputStream;
+   private static final long serialVersionUID = -4341744444291053097L;
+   private final InputStream inputStream;
 
-  /**
-   * Default Constructor
-   *
-   * @param stream The input stream
-   */
-  public InputStreamResource(@NonNull InputStream stream) {
-    this.inputStream = stream;
-  }
+   /**
+    * Default Constructor
+    *
+    * @param stream The input stream
+    */
+   public InputStreamResource(@NonNull InputStream stream) {
+      this.inputStream = stream;
+   }
 
-  @Override
-  public InputStream createInputStream() throws IOException {
-    return inputStream;
-  }
+   @Override
+   public InputStream createInputStream() throws IOException {
+      return inputStream;
+   }
 
-  @Override
-  public boolean exists() {
-    return true;
-  }
+   @Override
+   public boolean exists() {
+      return true;
+   }
 
 }//END OF InputStreamResource

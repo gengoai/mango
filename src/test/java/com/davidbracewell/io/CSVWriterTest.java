@@ -19,15 +19,13 @@
  * under the License.
  */
 
-package com.davidbracewell.io.structured.csv;
+package com.davidbracewell.io;
 
 import com.davidbracewell.collection.map.Maps;
-import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.resource.StringResource;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -82,55 +80,6 @@ public class CSVWriterTest {
 
    }
 
-   @Test
-   public void structuredWrite1() throws IOException {
-      try (CSVWriter writer = CSV.builder().writer(new StringResource())) {
-         writer.beginDocument();
-         writer.beginArray();
-         writer.writeValue("A");
-         writer.writeValue("B");
-         writer.writeValue("C");
-         writer.endArray();
-         writer.beginObject("OBJECT");
-         writer.writeValue("A");
-         writer.writeValue("B");
-         writer.writeValue("C");
-         writer.endObject();
-         writer.writeMap(Maps.map("A", "D"));
-         writer.write(Maps.map("A", "D"), ':');
-         writer.endDocument();
-      }
-   }
-
-   @Test
-   public void structuredWrite2() throws IOException {
-      try (CSVWriter writer = CSV.builder()
-                                 .header("One", "Two", "Three", "Four", "Five")
-                                 .writer(new StringResource())) {
-         writer.beginDocument();
-         writer.beginArray();
-         writer.writeValue("A");
-         writer.writeValue("B");
-         writer.writeValue("C");
-         writer.endArray();
-         writer.beginObject("OBJECT");
-         writer.writeValue("A");
-         writer.writeValue("B");
-         writer.writeValue("C");
-         writer.endObject();
-         writer.writeMap(Maps.map("A", "D"));
-         writer.write(Maps.map("A", "D"), ':');
-         writer.beginArray();
-         writer.writeKeyValue("One", 1);
-         writer.writeKeyValue("Two", 1);
-         writer.writeKeyValue("Three", 1);
-         writer.writeKeyValue("Four", 1);
-         writer.writeKeyValue("Five", 1);
-         writer.endArray();
-         writer.writeArray(new String[]{"A", "B", "C", "D"});
-         writer.endDocument();
-      }
-   }
 
 }//END OF CSVWriterTest
 

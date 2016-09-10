@@ -28,32 +28,32 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
 
 /**
- * Convenience method for detecting the character set of a byte array
+ * Convenience method for detecting the character set of a byte array.
  *
  * @author David B. Bracewell
  */
 public class CharsetDetector {
 
 
-  /**
-   * Detects the character set for the buffer.
-   *
-   * @param buffer The buffer
-   * @param offset where to start
-   * @param length the length to read
-   * @return The detected charset or null
-   */
-  public static Charset detect(@NonNull byte[] buffer, int offset, int length) {
-    Preconditions.checkArgument(length > 0);
-    Preconditions.checkArgument(offset >= 0);
+   /**
+    * Detects the character set for the buffer.
+    *
+    * @param buffer The buffer
+    * @param offset where to start
+    * @param length the length to read
+    * @return The detected charset or null
+    */
+   public static Charset detect(@NonNull byte[] buffer, int offset, int length) {
+      Preconditions.checkArgument(length > 0);
+      Preconditions.checkArgument(offset >= 0);
 
-    final com.ibm.icu.text.CharsetDetector detector = new com.ibm.icu.text.CharsetDetector();
-    try {
-      detector.setText(new ByteArrayInputStream(buffer, offset, length));
-      return Charset.forName(detector.detect().getName());
-    } catch (Exception e) {
-      return null;
-    }
-  }
+      final com.ibm.icu.text.CharsetDetector detector = new com.ibm.icu.text.CharsetDetector();
+      try {
+         detector.setText(new ByteArrayInputStream(buffer, offset, length));
+         return Charset.forName(detector.detect().getName());
+      } catch (Exception e) {
+         return null;
+      }
+   }
 
 }// END OF CharsetDetector

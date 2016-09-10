@@ -32,21 +32,21 @@ import java.io.Reader;
 @EqualsAndHashCode(callSuper = true)
 public class ReaderResource extends BaseResource implements ReadOnlyResource, NonTraversableResource {
 
-  private static final long serialVersionUID = 6220239496470153511L;
-  private final Reader reader;
+   private static final long serialVersionUID = 6220239496470153511L;
+   private final Reader reader;
 
-  public ReaderResource(Reader reader) {
-    this.reader = reader;
-  }
+   public ReaderResource(Reader reader) {
+      this.reader = reader;
+   }
 
-  @Override
-  public Reader reader() throws IOException {
-    return reader;
-  }
+   @Override
+   public Reader reader() throws IOException {
+      return reader;
+   }
 
-  @Override
-  public boolean exists() {
-    return true;
-  }
+   @Override
+   public boolean exists() {
+      return true;
+   }
 
 }//END OF ReaderResource

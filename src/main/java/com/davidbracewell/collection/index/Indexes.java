@@ -24,11 +24,11 @@ package com.davidbracewell.collection.index;
 
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.CSV;
+import com.davidbracewell.io.CSVReader;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.ElementType;
 import com.davidbracewell.io.structured.StructuredFormat;
 import com.davidbracewell.io.structured.StructuredReader;
-import com.davidbracewell.io.structured.csv.CSVReader;
 import lombok.NonNull;
 
 import java.io.IOException;

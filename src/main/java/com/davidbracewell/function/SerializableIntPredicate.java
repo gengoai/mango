@@ -32,27 +32,27 @@ import java.util.function.IntPredicate;
 @FunctionalInterface
 public interface SerializableIntPredicate extends IntPredicate, Serializable {
 
-  @Override
-  default SerializableIntPredicate negate() {
-    return i -> !this.test(i);
-  }
+   @Override
+   default SerializableIntPredicate negate() {
+      return i -> !this.test(i);
+   }
 
-  @Override
-  default SerializableIntPredicate and(@NonNull IntPredicate other) {
-    return i -> this.test(i) && other.test(i);
-  }
+   @Override
+   default SerializableIntPredicate and(@NonNull IntPredicate other) {
+      return i -> this.test(i) && other.test(i);
+   }
 
-  @Override
-  default SerializableIntPredicate or(@NonNull IntPredicate other) {
-    return i -> this.test(i) || other.test(i);
-  }
+   @Override
+   default SerializableIntPredicate or(@NonNull IntPredicate other) {
+      return i -> this.test(i) || other.test(i);
+   }
 
-  default SerializableIntPredicate and(@NonNull SerializableIntPredicate other) {
-    return i -> this.test(i) && other.test(i);
-  }
+   default SerializableIntPredicate and(@NonNull SerializableIntPredicate other) {
+      return i -> this.test(i) && other.test(i);
+   }
 
-  default SerializableIntPredicate or(@NonNull SerializableIntPredicate other) {
-    return i -> this.test(i) || other.test(i);
-  }
+   default SerializableIntPredicate or(@NonNull SerializableIntPredicate other) {
+      return i -> this.test(i) || other.test(i);
+   }
 
 }//END OF SerializableIntPredicate

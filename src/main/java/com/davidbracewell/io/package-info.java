@@ -19,16 +19,7 @@
  * under the License.
  */
 
-package com.davidbracewell.function;
-
-import java.io.Serializable;
-
 /**
- * Version of IntPredicate that is serializable and checked
+ * Classes for reading and writing to various different sources, e.g. files, streams, urls, etc.
  */
-@FunctionalInterface
-public interface CheckedIntPredicate extends Serializable {
-
-   boolean test(int t) throws Throwable;
-
-}//END OF CheckedIntPredicate
+package com.davidbracewell.io;

@@ -22,7 +22,7 @@
 package com.davidbracewell.string;
 
 import com.davidbracewell.io.CSV;
-import com.davidbracewell.io.structured.csv.CSVReader;
+import com.davidbracewell.io.CSVReader;
 import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import lombok.SneakyThrows;

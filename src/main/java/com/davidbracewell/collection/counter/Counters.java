@@ -24,11 +24,11 @@ package com.davidbracewell.collection.counter;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.io.CSV;
+import com.davidbracewell.io.CSVReader;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.ElementType;
 import com.davidbracewell.io.structured.StructuredFormat;
 import com.davidbracewell.io.structured.StructuredReader;
-import com.davidbracewell.io.structured.csv.CSVReader;
 import com.davidbracewell.tuple.Tuple2;
 import lombok.NonNull;
 

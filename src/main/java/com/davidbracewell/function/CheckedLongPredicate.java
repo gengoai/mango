@@ -24,11 +24,11 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of LongPredicate that is serializable
+ * Version of LongPredicate that is serializable and checked
  */
 @FunctionalInterface
 public interface CheckedLongPredicate extends Serializable {
 
-  boolean test(long t) throws Throwable;
+   boolean test(long t) throws Throwable;
 
 }//END OF CheckedLongPredicate

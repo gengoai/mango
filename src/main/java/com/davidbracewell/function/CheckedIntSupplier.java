@@ -24,11 +24,11 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of IntSupplier that is serializable
+ * Version of IntSupplier that is serializable and checked
  */
 @FunctionalInterface
 public interface CheckedIntSupplier extends Serializable {
 
-  int getAsInt() throws Throwable;
+   int getAsInt() throws Throwable;
 
 }//END OF CheckedIntSupplier

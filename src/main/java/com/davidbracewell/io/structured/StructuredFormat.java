@@ -21,10 +21,6 @@
 
 package com.davidbracewell.io.structured;
 
-import com.davidbracewell.collection.map.Maps;
-import com.davidbracewell.conversion.Cast;
-import com.davidbracewell.conversion.Val;
-import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.resource.StringResource;
 import com.davidbracewell.io.structured.json.JSONReader;
@@ -37,7 +33,6 @@ import lombok.SneakyThrows;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,183 +43,180 @@ import java.util.Map;
  */
 public interface StructuredFormat extends Serializable {
 
-  /**
-   * Create reader.
-   *
-   * @param resource the resource
-   * @return the structured reader
-   * @throws IOException the structured iO exception
-   */
-  StructuredReader createReader(Resource resource) throws IOException;
+   /**
+    * Create reader.
+    *
+    * @param resource the resource
+    * @return the structured reader
+    * @throws IOException the structured iO exception
+    */
+   StructuredReader createReader(Resource resource) throws IOException;
 
 
-  /**
-   * Create writer.
-   *
-   * @param resource the resource
-   * @return the structured writer
-   * @throws IOException the structured iO exception
-   */
-  StructuredWriter createWriter(Resource resource) throws IOException;
+   /**
+    * Create writer.
+    *
+    * @param resource the resource
+    * @return the structured writer
+    * @throws IOException the structured iO exception
+    */
+   StructuredWriter createWriter(Resource resource) throws IOException;
 
 
-  /**
-   * Reads the resource in the format to a map.
-   *
-   * @param resource the resource
-   * @return the data in the resource as a map
-   * @throws IOException something went wrong reading the resource
-   */
-  default Map<String, ?> loads(Resource resource) throws IOException {
-    return loads(resource.readToString());
-  }
+   /**
+    * Reads the resource in the format to a map.
+    *
+    * @param resource the resource
+    * @return the data in the resource as a map
+    * @throws IOException something went wrong reading the resource
+    */
+   default Map<String, ?> loads(Resource resource) throws IOException {
+      return loads(resource.readToString());
+   }
 
-  /**
-   * Reads the resource in the format to a map.
-   *
-   * @param data the data
-   * @return the data in the resource as a map
-   */
-  @SneakyThrows
-  default Map<String, ?> loads(String data) {
-    Map<String, Object> r = new HashMap<>();
-    try (StructuredReader reader = createReader(new StringResource(data))) {
-      reader.beginDocument();
-      while( reader.peek() != ElementType.END_DOCUMENT ){
-        String name = reader.peekName();
-        switch (reader.peek()){
-          case BEGIN_OBJECT:
-            r.put(name, reader.nextMap());
-            break;
-          case BEGIN_ARRAY:
-            r.put(name, reader.nextCollection(ArrayList::new));
-            break;
-          case NAME:
-            r.put(name, reader.nextKeyValue(name));
-            break;
-          default:
-            reader.skip();
-        }
+   /**
+    * Reads the resource in the format to a map.
+    *
+    * @param data the data
+    * @return the data in the resource as a map
+    */
+   @SneakyThrows
+   default Map<String, ?> loads(String data) {
+      Map<String, Object> r = new HashMap<>();
+      try (StructuredReader reader = createReader(new StringResource(data))) {
+         reader.beginDocument();
+         while (reader.peek() != ElementType.END_DOCUMENT) {
+            String name = reader.peekName();
+            switch (reader.peek()) {
+               case BEGIN_OBJECT:
+                  r.put(name, reader.nextMap());
+                  break;
+               case BEGIN_ARRAY:
+                  r.put(name, reader.nextCollection(ArrayList::new));
+                  break;
+               case NAME:
+                  r.put(name, reader.nextKeyValue(name));
+                  break;
+               default:
+                  reader.skip();
+            }
+         }
+         reader.endDocument();
       }
-      reader.endDocument();
-    }
-    return r;
-  }
+      return r;
+   }
 
-  /**
-   * Dumps a map in this format to a string.
-   *
-   * @param map the map to dump
-   * @return the string representation of the map
-   */
-  @SneakyThrows
-  default String dumps(@NonNull Map<String, ?> map) {
-    Resource strResource = new StringResource();
-    try (StructuredWriter writer = createWriter(strResource)) {
-      writer.beginDocument();
-      for (Map.Entry<String, ?> entry : map.entrySet()) {
-        writer.writeKeyValue(entry.getKey(), entry.getValue());
+   /**
+    * Dumps a map in this format to a string.
+    *
+    * @param map the map to dump
+    * @return the string representation of the map
+    */
+   @SneakyThrows
+   default String dumps(@NonNull Map<String, ?> map) {
+      Resource strResource = new StringResource();
+      try (StructuredWriter writer = createWriter(strResource)) {
+         writer.beginDocument();
+         for (Map.Entry<String, ?> entry : map.entrySet()) {
+            writer.writeKeyValue(entry.getKey(), entry.getValue());
+         }
+         writer.endDocument();
       }
-      writer.endDocument();
-    }
-    return strResource.readToString().trim();
-  }
+      return strResource.readToString().trim();
+   }
 
 
-  /**
-   * XML Format
-   */
-  StructuredFormat XML = new StructuredFormat() {
+   /**
+    * XML Format
+    */
+   StructuredFormat XML = new StructuredFormat() {
 
-    private static final long serialVersionUID = 1297100190960314727L;
+      private static final long serialVersionUID = 1297100190960314727L;
 
-    @Override
-    public StructuredReader createReader(Resource resource) throws IOException {
-      return new XMLReader(resource);
-    }
-
-    @Override
-    public StructuredWriter createWriter(Resource resource) throws IOException {
-      return new XMLWriter(resource);
-    }
-  };
-
-
-  /**
-   * JSON Format
-   */
-  StructuredFormat JSON = new StructuredFormat() {
-    private static final long serialVersionUID = 1297100190960314727L;
-
-    @Override
-    public StructuredReader createReader(Resource resource) throws IOException {
-      return new JSONReader(resource);
-    }
-
-    @Override
-    public StructuredWriter createWriter(Resource resource) throws IOException {
-      return new JSONWriter(resource);
-    }
-
-  };
-
-
-  /**
-   * The type Dsv format.
-   */
-  class DSVFormat implements StructuredFormat {
-    private static final long serialVersionUID = 1L;
-    private final com.davidbracewell.io.CSV format;
-
-    /**
-     * Instantiates a new Dsv format.
-     *
-     * @param format the format
-     */
-    DSVFormat(@NonNull com.davidbracewell.io.CSV format) {
-      this.format = format;
-    }
-
-    @Override
-    public StructuredReader createReader(Resource resource) throws IOException {
-      try {
-        return format.reader(resource);
-      } catch (IOException e) {
-        throw new IOException(e);
+      @Override
+      public StructuredReader createReader(Resource resource) throws IOException {
+         return new XMLReader(resource);
       }
-    }
 
-    @Override
-    public StructuredWriter createWriter(Resource resource) throws IOException {
-      try {
-        return format.writer(resource);
-      } catch (IOException e) {
-        throw new IOException(e);
+      @Override
+      public StructuredWriter createWriter(Resource resource) throws IOException {
+         return new XMLWriter(resource);
       }
-    }
-
-  }
+   };
 
 
-  /**
-   * CSV with no header
-   */
-  StructuredFormat CSV = new DSVFormat(com.davidbracewell.io.CSV.builder());
+   /**
+    * JSON Format
+    */
+   StructuredFormat JSON = new StructuredFormat() {
+      private static final long serialVersionUID = 1297100190960314727L;
 
-  /**
-   * TSV with no header
-   */
-  StructuredFormat TSV = new DSVFormat(com.davidbracewell.io.CSV.builder().delimiter('\t'));
+      @Override
+      public StructuredReader createReader(Resource resource) throws IOException {
+         return new JSONReader(resource);
+      }
 
-  /**
-   * CSV with header
-   */
-  StructuredFormat CSV_HEADER = new DSVFormat(com.davidbracewell.io.CSV.builder().hasHeader());
+      @Override
+      public StructuredWriter createWriter(Resource resource) throws IOException {
+         return new JSONWriter(resource);
+      }
 
-  /**
-   * TSV with header
-   */
-  StructuredFormat TSV_HEADER = new DSVFormat(com.davidbracewell.io.CSV.builder().delimiter('\t').hasHeader());
+   };
+//
+//
+//   /**
+//    * The type Dsv format.
+//    */
+//   class DSVFormat implements StructuredFormat {
+//      private static final long serialVersionUID = 1L;
+//      private final com.davidbracewell.io.CSV format;
+//
+//      /**
+//       * Instantiates a new Dsv format.
+//       *
+//       * @param format the format
+//       */
+//      DSVFormat(@NonNull com.davidbracewell.io.CSV format) {
+//         this.format = format;
+//      }
+//
+//      @Override
+//      public StructuredReader createReader(Resource resource) throws IOException {
+//         try {
+//            return format.reader(resource);
+//         } catch (IOException e) {
+//            throw new IOException(e);
+//         }
+//      }
+//
+//      @Override
+//      public StructuredWriter createWriter(Resource resource) throws IOException {
+//         return null;
+//         //return format.writer(resource);
+//      }
+//
+//   }
+//
+//
+//   /**
+//    * CSV with no header
+//    */
+//   StructuredFormat CSV = new DSVFormat(com.davidbracewell.io.CSV.builder());
+//
+//   /**
+//    * TSV with no header
+//    */
+//   StructuredFormat TSV = new DSVFormat(com.davidbracewell.io.CSV.builder().delimiter('\t'));
+//
+//   /**
+//    * CSV with header
+//    */
+//   StructuredFormat CSV_HEADER = new DSVFormat(com.davidbracewell.io.CSV.builder().hasHeader());
+//
+//   /**
+//    * TSV with header
+//    */
+//   StructuredFormat TSV_HEADER = new DSVFormat(com.davidbracewell.io.CSV.builder().delimiter('\t').hasHeader());
 
 
 }//END OF StructuredFormat

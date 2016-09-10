@@ -24,11 +24,11 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of IntUnaryOperator that is serializable
+ * Version of IntUnaryOperator that is serializable and checked
  */
 @FunctionalInterface
 public interface CheckedIntUnaryOperator extends Serializable {
 
-  int applyAsInt(int t) throws Throwable;
+   int applyAsInt(int t) throws Throwable;
 
 }//END OF CheckedIntUnaryOperator

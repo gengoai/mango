@@ -27,14 +27,14 @@ package com.davidbracewell.io.structured;
  * @author David B. Bracewell
  */
 public enum ElementType {
-  BEGIN_OBJECT,
-  END_OBJECT,
-  VALUE,
-  BEGIN_ARRAY,
-  END_ARRAY,
-  BEGIN_DOCUMENT,
-  END_DOCUMENT,
-  NAME,
-  OTHER,
-  END_KEY_VALUE
+   BEGIN_OBJECT,
+   END_OBJECT,
+   VALUE,
+   BEGIN_ARRAY,
+   END_ARRAY,
+   BEGIN_DOCUMENT,
+   END_DOCUMENT,
+   NAME,
+   OTHER,
+   END_KEY_VALUE
 } //END OF StructuredElement

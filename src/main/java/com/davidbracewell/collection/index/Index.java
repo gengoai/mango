@@ -24,10 +24,10 @@ package com.davidbracewell.collection.index;
 import com.davidbracewell.Copyable;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.CSV;
+import com.davidbracewell.io.CSVWriter;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.StructuredFormat;
 import com.davidbracewell.io.structured.StructuredWriter;
-import com.davidbracewell.io.structured.csv.CSVWriter;
 import lombok.NonNull;
 
 import java.io.IOException;

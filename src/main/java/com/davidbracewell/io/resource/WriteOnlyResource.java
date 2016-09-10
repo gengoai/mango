@@ -30,20 +30,20 @@ import java.io.IOException;
  */
 public interface WriteOnlyResource extends Resource {
 
-  @Override
-  default boolean canRead() {
-    return false;
-  }
+   @Override
+   default boolean canRead() {
+      return false;
+   }
 
-  @Override
-  default boolean canWrite() {
-    return true;
-  }
+   @Override
+   default boolean canWrite() {
+      return true;
+   }
 
-  @Override
-  default MStream<String> lines() throws IOException {
-    throw new IllegalStateException("This is resource cannot be read from.");
-  }
+   @Override
+   default MStream<String> lines() throws IOException {
+      throw new IllegalStateException("This is resource cannot be read from.");
+   }
 
 
 }//END OF WriteOnlyResource

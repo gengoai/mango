@@ -24,13 +24,13 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of ToLongFunction that is serializable
+ * Version of ToLongFunction that is serializable and checked
  *
  * @param <T> Functional parameter
  */
 @FunctionalInterface
 public interface CheckedToLongFunction<T> extends Serializable {
 
-  long applyAsLong(T t) throws Throwable;
+   long applyAsLong(T t) throws Throwable;
 
 }//END OF CheckedToLongFunction

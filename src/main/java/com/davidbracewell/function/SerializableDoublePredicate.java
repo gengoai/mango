@@ -32,22 +32,22 @@ import java.util.function.DoublePredicate;
 @FunctionalInterface
 public interface SerializableDoublePredicate extends DoublePredicate, Serializable {
 
-  @Override
-  default SerializableDoublePredicate and(@NonNull DoublePredicate other) {
-    return i -> this.test(i) && other.test(i);
-  }
+   @Override
+   default SerializableDoublePredicate and(@NonNull DoublePredicate other) {
+      return i -> this.test(i) && other.test(i);
+   }
 
-  @Override
-  default SerializableDoublePredicate or(@NonNull DoublePredicate other) {
-    return i -> this.test(i) || other.test(i);
-  }
+   @Override
+   default SerializableDoublePredicate or(@NonNull DoublePredicate other) {
+      return i -> this.test(i) || other.test(i);
+   }
 
-  default SerializableDoublePredicate and(@NonNull SerializableDoublePredicate other) {
-    return i -> this.test(i) && other.test(i);
-  }
+   default SerializableDoublePredicate and(@NonNull SerializableDoublePredicate other) {
+      return i -> this.test(i) && other.test(i);
+   }
 
-  default SerializableDoublePredicate or(@NonNull SerializableDoublePredicate other) {
-    return i -> this.test(i) || other.test(i);
-  }
+   default SerializableDoublePredicate or(@NonNull SerializableDoublePredicate other) {
+      return i -> this.test(i) || other.test(i);
+   }
 
 }//END OF SerializableDoublePredicate

@@ -24,11 +24,11 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of DoubleSupplier that is serializable
+ * Version of DoubleSupplier that is serializable and checked
  */
 @FunctionalInterface
 public interface CheckedDoubleSupplier extends Serializable {
 
-  double getAsDouble() throws Throwable;
+   double getAsDouble() throws Throwable;
 
 }//END OF CheckedDoubleSupplier

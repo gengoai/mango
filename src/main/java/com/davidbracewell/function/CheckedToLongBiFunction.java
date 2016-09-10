@@ -24,7 +24,7 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of ToLongBiFunction that is serializable
+ * Version of ToLongBiFunction that is serializable and checked
  *
  * @param <T> Functional parameter
  * @param <U> Functional parameter
@@ -32,6 +32,6 @@ import java.io.Serializable;
 @FunctionalInterface
 public interface CheckedToLongBiFunction<T, U> extends Serializable {
 
-  Long applyAsLong(T t, U u) throws Throwable;
+   Long applyAsLong(T t, U u) throws Throwable;
 
 }//END OF CheckedToLongBiFunction

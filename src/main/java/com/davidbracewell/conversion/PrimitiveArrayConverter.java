@@ -23,8 +23,9 @@ package com.davidbracewell.conversion;
 
 import com.davidbracewell.collection.list.Lists;
 import com.davidbracewell.collection.list.PrimitiveArrayList;
-import com.davidbracewell.io.IOUtils;
+import com.davidbracewell.io.CharsetDetectingReader;
 import com.davidbracewell.logging.Logger;
+import com.google.common.io.CharStreams;
 import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Chars;
 
@@ -98,7 +99,7 @@ public final class PrimitiveArrayConverter {
                   log.fine("Could not open input stream for {0}", o);
                   return null;
                }
-               return IOUtils.readToString(inputStream).getBytes();
+               return CharStreams.toString(new CharsetDetectingReader(inputStream)).getBytes();
             } catch (IOException e) {
                log.fine("Error reading in {0}: {1}", o, e);
                return null;
@@ -168,7 +169,7 @@ public final class PrimitiveArrayConverter {
                   log.fine("Could not open reader for {0}", o);
                   return null;
                }
-               return IOUtils.readToString(reader).toCharArray();
+               return CharStreams.toString(reader).toCharArray();
             } catch (IOException e) {
                log.fine("Error reading in {0}: {1}", o, e);
                return null;

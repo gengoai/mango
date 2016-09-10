@@ -25,7 +25,7 @@ import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.function.Unchecked;
 import com.davidbracewell.io.CSV;
-import com.davidbracewell.io.structured.csv.CSVReader;
+import com.davidbracewell.io.CSVReader;
 import com.davidbracewell.string.StringUtils;
 import lombok.SneakyThrows;
 

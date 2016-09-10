@@ -24,11 +24,11 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of LongSupplier that is serializable
+ * Version of LongSupplier that is serializable and checked
  */
 @FunctionalInterface
 public interface CheckedLongSupplier extends Serializable {
 
-  long getAsLong() throws Throwable;
+   long getAsLong() throws Throwable;
 
 }//END OF CheckedLongSupplier

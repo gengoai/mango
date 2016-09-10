@@ -24,13 +24,13 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of Supplier that is serializable
+ * Version of Supplier that is serializable and checked
  *
  * @param <T> Functional parameter
  */
 @FunctionalInterface
 public interface CheckedSupplier<T> extends Serializable {
 
-  T get() throws Throwable;
+   T get() throws Throwable;
 
 }//END OF CheckedSupplier

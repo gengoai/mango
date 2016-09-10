@@ -21,6 +21,7 @@
 
 package com.davidbracewell.conversion;
 
+import com.davidbracewell.io.CharsetDetectingReader;
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.*;
 import com.davidbracewell.logging.Logger;
@@ -246,12 +247,14 @@ public final class IOConverter {
          }
          InputStream is = INPUT_STREAM.apply(input);
          if (is != null) {
-            return new InputStreamReader(is, StandardCharsets.UTF_8);
+            return new CharsetDetectingReader(is);
          }
          log.fine("Unable to convert '{0}' into an Writer.", input.getClass());
          return null;
       }
    };
+
+
    public static final Function<Object, Resource> RESOUCE = new Function<Object, Resource>() {
 
       @Override

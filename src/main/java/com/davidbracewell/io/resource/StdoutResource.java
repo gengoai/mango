@@ -29,43 +29,43 @@ import java.io.OutputStream;
  * @author David B. Bracewell
  */
 public class StdoutResource extends BaseResource implements NonTraversableResource, WriteOnlyResource {
-  private static final long serialVersionUID = 1L;
+   private static final long serialVersionUID = 1L;
 
-  @Override
-  public OutputStream createOutputStream() throws IOException {
-    return new BufferedOutputStream(System.out);
-  }
+   @Override
+   public OutputStream createOutputStream() throws IOException {
+      return new BufferedOutputStream(System.out);
+   }
 
-  @Override
-  public boolean exists() {
-    return true;
-  }
+   @Override
+   public boolean exists() {
+      return true;
+   }
 
-  @Override
-  public Resource append(byte[] byteArray) throws IOException {
-    try (OutputStream os = createOutputStream()) {
-      os.write(byteArray);
-    }
-    return this;
-  }
+   @Override
+   public Resource append(byte[] byteArray) throws IOException {
+      try (OutputStream os = createOutputStream()) {
+         os.write(byteArray);
+      }
+      return this;
+   }
 
-  @Override
-  public boolean mkdir() {
-    return true;
-  }
+   @Override
+   public boolean mkdir() {
+      return true;
+   }
 
-  @Override
-  public boolean mkdirs() {
-    return true;
-  }
+   @Override
+   public boolean mkdirs() {
+      return true;
+   }
 
-  @Override
-  public Resource getParent() {
-    return this;
-  }
+   @Override
+   public Resource getParent() {
+      return this;
+   }
 
-  @Override
-  public Resource getChild(String relativePath) {
-    return this;
-  }
+   @Override
+   public Resource getChild(String relativePath) {
+      return this;
+   }
 }//END OF StdoutResource

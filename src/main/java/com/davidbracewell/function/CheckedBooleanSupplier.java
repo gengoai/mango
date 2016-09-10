@@ -24,11 +24,11 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of BooleanSupplier that is serializable
+ * Version of BooleanSupplier that is serializable and checked
  */
 @FunctionalInterface
 public interface CheckedBooleanSupplier extends Serializable {
 
-  boolean getAsBoolean() throws Throwable;
+   boolean getAsBoolean() throws Throwable;
 
 }//END OF CheckedBooleanSupplier

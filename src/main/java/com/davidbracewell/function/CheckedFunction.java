@@ -26,7 +26,7 @@ import lombok.NonNull;
 import java.io.Serializable;
 
 /**
- * Version of Function that is serializable
+ * Version of Function that is serializable and checked
  *
  * @param <T> Functional parameter
  * @param <R> Functional parameter
@@ -34,16 +34,16 @@ import java.io.Serializable;
 @FunctionalInterface
 public interface CheckedFunction<T, R> extends Serializable {
 
-  R apply(T t) throws Throwable;
+   R apply(T t) throws Throwable;
 
 
-  default <V> CheckedFunction<V, R> compose(@NonNull CheckedFunction<? super V, ? extends T> before) {
-    return v -> apply(before.apply(v));
-  }
+   default <V> CheckedFunction<V, R> compose(@NonNull CheckedFunction<? super V, ? extends T> before) {
+      return v -> apply(before.apply(v));
+   }
 
-  default <V> CheckedFunction<T, V> andThen(@NonNull CheckedFunction<? super R, ? extends V> after) {
-    return t -> after.apply(apply(t));
-  }
+   default <V> CheckedFunction<T, V> andThen(@NonNull CheckedFunction<? super R, ? extends V> after) {
+      return t -> after.apply(apply(t));
+   }
 
 
 }//END OF CheckedFunction

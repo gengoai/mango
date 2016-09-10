@@ -24,13 +24,13 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of ToDoubleFunction that is serializable
+ * Version of ToDoubleFunction that is serializable and checked
  *
  * @param <T> Functional parameter
  */
 @FunctionalInterface
 public interface CheckedToDoubleFunction<T> extends Serializable {
 
-  double applyAsDouble(T t) throws Throwable;
+   double applyAsDouble(T t) throws Throwable;
 
 }//END OF CheckedToDoubleFunction

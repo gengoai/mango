@@ -1,48 +1,39 @@
-package com.davidbracewell.io.structured.csv;
+/*
+ * (c) 2005 David B. Bracewell
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
-import com.davidbracewell.io.CSV;
-import com.davidbracewell.io.Resources;
-import com.davidbracewell.io.structured.ElementType;
-import com.davidbracewell.io.structured.StructuredReader;
+package com.davidbracewell.io;
+
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * @author David B. Bracewell
  */
 public class CSVReaderTest {
-
-  @Test
-  public void processMapTest() throws IOException {
-    List<String> names = CSV.builder()
-      .hasHeader()
-      .reader(Resources.fromClasspath("com/davidbracewell/Schools.csv"))
-      .processMaps(m -> Optional.of(m.get("schoolName").asString()));
-    assertEquals(names.get(0), "Abilene Christian University");
-    assertEquals(names.get(2), "Adrian College");
-    assertEquals(names.get(4), "University of Akron");
-    assertEquals(names.get(names.size() - 1), "Youngstown State University");
-  }
-
-  @Test
-  public void consumeMapTest() throws IOException {
-    List<String> names = new ArrayList<>();
-    CSV.builder()
-      .hasHeader()
-      .reader(Resources.fromClasspath("com/davidbracewell/Schools.csv"))
-      .consumeMaps(m -> names.add(m.get("schoolName").asString()));
-    assertEquals(names.get(0), "Abilene Christian University");
-    assertEquals(names.get(2), "Adrian College");
-    assertEquals(names.get(4), "University of Akron");
-    assertEquals(names.get(names.size() - 1), "Youngstown State University");
-  }
 
 
   @Test
@@ -60,8 +51,8 @@ public class CSVReaderTest {
   @Test
   public void headerTest() throws IOException {
     CSVReader reader = CSV.builder()
-      .hasHeader()
-      .reader(Resources.fromClasspath("com/davidbracewell/Schools.csv"));
+                          .hasHeader()
+                          .reader(Resources.fromClasspath("com/davidbracewell/Schools.csv"));
     assertEquals(
       Arrays.asList("schoolID", "schoolName", "schoolCity", "schoolState", "schoolNick"),
       reader.getHeader()
@@ -69,18 +60,6 @@ public class CSVReaderTest {
     reader.close();
   }
 
-  @Test
-  public void streamingTest() throws IOException {
-    StructuredReader reader = CSV.builder()
-      .hasHeader()
-      .reader(Resources.fromClasspath("com/davidbracewell/Schools.csv"));
-    reader.beginDocument();
-    while (reader.peek() != ElementType.END_DOCUMENT) {
-      reader.nextArray();
-    }
-    reader.endDocument();
-    reader.close();
-  }
 
   @Test
   public void readAllTest() throws IOException {

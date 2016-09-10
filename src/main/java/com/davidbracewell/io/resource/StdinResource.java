@@ -30,17 +30,17 @@ import java.io.InputStream;
  */
 public class StdinResource extends BaseResource implements NonTraversableResource, ReadOnlyResource {
 
-  private static final long serialVersionUID = 1373981063391575745L;
+   private static final long serialVersionUID = 1373981063391575745L;
 
-  @Override
-  public InputStream createInputStream() throws IOException {
-    return System.in;
-  }
+   @Override
+   public InputStream createInputStream() throws IOException {
+      return System.in;
+   }
 
-  @Override
-  public boolean exists() {
-    return true;
-  }
+   @Override
+   public boolean exists() {
+      return true;
+   }
 
 
 }//END OF StdinResource

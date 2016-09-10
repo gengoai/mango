@@ -30,37 +30,37 @@ import java.net.URI;
  * @author David B. Bracewell
  */
 public class URIResource extends BaseResource {
-  private static final long serialVersionUID = 1L;
-  private final URI uri;
+   private static final long serialVersionUID = 1L;
+   private final URI uri;
 
-  public URIResource(@NonNull URI uri) {
-    this.uri = uri;
-  }
+   public URIResource(@NonNull URI uri) {
+      this.uri = uri;
+   }
 
 
-  @Override
-  public Resource append(byte[] byteArray) throws IOException {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public Resource append(byte[] byteArray) throws IOException {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public boolean exists() {
-    return true;
-  }
+   @Override
+   public boolean exists() {
+      return true;
+   }
 
-  @Override
-  public Resource getChild(String relativePath) {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public Resource getChild(String relativePath) {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public Resource getParent() {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public Resource getParent() {
+      throw new UnsupportedOperationException();
+   }
 
-  @Override
-  public String descriptor() {
-    return uri.toString();
-  }
+   @Override
+   public String descriptor() {
+      return uri.toString();
+   }
 
 }//END OF URIResource

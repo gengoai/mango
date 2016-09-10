@@ -24,11 +24,11 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of DoublePredicate that is serializable
+ * Version of DoublePredicate that is serializable and checked
  */
 @FunctionalInterface
 public interface CheckedDoublePredicate extends Serializable {
 
-  boolean test(double t) throws Throwable;
+   boolean test(double t) throws Throwable;
 
 }//END OF CheckedDoublePredicate

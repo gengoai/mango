@@ -24,7 +24,7 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of BiPredicate that is serializable
+ * Version of BiPredicate that is serializable and checked
  *
  * @param <T> Functional parameter
  * @param <U> Functional parameter
@@ -32,6 +32,6 @@ import java.io.Serializable;
 @FunctionalInterface
 public interface CheckedBiPredicate<T, U> extends Serializable {
 
-  boolean test(T t, U u) throws Throwable;
+   boolean test(T t, U u) throws Throwable;
 
 }//END OF CheckedBiPredicate

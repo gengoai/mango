@@ -19,18 +19,7 @@
  * under the License.
  */
 
-package com.davidbracewell.io;
-
 /**
- * Interface defining a method to commit, e.g. data to database, etc.
- *
- * @author David B. Bracewell
+ * Checked and Serializable versions of Java 8's functional elements.
  */
-public interface Committable {
-
-  /**
-   * Commits
-   */
-  void commit();
-
-}//END OF Committable
+package com.davidbracewell.function;

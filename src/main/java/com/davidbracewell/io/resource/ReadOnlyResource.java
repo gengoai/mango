@@ -28,20 +28,20 @@ import java.io.IOException;
  */
 public interface ReadOnlyResource extends Resource {
 
-  @Override
-  default boolean canWrite() {
-    return false;
-  }
+   @Override
+   default boolean canWrite() {
+      return false;
+   }
 
-  @Override
-  default boolean canRead() {
-    return true;
-  }
+   @Override
+   default boolean canRead() {
+      return true;
+   }
 
-  @Override
-  default Resource append(byte[] byteArray) throws IOException {
-    throw new IllegalStateException("This is resource cannot be written to.");
-  }
+   @Override
+   default Resource append(byte[] byteArray) throws IOException {
+      throw new IllegalStateException("This is resource cannot be written to.");
+   }
 
 
 }//END OF ReadOnlyResource

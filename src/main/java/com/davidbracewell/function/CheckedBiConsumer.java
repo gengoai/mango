@@ -24,7 +24,7 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of BiConsumer that is serializable
+ * Version of BiConsumer that is serializable and checked
  *
  * @param <T> Functional parameter
  * @param <U> Functional parameter
@@ -32,6 +32,6 @@ import java.io.Serializable;
 @FunctionalInterface
 public interface CheckedBiConsumer<T, U> extends Serializable {
 
-  void accept(T t, U u) throws Throwable;
+   void accept(T t, U u) throws Throwable;
 
 }//END OF CheckedBiConsumer
