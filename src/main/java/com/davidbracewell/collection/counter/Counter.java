@@ -34,6 +34,7 @@ import com.davidbracewell.io.structured.csv.CSVWriter;
 import lombok.NonNull;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.function.*;
 import java.util.stream.Collectors;
@@ -433,9 +434,12 @@ public interface Counter<T> extends Copyable<Counter<T>> {
     * @throws IOException Something went wrong writing
     */
    default void writeCsv(@NonNull Resource output) throws IOException {
+      DecimalFormat decimalFormat = new DecimalFormat("#.#####");
       try (CSVWriter writer = CSV.builder().writer(output)) {
          for (Map.Entry<T, Double> entry : entries()) {
-            writer.write(entry.getKey(), entry.getValue());
+            writer.write(Convert.convert(entry.getKey(), String.class),
+                         decimalFormat.format(entry.getValue())
+                        );
          }
       }
    }
@@ -457,12 +461,12 @@ public interface Counter<T> extends Copyable<Counter<T>> {
    }
 
    /**
-    * For each.
+    * Convenience method for consuming item - count pairs.
     *
-    * @param consumer the consumer
+    * @param consumer the consumer to use for processing the key value pairs
     */
-   default void forEach(@NonNull BiConsumer<? super T, ? super Double> consumer){
-      entries().forEach(e -> consumer.accept(e.getKey(),e.getValue()));
+   default void forEach(@NonNull BiConsumer<? super T, ? super Double> consumer) {
+      entries().forEach(e -> consumer.accept(e.getKey(), e.getValue()));
    }
 
 }//END OF Counter

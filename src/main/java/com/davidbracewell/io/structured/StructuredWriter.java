@@ -2,7 +2,6 @@ package com.davidbracewell.io.structured;
 
 import com.davidbracewell.DynamicEnum;
 import com.davidbracewell.collection.counter.Counter;
-import com.davidbracewell.collection.counter.MultiCounter;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
 import com.google.common.collect.Iterators;
@@ -218,8 +217,6 @@ public abstract class StructuredWriter implements Closeable {
          writeMap(Cast.<Multimap>as(object).asMap());
       } else if (object instanceof Counter) {
          writeMap(Cast.<Counter>as(object).asMap());
-      } else if (object instanceof MultiCounter) {
-         writeMap(Cast.<MultiCounter>as(object).asMap());
       } else if (object instanceof Iterable) {
          writeCollection(new AbstractCollection<Object>() {
             @Override

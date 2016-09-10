@@ -23,20 +23,22 @@ package com.davidbracewell.collection.counter;
 
 import com.davidbracewell.Math2;
 import com.davidbracewell.conversion.Convert;
+import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.StructuredFormat;
 import com.davidbracewell.io.structured.StructuredWriter;
+import com.davidbracewell.io.structured.csv.CSVWriter;
 import com.davidbracewell.tuple.Tuple3;
 import lombok.NonNull;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
@@ -71,12 +73,6 @@ public interface MultiCounter<K, V> {
     */
    MultiCounter<K, V> adjustValuesSelf(DoubleUnaryOperator function);
 
-   /**
-    * As map.
-    *
-    * @return the map
-    */
-   Map<K, Counter<V>> asMap();
 
    /**
     * Average double.
@@ -417,50 +413,31 @@ public interface MultiCounter<K, V> {
     * @param output the output
     * @throws IOException the io exception
     */
-   default void writeCSV(@NonNull Resource output) throws IOException {
-      write(StructuredFormat.CSV, output);
+   default void writeCsv(@NonNull Resource output) throws IOException {
+      DecimalFormat decimalFormat = new DecimalFormat("#.#####");
+      try (CSVWriter writer = CSV.builder().writer(output)) {
+         for (Tuple3<K, V, Double> entry : entries()) {
+            writer.write(Convert.convert(entry.v1, String.class),
+                         Convert.convert(entry.v2, String.class),
+                         decimalFormat.format(entry.v3)
+                        );
+         }
+      }
    }
 
    default void writeJson(@NonNull Resource output) throws IOException {
-      write(StructuredFormat.JSON, output);
-   }
-
-   /**
-    * Write.
-    *
-    * @param structuredFormat the structured format
-    * @param output           the output
-    * @throws IOException the io exception
-    */
-   default void write(@NonNull StructuredFormat structuredFormat, @NonNull Resource output) throws IOException {
-      write(structuredFormat,
-            output,
-            item -> Convert.convert(item, String.class),
-            item -> Convert.convert(item, String.class)
-           );
-   }
-
-   /**
-    * Write.
-    *
-    * @param structuredFormat the structured format
-    * @param output           the output
-    * @param key1Serializer   the key 1 serializer
-    * @param key2Serializer   the key 2 serializer
-    * @throws IOException the io exception
-    */
-   default void write(@NonNull StructuredFormat structuredFormat, @NonNull Resource output, @NonNull Function<? super K, String> key1Serializer, @NonNull Function<? super V, String> key2Serializer) throws IOException {
-      try (StructuredWriter writer = structuredFormat.createWriter(output)) {
+      try (StructuredWriter writer = StructuredFormat.JSON.createWriter(output)) {
          writer.beginDocument();
          for (Tuple3<K, V, Double> entry : entries()) {
             writer.beginObject("entry");
-            writer.writeKeyValue("k1", key1Serializer.apply(entry.v1));
-            writer.writeKeyValue("k2", key2Serializer.apply(entry.v2));
+            writer.writeKeyValue("k1", Convert.convert(entry.v1, String.class));
+            writer.writeKeyValue("k2", Convert.convert(entry.v2, String.class));
             writer.writeKeyValue("v", entry.v3);
             writer.endObject();
          }
          writer.endDocument();
       }
    }
+
 
 }//END OF MultiCounter

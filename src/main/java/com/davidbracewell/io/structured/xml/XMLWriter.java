@@ -24,7 +24,6 @@ package com.davidbracewell.io.structured.xml;
 import com.davidbracewell.DynamicEnum;
 import com.davidbracewell.collection.Streams;
 import com.davidbracewell.collection.counter.Counter;
-import com.davidbracewell.collection.counter.MultiCounter;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.resource.Resource;
@@ -193,8 +192,6 @@ public class XMLWriter extends StructuredWriter {
             writeMap(key, Cast.<Multimap>as(object).asMap());
          } else if (object instanceof Counter) {
             writeMap(key, Cast.<Counter>as(object).asMap());
-         } else if (object instanceof MultiCounter) {
-            writeMap(key, Cast.<MultiCounter>as(object).asMap());
          } else if (object instanceof Iterable) {
             writeCollection(key, new AbstractCollection<Object>() {
                @Override

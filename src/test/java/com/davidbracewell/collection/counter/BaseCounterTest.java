@@ -40,19 +40,19 @@ import static org.junit.Assert.*;
 public abstract class BaseCounterTest {
 
    Counter<String> getCounter1() {
-      return Counters.newHashMapCounter("a", "b", "c", "a", "b", "a");
+      return Counters.newCounter("a", "b", "c", "a", "b", "a");
    }
 
    Counter<String> getCounter2() {
-      return Counters.newHashMapCounter(Maps.map("A", 4.0, "B", 5.0, "C", 1.0));
+      return Counters.newCounter(Maps.map("A", 4.0, "B", 5.0, "C", 1.0));
    }
 
    Counter<String> getCounter3() {
-      return Counters.newHashMapCounter(Collections.singleton("a"));
+      return Counters.newCounter(Collections.singleton("a"));
    }
 
    Counter<String> getEmptyCounter() {
-      return Counters.newHashMapCounter();
+      return Counters.newCounter();
    }
 
    @Test

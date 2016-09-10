@@ -210,7 +210,7 @@ public interface StreamingContext extends AutoCloseable {
     * @return the m accumulator
     */
    default <E> MAccumulator<Counter<E>> counterAccumulator() {
-      return accumulator(Counters.newHashMapCounter(), new CounterAccumulatable<>());
+      return accumulator(Counters.newCounter(), new CounterAccumulatable<>());
    }
 
    /**
@@ -245,7 +245,7 @@ public interface StreamingContext extends AutoCloseable {
     * @return the m accumulator
     */
    default <E> MAccumulator<Counter<E>> counterAccumulator(String name) {
-      return accumulator(Counters.newHashMapCounter(), new CounterAccumulatable<>(), name);
+      return accumulator(Counters.newCounter(), new CounterAccumulatable<>(), name);
    }
 
    /**

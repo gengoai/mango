@@ -23,145 +23,140 @@ package com.davidbracewell.collection.counter;
 
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.conversion.Val;
+import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.ElementType;
 import com.davidbracewell.io.structured.StructuredFormat;
 import com.davidbracewell.io.structured.StructuredReader;
-import com.davidbracewell.tuple.Tuple2;
+import com.davidbracewell.io.structured.csv.CSVReader;
 import lombok.NonNull;
 
 import java.io.IOException;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.Arrays;
+import java.util.Map;
 
 /**
  * The interface Multi counters.
  */
 public interface MultiCounters {
 
-  /**
-   * Unmodifiable multi counter multi counter.
-   *
-   * @param <K1>         the type parameter
-   * @param <K2>         the type parameter
-   * @param multiCounter the multi counter
-   * @return the multi counter
-   */
-  static <K1, K2> MultiCounter<K1, K2> unmodifiableMultiCounter(@NonNull MultiCounter<K1, K2> multiCounter) {
-    return new UnmodifiableMultiCounter<>(multiCounter);
-  }
 
-  /**
-   * Synchronized multi counter multi counter.
-   *
-   * @param <K1>         the type parameter
-   * @param <K2>         the type parameter
-   * @param multiCounter the multi counter
-   * @return the multi counter
-   */
-  static <K1, K2> MultiCounter<K1, K2> synchronizedMultiCounter(@NonNull MultiCounter<K1, K2> multiCounter) {
-    return new SynchronizedMultiCounter<>(multiCounter);
-  }
+   /**
+    * New multi counter multi counter.
+    *
+    * @param <K1>    the type parameter
+    * @param <K2>    the type parameter
+    * @param counter the counter
+    * @return the multi counter
+    */
+   static <K1, K2> MultiCounter<K1, K2> newMultiCounter(@NonNull MultiCounter<? extends K1, ? extends K2> counter) {
+      MultiCounter<K1, K2> mc = new HashMapMultiCounter<>();
+      counter.entries().forEach(triple -> mc.increment(triple.v1, triple.v2, triple.v3));
+      return mc;
+   }
+
+   /**
+    * New multi counter multi counter.
+    *
+    * @param <K1>    the type parameter
+    * @param <K2>    the type parameter
+    * @param entries the entries
+    * @return the multi counter
+    */
+   @SafeVarargs
+   static <K1, K2> MultiCounter<K1, K2> newMultiCounter(Map.Entry<? extends K1, ? extends K2>... entries) {
+      return entries == null ? new HashMapMultiCounter<>() : newMultiCounter(Arrays.asList(entries));
+   }
+
+   /**
+    * New multi counter multi counter.
+    *
+    * @param <K1>    the type parameter
+    * @param <K2>    the type parameter
+    * @param entries the entries
+    * @return the multi counter
+    */
+   static <K1, K2> MultiCounter<K1, K2> newMultiCounter(@NonNull Iterable<? extends Map.Entry<? extends K1, ? extends K2>> entries) {
+      MultiCounter<K1, K2> mc = new HashMapMultiCounter<>();
+      entries.forEach(e -> mc.increment(e.getKey(), e.getValue()));
+      return mc;
+   }
+
+   /**
+    * Unmodifiable multi counter multi counter.
+    *
+    * @param <K1>         the type parameter
+    * @param <K2>         the type parameter
+    * @param multiCounter the multi counter
+    * @return the multi counter
+    */
+   static <K1, K2> MultiCounter<K1, K2> unmodifiableMultiCounter(@NonNull MultiCounter<K1, K2> multiCounter) {
+      return new UnmodifiableMultiCounter<>(multiCounter);
+   }
+
+   /**
+    * Synchronized multi counter multi counter.
+    *
+    * @param <K1>         the type parameter
+    * @param <K2>         the type parameter
+    * @param multiCounter the multi counter
+    * @return the multi counter
+    */
+   static <K1, K2> MultiCounter<K1, K2> synchronizedMultiCounter(@NonNull MultiCounter<K1, K2> multiCounter) {
+      return new SynchronizedMultiCounter<>(multiCounter);
+   }
 
 
-  /**
-   * <p>Reads a resource in the given {@link StructuredFormat} which is made up of key value pairs where the key is the
-   * item in the counter and the value is its count.</p>
-   *
-   * @param <K1>             the type parameter
-   * @param <K2>             the type parameter
-   * @param structuredFormat the format of the file being read
-   * @param resource         the resource of the file being read
-   * @param key1Type         the class of the item type
-   * @param key2Type         the key 2 type
-   * @return the counter
-   * @throws IOException Something went wrong reading in the counter.
-   */
-  static <K1, K2> MultiCounter<K1, K2> read(@NonNull StructuredFormat structuredFormat, @NonNull Resource resource, @NonNull Class<K1> key1Type, @NonNull Class<K2> key2Type) throws IOException {
-    return read(structuredFormat, resource, str -> Convert.convert(str, key1Type), str -> Convert.convert(str, key2Type), HashMapMultiCounter::new);
-  }
+   static <K1, K2> MultiCounter<K1, K2> synchronizedMultiCounter() {
+      return synchronizedMultiCounter(newMultiCounter());
+   }
 
-  /**
-   * <p>Reads a resource in the given {@link StructuredFormat} which is made up of key value pairs where the key is the
-   * item in the counter and the value is its count.</p>
-   *
-   * @param <K1>             the type parameter
-   * @param <K2>             the type parameter
-   * @param structuredFormat the format of the file being read
-   * @param resource         the resource of the file being read
-   * @param k1Deserializer   Function to turn string representation of key into an item
-   * @param k2Deserializer   the k 2 deserializer
-   * @param supplier         the supplier to use for creating the initial counter
-   * @return the counter
-   * @throws IOException Something went wrong reading in the counter.
-   */
-  static <K1, K2> MultiCounter<K1, K2> read(@NonNull StructuredFormat structuredFormat, @NonNull Resource resource, @NonNull Function<String, K1> k1Deserializer, @NonNull Function<String, K2> k2Deserializer, @NonNull Supplier<MultiCounter<K1, K2>> supplier) throws IOException {
-    MultiCounter<K1, K2> counter = supplier.get();
-    try (StructuredReader reader = structuredFormat.createReader(resource)) {
-      reader.beginDocument();
-      while (reader.peek() != ElementType.END_DOCUMENT) {
-        reader.beginObject();
-        K1 k1 = null;
-        K2 k2 = null;
-        double value = 0;
-        int i = 0;
-        while (reader.peek() != ElementType.END_OBJECT) {
-          Tuple2<String, Val> kv = reader.nextKeyValue();
-          switch (kv.v1) {
-            case "k1":
-              k1 = k1Deserializer.apply(kv.v2.asString());
-              break;
-            case "k2":
-              k2 = k2Deserializer.apply(kv.v2.asString());
-              break;
-            case "v":
-              value = kv.v2.asDoubleValue();
-              break;
-            default:
-              if (k1 == null) {
-                k1 = k1Deserializer.apply(kv.v2.asString());
-              } else if (k2 == null) {
-                k2 = k2Deserializer.apply(kv.v2.asString());
-              } else {
-                value = kv.v2.asDoubleValue();
-              }
-          }
-        }
-        counter.set(k1, k2, value);
-        reader.endObject();
+   /**
+    * <p>Reads a counter from a CSV file.</p>
+    *
+    * @param <K1>      the type parameter
+    * @param <K2>      the type parameter
+    * @param resource  the resource that the counter values are written to.
+    * @param key1Class the class of the item type
+    * @param key2Class the key 2 class
+    * @return the counter
+    * @throws IOException Something went wrong reading in the counter.
+    */
+   static <K1, K2> MultiCounter<K1, K2> readCsv(@NonNull Resource resource, @NonNull Class<K1> key1Class, @NonNull Class<K2> key2Class) throws IOException {
+      MultiCounter<K1, K2> counter = newMultiCounter();
+      try (CSVReader reader = CSV.builder().reader(resource)) {
+         reader.forEach(row -> {
+            if (row.size() >= 3) {
+               counter.increment(Convert.convert(row.get(0), key1Class), Convert.convert(row.get(1), key2Class),
+                                 Double.valueOf(row.get(2)));
+            }
+         });
       }
-      reader.endDocument();
-    }
-    return counter;
-  }
+      return counter;
+   }
 
-  /**
-   * <p>Reads a counter from a CSV file.</p>
-   *
-   * @param <K1>      the type parameter
-   * @param <K2>      the type parameter
-   * @param resource  the resource that the counter values are written to.
-   * @param key1Class the class of the item type
-   * @param key2Class the key 2 class
-   * @return the counter
-   * @throws IOException Something went wrong reading in the counter.
-   */
-  static <K1, K2> MultiCounter<K1, K2> readCSV(@NonNull Resource resource, @NonNull Class<K1> key1Class, @NonNull Class<K2> key2Class) throws IOException {
-    return read(StructuredFormat.CSV, resource, key1Class, key2Class);
-  }
+   /**
+    * <p>Reads a counter from a Json file.</p>
+    *
+    * @param <K1>      the type parameter
+    * @param <K2>      the type parameter
+    * @param resource  the resource that the counter values are written to.
+    * @param key1Class the key 1 class
+    * @param key2Class the key 2 class
+    * @return the counter
+    * @throws IOException Something went wrong reading in the counter.
+    */
+   static <K1, K2> MultiCounter<K1, K2> readJson(@NonNull Resource resource, @NonNull Class<K1> key1Class, @NonNull Class<K2> key2Class) throws IOException {
+      MultiCounter<K1, K2> counter = newMultiCounter();
+      try (StructuredReader reader = StructuredFormat.JSON.createReader(resource)) {
+         reader.beginDocument();
+         while (reader.peek() != ElementType.END_DOCUMENT) {
+            Map<String, Val> map = reader.nextMap();
+            counter.set(map.get("k1").as(key1Class), map.get("k2").as(key2Class), map.get("v").asDoubleValue());
+         }
+         reader.endDocument();
+      }
+      return counter;
+   }
 
-  /**
-   * <p>Reads a counter from a Json file.</p>
-   *
-   * @param <K1>      the type parameter
-   * @param <K2>      the type parameter
-   * @param resource  the resource that the counter values are written to.
-   * @param key1Class the key 1 class
-   * @param key2Class the key 2 class
-   * @return the counter
-   * @throws IOException Something went wrong reading in the counter.
-   */
-  static <K1, K2> MultiCounter<K1, K2> readJson(@NonNull Resource resource, @NonNull Class<K1> key1Class, @NonNull Class<K2> key2Class) throws IOException {
-    return read(StructuredFormat.JSON, resource, key1Class, key2Class);
-  }
 }//END OF MultiCounters

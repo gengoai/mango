@@ -155,7 +155,8 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
 
       @Override
       public void remove() {
-         HashMapCounter.this.remove(last);
+         HashMapCounter.this.sum -= HashMapCounter.this.get(last);
+         itr.remove();
       }
    }
 

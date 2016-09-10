@@ -51,7 +51,7 @@ public interface Counters {
     * @return the counter
     */
    @SafeVarargs
-   static <T> Counter<T> newHashMapCounter(T... items) {
+   static <T> Counter<T> newCounter(T... items) {
       Counter<T> counter = new HashMapCounter<>();
       if (items != null) {
          counter.incrementAll(Arrays.asList(items));
@@ -66,7 +66,7 @@ public interface Counters {
     * @param iterable the items to add to the counter
     * @return the counter
     */
-   static <T> Counter<T> newHashMapCounter(@NonNull Iterable<? extends T> iterable) {
+   static <T> Counter<T> newCounter(@NonNull Iterable<? extends T> iterable) {
       Counter<T> counter = new HashMapCounter<>();
       counter.incrementAll(iterable);
       return counter;
@@ -79,7 +79,7 @@ public interface Counters {
     * @param map the items and counts to merge with counter
     * @return the counter
     */
-   static <T> Counter<T> newHashMapCounter(@NonNull Map<? extends T, ? extends Number> map) {
+   static <T> Counter<T> newCounter(@NonNull Map<? extends T, ? extends Number> map) {
       Counter<T> counter = new HashMapCounter<>();
       counter.merge(map);
       return counter;
@@ -92,7 +92,7 @@ public interface Counters {
     * @param other the items and counts to merge with counter
     * @return the counter
     */
-   static <T> Counter<T> newHashMapCounter(@NonNull Counter<? extends T> other) {
+   static <T> Counter<T> newCounter(@NonNull Counter<? extends T> other) {
       Counter<T> counter = new HashMapCounter<>();
       counter.merge(other);
       return counter;
@@ -108,7 +108,7 @@ public interface Counters {
     * @throws IOException Something went wrong reading in the counter.
     */
    static <TYPE> Counter<TYPE> readCsv(@NonNull Resource resource, @NonNull Class<TYPE> keyClass) throws IOException {
-      Counter<TYPE> counter = Counters.newHashMapCounter();
+      Counter<TYPE> counter = Counters.newCounter();
       try (CSVReader reader = CSV.builder().reader(resource)) {
          reader.forEach(row -> {
             if (row.size() >= 2) {
@@ -129,7 +129,7 @@ public interface Counters {
     * @throws IOException Something went wrong reading in the counter.
     */
    static <TYPE> Counter<TYPE> readJson(@NonNull Resource resource, @NonNull Class<TYPE> keyClass) throws IOException {
-      Counter<TYPE> counter = Counters.newHashMapCounter();
+      Counter<TYPE> counter = Counters.newCounter();
       try (StructuredReader reader = StructuredFormat.JSON.createReader(resource)) {
          reader.beginDocument();
          while (reader.peek() != ElementType.END_DOCUMENT) {
@@ -159,7 +159,7 @@ public interface Counters {
     * @return the wrapped counter
     */
    static <TYPE> Counter<TYPE> synchronizedCounter() {
-      return new SynchronizedCounter<>(newHashMapCounter());
+      return new SynchronizedCounter<>(newCounter());
    }
 
    /**

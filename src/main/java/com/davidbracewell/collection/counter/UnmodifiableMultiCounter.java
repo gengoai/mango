@@ -50,6 +50,16 @@ final class UnmodifiableMultiCounter<K, V> extends ForwardingMutliCounter<K, V> 
    }
 
    @Override
+   public Counter<V> get(K item) {
+      return Counters.unmodifiableCounter(super.get(item));
+   }
+
+   @Override
+   public void clear() {
+      throw new UnsupportedOperationException();
+   }
+
+   @Override
    public MultiCounter<K, V> set(K item1, V item2, double count) {
       throw new UnsupportedOperationException();
    }

@@ -2,15 +2,14 @@ package com.davidbracewell.stream;
 
 import com.davidbracewell.collection.counter.Counter;
 import com.davidbracewell.collection.counter.Counters;
-import com.davidbracewell.collection.counter.HashMapMultiCounter;
 import com.davidbracewell.collection.counter.MultiCounter;
+import com.davidbracewell.collection.counter.MultiCounters;
 import com.davidbracewell.collection.list.Lists;
 import com.davidbracewell.collection.map.Maps;
 import com.davidbracewell.config.Config;
 import com.davidbracewell.stream.accumulator.MAccumulator;
 import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
-import com.davidbracewell.tuple.Tuple3;
 import org.junit.Test;
 
 import java.util.*;
@@ -18,6 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import static com.davidbracewell.collection.list.Lists.list;
+import static com.davidbracewell.tuple.Tuples.$;
 import static org.junit.Assert.*;
 
 /**
@@ -38,15 +38,15 @@ public abstract class BaseMStreamTest {
    @Test
    public void map() throws Exception {
       assertEquals(
-            Arrays.asList("a", "b", "c"),
-            sc.stream("A", "B", "C").map(String::toLowerCase).collect()
+         Arrays.asList("a", "b", "c"),
+         sc.stream("A", "B", "C").map(String::toLowerCase).collect()
                   );
 
       assertEquals(
-            Arrays.asList("a", "b", "c"),
-            sc.stream(Collections.singletonList("A"), Collections.singletonList("B"), Collections.singletonList("C"))
-              .map(c -> c.get(0).toLowerCase())
-              .collect()
+         Arrays.asList("a", "b", "c"),
+         sc.stream(Collections.singletonList("A"), Collections.singletonList("B"), Collections.singletonList("C"))
+           .map(c -> c.get(0).toLowerCase())
+           .collect()
                   );
    }
 
@@ -114,10 +114,10 @@ public abstract class BaseMStreamTest {
    @Test
    public void flatMap() throws Exception {
       assertEquals(
-            Arrays.asList("A", "B", "C"),
-            sc.stream(Collections.singletonList("A"), Collections.singletonList("B"), Collections.singletonList("C"))
-              .flatMap(c -> c)
-              .collect()
+         Arrays.asList("A", "B", "C"),
+         sc.stream(Collections.singletonList("A"), Collections.singletonList("B"), Collections.singletonList("C"))
+           .flatMap(c -> c)
+           .collect()
                   );
    }
 
@@ -136,15 +136,15 @@ public abstract class BaseMStreamTest {
    @Test
    public void groupBy() throws Exception {
       Map<Character, Iterable<String>> target = new TreeMap<>(Maps.map(
-            'A', Arrays.asList("Abb", "Abc"),
-            'B', Arrays.asList("Bbb", "Bbc"),
-            'C', Arrays.asList("Cbb", "Cbb")
+         'A', Arrays.asList("Abb", "Abc"),
+         'B', Arrays.asList("Bbb", "Bbc"),
+         'C', Arrays.asList("Cbb", "Cbb")
                                                                       ));
 
       Map<Character, Iterable<String>> calc = new TreeMap<>(
-            sc.stream("Abb", "Abc", "Bbb", "Bbc", "Cbb", "Cbb")
-              .groupBy(s -> s.charAt(0))
-              .collectAsMap()
+                                                              sc.stream("Abb", "Abc", "Bbb", "Bbc", "Cbb", "Cbb")
+                                                                .groupBy(s -> s.charAt(0))
+                                                                .collectAsMap()
       );
 
       assertEquals(target.keySet(), calc.keySet());
@@ -156,9 +156,9 @@ public abstract class BaseMStreamTest {
    @Test
    public void groupByError() throws Exception {
       Map<Character, List<String>> gold = Maps.treeMap(
-            'A', list("Abb", "Abc"),
-            'B', list("Bbb", "Bbc"),
-            'C', list("Cbb", "Cbb")
+         'A', list("Abb", "Abc"),
+         'B', list("Bbb", "Bbc"),
+         'C', list("Cbb", "Cbb")
                                                       );
       Map<Character, Iterable<String>> streamed = sc.stream("Abb", "Abc", "Bbb", "Bbc", "Cbb", "Cbb", null)
                                                     .filter(Objects::nonNull)
@@ -172,25 +172,25 @@ public abstract class BaseMStreamTest {
    @Test
    public void countByValue() throws Exception {
       assertEquals(
-            Maps.map(
-                  "A", 3L,
-                  "B", 1L,
-                  "C", 2L
-                    ),
-            sc.stream(Arrays.asList("A", "A", "A", "B", "C", "C"))
-              .countByValue()
+         Maps.map(
+            "A", 3L,
+            "B", 1L,
+            "C", 2L
+                 ),
+         sc.stream(Arrays.asList("A", "A", "A", "B", "C", "C"))
+           .countByValue()
                   );
    }
 
    @Test
    public void sorted() throws Exception {
       assertEquals(
-            Arrays.asList(1, 2, 3, 4, 5),
-            sc.stream(5, 4, 2, 1, 3).sorted(true).collect()
+         Arrays.asList(1, 2, 3, 4, 5),
+         sc.stream(5, 4, 2, 1, 3).sorted(true).collect()
                   );
       assertEquals(
-            Arrays.asList(5, 4, 3, 2, 1),
-            sc.stream(5, 4, 2, 1, 3).sorted(false).collect()
+         Arrays.asList(5, 4, 3, 2, 1),
+         sc.stream(5, 4, 2, 1, 3).sorted(false).collect()
                   );
    }
 
@@ -217,12 +217,12 @@ public abstract class BaseMStreamTest {
    @Test
    public void union() throws Exception {
       assertEquals(
-            Arrays.asList("A", "B", "C"),
-            sc.stream("A").union(sc.stream("B", "C")).collect()
+         Arrays.asList("A", "B", "C"),
+         sc.stream("A").union(sc.stream("B", "C")).collect()
                   );
       assertEquals(
-            Arrays.asList("A"),
-            sc.stream("A").union(sc.empty()).collect()
+         Arrays.asList("A"),
+         sc.stream("A").union(sc.empty()).collect()
                   );
 
       StreamingContext other;
@@ -234,12 +234,12 @@ public abstract class BaseMStreamTest {
       }
 
       assertEquals(
-            Arrays.asList("A", "B", "C"),
-            sc.stream("A").union(other.stream("B", "C")).collect()
+         Arrays.asList("A", "B", "C"),
+         sc.stream("A").union(other.stream("B", "C")).collect()
                   );
       assertEquals(
-            Arrays.asList("A"),
-            sc.stream("A").union(other.empty()).collect()
+         Arrays.asList("A"),
+         sc.stream("A").union(other.empty()).collect()
                   );
 
    }
@@ -374,11 +374,11 @@ public abstract class BaseMStreamTest {
          iA.add(s.length());
          sA.add(Collections.singleton(s));
          mA.add(Maps.map(s, s.length()));
-         cA.add(Counters.newHashMapCounter(s));
+         cA.add(Counters.newCounter(s));
          if (s.length() == 1) {
-            mcA.add(new HashMapMultiCounter<>(Tuple3.of(s.charAt(0), ' ', 1)));
+            mcA.add(MultiCounters.newMultiCounter($(s.charAt(0), ' ')));
          } else {
-            mcA.add(new HashMapMultiCounter<>(Tuple3.of(s.charAt(0), s.charAt(1), 1)));
+            mcA.add(MultiCounters.newMultiCounter($(s.charAt(0), s.charAt(1))));
          }
       });
 
@@ -399,9 +399,9 @@ public abstract class BaseMStreamTest {
    @Test
    public void mapToDouble() throws Exception {
       assertEquals(
-            6.0,
-            sc.stream("1.0", "2.0", "3.0").mapToDouble(Double::parseDouble).sum(),
-            0.0
+         6.0,
+         sc.stream("1.0", "2.0", "3.0").mapToDouble(Double::parseDouble).sum(),
+         0.0
                   );
    }
 }//END OF BaseMStreamTest

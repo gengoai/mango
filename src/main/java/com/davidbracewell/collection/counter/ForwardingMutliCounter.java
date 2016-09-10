@@ -61,11 +61,6 @@ public abstract class ForwardingMutliCounter<K, V> implements MultiCounter<K, V>
    }
 
    @Override
-   public Map<K, Counter<V>> asMap() {
-      return delegate().asMap();
-   }
-
-   @Override
    public void clear() {
       delegate().clear();
    }

@@ -33,7 +33,7 @@ import java.util.Objects;
 public class UnmodifiableCounterTest {
 
    final Counter<String> counter = Counters.unmodifiableCounter(
-      Counters.newHashMapCounter(Maps.map("A", 1.0, "B", 2.0)));
+      Counters.newCounter(Maps.map("A", 1.0, "B", 2.0)));
 
    @Test(expected = UnsupportedOperationException.class)
    public void asMap() throws Exception {
@@ -102,7 +102,7 @@ public class UnmodifiableCounterTest {
 
    @Test(expected = UnsupportedOperationException.class)
    public void mergeCounter() throws Exception {
-      counter.merge(Counters.newHashMapCounter("A"));
+      counter.merge(Counters.newCounter("A"));
    }
 
 

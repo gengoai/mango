@@ -19,31 +19,20 @@
  * under the License.
  */
 
-package com.davidbracewell.stream.accumulator;
-
-import com.davidbracewell.collection.counter.Counter;
-import com.davidbracewell.collection.counter.Counters;
+package com.davidbracewell.collection.counter;
 
 /**
  * @author David B. Bracewell
  */
-public class CounterAccumulatable<E> implements Accumulatable<Counter<E>> {
-   private static final long serialVersionUID = 1L;
+public class SynchronizedMultiCounterTest extends BaseMultiCounterTest {
 
    @Override
-   public Counter<E> addInPlace(Counter<E> t1, Counter<E> t2) {
-      return t1.merge(t2);
+   public MultiCounter<String, String> getEmptyCounter() {
+      return MultiCounters.synchronizedMultiCounter();
    }
 
    @Override
-   public Counter<E> addAccumulator(Counter<E> t1, Counter<E> t2) {
-      Counter<E> copy = Counters.newCounter(t1);
-      return copy.merge(t2);
+   public MultiCounter<String, String> getEntryCounter() {
+      return MultiCounters.synchronizedMultiCounter(super.getEntryCounter());
    }
-
-   @Override
-   public Counter<E> zero(Counter<E> zeroValue) {
-      return zeroValue;
-   }
-
-}//END OF CounterAccumulatable
+}//END OF MultiCounterTest

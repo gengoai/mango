@@ -67,11 +67,6 @@ final class SynchronizedMultiCounter<K, V> implements MultiCounter<K, V>, Serial
    }
 
    @Override
-   public synchronized Map<K, Counter<V>> asMap() {
-      return delegate.asMap();
-   }
-
-   @Override
    public synchronized void clear() {
       delegate.clear();
    }
@@ -160,6 +155,5 @@ final class SynchronizedMultiCounter<K, V> implements MultiCounter<K, V>, Serial
    public String toString() {
       return delegate.toString();
    }
-
 
 }//END OF SynchronizedMultiCounter
