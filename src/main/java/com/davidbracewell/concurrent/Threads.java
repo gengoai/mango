@@ -24,7 +24,7 @@ package com.davidbracewell.concurrent;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The type Threads.
+ * Convenience methods for sleeping threads.
  *
  * @author David B. Bracewell
  */

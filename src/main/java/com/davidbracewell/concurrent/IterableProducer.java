@@ -24,28 +24,28 @@ package com.davidbracewell.concurrent;
 import lombok.NonNull;
 
 /**
- * The type Iterable producer.
+ * <p>A producer implementation that produces items from an iterable.</p>
  *
- * @param <V> the type parameter
+ * @param <V> the type of item being produced.
  * @author David B. Bracewell
  */
 public class IterableProducer<V> extends Broker.Producer<V> {
-  private final Iterable<V> iterable;
+   private final Iterable<V> iterable;
 
-  /**
-   * Instantiates a new Iterable producer.
-   *
-   * @param iterable the iterable
-   */
-  public IterableProducer(@NonNull Iterable<V> iterable) {
-    this.iterable = iterable;
-  }
+   /**
+    * Instantiates a new Iterable producer.
+    *
+    * @param iterable the iterable
+    */
+   public IterableProducer(@NonNull Iterable<V> iterable) {
+      this.iterable = iterable;
+   }
 
-  @Override
-  public void produce() {
-    start();
-    iterable.forEach(this::yield);
-    stop();
-  }
+   @Override
+   public void produce() {
+      start();
+      iterable.forEach(this::yield);
+      stop();
+   }
 
 }//END OF IterableProducer

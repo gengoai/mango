@@ -30,12 +30,12 @@ import java.util.concurrent.TimeUnit;
  */
 public class ThreadsTest {
 
-  @Test
-  public void testSleep() throws Exception {
-    Threads.sleep(1000);
-    Threads.sleep(1, TimeUnit.SECONDS);
+   @Test
+   public void testSleep() throws Exception {
+      Threads.sleep(1000);
+      Threads.sleep(1, TimeUnit.SECONDS);
 
-  }
+   }
 
 
 }

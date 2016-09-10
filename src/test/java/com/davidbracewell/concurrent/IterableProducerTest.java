@@ -21,33 +21,39 @@
 
 package com.davidbracewell.concurrent;
 
-import lombok.NonNull;
+import org.junit.Test;
 
-import java.util.stream.Stream;
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+
+import static org.junit.Assert.*;
 
 /**
- * <p>A producer implementation that produces items from a string</p>
- *
- * @param <V> the type of item being produced.
  * @author David B. Bracewell
  */
-public class StreamProducer<V> extends Broker.Producer<V> {
-   private final Stream<V> stream;
+public class IterableProducerTest {
 
-   /**
-    * Instantiates a new Stream producer.
-    *
-    * @param stream the stream
-    */
-   public StreamProducer(@NonNull Stream<V> stream) {
-      this.stream = stream;
+   private static class SummingConsumer implements Consumer<Integer> {
+      public final AtomicInteger sum = new AtomicInteger();
+
+      @Override
+      public void accept(Integer integer) {
+         sum.accumulateAndGet(integer, (i1, i2) -> i1 + i2);
+      }
    }
 
-   @Override
-   public void produce() {
-      start();
-      stream.forEach(this::yield);
-      stop();
+   @Test
+   public void produce() throws Exception {
+      SummingConsumer consumer = new SummingConsumer();
+      Broker<Integer> pc = Broker.<Integer>builder()
+                              .bufferSize(100)
+                              .addConsumer(consumer)
+                              .addProducer(new IterableProducer<>(Arrays.asList(1, 2, 3, 4, 5)))
+                              .build();
+      pc.run();
+      assertEquals(15, consumer.sum.get(), 0);
    }
 
-}//END OF StreamProducer
+
+}

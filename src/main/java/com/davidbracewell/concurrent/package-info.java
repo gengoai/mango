@@ -19,47 +19,7 @@
  * under the License.
  */
 
-package com.davidbracewell.concurrent;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
 /**
- * @author David B. Bracewell
+ * Contains a custom fixed size executor and a Producer - Consumer framework for multithreaded tasks.
  */
-public class MultiLockTest {
-
-  MultiLock multiLock;
-
-  @Before
-  public void setUp() throws Exception {
-    multiLock = new MultiLock(3);
-  }
-
-  @Test
-  public void testLock() throws Exception {
-    assertEquals(0, multiLock.lock());
-    assertEquals(1, multiLock.lock());
-    assertEquals(2, multiLock.lock());
-
-    multiLock.unlock(2);
-    multiLock.unlock(1);
-
-    assertEquals(0, multiLock.lock());
-    assertEquals(1, multiLock.lock());
-
-    multiLock.unlock(1);
-    multiLock.unlock(0);
-
-    multiLock.setSize(1);
-
-    assertEquals(1, multiLock.size());
-    assertEquals(0, multiLock.lock());
-    assertEquals(0, multiLock.lock());
-
-  }
-
-
-}
+package com.davidbracewell.concurrent;

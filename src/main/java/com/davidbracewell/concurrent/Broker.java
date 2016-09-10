@@ -42,275 +42,275 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author David B. Bracewell
  */
 public class Broker<V> implements Serializable, Loggable {
-  private static final long serialVersionUID = 1L;
-  final ArrayBlockingQueue<V> queue;
-  final List<Producer<V>> producers;
-  final List<java.util.function.Consumer<? super V>> consumers;
-  final AtomicInteger runningProducers = new AtomicInteger();
+   private static final long serialVersionUID = 1L;
+   final ArrayBlockingQueue<V> queue;
+   final List<Producer<V>> producers;
+   final List<java.util.function.Consumer<? super V>> consumers;
+   final AtomicInteger runningProducers = new AtomicInteger();
 
-  private Broker(ArrayBlockingQueue<V> queue, List<Producer<V>> producers, List<java.util.function.Consumer<? super V>> consumers) {
-    this.queue = queue;
-    this.producers = producers;
-    this.consumers = consumers;
-  }
+   private Broker(ArrayBlockingQueue<V> queue, List<Producer<V>> producers, List<java.util.function.Consumer<? super V>> consumers) {
+      this.queue = queue;
+      this.producers = producers;
+      this.consumers = consumers;
+   }
 
-  /**
-   * Builder builder.
-   *
-   * @return the builder
-   */
-  public static <V> Builder<V> builder() {
-    return new Builder<>();
-  }
+   /**
+    * Creates a Builder to construct Broker instances.
+    *
+    * @return A builder instance
+    */
+   public static <V> Builder<V> builder() {
+      return new Builder<>();
+   }
 
-  /**
-   * Run boolean.
-   *
-   * @return the boolean
-   */
-  public boolean run() {
-    ExecutorService executors = Executors.newFixedThreadPool(producers.size() + consumers.size());
-    runningProducers.set(producers.size());
+   /**
+    * Starts execution of the broker.
+    *
+    * @return Returns true if the broker completed without interruption, false otherwise
+    */
+   public boolean run() {
+      ExecutorService executors = Executors.newFixedThreadPool(producers.size() + consumers.size());
+      runningProducers.set(producers.size());
 
-    //create the producers
-    for (Producer<V> producer : producers) {
-      producer.setOwner(this);
-      executors.submit(new ProducerThread(producer));
-    }
+      //create the producers
+      for (Producer<V> producer : producers) {
+         producer.setOwner(this);
+         executors.submit(new ProducerThread(producer));
+      }
 
-    //create the consumers
-    for (java.util.function.Consumer<? super V> consumer : consumers) {
-      executors.submit(new ConsumerThread(consumer));
-    }
+      //create the consumers
+      for (java.util.function.Consumer<? super V> consumer : consumers) {
+         executors.submit(new ConsumerThread(consumer));
+      }
 
-    //give it some more time to process
-    while (runningProducers.get() > 0 || !queue.isEmpty()) {
-      Threads.sleep(10);
-    }
+      //give it some more time to process
+      while (runningProducers.get() > 0 || !queue.isEmpty()) {
+         Threads.sleep(10);
+      }
 
-    executors.shutdown();
-    try {
-      executors.awaitTermination(Integer.MAX_VALUE, TimeUnit.SECONDS);
-    } catch (InterruptedException e) {
-      logWarn(e);
-      return false;
-    }
-    return true;
-  }
-
-  /**
-   * <p>A producer generates data to be consumed. Implementations of Producer should use the {@link #start()} to begin
-   * the production process, {@link #stop()} to signal production has finished, and {@link #yield(Object)} to offer an
-   * item up for consumption.</p>
-   */
-  public abstract static class Producer<V> implements Loggable {
-
-    Broker<V> owner;
-    boolean isStopped = false;
-
-    /**
-     * @return True if the producer is still running.
-     */
-    public boolean isRunning() {
-      return !isStopped;
-    }
-
-    /**
-     * Logic for producing items to be consumed.
-     */
-    public abstract void produce();
-
-    private void setOwner(Broker<V> owner) {
-      this.owner = owner;
-    }
-
-    /**
-     * Signals the production has started.
-     */
-    protected void start() {
-      isStopped = false;
-    }
-
-    /**
-     * Signals that the producer is finished and its thread can be released.
-     */
-    protected void stop() {
-      isStopped = true;
-      owner.runningProducers.decrementAndGet();
-    }
-
-    /**
-     * offers an object to be consumed, blocking if the Broker's queue is full.
-     *
-     * @param object the object
-     */
-    protected final void yield(V object) {
+      executors.shutdown();
       try {
-        owner.queue.put(object);
+         executors.awaitTermination(Integer.MAX_VALUE, TimeUnit.SECONDS);
       } catch (InterruptedException e) {
-        logWarn(e);
+         logWarn(e);
+         return false;
       }
-    }
+      return true;
+   }
 
-  }//END OF ProducerConsumer$Producer
+   /**
+    * <p>A producer generates data to be consumed. Implementations of Producer should use the {@link #start()} to begin
+    * the production process, {@link #stop()} to signal production has finished, and {@link #yield(Object)} to offer an
+    * item up for consumption.</p>
+    */
+   public abstract static class Producer<V> implements Loggable {
 
-  /**
-   * A Builder interface for constructing a Broker.
-   */
-  public static class Builder<V> {
+      Broker<V> owner;
+      boolean isStopped = false;
 
-    private ArrayBlockingQueue<V> queue;
-    private List<Producer<V>> producers = new ArrayList<>();
-    private List<java.util.function.Consumer<? super V>> consumers = new ArrayList<>();
-
-    /**
-     * Adds a  consumer.
-     *
-     * @param consumer the consumer
-     * @return the builder
-     */
-    public Builder<V> addConsumer(@NonNull java.util.function.Consumer<? super V> consumer) {
-      return addConsumer(consumer, 1);
-    }
-
-    /**
-     * Adds a  consumer and will run it on a number of threads.
-     *
-     * @param consumer the consumer
-     * @param number   the number of threads to run the consumer on.
-     * @return the builder
-     */
-    public Builder<V> addConsumer(@NonNull java.util.function.Consumer<? super V> consumer, int number) {
-      for (int i = 0; i < number; i++) {
-        this.consumers.add(consumer);
+      /**
+       * @return True if the producer is still running.
+       */
+      public boolean isRunning() {
+         return !isStopped;
       }
-      return this;
-    }
 
-    /**
-     * Add a collection of consumers.
-     *
-     * @param consumers the consumers
-     * @return the builder
-     */
-    public Builder<V> addConsumers(@NonNull Collection<java.util.function.Consumer<? super V>> consumers) {
-      this.consumers.addAll(consumers);
-      return this;
-    }
+      /**
+       * Logic for producing items to be consumed.
+       */
+      public abstract void produce();
 
-    /**
-     * Adds producer and sets it to run on a number of threads. Note that the producer must be thread safe.
-     *
-     * @param producer the producer
-     * @param number   the number of threads to run the producer on.
-     * @return the builder
-     */
-    public Builder<V> addProducer(@NonNull Producer<V> producer, int number) {
-      for (int i = 0; i < number; i++) {
-        this.producers.add(producer);
+      private void setOwner(Broker<V> owner) {
+         this.owner = owner;
       }
-      return this;
-    }
 
-    /**
-     * Adds a producer
-     *
-     * @param producer the producer
-     * @return the builder
-     */
-    public Builder<V> addProducer(@NonNull Producer<V> producer) {
-      return addProducer(producer, 1);
-    }
-
-    /**
-     * Adds a collection of producers.
-     *
-     * @param producers the producers
-     * @return the builder
-     */
-    public Builder<V> addProducers(@NonNull Collection<? extends Producer<V>> producers) {
-      this.producers.addAll(producers);
-      return this;
-    }
-
-    /**
-     * The size of the buffer.
-     *
-     * @param size the size
-     * @return the builder
-     */
-    public Builder<V> bufferSize(int size) {
-      Preconditions.checkArgument(size > 0);
-      queue = new ArrayBlockingQueue<>(size);
-      return this;
-    }
-
-    /**
-     * Builds A Broker. If no queue size was given than it will default to <code>2 * (number of producers + number of
-     * consumers)</code>
-     *
-     * @return the producer consumer
-     */
-    public Broker<V> build() {
-      Preconditions.checkArgument(producers.size() > 0);
-      Preconditions.checkArgument(consumers.size() > 0);
-      if (queue == null) {
-        queue = new ArrayBlockingQueue<>(2 * (producers.size() + consumers.size()));
+      /**
+       * Signals the production has started.
+       */
+      protected void start() {
+         isStopped = false;
       }
-      return new Broker<>(queue, producers, consumers);
-    }
 
-  }//END OF ProducerConsumer$Builder
-
-  private class ProducerThread implements Runnable, Loggable {
-
-    final Producer<V> producer;
-
-    private ProducerThread(Producer<V> producer) {
-      this.producer = producer;
-    }
-
-    @Override
-    public void run() {
-      while (!Thread.currentThread().isInterrupted() && producer.isRunning()) {
-        try {
-          producer.produce();
-        } catch (Exception e) {
-          logWarn(e);
-        }
+      /**
+       * Signals that the producer is finished and its thread can be released.
+       */
+      protected void stop() {
+         isStopped = true;
+         owner.runningProducers.decrementAndGet();
       }
-    }
 
-  }//END OF Broker$ProducerThread
-
-  private class ConsumerThread implements Runnable, Loggable {
-
-    final java.util.function.Consumer<? super V> consumerAction;
-
-    private ConsumerThread(java.util.function.Consumer<? super V> consumerAction) {
-      this.consumerAction = consumerAction;
-    }
-
-    @Override
-    public void run() {
-      while (!Thread.currentThread().isInterrupted()) {
-        try {
-          V v = queue.poll(100, TimeUnit.NANOSECONDS);
-          if (v != null) {
-            consumerAction.accept(v);
-          }
-          if (runningProducers.get() <= 0 && queue.isEmpty()) {
-            break;
-          }
-        } catch (InterruptedException e) {
-          break;
-        } catch (Exception e) {
-          logWarn(e);
-        }
+      /**
+       * offers an object to be consumed, blocking if the Broker's queue is full.
+       *
+       * @param object the object
+       */
+      protected final void yield(V object) {
+         try {
+            owner.queue.put(object);
+         } catch (InterruptedException e) {
+            logWarn(e);
+         }
       }
-    }
 
-  }//END OF Broker$ConsumerThread
+   }//END OF ProducerConsumer$Producer
+
+   /**
+    * A Builder interface for constructing a Broker.
+    */
+   public static class Builder<V> {
+
+      private ArrayBlockingQueue<V> queue;
+      private List<Producer<V>> producers = new ArrayList<>();
+      private List<java.util.function.Consumer<? super V>> consumers = new ArrayList<>();
+
+      /**
+       * Adds a  consumer.
+       *
+       * @param consumer the consumer
+       * @return the builder
+       */
+      public Builder<V> addConsumer(@NonNull java.util.function.Consumer<? super V> consumer) {
+         return addConsumer(consumer, 1);
+      }
+
+      /**
+       * Adds a  consumer and will run it on a number of threads.
+       *
+       * @param consumer the consumer
+       * @param number   the number of threads to run the consumer on.
+       * @return the builder
+       */
+      public Builder<V> addConsumer(@NonNull java.util.function.Consumer<? super V> consumer, int number) {
+         for (int i = 0; i < number; i++) {
+            this.consumers.add(consumer);
+         }
+         return this;
+      }
+
+      /**
+       * Add a collection of consumers.
+       *
+       * @param consumers the consumers
+       * @return the builder
+       */
+      public Builder<V> addConsumers(@NonNull Collection<java.util.function.Consumer<? super V>> consumers) {
+         this.consumers.addAll(consumers);
+         return this;
+      }
+
+      /**
+       * Adds producer and sets it to run on a number of threads. Note that the producer must be thread safe.
+       *
+       * @param producer the producer
+       * @param number   the number of threads to run the producer on.
+       * @return the builder
+       */
+      public Builder<V> addProducer(@NonNull Producer<V> producer, int number) {
+         for (int i = 0; i < number; i++) {
+            this.producers.add(producer);
+         }
+         return this;
+      }
+
+      /**
+       * Adds a producer
+       *
+       * @param producer the producer
+       * @return the builder
+       */
+      public Builder<V> addProducer(@NonNull Producer<V> producer) {
+         return addProducer(producer, 1);
+      }
+
+      /**
+       * Adds a collection of producers.
+       *
+       * @param producers the producers
+       * @return the builder
+       */
+      public Builder<V> addProducers(@NonNull Collection<? extends Producer<V>> producers) {
+         this.producers.addAll(producers);
+         return this;
+      }
+
+      /**
+       * The size of the buffer.
+       *
+       * @param size the size
+       * @return the builder
+       */
+      public Builder<V> bufferSize(int size) {
+         Preconditions.checkArgument(size > 0);
+         queue = new ArrayBlockingQueue<>(size);
+         return this;
+      }
+
+      /**
+       * Builds A Broker. If no queue size was given than it will default to <code>2 * (number of producers + number of
+       * consumers)</code>
+       *
+       * @return the producer consumer
+       */
+      public Broker<V> build() {
+         Preconditions.checkArgument(producers.size() > 0);
+         Preconditions.checkArgument(consumers.size() > 0);
+         if (queue == null) {
+            queue = new ArrayBlockingQueue<>(2 * (producers.size() + consumers.size()));
+         }
+         return new Broker<>(queue, producers, consumers);
+      }
+
+   }//END OF ProducerConsumer$Builder
+
+   private class ProducerThread implements Runnable, Loggable {
+
+      final Producer<V> producer;
+
+      private ProducerThread(Producer<V> producer) {
+         this.producer = producer;
+      }
+
+      @Override
+      public void run() {
+         while (!Thread.currentThread().isInterrupted() && producer.isRunning()) {
+            try {
+               producer.produce();
+            } catch (Exception e) {
+               logWarn(e);
+            }
+         }
+      }
+
+   }//END OF Broker$ProducerThread
+
+   private class ConsumerThread implements Runnable, Loggable {
+
+      final java.util.function.Consumer<? super V> consumerAction;
+
+      private ConsumerThread(java.util.function.Consumer<? super V> consumerAction) {
+         this.consumerAction = consumerAction;
+      }
+
+      @Override
+      public void run() {
+         while (!Thread.currentThread().isInterrupted()) {
+            try {
+               V v = queue.poll(100, TimeUnit.NANOSECONDS);
+               if (v != null) {
+                  consumerAction.accept(v);
+               }
+               if (runningProducers.get() <= 0 && queue.isEmpty()) {
+                  break;
+               }
+            } catch (InterruptedException e) {
+               break;
+            } catch (Exception e) {
+               logWarn(e);
+            }
+         }
+      }
+
+   }//END OF Broker$ConsumerThread
 
 
 }//END OF Broker
