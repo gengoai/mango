@@ -40,7 +40,7 @@ import java.util.function.Predicate;
  * @param <V> the type parameter
  * @author David B. Bracewell
  */
-public abstract class ForwardingMutliCounter<K, V> implements MultiCounter<K, V>, Serializable {
+public abstract class ForwardingMultiCounter<K, V> implements MultiCounter<K, V>, Serializable {
    private static final long serialVersionUID = 1L;
 
    protected abstract MultiCounter<K, V> delegate();

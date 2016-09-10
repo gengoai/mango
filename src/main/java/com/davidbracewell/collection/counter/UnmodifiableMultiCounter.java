@@ -31,7 +31,7 @@ import java.util.function.DoubleUnaryOperator;
  * @author David B. Bracewell
  */
 @EqualsAndHashCode(callSuper = false)
-final class UnmodifiableMultiCounter<K, V> extends ForwardingMutliCounter<K, V> {
+final class UnmodifiableMultiCounter<K, V> extends ForwardingMultiCounter<K, V> {
    private static final long serialVersionUID = 292069831932346092L;
    final MultiCounter<K, V> backing;
 
