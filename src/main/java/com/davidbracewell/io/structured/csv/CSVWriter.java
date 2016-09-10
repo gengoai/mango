@@ -106,7 +106,7 @@ public class CSVWriter extends StructuredWriter {
         writer.write(
           formatter.format(
             Stream.concat(
-              header.asList().stream()
+              header.stream()
                     .map(h -> row.containsKey(h) ? Convert.convert(row.get(h), String.class) : StringUtils.EMPTY),
               row.keySet().stream()
                  .map(k -> Convert.convert(k, String.class))
@@ -138,7 +138,7 @@ public class CSVWriter extends StructuredWriter {
         writer.write(
           formatter.format(
             Stream.concat(
-              header.asList().stream()
+              header.stream()
                     .map(h -> row.containsKey(h) ? Convert.convert(row.get(h), String.class) : StringUtils.EMPTY),
               row.keySet().stream()
                  .map(k -> Convert.convert(k, String.class))

@@ -21,200 +21,124 @@
 
 package com.davidbracewell.collection.index;
 
-import com.davidbracewell.conversion.Cast;
+import com.google.common.collect.Iterators;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.*;
 
 /**
+ * <p>An Index implementation that uses a combination of a HashMap and List.</p>
+ *
+ * @param <TYPE> the type being indexed.
  * @author David B. Bracewell
  */
+@EqualsAndHashCode(exclude = "map", callSuper = false)
 public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
+   private static final long serialVersionUID = -288128807385573349L;
+   private final Map<TYPE, Integer> map = new HashMap<>();
+   private final List<TYPE> list = new ArrayList<>();
 
-  private static final long serialVersionUID = -288128807385573349L;
-  private final Map<TYPE, Integer> map = new HashMap<>();
-  private final List<TYPE> list = new ArrayList<>();
-
-  public HashMapIndex() {
-
-  }
-
-  public HashMapIndex(@NonNull Iterable<TYPE> items) {
-    addAll(items);
-  }
-
-  @SafeVarargs
-  public HashMapIndex(@NonNull TYPE... items) {
-    addAll(Arrays.asList(items));
-  }
-
-
-  @Override
-  public int add(TYPE item) {
-    if (item == null) {
-      return -1;
-    }
-    if (!map.containsKey(item)) {
-      synchronized (this) {
-        if (!map.containsKey(item)) {
-          list.add(item);
-          map.put(item, list.size() - 1);
-          return list.size() - 1;
-        }
+   @Override
+   public int add(@NonNull TYPE item) {
+      if (!map.containsKey(item)) {
+         synchronized (this) {
+            if (!map.containsKey(item)) {
+               list.add(item);
+               map.put(item, list.size() - 1);
+               return list.size() - 1;
+            }
+         }
       }
-    }
-    return map.get(item);
-  }
-
-  @Override
-  public void addAll(Iterable<TYPE> items) {
-    if (items != null) {
-      for (TYPE item : items) {
-        add(item);
-      }
-    }
-  }
-
-  @Override
-  public Index<TYPE> copy() {
-    HashMapIndex<TYPE> copy = new HashMapIndex<>();
-    copy.map.putAll(this.map);
-    copy.list.addAll(this.list);
-    return copy;
-  }
-
-  @Override
-  public int indexOf(TYPE item) {
-    if (map.containsKey(item)) {
       return map.get(item);
-    }
-    return -1;
-  }
+   }
 
-  @Override
-  public TYPE get(int id) {
-    if (id < 0 || id >= list.size()) {
-      return null;
-    }
-    return list.get(id);
-  }
-
-  @Override
-  public void clear() {
-    map.clear();
-    list.clear();
-  }
-
-  @Override
-  public int size() {
-    return list.size();
-  }
-
-  @Override
-  public boolean isEmpty() {
-    return list.isEmpty();
-  }
-
-  @Override
-  public TYPE remove(int id) {
-    if (id < 0 || id >= list.size()) {
-      return null;
-    }
-    for (int i = id + 1; i < list.size(); i++) {
-      map.put(list.get(i), i - 1);
-    }
-    map.remove(list.get(id));
-    return list.remove(id);
-  }
-
-  @Override
-  public int remove(TYPE item) {
-    int index = indexOf(item);
-    if (index >= 0) {
-      remove(index);
-    }
-    return index;
-  }
-
-  @Override
-  public boolean contains(TYPE item) {
-    return map.containsKey(item);
-  }
-
-  @Override
-  public List<TYPE> asList() {
-    return Collections.unmodifiableList(list);
-  }
-
-  @Override
-  public TYPE set(int index, @NonNull TYPE newValue) {
-    if (index < 0 || index >= list.size()) {
-      throw new IndexOutOfBoundsException();
-    }
-    if (map.containsKey(newValue)) {
-      throw new IllegalArgumentException(newValue + " already exists in the index.");
-    }
-    TYPE oldValue = list.set(index, newValue);
-    map.remove(oldValue);
-    map.put(newValue, index);
-    return oldValue;
-  }
-
-  @Override
-  public Iterator<TYPE> iterator() {
-    return new Iterator<TYPE>() {
-      Iterator<TYPE> iterator = list.iterator();
-      TYPE last = null;
-
-      @Override
-      public boolean hasNext() {
-        return iterator.hasNext();
+   @Override
+   public void addAll(Iterable<TYPE> items) {
+      if (items != null) {
+         for (TYPE item : items) {
+            add(item);
+         }
       }
+   }
 
-      @Override
-      public TYPE next() {
-        if (!hasNext()) {
-          throw new NoSuchElementException();
-        }
-        last = iterator.next();
-        return last;
+   @Override
+   public Index<TYPE> copy() {
+      HashMapIndex<TYPE> copy = new HashMapIndex<>();
+      copy.map.putAll(this.map);
+      copy.list.addAll(this.list);
+      return copy;
+   }
+
+   @Override
+   public int getId(TYPE item) {
+      return map.getOrDefault(item, -1);
+   }
+
+   @Override
+   public TYPE get(int id) {
+      if (id < 0 || id >= list.size()) {
+         return null;
       }
+      return list.get(id);
+   }
 
-      @Override
-      public void remove() {
-        if (last == null) {
-          throw new IllegalStateException("Calling remove before next");
-        }
-        iterator.remove();
-        map.remove(last);
+   @Override
+   public void clear() {
+      map.clear();
+      list.clear();
+   }
+
+   @Override
+   public int size() {
+      return list.size();
+   }
+
+   @Override
+   public boolean isEmpty() {
+      return list.isEmpty();
+   }
+
+   @Override
+   public TYPE remove(int id) {
+      if (id < 0 || id >= list.size()) {
+         return null;
       }
-    };
-  }
+      for (int i = id + 1; i < list.size(); i++) {
+         map.put(list.get(i), i - 1);
+      }
+      map.remove(list.get(id));
+      return list.remove(id);
+   }
 
-  @Override
-  public int hashCode() {
-    return list.hashCode();
-  }
+   @Override
+   public int remove(TYPE item) {
+      int index = getId(item);
+      if (index >= 0) {
+         remove(index);
+      }
+      return index;
+   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (o == null) {
-      return false;
-    }
-    if (this == o) {
-      return true;
-    }
-    if (o instanceof HashMapIndex) {
-      return list.equals(Cast.<HashMapIndex>as(o).list);
-    }
-    return false;
-  }
+   @Override
+   public boolean contains(TYPE item) {
+      return map.containsKey(item);
+   }
 
-  @Override
-  public String toString() {
-    return list.toString();
-  }
+   @Override
+   public Iterator<TYPE> iterator() {
+      return Iterators.unmodifiableIterator(list.iterator());
+   }
+
+   @Override
+   public String toString() {
+      return list.toString();
+   }
 
 
+   @Override
+   public List<TYPE> asList() {
+      return Collections.unmodifiableList(list);
+   }
 }//END OF AbstractMapListIndex

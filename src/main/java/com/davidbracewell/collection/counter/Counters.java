@@ -41,7 +41,6 @@ import java.util.Map;
  */
 public interface Counters {
 
-
    /**
     * <p>Creates a new {@link HashMapMultiCounter} which is initialized with the given items</p>
     *
@@ -100,8 +99,8 @@ public interface Counters {
    /**
     * <p>Reads a counter from a CSV file.</p>
     *
-    * @param <TYPE>   the item type
-    * @param resource the resource that the counter values are written to.
+    * @param <TYPE>   the component type of the counter
+    * @param resource the resource that the counter values are read from.
     * @param keyClass the class of the item type
     * @return the counter
     * @throws IOException Something went wrong reading in the counter.
@@ -121,8 +120,8 @@ public interface Counters {
    /**
     * <p>Reads a counter from a Json file.</p>
     *
-    * @param <TYPE>   the item type
-    * @param resource the resource that the counter values are written to.
+    * @param <TYPE>   the component type of the counter
+    * @param resource the resource that the counter values are read from.
     * @param keyClass the class of the item type
     * @return the counter
     * @throws IOException Something went wrong reading in the counter.

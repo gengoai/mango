@@ -34,96 +34,90 @@ import java.util.List;
  * @author David B. Bracewell
  */
 final class SynchronizedIndex<TYPE> implements Index<TYPE>, Serializable {
-  private static final long serialVersionUID = 1L;
-  private final Index<TYPE> delegate;
+   private static final long serialVersionUID = 1L;
+   private final Index<TYPE> delegate;
 
-  public SynchronizedIndex(@NonNull Index<TYPE> delegate) {
-    this.delegate = delegate;
-  }
+   public SynchronizedIndex(@NonNull Index<TYPE> delegate) {
+      this.delegate = delegate;
+   }
 
-  @Override
-  public synchronized int add(TYPE item) {
-    return delegate.add(item);
-  }
+   @Override
+   public synchronized int add(TYPE item) {
+      return delegate.add(item);
+   }
 
-  @Override
-  public synchronized void addAll(Iterable<TYPE> items) {
-    delegate.addAll(items);
-  }
+   @Override
+   public synchronized void addAll(Iterable<TYPE> items) {
+      delegate.addAll(items);
+   }
 
-  @Override
-  public synchronized int indexOf(TYPE item) {
-    return delegate.indexOf(item);
-  }
+   @Override
+   public synchronized int getId(TYPE item) {
+      return delegate.getId(item);
+   }
 
-  @Override
-  public synchronized TYPE get(int id) {
-    return delegate.get(id);
-  }
+   @Override
+   public synchronized TYPE get(int id) {
+      return delegate.get(id);
+   }
 
-  @Override
-  public synchronized void clear() {
-    delegate.clear();
-  }
+   @Override
+   public synchronized void clear() {
+      delegate.clear();
+   }
 
-  @Override
-  public synchronized int size() {
-    return delegate.size();
-  }
+   @Override
+   public synchronized int size() {
+      return delegate.size();
+   }
 
-  @Override
-  public synchronized boolean isEmpty() {
-    return delegate.isEmpty();
-  }
+   @Override
+   public synchronized boolean isEmpty() {
+      return delegate.isEmpty();
+   }
 
-  @Override
-  public synchronized TYPE remove(int id) {
-    return delegate.remove(id);
-  }
+   @Override
+   public synchronized TYPE remove(int id) {
+      return delegate.remove(id);
+   }
 
-  @Override
-  public synchronized int remove(TYPE item) {
-    return delegate.remove(item);
-  }
+   @Override
+   public synchronized int remove(TYPE item) {
+      return delegate.remove(item);
+   }
 
-  @Override
-  public synchronized boolean contains(TYPE item) {
-    return delegate.contains(item);
-  }
+   @Override
+   public synchronized boolean contains(TYPE item) {
+      return delegate.contains(item);
+   }
 
-  @Override
-  public List<TYPE> asList() {
-    return delegate.asList();
-  }
+   @Override
+   public Iterator<TYPE> iterator() {
+      return delegate.iterator();
+   }
 
-  @Override
-  public synchronized TYPE set(int index, TYPE newValue) {
-    return delegate.set(index, newValue);
-  }
+   @Override
+   public Index<TYPE> copy() {
+      return Indexes.synchronizedIndex(delegate.copy());
+   }
 
-  @Override
-  public Iterator<TYPE> iterator() {
-    return delegate.iterator();
-  }
+   @Override
+   public String toString() {
+      return delegate.toString();
+   }
 
-  @Override
-  public Index<TYPE> copy() {
-    return Indexes.synchronizedIndex(delegate.copy());
-  }
+   @Override
+   public int hashCode() {
+      return delegate.hashCode();
+   }
 
-  @Override
-  public String toString() {
-    return delegate.toString();
-  }
+   @Override
+   public synchronized boolean equals(Object object) {
+      return delegate.equals(object);
+   }
 
-  @Override
-  public int hashCode() {
-    return delegate.hashCode();
-  }
-
-  @Override
-  public synchronized boolean equals(Object object) {
-    return delegate.equals(object);
-  }
-
+   @Override
+   public List<TYPE> asList() {
+      return delegate.asList();
+   }
 }//END OF SynchronizedIndex

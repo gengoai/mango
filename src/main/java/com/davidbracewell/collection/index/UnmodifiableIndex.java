@@ -73,9 +73,5 @@ final class UnmodifiableIndex<TYPE> extends ForwardingIndex<TYPE> {
       throw new UnsupportedOperationException("Cannot modify a read only index.");
    }
 
-   @Override
-   public TYPE set(int index, TYPE newValue) {
-      throw new UnsupportedOperationException("Cannot modify a read only index.");
-   }
 }
 //END OF UnmodifiableIndex

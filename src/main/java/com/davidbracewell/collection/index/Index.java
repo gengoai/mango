@@ -23,19 +23,20 @@ package com.davidbracewell.collection.index;
 
 import com.davidbracewell.Copyable;
 import com.davidbracewell.conversion.Convert;
+import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.StructuredFormat;
 import com.davidbracewell.io.structured.StructuredWriter;
+import com.davidbracewell.io.structured.csv.CSVWriter;
 import lombok.NonNull;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
- * <p>An index represents a mapping from an Item to an id. </p>
+ * <p>An index represents a mapping from an Item to an id. All ids are positive integers.</p>
  *
  * @param <E> the type parameter
  * @author David B. Bracewell
@@ -43,10 +44,11 @@ import java.util.stream.StreamSupport;
 public interface Index<E> extends Iterable<E>, Copyable<Index<E>> {
 
    /**
-    * <p>Adds an item to the index. If the item is already in the index, the item's id is returned.</p>
+    * <p>Adds an item to the index. If the item is already in the index, the item's id is returned otherwise the newly
+    * generated id is returned.</p>
     *
     * @param item the item to add
-    * @return The index of the item
+    * @return The id of the item
     */
    int add(E item);
 
@@ -63,7 +65,7 @@ public interface Index<E> extends Iterable<E>, Copyable<Index<E>> {
     * @param item The item whose id we want
     * @return The id of the item or -1 if it is not in the index
     */
-   int indexOf(E item);
+   int getId(E item);
 
    /**
     * Gets the item with the given id.
@@ -79,21 +81,22 @@ public interface Index<E> extends Iterable<E>, Copyable<Index<E>> {
    void clear();
 
    /**
-    * Size int.
+    * The number of items in the index
     *
     * @return The number of items in the index
     */
    int size();
 
    /**
-    * Is empty.
+    * Determines if the index is empty
     *
     * @return True if there are no items in the index
     */
    boolean isEmpty();
 
    /**
-    * Removes the item with the given id from the index
+    * Removes the item with the given id from the index. Note that his operation is expensive and can cause other ids to
+    * change.
     *
     * @param id The id to remove
     * @return A mapping of old to new ids
@@ -101,7 +104,8 @@ public interface Index<E> extends Iterable<E>, Copyable<Index<E>> {
    E remove(int id);
 
    /**
-    * Removes the item from the index
+    * Removes the item from the index. Note that his operation is expensive and can cause other ids to
+    * change.
     *
     * @param item The item to remove
     * @return A mapping of old to new ids
@@ -117,85 +121,55 @@ public interface Index<E> extends Iterable<E>, Copyable<Index<E>> {
    boolean contains(E item);
 
    /**
-    * As list.
+    * Creates a stream over the items in the index
     *
-    * @return The index as an unmodifiable list.
-    */
-   List<E> asList();
-
-   /**
-    * Sets the item at a given index value. Implementations should throw runtime exceptions if the new value is already
-    * in the index or the given index (int) is too large for the index.
-    *
-    * @param index    the index
-    * @param newValue the new value
-    * @return The old value
-    */
-   E set(int index, E newValue);
-
-   /**
-    * Stream stream.
-    *
-    * @return the stream
+    * @return the stream of items
     */
    default Stream<E> stream() {
       return StreamSupport.stream(spliterator(), false);
    }
 
    /**
-    * Parallel stream.
+    * Creates a parallel stream over the items in the index
     *
-    * @return the stream
+    * @return the stream of items
     */
    default Stream<E> parallelStream() {
       return StreamSupport.stream(spliterator(), true);
    }
 
    /**
-    * Write csv.
+    * Retrieves an unmodifiable list view of the index
     *
-    * @param output the output
-    * @throws IOException the io exception
+    * @return an unmodifiable list view of the index
+    */
+   List<E> asList();
+
+   /**
+    * Writes the index to a csv file.
+    *
+    * @param output the resource to write to
+    * @throws IOException Something went wrong writing to the output
     */
    default void writeCSV(@NonNull Resource output) throws IOException {
-      write(StructuredFormat.CSV, output);
+      try (CSVWriter writer = CSV.builder().writer(output)) {
+         for (E item : this) {
+            writer.write(Convert.convert(item, String.class));
+         }
+      }
    }
 
    /**
-    * Write csv.
+    * Writes the index to a json file.
     *
-    * @param output the output
-    * @throws IOException the io exception
+    * @param output the resource to write to
+    * @throws IOException Something went wrong writing to the output
     */
    default void writeJson(@NonNull Resource output) throws IOException {
-      write(StructuredFormat.JSON, output);
-   }
-
-
-   /**
-    * Write.
-    *
-    * @param structuredFormat the structured format
-    * @param output           the output
-    * @throws IOException the io exception
-    */
-   default void write(@NonNull StructuredFormat structuredFormat, @NonNull Resource output) throws IOException {
-      write(structuredFormat, output, item -> Convert.convert(item, String.class));
-   }
-
-   /**
-    * Write.
-    *
-    * @param structuredFormat the structured format
-    * @param output           the output
-    * @param keySerializer    the key serializer
-    * @throws IOException the io exception
-    */
-   default void write(@NonNull StructuredFormat structuredFormat, @NonNull Resource output, @NonNull Function<? super E, String> keySerializer) throws IOException {
-      try (StructuredWriter writer = structuredFormat.createWriter(output)) {
+      try (StructuredWriter writer = StructuredFormat.JSON.createWriter(output)) {
          writer.beginDocument(true);
-         for (E item : asList()) {
-            writer.writeValue(keySerializer.apply(item));
+         for (E item : this) {
+            writer.writeValue(Convert.convert(item, String.class));
          }
          writer.endDocument();
       }

@@ -42,12 +42,12 @@ public interface MultiCounters {
 
 
    /**
-    * New multi counter multi counter.
+    * Creates a copy of the specified multi-counter
     *
-    * @param <K1>    the type parameter
-    * @param <K2>    the type parameter
-    * @param counter the counter
-    * @return the multi counter
+    * @param <K1>    the component type of the first key
+    * @param <K2>    the component type of the second key
+    * @param counter the counter to copy
+    * @return A new MultiCounter that is a copy of the given MultiCounter
     */
    static <K1, K2> MultiCounter<K1, K2> newMultiCounter(@NonNull MultiCounter<? extends K1, ? extends K2> counter) {
       MultiCounter<K1, K2> mc = new HashMapMultiCounter<>();
@@ -56,12 +56,12 @@ public interface MultiCounters {
    }
 
    /**
-    * New multi counter multi counter.
+    * Creates a new MultiCounter using the given map entries.
     *
-    * @param <K1>    the type parameter
-    * @param <K2>    the type parameter
-    * @param entries the entries
-    * @return the multi counter
+    * @param <K1>    the component type of the first key
+    * @param <K2>    the component type of the second key
+    * @param entries the entries to increment in the counter.
+    * @return A new MultiCounter with counts of the given entries
     */
    @SafeVarargs
    static <K1, K2> MultiCounter<K1, K2> newMultiCounter(Map.Entry<? extends K1, ? extends K2>... entries) {
@@ -69,12 +69,12 @@ public interface MultiCounters {
    }
 
    /**
-    * New multi counter multi counter.
+    * Creates a new MultiCounter using the given map entries.
     *
-    * @param <K1>    the type parameter
-    * @param <K2>    the type parameter
-    * @param entries the entries
-    * @return the multi counter
+    * @param <K1>    the component type of the first key
+    * @param <K2>    the component type of the second key
+    * @param entries the entries to increment in the counter.
+    * @return A new MultiCounter with counts of the given entries
     */
    static <K1, K2> MultiCounter<K1, K2> newMultiCounter(@NonNull Iterable<? extends Map.Entry<? extends K1, ? extends K2>> entries) {
       MultiCounter<K1, K2> mc = new HashMapMultiCounter<>();
@@ -83,30 +83,50 @@ public interface MultiCounters {
    }
 
    /**
-    * Unmodifiable multi counter multi counter.
+    * Creates a new MultiCounter using the given map.
     *
-    * @param <K1>         the type parameter
-    * @param <K2>         the type parameter
-    * @param multiCounter the multi counter
-    * @return the multi counter
+    * @param <K1> the component type of the first key
+    * @param <K2> the component type of the second key
+    * @param map  A map whose keys are the entries of the counter and values are the counts.
+    * @return A new MultiCounter with counts of the given entries
+    */
+   static <K1, K2> MultiCounter<K1, K2> newMultiCounter(@NonNull Map<? extends Map.Entry<? extends K1, ? extends K2>, ? extends Number> map) {
+      MultiCounter<K1, K2> mc = new HashMapMultiCounter<>();
+      map.entrySet().forEach(e -> mc.increment(e.getKey().getKey(), e.getKey().getValue(), e.getValue().doubleValue()));
+      return mc;
+   }
+
+   /**
+    * Wraps a mutli-counter making its entries unmodifiable.
+    *
+    * @param <K1>         the component type of the first key
+    * @param <K2>         the component type of the second key
+    * @param multiCounter the multi counter to wrap
+    * @return the unmodifiable multi counter
     */
    static <K1, K2> MultiCounter<K1, K2> unmodifiableMultiCounter(@NonNull MultiCounter<K1, K2> multiCounter) {
       return new UnmodifiableMultiCounter<>(multiCounter);
    }
 
    /**
-    * Synchronized multi counter multi counter.
+    * <p>Wraps a counter making each method call synchronized.</p>
     *
-    * @param <K1>         the type parameter
-    * @param <K2>         the type parameter
-    * @param multiCounter the multi counter
-    * @return the multi counter
+    * @param <K1>         the component type of the first key
+    * @param <K2>         the component type of the second key
+    * @param multiCounter the multi counter to wrap
+    * @return the synchronized multi-counter
     */
    static <K1, K2> MultiCounter<K1, K2> synchronizedMultiCounter(@NonNull MultiCounter<K1, K2> multiCounter) {
       return new SynchronizedMultiCounter<>(multiCounter);
    }
 
-
+   /**
+    * <p>Creates a new multi-counter where each method call is synchronized.</p>
+    *
+    * @param <K1> the component type of the first key
+    * @param <K2> the component type of the second key
+    * @return the synchronized multi-counter
+    */
    static <K1, K2> MultiCounter<K1, K2> synchronizedMultiCounter() {
       return synchronizedMultiCounter(newMultiCounter());
    }
@@ -114,12 +134,12 @@ public interface MultiCounters {
    /**
     * <p>Reads a counter from a CSV file.</p>
     *
-    * @param <K1>      the type parameter
-    * @param <K2>      the type parameter
-    * @param resource  the resource that the counter values are written to.
-    * @param key1Class the class of the item type
-    * @param key2Class the key 2 class
-    * @return the counter
+    * @param <K1>      the component type of the first key
+    * @param <K2>      the component type of the second key
+    * @param resource  the resource that the counter values are read from.
+    * @param key1Class the class of first key
+    * @param key2Class the class of the second key
+    * @return the new MultiCounter
     * @throws IOException Something went wrong reading in the counter.
     */
    static <K1, K2> MultiCounter<K1, K2> readCsv(@NonNull Resource resource, @NonNull Class<K1> key1Class, @NonNull Class<K2> key2Class) throws IOException {
@@ -138,12 +158,12 @@ public interface MultiCounters {
    /**
     * <p>Reads a counter from a Json file.</p>
     *
-    * @param <K1>      the type parameter
-    * @param <K2>      the type parameter
-    * @param resource  the resource that the counter values are written to.
-    * @param key1Class the key 1 class
-    * @param key2Class the key 2 class
-    * @return the counter
+    * @param <K1>      the component type of the first key
+    * @param <K2>      the component type of the second key
+    * @param resource  the resource that the counter values are read from.
+    * @param key1Class the class of first key
+    * @param key2Class the class of the second key
+    * @return the new MultiCounter
     * @throws IOException Something went wrong reading in the counter.
     */
    static <K1, K2> MultiCounter<K1, K2> readJson(@NonNull Resource resource, @NonNull Class<K1> key1Class, @NonNull Class<K2> key2Class) throws IOException {

@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
 public abstract class BaseIndexTest {
 
    public Index<String> getIndex() {
-      return new HashMapIndex<>("A", "B", "C", "D", "E");
+      return Indexes.newIndex("A", "B", "C", "D", "E");
    }
 
 
@@ -61,8 +61,6 @@ public abstract class BaseIndexTest {
       Index<String> index = getIndex();
       Iterator<String> itr = index.iterator();
       assertEquals("A", itr.next());
-      itr.remove();
-      assertEquals(4, index.size());
    }
 
    @Test
@@ -101,14 +99,22 @@ public abstract class BaseIndexTest {
    @Test
    public void testIndexOf() throws Exception {
       Index<String> index = getIndex();
-      assertEquals(0, index.indexOf("A"));
-      assertEquals(-1, index.indexOf("Z"));
+      assertEquals(0, index.getId("A"));
+      assertEquals(-1, index.getId("Z"));
+   }
+
+
+   @Test
+   public void parallelStream() throws Exception {
+      Index<String> index = getIndex();
+      assertEquals("A", index.parallelStream().filter(k -> k.equalsIgnoreCase("a")).findFirst().orElse(null));
    }
 
    @Test
-   public void testAsList() throws Exception {
+   public void stream() throws Exception {
       Index<String> index = getIndex();
-      assertEquals(Arrays.asList("A", "B", "C", "D", "E"), index.asList());
+      assertEquals("A", index.stream().filter(k -> k.equalsIgnoreCase("a")).findFirst().orElse(null));
    }
+
 
 }//END OF HashMapIndexTest

@@ -32,98 +32,92 @@ import java.util.List;
  * @author David B. Bracewell
  */
 public abstract class ForwardingIndex<TYPE> implements Index<TYPE>, Serializable {
-  private static final long serialVersionUID = 1L;
+   private static final long serialVersionUID = 1L;
 
-  /**
-   * Delegate index.
-   *
-   * @return the index
-   */
-  protected abstract Index<TYPE> delegate();
+   /**
+    * Delegate index.
+    *
+    * @return the index
+    */
+   protected abstract Index<TYPE> delegate();
 
-  @Override
-  public int add(TYPE item) {
-    return delegate().add(item);
-  }
+   @Override
+   public int add(TYPE item) {
+      return delegate().add(item);
+   }
 
-  @Override
-  public void addAll(Iterable<TYPE> items) {
-    delegate().addAll(items);
-  }
+   @Override
+   public void addAll(Iterable<TYPE> items) {
+      delegate().addAll(items);
+   }
 
-  @Override
-  public int indexOf(TYPE item) {
-    return delegate().indexOf(item);
-  }
+   @Override
+   public int getId(TYPE item) {
+      return delegate().getId(item);
+   }
 
-  @Override
-  public TYPE get(int id) {
-    return delegate().get(id);
-  }
+   @Override
+   public TYPE get(int id) {
+      return delegate().get(id);
+   }
 
-  @Override
-  public void clear() {
-    delegate().clear();
-  }
+   @Override
+   public void clear() {
+      delegate().clear();
+   }
 
-  @Override
-  public int size() {
-    return delegate().size();
-  }
+   @Override
+   public int size() {
+      return delegate().size();
+   }
 
-  @Override
-  public boolean isEmpty() {
-    return delegate().isEmpty();
-  }
+   @Override
+   public boolean isEmpty() {
+      return delegate().isEmpty();
+   }
 
-  @Override
-  public TYPE remove(int id) {
-    return delegate().remove(id);
-  }
+   @Override
+   public TYPE remove(int id) {
+      return delegate().remove(id);
+   }
 
-  @Override
-  public int remove(TYPE item) {
-    return delegate().remove(item);
-  }
+   @Override
+   public int remove(TYPE item) {
+      return delegate().remove(item);
+   }
 
-  @Override
-  public boolean contains(TYPE item) {
-    return delegate().contains(item);
-  }
+   @Override
+   public boolean contains(TYPE item) {
+      return delegate().contains(item);
+   }
 
-  @Override
-  public List<TYPE> asList() {
-    return delegate().asList();
-  }
+   @Override
+   public Iterator<TYPE> iterator() {
+      return delegate().iterator();
+   }
 
-  @Override
-  public TYPE set(int index, TYPE newValue) {
-    return delegate().set(index, newValue);
-  }
+   @Override
+   public Index<TYPE> copy() {
+      return delegate().copy();
+   }
 
-  @Override
-  public Iterator<TYPE> iterator() {
-    return delegate().iterator();
-  }
+   @Override
+   public String toString() {
+      return delegate().toString();
+   }
 
-  @Override
-  public Index<TYPE> copy() {
-    return delegate().copy();
-  }
+   @Override
+   public int hashCode() {
+      return delegate().hashCode();
+   }
 
-  @Override
-  public String toString() {
-    return delegate().toString();
-  }
+   @Override
+   public boolean equals(Object object) {
+      return delegate().equals(object);
+   }
 
-  @Override
-  public int hashCode() {
-    return delegate().hashCode();
-  }
-
-  @Override
-  public boolean equals(Object object) {
-    return delegate().equals(object);
-  }
-
+   @Override
+   public List<TYPE> asList() {
+      return delegate().asList();
+   }
 }//END OF ForwardingIndex

@@ -23,122 +23,123 @@ package com.davidbracewell.collection.index;
 
 
 import com.davidbracewell.conversion.Convert;
+import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.ElementType;
 import com.davidbracewell.io.structured.StructuredFormat;
 import com.davidbracewell.io.structured.StructuredReader;
+import com.davidbracewell.io.structured.csv.CSVReader;
 import lombok.NonNull;
 
 import java.io.IOException;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.Arrays;
 
 /**
- * The type Indexes.
+ * Common methods for reading counters from structured files, creating synchronized and unmodifiable wrappers.
  *
  * @author David B. Bracewell
  */
 public interface Indexes {
 
-  /**
-   * New synchronized index.
-   *
-   * @param <TYPE> the type parameter
-   * @param index  the index
-   * @return the index
-   */
-  static <TYPE> Index<TYPE> synchronizedIndex(@NonNull Index<TYPE> index) {
-    return new SynchronizedIndex<>(index);
-  }
+   /**
+    * Creates a new index using the given set of elements
+    *
+    * @param <TYPE>   the component type of the index
+    * @param elements the elements to initialize the index with
+    * @return A new index containing the given elements
+    */
+   @SafeVarargs
+   static <TYPE> Index<TYPE> newIndex(TYPE... elements) {
+      return elements == null ? new HashMapIndex<>() : newIndex(Arrays.asList(elements));
+   }
 
-  /**
-   * Unmodifiable index.
-   *
-   * @param <TYPE> the type parameter
-   * @param index  the index
-   * @return the index
-   */
-  static <TYPE> Index<TYPE> unmodifiableIndex(@NonNull final Index<TYPE> index) {
-    return new UnmodifiableIndex<>(index);
-  }
+   /**
+    * Creates a new index using the given set of elements
+    *
+    * @param <TYPE>   the component type of the index
+    * @param elements the elements to initialize the index with
+    * @return A new index containing the given elements
+    */
+   static <TYPE> Index<TYPE> newIndex(@NonNull Iterable<TYPE> elements) {
+      Index<TYPE> index = new HashMapIndex<>();
+      index.addAll(elements);
+      return index;
+   }
+
+   /**
+    * <p>Wraps an index making each method call synchronized.</p>
+    *
+    * @param <TYPE> the type parameter of the item being indexed.
+    * @param index  The index to wrap
+    * @return the synchronized index
+    */
+   static <TYPE> Index<TYPE> synchronizedIndex(@NonNull Index<TYPE> index) {
+      return new SynchronizedIndex<>(index);
+   }
+
+   /**
+    * <p>Creates a new index with each method call synchronized.</p>
+    *
+    * @param <TYPE> the type parameter of the item being indexed.
+    * @return the synchronized index
+    */
+   static <TYPE> Index<TYPE> synchronizedIndex() {
+      return new SynchronizedIndex<>(new HashMapIndex<>());
+   }
 
 
-  /**
-   * Read counter.
-   *
-   * @param <TYPE>           the type parameter
-   * @param structuredFormat the structured format
-   * @param resource         the resource
-   * @param keyType          the key type
-   * @return the counter
-   * @throws IOException the io exception
-   */
-  static <TYPE> Index<TYPE> read(@NonNull StructuredFormat structuredFormat, @NonNull Resource resource, @NonNull Class<TYPE> keyType) throws IOException {
-    return read(structuredFormat, resource, str -> Convert.convert(str, keyType));
-  }
+   /**
+    * Wraps an index making its entries unmodifiable.
+    *
+    * @param <TYPE> the type parameter of the item being indexed.
+    * @param index  The index to wrap
+    * @return the unmodifiable index
+    */
+   static <TYPE> Index<TYPE> unmodifiableIndex(@NonNull final Index<TYPE> index) {
+      return new UnmodifiableIndex<>(index);
+   }
 
-  /**
-   * Read counter.
-   *
-   * @param <TYPE>           the type parameter
-   * @param structuredFormat the structured format
-   * @param resource         the resource
-   * @param deserializer     the deserializer
-   * @param supplier         the supplier
-   * @return the counter
-   * @throws IOException the io exception
-   */
-  static <TYPE> Index<TYPE> read(@NonNull StructuredFormat structuredFormat, @NonNull Resource resource, @NonNull Function<String, TYPE> deserializer, @NonNull Supplier<Index<TYPE>> supplier) throws IOException {
-    Index<TYPE> index = supplier.get();
-    try (StructuredReader reader = structuredFormat.createReader(resource)) {
-      reader.beginDocument();
-      while (reader.peek() != ElementType.END_DOCUMENT) {
-        index.add(deserializer.apply(reader.nextValue().asString()));
+   /**
+    * <p>Reads an Index from a CSV file.</p>
+    *
+    * @param <TYPE>   the component type of the Index
+    * @param resource the resource containing the Index specification
+    * @param keyClass the class of the index component type
+    * @return An index containing the elements of the CSV file.
+    * @throws IOException Something went wrong reading in the file
+    */
+   static <TYPE> Index<TYPE> readCsv(@NonNull Resource resource, @NonNull Class<TYPE> keyClass) throws IOException {
+      Index<TYPE> index = newIndex();
+      try (CSVReader reader = CSV.builder().reader(resource)) {
+         reader.forEach(row -> {
+            if (row.size() >= 1) {
+               index.add(Convert.convert(row.get(0), keyClass));
+            }
+         });
       }
-      reader.endDocument();
-    }
-    return index;
-  }
+      return index;
+   }
 
-  /**
-   * Read counter.
-   *
-   * @param <TYPE>           the type parameter
-   * @param structuredFormat the structured format
-   * @param resource         the resource
-   * @param deserializer     the deserializer
-   * @return the counter
-   * @throws IOException the io exception
-   */
-  static <TYPE> Index<TYPE> read(@NonNull StructuredFormat structuredFormat, @NonNull Resource resource, @NonNull Function<String, TYPE> deserializer) throws IOException {
-    return read(structuredFormat, resource, deserializer, HashMapIndex::new);
-  }
-
-  /**
-   * Read csv counter.
-   *
-   * @param <TYPE>   the type parameter
-   * @param resource the resource
-   * @param keyClass the key class
-   * @return the counter
-   * @throws IOException the io exception
-   */
-  static <TYPE> Index<TYPE> readCSV(@NonNull Resource resource, @NonNull Class<TYPE> keyClass) throws IOException {
-    return read(StructuredFormat.CSV, resource, keyClass);
-  }
-
-  /**
-   * Read json index.
-   *
-   * @param <TYPE>   the type parameter
-   * @param resource the resource
-   * @param keyClass the key class
-   * @return the index
-   * @throws IOException the io exception
-   */
-  static <TYPE> Index<TYPE> readJson(@NonNull Resource resource, @NonNull Class<TYPE> keyClass) throws IOException {
-    return read(StructuredFormat.JSON, resource, keyClass);
-  }
+   /**
+    * <p>Reads an Index from a Json file.</p>
+    *
+    * @param <TYPE>   the component type of the Index
+    * @param resource the resource containing the Index specification
+    * @param keyClass the class of the index component type
+    * @return An index containing the elements of the Json file.
+    * @throws IOException Something went wrong reading in the file
+    */
+   static <TYPE> Index<TYPE> readJson(@NonNull Resource resource, @NonNull Class<TYPE> keyClass) throws IOException {
+      Index<TYPE> index = newIndex();
+      try (StructuredReader reader = StructuredFormat.JSON.createReader(resource)) {
+         reader.beginDocument();
+         while (reader.peek() != ElementType.END_DOCUMENT) {
+            index.add(reader.nextValue().as(keyClass));
+         }
+         reader.endDocument();
+      }
+      return index;
+   }
 
 
 }//END OF Indexes
