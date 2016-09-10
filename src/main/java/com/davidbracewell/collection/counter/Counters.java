@@ -37,8 +37,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 /**
- * Common methods for reading counters from structured files, creating synchronized and unmodifiable wrappers, and
- * creating collectors.
+ * Common methods for reading counters from structured files, creating synchronized and unmodifiable wrappers.
  */
 public interface Counters {
 

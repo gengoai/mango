@@ -34,10 +34,10 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
 
 /**
- * The type Forwarding mutli counter.
+ * A MultiCounter that forwards all of its calls to a delegate counter.
  *
- * @param <K> the type parameter
- * @param <V> the type parameter
+ * @param <K> the first key type
+ * @param <V> the second key type
  * @author David B. Bracewell
  */
 public abstract class ForwardingMultiCounter<K, V> implements MultiCounter<K, V>, Serializable {
@@ -56,8 +56,8 @@ public abstract class ForwardingMultiCounter<K, V> implements MultiCounter<K, V>
    }
 
    @Override
-   public Collection<Double> counts() {
-      return delegate().counts();
+   public Collection<Double> values() {
+      return delegate().values();
    }
 
    @Override
@@ -76,8 +76,8 @@ public abstract class ForwardingMultiCounter<K, V> implements MultiCounter<K, V>
    }
 
    @Override
-   public Counter<V> get(K item) {
-      return delegate().get(item);
+   public Counter<V> get(K firstKey) {
+      return delegate().get(firstKey);
    }
 
    @Override
@@ -86,8 +86,8 @@ public abstract class ForwardingMultiCounter<K, V> implements MultiCounter<K, V>
    }
 
    @Override
-   public Set<K> items() {
-      return delegate().items();
+   public Set<K> firstKeys() {
+      return delegate().firstKeys();
    }
 
    @Override
@@ -131,8 +131,8 @@ public abstract class ForwardingMultiCounter<K, V> implements MultiCounter<K, V>
    }
 
    @Override
-   public MultiCounter<K, V> set(K item1, V item2, double count) {
-      return delegate().set(item1, item2, count);
+   public MultiCounter<K, V> set(K item1, V item2, double amount) {
+      return delegate().set(item1, item2, amount);
    }
 
    @Override
@@ -148,6 +148,11 @@ public abstract class ForwardingMultiCounter<K, V> implements MultiCounter<K, V>
    @Override
    public String toString() {
       return delegate().toString();
+   }
+
+   @Override
+   public Set<Map.Entry<K, V>> keyPairs() {
+      return delegate().keyPairs();
    }
 
 }//END OF ForwardingMultiCounter

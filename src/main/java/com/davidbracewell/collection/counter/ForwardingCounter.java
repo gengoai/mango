@@ -31,6 +31,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
+ * A Counter that forwards all of its calls to a delegate counter. The forwarding counter can handle null delegates.
+ *
+ * @param <TYPE> the component type of the counter
  * @author David B. Bracewell
  */
 public abstract class ForwardingCounter<TYPE> implements Counter<TYPE>, Serializable {

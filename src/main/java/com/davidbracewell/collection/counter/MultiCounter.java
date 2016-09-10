@@ -40,47 +40,47 @@ import java.util.Set;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
- * <p> Provides double-based counts for pairs of items. </p>
+ * <p>A specialized object-object to double map that allows basic statistics over the object pairs and their values.</p>
  *
- * @param <K> Type of item.
- * @param <V> the type parameter
+ * @param <K> component type of the first key in the pair
+ * @param <V> component type of the second key in the pair
  * @author David B. Bracewell
  */
 public interface MultiCounter<K, V> {
 
    /**
-    * Entries set.
+    * A set of triplies entries (key1,key2,double) making up the counter
     *
-    * @return the set
+    * @return the set of entries
     */
    Set<Tuple3<K, V, Double>> entries();
 
    /**
-    * Adjust values.
+    * Constructs a new multi-counter made up of counts that are adjusted using the supplied function.
     *
-    * @param function the function
-    * @return the multi counter
+    * @param function The function to use to adjust the counts
+    * @return The new counter with adjusted counts.
     */
    MultiCounter<K, V> adjustValues(DoubleUnaryOperator function);
 
    /**
-    * Adjust values.
+    * Adjust the values in-place using the supplied function
     *
-    * @param function the function
-    * @return the multi counter
+    * @param function The function to use to adjust the counts
+    * @return this counter
     */
    MultiCounter<K, V> adjustValuesSelf(DoubleUnaryOperator function);
 
-
    /**
-    * Average double.
+    * Calculates the average of the values in the counter
     *
     * @return The average count in the counter
     */
    default double average() {
-      return Math2.summaryStatistics(counts()).getAverage();
+      return Math2.summaryStatistics(values()).getAverage();
    }
 
    /**
@@ -89,15 +89,15 @@ public interface MultiCounter<K, V> {
    void clear();
 
    /**
-    * Determines if the item is in the counter
+    * Determines if (item,*) is in the counter, i.e. if the item is a first key in the counter
     *
-    * @param item item to check
+    * @param item item relating to a first key to check
     * @return True if item is in the counter, false otherwise
     */
    boolean contains(K item);
 
    /**
-    * Contains boolean.
+    * Determines if the pair (item1,item2) is in the counter.
     *
     * @param item1 the item 1
     * @param item2 the item 2
@@ -106,40 +106,40 @@ public interface MultiCounter<K, V> {
    boolean contains(K item1, V item2);
 
    /**
-    * Counts collection.
+    * The values associated with the items in the counter
     *
-    * @return the collection
+    * @return The values of the items in the counter.
     */
-   Collection<Double> counts();
+   Collection<Double> values();
 
    /**
-    * Decrement void.
+    * Decrements the count of the pair (item1, item2) by one.
     *
-    * @param item1 the item 1
-    * @param item2 the item 2
-    * @return the multi counter
+    * @param item1 the first key
+    * @param item2 the second key
+    * @return This multi-counter (for fluent design)
     */
    default MultiCounter<K, V> decrement(K item1, V item2) {
       return decrement(item1, item2, 1);
    }
 
    /**
-    * Decrement void.
+    * Decrements the count of the pair (item1, item2) by the given amount.
     *
-    * @param item1  the item 1
-    * @param item2  the item 2
-    * @param amount the amount
-    * @return the multi counter
+    * @param item1  the first key
+    * @param item2  the second key
+    * @param amount the amount to decrement the (item1,item2) pair by
+    * @return This multi-counter (for fluent design)
     */
    default MultiCounter<K, V> decrement(K item1, V item2, double amount) {
       return increment(item1, item2, -amount);
    }
 
    /**
-    * Decrement all.
+    * Decrements the counts of the entries in the iterable in this counter by one.
     *
-    * @param iterable the iterable
-    * @return the multi counter
+    * @param iterable the iterable of entries that we want to decrement
+    * @return This multi-counter (for fluent design)
     */
    default MultiCounter<K, V> decrementAll(Iterable<? extends Map.Entry<K, V>> iterable) {
       if (iterable != null) {
@@ -149,11 +149,11 @@ public interface MultiCounter<K, V> {
    }
 
    /**
-    * Decrement all.
+    * Decrements the count of the item and each second key in the iterable by one in this counter.
     *
-    * @param item     the item
-    * @param iterable the iterable
-    * @return the multi counter
+    * @param item     the first key
+    * @param iterable the iterable of second keys
+    * @return This multi-counter (for fluent design)
     */
    default MultiCounter<K, V> decrementAll(K item, Iterable<? extends V> iterable) {
       get(item).decrementAll(iterable);
@@ -161,55 +161,56 @@ public interface MultiCounter<K, V> {
    }
 
    /**
-    * Divide by key sum.
+    * Divides the counter of each first key by its sum.
     *
-    * @return the multi counter
+    * @return This multi-counter (for fluent design)
     */
    default MultiCounter<K, V> divideByKeySum() {
-      items().forEach(key -> get(key).divideBySum());
+      firstKeys().forEach(key -> get(key).divideBySum());
       return this;
    }
 
    /**
     * Divides the values in the counter by the sum and sets the sum to 1.0
     *
-    * @return the multi counter
+    * @return This multi-counter (for fluent design)
     */
    default MultiCounter<K, V> divideBySum() {
-      adjustValuesSelf(d -> 1d / sum());
+      final double sum = sum();
+      adjustValuesSelf(d -> 1d / sum);
       return this;
    }
 
    /**
-    * Filter by first key.
+    * Creates a new multi-counter containing only those entries whose first key evaluate true for the given predicate
     *
-    * @param predicate the predicate
-    * @return the multi counter
+    * @param predicate the predicate to use to filter the first keys
+    * @return A new counter containing only those entries whose first key evaluate true for the given predicate
     */
    MultiCounter<K, V> filterByFirstKey(Predicate<K> predicate);
 
    /**
-    * Filter by second key.
+    * Creates a new multi-counter containing only those entries whose second key evaluate true for the given predicate
     *
-    * @param predicate the predicate
-    * @return the multi counter
+    * @param predicate the predicate to use to filter the second keys
+    * @return A new counter containing only those entries whose second key evaluate true for the given predicate
     */
    MultiCounter<K, V> filterBySecondKey(Predicate<V> predicate);
 
    /**
-    * Filter by value.
+    * Creates a new multi-counter containing only those entries whose value evaluate true for the given predicate
     *
-    * @param predicate the predicate
-    * @return the multi counter
+    * @param predicate the predicate to use to filter the values
+    * @return A new counter containing only those entries whose value evaluate true for the given predicate
     */
    MultiCounter<K, V> filterByValue(DoublePredicate predicate);
 
    /**
-    * Get double.
+    * Gets the count of the item1, item2 pair
     *
-    * @param item1 the item 1
-    * @param item2 the item 2
-    * @return the double
+    * @param item1 the first key
+    * @param item2 the second key
+    * @return the count of the pair
     */
    default double get(K item1, V item2) {
       if (contains(item1)) {
@@ -219,19 +220,19 @@ public interface MultiCounter<K, V> {
    }
 
    /**
-    * Get counter.
+    * Gets a counter of second keys associated with the first key.
     *
-    * @param item the item
-    * @return the counter
+    * @param firstKey the first key whose counter we want
+    * @return A counter of second key - double values associated with the first key
     */
-   Counter<V> get(K item);
+   Counter<V> get(K firstKey);
 
    /**
-    * Increment void.
+    * Increments the count of the pair (item1, item2) by one.
     *
-    * @param item1 the item 1
-    * @param item2 the item 2
-    * @return the multi counter
+    * @param item1 the first key
+    * @param item2 the second key
+    * @return This multi-counter (for fluent design)
     */
    default MultiCounter<K, V> increment(K item1, V item2) {
       increment(item1, item2, 1);
@@ -239,12 +240,12 @@ public interface MultiCounter<K, V> {
    }
 
    /**
-    * Increment void.
+    * Increments the count of the pair (item1, item2) by the given amount.
     *
-    * @param item1  the item 1
-    * @param item2  the item 2
-    * @param amount the amount
-    * @return the multi counter
+    * @param item1  the first key
+    * @param item2  the second key
+    * @param amount the amount to increment the (item1,item2) pair by
+    * @return This multi-counter (for fluent design)
     */
    default MultiCounter<K, V> increment(K item1, V item2, double amount) {
       get(item1).increment(item2, amount);
@@ -252,11 +253,11 @@ public interface MultiCounter<K, V> {
    }
 
    /**
-    * Increment all.
+    * Increments the count of the item and each second key in the iterable by one in this counter.
     *
-    * @param item     the item
-    * @param iterable the iterable
-    * @return the multi counter
+    * @param item     the first key
+    * @param iterable the iterable of second keys
+    * @return This multi-counter (for fluent design)
     */
    default MultiCounter<K, V> incrementAll(K item, Iterable<? extends V> iterable) {
       get(item).incrementAll(iterable);
@@ -264,10 +265,10 @@ public interface MultiCounter<K, V> {
    }
 
    /**
-    * Increment all.
+    * Increments the counts of the entries in the iterable in this counter by one.
     *
-    * @param iterable the iterable
-    * @return the multi counter
+    * @param iterable the iterable of entries that we want to increments
+    * @return This multi-counter (for fluent design)
     */
    default MultiCounter<K, V> incrementAll(Iterable<? extends Map.Entry<K, V>> iterable) {
       if (iterable != null) {
@@ -277,18 +278,34 @@ public interface MultiCounter<K, V> {
    }
 
    /**
-    * Is empty.
+    * Determines if the counter is empty or not
     *
     * @return True if the counter is empty
     */
    boolean isEmpty();
 
    /**
-    * Items set.
+    * Retrieves a set of the first keys in the counter
     *
-    * @return The items in the counter
+    * @return The items making up the first level keys in the counter
     */
-   Set<K> items();
+   Set<K> firstKeys();
+
+   /**
+    * Retrieves an unmodifiable set of secondary level keys in the counter
+    *
+    * @return an unmodifiable set of secondary level keys in the counter
+    */
+   default Set<V> secondKeys() {
+      return entries().parallelStream().map(Tuple3::getV2).collect(Collectors.toSet());
+   }
+
+   /**
+    * Retrieves the set of key pairs making up the counts in the counter
+    *
+    * @return A set of key pairs that make up the items in the counter
+    */
+   Set<Map.Entry<K, V>> keyPairs();
 
    /**
     * Returns the items as a sorted list by their counts.
@@ -304,16 +321,16 @@ public interface MultiCounter<K, V> {
     * @return the magnitude
     */
    default double magnitude() {
-      return Math.sqrt(Math2.summaryStatistics(counts()).getSumOfSquares());
+      return Math.sqrt(Math2.summaryStatistics(values()).getSumOfSquares());
    }
 
    /**
-    * Maximum count.
+    * Determines the maximum value in the counter
     *
     * @return The maximum count in the counter
     */
    default double maximumCount() {
-      return Math2.summaryStatistics(counts()).getMax();
+      return Math2.summaryStatistics(values()).getMax();
    }
 
    /**
@@ -325,28 +342,28 @@ public interface MultiCounter<K, V> {
    MultiCounter<K, V> merge(MultiCounter<K, V> other);
 
    /**
-    * Minimum count.
+    * Determines the minimum value in the counter
     *
     * @return The minimum count in the counter
     */
    default double minimumCount() {
-      return Math2.summaryStatistics(counts()).getMin();
+      return Math2.summaryStatistics(values()).getMin();
    }
 
    /**
-    * Removes an item from the counter
+    * Removes an item and its associated secondary keys from the counter
     *
-    * @param item The item to remove
-    * @return the count of the removed item
+    * @param item The first level key to remove
+    * @return the counter associated with the removed item
     */
    Counter<V> remove(K item);
 
    /**
-    * Remove double.
+    * Removes a key pair from the counter.
     *
-    * @param item1 the item 1
-    * @param item2 the item 2
-    * @return the double
+    * @param item1 the first key
+    * @param item2 the second key
+    * @return the count of the key pair
     */
    double remove(K item1, V item2);
 
@@ -364,54 +381,54 @@ public interface MultiCounter<K, V> {
    }
 
    /**
-    * Set void.
+    * Sets the value of the given key pair to the given amount
     *
-    * @param item1 the item 1
-    * @param item2 the item 2
-    * @param count the count
-    * @return the multi counter
+    * @param item1  the first key
+    * @param item2  the second key
+    * @param amount the amount to set the key pair to
+    * @return This MultiCounter (for fluent design)
     */
-   MultiCounter<K, V> set(K item1, V item2, double count);
+   MultiCounter<K, V> set(K item1, V item2, double amount);
 
    /**
-    * Set void.
+    * Sets the secondary keys and counts associated with a first level kek
     *
-    * @param item    the item
-    * @param counter the counter
-    * @return the multi counter
+    * @param item    the first key
+    * @param counter the counter of secondary keys and counts
+    * @return This MultiCounter (for fluent design)
     */
    MultiCounter<K, V> set(K item, Counter<V> counter);
 
    /**
-    * Size int.
+    * The total number of items in the counter
     *
     * @return The number of items in the counter
     */
    int size();
 
    /**
-    * Standard deviation.
+    * Calculates the standard deviation of the items in the counter
     *
     * @return The standard deviation of the counts in the counter
     */
    default double standardDeviation() {
-      return Math2.summaryStatistics(counts()).getSampleStandardDeviation();
+      return Math2.summaryStatistics(values()).getSampleStandardDeviation();
    }
 
    /**
-    * Sum double.
+    * The sum of values in the counter
     *
     * @return The sum of the counts in the counter
     */
    default double sum() {
-      return Math2.summaryStatistics(counts()).getSum();
+      return Math2.summaryStatistics(values()).getSum();
    }
 
    /**
-    * Write csv.
+    * Writes the counter items and values to CSV
     *
-    * @param output the output
-    * @throws IOException the io exception
+    * @param output the resource to write to
+    * @throws IOException Something went wrong writing
     */
    default void writeCsv(@NonNull Resource output) throws IOException {
       DecimalFormat decimalFormat = new DecimalFormat("#.#####");
@@ -425,6 +442,12 @@ public interface MultiCounter<K, V> {
       }
    }
 
+   /**
+    * Writes the counter items and values to Json
+    *
+    * @param output the resource to write to
+    * @throws IOException Something went wrong writing
+    */
    default void writeJson(@NonNull Resource output) throws IOException {
       try (StructuredWriter writer = StructuredFormat.JSON.createWriter(output)) {
          writer.beginDocument();

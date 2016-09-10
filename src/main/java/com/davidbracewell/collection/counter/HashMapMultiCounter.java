@@ -37,10 +37,10 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * The type Hash map multi counter.
+ * Implementation of a MultiCounter using a HashMaps.
  *
- * @param <K> the type parameter
- * @param <V> the type parameter
+ * @param <K> the first key type
+ * @param <V> the second type
  * @author David B. Bracewell
  */
 @EqualsAndHashCode
@@ -52,13 +52,13 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
    @Override
    public MultiCounter<K, V> adjustValues(@NonNull DoubleUnaryOperator function) {
       MultiCounter<K, V> tmp = newInstance();
-      items().forEach(key -> tmp.set(key, get(key).adjustValues(function)));
+      firstKeys().forEach(key -> tmp.set(key, get(key).adjustValues(function)));
       return tmp;
    }
 
    @Override
    public MultiCounter<K, V> adjustValuesSelf(@NonNull DoubleUnaryOperator function) {
-      items().forEach(key -> get(key).adjustValuesSelf(function));
+      firstKeys().forEach(key -> get(key).adjustValuesSelf(function));
       return this;
    }
 
@@ -78,7 +78,7 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
    }
 
    @Override
-   public Collection<Double> counts() {
+   public Collection<Double> values() {
       return new AbstractCollection<Double>() {
          @Override
          public Iterator<Double> iterator() {
@@ -136,8 +136,8 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
    }
 
    @Override
-   public Counter<V> get(K item) {
-      return new WrappedCounter(item);
+   public Counter<V> get(K firstKey) {
+      return new WrappedCounter(firstKey);
    }
 
    @Override
@@ -146,7 +146,7 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
    }
 
    @Override
-   public Set<K> items() {
+   public Set<K> firstKeys() {
       return map.keySet();
    }
 
@@ -192,8 +192,8 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
    }
 
    @Override
-   public MultiCounter<K, V> set(K item1, V item2, double count) {
-      get(item1).set(item2, count);
+   public MultiCounter<K, V> set(K item1, V item2, double amount) {
+      get(item1).set(item2, amount);
       return this;
    }
 
@@ -211,13 +211,39 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
    @Override
    public String toString() {
       StringBuilder builder = new StringBuilder();
-      items().stream().limit(10).forEach(item -> {
+      firstKeys().stream().limit(10).forEach(item -> {
          builder.append(item).append(":").append(get(item)).append("\n");
       });
       if (size() > 10) {
          builder.append("....");
       }
       return builder.toString().trim();
+   }
+
+   @Override
+   public Set<Map.Entry<K, V>> keyPairs() {
+      return new AbstractSet<Map.Entry<K, V>>() {
+
+         @Override
+         public boolean contains(Object o) {
+            if (o instanceof Map.Entry) {
+               Map.Entry<K, V> e = Cast.as(o);
+               return HashMapMultiCounter.this.contains(e.getKey(), e.getValue());
+            }
+            return false;
+         }
+
+         @Override
+         public Iterator<Map.Entry<K, V>> iterator() {
+            return Iterators.transform(new KeyKeyValueIterator(),
+                                       t -> new AbstractMap.SimpleImmutableEntry<>(t.v1, t.v2));
+         }
+
+         @Override
+         public int size() {
+            return HashMapMultiCounter.this.size();
+         }
+      };
    }
 
    private class KeyKeyValueIterator implements Iterator<Tuple3<K, V, Double>> {

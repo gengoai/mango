@@ -73,21 +73,21 @@ public abstract class BaseMultiCounterTest {
    @Test
    public void items() throws Exception {
       MultiCounter<String, String> mc = getEntryCounter();
-      assertEquals(Sets.set("A", "B"), mc.items());
+      assertEquals(Sets.set("A", "B"), mc.firstKeys());
       assertEquals(6, mc.sum(), 0);
-      mc.items().remove("A");
-      assertEquals(Sets.set("B"), mc.items());
+      mc.firstKeys().remove("A");
+      assertEquals(Sets.set("B"), mc.firstKeys());
       assertEquals(3, mc.sum(), 0);
    }
 
    @Test
    public void counts() throws Exception {
       MultiCounter<String, String> mc = getEntryCounter();
-      assertEquals(6, Math2.sum(mc.counts()), 0);
-      Iterator<Double> itr = mc.counts().iterator();
+      assertEquals(6, Math2.sum(mc.values()), 0);
+      Iterator<Double> itr = mc.values().iterator();
       itr.next();
       itr.remove();
-      assertEquals(5, Math2.sum(mc.counts()), 0);
+      assertEquals(5, Math2.sum(mc.values()), 0);
    }
 
    @Test
@@ -122,7 +122,7 @@ public abstract class BaseMultiCounterTest {
       z.clear();
       assertEquals(0, mc.sum(), 0);
       assertEquals(0, z.sum(), 0);
-      assertTrue(mc.items().isEmpty());
+      assertTrue(mc.firstKeys().isEmpty());
    }
 
 
@@ -151,10 +151,10 @@ public abstract class BaseMultiCounterTest {
       assertEquals(1, mc.remove("A", "B"), 0);
       assertEquals(1, mc.remove("A", "C"), 0);
       mc.remove("A", "D");
-      assertEquals(Sets.set("B"), mc.items());
+      assertEquals(Sets.set("B"), mc.firstKeys());
       mc.increment("A", "B");
       mc.remove("A");
-      assertEquals(Sets.set("B"), mc.items());
+      assertEquals(Sets.set("B"), mc.firstKeys());
       mc.removeAll(Collections.singleton("B"));
       assertTrue(mc.isEmpty());
    }
@@ -185,10 +185,10 @@ public abstract class BaseMultiCounterTest {
    public void filter() throws Exception {
       MultiCounter<String, String> mc = getEntryCounter();
       MultiCounter<String, String> mc2 = mc.filterByFirstKey(k -> k.equalsIgnoreCase("a"));
-      assertEquals(Sets.set("A"), mc2.items());
+      assertEquals(Sets.set("A"), mc2.firstKeys());
       assertEquals(3, mc2.sum(), 0);
       mc2 = mc.filterBySecondKey(k -> k.equalsIgnoreCase("H"));
-      assertEquals(Sets.set("B"), mc2.items());
+      assertEquals(Sets.set("B"), mc2.firstKeys());
       assertEquals(1, mc2.sum(), 0);
       mc2 = mc.filterByValue(d -> d > 1);
       assertTrue(mc2.isEmpty());

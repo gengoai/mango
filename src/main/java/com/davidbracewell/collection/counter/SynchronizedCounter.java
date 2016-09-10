@@ -35,14 +35,21 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
+ * An implementation of a Counter that wraps all calls in synchronized.
+ *
+ * @param <TYPE> the type parameter
  * @author David B. Bracewell
  */
 @EqualsAndHashCode
 final class SynchronizedCounter<TYPE> implements Counter<TYPE>, Serializable {
    private static final long serialVersionUID = 1L;
+   private final Counter<TYPE> delegate;
 
-   final Counter<TYPE> delegate;
-
+   /**
+    * Instantiates a new Synchronized counter.
+    *
+    * @param delegate the delegate
+    */
    public SynchronizedCounter(Counter<TYPE> delegate) {
       this.delegate = delegate;
    }

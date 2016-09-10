@@ -28,6 +28,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * An implementation of a counter that is unmodifiable
+ *
+ * @param <TYPE> the component type of the counter
  * @author David B. Bracewell
  */
 @EqualsAndHashCode(callSuper = false)
@@ -35,6 +38,11 @@ final class UnmodifiableCounter<TYPE> extends ForwardingCounter<TYPE> {
    private static final long serialVersionUID = 1L;
    private final Counter<TYPE> backing;
 
+   /**
+    * Instantiates a new Unmodifiable counter.
+    *
+    * @param backing the backing
+    */
    UnmodifiableCounter(Counter<TYPE> backing) {
       this.backing = backing;
    }

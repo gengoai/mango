@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
 public interface Counter<T> extends Copyable<Counter<T>> {
 
    /**
-    * Constructs a new counter made up of counts that are adjusted using a <code>Function</code>.
+    * Constructs a new counter made up of counts that are adjusted using the supplied function.
     *
     * @param function The function to use to adjust the counts
     * @return The new counter with adjusted counts.
@@ -180,7 +180,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
    /**
     * Creates a new counter containing only those items whose value evaluate true for the given predicate
     *
-    * @param doublePredicate the predicate to use to filter the keys
+    * @param doublePredicate the predicate to use to filter the values
     * @return A new counter containing only those items whose value evaluate true for the given predicate
     */
    Counter<T> filterByValue(DoublePredicate doublePredicate);

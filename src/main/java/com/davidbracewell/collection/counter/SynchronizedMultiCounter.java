@@ -35,10 +35,10 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
 
 /**
- * The type Forwarding mutli counter.
+ * An implementation of a multi-counter that wraps its calls in synchornized
  *
- * @param <K> the type parameter
- * @param <V> the type parameter
+ * @param <K> the first key type
+ * @param <V> the second key type
  * @author David B. Bracewell
  */
 @EqualsAndHashCode
@@ -62,8 +62,8 @@ final class SynchronizedMultiCounter<K, V> implements MultiCounter<K, V>, Serial
    }
 
    @Override
-   public synchronized Collection<Double> counts() {
-      return delegate.counts();
+   public synchronized Collection<Double> values() {
+      return delegate.values();
    }
 
    @Override
@@ -82,8 +82,8 @@ final class SynchronizedMultiCounter<K, V> implements MultiCounter<K, V>, Serial
    }
 
    @Override
-   public synchronized Counter<V> get(K item) {
-      return delegate.get(item);
+   public synchronized Counter<V> get(K firstKey) {
+      return delegate.get(firstKey);
    }
 
    @Override
@@ -92,8 +92,8 @@ final class SynchronizedMultiCounter<K, V> implements MultiCounter<K, V>, Serial
    }
 
    @Override
-   public synchronized Set<K> items() {
-      return delegate.items();
+   public synchronized Set<K> firstKeys() {
+      return delegate.firstKeys();
    }
 
    @Override
@@ -137,8 +137,8 @@ final class SynchronizedMultiCounter<K, V> implements MultiCounter<K, V>, Serial
    }
 
    @Override
-   public synchronized MultiCounter<K, V> set(K item1, V item2, double count) {
-      return delegate.set(item1, item2, count);
+   public synchronized MultiCounter<K, V> set(K item1, V item2, double amount) {
+      return delegate.set(item1, item2, amount);
    }
 
    @Override
@@ -156,4 +156,8 @@ final class SynchronizedMultiCounter<K, V> implements MultiCounter<K, V>, Serial
       return delegate.toString();
    }
 
+   @Override
+   public Set<Map.Entry<K, V>> keyPairs() {
+      return delegate.keyPairs();
+   }
 }//END OF SynchronizedMultiCounter

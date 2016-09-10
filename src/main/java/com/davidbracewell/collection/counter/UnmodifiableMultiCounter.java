@@ -28,13 +28,22 @@ import java.util.Map;
 import java.util.function.DoubleUnaryOperator;
 
 /**
+ * An implementation of a multi-counter that is unmodifiable
+ *
+ * @param <K> the first key type
+ * @param <V> the second key type
  * @author David B. Bracewell
  */
 @EqualsAndHashCode(callSuper = false)
 final class UnmodifiableMultiCounter<K, V> extends ForwardingMultiCounter<K, V> {
    private static final long serialVersionUID = 292069831932346092L;
-   final MultiCounter<K, V> backing;
+   private final MultiCounter<K, V> backing;
 
+   /**
+    * Instantiates a new Unmodifiable multi counter.
+    *
+    * @param backing the backing
+    */
    public UnmodifiableMultiCounter(@NonNull MultiCounter<K, V> backing) {
       this.backing = backing;
    }
@@ -50,8 +59,8 @@ final class UnmodifiableMultiCounter<K, V> extends ForwardingMultiCounter<K, V> 
    }
 
    @Override
-   public Counter<V> get(K item) {
-      return Counters.unmodifiableCounter(super.get(item));
+   public Counter<V> get(K firstKey) {
+      return Counters.unmodifiableCounter(super.get(firstKey));
    }
 
    @Override
@@ -60,7 +69,7 @@ final class UnmodifiableMultiCounter<K, V> extends ForwardingMultiCounter<K, V> 
    }
 
    @Override
-   public MultiCounter<K, V> set(K item1, V item2, double count) {
+   public MultiCounter<K, V> set(K item1, V item2, double amount) {
       throw new UnsupportedOperationException();
    }
 

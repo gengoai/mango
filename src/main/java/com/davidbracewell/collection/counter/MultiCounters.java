@@ -36,7 +36,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 /**
- * The interface Multi counters.
+ * Common methods for reading multi-counters from structured files, creating synchronized and unmodifiable wrappers.
  */
 public interface MultiCounters {
 

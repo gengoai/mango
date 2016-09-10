@@ -35,9 +35,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
- * <p>Abstract class for counters backed by <code>java.util.Map</code> implementations. </p>
+ * Implementation of a Counter using a HashMap
  *
- * @param <T> the type parameter
+ * @param <T> the component type of the counter
  * @author David B. Bracewell
  */
 @EqualsAndHashCode(exclude = {"sum"})
