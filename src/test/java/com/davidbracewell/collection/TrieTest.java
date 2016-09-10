@@ -55,7 +55,7 @@ public class TrieTest {
    @Test
    public void findAll() throws Exception {
       String content = "I ran the rand program and wasn't happy";
-      List<TrieMatch<String>> matches = trie.findAll(content, CharPredicate.WHITESPACE);
+      List<TrieMatch<String>> matches = trie.find(content, CharPredicate.WHITESPACE);
       assertEquals(3, matches.size());
 
       assertEquals("run", matches.get(0).getValue());
@@ -102,21 +102,8 @@ public class TrieTest {
 
    @Test
    public void prefix() throws Exception {
-      Trie<String> prefix = trie.prefix("ran");
+      Map<String, String> prefix = trie.prefix("ran");
 
-      assertEquals(2, prefix.size());
-      assertEquals(Sets.set("ran", "rand"), prefix.keySet());
-
-      prefix.remove("ran");
-      assertEquals(1, prefix.size());
-      assertEquals(4, trie.size());
-
-      prefix.remove("rand");
-      assertEquals(0, prefix.size());
-      assertEquals(3, trie.size());
-
-      prefix.put("ran", "run");
-      prefix.put("rand", "rand");
       assertEquals(2, prefix.size());
       assertEquals(Sets.set("ran", "rand"), prefix.keySet());
    }
@@ -151,13 +138,16 @@ public class TrieTest {
       String key = first.getKey();
       first.setValue("ABBA");
       assertEquals("ABBA", trie.get(key));
+
    }
 
    @Test
    public void put() throws Exception {
       assertEquals("run", trie.put("ran", null));
 
-      Trie<String> prefix = trie.prefix("ran");
+
+
+      Map<String,String> prefix = trie.prefix("ran");
 
       assertEquals(2, prefix.size());
       assertEquals(Sets.set("ran", "rand"), prefix.keySet());

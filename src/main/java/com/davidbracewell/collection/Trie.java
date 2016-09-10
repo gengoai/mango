@@ -3,6 +3,7 @@ package com.davidbracewell.collection;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.string.CharPredicate;
 import com.davidbracewell.string.StringUtils;
+import com.google.common.collect.Iterators;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -10,9 +11,15 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * The type Trie.
+ * <p>A basic <a href="https://en.wikipedia.org/wiki/Trie">Trie</a> implementation that uses hashmaps to store its child
+ * nodes. The {@link #find(String, CharPredicate)} method provides functionality to find all elements of the trie in the
+ * specified string in longest-first style using the specified CharPredicate to accept or reject matches based on the
+ * character after the match, e.g. only match if the next character is whitespace.</p>
  *
- * @param <V> the type parameter
+ * <p>Note that views of the trie, i.e. keySet(), values(), entrySet(), and the resulting map from prefix(), are
+ * unmodifiable.</p>
+ *
+ * @param <V> the value type of the trie.
  * @author David B. Bracewell
  */
 public class Trie<V> implements Serializable, Map<String, V> {
@@ -27,31 +34,25 @@ public class Trie<V> implements Serializable, Map<String, V> {
    }
 
    /**
-    * Instantiates a new Trie.
+    * Instantiates a new Trie initializing the values to those in the given map.
     *
-    * @param map the map
+    * @param map A map of string to value used to populate the trie.
     */
    public Trie(@NonNull Map<String, V> map) {
       this();
       putAll(map);
    }
 
-   private Trie(TrieNode<V> root) {
-      if (root != null) {
-         this.root = root;
-      } else {
-         this.root = new TrieNode<>(null, null);
-      }
-   }
-
    /**
-    * Find all list.
+    * Matches the strings in the trie against a specified text. Matching is doing using a greedy longest match wins way.
+    * The give CharPredicate is used to determine if matches are accepted, e.g. only accept a match followed by a
+    * whitespace character.
     *
-    * @param text      the text
-    * @param delimiter the delimiter
-    * @return the list
+    * @param text      the text to find the trie elements in
+    * @param delimiter the predicate that specifies acceptable delimiters
+    * @return the list of matched elements
     */
-   public List<TrieMatch<V>> findAll(String text, CharPredicate delimiter) {
+   public List<TrieMatch<V>> find(String text, CharPredicate delimiter) {
       if (StringUtils.isNullOrBlank(text)) {
          return Collections.emptyList();
       }
@@ -134,7 +135,10 @@ public class Trie<V> implements Serializable, Map<String, V> {
 
    @Override
    public boolean containsKey(Object key) {
-      TrieNode<V> match = find(Cast.as(key));
+      if (key == null) {
+         return false;
+      }
+      TrieNode<V> match = root.find(key.toString());
       return match != null && StringUtils.safeEquals(match.matches, Cast.as(key), true);
    }
 
@@ -145,7 +149,10 @@ public class Trie<V> implements Serializable, Map<String, V> {
 
    @Override
    public V get(Object key) {
-      TrieNode<V> match = find(Cast.as(key));
+      if (key == null) {
+         return null;
+      }
+      TrieNode<V> match = root.find(key.toString());
       if (match != null) {
          return match.value;
       }
@@ -158,17 +165,32 @@ public class Trie<V> implements Serializable, Map<String, V> {
    }
 
    /**
-    * Prefix trie.
+    * <p>Returns an unmodifiable map view of this Trie containing only those elements with the given prefix.</p>
     *
-    * @param prefix the prefix
-    * @return the trie
+    * @param prefix the prefix to match
+    * @return A unmodifiable map view of the trie whose elements have the given prefix
     */
-   public Trie<V> prefix(String prefix) {
-      TrieNode<V> match = find(prefix);
+   public Map<String, V> prefix(@NonNull String prefix) {
+      final TrieNode<V> match = root.find(prefix);
       if (match == null) {
-         return new Trie<>();
+         return Collections.emptyMap();
       }
-      return new Trie<>(match);
+      return new AbstractMap<String, V>() {
+         @Override
+         public Set<Entry<String, V>> entrySet() {
+            return new AbstractSet<Entry<String, V>>() {
+               @Override
+               public Iterator<Entry<String, V>> iterator() {
+                  return Iterators.unmodifiableIterator(new EntryIterator<>(match));
+               }
+
+               @Override
+               public int size() {
+                  return match.size;
+               }
+            };
+         }
+      };
    }
 
    @Override
@@ -183,7 +205,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
 
          @Override
          public Iterator<String> iterator() {
-            return Streams.asStream(root.subTreeIterator()).map(Map.Entry::getKey).iterator();
+            return new KeyIterator<>(root);
          }
 
          @Override
@@ -200,7 +222,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
       return new AbstractCollection<V>() {
          @Override
          public Iterator<V> iterator() {
-            return Streams.asStream(root.subTreeIterator()).map(Map.Entry::getValue).iterator();
+            return new ValueIterator<>(root);
          }
 
          @Override
@@ -242,7 +264,10 @@ public class Trie<V> implements Serializable, Map<String, V> {
 
    @Override
    public V remove(Object key) {
-      TrieNode<V> node = find(Cast.as(key));
+      if (key == null) {
+         return null;
+      }
+      TrieNode<V> node = root.find(key.toString());
       V value = null;
       if (node != null) {
          node.matches = null;
@@ -270,34 +295,9 @@ public class Trie<V> implements Serializable, Map<String, V> {
       root.prune();
    }
 
-   private TrieNode<V> find(String string) {
-      if (string == null || string.length() == 0 || string.length() < root.depth) {
-         return null;
-      }
-      char[] array = string.toCharArray();
-      TrieNode<V> node = root;
-      int i = 0;
-      if (root.matches == null) {
-         while (i < root.depth) {
-            node = node.parent;
-            i++;
-         }
-         i = 0;
-      } else {
-         i = root.depth;
-         if (!root.matches.substring(0, i).equals(string.substring(0, i))) {
-            return null;
-         }
-      }
-      for (; i < array.length && node != null; i++) {
-         node = node.children.get(array[i]);
-      }
-      return node;
-   }
-
    private static class TrieNode<V> implements Serializable {
       private static final long serialVersionUID = 1L;
-      private final Character c;
+      private final Character nodeChar;
       private final TrieNode<V> parent;
       private final int depth;
       private V value;
@@ -305,9 +305,28 @@ public class Trie<V> implements Serializable, Map<String, V> {
       private int size = 0;
       private Map<Character, TrieNode<V>> children = new HashMap<>(1);
 
+      TrieNode<V> find(String string) {
+         if (string == null || string.length() == 0) {
+            return null;
+         }
+         TrieNode<V> node = this;
+         if (nodeChar == null) {
+            node = children.get(string.charAt(0));
+         } else if (nodeChar != string.charAt(0)) {
+            return null;
+         }
+         for (int i = 1; node != null && i < string.length(); i++) {
+            node = node.children.get(string.charAt(i));
+         }
+         return node;
+      }
 
-      private TrieNode(Character c, TrieNode<V> parent) {
-         this.c = c;
+      public boolean contains(String string) {
+         return find(string) != null;
+      }
+
+      private TrieNode(Character nodeChar, TrieNode<V> parent) {
+         this.nodeChar = nodeChar;
          this.parent = parent;
          if (parent == null) {
             this.depth = 0;
@@ -321,18 +340,18 @@ public class Trie<V> implements Serializable, Map<String, V> {
          return "(" + matches + ", " + value + ")";
       }
 
-      private void prune() {
+      void prune() {
          if (parent == null) {
             return;
          }
          if (matches == null && children.isEmpty()) {
-            parent.children.remove(c);
+            parent.children.remove(nodeChar);
          }
          parent.size--;
          parent.prune();
       }
 
-      private Iterator<Map.Entry<String, V>> subTreeIterator() {
+      Iterator<Map.Entry<String, V>> subTreeIterator() {
          return new EntryIterator<>(this);
       }
 
@@ -365,101 +384,122 @@ public class Trie<V> implements Serializable, Map<String, V> {
          return toReturn;
       }
 
-      private static class EntryIterator<V> implements Iterator<Map.Entry<String, V>> {
-         /**
-          * The Queue.
-          */
-         final Queue<TrieNode<V>> queue = new LinkedList<>();
-         /**
-          * The Current.
-          */
-         TrieNode<V> current = null;
-         /**
-          * The Old.
-          */
-         TrieNode<V> old = null;
+   }
 
-         /**
-          * Instantiates a new Entry iterator.
-          *
-          * @param node the node
-          */
-         public EntryIterator(TrieNode<V> node) {
-            if (node.matches != null) {
-               queue.add(node);
-            } else {
-               queue.addAll(node.children.values());
-            }
-         }
+   private static abstract class TrieIterator<V, E> implements Iterator<E> {
+      private final Queue<TrieNode<V>> queue = new LinkedList<>();
+      private TrieNode<V> current = null;
+      private TrieNode<V> old = null;
 
-         private TrieNode<V> move() {
-            while (current == null || current.matches == null) {
-               if (queue.isEmpty()) {
-                  return null;
-               }
-               current = queue.remove();
-               queue.addAll(current.children.values());
-            }
-            return current;
-         }
-
-
-         @Override
-         public boolean hasNext() {
-            return move() != null;
-         }
-
-         @Override
-         public Map.Entry<String, V> next() {
-            old = move();
-            if (old == null) {
-               throw new NoSuchElementException();
-            }
-            current = null;
-            return new Map.Entry<String, V>() {
-               @Override
-               public String getKey() {
-                  return node.matches;
-               }
-
-               @Override
-               public V getValue() {
-                  return node.value;
-               }
-
-               @Override
-               public V setValue(V value) {
-                  V oldValue = node.value;
-                  node.value = value;
-                  return oldValue;
-               }
-
-               TrieNode<V> node = old;
-
-               @Override
-               public String toString() {
-                  return node.matches + "=" + node.value;
-               }
-
-               @Override
-               public boolean equals(Object obj) {
-                  if (obj == null || !(obj instanceof Entry)) {
-                     return false;
-                  }
-                  Entry e = Cast.as(obj);
-                  return e.getKey().equals(node.matches) && e.getValue().equals(node.value);
-               }
-            };
-         }
-
-         @Override
-         public void remove() {
-            old.value = null;
-            old.matches = null;
-            old.size--;
-            old.prune();
+      private TrieIterator(TrieNode<V> node) {
+         if (node.matches != null) {
+            queue.add(node);
+         } else {
+            queue.addAll(node.children.values());
          }
       }
+
+      private TrieNode<V> move() {
+         while (current == null || current.matches == null) {
+            if (queue.isEmpty()) {
+               return null;
+            }
+            current = queue.remove();
+            queue.addAll(current.children.values());
+         }
+         return current;
+      }
+
+      @Override
+      public boolean hasNext() {
+         return move() != null;
+      }
+
+
+      @Override
+      public E next() {
+         old = move();
+         if (old == null) {
+            throw new NoSuchElementException();
+         }
+         current = null;
+         return convert(old);
+      }
+
+      abstract E convert(TrieNode<V> node);
+
+   }
+
+   private static class KeyIterator<V> extends TrieIterator<V, String> {
+
+      private KeyIterator(TrieNode<V> node) {
+         super(node);
+      }
+
+      @Override
+      String convert(TrieNode<V> node) {
+         return node.matches;
+      }
+
+   }
+
+   private static class ValueIterator<V> extends TrieIterator<V, V> {
+
+      private ValueIterator(TrieNode<V> node) {
+         super(node);
+      }
+
+      @Override
+      V convert(TrieNode<V> node) {
+         return node.value;
+      }
+   }
+
+   private static class EntryIterator<V> extends TrieIterator<V, Map.Entry<String, V>> {
+
+      private EntryIterator(TrieNode<V> node) {
+         super(node);
+      }
+
+      @Override
+      Map.Entry<String, V> convert(final TrieNode<V> old) {
+         return new Map.Entry<String, V>() {
+            @Override
+            public String getKey() {
+               return node.matches;
+            }
+
+            @Override
+            public V getValue() {
+               return node.value;
+            }
+
+            @Override
+            public V setValue(V value) {
+               V oldValue = node.value;
+               node.value = value;
+               return oldValue;
+            }
+
+            TrieNode<V> node = old;
+
+            @Override
+            public String toString() {
+               return node.matches + "=" + node.value;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+               if (obj == null || !(obj instanceof Entry)) {
+                  return false;
+               }
+               Entry e = Cast.as(obj);
+               return e.getKey().equals(node.matches) && e.getValue().equals(node.value);
+            }
+         };
+      }
+
+
    }
 
 
