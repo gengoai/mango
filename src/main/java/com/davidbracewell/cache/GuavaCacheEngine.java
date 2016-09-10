@@ -29,53 +29,55 @@ import org.kohsuke.MetaInfServices;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * <p>Cache engine for creating Guava-backed caches.</p>
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices
 public class GuavaCacheEngine implements CacheEngine {
 
-  @Override
-  public String name() {
-    return "Guava";
-  }
+   @Override
+   public String name() {
+      return "Guava";
+   }
 
-  @Override
-  @SuppressWarnings("unchecked")
-  public <K, V> Cache<K, V> create(@NonNull CacheSpec<K, V> cacheSpec) {
-    CacheBuilder<K, V> builder = cacheBuilderFromSpec(cacheSpec);
-    if (cacheSpec.getLoadingFunction() == null) {
-      return new GuavaCache<>(cacheSpec.getName(), builder);
-    }
-    return new GuavaLoadingCache<>(cacheSpec.getName(), builder, cacheSpec.getLoadingFunction());
-  }
+   @Override
+   @SuppressWarnings("unchecked")
+   public <K, V> Cache<K, V> create(@NonNull CacheSpec<K, V> cacheSpec) {
+      CacheBuilder<K, V> builder = cacheBuilderFromSpec(cacheSpec);
+      if (cacheSpec.getLoadingFunction() == null) {
+         return new GuavaCache<>(cacheSpec.getName(), builder);
+      }
+      return new GuavaLoadingCache<>(cacheSpec.getName(), builder, cacheSpec.getLoadingFunction());
+   }
 
-  @SuppressWarnings("unchecked")
-  private <K, V> CacheBuilder<K, V> cacheBuilderFromSpec(CacheSpec<K, V> specification) {
-    CacheBuilder cacheBuilder = CacheBuilder.newBuilder();
-    if (specification.getMaxSize() > 0) {
-      cacheBuilder.maximumSize(specification.getMaxSize());
-    }
-    if (specification.getConcurrencyLevel() > 0) {
-      cacheBuilder.concurrencyLevel(specification.getMaxSize());
-    }
-    if (specification.getInitialCapacity() > 0) {
-      cacheBuilder.initialCapacity(specification.getInitialCapacity());
-    }
-    if (specification.getExpiresAfterAccess() > 0) {
-      cacheBuilder.expireAfterAccess(specification.getExpiresAfterAccess(), TimeUnit.MILLISECONDS);
-    }
-    if (specification.getExpiresAfterWrite() > 0) {
-      cacheBuilder.expireAfterWrite(specification.getExpiresAfterWrite(), TimeUnit.MILLISECONDS);
-    }
-    if (specification.isWeakKeys()) {
-      cacheBuilder.weakKeys();
-    }
-    if (specification.isWeakValues()) {
-      cacheBuilder.weakValues();
-    }
-    if (specification.getRemovalListener() != null) {
-      cacheBuilder.removalListener(specification.getRemovalListener());
-    }
-    return Cast.as(cacheBuilder);
-  }
+   @SuppressWarnings("unchecked")
+   private <K, V> CacheBuilder<K, V> cacheBuilderFromSpec(CacheSpec<K, V> specification) {
+      CacheBuilder cacheBuilder = CacheBuilder.newBuilder();
+      if (specification.getMaxSize() > 0) {
+         cacheBuilder.maximumSize(specification.getMaxSize());
+      }
+      if (specification.getConcurrencyLevel() > 0) {
+         cacheBuilder.concurrencyLevel(specification.getMaxSize());
+      }
+      if (specification.getInitialCapacity() > 0) {
+         cacheBuilder.initialCapacity(specification.getInitialCapacity());
+      }
+      if (specification.getExpiresAfterAccess() > 0) {
+         cacheBuilder.expireAfterAccess(specification.getExpiresAfterAccess(), TimeUnit.MILLISECONDS);
+      }
+      if (specification.getExpiresAfterWrite() > 0) {
+         cacheBuilder.expireAfterWrite(specification.getExpiresAfterWrite(), TimeUnit.MILLISECONDS);
+      }
+      if (specification.isWeakKeys()) {
+         cacheBuilder.weakKeys();
+      }
+      if (specification.isWeakValues()) {
+         cacheBuilder.weakValues();
+      }
+      if (specification.getRemovalListener() != null) {
+         cacheBuilder.removalListener(specification.getRemovalListener());
+      }
+      return Cast.as(cacheBuilder);
+   }
 }//END OF GuavaCacheEngine

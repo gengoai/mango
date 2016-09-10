@@ -35,7 +35,7 @@ import java.util.stream.Stream;
 import static com.davidbracewell.collection.Streams.asStream;
 
 /**
- * <p>Convenience methods for creating lists and manipulating collections resulting in sets.</p>
+ * <p>Convenience methods for creating lists and manipulating collections resulting in lists.</p>
  *
  * @author David B. Bracewell
  */

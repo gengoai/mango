@@ -34,10 +34,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
 /**
- * The type Guava loading cache.
+ * <p>Guava-backed loading cache implementation.</p>
  *
- * @param <K> the type parameter
- * @param <V> the type parameter
+ * @param <K> the key type
+ * @param <V> the value parameter
  * @author David B. Bracewell
  */
 public class GuavaLoadingCache<K, V> implements AutoCalculatingCache<K, V>, Serializable {

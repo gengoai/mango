@@ -28,7 +28,7 @@ import java.util.Map;
 
 /**
  * <p>
- * A Bounded map that keeps the last recently used items.
+ * A Bounded map that keeps the last recently N used items.
  * </p>
  *
  * @param <K> Key type

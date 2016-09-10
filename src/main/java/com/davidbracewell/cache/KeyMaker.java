@@ -26,7 +26,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 /**
- * The interface Key maker.
+ * Defines an interface for turning a class, method, and method arguments into a key used in cache.
  *
  * @author David B. Bracewell
  */

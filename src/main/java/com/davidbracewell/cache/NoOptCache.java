@@ -28,10 +28,10 @@ import java.io.Serializable;
 import java.util.concurrent.ExecutionException;
 
 /**
- * The type No opt cache.
+ * <p>Cache implementation in which nothing is retained</p>
  *
- * @param <K> the type parameter
- * @param <V> the type parameter
+ * @param <K> the key type
+ * @param <V> the value type
  * @author David B. Bracewell
  */
 public class NoOptCache<K, V> implements Cache<K, V>, Serializable {
