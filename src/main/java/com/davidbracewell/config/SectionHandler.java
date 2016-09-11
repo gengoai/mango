@@ -32,25 +32,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * The type Section handler.
+ *
  * @author David B. Bracewell
  */
 class SectionHandler extends PrefixHandler {
 
-  /**
-   * Instantiates a new Section handler.
-   */
-  public SectionHandler() {
-    super(100);
-  }
+   /**
+    * Instantiates a new Section handler.
+    */
+   public SectionHandler() {
+      super(100);
+   }
 
-  @Override
-  public Expression parse(Parser parser, ParserToken token) throws ParseException {
-    List<Expression> subExpressions = new ArrayList<>();
-    while (parser.tokenStream().lookAheadType(0) != ConfigTokenizer.ConfigTokenType.END_SECTION) {
-      subExpressions.add(parser.next());
-    }
-    parser.tokenStream().consume();
-    return new SectionExpression(token.text, subExpressions);
-  }
+   @Override
+   public Expression parse(Parser parser, ParserToken token) throws ParseException {
+      List<Expression> subExpressions = new ArrayList<>();
+      while (parser.tokenStream().lookAheadType(0) != ConfigTokenizer.ConfigTokenType.END_SECTION) {
+         subExpressions.add(parser.next());
+      }
+      parser.tokenStream().consume();
+      return new SectionExpression(token.text, subExpressions);
+   }
 
 }//END OF SectionHandler

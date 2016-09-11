@@ -16,172 +16,173 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * The interface Structured writer.
+ * Represents a class for writing data in a structured format, e.g. xml, json, yaml, etc. Individual implementations
+ * may provide extra functionality (e.g. read xml attributes).
  *
  * @author David B. Bracewell
  */
 public abstract class StructuredWriter implements Closeable {
 
    /**
-    * Begin document structured writer.
+    * Begin document as an object structure
     *
-    * @return the structured writer
-    * @throws IOException the io exception
+    * @return This structured writer
+    * @throws IOException Something went wrong writing
     */
    public StructuredWriter beginDocument() throws IOException {
       return beginDocument(false);
    }
 
    /**
-    * Begin document structured writer.
+    * Begin document
     *
-    * @param isArray the is array
-    * @return the structured writer
-    * @throws IOException the io exception
+    * @param isArray True the document is an array structure, false is an object structure
+    * @return This structured writer
+    * @throws IOException Something went wrong writing
     */
    public abstract StructuredWriter beginDocument(boolean isArray) throws IOException;
 
    /**
     * End document.
     *
-    * @throws IOException the io exception
+    * @throws IOException Something went wrong writing
     */
    public abstract void endDocument() throws IOException;
 
    /**
-    * Begin object structured writer.
+    * Begins a new object with a given name
     *
     * @param name the name
-    * @return the structured writer
-    * @throws IOException the io exception
+    * @return This structured writer
+    * @throws IOException Something went wrong writing
     */
    public abstract StructuredWriter beginObject(String name) throws IOException;
 
    /**
-    * Begin object structured writer.
+    * Begins a new object
     *
-    * @return the structured writer
-    * @throws IOException the io exception
+    * @return This structured writer
+    * @throws IOException Something went wrong writing
     */
    public abstract StructuredWriter beginObject() throws IOException;
 
    /**
-    * End object structured writer.
+    * Ends the current object
     *
-    * @return the structured writer
-    * @throws IOException the io exception
+    * @return This structured writer
+    * @throws IOException Something went wrong writing
     */
    public abstract StructuredWriter endObject() throws IOException;
 
    /**
-    * Begin array structured writer.
+    * Begins a new array with given name
     *
     * @param name the name
-    * @return the structured writer
-    * @throws IOException the io exception
+    * @return This structured writer
+    * @throws IOException Something went wrong writing
     */
    public abstract StructuredWriter beginArray(String name) throws IOException;
 
    /**
-    * Begin array structured writer.
+    * Begins a new array
     *
-    * @return the structured writer
-    * @throws IOException the io exception
+    * @return This structured writer
+    * @throws IOException Something went wrong writing
     */
    public abstract StructuredWriter beginArray() throws IOException;
 
    /**
-    * End array structured writer.
+    * Ends the current array
     *
-    * @return the structured writer
-    * @throws IOException the io exception
+    * @return This structured writer
+    * @throws IOException Something went wrong writing
     */
    public abstract StructuredWriter endArray() throws IOException;
 
    /**
-    * In array boolean.
+    * Determines if the writer is currently in an array
     *
-    * @return the boolean
+    * @return True if in an array, False if not
     */
    public abstract boolean inArray();
 
    /**
-    * In object boolean.
+    * Determines if the writer is currently in an object
     *
-    * @return the boolean
+    * @return True if in an object, False if not
     */
    public abstract boolean inObject();
 
    /**
-    * Flush.
+    * Flushes the writer.
     *
-    * @throws IOException the io exception
+    * @throws IOException Something went wrong writing
     */
    public abstract void flush() throws IOException;
 
    /**
-    * Write key value structured writer.
+    * Writes a  key value pair
     *
     * @param key    the key
     * @param object the value
-    * @return the structured writer
-    * @throws IOException the io exception
+    * @return This structured writer
+    * @throws IOException Something went wrong writing
     */
    public abstract StructuredWriter writeKeyValue(String key, Object object) throws IOException;
 
    /**
-    * Write value structured writer.
+    * Writes an array value
     *
     * @param value the value
-    * @return the structured writer
-    * @throws IOException the io exception
+    * @return This structured writer
+    * @throws IOException Something went wrong writing
     */
    public StructuredWriter writeValue(Object value) throws IOException {
       return writeObject(value);
    }
 
    /**
-    * Write null structured writer.
+    * Writes a  null value
     *
-    * @return the structured writer
-    * @throws IOException the io exception
+    * @return This structured writer
+    * @throws IOException Something went wrong writing
     */
    protected abstract StructuredWriter writeNull() throws IOException;
 
    /**
-    * Write number structured writer.
+    * Writes a number
     *
     * @param number the number
-    * @return the structured writer
-    * @throws IOException the io exception
+    * @return This structured writer
+    * @throws IOException Something went wrong writing
     */
    protected abstract StructuredWriter writeNumber(Number number) throws IOException;
 
    /**
-    * Write string structured writer.
+    * Writes a string
     *
     * @param string the string
-    * @return the structured writer
-    * @throws IOException the io exception
+    * @return This structured writer
+    * @throws IOException Something went wrong writing
     */
    protected abstract StructuredWriter writeString(String string) throws IOException;
 
    /**
-    * Write boolean structured writer.
+    * Writes a boolean.
     *
     * @param value the value
-    * @return the structured writer
-    * @throws IOException the io exception
+    * @return This structured writer
+    * @throws IOException Something went wrong writing
     */
    protected abstract StructuredWriter writeBoolean(boolean value) throws IOException;
 
 
    /**
-    * Write object structured writer.
+    * Serializes an object
     *
-    * @param object the object
-    * @return the structured writer
-    * @throws IOException the io exception
+    * @param object the object to serialize
+    * @return This structured writer
+    * @throws IOException Something went wrong writing
     */
    protected StructuredWriter writeObject(Object object) throws IOException {
       if (object == null) {
@@ -248,11 +249,11 @@ public abstract class StructuredWriter implements Closeable {
    }
 
    /**
-    * Write map structured writer.
+    * Writes a map
     *
-    * @param map the map
-    * @return the structured writer
-    * @throws IOException the io exception
+    * @param map the map to be written
+    * @return This structured writer
+    * @throws IOException Something went wrong writing
     */
    protected StructuredWriter writeMap(@NonNull Map<?, ?> map) throws IOException {
       boolean inObject = inObject();
@@ -265,11 +266,11 @@ public abstract class StructuredWriter implements Closeable {
    }
 
    /**
-    * Write collection structured writer.
+    * Writes a collection
     *
-    * @param collection the collection
-    * @return the structured writer
-    * @throws IOException the io exception
+    * @param collection the collection to be written
+    * @return This structured writer
+    * @throws IOException Something went wrong writing
     */
    protected StructuredWriter writeCollection(@NonNull Collection<?> collection) throws IOException {
       beginArray();
@@ -281,11 +282,11 @@ public abstract class StructuredWriter implements Closeable {
    }
 
    /**
-    * Write array structured writer.
+    * Writes an array
     *
-    * @param array the array
-    * @return the structured writer
-    * @throws IOException the io exception
+    * @param array the array to be written
+    * @return This structured writer
+    * @throws IOException Something went wrong writing
     */
    protected StructuredWriter writeArray(@NonNull Object[] array) throws IOException {
       beginArray();
@@ -296,13 +297,13 @@ public abstract class StructuredWriter implements Closeable {
       return this;
    }
 
-
    /**
-    * Write map structured writer.
+    * Writes a map with the given key name
     *
-    * @param map the map
-    * @return the structured writer
-    * @throws IOException the io exception
+    * @param key the key name for the map
+    * @param map the map to be written
+    * @return This structured writer
+    * @throws IOException Something went wrong writing
     */
    protected StructuredWriter writeMap(String key, @NonNull Map<?, ?> map) throws IOException {
       boolean inObject = inObject();
@@ -315,11 +316,12 @@ public abstract class StructuredWriter implements Closeable {
    }
 
    /**
-    * Write collection structured writer.
+    * Writes a collection with the given key name
     *
-    * @param collection the collection
-    * @return the structured writer
-    * @throws IOException the io exception
+    * @param key        the key name for the collection
+    * @param collection the collection to be written
+    * @return This structured writer
+    * @throws IOException Something went wrong writing
     */
    protected StructuredWriter writeCollection(String key, @NonNull Collection<?> collection) throws IOException {
       beginArray(key);
@@ -331,11 +333,12 @@ public abstract class StructuredWriter implements Closeable {
    }
 
    /**
-    * Write array structured writer.
+    * Writes an array with the given key name
     *
-    * @param array the array
-    * @return the structured writer
-    * @throws IOException the io exception
+    * @param key   the key name for the array
+    * @param array the array to be written
+    * @return This structured writer
+    * @throws IOException Something went wrong writing
     */
    protected StructuredWriter writeArray(String key, @NonNull Object[] array) throws IOException {
       beginArray(key);

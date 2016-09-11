@@ -77,12 +77,15 @@ public final class Config implements Serializable {
    private volatile static Config INSTANCE;
    private final Map<String, String> properties = new ConcurrentHashMap<>();
    private final Set<String> loaded = new ConcurrentSkipListSet<>();
+   /**
+    * The Setter function.
+    */
    ConfigPropertySetter setterFunction = ConfigSettingError.INSTANCE;
 
    /**
-    * Gets instance.
+    * Gets the singleton instance of the config. This should not normally be used by api consumers
     *
-    * @return the instance
+    * @return the singleton instance of the config.
     */
    public static Config getInstance() {
       if (INSTANCE == null) {
@@ -94,10 +97,11 @@ public final class Config implements Serializable {
    }
 
    /**
-    * Sets instance.
+    * Sets the singleton instance of the config. This is mainly useful in distributed environments where we are passing
+    * configurations around.
     *
-    * @param config the config
-    * @return the instance
+    * @param config the config that will become the single instance
+    * @return the singleton instance of the config
     */
    public static Config setInstance(Config config) {
       synchronized (Config.class) {
@@ -107,12 +111,12 @@ public final class Config implements Serializable {
    }
 
    /**
-    * Is config loaded.
+    * Determines if a given configuration resource has been loaded
     *
-    * @param configResource the config resource
-    * @return the boolean
+    * @param configResource the config resource to check.
+    * @return True if the config has been loaded, False if not
     */
-   public static boolean isConfigLoaded(Resource configResource) {
+   public static boolean isConfigLoaded(@NonNull Resource configResource) {
       return getInstance().loaded.contains(configResource.path());
    }
 
@@ -141,19 +145,31 @@ public final class Config implements Serializable {
 
 
    /**
-    * Gets map.
+    * <p>Creates a map from a number of config properties. For example, given the following config excerpt:</p>
+    * <pre>
+    * {@code
+    *    mymap {
+    *       key1 = 100
+    *       key2 = 200
+    *       key3 = 300
+    *    }
+    * }*
+    * </pre>
+    * <p>We can create map containing <code>{key1=100,key2=200,key3=300}</code>, but calling the method using:
+    * <code>getMap("mymap", String.class, Integer.class);</code></p>
     *
-    * @param <K>        the type parameter
-    * @param <V>        the type parameter
-    * @param prefix     the prefix
+    * @param <K>        the key type parameter
+    * @param <V>        the value type parameter
+    * @param mapName    the name of the map that is used to find map entries.
     * @param keyClass   the key class
     * @param valueClass the value class
-    * @return the map
+    * @return A map containing keys and values whose properties are <code>mapName.*</code> where "*" is a wildcard for
+    * key names
     */
-   public static <K, V> Map<K, V> getMap(String prefix, Class<K> keyClass, Class<V> valueClass) {
+   public static <K, V> Map<K, V> getMap(String mapName, Class<K> keyClass, Class<V> valueClass) {
       Map<K, V> map = new HashMap<>();
-      getPropertiesMatching(StringPredicates.STARTS_WITH(prefix, true)).forEach(property -> {
-         String k = property.substring(prefix.length() + 1);
+      getPropertiesMatching(StringPredicates.STARTS_WITH(mapName, true)).forEach(property -> {
+         String k = property.substring(mapName.length() + 1);
          map.put(Convert.convert(k, keyClass), get(property).as(valueClass));
       });
       return map;
@@ -189,7 +205,7 @@ public final class Config implements Serializable {
 
    /**
     * <p>Checks if a property is in the config or or set on the system. The property name is constructed as
-    * <code>clazz.getName() + . + propertyComponent[0] + . + propertyComponent[1] + ... +
+    * <code>propertyPrefix+ . + propertyComponent[0] + . + propertyComponent[1] + ... +
     * (language.toString()|language.getCode().toLowerCase())</code> This will return true if the language specific
     * config option is set or a default (i.e. no-language specified) version is set. </p>
     *
@@ -203,7 +219,7 @@ public final class Config implements Serializable {
    }
 
    /**
-    * Closest key.
+    * Finds the closest key to the given components
     *
     * @param propertyPrefix     the property prefix
     * @param language           the language
@@ -424,7 +440,7 @@ public final class Config implements Serializable {
    }
 
    /**
-    * Sets all command line.
+    * Sets all properties from the given array of arguments
     *
     * @param args the args
     */
@@ -432,26 +448,25 @@ public final class Config implements Serializable {
       if (args != null) {
          CommandLineParser parser = new CommandLineParser();
          parser.parse(args);
-         parser.getSetEntries().forEach(entry ->
-                                           getInstance().setterFunction.setProperty(entry.getKey(),
-                                                                                    entry.getValue(),
-                                                                                    "CommandLine"
-                                                                                   )
-                                       );
+         setAllCommandLine(parser);
       }
    }
 
+   /**
+    * Sets all properties from the given command line parser.
+    *
+    * @param parser the parser
+    */
    public static void setAllCommandLine(CommandLineParser parser) {
       if (parser != null) {
-         parser.getSetEntries().forEach(entry ->
-                                           getInstance().setterFunction.setProperty(entry.getKey(),
-                                                                                    entry.getValue(),
-                                                                                    "CommandLine"
-                                                                                   )
-                                       );
+         parser.getSetEntries()
+               .forEach(entry -> getInstance().setterFunction.setProperty(entry.getKey(),
+                                                                          entry.getValue(),
+                                                                          "CommandLine"
+                                                                         )
+                       );
       }
    }
-
 
    /**
     * <p> Initializes the configuration. </p> <p> Looks for a properties (programName.conf) in the classpath, the user
@@ -543,7 +558,6 @@ public final class Config implements Serializable {
 
       return rval;
    }
-
 
    /**
     * Load default conf.
@@ -733,10 +747,25 @@ public final class Config implements Serializable {
       defaultClassLoader = newDefaultClassLoader;
    }
 
+   /**
+    * Converts the config into an ini format easily consumed by Python with the section "default"
+    *
+    * @param output the resource to output the ini file to
+    * @return the resource writen to
+    * @throws IOException Something went wrong writing the config file
+    */
    public static Resource toPythonConfigParser(@NonNull Resource output) throws IOException {
       return toPythonConfigParser("default", output);
    }
 
+   /**
+    * Converts the config into an ini format easily consumed by Python with the given section name
+    *
+    * @param sectionName The section name to write properties under
+    * @param output      the resource to output the ini file to
+    * @return the resource writen to
+    * @throws IOException Something went wrong writing the config file
+    */
    public static Resource toPythonConfigParser(@NonNull String sectionName, @NonNull Resource output) throws IOException {
       try (BufferedWriter writer = new BufferedWriter(output.writer())) {
          writer.write("[");
@@ -790,7 +819,6 @@ public final class Config implements Serializable {
 
    }
 
-
    /**
     * Standard implementation of ConfigPropertySetter
     */
@@ -807,6 +835,9 @@ public final class Config implements Serializable {
 
    }
 
+   /**
+    * The enum Config setting error.
+    */
    enum ConfigSettingError implements ConfigPropertySetter {
       /**
        * The INSTANCE.
@@ -819,7 +850,6 @@ public final class Config implements Serializable {
       }
 
    }
-
 
    /**
     * A <code>ConfigPropertySetter</code> takes care of setting properties and their values are they are parsed by the

@@ -37,28 +37,28 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The type Structured format.
+ * Defines a common interface for creating structured readers and writers
  *
  * @author David B. Bracewell
  */
 public interface StructuredFormat extends Serializable {
 
    /**
-    * Create reader.
+    * Creates a new Structured Reader reading from the given resource.
     *
-    * @param resource the resource
+    * @param resource the resource to read from
     * @return the structured reader
-    * @throws IOException the structured iO exception
+    * @throws IOException Something went wrong initializing the reader
     */
    StructuredReader createReader(Resource resource) throws IOException;
 
 
    /**
-    * Create writer.
+    * Creates a new Structured Writer writing to the given resource.
     *
-    * @param resource the resource
+    * @param resource the resource to write from
     * @return the structured writer
-    * @throws IOException the structured iO exception
+    * @throws IOException Something went wrong initializing the writer
     */
    StructuredWriter createWriter(Resource resource) throws IOException;
 
@@ -162,61 +162,5 @@ public interface StructuredFormat extends Serializable {
       }
 
    };
-//
-//
-//   /**
-//    * The type Dsv format.
-//    */
-//   class DSVFormat implements StructuredFormat {
-//      private static final long serialVersionUID = 1L;
-//      private final com.davidbracewell.io.CSV format;
-//
-//      /**
-//       * Instantiates a new Dsv format.
-//       *
-//       * @param format the format
-//       */
-//      DSVFormat(@NonNull com.davidbracewell.io.CSV format) {
-//         this.format = format;
-//      }
-//
-//      @Override
-//      public StructuredReader createReader(Resource resource) throws IOException {
-//         try {
-//            return format.reader(resource);
-//         } catch (IOException e) {
-//            throw new IOException(e);
-//         }
-//      }
-//
-//      @Override
-//      public StructuredWriter createWriter(Resource resource) throws IOException {
-//         return null;
-//         //return format.writer(resource);
-//      }
-//
-//   }
-//
-//
-//   /**
-//    * CSV with no header
-//    */
-//   StructuredFormat CSV = new DSVFormat(com.davidbracewell.io.CSV.builder());
-//
-//   /**
-//    * TSV with no header
-//    */
-//   StructuredFormat TSV = new DSVFormat(com.davidbracewell.io.CSV.builder().delimiter('\t'));
-//
-//   /**
-//    * CSV with header
-//    */
-//   StructuredFormat CSV_HEADER = new DSVFormat(com.davidbracewell.io.CSV.builder().hasHeader());
-//
-//   /**
-//    * TSV with header
-//    */
-//   StructuredFormat TSV_HEADER = new DSVFormat(com.davidbracewell.io.CSV.builder().delimiter('\t').hasHeader());
-
 
 }//END OF StructuredFormat

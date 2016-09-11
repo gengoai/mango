@@ -6,7 +6,7 @@ import lombok.NonNull;
 import java.io.IOException;
 
 /**
- * The interface Structured serializable.
+ * Defines custom methods writing to and reading from structured formats
  *
  * @author David B. Bracewell
  */
