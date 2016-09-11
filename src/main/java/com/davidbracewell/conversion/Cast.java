@@ -21,19 +21,10 @@
 
 package com.davidbracewell.conversion;
 
-import com.davidbracewell.function.SerializableFunction;
 import lombok.NonNull;
 
 import java.io.Serializable;
-import java.util.AbstractCollection;
-import java.util.AbstractList;
-import java.util.AbstractMap;
-import java.util.AbstractSet;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * <p>A collection of static methods making casting from one type to another a bit easier. Note that the standard use
@@ -76,30 +67,6 @@ public final class Cast {
     } catch (Exception e) {
       return null;
     }
-  }
-
-  /**
-   * Creates a casting function that casts objects from one type to another using {@link #as(Object)}.
-   *
-   * @param <F> the type parameter
-   * @param <T> the type parameter
-   * @return A Function for casting objects to other types
-   */
-  public static <F, T> SerializableFunction<? super F, T> castingFunction() {
-    return Cast::as;
-  }
-
-
-  /**
-   * Creates a casting function that casts objects from one type to another using {@link #as(Object, Class)}.
-   *
-   * @param <F>   the type parameter
-   * @param <T>   the type parameter
-   * @param clazz The class to cast to
-   * @return A Function for casting objects to other types
-   */
-  public static <F, T> SerializableFunction<? super F, T> castingFunction(@NonNull final Class<? extends T> clazz) {
-    return input -> Cast.as(input, clazz);
   }
 
   /**

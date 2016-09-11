@@ -21,7 +21,9 @@
 
 package com.davidbracewell.conversion.impl;
 
+import com.davidbracewell.collection.Sets;
 import com.davidbracewell.conversion.CollectionConverter;
+import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.conversion.Val;
 import org.junit.Test;
 
@@ -61,11 +63,24 @@ public class CollectionConverterTest {
    }
 
    @Test
+   public void iterator() throws Exception {
+      Iterator<?> itr = Convert.convert("1,2,3", Iterator.class);
+      assertTrue(itr.hasNext());
+      assertEquals("1", itr.next());
+      assertTrue(itr.hasNext());
+      assertEquals("2", itr.next());
+      assertTrue(itr.hasNext());
+      assertEquals("3", itr.next());
+      assertFalse(itr.hasNext());
+   }
+
+   @Test
    public void testComponentConversionCollection() throws Exception {
       //Null
       assertNull(CollectionConverter.COLLECTION(List.class, String.class).apply(null));
       assertNull(CollectionConverter.COLLECTION(null, String.class).apply("1"));
-      assertNull(CollectionConverter.COLLECTION(HashSet.class, null).apply("1"));
+
+      assertEquals(Sets.set("1"), CollectionConverter.COLLECTION(HashSet.class, null).apply("1"));
 
 
       List<String> stringList = list("A", "B", "C");

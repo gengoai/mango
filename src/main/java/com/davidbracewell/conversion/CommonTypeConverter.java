@@ -21,11 +21,8 @@
 
 package com.davidbracewell.conversion;
 
-import com.davidbracewell.EnumValue;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.logging.Logger;
-import com.davidbracewell.reflection.Reflect;
-import com.davidbracewell.reflection.ReflectionException;
 import com.davidbracewell.reflection.ReflectionUtils;
 import com.davidbracewell.string.CSVFormatter;
 import com.davidbracewell.string.StringUtils;
@@ -80,37 +77,7 @@ public class CommonTypeConverter {
     */
    public static final Function<Object, Object> OBJECT = input -> input;
    /**
-    * The constant DYNAMIC_ENUM.
-    */
-   public static final Function<Object, EnumValue> DYNAMIC_ENUM = o -> {
-      if (o == null) {
-         return null;
-      } else if (o instanceof EnumValue) {
-         return as(o);
-      } else if (o instanceof CharSequence) {
-
-         String string = o.toString();
-         if (StringUtils.isNullOrBlank(string)) {
-            return null;
-         }
-
-         int index = string.lastIndexOf('.');
-         if (index == -1) {
-            return null;
-         }
-         Class<?> clazz = ReflectionUtils.getClassForNameQuietly(string.substring(0, index));
-         if (clazz != null) {
-            try {
-               return Reflect.onClass(clazz).allowPrivilegedAccess().get(string.substring(index + 1)).get();
-            } catch (ReflectionException e) {
-               return null;
-            }
-         }
-      }
-      return null;
-   };
-   /**
-    * Converts objects to strings. Handles collections, arrays, and varios io related objects (e.g. File, URI,
+    * Converts objects to strings. Handles collections, arrays, and various io related objects (e.g. File, URI,
     * InputStream, etc.)
     */
    @SuppressWarnings("unchecked")
@@ -120,25 +87,13 @@ public class CommonTypeConverter {
       } else if (input instanceof CharSequence) {
          return input.toString();
       } else if (input instanceof char[]) {
-
-         char[] chars = Cast.as(input);
-         return new String(chars);
-
+         return new String(Cast.<char[]>as(input));
       } else if (input instanceof byte[]) {
-
-         byte[] bytes = Cast.as(input);
-         return new String(bytes);
-
+         return new String(Cast.<byte[]>as(input));
       } else if (input instanceof Character[]) {
-
-         Character[] characters = Cast.as(input);
-         return new String(Chars.toArray(Arrays.asList(characters)));
-
+         return new String(Chars.toArray(Arrays.asList(Cast.as(input))));
       } else if (input instanceof Byte[]) {
-
-         Byte[] bytes = Cast.as(input);
-         return new String(Bytes.toArray(Arrays.asList(bytes)));
-
+         return new String(Bytes.toArray(Arrays.asList(Cast.as(input))));
       } else if (input instanceof File || input instanceof Path || input instanceof URI || input instanceof URL || input instanceof InputStream || input instanceof Blob || input instanceof Reader) {
          byte[] bytes = PrimitiveArrayConverter.BYTE.apply(input);
          if (bytes != null) {
@@ -159,8 +114,7 @@ public class CommonTypeConverter {
          StringBuilder builder = new StringBuilder("{");
          CSVFormatter mapFormat = CSV.builder().delimiter('=').formatter();
          Cast.<Map<?, ?>>as(input).forEach((o, o2) -> builder.append(
-               mapFormat.format(Convert.convert(o, String.class), Convert.convert(o2, String.class))
-                                                                    ));
+            mapFormat.format(Convert.convert(o, String.class), Convert.convert(o2, String.class))));
          return builder.append("}").toString();
       }
 
@@ -169,6 +123,9 @@ public class CommonTypeConverter {
 
    private static Logger log = Logger.getLogger(CommonTypeConverter.class);
 
+   /**
+    * Converts objects to java.util.Date
+    */
    public static final Function<Object, Date> JAVA_DATE = input -> {
       if (input == null) {
          return null;
@@ -185,14 +142,14 @@ public class CommonTypeConverter {
          string = StringUtils.trim(string.replaceAll(StringUtils.MULTIPLE_WHITESPACE, " "));
 
          for (DateFormat format : new DateFormat[]{
-               SimpleDateFormat.getDateTimeInstance(),
-               DateFormat.getDateInstance(DateFormat.SHORT),
-               DateFormat.getDateInstance(DateFormat.MEDIUM),
-               DateFormat.getDateInstance(DateFormat.LONG),
-               DateFormat.getDateInstance(DateFormat.FULL),
-               new SimpleDateFormat("yyyy-MM-dd"),
-               new SimpleDateFormat("MM/dd/yyyy")}
-               ) {
+            SimpleDateFormat.getDateTimeInstance(),
+            DateFormat.getDateInstance(DateFormat.SHORT),
+            DateFormat.getDateInstance(DateFormat.MEDIUM),
+            DateFormat.getDateInstance(DateFormat.LONG),
+            DateFormat.getDateInstance(DateFormat.FULL),
+            new SimpleDateFormat("yyyy-MM-dd"),
+            new SimpleDateFormat("MM/dd/yyyy")}
+            ) {
             try {
                return format.parse(string);
             } catch (ParseException e) {
@@ -205,6 +162,9 @@ public class CommonTypeConverter {
       log.fine("Could not convert {0} into java.util.Date", input.getClass());
       return null;
    };
+   /**
+    * Converts objects to java.sql.Date
+    */
    public static final Function<Object, java.sql.Date> SQL_DATE = input -> {
       if (input == null) {
          return null;

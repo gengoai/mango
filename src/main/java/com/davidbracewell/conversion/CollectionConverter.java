@@ -22,56 +22,58 @@
 package com.davidbracewell.conversion;
 
 import com.davidbracewell.collection.Collect;
-import com.davidbracewell.io.CSV;
-import com.davidbracewell.io.CSVReader;
-import com.davidbracewell.logging.Logger;
+import com.davidbracewell.function.SerializableFunction;
+import com.davidbracewell.logging.Loggable;
+import com.davidbracewell.string.StringUtils;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.function.Function;
 
+import static com.davidbracewell.conversion.Cast.as;
+
 /**
- * Converts objects to collections and iterables
+ * Converts objects to collections, iterators, and iterables
  *
  * @author David B. Bracewell
  */
 public final class CollectionConverter {
-
    /**
     * Converts an object to an iterable. Will only return null if the input is null
     */
-
    public static final Function<Object, Iterable<?>> ITERABLE = object -> {
       if (object == null) {
          return Collections.emptyList();
       } else if (object instanceof Iterable<?>) {
-         return Cast.as(object);
+         return as(object);
       } else if (object instanceof Iterator<?>) {
          return Collect.asIterable(Cast.<Iterator<?>>as(object));
       } else if (object instanceof Map) {
-         return Cast.as(Cast.<Map>as(object).entrySet());
+         return as(Cast.<Map>as(object).entrySet());
       } else if (object.getClass().isArray()) {
-         return Cast.as(Collect.asIterable(object, Object.class));
+         return as(Collect.asIterable(object, Object.class));
       } else if (object instanceof CharSequence) {
-         List<String> list = new ArrayList<>();
-         try (CSVReader reader = CSV.builder().removeEmptyCells().reader(new StringReader(object.toString()))) {
-            List<String> row;
-            while ((row = reader.nextRow()) != null) {
-               list.addAll(row);
-            }
-            return Cast.as(list);
-         } catch (IOException e) {
-            throw new RuntimeException(e);
-         }
+         return StringUtils.split(object.toString(), ',');
       }
-      return Cast.as(Collections.singletonList(object));
+      return as(Collections.singletonList(object));
    };
 
-   private static final Logger log = Logger.getLogger(CollectionConverter.class);
 
+   /**
+    * Converts an object to an iterator
+    */
+   public static final Function<Object, Iterator<?>> ITERATOR = object -> {
+      Iterable<?> iterable = ITERABLE.apply(object);
+      if (iterable == null) {
+         return null;
+      }
+      return iterable.iterator();
+   };
 
    private CollectionConverter() {
+      throw new IllegalAccessError();
    }
 
    /**
@@ -81,32 +83,8 @@ public final class CollectionConverter {
     * @return the conversion function
     */
    public static Function<Object, Collection<?>> COLLECTION(final Class<? extends Collection> collectionType) {
-      return input -> {
-         if (input == null) {
-            return null;
-         } else if (collectionType == null) {
-            return null;
-         } else if (collectionType.isAssignableFrom(input.getClass())) {
-            return Cast.as(input);
-         }
-         Iterable<?> iterable = ITERABLE.apply(input);
-         if (iterable != null) {
-            Collection<Object> collection = Cast.as(Collect.create(collectionType));
-            if (collection == null) {
-               log.fine("Unable to create a collection of type {0}", collectionType);
-               return null;
-            }
-            for (Object o : iterable) {
-               collection.add(o);
-            }
-            return collection;
-         }
-
-         log.fine("Unable to convert {0} to a Collection of type {1}", input.getClass(), collectionType);
-         return null;
-      };
+      return as(new CollectionConverterImpl<>(collectionType, null));
    }
-
 
    /**
     * Converts an object to a collection and converts the components as well.
@@ -117,45 +95,62 @@ public final class CollectionConverter {
     * @return the conversion function
     */
    public static <T> Function<Object, Collection<T>> COLLECTION(final Class<? extends Collection> collectionType, final Class<T> componentType) {
-      return input -> {
+      return new CollectionConverterImpl<>(collectionType, componentType);
+   }
+
+   private static class CollectionConverterImpl<T> implements SerializableFunction<Object, Collection<T>>, Loggable {
+      private static final long serialVersionUID = 1L;
+      private final Class<? extends Collection> collectionType;
+      private final Class<T> componentType;
+
+      private CollectionConverterImpl(Class<? extends Collection> collectionType, Class<T> componentType) {
+         this.collectionType = collectionType;
+         this.componentType = componentType;
+      }
+
+      @Override
+      public Collection<T> apply(Object input) {
 
          if (input == null) {
             return null;
          } else if (collectionType == null) {
-            log.fine("No collection type was given, returning null");
-            return null;
-         } else if (componentType == null) {
-            log.fine("No component type was given, returning null");
+            logFine("No collection type was given, returning null");
             return null;
          }
 
          Iterable<?> iterable = ITERABLE.apply(input);
          if (iterable != null) {
-            Collection<T> collection = Cast.as(Collect.create(collectionType));
+            Collection<T> collection = as(Collect.create(collectionType));
             if (collection == null) {
-               log.fine("Unable to create a collection of type {0}", collectionType);
+               logFine("Unable to create a collection of type {0}", collectionType);
                return null;
             }
             int added = 0;
-            for (Object o : iterable) {
-               T obj = Convert.convert(o, componentType);
-               if (obj != null) {
-                  collection.add(obj);
+            if (componentType == null) {
+               for (Object o : iterable) {
+                  collection.add(as(o));
                   added++;
+               }
+            } else {
+               for (Object o : iterable) {
+                  T obj = Convert.convert(o, componentType);
+                  if (obj != null) {
+                     collection.add(obj);
+                     added++;
+                  }
                }
             }
             if (added == 0) {
-               log.fine("Unable to convert components to {0}", componentType);
+               logFine("Unable to convert components to {0}", componentType);
                return null;
             }
             return collection;
          }
 
 
-
-         log.fine("Unable to convert {0} to a Collection of type {1}", input.getClass(), collectionType);
+         logFine("Unable to convert {0} to a Collection of type {1}", input.getClass(), collectionType);
          return null;
-      };
+      }
    }
 
 

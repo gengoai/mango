@@ -21,13 +21,12 @@
 
 package com.davidbracewell.conversion;
 
-import com.davidbracewell.collection.list.PrimitiveArrayList;
-import com.davidbracewell.logging.Logger;
+import com.davidbracewell.function.SerializableFunction;
+import com.davidbracewell.logging.Loggable;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * Converts objects to arrays of objects
@@ -35,66 +34,55 @@ import java.util.function.Function;
  * @param <T> the component type of the array
  * @author David B. Bracewell
  */
-public class ArrayConverter<T> implements Function<Object, T[]> {
+public class ArrayConverter<T> implements SerializableFunction<Object, T[]>, Loggable {
+   private static final long serialVersionUID = 1L;
 
-  private static final Logger log = Logger.getLogger(ArrayConverter.class);
+   private final Class<T> componentType;
 
-  private final Class<T> componentType;
+   /**
+    * Instantiates a new Array converter.
+    *
+    * @param componentType the component type
+    */
+   public ArrayConverter(Class<T> componentType) {
+      this.componentType = componentType;
+   }
 
-  /**
-   * Instantiates a new Array converter.
-   *
-   * @param componentType the component type
-   */
-  public ArrayConverter(Class<T> componentType) {
-    this.componentType = componentType;
-  }
+   @Override
+   public T[] apply(Object o) {
 
-  @Override
-  public T[] apply(Object o) {
-    if (o == null) {
-      return null;
-    }
-
-    if (o.getClass().isArray() && o.getClass().getComponentType().equals(componentType)) {
-      return Cast.as(o);
-    }
-
-    if (Character.class.isAssignableFrom(componentType)) {
-      char[] chars = PrimitiveArrayConverter.CHAR.apply(o);
-      if (chars != null) {
-        return Cast.as(new PrimitiveArrayList<>(chars, Character.class).toArray(new Character[chars.length]));
+      if (o == null) {
+         return null;
       }
-    } else if (Byte.class.isAssignableFrom(componentType)) {
-      byte[] bytes = PrimitiveArrayConverter.BYTE.apply(o);
-      if (bytes != null) {
-        return Cast.as(new PrimitiveArrayList<>(bytes, Byte.class).toArray(new Byte[bytes.length]));
+
+      //We already have what we need so just cast and return
+      if (o.getClass().isArray() && o.getClass().getComponentType().equals(componentType)) {
+         return Cast.as(o);
       }
-    }
 
-    List<T> list = new ArrayList<>();
-    boolean anyConversionSuccessful = false;
-    for (Object component : Convert.convert(o, Iterable.class)) {
-      T comp = Convert.convert(component, componentType);
-      if (comp != null) {
-        anyConversionSuccessful = true;
+      List<T> list = new ArrayList<>();
+      boolean anyConversionSuccessful = false;
+      for (Object component : Convert.convert(o, Iterable.class)) {
+         T comp = Convert.convert(component, componentType);
+         if (comp != null) {
+            anyConversionSuccessful = true;
+         }
+         list.add(comp);
       }
-      list.add(comp);
-    }
 
-    if (!anyConversionSuccessful) {
-      log.fine("Cannot convert {0} into an array of {1}.", o.getClass(), componentType);
-      return null;
-    }
+      if (!anyConversionSuccessful) {
+         logFine("Cannot convert {0} into an array of {1}.", o.getClass(), componentType);
+         return null;
+      }
 
-    T[] array = Cast.as(Array.newInstance(componentType, list.size()));
-    if (array == null) {
-      log.fine("Error creating a new array of {0}", componentType);
-      return null;
-    }
+      T[] array = Cast.as(Array.newInstance(componentType, list.size()));
+      if (array == null) {
+         logFine("Error creating a new array of {0}", componentType);
+         return null;
+      }
 
-    return list.toArray(array);
-  }
+      return list.toArray(array);
+   }
 
 
 }//END OF ArrayConverter

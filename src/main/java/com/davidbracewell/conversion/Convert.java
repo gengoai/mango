@@ -83,6 +83,7 @@ public final class Convert {
 
       //------- Collection Converters
       register(Iterable.class, CollectionConverter.ITERABLE);
+      register(Iterator.class, CollectionConverter.ITERATOR);
       register(List.class, CollectionConverter.COLLECTION(ArrayList.class));
       register(ArrayList.class, CollectionConverter.COLLECTION(ArrayList.class));
       register(LinkedList.class, CollectionConverter.COLLECTION(LinkedList.class));
@@ -182,9 +183,6 @@ public final class Convert {
          return null;
       }
 
-//      if (EnumValue.class.isAssignableFrom(desiredType)) {
-//         return Cast.as(CommonTypeConverter.DYNAMIC_ENUM.apply(object));
-//      }
 
       if (object instanceof Val) {
          return convert(Cast.as(object, Val.class).get(), desiredType);
