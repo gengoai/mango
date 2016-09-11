@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
+ * Resource that wraps standard out
+ *
  * @author David B. Bracewell
  */
 public class StdoutResource extends BaseResource implements NonTraversableResource, WriteOnlyResource {

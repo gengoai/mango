@@ -30,6 +30,8 @@ import java.util.Queue;
 import java.util.regex.Pattern;
 
 /**
+ * Iterates over the children of a given resource.
+ *
  * @author David B. Bracewell
  */
 public class ResourceChildIterator implements Iterator<Resource> {
@@ -82,4 +84,5 @@ public class ResourceChildIterator implements Iterator<Resource> {
    public void remove() {
       throw new UnsupportedOperationException();
    }
+
 }//END OF ResourceChildIterator

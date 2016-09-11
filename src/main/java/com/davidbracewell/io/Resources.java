@@ -134,6 +134,17 @@ public final class Resources {
    }
 
    /**
+    * <p> Creates a new {@link com.davidbracewell.io.resource.URIResource}. </p>
+    *
+    * @param resource The uri to wrap.
+    * @return A new Resource wrapping a uri.
+    */
+   public static URIResource fromURI(URI resource) {
+      return new URIResource(resource);
+   }
+
+
+   /**
     * <p> Creases a new {@link FileResource}. </p>
     *
     * @param resource The file making up the resource

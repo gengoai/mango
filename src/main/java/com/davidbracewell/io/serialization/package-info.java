@@ -19,33 +19,7 @@
  * under the License.
  */
 
-package com.davidbracewell.io.resource;
-
-import com.davidbracewell.stream.MStream;
-
-import java.io.IOException;
-
 /**
- * Defines a resources as being write only
- *
- * @author David B. Bracewell
+ * Facade around different methodologies for serializing objects.
  */
-public interface WriteOnlyResource extends Resource {
-
-   @Override
-   default boolean canRead() {
-      return false;
-   }
-
-   @Override
-   default boolean canWrite() {
-      return true;
-   }
-
-   @Override
-   default MStream<String> lines() throws IOException {
-      throw new IllegalStateException("This is resource cannot be read from.");
-   }
-
-
-}//END OF WriteOnlyResource
+package com.davidbracewell.io.serialization;

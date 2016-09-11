@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 /**
+ * Defines a resources whose hierarchy is not traversable.
+ *
  * @author David B. Bracewell
  */
 public interface NonTraversableResource extends Resource {

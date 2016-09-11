@@ -27,6 +27,25 @@ package com.davidbracewell;
  * @author David B. Bracewell
  */
 public interface SystemInfo {
+
+   /**
+    * Checks if the OS is a unix variant
+    *
+    * @return True if unix, False otherwise
+    */
+   static boolean isUnix() {
+      return !OS_NAME.startsWith("Windows");
+   }
+
+   /**
+    * Checks if the OS is a windows variant
+    *
+    * @return True if windows, False otherwise
+    */
+   static boolean isWindows() {
+      return OS_NAME.startsWith("Windows");
+   }
+
    /**
     * The number of available processors according to the runtime
     */

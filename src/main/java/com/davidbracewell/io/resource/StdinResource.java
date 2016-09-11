@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
+ * Resource that wraps standard in
+ *
  * @author David B. Bracewell
  */
 public class StdinResource extends BaseResource implements NonTraversableResource, ReadOnlyResource {

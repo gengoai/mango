@@ -29,13 +29,12 @@ import lombok.NonNull;
 import java.io.*;
 
 /**
- * A Resource that wraps a byte array
+ * A Resource that wraps a byte array.
  *
  * @author David B. Bracewell
  */
 @EqualsAndHashCode(callSuper = true)
 public class ByteArrayResource extends BaseResource implements NonTraversableResource {
-
    private static final long serialVersionUID = 9152033221857665242L;
    private final ByteArrayOutputStream buffer;
 

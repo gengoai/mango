@@ -21,31 +21,40 @@
 
 package com.davidbracewell.io.resource;
 
-import com.davidbracewell.stream.MStream;
+import org.junit.Test;
 
-import java.io.IOException;
+import java.io.File;
+import java.net.URI;
+
+import static org.junit.Assert.*;
 
 /**
- * Defines a resources as being write only
- *
  * @author David B. Bracewell
  */
-public interface WriteOnlyResource extends Resource {
+public class URIResourceTest {
 
-   @Override
-   default boolean canRead() {
-      return false;
+   @Test
+   public void testReadingFromWeb() throws Exception {
+      URIResource r = new URIResource(new URI("http://www.google.com"));
+      assertTrue(r.readToString().length() > 0);
+      assertTrue(r.exists());
+
+      URIResource r2 = new URIResource(new URI("http://www.yahoo.com"));
+      assertNotEquals(r, r2);
+      Resource child = r2.getChild("news");
+
+      assertEquals("/news", child.path());
+
+      URIResource r3 = new URIResource(new URI("http://www.google.com"));
+      assertEquals(r, r3);
+      assertEquals(r.asURL(), r3.asURL());
+
    }
 
-   @Override
-   default boolean canWrite() {
-      return true;
+   @Test
+   public void testAsFile() throws Exception {
+      URIResource r = new URIResource(new URI("file:///home/user/"));
+      assertEquals(new File("/home/user"), r.asFile().orElse(null));
    }
 
-   @Override
-   default MStream<String> lines() throws IOException {
-      throw new IllegalStateException("This is resource cannot be read from.");
-   }
-
-
-}//END OF WriteOnlyResource
+}//END OF URLResourceTest

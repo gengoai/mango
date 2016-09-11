@@ -24,11 +24,16 @@ package com.davidbracewell.io.resource;
 import java.io.IOException;
 
 /**
+ * An empty resource
+ *
  * @author David B. Bracewell
  */
 public class EmptyResource extends BaseResource implements NonTraversableResource {
    private static final long serialVersionUID = 1L;
 
+   /**
+    * The singleton instance
+    */
    public static final EmptyResource INSTANCE = new EmptyResource();
 
    @Override

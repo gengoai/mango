@@ -35,6 +35,8 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
+ * Abstract base resource
+ *
  * @author David B. Bracewell
  */
 public abstract class BaseResource implements Resource, Serializable {
@@ -98,11 +100,30 @@ public abstract class BaseResource implements Resource, Serializable {
       return createOutputStream();
    }
 
+   /**
+    * Create output stream output stream.
+    *
+    * @return the output stream
+    * @throws IOException the io exception
+    */
    protected OutputStream createOutputStream() throws IOException {
+      if (asFile().isPresent()) {
+         return new FileOutputStream(asFile().orElse(null));
+      }
       return null;
+
    }
 
+   /**
+    * Create input stream input stream.
+    *
+    * @return the input stream
+    * @throws IOException the io exception
+    */
    protected InputStream createInputStream() throws IOException {
+      if (asFile().isPresent()) {
+         return new FileInputStream(asFile().orElse(null));
+      }
       return null;
    }
 

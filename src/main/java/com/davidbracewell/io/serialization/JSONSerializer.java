@@ -33,7 +33,7 @@ import lombok.NonNull;
  */
 public class JSONSerializer implements Serializer {
 
-   @Override
+    @Override
    public void serialize(@NonNull Object o, @NonNull Resource resource) throws Exception {
       resource.write(new GsonBuilder().create().toJson(o).trim());
    }

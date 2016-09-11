@@ -24,6 +24,8 @@ package com.davidbracewell.io.resource;
 import java.io.IOException;
 
 /**
+ * Defines a resource as being Read Only
+ *
  * @author David B. Bracewell
  */
 public interface ReadOnlyResource extends Resource {

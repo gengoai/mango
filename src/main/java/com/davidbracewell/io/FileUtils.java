@@ -22,7 +22,9 @@
 package com.davidbracewell.io;
 
 
+import com.davidbracewell.SystemInfo;
 import com.davidbracewell.string.StringUtils;
+import lombok.NonNull;
 
 import java.io.IOException;
 import java.io.PushbackInputStream;
@@ -40,6 +42,12 @@ public class FileUtils {
    private static final char UNIX_SEPARATOR = '/';
    private static final char WINDOWS_SEPARATOR = '\\';
 
+   /**
+    * Create file pattern pattern.
+    *
+    * @param filePattern the file pattern
+    * @return the pattern
+    */
    public static Pattern createFilePattern(String filePattern) {
       filePattern = StringUtils.isNullOrBlank(filePattern) ? "\\*" : filePattern;
       filePattern = filePattern.replaceAll("\\.", "\\.");
@@ -47,6 +55,13 @@ public class FileUtils {
       return Pattern.compile("^" + filePattern + "$");
    }
 
+   /**
+    * Is compressed boolean.
+    *
+    * @param pushbackInputStream the pushback input stream
+    * @return the boolean
+    * @throws IOException the io exception
+    */
    public static boolean isCompressed(PushbackInputStream pushbackInputStream) throws IOException {
       if (pushbackInputStream == null) {
          return false;
@@ -98,7 +113,7 @@ public class FileUtils {
     */
    public static String toUnix(String spec) {
       if (spec == null) {
-         return null;
+         return StringUtils.EMPTY;
       }
       return spec.replaceAll("\\\\+", "/");
    }
@@ -111,7 +126,7 @@ public class FileUtils {
     */
    public static String toWindows(String spec) {
       if (spec == null) {
-         return null;
+         return StringUtils.EMPTY;
       }
       return spec.replaceAll("/+", "\\\\");
    }
@@ -125,7 +140,7 @@ public class FileUtils {
     * string.
     */
    public static String baseName(String file) {
-      return baseName(file, "");
+      return baseName(file, StringUtils.EMPTY);
    }
 
    /**
@@ -137,9 +152,9 @@ public class FileUtils {
     * @return The file name if given a file, the directory name if given a directory, or null if given a null or empty
     * string.
     */
-   public static String baseName(String file, String suffix) {
+   public static String baseName(String file, @NonNull String suffix) {
       if (StringUtils.isNullOrBlank(file)) {
-         return null;
+         return StringUtils.EMPTY;
       }
       file = StringUtils.trim(file);
       int index = indexOfLastSeparator(file);
@@ -159,7 +174,7 @@ public class FileUtils {
     */
    public static String extension(String file) {
       if (StringUtils.isNullOrBlank(file)) {
-         return null;
+         return StringUtils.EMPTY;
       }
       file = StringUtils.trim(file);
       int index = indexOfFileExtension(file);
@@ -172,18 +187,17 @@ public class FileUtils {
 
    /**
     * Adds a trailing slash if its needed. Tries to determine the slash style, but defaults to unix. Assumes that what
-    * is
-    * passed in is a directory.
+    * is passed in is a directory.
     *
     * @param directory The directory to possibly add a trailing slash to
     * @return A directory name with a trailing slash
     */
    public static String addTrailingSlashIfNeeded(String directory) {
       if (StringUtils.isNullOrBlank(directory)) {
-         return null;
+         return StringUtils.EMPTY;
       }
       int separator = indexOfLastSeparator(directory);
-      String slash = "/";
+      String slash = SystemInfo.isUnix() ? Character.toString(UNIX_SEPARATOR) : Character.toString(WINDOWS_SEPARATOR);
       if (separator != -1) {
          slash = Character.toString(directory.charAt(separator));
       }
@@ -199,7 +213,7 @@ public class FileUtils {
     */
    public static String directory(String file) {
       if (StringUtils.isNullOrBlank(file)) {
-         return null;
+         return StringUtils.EMPTY;
       }
       file = StringUtils.trim(file);
       int separator = indexOfLastSeparator(file);
@@ -223,12 +237,15 @@ public class FileUtils {
     */
    public static String parent(String file) {
       if (StringUtils.isNullOrBlank(file)) {
-         return null;
+         return StringUtils.EMPTY;
       }
       file = StringUtils.trim(file);
       String path = path(file);
-      int index = indexOfLastSeparator(file);
-      return index == -1 ? "/" : path.substring(0, index);
+      int index = indexOfLastSeparator(path);
+      if (index <= 0) {
+         return SystemInfo.isUnix() ? Character.toString(UNIX_SEPARATOR) : Character.toString(WINDOWS_SEPARATOR);
+      }
+      return path.substring(0, index);
    }
 
    /**
@@ -239,7 +256,7 @@ public class FileUtils {
     */
    public static String path(String file) {
       if (StringUtils.isNullOrBlank(file)) {
-         return null;
+         return StringUtils.EMPTY;
       }
       file = StringUtils.trim(file);
       int pos = indexOfLastSeparator(file);

@@ -40,6 +40,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /**
+ * <p>Utilities for reading contents of jar files.</p>
+ *
  * @author David B. Bracewell
  */
 public class JarUtils {
@@ -73,9 +75,7 @@ public class JarUtils {
       List<Resource> children = new ArrayList<>();
       for (Resource child : resource.getChildren()) {
          children.add(child);
-         if (child.isDirectory()) {
-            children.addAll(getResourcesFromDirectory(child, stringMatcher));
-         }
+         children.addAll(getJarContents(child));
       }
       return children;
    }
@@ -109,6 +109,8 @@ public class JarUtils {
    }
 
    /**
+    * Gets classpath resources.
+    *
     * @return A list of all resources on the classpath
     */
    public static List<Resource> getClasspathResources() {
