@@ -394,7 +394,6 @@ public class XMLReader extends StructuredReader {
          default:
             consume();
       }
-
       return element;
    }
 

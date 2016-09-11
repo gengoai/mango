@@ -21,6 +21,7 @@
 
 package com.davidbracewell.io.structured;
 
+import com.davidbracewell.conversion.Val;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.resource.StringResource;
 import com.davidbracewell.io.structured.json.JSONReader;
@@ -70,7 +71,7 @@ public interface StructuredFormat extends Serializable {
     * @return the data in the resource as a map
     * @throws IOException something went wrong reading the resource
     */
-   default Map<String, ?> loads(Resource resource) throws IOException {
+   default Map<String, Val> loads(Resource resource) throws IOException {
       return loads(resource.readToString());
    }
 
@@ -81,18 +82,18 @@ public interface StructuredFormat extends Serializable {
     * @return the data in the resource as a map
     */
    @SneakyThrows
-   default Map<String, ?> loads(String data) {
-      Map<String, Object> r = new HashMap<>();
+   default Map<String, Val> loads(String data) {
+      Map<String, Val> r = new HashMap<>();
       try (StructuredReader reader = createReader(new StringResource(data))) {
          reader.beginDocument();
          while (reader.peek() != ElementType.END_DOCUMENT) {
             String name = reader.peekName();
             switch (reader.peek()) {
                case BEGIN_OBJECT:
-                  r.put(name, reader.nextMap());
+                  r.put(name, Val.of(reader.nextMap()));
                   break;
                case BEGIN_ARRAY:
-                  r.put(name, reader.nextCollection(ArrayList::new));
+                  r.put(name, Val.of(reader.nextCollection(ArrayList::new)));
                   break;
                case NAME:
                   r.put(name, reader.nextKeyValue(name));

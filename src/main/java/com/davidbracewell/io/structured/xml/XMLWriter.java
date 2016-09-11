@@ -296,12 +296,12 @@ public class XMLWriter extends StructuredWriter {
 
    @Override
    public boolean inArray() {
-      return stack.peek() == ElementType.BEGIN_ARRAY || (stack.peek() == ElementType.BEGIN_DOCUMENT && documentIsArray);
+      return stack.peek() == ElementType.BEGIN_ARRAY;// || (stack.peek() == ElementType.BEGIN_DOCUMENT && documentIsArray);
    }
 
    @Override
    public boolean inObject() {
-      return stack.peek() == ElementType.BEGIN_OBJECT || (stack.peek() == ElementType.BEGIN_DOCUMENT && !documentIsArray);
+      return stack.peek() == ElementType.BEGIN_OBJECT;// || (stack.peek() == ElementType.BEGIN_DOCUMENT && !documentIsArray);
    }
 
    @Override
