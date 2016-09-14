@@ -116,7 +116,7 @@ public final class Sorting {
     * @return A <code>List</code> of <code>Entry</code> containing the map entries in sorted order.
     */
    public static <K, V extends Comparable<V>> List<Entry<K, V>> sortMapEntriesByValue(@NonNull final Map<K, V> map,
-                                                                                      @NonNull final boolean ascending
+                                                                                     final boolean ascending
                                                                                      ) {
       return sortMapEntries(map, new MapEntryComparator<>(false, ascending));
    }
