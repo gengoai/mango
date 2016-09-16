@@ -2,6 +2,7 @@ package com.davidbracewell.parsing;
 
 import com.davidbracewell.Regex;
 import com.davidbracewell.string.CharPredicate;
+import com.davidbracewell.tuple.Tuple2;
 import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import lombok.Value;
@@ -12,6 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.davidbracewell.collection.list.Lists.list;
+import static com.davidbracewell.tuple.Tuples.$;
 
 /**
  * @author David B. Bracewell
@@ -20,13 +22,18 @@ public abstract class LexicalPattern implements Serializable {
   public static final int NO_MATCH = -1;
   private static final long serialVersionUID = 1L;
 
-  public static LexicalPattern literal(@NonNull String literal) {
+  public static LexicalPattern stringLiteral(@NonNull String literal) {
     return new LiteralPattern(literal);
   }
 
-  public static LexicalPattern literal(@NonNull char literal) {
+  public static LexicalPattern charLiteral(@NonNull char literal) {
+    return new CharLiteralPattern(CharPredicate.anyOf(Character.toString(literal)));
+  }
+
+  public static LexicalPattern charLiteral(@NonNull CharPredicate literal) {
     return new CharLiteralPattern(literal);
   }
+
 
   public static LexicalPattern charPredicate(@NonNull CharPredicate predicate) {
     return new CharPredicatePattern(predicate);
@@ -45,29 +52,41 @@ public abstract class LexicalPattern implements Serializable {
   }
 
   public static void main(String[] args) {
-    List<LexicalPattern> patterns = list(
-      literal("sin"),
-      literal("cos"),
-      literal("pow"),
-      literal('('),
-      literal(')'),
-      literal('+'),
-      literal('-'),
-      literal('*'),
-      literal('/'),
-      literal('^'),
-      literal(','),
-      regex("\\d+(\\.\\d+)?"),
-      charPredicate(CharPredicate.WHITESPACE)
+    CharPredicate reserved = CharPredicate.anyOf("={}[],\\\"");
+    List<Tuple2<String, LexicalPattern>> main = list(
+      $("ASSIGNMENT", charLiteral('=')),
+      $("BEGIN_ARRAY", charLiteral('[')),
+      $("END_ARRAY", charLiteral(']')),
+      $("BEGIN_MAP", charLiteral('{')),
+      $("END_MAP", charLiteral('}')),
+      $("COMMA", charLiteral(',')),
+      $("QUOTED_VALUE", regex("\"(\"\"|[^\"])+\"")),
+      $("VALUE", charPredicate(reserved.or(CharPredicate.anyOf("\r\n")).negate()))
     );
-    String text = "2^- 9";
+
+
+    String text = "key = \"value = 1\"\nkey = {value}\nblah = [\"1\",2,3,4,5]\n";
     for (int i = 0; i < text.length(); ) {
       int longest = -1;
-      for (LexicalPattern pattern : patterns) {
-        longest = Math.max(longest, pattern.match(text, i));
+      String longestType = "";
+      for (Tuple2<String, LexicalPattern> entry : main) {
+        int match = entry.v2.match(text, i);
+
+        if (!entry.v1.equals("QUOTED_VALUE") && match > 1) {
+          int r = reserved.indexIn(text, i);
+          if (r >= 0 && r <= i + match) {
+            match = r - i;
+          }
+        }
+
+        if (match > longest) {
+          longest = match;
+          longestType = entry.v1;
+        }
       }
+
       if (longest > 0) {
-        System.out.println(text.substring(i, i + longest));
+        System.out.println(longestType + " : " + text.substring(i, i + longest).trim().replaceAll("\\\\(.)", "$1"));
         i += longest;
       } else {
         i++;
@@ -104,12 +123,12 @@ public abstract class LexicalPattern implements Serializable {
   @Value
   private static class CharLiteralPattern extends LexicalPattern {
     private static final long serialVersionUID = 1L;
-    private final char literal;
+    private final CharPredicate predicate;
 
     @Override
     public int match(@NonNull CharSequence sequence, int start) {
       Preconditions.checkPositionIndex(start, sequence.length());
-      return sequence.charAt(start) == literal ? 1 : NO_MATCH;
+      return predicate.matches(sequence.charAt(start)) ? 1 : NO_MATCH;
     }
   }
 
@@ -132,7 +151,6 @@ public abstract class LexicalPattern implements Serializable {
       return length == start ? NO_MATCH : (length - start);
     }
   }
-
 
   @Value
   private static class RegexPattern extends LexicalPattern {
