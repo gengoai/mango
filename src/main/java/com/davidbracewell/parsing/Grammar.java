@@ -77,6 +77,10 @@ public class Grammar implements Serializable {
       return this;
    }
 
+   public Grammar registerSkip(@NonNull ParserTokenType type) {
+      return register(type, new PrefixSkipHandler());
+   }
+
    /**
     * Registers an infix handler
     *

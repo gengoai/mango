@@ -91,7 +91,7 @@ public class Switch<T, R> implements Serializable, Function<T, R> {
     * @param <R> the type being returned
     * @return the switch builder
     */
-   public static <T, R> Builder<T, R> builder() {
+   public static <T, R> Builder<T, R> switchBuilder() {
       return new Builder<>();
    }
 

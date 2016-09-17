@@ -13,7 +13,7 @@ public class SwitchTest {
 
    @Test
    public void builderTest() {
-      Switch<String, Integer> stringToNumber = Switch.<String, Integer>builder()
+      Switch<String, Integer> stringToNumber = Switch.<String, Integer>switchBuilder()
             .caseStmt(StringPredicates.MATCHES("one", false), s -> 1)
             .caseStmt(StringPredicates.MATCHES("two", false), s -> 2)
             .caseStmt(StringPredicates.MATCHES("three", false), s -> 3)
@@ -51,7 +51,7 @@ public class SwitchTest {
 
    @Test(expected = IllegalArgumentException.class)
    public void noDefault() {
-      Switch<String, Integer> stringToNumber = Switch.<String, Integer>builder()
+      Switch<String, Integer> stringToNumber = Switch.<String, Integer>switchBuilder()
             .caseStmt(StringPredicates.MATCHES("one", false), s -> 1)
             .caseStmt(StringPredicates.MATCHES("two", false), s -> 2)
             .caseStmt(StringPredicates.MATCHES("three", false), s -> 3)
@@ -89,7 +89,7 @@ public class SwitchTest {
 
    @Test
    public void builderMappingTest() {
-      Switch<String, Integer> stringToNumber = Switch.<String, Integer>builder()
+      Switch<String, Integer> stringToNumber = Switch.<String, Integer>switchBuilder()
             .caseStmt(StringPredicates.MATCHES("one", false), s -> 1, s -> 1)
             .caseStmt(StringPredicates.MATCHES("two", false), s -> 1, s -> 2)
             .caseStmt(StringPredicates.MATCHES("three", false), s -> 1, s -> 3)

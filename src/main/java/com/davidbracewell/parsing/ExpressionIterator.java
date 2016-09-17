@@ -24,9 +24,6 @@ package com.davidbracewell.parsing;
 import com.davidbracewell.parsing.expressions.Expression;
 import lombok.NonNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Provides a way to iterate over expressions resulting from parsing a token stream.
  *
@@ -107,17 +104,6 @@ public final class ExpressionIterator {
       return tokenStream.lookAhead(0) != null;
    }
 
-   /**
-    * Parses the entire token stream returning a list of expressions
-    *
-    * @return the list of expressions resulting from the parse
-    */
-   public List<Expression> toList() throws ParseException {
-      List<Expression> expressions = new ArrayList<>();
-      while (hasNext()) {
-         expressions.add(next());
-      }
-      return expressions;
-   }
+
 
 }//END OF ExpressionIterator

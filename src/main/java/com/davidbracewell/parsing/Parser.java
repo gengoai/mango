@@ -21,11 +21,15 @@
 
 package com.davidbracewell.parsing;
 
+import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.Resource;
+import com.davidbracewell.parsing.expressions.Expression;
 import lombok.NonNull;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>An implementation of a <a href="http://en.wikipedia.org/wiki/Pratt_parser">Pratt Parser</a> inspired by <a
@@ -44,8 +48,8 @@ public class Parser implements Serializable {
    /**
     * Instantiates a new Parser.
     *
-    * @param grammar the grammar
-    * @param lexer   the lexer
+    * @param grammar the grammar to use for parsing
+    * @param lexer   the lexer to use for tokenizing input
     */
    public Parser(Grammar grammar, Lexer lexer) {
       this.grammar = grammar;
@@ -53,21 +57,24 @@ public class Parser implements Serializable {
    }
 
    /**
-    * Parse expression iterator.
+    * <p>Parses the given string returning an {@link ExpressionIterator} to iterate over the parsed expressions. Note
+    * the parse is lazy and is done during the calls to {@link ExpressionIterator#next()}.</P>
     *
-    * @param string the string
-    * @return the expression iterator
+    * @param string the string to parse
+    * @return the expression iterator that lazily parses the resource
+    * @throws ParseException tSomething went wrong parsing
     */
-   public ExpressionIterator parse(@NonNull String string) {
+   public ExpressionIterator parse(@NonNull String string) throws ParseException {
       return new ExpressionIterator(grammar, lexer.lex(string));
    }
 
    /**
-    * Parse expression iterator.
+    * <p>Parses the given resource returning an {@link ExpressionIterator} to iterate over the parsed expressions. Note
+    * the parse is lazy and is done during the calls to {@link ExpressionIterator#next()}.</P>
     *
-    * @param resource the resource
-    * @return the expression iterator
-    * @throws ParseException the io exception
+    * @param resource the resource to parse
+    * @return the expression iterator that lazily parses the resource
+    * @throws ParseException tSomething went wrong parsing
     */
    public ExpressionIterator parse(@NonNull Resource resource) throws ParseException {
       try {
@@ -75,6 +82,78 @@ public class Parser implements Serializable {
       } catch (IOException e) {
          throw new ParseException(e);
       }
+   }
+
+   /**
+    * <p>Parses the given string and evaluates it with the given evaluator. Requires that the parse result in a single
+    * expression.</p>
+    *
+    * @param <O>       the return type of the evaluator
+    * @param string    the string to evaluate
+    * @param evaluator the evaluator to use for transforming expressions
+    * @return the single return values from the evaluator
+    * @throws ParseException Something went wrong parsing
+    */
+   public <O> O evaluate(@NonNull String string, @NonNull Evaluator<? extends O> evaluator) throws ParseException {
+      return evaluate(Resources.fromString(string), evaluator);
+   }
+
+   /**
+    * <p>Parses the given resource and evaluates it with the given evaluator. Requires that the parse result in a single
+    * expression.</p>
+    *
+    * @param <O>       the return type of the evaluator
+    * @param resource  the resource to evaluate
+    * @param evaluator the evaluator to use for transforming expressions
+    * @return the single return values from the evaluator
+    * @throws ParseException Something went wrong parsing
+    */
+   public <O> O evaluate(@NonNull Resource resource, @NonNull Evaluator<? extends O> evaluator) throws ParseException {
+      ExpressionIterator iterator = parse(resource);
+      Expression expression = iterator.next();
+      if (iterator.hasNext()) {
+         throw new ParseException("Did not fully parse token stream");
+      }
+      try {
+         return evaluator.eval(expression);
+      } catch (Exception e) {
+         throw new ParseException(e);
+      }
+   }
+
+   /**
+    * <p>Parses the given string and evaluates it with the given evaluator.</p>
+    *
+    * @param <O>       the return type of the evaluator
+    * @param string    the string to evaluate
+    * @param evaluator the evaluator to use for transforming expressions
+    * @return A list of objects relating to the transformation of expressions by the given evaluator.
+    * @throws ParseException Something went wrong parsing
+    */
+   public <O> List<O> evaluateAll(@NonNull String string, @NonNull Evaluator<? extends O> evaluator) throws ParseException {
+      return evaluateAll(Resources.fromString(string), evaluator);
+   }
+
+   /**
+    * <p>Parses the given resource and evaluates it with the given evaluator.</p>
+    *
+    * @param <O>       the return type of the evaluator
+    * @param resource  the resource to evaluate
+    * @param evaluator the evaluator to use for transforming expressions
+    * @return A list of objects relating to the transformation of expressions by the given evaluator.
+    * @throws ParseException Something went wrong parsing
+    */
+   public <O> List<O> evaluateAll(@NonNull Resource resource, @NonNull Evaluator<? extends O> evaluator) throws ParseException {
+      ExpressionIterator iterator = parse(resource);
+      List<O> evaluationResults = new ArrayList<>();
+      while (iterator.hasNext()) {
+         try {
+            evaluationResults.add(evaluator.eval(iterator.next()));
+         } catch (Exception e) {
+            throw new ParseException(e);
+         }
+      }
+      return evaluationResults;
    }
 
 }//END OF Parser

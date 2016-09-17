@@ -58,11 +58,9 @@ public abstract class Evaluator<O> extends Switch<Expression, O> {
     * @param function        the function to apply when the condition is met.
     */
    protected final <E extends Expression> void $(@NonNull Class<E> expressionClass, @NonNull ParserTokenType type, @NonNull CheckedFunction<E, ? extends O> function) {
-      $case(
-         e -> e.match(expressionClass, type),
-         e -> Cast.as(e, expressionClass),
-         function
-           );
+      $case(e -> e.match(expressionClass, type),
+            e -> Cast.as(e, expressionClass),
+            function);
    }
 
    /**
@@ -74,11 +72,9 @@ public abstract class Evaluator<O> extends Switch<Expression, O> {
     * @param function        the function to apply when the condition is met.
     */
    protected final <E extends Expression> void $(@NonNull Class<E> expressionClass, @NonNull CheckedFunction<E, ? extends O> function) {
-      $case(
-         e -> e.isInstance(expressionClass),
-         e -> Cast.as(e, expressionClass),
-         function
-           );
+      $case(e -> e.isInstance(expressionClass),
+            e -> Cast.as(e, expressionClass),
+            function);
    }
 
 }// END OF Evaluator
