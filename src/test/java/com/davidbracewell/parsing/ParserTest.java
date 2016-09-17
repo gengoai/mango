@@ -90,7 +90,7 @@ public class ParserTest {
    private static class TestGrammar extends Grammar {
 
       public TestGrammar() {
-         super(new PrefixSkipHandler());
+         super(true);
          register(CommonTypes.POUND, new CommentHandler(CommonTypes.NEWLINE));
          register(CommonTypes.OPENPARENS, new GroupHandler(CommonTypes.CLOSEPARENS));
          register(CommonTypes.WORD, new ValueHandler());

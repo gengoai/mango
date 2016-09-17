@@ -76,6 +76,12 @@ public final class ExpressionIterator {
          result = grammar.parse(this, token);
       } while (result == null);
 
+
+      //Consume things that will be skipped
+      while (grammar.skip(tokenStream.lookAhead(0))) {
+         tokenStream.consume();
+      }
+
       while (precedence < grammar.precedence(tokenStream.lookAhead(0))) {
          token = tokenStream.consume();
          result = grammar.parse(this, result, token);

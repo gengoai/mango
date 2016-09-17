@@ -24,6 +24,7 @@ package com.davidbracewell.parsing;
 import com.davidbracewell.parsing.expressions.Expression;
 import com.davidbracewell.parsing.handlers.InfixHandler;
 import com.davidbracewell.parsing.handlers.PrefixHandler;
+import com.davidbracewell.parsing.handlers.PrefixSkipHandler;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -47,12 +48,20 @@ public class Grammar implements Serializable {
    private final Map<ParserTokenType, InfixHandler> infixHandlers = new HashMap<>();
    private final PrefixHandler prefixSkipHandler;
 
-   protected Grammar() {
-      this(null);
+   /**
+    * Instantiates a new Grammar.
+    */
+   public Grammar() {
+      this(false);
    }
 
-   protected Grammar(PrefixHandler prefixSkipHandler) {
-      this.prefixSkipHandler = prefixSkipHandler;
+   /**
+    * Instantiates a new Grammar.
+    *
+    * @param skipNonRegisteredTokenTypes the prefix skip handler
+    */
+   public Grammar(boolean skipNonRegisteredTokenTypes) {
+      this.prefixSkipHandler = skipNonRegisteredTokenTypes ? new PrefixSkipHandler() : null;
    }
 
 
@@ -145,6 +154,20 @@ public class Grammar implements Serializable {
          return infixHandlers.get(token.type).precedence();
       }
       return 0;
+   }
+
+   public boolean skip(ParserToken token) {
+      if (token == null) {
+         return false;
+      }
+      if (isPrefix(token)) {
+         if (prefixHandlers.containsKey(token.getType())) {
+            return prefixHandlers.get(token.getType()) instanceof PrefixSkipHandler;
+         } else {
+            return prefixSkipHandler != null;
+         }
+      }
+      return false;
    }
 
 

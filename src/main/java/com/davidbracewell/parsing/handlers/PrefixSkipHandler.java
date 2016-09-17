@@ -29,7 +29,7 @@ import com.davidbracewell.parsing.expressions.Expression;
 /**
  * @author David B. Bracewell
  */
-public class PrefixSkipHandler extends PrefixHandler {
+public final class PrefixSkipHandler extends PrefixHandler {
    private static final long serialVersionUID = 1L;
 
    @Override
