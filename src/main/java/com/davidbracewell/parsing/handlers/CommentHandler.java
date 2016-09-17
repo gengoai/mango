@@ -21,8 +21,8 @@
 
 package com.davidbracewell.parsing.handlers;
 
+import com.davidbracewell.parsing.ExpressionIterator;
 import com.davidbracewell.parsing.ParseException;
-import com.davidbracewell.parsing.Parser;
 import com.davidbracewell.parsing.ParserToken;
 import com.davidbracewell.parsing.ParserTokenType;
 import com.davidbracewell.parsing.expressions.CommentExpression;
@@ -35,24 +35,26 @@ import java.util.List;
  * @author David B. Bracewell
  */
 public class CommentHandler extends PrefixHandler {
+   private static final long serialVersionUID = 1L;
+   private final ParserTokenType endOfLine;
 
-  private final ParserTokenType endOfLine;
+   public CommentHandler(ParserTokenType endOfLine) {
+      this.endOfLine = endOfLine;
+   }
 
-  public CommentHandler(ParserTokenType endOfLine) {
-    super(0);
-    this.endOfLine = endOfLine;
-  }
-
-  @Override
-  public Expression parse(Parser parser, ParserToken token) throws ParseException {
-    List<ParserToken> tokens = parser.tokenStream().consumeUntil(endOfLine);
-    if (parser.tokenStream().lookAheadType(0) != null) {
-      parser.tokenStream().consume(endOfLine);
-    }
-    return new CommentExpression(
-        token.type,
-        token.text + tokens.stream().map(ParserToken::getText).reduce(String::concat).orElse(StringUtils.EMPTY)
-    );
-  }
+   @Override
+   public Expression parse(ExpressionIterator expressionIterator, ParserToken token) throws ParseException {
+      List<ParserToken> tokens = expressionIterator.tokenStream().consumeUntil(endOfLine);
+      if (expressionIterator.tokenStream().lookAheadType(0) != null) {
+         expressionIterator.tokenStream().consume(endOfLine);
+      }
+      return new CommentExpression(
+                                     token.type,
+                                     token.text + tokens.stream()
+                                                        .map(ParserToken::getText)
+                                                        .reduce(String::concat)
+                                                        .orElse(StringUtils.EMPTY)
+      );
+   }
 
 }//END OF CommentHandler

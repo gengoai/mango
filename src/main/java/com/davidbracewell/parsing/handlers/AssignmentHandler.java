@@ -22,8 +22,8 @@
 package com.davidbracewell.parsing.handlers;
 
 
+import com.davidbracewell.parsing.ExpressionIterator;
 import com.davidbracewell.parsing.ParseException;
-import com.davidbracewell.parsing.Parser;
 import com.davidbracewell.parsing.ParserToken;
 import com.davidbracewell.parsing.expressions.AssignmentExpression;
 import com.davidbracewell.parsing.expressions.Expression;
@@ -34,23 +34,24 @@ import com.davidbracewell.parsing.expressions.Expression;
  * @author David B. Bracewell
  */
 public class AssignmentHandler extends InfixHandler {
+   private static final long serialVersionUID = 1L;
 
-  /**
-   * Default constructor
-   *
-   * @param precedence The precedence of the handler
-   */
-  public AssignmentHandler(int precedence) {
-    super(precedence);
-  }
+   /**
+    * Default constructor
+    *
+    * @param precedence The precedence of the handler
+    */
+   public AssignmentHandler(int precedence) {
+      super(precedence);
+   }
 
-  @Override
-  public Expression parse(Parser parser, Expression left, ParserToken token) throws ParseException {
-    Expression right = parser.next(precedence() - 1);
-    if (right == null) {
-      throw new ParseException("Assignment operator expects expression on right hand side of the operator, but found nothing");
-    }
-    return new AssignmentExpression(left.toString(), token, right);
-  }
+   @Override
+   public Expression parse(ExpressionIterator expressionIterator, Expression left, ParserToken token) throws ParseException {
+      Expression right = expressionIterator.next(precedence() - 1);
+      if (right == null) {
+         throw new ParseException("Assignment operator expects expression on right hand side of the operator, but found nothing");
+      }
+      return new AssignmentExpression(left.toString(), token, right);
+   }
 
 }//END OF AssignmentHandler

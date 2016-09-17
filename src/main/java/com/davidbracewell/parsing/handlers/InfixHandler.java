@@ -22,8 +22,8 @@
 package com.davidbracewell.parsing.handlers;
 
 
+import com.davidbracewell.parsing.ExpressionIterator;
 import com.davidbracewell.parsing.ParseException;
-import com.davidbracewell.parsing.Parser;
 import com.davidbracewell.parsing.ParserToken;
 import com.davidbracewell.parsing.expressions.Expression;
 
@@ -31,27 +31,27 @@ import com.davidbracewell.parsing.expressions.Expression;
  * @author David B. Bracewell
  */
 public abstract class InfixHandler extends ParserHandler {
+   private static final long serialVersionUID = 1L;
 
+   /**
+    * Default constructor
+    *
+    * @param precedence The precedence of the handler
+    */
+   public InfixHandler(int precedence) {
+      super(precedence);
+   }
 
-  /**
-   * Default constructor
-   *
-   * @param precedence The precedence of the handler
-   */
-  public InfixHandler(int precedence) {
-    super(precedence);
-  }
-
-  /**
-   * Constructs an expression from the current token and the parser.
-   *
-   * @param parser The parser
-   * @param left   The expression that takes place before the infix operator
-   * @param token  The token that caused the handler to be invoked
-   * @return An expression representing the parse
-   * @throws ParseException An error occurred parsing
-   */
-  public abstract Expression parse(Parser parser, Expression left, ParserToken token) throws ParseException;
+   /**
+    * Constructs an expression from the current token and the parser.
+    *
+    * @param expressionIterator The parser
+    * @param left               The expression that takes place before the infix operator
+    * @param token              The token that caused the handler to be invoked
+    * @return An expression representing the parse
+    * @throws ParseException An error occurred parsing
+    */
+   public abstract Expression parse(ExpressionIterator expressionIterator, Expression left, ParserToken token) throws ParseException;
 
 
 } //END OF InfixHandler

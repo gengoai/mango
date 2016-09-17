@@ -21,8 +21,8 @@
 
 package com.davidbracewell.parsing.handlers;
 
+import com.davidbracewell.parsing.ExpressionIterator;
 import com.davidbracewell.parsing.ParseException;
-import com.davidbracewell.parsing.Parser;
 import com.davidbracewell.parsing.ParserToken;
 import com.davidbracewell.parsing.expressions.Expression;
 
@@ -30,24 +30,23 @@ import com.davidbracewell.parsing.expressions.Expression;
  * @author David B. Bracewell
  */
 public abstract class PrefixHandler extends ParserHandler {
+   private static final long serialVersionUID = 1L;
 
-  /**
-   * Default constructor
-   *
-   * @param precedence The precedence of the handler
-   */
-  public PrefixHandler(int precedence) {
-    super(precedence);
-  }
+   /**
+    * Default constructor
+    */
+   public PrefixHandler() {
+      super(0);
+   }
 
-  /**
-   * Constructs an expression from the current token and the parser.
-   *
-   * @param parser The parser
-   * @param token  The token that caused the handler to be invoked
-   * @return An expression representing the parse
-   * @throws ParseException An error occurred parsing
-   */
-  public abstract Expression parse(Parser parser, ParserToken token) throws ParseException;
+   /**
+    * Constructs an expression from the current token and the parser.
+    *
+    * @param expressionIterator The parser
+    * @param token              The token that caused the handler to be invoked
+    * @return An expression representing the parse
+    * @throws ParseException An error occurred parsing
+    */
+   public abstract Expression parse(ExpressionIterator expressionIterator, ParserToken token) throws ParseException;
 
 }//END OF PrefixHandler

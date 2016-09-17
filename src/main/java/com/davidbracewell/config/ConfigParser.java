@@ -45,170 +45,175 @@ import java.util.NoSuchElementException;
  * @author David B. Bracewell
  */
 class ConfigParser extends Parser {
+   private static final long serialVersionUID = 1L;
 
-  private static Grammar CONFIG_GRAMMAR = new Grammar() {{
-    register(ConfigTokenizer.ConfigTokenType.IMPORT, new PrefixOperatorHandler(10, ValueExpression.class));
-    register(ConfigTokenizer.ConfigTokenType.SCRIPT, new PrefixOperatorHandler(10, ValueExpression.class));
-    register(ConfigTokenizer.ConfigTokenType.PROPERTY, new PrefixOperatorHandler(10, ValueExpression.class));
-    register(ConfigTokenizer.ConfigTokenType.APPEND_PROPERTY, new PrefixOperatorHandler(10, ValueExpression.class));
-    register(ConfigTokenizer.ConfigTokenType.VALUE, new ValueHandler());
-    register(ConfigTokenizer.ConfigTokenType.SECTION_HEADER, new SectionHandler());
-  }};
+   private static Grammar CONFIG_GRAMMAR = new Grammar() {{
+      register(ConfigTokenizer.ConfigTokenType.IMPORT, new PrefixOperatorHandler(ValueExpression.class));
+      register(ConfigTokenizer.ConfigTokenType.SCRIPT, new PrefixOperatorHandler(ValueExpression.class));
+      register(ConfigTokenizer.ConfigTokenType.PROPERTY, new PrefixOperatorHandler(ValueExpression.class));
+      register(ConfigTokenizer.ConfigTokenType.APPEND_PROPERTY, new PrefixOperatorHandler(ValueExpression.class));
+      register(ConfigTokenizer.ConfigTokenType.VALUE, new ValueHandler());
+      register(ConfigTokenizer.ConfigTokenType.SECTION_HEADER, new SectionHandler());
+   }};
 
-  private static Lexer CONFIG_LEXER = new Lexer() {
-    @Override
-    public ParserTokenStream lex(final Resource input) throws IOException {
-      return new ParserTokenStream(
-        new Iterator<ParserToken>() {
-          final ConfigTokenizer backing = new ConfigTokenizer(input.reader());
-          ParserToken next = null;
+   private static Lexer CONFIG_LEXER = new Lexer() {
+      @Override
+      public ParserTokenStream lex(final Resource input) throws IOException {
+         return new ParserTokenStream(
+                                        new Iterator<ParserToken>() {
+                                           final ConfigTokenizer backing = new ConfigTokenizer(input.reader());
+                                           ParserToken next = null;
 
-          @Override
-          @SneakyThrows
-          public boolean hasNext() {
-            if (next == null) {
-              next = backing.next();
+                                           @Override
+                                           @SneakyThrows
+                                           public boolean hasNext() {
+                                              if (next == null) {
+                                                 next = backing.next();
+                                              }
+                                              return next != null;
+                                           }
+
+                                           @Override
+                                           public ParserToken next() {
+                                              if (!hasNext()) {
+                                                 throw new NoSuchElementException();
+                                              }
+                                              ParserToken returnToken = next;
+                                              next = null;
+                                              return returnToken;
+                                           }
+
+                                           @Override
+                                           public void remove() {
+                                              throw new UnsupportedOperationException();
+                                           }
+                                        }
+         );
+      }
+   };
+
+
+   private final Resource resource;
+   private final String resourceName;
+
+
+   /**
+    * Instantiates a new Config parser.
+    *
+    * @param config the config
+    * @throws java.io.IOException the iO exception
+    */
+   public ConfigParser(Resource config) throws IOException {
+      super(CONFIG_GRAMMAR, CONFIG_LEXER);
+      this.resource = config;
+      this.resourceName = config.descriptor();
+   }
+
+   @SneakyThrows
+   private void importScript(String script) {
+      Resource scriptResource = new ClasspathResource(script.trim(), Config.getDefaultClassLoader());
+      String extension = script.substring(script.lastIndexOf('.') + 1);
+      ScriptEnvironment env = ScriptEnvironmentManager.getInstance().getEnvironmentForExtension(extension);
+      env.eval(scriptResource);
+   }
+
+   private void importConfig(String importStatement) throws ParseException {
+      if (!Config.loadDefaultConf(importStatement)) {
+         String path;
+
+         if (importStatement.contains("/")) {
+            path = importStatement;
+            if (!path.endsWith(".conf")) {
+               path += ".conf";
             }
-            return next != null;
-          }
-
-          @Override
-          public ParserToken next() {
-            if (!hasNext()) {
-              throw new NoSuchElementException();
+         } else {
+            if (importStatement.endsWith(".conf")) {
+               int index = importStatement.lastIndexOf('.');
+               path = importStatement.substring(0, index).replaceAll("\\.", "/") + ".conf";
+            } else {
+               path = importStatement.replace(".", "/") + ".conf";
             }
-            ParserToken returnToken = next;
-            next = null;
-            return returnToken;
-          }
+         }
 
-          @Override
-          public void remove() {
-            throw new UnsupportedOperationException();
-          }
-        }
-      );
-    }
-  };
+         path = Config.resolveVariables(path).trim();
+         if (path.startsWith("file:")) {
+            Config.loadConfig(Resources.from(path));
+         } else {
+            Config.loadConfig(new ClasspathResource(path));
+         }
+      }
+   }
 
-  private final String resourceName;
+   private void setProperty(PrefixExpression assignment, String section) {
+      String key = section;
 
-  /**
-   * Instantiates a new Config parser.
-   *
-   * @param config the config
-   * @throws java.io.IOException the iO exception
-   */
-  public ConfigParser(Resource config) throws IOException {
-    super(CONFIG_GRAMMAR, CONFIG_LEXER.lex(config));
-    this.resourceName = config.descriptor();
-  }
-
-  @SneakyThrows
-  private void importScript(String script) {
-    Resource scriptResource = new ClasspathResource(script.trim(), Config.getDefaultClassLoader());
-    String extension = script.substring(script.lastIndexOf('.') + 1);
-    ScriptEnvironment env = ScriptEnvironmentManager.getInstance().getEnvironmentForExtension(extension);
-    env.eval(scriptResource);
-  }
-
-  private void importConfig(String importStatement) throws ParseException {
-    if (!Config.loadDefaultConf(importStatement)) {
-      String path;
-
-      if (importStatement.contains("/")) {
-        path = importStatement;
-        if (!path.endsWith(".conf")) {
-          path += ".conf";
-        }
+      if (assignment.operator.text.equals("_")) {
+         if (StringUtils.isNullOrBlank(section)) {
+            throw new IllegalStateException("Trying to set a non-section value using the \"_\" property.");
+         }
+         key = section.substring(0, section.length() - 1);
       } else {
-        if (importStatement.endsWith(".conf")) {
-          int index = importStatement.lastIndexOf('.');
-          path = importStatement.substring(0, index).replaceAll("\\.", "/") + ".conf";
-        } else {
-          path = importStatement.replace(".", "/") + ".conf";
-        }
+         key = section + assignment.operator.text;
       }
 
-      path = Config.resolveVariables(path).trim();
-      if (path.startsWith("file:")) {
-        Config.loadConfig(Resources.from(path));
-      } else {
-        Config.loadConfig(new ClasspathResource(path));
+      String value = assignment.right.as(ValueExpression.class).value;
+
+      //unescape things
+      value = StringUtils.trim(value);
+      value = value.replaceAll("(?<!\\\\)\\\\\n", "\n");
+      value = value.replaceAll("\\\\(.)", "$1");
+
+      if (assignment.operator.type == ConfigTokenizer.ConfigTokenType.APPEND_PROPERTY) {
+         if (Config.hasProperty(key)) {
+            value = Config.get(key).asString() + "," + value;
+         }
       }
-    }
-  }
 
-  private void setProperty(PrefixExpression assignment, String section) {
-    String key = section;
+      Config.getInstance().setterFunction.setProperty(key, value, resourceName);
+   }
 
-    if (assignment.operator.text.equals("_")) {
-      if (StringUtils.isNullOrBlank(section)) {
-        throw new IllegalStateException("Trying to set a non-section value using the \"_\" property.");
+   public List<Expression> parse() throws ParseException {
+      ExpressionIterator iterator = parse(resource);
+      Expression exp;
+      while ((exp = iterator.next()) != null) {
+
+         if (exp.match(ConfigTokenizer.ConfigTokenType.IMPORT)) {
+
+            importConfig(exp.as(PrefixExpression.class).right.toString().trim());
+
+         } else if (exp.match(ConfigTokenizer.ConfigTokenType.SCRIPT)) {
+
+            importScript(exp.as(PrefixExpression.class).right.toString().trim());
+
+         } else if (exp.match(ConfigTokenizer.ConfigTokenType.APPEND_PROPERTY)) {
+
+            setProperty(exp.as(PrefixExpression.class), "");
+
+         } else if (exp.match(ConfigTokenizer.ConfigTokenType.PROPERTY)) {
+
+            setProperty(exp.as(PrefixExpression.class), "");
+
+         } else if (exp.match(ConfigTokenizer.ConfigTokenType.SECTION_HEADER)) {
+
+            handleSection(StringUtils.EMPTY, exp.as(SectionExpression.class));
+
+         }
       }
-      key = section.substring(0, section.length() - 1);
-    } else {
-      key = section + assignment.operator.text;
-    }
 
-    String value = assignment.right.as(ValueExpression.class).value;
+      return Collections.emptyList();
+   }
 
-    //unescape things
-    value = StringUtils.trim(value);
-    value = value.replaceAll("(?<!\\\\)\\\\\n", "\n");
-    value = value.replaceAll("\\\\(.)", "$1");
-
-    if (assignment.operator.type == ConfigTokenizer.ConfigTokenType.APPEND_PROPERTY) {
-      if (Config.hasProperty(key)) {
-        value = Config.get(key).asString() + "," + value;
+   private void handleSection(String parent, SectionExpression exp) {
+      final SectionExpression section = exp.as(SectionExpression.class);
+      final String prefix = StringUtils.isNullOrBlank(parent) ? exp.sectionPrefix : parent + "." + exp.sectionPrefix;
+      for (Expression x : section.assignments) {
+         if (x.isInstance(SectionExpression.class)) {
+            handleSection(prefix, x.as(SectionExpression.class));
+         } else {
+            setProperty(x.as(PrefixExpression.class), prefix + ".");
+         }
       }
-    }
-
-    Config.getInstance().setterFunction.setProperty(key, value, resourceName);
-  }
-
-  @Override
-  public List<Expression> parse() throws ParseException {
-    Expression exp;
-    while ((exp = next()) != null) {
-
-      if (exp.match(ConfigTokenizer.ConfigTokenType.IMPORT)) {
-
-        importConfig(exp.as(PrefixExpression.class).right.toString().trim());
-
-      } else if (exp.match(ConfigTokenizer.ConfigTokenType.SCRIPT)) {
-
-        importScript(exp.as(PrefixExpression.class).right.toString().trim());
-
-      } else if (exp.match(ConfigTokenizer.ConfigTokenType.APPEND_PROPERTY)) {
-
-        setProperty(exp.as(PrefixExpression.class), "");
-
-      } else if (exp.match(ConfigTokenizer.ConfigTokenType.PROPERTY)) {
-
-        setProperty(exp.as(PrefixExpression.class), "");
-
-      } else if (exp.match(ConfigTokenizer.ConfigTokenType.SECTION_HEADER)) {
-
-        handleSection(StringUtils.EMPTY, exp.as(SectionExpression.class));
-
-      }
-    }
-
-    return Collections.emptyList();
-  }
-
-  private void handleSection(String parent, SectionExpression exp) {
-    final SectionExpression section = exp.as(SectionExpression.class);
-    final String prefix = StringUtils.isNullOrBlank(parent) ? exp.sectionPrefix : parent + "." + exp.sectionPrefix;
-    for (Expression x : section.assignments) {
-      if (x.isInstance(SectionExpression.class)) {
-        handleSection(prefix, x.as(SectionExpression.class));
-      } else {
-        setProperty(x.as(PrefixExpression.class), prefix + ".");
-      }
-    }
-  }
+   }
 
 
 }//END OF ConfigParser

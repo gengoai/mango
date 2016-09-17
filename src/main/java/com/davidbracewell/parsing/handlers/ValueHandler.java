@@ -22,8 +22,8 @@
 package com.davidbracewell.parsing.handlers;
 
 
+import com.davidbracewell.parsing.ExpressionIterator;
 import com.davidbracewell.parsing.ParseException;
-import com.davidbracewell.parsing.Parser;
 import com.davidbracewell.parsing.ParserToken;
 import com.davidbracewell.parsing.expressions.Expression;
 import com.davidbracewell.parsing.expressions.ValueExpression;
@@ -34,18 +34,12 @@ import com.davidbracewell.parsing.expressions.ValueExpression;
  * @author David B. Bracewell
  */
 public class ValueHandler extends PrefixHandler {
+   private static final long serialVersionUID = 1L;
 
-  /**
-   * Default Constructor
-   */
-  public ValueHandler() {
-    super(-1);
-  }
-
-  @Override
-  public Expression parse(Parser parser, ParserToken token) throws ParseException {
-    return new ValueExpression(token.text, token.type);
-  }
+   @Override
+   public Expression parse(ExpressionIterator expressionIterator, ParserToken token) throws ParseException {
+      return new ValueExpression(token.text, token.type);
+   }
 
 }//END OF ValueHandler
 

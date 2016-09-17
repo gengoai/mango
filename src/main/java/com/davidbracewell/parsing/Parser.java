@@ -21,11 +21,11 @@
 
 package com.davidbracewell.parsing;
 
-import com.davidbracewell.parsing.expressions.Expression;
+import com.davidbracewell.io.resource.Resource;
 import lombok.NonNull;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * <p>An implementation of a <a href="http://en.wikipedia.org/wiki/Pratt_parser">Pratt Parser</a> inspired by <a
@@ -36,87 +36,45 @@ import java.util.List;
  *
  * @author David B. Bracewell
  */
-public class Parser {
+public class Parser implements Serializable {
+   private static final long serialVersionUID = 1L;
+   private final Grammar grammar;
+   private final Lexer lexer;
 
-  private final Grammar grammar;
-  private final ParserTokenStream tokenStream;
+   /**
+    * Instantiates a new Parser.
+    *
+    * @param grammar the grammar
+    * @param lexer   the lexer
+    */
+   public Parser(Grammar grammar, Lexer lexer) {
+      this.grammar = grammar;
+      this.lexer = lexer;
+   }
 
-  /**
-   * Constructs a parser for the given token stream
-   *
-   * @param grammar     the grammar
-   * @param tokenStream The stream of tokens to parse
-   */
-  public Parser(@NonNull Grammar grammar, @NonNull ParserTokenStream tokenStream) {
-    this.grammar = grammar;
-    this.tokenStream = tokenStream;
-  }
+   /**
+    * Parse expression iterator.
+    *
+    * @param string the string
+    * @return the expression iterator
+    */
+   public ExpressionIterator parse(@NonNull String string) {
+      return new ExpressionIterator(grammar, lexer.lex(string));
+   }
 
-  /**
-   * Determine if there is more to parse or not
-   *
-   * @return True if there are more expressions to parse, False if at end of stream
-   */
-  public boolean hasNext() {
-    return tokenStream.lookAhead(0) != null;
-  }
-
-  /**
-   * Parses the next expression with the lowest precedence (0)
-   *
-   * @return The next expression
-   * @throws ParseException An error occurred parsing
-   */
-  public Expression next() throws ParseException {
-    return next(0);
-  }
-
-  /**
-   * Token stream.
-   *
-   * @return The token stream used by the parser
-   */
-  public final ParserTokenStream tokenStream() {
-    return tokenStream;
-  }
-
-  /**
-   * Parses the entire token stream until the end
-   *
-   * @return A list of expressions parsed from the underlying stream
-   * @throws ParseException Something went wrong parsing.
-   */
-  public List<Expression> parse() throws ParseException {
-    List<Expression> parseTree = new ArrayList<>();
-    while (hasNext()) {
-      parseTree.add(next());
-    }
-    return parseTree;
-  }
-
-  /**
-   * Parses the next expression with a given precedence.
-   *
-   * @param precedence The precedence to use in parsing
-   * @return The next expression or null if at the end of the token stream
-   * @throws ParseException An error occurred parsing
-   */
-  public Expression next(int precedence) throws ParseException {
-    ParserToken token;
-    Expression result;
-    do {
-      token = tokenStream.consume();
-      if (token == null) {
-        return null;
+   /**
+    * Parse expression iterator.
+    *
+    * @param resource the resource
+    * @return the expression iterator
+    * @throws ParseException the io exception
+    */
+   public ExpressionIterator parse(@NonNull Resource resource) throws ParseException {
+      try {
+         return new ExpressionIterator(grammar, lexer.lex(resource));
+      } catch (IOException e) {
+         throw new ParseException(e);
       }
-      result = grammar.parse(this, token);
-    } while (result == null);
+   }
 
-    while (precedence < grammar.precedence(tokenStream.lookAhead(0))) {
-      token = tokenStream.consume();
-      result = grammar.parse(this, result, token);
-    }
-    return result;
-  }
-
-}//END OF PrattParser
+}//END OF Parser

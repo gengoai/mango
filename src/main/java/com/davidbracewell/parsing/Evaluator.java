@@ -27,58 +27,58 @@ import lombok.NonNull;
  * @author David B. Bracewell
  */
 public abstract class Evaluator<O> extends Switch<Expression, O> {
-  private static final long serialVersionUID = 1L;
+   private static final long serialVersionUID = 1L;
 
-  /**
-   * Instantiates a new Evaluator.
-   */
-  protected Evaluator() {
-    $default(exp -> {throw new ParseException("Unknown Expression [" + exp + " : " + exp.getTokenType() + "]");});
-  }
+   /**
+    * Instantiates a new Evaluator.
+    */
+   protected Evaluator() {
+      $default(exp -> {throw new ParseException("Unknown Expression [" + exp + " : " + exp.getTokenType() + "]");});
+   }
 
-  /**
-   * Evaluates the given expression
-   *
-   * @param expression the expression to evaluate
-   * @return the result of evaluation
-   * @throws Exception Something went wrong during evaluation
-   */
-  public final O eval(@NonNull Expression expression) throws Exception {
-    return switchOn(expression);
-  }
+   /**
+    * Evaluates the given expression
+    *
+    * @param expression the expression to evaluate
+    * @return the result of evaluation
+    * @throws Exception Something went wrong during evaluation
+    */
+   public final O eval(@NonNull Expression expression) throws Exception {
+      return switchOn(expression);
+   }
 
-  /**
-   * Adds a switch statement where the condition is that the expression is of type <code>expressionClass</code> and the
-   * expressions's token type is an instance of <code>type</code>. When the condition is met the expression is cast as
-   * the given expression class and the given function is applied.
-   *
-   * @param <E>             the type of expression
-   * @param expressionClass the expression class
-   * @param type            the token type
-   * @param function        the function to apply when the condition is met.
-   */
-  protected final <E extends Expression> void $(@NonNull Class<E> expressionClass, @NonNull ParserTokenType type, @NonNull CheckedFunction<E, ? extends O> function) {
-    $case(
-      e -> e.match(expressionClass, type),
-      e -> Cast.as(e, expressionClass),
-      function
-    );
-  }
+   /**
+    * Adds a switch statement where the condition is that the expression is of type <code>expressionClass</code> and the
+    * expressions's token type is an instance of <code>type</code>. When the condition is met the expression is cast as
+    * the given expression class and the given function is applied.
+    *
+    * @param <E>             the type of expression
+    * @param expressionClass the expression class
+    * @param type            the token type
+    * @param function        the function to apply when the condition is met.
+    */
+   protected final <E extends Expression> void $(@NonNull Class<E> expressionClass, @NonNull ParserTokenType type, @NonNull CheckedFunction<E, ? extends O> function) {
+      $case(
+         e -> e.match(expressionClass, type),
+         e -> Cast.as(e, expressionClass),
+         function
+           );
+   }
 
-  /**
-   * Adds a switch statement where the condition is that the expression is of type <code>expressionClass</code>. When
-   * the condition is met the expression is cast as the given expression class and the given function is applied.
-   *
-   * @param <E>             the type of expression
-   * @param expressionClass the expression class
-   * @param function        the function to apply when the condition is met.
-   */
-  protected final <E extends Expression> void $(@NonNull Class<E> expressionClass, @NonNull CheckedFunction<E, ? extends O> function) {
-    $case(
-      e -> e.isInstance(expressionClass),
-      e -> Cast.as(e, expressionClass),
-      function
-    );
-  }
+   /**
+    * Adds a switch statement where the condition is that the expression is of type <code>expressionClass</code>. When
+    * the condition is met the expression is cast as the given expression class and the given function is applied.
+    *
+    * @param <E>             the type of expression
+    * @param expressionClass the expression class
+    * @param function        the function to apply when the condition is met.
+    */
+   protected final <E extends Expression> void $(@NonNull Class<E> expressionClass, @NonNull CheckedFunction<E, ? extends O> function) {
+      $case(
+         e -> e.isInstance(expressionClass),
+         e -> Cast.as(e, expressionClass),
+         function
+           );
+   }
 
 }// END OF Evaluator

@@ -21,8 +21,8 @@
 
 package com.davidbracewell.parsing.handlers;
 
+import com.davidbracewell.parsing.ExpressionIterator;
 import com.davidbracewell.parsing.ParseException;
-import com.davidbracewell.parsing.Parser;
 import com.davidbracewell.parsing.ParserToken;
 import com.davidbracewell.parsing.expressions.Expression;
 import com.davidbracewell.parsing.expressions.PostfixExpression;
@@ -33,19 +33,19 @@ import com.davidbracewell.parsing.expressions.PostfixExpression;
  * @author David B. Bracewell
  */
 public class PostfixOperatorHandler extends InfixHandler {
+   private static final long serialVersionUID = 1L;
+   /**
+    * Default constructor
+    *
+    * @param precedence The precedence of the handler
+    */
+   public PostfixOperatorHandler(int precedence) {
+      super(precedence);
+   }
 
-  /**
-   * Default constructor
-   *
-   * @param precedence The precedence of the handler
-   */
-  public PostfixOperatorHandler(int precedence) {
-    super(precedence);
-  }
-
-  @Override
-  public Expression parse(Parser parser, Expression left, ParserToken token) throws ParseException {
-    return new PostfixExpression(token, left);
-  }
+   @Override
+   public Expression parse(ExpressionIterator expressionIterator, Expression left, ParserToken token) throws ParseException {
+      return new PostfixExpression(token, left);
+   }
 
 }//END OF PostfixOperatorHandler

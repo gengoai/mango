@@ -25,90 +25,83 @@ import com.davidbracewell.parsing.expressions.AssignmentExpression;
 import com.davidbracewell.parsing.expressions.BinaryOperatorExpression;
 import com.davidbracewell.parsing.expressions.Expression;
 import com.davidbracewell.parsing.expressions.MethodCallExpression;
-import com.davidbracewell.parsing.handlers.AssignmentHandler;
-import com.davidbracewell.parsing.handlers.BinaryOperatorHandler;
-import com.davidbracewell.parsing.handlers.CommentHandler;
-import com.davidbracewell.parsing.handlers.GroupHandler;
-import com.davidbracewell.parsing.handlers.MethodCallHandler;
-import com.davidbracewell.parsing.handlers.PrefixSkipHandler;
-import com.davidbracewell.parsing.handlers.ValueHandler;
+import com.davidbracewell.parsing.handlers.*;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author David B. Bracewell
  */
 public class ParserTest {
 
-  @Test
-  public void test() throws Exception {
-    RegularExpressionLexer lexer = RegularExpressionLexer.builder()
-                                                         .add(CommonTypes.EQUALS)
-                                                         .add(CommonTypes.POUND)
-                                                         .add(CommonTypes.WHITESPACE)
-                                                         .add(CommonTypes.PERIOD)
-                                                         .add(CommonTypes.OPENPARENS)
-                                                         .add(CommonTypes.CLOSEPARENS)
-                                                         .add(CommonTypes.NUMBER)
-                                                         .add(CommonTypes.PLUS)
-                                                         .add(CommonTypes.COMMA)
-                                                         .add(CommonTypes.NEWLINE)
-                                                         .add(CommonTypes.WORD, "[a-zA-z]\\w*")
-                                                         .build();
+   @Test
+   public void test() throws Exception {
+      RegularExpressionLexer lexer = RegularExpressionLexer.builder()
+                                                           .add(CommonTypes.EQUALS)
+                                                           .add(CommonTypes.POUND)
+                                                           .add(CommonTypes.WHITESPACE)
+                                                           .add(CommonTypes.PERIOD)
+                                                           .add(CommonTypes.OPENPARENS)
+                                                           .add(CommonTypes.CLOSEPARENS)
+                                                           .add(CommonTypes.NUMBER)
+                                                           .add(CommonTypes.PLUS)
+                                                           .add(CommonTypes.COMMA)
+                                                           .add(CommonTypes.NEWLINE)
+                                                           .add(CommonTypes.WORD, "[a-zA-z]\\w*")
+                                                           .build();
 
-    Parser parser = new Parser(new TestGrammar(), lexer.lex(
-      "(1+2)\nmethod(arg1,arg2)\n#This is a comment.\n... var=(100+34)"
-    )
-    );
+      Parser parser2 = new Parser(new TestGrammar(), lexer);
+
+      ExpressionIterator parser = parser2.parse(
+         "(1+2)\nmethod(arg1,arg2)\n#This is a comment.\n... var=(100+34)"
+                                               );
 
 
-    Expression exp1 = parser.next();
-    assertEquals("(1 + 2)", exp1.toString());
-    assertNotNull(exp1.as(BinaryOperatorExpression.class));
-    Expression left = exp1.as(BinaryOperatorExpression.class).left;
-    Expression right = exp1.as(BinaryOperatorExpression.class).right;
-    String operator = exp1.as(BinaryOperatorExpression.class).operator.text;
-    assertEquals("1", left.toString());
-    assertEquals("2", right.toString());
-    assertEquals("+", operator);
+      Expression exp1 = parser.next();
+      assertEquals("(1 + 2)", exp1.toString());
+      assertNotNull(exp1.as(BinaryOperatorExpression.class));
+      Expression left = exp1.as(BinaryOperatorExpression.class).left;
+      Expression right = exp1.as(BinaryOperatorExpression.class).right;
+      String operator = exp1.as(BinaryOperatorExpression.class).operator.text;
+      assertEquals("1", left.toString());
+      assertEquals("2", right.toString());
+      assertEquals("+", operator);
 
-    Expression exp2 = parser.next();
-    assertEquals("(method[arg1, arg2])", exp2.toString());
-    assertNotNull(exp2.as(MethodCallExpression.class));
-    assertEquals("method", exp2.as(MethodCallExpression.class).methodName);
-    assertEquals(2, exp2.as(MethodCallExpression.class).arguments.size());
-    assertEquals("arg1", exp2.as(MethodCallExpression.class).arguments.get(0).toString());
-    assertEquals("arg2", exp2.as(MethodCallExpression.class).arguments.get(1).toString());
+      Expression exp2 = parser.next();
+      assertEquals("(method[arg1, arg2])", exp2.toString());
+      assertNotNull(exp2.as(MethodCallExpression.class));
+      assertEquals("method", exp2.as(MethodCallExpression.class).methodName);
+      assertEquals(2, exp2.as(MethodCallExpression.class).arguments.size());
+      assertEquals("arg1", exp2.as(MethodCallExpression.class).arguments.get(0).toString());
+      assertEquals("arg2", exp2.as(MethodCallExpression.class).arguments.get(1).toString());
 
-    Expression comment = parser.next();
-    assertEquals("#This is a comment.", comment.toString());
+      Expression comment = parser.next();
+      assertEquals("#This is a comment.", comment.toString());
 
-    Expression last = parser.next();
-    assertTrue(last instanceof AssignmentExpression);
-    AssignmentExpression a = (AssignmentExpression) last;
-    assertEquals("var", a.variableName);
-    assertEquals("=", a.operator);
-    assertEquals("(100 + 34)", a.right.toString());
-  }
+      Expression last = parser.next();
+      assertTrue(last instanceof AssignmentExpression);
+      AssignmentExpression a = (AssignmentExpression) last;
+      assertEquals("var", a.variableName);
+      assertEquals("=", a.operator);
+      assertEquals("(100 + 34)", a.right.toString());
+   }
 
-  private static class TestGrammar extends Grammar {
+   private static class TestGrammar extends Grammar {
 
-    public TestGrammar() {
-      super(new PrefixSkipHandler());
-      register(CommonTypes.POUND, new CommentHandler(CommonTypes.NEWLINE));
-      register(CommonTypes.OPENPARENS, new GroupHandler(CommonTypes.CLOSEPARENS));
-      register(CommonTypes.WORD, new ValueHandler());
-      register(CommonTypes.NUMBER, new ValueHandler());
-      register(CommonTypes.PLUS, new BinaryOperatorHandler(3, true));
-      register(CommonTypes.OPENPARENS, new MethodCallHandler(8, CommonTypes.CLOSEPARENS, CommonTypes.COMMA));
-      register(CommonTypes.EQUALS, new AssignmentHandler(10));
-      register(CommonTypes.POUND, new CommentHandler(CommonTypes.NEWLINE));
-    }
+      public TestGrammar() {
+         super(new PrefixSkipHandler());
+         register(CommonTypes.POUND, new CommentHandler(CommonTypes.NEWLINE));
+         register(CommonTypes.OPENPARENS, new GroupHandler(CommonTypes.CLOSEPARENS));
+         register(CommonTypes.WORD, new ValueHandler());
+         register(CommonTypes.NUMBER, new ValueHandler());
+         register(CommonTypes.PLUS, new BinaryOperatorHandler(3, true));
+         register(CommonTypes.OPENPARENS, new MethodCallHandler(8, CommonTypes.CLOSEPARENS, CommonTypes.COMMA));
+         register(CommonTypes.EQUALS, new AssignmentHandler(10));
+         register(CommonTypes.POUND, new CommentHandler(CommonTypes.NEWLINE));
+      }
 
-  }
+   }
 
 }
 

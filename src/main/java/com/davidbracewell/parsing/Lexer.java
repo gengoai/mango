@@ -23,36 +23,36 @@ package com.davidbracewell.parsing;
 
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.Resource;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 
 import java.io.IOException;
 
 /**
- * The interface Lexer.
+ * <p>A Lexer tokenizes a string or resource into tokens.</p>
  *
  * @author David B. Bracewell
  */
-public abstract class Lexer {
+public interface Lexer {
 
+   /**
+    * Tokenizes the input string into tokens
+    *
+    * @param input the input to tokenize
+    * @return A token stream wrapping the tokenization results
+    */
+   @SneakyThrows
+   default ParserTokenStream lex(@NonNull final String input) {
+      return lex(Resources.fromString(input));
+   }
 
-  /**
-   * Lex parser token stream.
-   *
-   * @param input the input
-   * @return the parser token stream
-   */
-  @SneakyThrows
-  public ParserTokenStream lex(final String input) {
-    return lex(Resources.fromString(input));
-  }
-
-  /**
-   * Parses an input into a token stream
-   *
-   * @param input The input to parse
-   * @return A token stream representing the tokenized items
-   * @throws java.io.IOException the iO exception
-   */
-  public abstract ParserTokenStream lex(final Resource input) throws IOException;
+   /**
+    * Reads from the given resource and tokenizes it into tokens
+    *
+    * @param input the resource to read and tokenize
+    * @return A token stream wrapping the tokenization results
+    * @throws IOException Something went wrong reading from the input resource
+    */
+   ParserTokenStream lex(final Resource input) throws IOException;
 
 }//END OF Lexer

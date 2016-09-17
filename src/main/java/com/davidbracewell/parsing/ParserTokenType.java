@@ -28,14 +28,14 @@ package com.davidbracewell.parsing;
  */
 public interface ParserTokenType {
 
-  /**
-   * Determines if this type is the same type as the given one
-   *
-   * @param tokenType The type to check
-   * @return True if this is the same type as the given
-   */
-  default boolean isInstance(ParserTokenType tokenType){
-    return this == tokenType;
-  }
+   /**
+    * Determines if this type is the same type as the given one
+    *
+    * @param tokenType The type to check
+    * @return True if this is the same type as the given
+    */
+   default boolean isInstance(ParserTokenType tokenType) {
+      return this == tokenType;
+   }
 
 }//END OF TokenType
