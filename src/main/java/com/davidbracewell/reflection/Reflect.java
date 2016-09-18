@@ -372,6 +372,30 @@ public class Reflect {
 
    }
 
+
+   /**
+    * Has field boolean.
+    *
+    * @param fieldName the field name
+    * @return the boolean
+    */
+   public boolean hasField(@NonNull String fieldName) {
+      return ClassDescriptorCache.getInstance()
+                                 .getClassDescriptor(clazz)
+                                 .getFields(accessAll)
+                                 .stream()
+                                 .anyMatch(f -> f.getName().equals(fieldName));
+   }
+
+   private Field getField(String fieldName) {
+      return ClassDescriptorCache.getInstance()
+                                 .getClassDescriptor(clazz)
+                                 .getFields(accessAll)
+                                 .stream()
+                                 .filter(field -> field.getName().equals(fieldName))
+                                 .findFirst().orElse(null);
+   }
+
    /**
     * Sets the value of a field. Will perform conversion on the value if needed.
     *
@@ -382,32 +406,23 @@ public class Reflect {
     */
    public Reflect set(String fieldName, Object value) throws ReflectionException {
       Field field = null;
-      boolean hasAccess = false;
-
+      boolean isAccessible = false;
       try {
-         if (ReflectionUtils.hasField(clazz, fieldName)) {
-            field = clazz.getField(fieldName);
-         } else if (accessAll && ReflectionUtils.hasDeclaredField(clazz, fieldName)) {
-            field = clazz.getDeclaredField(fieldName);
-         } else if (ReflectionUtils.hasField(clazz.getSuperclass(), fieldName)) {
-            field = clazz.getSuperclass().getField(fieldName);
-         } else if (accessAll && ReflectionUtils.hasDeclaredField(clazz.getSuperclass(), fieldName)) {
-            field = clazz.getSuperclass().getDeclaredField(fieldName);
+         if (hasField(fieldName)) {
+            field = getField(fieldName);
+            isAccessible = field.isAccessible();
+            field.setAccessible(accessAll);
          } else {
             throw new NoSuchElementException();
          }
-
-         hasAccess = field.isAccessible();
-         field.setAccessible(true);
          value = convertValueType(value, field.getType());
          field.set(object, value);
          return this;
-
-      } catch (IllegalAccessException | NoSuchFieldException e) {
+      } catch (IllegalAccessException e) {
          throw new ReflectionException(e);
       } finally {
          if (field != null) {
-            field.setAccessible(hasAccess);
+            field.setAccessible(isAccessible);
          }
       }
 
@@ -420,16 +435,8 @@ public class Reflect {
     * @return An instance of Reflect wrapping the result of the field value
     * @throws ReflectionException Something went wrong getting the value of field
     */
-   public Reflect get(String fieldName) throws ReflectionException {
-      Field f = ReflectionUtils.getField(clazz, fieldName, accessAll);
-
-      if (f == null) {
-         Class<?> parent = clazz.getSuperclass();
-         while (f == null && parent != null) {
-            f = ReflectionUtils.getField(parent, fieldName, accessAll);
-            parent = parent.getSuperclass();
-         }
-      }
+   public Reflect get(@NonNull String fieldName) throws ReflectionException {
+      Field f = getField(fieldName);
 
       if (f == null) {
          throw new ReflectionException(new NoSuchFieldException(fieldName + " is not a valid field for " + clazz));

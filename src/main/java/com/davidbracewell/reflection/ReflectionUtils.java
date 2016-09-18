@@ -28,7 +28,6 @@ import com.google.common.primitives.Primitives;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -41,136 +40,27 @@ public final class ReflectionUtils {
 
    private final static Logger log = Logger.getLogger(ReflectionUtils.class);
 
-
    private ReflectionUtils() {
    }
 
    /**
-    * Gets fields.
+    * Finds the best Method match for a given method name and types against a collection of methods.
     *
-    * @param o         the o
-    * @param recursive the recursive
-    * @return the fields
+    * @param methods    The collections of methods to choose from
+    * @param methodName The name of the method we want to match
+    * @param types      The types that we want to pass to the method.
+    * @return Null if there is no match, otherwise the Method which bests fits the given method name and types
     */
-   public static List<Field> getFields(@NonNull Object o, boolean recursive) {
-      return getFields(o.getClass(), recursive);
-   }
-
-   /**
-    * Gets declared fields.
-    *
-    * @param o         the o
-    * @param recursive the recursive
-    * @return the declared fields
-    */
-   public static List<Field> getDeclaredFields(@NonNull Object o, boolean recursive) {
-      return getDeclaredFields(o.getClass(), recursive);
-   }
-
-   /**
-    * Gets fields.
-    *
-    * @param clazz     the clazz
-    * @param recursive the recursive
-    * @return the fields
-    */
-   public static List<Field> getFields(@NonNull Class<?> clazz, boolean recursive) {
-      List<Field> fields = new ArrayList<>();
-      do {
-         fields.addAll(Arrays.asList(clazz.getFields()));
-         clazz = clazz.getSuperclass();
-      } while (recursive && clazz != null && clazz != Object.class);
-      return fields;
-   }
-
-   /**
-    * Gets declared fields.
-    *
-    * @param clazz     the clazz
-    * @param recursive the recursive
-    * @return the declared fields
-    */
-   public static List<Field> getDeclaredFields(@NonNull Class<?> clazz, boolean recursive) {
-      List<Field> fields = new ArrayList<>();
-      do {
-         fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
-         clazz = clazz.getSuperclass();
-      } while (recursive && clazz != null && clazz != Object.class);
-      return fields;
-   }
-
-   /**
-    * Gets field.
-    *
-    * @param clazz      the clazz
-    * @param name       the name
-    * @param privileged the privalged
-    * @return the field
-    */
-   public static Field getField(Class<?> clazz, String name, boolean privileged) {
-      if (clazz == null || name == null) {
+   public static Method bestMatchingMethod(Collection<Method> methods, String methodName, Class[] types) {
+      if (methods == null || StringUtils.isNullOrBlank(methodName) || types == null) {
          return null;
       }
-      return ClassDescriptorCache.getInstance()
-                                 .getClassDescriptor(clazz)
-                                 .getFields(privileged)
-                                 .stream()
-                                 .filter(f -> f.getName().equals(name))
-                                 .findFirst().orElse(null);
-   }
-
-   /**
-    * Gets all interfaces that the given object implements
-    *
-    * @param o The object
-    * @return A list of interfaces implemented by the object
-    */
-   public static List<Class<?>> getAllInterfaces(Object o) {
-      return getAllClasses(o, IsInterface.INSTANCE);
-   }
-
-   /**
-    * Gets all classes associated with (superclasses and interfaces) the given object.
-    *
-    * @param o The object
-    * @return List of classes including the class of the given object that match the given predicate
-    */
-   public static List<Class<?>> getAllClasses(Object o) {
-      return getAllClasses(o, x -> true);
-   }
-
-   /**
-    * Gets all classes associated with (superclasses and interfaces) the given object that pass the given
-    * predicate.
-    *
-    * @param o         The object
-    * @param predicate The predicate that ancestors must pass.
-    * @return List of classes including the class of the given object that match the given predicate
-    */
-   private static List<Class<?>> getAllClasses(Object o, Predicate<? super Class<?>> predicate) {
-      if (o == null) {
-         return Collections.emptyList();
-      }
-      List<Class<?>> matches = new ArrayList<>();
-      Set<Class<?>> seen = new HashSet<>();
-      Queue<Class<?>> queue = new LinkedList<>();
-      queue.add(o.getClass());
-      while (!queue.isEmpty()) {
-         Class<?> clazz = queue.remove();
-         if (predicate.test(clazz)) {
-            matches.add(clazz);
-         }
-         seen.add(clazz);
-         if (clazz.getSuperclass() != null && !seen.contains(clazz.getSuperclass())) {
-            queue.add(clazz.getSuperclass());
-         }
-         for (Class<?> iface : clazz.getInterfaces()) {
-            if (!seen.contains(iface)) {
-               queue.add(iface);
-            }
+      for (Method method : methods) {
+         if (method.getName().equals(methodName) && typesMatch(method.getParameterTypes(), types)) {
+            return method;
          }
       }
-      return matches;
+      return null;
    }
 
    /**
@@ -232,72 +122,57 @@ public final class ReflectionUtils {
    }
 
    /**
-    * Determines if a class is a singleton by looking for certain methods on the class.  Looks for a
-    * <code>getInstance</code>, <code>getSingleton</code> or <code>createInstance</code> method.
+    * Gets all classes associated with (superclasses and interfaces) the given object.
     *
-    * @param clazz The class
-    * @return True if it appears to be a singleton.
+    * @param o The object
+    * @return List of classes including the class of the given object that match the given predicate
     */
-   public static boolean isSingleton(Class<?> clazz) {
-      return clazz != null && (Reflect.onClass(clazz).containsMethod("getInstance") || Reflect.onClass(clazz)
-                                                                                              .containsMethod(
-                                                                                                 "getSingleton") || Reflect
-                                                                                                                       .onClass(
-                                                                                                                          clazz)
-                                                                                                                       .containsMethod(
-                                                                                                                          "createInstance"));
+   public static List<Class<?>> getAncestorClasses(Object o) {
+      return getAncestorClasses(o, x -> true);
    }
 
    /**
-    * Determines if a string is a class name.
+    * Gets all classes associated with (superclasses and interfaces) the given object that pass the given
+    * predicate.
     *
-    * @param string The string
-    * @return True if value of the string is a class name.
+    * @param o         The object
+    * @param predicate The predicate that ancestors must pass.
+    * @return List of classes including the class of the given object that match the given predicate
     */
-   public static boolean isClassName(String string) {
-      return StringUtils.isNotNullOrBlank(string) && getClassForNameQuietly(string) != null;
-   }
-
-   /**
-    * Gets the singleton instance of a class. Looks for a <code>getInstance</code>, <code>getSingleton</code> or
-    * <code>createInstance</code> method.
-    *
-    * @param <T> the type parameter
-    * @param cz  The class
-    * @return The singleton instance or null if the class is not a singleton.
-    */
-   @SneakyThrows
-   public static <T> T getSingletonFor(Class<?> cz) {
-      if (Reflect.onClass(cz).containsMethod("getInstance")) {
-         return Reflect.onClass(cz).invoke("getInstance").get();
-      } else if (Reflect.onClass(cz).containsMethod("getSingleton")) {
-         return Reflect.onClass(cz).invoke("getSingleton").get();
-      } else if (Reflect.onClass(cz).containsMethod("createInstance")) {
-         return Reflect.onClass(cz).invoke("createInstance").get();
+   private static List<Class<?>> getAncestorClasses(Object o, Predicate<? super Class<?>> predicate) {
+      if (o == null) {
+         return Collections.emptyList();
       }
-      return null;
+      List<Class<?>> matches = new ArrayList<>();
+      Set<Class<?>> seen = new HashSet<>();
+      Queue<Class<?>> queue = new LinkedList<>();
+      queue.add(o.getClass());
+      while (!queue.isEmpty()) {
+         Class<?> clazz = queue.remove();
+         if (predicate.test(clazz)) {
+            matches.add(clazz);
+         }
+         seen.add(clazz);
+         if (clazz.getSuperclass() != null && !seen.contains(clazz.getSuperclass())) {
+            queue.add(clazz.getSuperclass());
+         }
+         for (Class<?> iface : clazz.getInterfaces()) {
+            if (!seen.contains(iface)) {
+               queue.add(iface);
+            }
+         }
+      }
+      return matches;
    }
 
    /**
-    * Determines if two constructors have the same signature.
+    * Gets all interfaces that the given object implements
     *
-    * @param c1 Constructor 1
-    * @param c2 Constructor 2
-    * @return True if they have the same signature, false if not
+    * @param o The object
+    * @return A list of interfaces implemented by the object
     */
-   public static boolean constructorsEqual(Constructor<?> c1, Constructor<?> c2) {
-      return c1.getName().equals(c2.getName()) && typesMatch(c1.getParameterTypes(), c2.getParameterTypes());
-   }
-
-   /**
-    * Determines if two fields have the same signature (i.e. name)
-    *
-    * @param f1 Field 1
-    * @param f2 Field 2
-    * @return True if they have the same signature, false if not
-    */
-   public static boolean fieldsEqual(Field f1, Field f2) {
-      return f1.getName().equals(f2.getName());
+   public static List<Class<?>> getAncestorInterfaces(Object o) {
+      return getAncestorClasses(o, Class::isInterface);
    }
 
    /**
@@ -336,47 +211,46 @@ public final class ReflectionUtils {
    }
 
    /**
-    * Best matching constructor constructor.
+    * Gets declared fields.
     *
-    * @param clazz              the clazz
-    * @param numberOfParameters the number of parameters
-    * @return the constructor
+    * @param clazz     the clazz
+    * @param recursive the recursive
+    * @return the declared fields
     */
-   public static Constructor<?> bestMatchingConstructor(Class<?> clazz, int numberOfParameters) {
-      if (numberOfParameters <= 0) {
-         try {
-            return clazz.getConstructor();
-         } catch (NoSuchMethodException e) {
-            return null;
-         }
-      }
-
-      for (Constructor<?> constructor : clazz.getConstructors()) {
-         Class<?>[] parameters = constructor.getParameterTypes();
-         if (parameters.length == numberOfParameters) {
-            return constructor;
-         }
-      }
-
-      return null;
+   public static List<Field> getDeclaredFields(@NonNull Class<?> clazz, boolean recursive) {
+      List<Field> fields = new ArrayList<>();
+      do {
+         fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
+         clazz = clazz.getSuperclass();
+      } while (recursive && clazz != null && clazz != Object.class);
+      return fields;
    }
 
    /**
-    * Finds the best Method match for a given method name and types against a collection of methods.
+    * Gets the singleton instance of a class. Looks for a <code>getInstance</code>, <code>getSingleton</code> or
+    * <code>createInstance</code> method.
     *
-    * @param methods    The collections of methods to choose from
-    * @param methodName The name of the method we want to match
-    * @param types      The types that we want to pass to the method.
-    * @return Null if there is no match, otherwise the Method which bests fits the given method name and types
+    * @param <T> the type parameter
+    * @param cz  The class
+    * @return The singleton instance or null if the class is not a singleton.
     */
-   public static Method bestMatchingMethod(Collection<Method> methods, String methodName, Class[] types) {
-      if (methods == null || StringUtils.isNullOrBlank(methodName) || types == null) {
+   @SneakyThrows
+   public static <T> T getSingletonFor(Class<?> cz) {
+      if (cz == null) {
          return null;
       }
-      for (Method method : methods) {
-         if (method.getName().equals(methodName) && typesMatch(method.getParameterTypes(), types)) {
-            return method;
-         }
+      Method method = getSingletonMethod(cz);
+      return method == null ? null : Reflect.on(method, null, true).get();
+   }
+
+   private static Method getSingletonMethod(Class<?> clazz) {
+      Reflect reflect = Reflect.onClass(clazz);
+      if (reflect.containsMethod("getInstance")) {
+         return reflect.getMethod("getInstance");
+      } else if (reflect.containsMethod("getSingleton")) {
+         return reflect.getMethod("getSingleton");
+      } else if (reflect.containsMethod("createInstance")) {
+         return reflect.getMethod("createInstance");
       }
       return null;
    }
@@ -399,52 +273,36 @@ public final class ReflectionUtils {
       return types;
    }
 
-   /**
-    * Determines if two methods have the same signature.
-    *
-    * @param m1 Method 1
-    * @param m2 Method 2
-    * @return True if they have the same signature, false if not
-    */
-   public static boolean methodsEqual(Method m1, Method m2) {
-      return m1.getName().equals(m2.getName()) && typesMatch(m1.getParameterTypes(), m2.getParameterTypes());
+   private static boolean inSameHierarchy(Class<?> c1, Class<?> c2) {
+      return Primitives.wrap(c1).isAssignableFrom(c2) || Primitives.wrap(c2).isAssignableFrom(c1);
    }
 
    /**
-    * Has field boolean.
+    * Determines if a string is a class name.
     *
-    * @param clazz     the clazz
-    * @param fieldName the field name
-    * @return the boolean
+    * @param string The string
+    * @return True if value of the string is a class name.
     */
-   public static boolean hasField(Class<?> clazz, String fieldName) {
-      if (clazz == null) {
-         return false;
-      }
-      return ClassDescriptorCache.getInstance()
-                                 .getClassDescriptor(clazz)
-                                 .getFields(false)
-                                 .stream()
-                                 .anyMatch(f -> f.getName().equals(fieldName));
+   public static boolean isClassName(String string) {
+      return StringUtils.isNotNullOrBlank(string) && getClassForNameQuietly(string) != null;
+   }
+
+   private static boolean isConvertible(Class<?> c1, Class<?> c2) {
+      return Val.class.isAssignableFrom(c1) || Val.class.isAssignableFrom(c2);
    }
 
    /**
-    * Has declared field boolean.
+    * Determines if a class is a singleton by looking for certain methods on the class.  Looks for a
+    * <code>getInstance</code>, <code>getSingleton</code> or <code>createInstance</code> method.
     *
-    * @param clazz     the clazz
-    * @param fieldName the field name
-    * @return the boolean
+    * @param clazz The class
+    * @return True if it appears to be a singleton.
     */
-   public static boolean hasDeclaredField(Class<?> clazz, String fieldName) {
+   public static boolean isSingleton(Class<?> clazz) {
       if (clazz == null) {
          return false;
       }
-      try {
-         clazz.getDeclaredField(fieldName);
-      } catch (NoSuchFieldException e) {
-         return false;
-      }
-      return true;
+      return getSingletonMethod(clazz) != null;
    }
 
    /**
@@ -465,26 +323,6 @@ public final class ReflectionUtils {
          }
       }
       return true;
-   }
-
-   private static boolean isConvertible(Class<?> c1, Class<?> c2) {
-      return Val.class.isAssignableFrom(c1) || Val.class.isAssignableFrom(c2);
-   }
-
-   private static boolean inSameHierarchy(Class<?> c1, Class<?> c2) {
-      return Primitives.wrap(c1).isAssignableFrom(c2) || Primitives.wrap(c2).isAssignableFrom(c1);
-   }
-
-   private enum IsInterface implements Predicate<Class<?>> {
-      /**
-       * Instance is interface.
-       */
-      INSTANCE;
-
-      @Override
-      public boolean test(Class<?> input) {
-         return input != null && input.isInterface();
-      }
    }
 
 

@@ -98,7 +98,7 @@ public class CacheProxy<T> implements InvocationHandler, Serializable {
    @SneakyThrows
    public static <T> T cache(@NonNull Object object, String defaultCacheName) {
       return Cast.as(Proxy.newProxyInstance(object.getClass().getClassLoader(),
-                                            ReflectionUtils.getAllInterfaces(object).toArray(new Class[1]),
+                                            ReflectionUtils.getAncestorInterfaces(object).toArray(new Class[1]),
                                             new CacheProxy<>(object, defaultCacheName)
                                            )
                     );

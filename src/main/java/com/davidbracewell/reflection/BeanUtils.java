@@ -94,12 +94,12 @@ public class BeanUtils {
       for (int i = 1; i <= 1000; i++) {
          String cParam = name + ".constructor.param" + i;
          if (Config.hasProperty(cParam) || Config.hasProperty(cParam, "value")) {
-            ValueType valueType = ValueType.fromConfig(name);
+            ValueType valueType = ValueType.fromConfig(cParam);
             paramTypes.add(valueType.getType());
             String valueCfg = Config.hasProperty(cParam, "value")
                               ? Config.get(cParam, "value").asString()
                               : Config.get(cParam).asString();
-            if (Config.hasProperty(name, "type")) {
+            if (Config.hasProperty(cParam, "type")) {
                hadType = true;
             }
             rawValues.add(valueCfg);
@@ -117,8 +117,15 @@ public class BeanUtils {
                                                                  values.toArray()
                                                                 ).<T>get()));
       } else {
-         Constructor<?> constructor = ReflectionUtils.bestMatchingConstructor(reflect.getReflectedClass(),
-                                                                              values.size());
+         Constructor<?> constructor = ClassDescriptorCache.getInstance()
+                                                          .getClassDescriptor(clazz)
+                                                          .getConstructors(false)
+                                                          .stream()
+                                                          .filter(
+                                                             c -> c.getParameterTypes().length == values.size()
+                                                                 )
+                                                          .findFirst()
+                                                          .orElse(null);
          if (constructor == null) {
             throw new ReflectionException("Cannot find a matching constructor for " +
                                              reflect.getReflectedClass() + " that takes " + values);
@@ -157,7 +164,7 @@ public class BeanUtils {
       }
 
       BeanMap beanMap = new BeanMap(object);
-      List<Class<?>> list = ReflectionUtils.getAllClasses(object);
+      List<Class<?>> list = ReflectionUtils.getAncestorClasses(object);
       Collections.reverse(list);
       for (Class<?> clazz : list) {
          doParametrization(beanMap, clazz.getName());
