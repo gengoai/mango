@@ -38,7 +38,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * <code>Reflect</code> is a class that allows fluent use of reflection
+ * Allows fluent use of reflection
  *
  * @author David B. Bracewell
  */

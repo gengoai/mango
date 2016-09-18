@@ -22,22 +22,29 @@
 package com.davidbracewell.reflection;
 
 /**
+ * Specialized exception for reflection errors
+ *
  * @author David B. Bracewell
  */
 public class ReflectionException extends Exception {
-  private static final long serialVersionUID = 6783174274006281405L;
+   private static final long serialVersionUID = 6783174274006281405L;
 
-  /**
-   * Default Constructor
-   *
-   * @param throwable The throwable being wrapped
-   */
-  public ReflectionException(Throwable throwable) {
-    super(throwable);
-  }
+   /**
+    * Instantiates a new Reflection exception.
+    *
+    * @param throwable The throwable being wrapped
+    */
+   public ReflectionException(Throwable throwable) {
+      super(throwable);
+   }
 
-  public ReflectionException(String message) {
-    super(message);
-  }
+   /**
+    * Instantiates a new Reflection exception.
+    *
+    * @param message the error message
+    */
+   public ReflectionException(String message) {
+      super(message);
+   }
 
 }//END OF ReflectionException

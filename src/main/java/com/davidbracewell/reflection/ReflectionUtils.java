@@ -22,6 +22,7 @@
 package com.davidbracewell.reflection;
 
 import com.davidbracewell.conversion.Val;
+import com.davidbracewell.logging.Loggable;
 import com.davidbracewell.logging.Logger;
 import com.davidbracewell.string.StringUtils;
 import com.google.common.primitives.Primitives;
@@ -37,11 +38,12 @@ import java.util.function.Predicate;
 /**
  * Static classes to make reflection easier.
  */
-public final class ReflectionUtils {
+public final class ReflectionUtils implements Loggable {
 
    private final static Logger log = Logger.getLogger(ReflectionUtils.class);
 
    private ReflectionUtils() {
+      throw new IllegalAccessError();
    }
 
    /**
