@@ -241,9 +241,11 @@ public final class ReflectionUtils {
    public static boolean isSingleton(Class<?> clazz) {
       return clazz != null && (Reflect.onClass(clazz).containsMethod("getInstance") || Reflect.onClass(clazz)
                                                                                               .containsMethod(
-                                                                                                    "getSingleton") || Reflect
-            .onClass(clazz)
-            .containsMethod("createInstance"));
+                                                                                                 "getSingleton") || Reflect
+                                                                                                                       .onClass(
+                                                                                                                          clazz)
+                                                                                                                       .containsMethod(
+                                                                                                                          "createInstance"));
    }
 
    /**

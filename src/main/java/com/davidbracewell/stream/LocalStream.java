@@ -49,310 +49,312 @@ import java.util.stream.Stream;
  * @author David B. Bracewell
  */
 public class LocalStream<T> implements MStream<T>, Serializable {
-  private static final long serialVersionUID = 1L;
+   private static final long serialVersionUID = 1L;
 
-  private volatile Stream<T> stream;
-  private SerializableRunnable onClose;
+   private volatile Stream<T> stream;
+   private SerializableRunnable onClose;
 
-  public LocalStream() {
-    this.stream = Stream.of();
-  }
+   public LocalStream() {
+      this.stream = Stream.of();
+   }
 
-  /**
-   * Instantiates a new Java m stream.
-   *
-   * @param items the items
-   */
-  @SafeVarargs
-  public LocalStream(@NonNull final T... items) {
-    this.stream = Stream.of(items);
-  }
+   /**
+    * Instantiates a new Java m stream.
+    *
+    * @param items the items
+    */
+   @SafeVarargs
+   public LocalStream(@NonNull final T... items) {
+      this.stream = Stream.of(items);
+   }
 
-  /**
-   * Instantiates a new Java m stream.
-   *
-   * @param stream the stream
-   */
-  public LocalStream(@NonNull final Stream<T> stream) {
-    this.stream = stream;
-  }
+   /**
+    * Instantiates a new Java m stream.
+    *
+    * @param stream the stream
+    */
+   public LocalStream(@NonNull final Stream<T> stream) {
+      this.stream = stream;
+   }
 
-  /**
-   * Instantiates a new Java m stream.
-   *
-   * @param collection the collection
-   */
-  public LocalStream(@NonNull final Collection<T> collection) {
-    this.stream = collection.parallelStream();
-  }
+   /**
+    * Instantiates a new Java m stream.
+    *
+    * @param collection the collection
+    */
+   public LocalStream(@NonNull final Collection<T> collection) {
+      this.stream = collection.parallelStream();
+   }
 
-  /**
-   * Instantiates a new Java m stream.
-   *
-   * @param iterable the iterable
-   */
-  public LocalStream(@NonNull final Iterable<T> iterable) {
-    this.stream = Streams.asStream(iterable);
-  }
+   /**
+    * Instantiates a new Java m stream.
+    *
+    * @param iterable the iterable
+    */
+   public LocalStream(@NonNull final Iterable<T> iterable) {
+      this.stream = Streams.asStream(iterable);
+   }
 
 
-  @Override
-  public void onClose(@NonNull SerializableRunnable closeHandler) {
-    this.onClose = closeHandler;
-    stream.onClose(closeHandler);
-  }
+   @Override
+   public void onClose(@NonNull SerializableRunnable closeHandler) {
+      this.onClose = closeHandler;
+      stream.onClose(closeHandler);
+   }
 
-  @Override
-  public void close() throws IOException {
-    stream.close();
-  }
+   @Override
+   public void close() throws IOException {
+      stream.close();
+   }
 
-  @Override
-  public MStream<T> filter(@NonNull SerializablePredicate<? super T> predicate) {
-    return new LocalStream<>(stream.filter(predicate));
-  }
+   @Override
+   public MStream<T> filter(@NonNull SerializablePredicate<? super T> predicate) {
+      return new LocalStream<>(stream.filter(predicate));
+   }
 
-  @Override
-  public <R> MStream<R> map(@NonNull SerializableFunction<? super T, ? extends R> function) {
-    return new LocalStream<>(stream.map(function));
-  }
+   @Override
+   public <R> MStream<R> map(@NonNull SerializableFunction<? super T, ? extends R> function) {
+      return new LocalStream<>(stream.map(function));
+   }
 
-  @Override
-  public <R> MStream<R> flatMap(@NonNull SerializableFunction<? super T, Iterable<? extends R>> mapper) {
-    return new LocalStream<>(stream.flatMap(t -> Streams.asStream(mapper.apply(t)).map(Cast::<R>as)));
-  }
+   @Override
+   public <R> MStream<R> flatMap(@NonNull SerializableFunction<? super T, Iterable<? extends R>> mapper) {
+      return new LocalStream<>(stream.flatMap(t -> Streams.asStream(mapper.apply(t)).map(Cast::<R>as)));
+   }
 
-  @Override
-  public <R, U> MPairStream<R, U> flatMapToPair(SerializableFunction<? super T, ? extends Iterable<? extends Map.Entry<? extends R, ? extends U>>> function) {
-    return new LocalPairStream<>(
-      stream.flatMap(t -> Streams.asStream(Cast.<Iterable<Map.Entry<R, U>>>as(function.apply(t))))
-    );
-  }
+   @Override
+   public <R, U> MPairStream<R, U> flatMapToPair(SerializableFunction<? super T, ? extends Iterable<? extends Map.Entry<? extends R, ? extends U>>> function) {
+      return new LocalPairStream<>(
+                                     stream.flatMap(
+                                        t -> Streams.asStream(Cast.<Iterable<Map.Entry<R, U>>>as(function.apply(t))))
+      );
+   }
 
-  @Override
-  public <R, U> MPairStream<R, U> mapToPair(@NonNull SerializableFunction<? super T, ? extends Map.Entry<? extends R, ? extends U>> function) {
-    return new LocalPairStream<>(stream.map(f -> Cast.<Map.Entry<R, U>>as(function.apply(f))));
-  }
+   @Override
+   public <R, U> MPairStream<R, U> mapToPair(@NonNull SerializableFunction<? super T, ? extends Map.Entry<? extends R, ? extends U>> function) {
+      return new LocalPairStream<>(stream.map(f -> Cast.<Map.Entry<R, U>>as(function.apply(f))));
+   }
 
-  @Override
-  public Optional<T> first() {
-    return stream.findFirst();
-  }
+   @Override
+   public Optional<T> first() {
+      return stream.findFirst();
+   }
 
-  @Override
-  public MStream<T> sample(boolean withReplacement, int count) {
-    if (count <= 0) {
-      return new LocalStream<>(Stream.<T>empty());
-    }
-    Random random = new Random();
-    if (withReplacement) {
-      List<T> all = collect();
-      List<T> sample = new ArrayList<>();
-      while (sample.size() < count) {
-        sample.add(all.get(random.nextInt(all.size())));
+   @Override
+   public MStream<T> sample(boolean withReplacement, int count) {
+      if (count <= 0) {
+         return new LocalStream<>(Stream.<T>empty());
       }
-      return new ReusableLocalStream<>(sample);
-    } else {
-      List<T> sample = new ArrayList<>();
-      AtomicInteger k = new AtomicInteger(count + 1);
-      stream.sequential().forEach(document -> {
-        if (sample.size() < count) {
-          sample.add(document);
-        } else {
-          int rndIndex = random.nextInt(k.getAndIncrement());
-          if (rndIndex < count) {
-            sample.set(rndIndex, document);
-          }
-        }
-      });
-      return new ReusableLocalStream<>(sample);
-    }
-  }
+      Random random = new Random();
+      if (withReplacement) {
+         List<T> all = collect();
+         List<T> sample = new ArrayList<>();
+         while (sample.size() < count) {
+            sample.add(all.get(random.nextInt(all.size())));
+         }
+         return new ReusableLocalStream<>(sample);
+      } else {
+         List<T> sample = new ArrayList<>();
+         AtomicInteger k = new AtomicInteger(count + 1);
+         stream.sequential().forEach(document -> {
+            if (sample.size() < count) {
+               sample.add(document);
+            } else {
+               int rndIndex = random.nextInt(k.getAndIncrement());
+               if (rndIndex < count) {
+                  sample.set(rndIndex, document);
+               }
+            }
+         });
+         return new ReusableLocalStream<>(sample);
+      }
+   }
 
-  @Override
-  public Optional<T> reduce(@NonNull SerializableBinaryOperator<T> accumulator) {
-    return stream.reduce(accumulator);
-  }
+   @Override
+   public Optional<T> reduce(@NonNull SerializableBinaryOperator<T> accumulator) {
+      return stream.reduce(accumulator);
+   }
 
-  @Override
-  public long count() {
-    List<T> objects = stream.collect(Collectors.toList());
-    stream = objects.stream();
-    return objects.size();
-  }
+   @Override
+   public long count() {
+      List<T> objects = stream.collect(Collectors.toList());
+      stream = objects.stream();
+      return objects.size();
+   }
 
-  @Override
-  public MStream<T> distinct() {
-    return new LocalStream<>(stream.distinct());
-  }
+   @Override
+   public MStream<T> distinct() {
+      return new LocalStream<>(stream.distinct());
+   }
 
-  @Override
-  public void forEach(@NonNull SerializableConsumer<? super T> consumer) {
-    stream.forEachOrdered(consumer);
-  }
+   @Override
+   public void forEach(@NonNull SerializableConsumer<? super T> consumer) {
+      stream.forEachOrdered(consumer);
+   }
 
-  @Override
-  public void forEachLocal(SerializableConsumer<? super T> consumer) {
-    stream.forEachOrdered(consumer);
-  }
+   @Override
+   public void forEachLocal(SerializableConsumer<? super T> consumer) {
+      stream.forEachOrdered(consumer);
+   }
 
-  @Override
-  public Iterator<T> iterator() {
-    return stream.iterator();
-  }
+   @Override
+   public Iterator<T> iterator() {
+      return stream.iterator();
+   }
 
-  @Override
-  public <R> R collect(@NonNull Collector<? super T, T, R> collector) {
-    return stream.collect(collector);
-  }
+   @Override
+   public <R> R collect(@NonNull Collector<? super T, T, R> collector) {
+      return stream.collect(collector);
+   }
 
-  @Override
-  public MStream<T> limit(long number) {
-    if (number <= 0) {
-      return StreamingContext.local().empty();
-    }
-    return new LocalStream<>(stream.limit(number));
-  }
+   @Override
+   public MStream<T> limit(long number) {
+      if (number <= 0) {
+         return StreamingContext.local().empty();
+      }
+      return new LocalStream<>(stream.limit(number));
+   }
 
-  @Override
-  public List<T> take(int n) {
-    if (n <= 0) {
-      return Collections.emptyList();
-    }
-    return stream.limit(n).collect(Collectors.toList());
-  }
+   @Override
+   public List<T> take(int n) {
+      if (n <= 0) {
+         return Collections.emptyList();
+      }
+      return stream.limit(n).collect(Collectors.toList());
+   }
 
-  @Override
-  public MStream<T> skip(long n) {
-    return new LocalStream<>(stream.skip(n));
-  }
+   @Override
+   public MStream<T> skip(long n) {
+      return new LocalStream<>(stream.skip(n));
+   }
 
-  /**
-   * Stream stream.
-   *
-   * @return the stream
-   */
-  public Stream<T> stream() {
-    return stream;
-  }
+   /**
+    * Stream stream.
+    *
+    * @return the stream
+    */
+   public Stream<T> stream() {
+      return stream;
+   }
 
-  @Override
-  public List<T> collect() {
-    return stream.collect(Collectors.toList());
-  }
+   @Override
+   public List<T> collect() {
+      return stream.collect(Collectors.toList());
+   }
 
-  @Override
-  public Map<T, Long> countByValue() {
-    return stream.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-  }
+   @Override
+   public Map<T, Long> countByValue() {
+      return stream.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+   }
 
-  @Override
-  public T fold(@NonNull T zeroValue, @NonNull SerializableBinaryOperator<T> operator) {
-    return stream.reduce(zeroValue, operator);
-  }
+   @Override
+   public T fold(@NonNull T zeroValue, @NonNull SerializableBinaryOperator<T> operator) {
+      return stream.reduce(zeroValue, operator);
+   }
 
-  @Override
-  public <U> MPairStream<U, Iterable<T>> groupBy(@NonNull SerializableFunction<? super T, ? extends U> function) {
-    return new LocalPairStream<>(
-      stream.collect(Collectors.groupingBy(function))
-            .entrySet()
-            .stream()
-            .map(e -> Tuple2.<U, Iterable<T>>of(e.getKey(), e.getValue()))
-    );
-  }
+   @Override
+   public <U> MPairStream<U, Iterable<T>> groupBy(@NonNull SerializableFunction<? super T, ? extends U> function) {
+      return new LocalPairStream<>(
+                                     stream.collect(Collectors.groupingBy(function))
+                                           .entrySet()
+                                           .stream()
+                                           .map(e -> Tuple2.<U, Iterable<T>>of(e.getKey(), e.getValue()))
+      );
+   }
 
-  @Override
-  public boolean isEmpty() {
-    return count() == 0;
-  }
+   @Override
+   public boolean isEmpty() {
+      return count() == 0;
+   }
 
-  @Override
-  public Optional<T> max(@NonNull SerializableComparator<? super T> comparator) {
-    return stream.max(comparator);
-  }
+   @Override
+   public Optional<T> max(@NonNull SerializableComparator<? super T> comparator) {
+      return stream.max(comparator);
+   }
 
-  @Override
-  public Optional<T> min(@NonNull SerializableComparator<? super T> comparator) {
-    return stream.min(comparator);
-  }
+   @Override
+   public Optional<T> min(@NonNull SerializableComparator<? super T> comparator) {
+      return stream.min(comparator);
+   }
 
-  @Override
-  public MStream<T> sorted(boolean ascending) {
-    Comparator<T> comparator = Cast.as(ascending ? Sorting.natural() : Sorting.natural().reversed());
-    return new LocalStream<>(stream.sorted(comparator));
-  }
+   @Override
+   public MStream<T> sorted(boolean ascending) {
+      Comparator<T> comparator = Cast.as(ascending ? Sorting.natural() : Sorting.natural().reversed());
+      return new LocalStream<>(stream.sorted(comparator));
+   }
 
-  @Override
-  public <U> MPairStream<T, U> zip(@NonNull MStream<U> other) {
-    return new LocalPairStream<>(Collect.zip(iterator(), other.iterator()));
-  }
+   @Override
+   public <U> MPairStream<T, U> zip(@NonNull MStream<U> other) {
+      return new LocalPairStream<>(Collect.zip(iterator(), other.iterator()));
+   }
 
-  @Override
-  public MPairStream<T, Long> zipWithIndex() {
-    final AtomicLong indexer = new AtomicLong();
-    return new LocalPairStream<>(stream.map(t -> Cast.<Map.Entry<T, Long>>as(Tuple2.of(t, indexer.getAndIncrement()))));
-  }
+   @Override
+   public MPairStream<T, Long> zipWithIndex() {
+      final AtomicLong indexer = new AtomicLong();
+      return new LocalPairStream<>(stream.map(
+         t -> Cast.<Map.Entry<T, Long>>as(Tuple2.of(t, indexer.getAndIncrement()))));
+   }
 
-  @Override
-  public MDoubleStream mapToDouble(@NonNull SerializableToDoubleFunction<? super T> function) {
-    return new LocalDoubleStream(stream.mapToDouble(function));
-  }
+   @Override
+   public MDoubleStream mapToDouble(@NonNull SerializableToDoubleFunction<? super T> function) {
+      return new LocalDoubleStream(stream.mapToDouble(function));
+   }
 
-  @Override
-  public MStream<T> cache() {
-    return new ReusableLocalStream<>(collect());
-  }
+   @Override
+   public MStream<T> cache() {
+      return new ReusableLocalStream<>(collect());
+   }
 
-  @Override
-  public MStream<T> union(MStream<T> other) {
-    if (other instanceof LocalStream) {
-      return new LocalStream<>(Stream.concat(stream, Cast.<LocalStream<T>>as(other).stream));
-    }
-    return new LocalStream<>(Stream.concat(stream, other.collect().stream()));
-  }
+   @Override
+   public MStream<T> union(MStream<T> other) {
+      if (other instanceof LocalStream) {
+         return new LocalStream<>(Stream.concat(stream, Cast.<LocalStream<T>>as(other).stream));
+      }
+      return new LocalStream<>(Stream.concat(stream, other.collect().stream()));
+   }
 
-  @Override
-  @SneakyThrows
-  public void saveAsTextFile(@NonNull Resource location) {
-    try (BufferedWriter writer = new BufferedWriter(location.writer())) {
-      stream.forEach(Unchecked.consumer(o -> {
-                                          writer.write(o.toString());
-                                          writer.newLine();
-                                        }
-                                       ));
-    }
-  }
+   @Override
+   @SneakyThrows
+   public void saveAsTextFile(@NonNull Resource location) {
+      try (BufferedWriter writer = new BufferedWriter(location.writer())) {
+         stream.forEach(Unchecked.consumer(o -> {
+                                              writer.write(o.toString());
+                                              writer.newLine();
+                                           }
+                                          ));
+      }
+   }
 
-  @Override
-  public MStream<T> parallel() {
-    Stream<T> parallel = stream.parallel();
-    if (parallel == null) {
+   @Override
+   public MStream<T> parallel() {
+      Stream<T> parallel = stream.parallel();
+      if (parallel == null) {
+         return this;
+      }
+      return new LocalStream<>(parallel);
+   }
+
+   @Override
+   public MStream<T> shuffle(@NonNull Random random) {
+      return new LocalStream<>(
+                                 stream.map(t -> Tuple2.of(random.nextDouble(), t))
+                                       .sorted(Map.Entry.comparingByKey())
+                                       .map(Tuple2::getValue)
+      );
+   }
+
+   @Override
+   public MStream<T> repartition(int numPartitions) {
       return this;
-    }
-    return new LocalStream<>(parallel);
-  }
+   }
 
-  @Override
-  public MStream<T> shuffle(@NonNull Random random) {
-    return new LocalStream<>(
-      stream.map(t -> Tuple2.of(random.nextDouble(), t))
-            .sorted(Map.Entry.comparingByKey())
-            .map(Tuple2::getValue)
-    );
-  }
+   @Override
+   public StreamingContext getContext() {
+      return JavaStreamingContext.INSTANCE;
+   }
 
-  @Override
-  public MStream<T> repartition(int numPartitions) {
-    return this;
-  }
-
-  @Override
-  public StreamingContext getContext() {
-    return JavaStreamingContext.INSTANCE;
-  }
-
-  @Override
-  public SerializableRunnable getOnCloseHandler() {
-    return onClose;
-  }
+   @Override
+   public SerializableRunnable getOnCloseHandler() {
+      return onClose;
+   }
 }//END OF LocalStream

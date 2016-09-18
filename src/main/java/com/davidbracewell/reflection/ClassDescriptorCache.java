@@ -33,9 +33,11 @@ import java.lang.reflect.Array;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * The type Class descriptor cache.
+ *
  * @author David B. Bracewell
  */
-class ClassDescriptorCache implements Serializable {
+public class ClassDescriptorCache implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private volatile static ClassDescriptorCache INSTANCE = null;
@@ -118,6 +120,11 @@ class ClassDescriptorCache implements Serializable {
       }
     });
 
+  /**
+   * Gets instance.
+   *
+   * @return the instance
+   */
   public static ClassDescriptorCache getInstance() {
     if (INSTANCE == null) {
       synchronized (ClassDescriptorCache.class) {
@@ -129,11 +136,24 @@ class ClassDescriptorCache implements Serializable {
     return INSTANCE;
   }
 
+  /**
+   * Gets class descriptor.
+   *
+   * @param clazz the clazz
+   * @return the class descriptor
+   */
   @SneakyThrows
   public ClassDescriptor getClassDescriptor(@NonNull Class<?> clazz) {
       return classDescriptorCache.get(clazz);
   }
 
+  /**
+   * Gets class for name.
+   *
+   * @param string the string
+   * @return the class for name
+   * @throws Exception the exception
+   */
   public Class<?> getClassForName(@NonNull String string) throws Exception {
     return classNameCache.get(string);
   }

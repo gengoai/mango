@@ -31,28 +31,68 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
+ * The type Value type.
+ *
  * @author David B. Bracewell
  */
 public abstract class ValueType implements Serializable {
    private static final long serialVersionUID = 1L;
 
+   /**
+    * The constant TYPE_PROPERTY.
+    */
    public static final String TYPE_PROPERTY = "type";
+   /**
+    * The constant ELEMENT_TYPE_PROPERTY.
+    */
    public static final String ELEMENT_TYPE_PROPERTY = "elementType";
+   /**
+    * The constant KEY_TYPE_PROPERTY.
+    */
    public static final String KEY_TYPE_PROPERTY = "keyType";
+   /**
+    * The constant VALUE_TYPE_PROPERTY.
+    */
    public static final String VALUE_TYPE_PROPERTY = "valueType";
 
+   /**
+    * Gets type.
+    *
+    * @return the type
+    */
    public abstract Class<?> getType();
 
+   /**
+    * Get parameter types class [ ].
+    *
+    * @return the class [ ]
+    */
    public abstract Class<?>[] getParameterTypes();
 
+   /**
+    * Is collection boolean.
+    *
+    * @return the boolean
+    */
    public boolean isCollection() {
       return false;
    }
 
+   /**
+    * Is map boolean.
+    *
+    * @return the boolean
+    */
    public boolean isMap() {
       return false;
    }
 
+   /**
+    * From config value type.
+    *
+    * @param prefix the prefix
+    * @return the value type
+    */
    public static ValueType fromConfig(String prefix) {
       if (Config.hasProperty(prefix)) {
          return new SimpleValueType(Config.get(prefix).asClass());
@@ -83,6 +123,13 @@ public abstract class ValueType implements Serializable {
       return new SimpleValueType(typeClass);
    }
 
+   /**
+    * Convert t.
+    *
+    * @param <T>   the type parameter
+    * @param input the input
+    * @return the t
+    */
    public abstract <T> T convert(Object input);
 
    @Override
@@ -124,6 +171,12 @@ public abstract class ValueType implements Serializable {
       private final Class<?> genericType;
 
 
+      /**
+       * Instantiates a new Collection value type.
+       *
+       * @param collectionType the collection type
+       * @param genericType    the generic type
+       */
       public CollectionValueType(Class<?> collectionType, Class<?> genericType) {
          this.collectionType = collectionType;
          this.genericType = genericType;
@@ -157,6 +210,13 @@ public abstract class ValueType implements Serializable {
       private final Class<?> keyType;
       private final Class<?> valueType;
 
+      /**
+       * Instantiates a new Map value type.
+       *
+       * @param mapType   the map type
+       * @param keyType   the key type
+       * @param valueType the value type
+       */
       public MapValueType(Class<?> mapType, Class<?> keyType, Class<?> valueType) {
          this.keyType = keyType;
          this.mapType = mapType;

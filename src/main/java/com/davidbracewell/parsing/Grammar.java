@@ -32,24 +32,25 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * <p>A grammar representing the rules for parsing within a <code>Parser</code>. Rules in the form of
- * <code>ParserHandler</code>s are defined for each <code>TokenType</code>. There are two main types of
- * <code>ParserHandler</code>. The first is <code>PrefixHandler</code> which takes care of prefix operators and the
- * second is <code>InfixHandler</code> which handles infix operators.</p>
- * <p>The grammar provides methods for determining if a given token should be parsed using an infix or prefix handler
- * as well as the precedence of its associated type.</p>
+ * <p>A grammar representing the rules for parsing. Rules are defined using <code>ParserHandler</code>s, which are
+ * associated with individual <code>ParserTokenType</code>s. There are two main types of handlers, prefix and infix. The
+ * <code>PrefixHandler</code> takes care of prefix operators and the <code>InfixHandler</code> handles infix and postfix
+ * operators.</p>
+ *
+ * <p>By default a grammar will throw a <code>ParseException</code> when it encounters a token type that it does not
+ * know how to handle. Grammars can be set to instead ignore these tokens.</p>
  *
  * @author David B. Bracewell
  */
 public class Grammar implements Serializable {
    private static final long serialVersionUID = 1L;
-
    private final Map<ParserTokenType, PrefixHandler> prefixHandlers = new HashMap<>();
    private final Map<ParserTokenType, InfixHandler> infixHandlers = new HashMap<>();
    private final PrefixHandler prefixSkipHandler;
 
    /**
-    * Instantiates a new Grammar.
+    * Instantiates a new Grammar which will throw a <code>ParseException</code> when encountering token types it cannot
+    * handle.
     */
    public Grammar() {
       this(false);
@@ -58,7 +59,8 @@ public class Grammar implements Serializable {
    /**
     * Instantiates a new Grammar.
     *
-    * @param skipNonRegisteredTokenTypes the prefix skip handler
+    * @param skipNonRegisteredTokenTypes When true the grammar will ignore token types is cannot handle and when false
+    *                                    it will throw a <code>ParseException</code>.
     */
    public Grammar(boolean skipNonRegisteredTokenTypes) {
       this.prefixSkipHandler = skipNonRegisteredTokenTypes ? new PrefixSkipHandler() : null;
@@ -70,13 +72,19 @@ public class Grammar implements Serializable {
     *
     * @param type    The token type that causes the prefix handler to parse
     * @param handler The prefix handler
-    * @return This grammar (for builder pattern)
+    * @return This grammar (for fluent pattern)
     */
    public Grammar register(@NonNull ParserTokenType type, @NonNull PrefixHandler handler) {
       prefixHandlers.put(type, handler);
       return this;
    }
 
+   /**
+    * Registers a token type as being ignored, i.e. the grammar will skip it when seen.
+    *
+    * @param type the token type to ignore
+    * @return This grammar (for fluent pattern)
+    */
    public Grammar registerSkip(@NonNull ParserTokenType type) {
       return register(type, new PrefixSkipHandler());
    }
@@ -86,7 +94,7 @@ public class Grammar implements Serializable {
     *
     * @param type    The token type that causes the infix handler to parse
     * @param handler The infix handler
-    * @return This grammar (for builder pattern)
+    * @return This grammar (for fluent pattern)
     */
    public Grammar register(@NonNull ParserTokenType type, @NonNull InfixHandler handler) {
       infixHandlers.put(type, handler);
@@ -160,6 +168,12 @@ public class Grammar implements Serializable {
       return 0;
    }
 
+   /**
+    * Determines if the given the token should be skipped or not
+    *
+    * @param token the token to check
+    * @return True if the token should be skipped, false if it should be parsed.
+    */
    public boolean skip(ParserToken token) {
       if (token == null) {
          return false;

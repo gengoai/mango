@@ -87,7 +87,7 @@ public final class ExpressionIterator {
    }
 
    /**
-    * Gets the token stream wrapped in this iterator
+    * Gets the token stream wrapped by this iterator
     *
     * @return the token stream
     */
@@ -103,7 +103,6 @@ public final class ExpressionIterator {
    public boolean hasNext() {
       return tokenStream.lookAhead(0) != null;
    }
-
 
 
 }//END OF ExpressionIterator
