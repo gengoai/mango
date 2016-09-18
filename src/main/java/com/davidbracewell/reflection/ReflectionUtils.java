@@ -28,6 +28,7 @@ import com.google.common.primitives.Primitives;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -188,7 +189,60 @@ public final class ReflectionUtils {
     * @throws Exception the exception
     */
    public static Class<?> getClassForName(String name) throws Exception {
-      return ClassDescriptorCache.getInstance().getClassForName(name);
+      if (StringUtils.isNullOrBlank(name)) {
+         throw new ClassNotFoundException();
+      }
+      name = name.trim();
+
+      boolean isArray = false;
+      if (name.endsWith("[]")) {
+         isArray = true;
+         name = name.substring(0, name.length() - 2);
+      } else if (name.startsWith("[L")) {
+         isArray = true;
+         name = name.substring(2);
+      } else if (name.startsWith("[")) {
+         isArray = true;
+         name = name.substring(1);
+      }
+
+      switch (name) {
+         case "int":
+            return isArray ? int[].class : int.class;
+         case "double":
+            return isArray ? double[].class : double.class;
+         case "float":
+            return isArray ? float[].class : float.class;
+         case "boolean":
+            return isArray ? boolean[].class : boolean.class;
+         case "short":
+            return isArray ? short[].class : short.class;
+         case "byte":
+            return isArray ? byte[].class : byte.class;
+         case "long":
+            return isArray ? long[].class : long.class;
+      }
+
+      Class<?> clazz;
+      try {
+         clazz = Class.forName(name);
+      } catch (Exception e) {
+         try {
+            clazz = Class.forName("java.lang." + name);
+         } catch (Exception e2) {
+            try {
+               clazz = Class.forName("java.util." + name);
+            } catch (Exception e3) {
+               try {
+                  clazz = Class.forName("com.davidbracewell." + name);
+               } catch (Exception e4) {
+                  throw e;
+               }
+            }
+         }
+      }
+
+      return isArray ? Array.newInstance(clazz, 0).getClass() : clazz;
    }
 
    /**

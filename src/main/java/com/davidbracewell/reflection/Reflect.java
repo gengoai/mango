@@ -42,8 +42,7 @@ import java.util.stream.Collectors;
  *
  * @author David B. Bracewell
  */
-public class Reflect {
-
+public final class Reflect {
    private final Object object;
    private final Class<?> clazz;
    private final boolean accessAll;
@@ -86,7 +85,7 @@ public class Reflect {
     *
     * @param clazz The class for reflection as string
     * @return The Reflect object
-    * @throws ClassNotFoundException the class not found exception
+    * @throws Exception the exception
     */
    public static Reflect onClass(String clazz) throws Exception {
       return new Reflect(null, ReflectionUtils.getClassForName(clazz));
@@ -201,16 +200,6 @@ public class Reflect {
    }
 
    /**
-    * Allow public access.
-    *
-    * @return An new Reflect object based on the current one that allows public access to methods, fields, and
-    * constructors.
-    */
-   public Reflect allowPublicAccess() {
-      return new Reflect(object, clazz, false);
-   }
-
-   /**
     * Get t.
     *
     * @param <T> The object type
@@ -306,7 +295,13 @@ public class Reflect {
                                  .getMethods(accessAll);
    }
 
-   public Method getMethod(String name) {
+   /**
+    * Gets method.
+    *
+    * @param name the name
+    * @return the method
+    */
+   public Method getMethod(final String name) {
       if (StringUtils.isNullOrBlank(name)) {
          return null;
       }
@@ -358,7 +353,6 @@ public class Reflect {
     * @throws ReflectionException Something went wrong invoking the method
     */
    public Reflect invoke(String methodName, Object... args) throws ReflectionException {
-
       Class[] types = ReflectionUtils.getTypes(args);
       try {
          return on(clazz.getMethod(methodName, types), object, accessAll, args);

@@ -21,7 +21,6 @@
 
 package com.davidbracewell.reflection;
 
-import com.davidbracewell.string.StringUtils;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -29,11 +28,11 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The type Class descriptor cache.
+ * <p>A cache of {@link ClassDescriptor} to speed up performance.</p>
+ *
  *
  * @author David B. Bracewell
  */
@@ -63,60 +62,7 @@ public class ClassDescriptorCache implements Serializable {
     .build(new CacheLoader<String, Class<?>>() {
       @Override
       public Class<?> load(String name) throws Exception {
-        if (StringUtils.isNullOrBlank(name)) {
-          throw new ClassNotFoundException();
-        }
-        name = name.trim();
-
-        boolean isArray = false;
-        if (name.endsWith("[]")) {
-          isArray = true;
-          name = name.substring(0, name.length() - 2);
-        } else if (name.startsWith("[L")) {
-          isArray = true;
-          name = name.substring(2);
-        } else if (name.startsWith("[")) {
-          isArray = true;
-          name = name.substring(1);
-        }
-
-        switch (name) {
-          case "int":
-            return isArray ? int[].class : int.class;
-          case "double":
-            return isArray ? double[].class : double.class;
-          case "float":
-            return isArray ? float[].class : float.class;
-          case "boolean":
-            return isArray ? boolean[].class : boolean.class;
-          case "short":
-            return isArray ? short[].class : short.class;
-          case "byte":
-            return isArray ? byte[].class : byte.class;
-          case "long":
-            return isArray ? long[].class : long.class;
-        }
-
-        Class<?> clazz;
-        try {
-          clazz = Class.forName(name);
-        } catch (Exception e) {
-          try {
-            clazz = Class.forName("java.lang." + name);
-          } catch (Exception e2) {
-            try {
-              clazz = Class.forName("java.util." + name);
-            } catch (Exception e3) {
-              try {
-                clazz = Class.forName("com.davidbracewell." + name);
-              } catch (Exception e4) {
-                throw e;
-              }
-            }
-          }
-        }
-
-        return isArray ? Array.newInstance(clazz, 0).getClass() : clazz;
+         return ReflectionUtils.getClassForName(name);
       }
     });
 
@@ -157,6 +103,7 @@ public class ClassDescriptorCache implements Serializable {
   public Class<?> getClassForName(@NonNull String string) throws Exception {
     return classNameCache.get(string);
   }
+
 
 
 }//END OF ClassDescriptorCache

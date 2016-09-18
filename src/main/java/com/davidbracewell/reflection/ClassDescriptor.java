@@ -35,7 +35,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * The type Class descriptor.
+ * Contains basic information about the methods, fields and constructors for a class.
  *
  * @author David B. Bracewell
  */

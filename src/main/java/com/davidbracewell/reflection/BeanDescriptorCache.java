@@ -28,58 +28,51 @@ import com.google.common.cache.LoadingCache;
 import lombok.SneakyThrows;
 
 /**
- * A cache of {@link BeanDescriptor} to speed up performance of using {@link BeanMap}s. The cache specification be set
- * using <code>com.davidbracewell.reflection.BeanDescriptorCache.spec</code> and follows the {@link com.google.common.cache.LoadingCache} spec
- * format found in
- * <a href= "http://docs.guava-libraries.googlecode.com/git/javadoc/com/google/common/cache/CacheBuilder.html" >the
- * Guava documentation.By defaul it set to
- * <p/>
- * <pre>
- * maximumSize=100,expireAfterWrite=10m
- * </pre>
- * <p/>
- * </a>
+ * <p>A cache of {@link BeanDescriptor} to speed up performance of using {@link BeanMap}s. The cache parameters can be
+ * specified using the cache spec with property <code>com.davidbracewell.reflection.BeanDescriptorCache.spec</code> by
+ * default it will have a maximum size of 100 and entries will expire after 10 minutes of write</p>
  *
  * @author David B. Bracewell
  */
 public class BeanDescriptorCache {
 
-  private static volatile BeanDescriptorCache INSTANCE = null;
+   private static volatile BeanDescriptorCache INSTANCE = null;
 
-  private final LoadingCache<Class<?>, BeanDescriptor> cache;
+   private final LoadingCache<Class<?>, BeanDescriptor> cache;
 
-  /**
-   * @return An instance of the {@link BeanDescriptorCache}.
-   */
-  public static BeanDescriptorCache getInstance() {
-    if (INSTANCE == null) {
-      synchronized (BeanDescriptorCache.class) {
-        if (INSTANCE == null) {
-          INSTANCE = new BeanDescriptorCache();
-        }
+   /**
+    * @return An instance of the {@link BeanDescriptorCache}.
+    */
+   public static BeanDescriptorCache getInstance() {
+      if (INSTANCE == null) {
+         synchronized (BeanDescriptorCache.class) {
+            if (INSTANCE == null) {
+               INSTANCE = new BeanDescriptorCache();
+            }
+         }
       }
-    }
-    return INSTANCE;
-  }
+      return INSTANCE;
+   }
 
-  protected BeanDescriptorCache() {
-    String spec = Config.get(BeanDescriptorCache.class, "spec").asString("maximumSize=100,expireAfterWrite=10m");
-    cache = CacheBuilder.from(spec).build(new CacheLoader<Class<?>, BeanDescriptor>() {
-      public BeanDescriptor load(Class<?> key) {
-        return new BeanDescriptor(key);
-      }
-    });
-  }
+   protected BeanDescriptorCache() {
+      String spec = Config.get(BeanDescriptorCache.class, "spec").asString(
+         "maximumSize=100,expireAfterWrite=10m");
+      cache = CacheBuilder.from(spec).build(new CacheLoader<Class<?>, BeanDescriptor>() {
+         public BeanDescriptor load(Class<?> key) {
+            return new BeanDescriptor(key);
+         }
+      });
+   }
 
-  /**
-   * Gets a {@link BeanDescriptor} for a <code>Class</code>
-   *
-   * @param clazz The class for which a {@link BeanDescriptor} is to be created.
-   * @return A {@link BeanDescriptor} for the given class
-   */
-  @SneakyThrows
-  public synchronized BeanDescriptor get(Class<?> clazz) {
-    return cache.get(clazz);
-  }
+   /**
+    * Gets a {@link BeanDescriptor} for a <code>Class</code>
+    *
+    * @param clazz The class for which a {@link BeanDescriptor} is to be created.
+    * @return A {@link BeanDescriptor} for the given class
+    */
+   @SneakyThrows
+   public synchronized BeanDescriptor get(Class<?> clazz) {
+      return cache.get(clazz);
+   }
 
 }// END OF CLASS BeanDescriptorCache

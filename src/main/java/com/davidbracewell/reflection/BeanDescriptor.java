@@ -34,7 +34,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Contains basic information about the read and write methods for a class.
+ * Contains basic information about the read and write methods for a bean class.
  *
  * @author David B. Bracewell
  */
