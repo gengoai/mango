@@ -29,7 +29,7 @@ import com.davidbracewell.parsing.expressions.Expression;
 import com.davidbracewell.parsing.expressions.ValueExpression;
 
 /**
- * A <code>PrefixHandler</code> for values.
+ * <p>Creates {@link ValueExpression}s which simply wrap the type and text of the current token.</p>
  *
  * @author David B. Bracewell
  */

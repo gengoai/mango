@@ -28,6 +28,8 @@ import com.davidbracewell.parsing.ParserToken;
 import com.davidbracewell.parsing.expressions.Expression;
 
 /**
+ * <p>Abstract based handler for infix operations.</p>
+ *
  * @author David B. Bracewell
  */
 public abstract class InfixHandler extends ParserHandler {

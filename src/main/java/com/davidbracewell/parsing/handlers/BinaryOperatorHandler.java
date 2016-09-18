@@ -29,7 +29,8 @@ import com.davidbracewell.parsing.expressions.BinaryOperatorExpression;
 import com.davidbracewell.parsing.expressions.Expression;
 
 /**
- * A <code>InfixHandler</code> for binary operators
+ * <p>Creates {@link BinaryOperatorExpression}s where the left and right expressions are being operated on by the
+ * operator represented by the current token.</p>
  *
  * @author David B. Bracewell
  */

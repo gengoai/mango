@@ -27,6 +27,8 @@ import com.davidbracewell.parsing.ParserToken;
 import com.davidbracewell.parsing.expressions.Expression;
 
 /**
+ * <p>Abstract base class for prefix handlers.</p>
+ *
  * @author David B. Bracewell
  */
 public abstract class PrefixHandler extends ParserHandler {

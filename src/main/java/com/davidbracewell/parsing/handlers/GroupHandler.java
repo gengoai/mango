@@ -30,7 +30,8 @@ import com.davidbracewell.parsing.expressions.Expression;
 import com.davidbracewell.parsing.expressions.ValueExpression;
 
 /**
- * A <code>PrefixHandler</code> that captures groups.
+ * <p>Treats everything between the open group type and closed group type as a single group which should result in a
+ * single expression.</p>
  *
  * @author David B. Bracewell
  */

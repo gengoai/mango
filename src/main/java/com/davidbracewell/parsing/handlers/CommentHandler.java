@@ -32,12 +32,20 @@ import com.davidbracewell.string.StringUtils;
 import java.util.List;
 
 /**
+ * <p>Creates a comment expression where the everything from the comment token to the end of line (specified via the
+ * <code>endOfLine</code> token type) is found.</p>
+ *
  * @author David B. Bracewell
  */
 public class CommentHandler extends PrefixHandler {
    private static final long serialVersionUID = 1L;
    private final ParserTokenType endOfLine;
 
+   /**
+    * Instantiates a new Comment handler.
+    *
+    * @param endOfLine the token type represent the end of line (where the comment stops).
+    */
    public CommentHandler(ParserTokenType endOfLine) {
       this.endOfLine = endOfLine;
    }
@@ -48,12 +56,11 @@ public class CommentHandler extends PrefixHandler {
       if (expressionIterator.tokenStream().lookAheadType(0) != null) {
          expressionIterator.tokenStream().consume(endOfLine);
       }
-      return new CommentExpression(
-                                     token.type,
-                                     token.text + tokens.stream()
-                                                        .map(ParserToken::getText)
-                                                        .reduce(String::concat)
-                                                        .orElse(StringUtils.EMPTY)
+      return new CommentExpression(token.type,
+                                   token.text + tokens.stream()
+                                                      .map(ParserToken::getText)
+                                                      .reduce(String::concat)
+                                                      .orElse(StringUtils.EMPTY)
       );
    }
 

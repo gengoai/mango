@@ -28,12 +28,14 @@ import com.davidbracewell.parsing.expressions.Expression;
 import com.davidbracewell.parsing.expressions.PostfixExpression;
 
 /**
- * An <code>InfixHandler</code> for post fix expressions
+ * <p>Captures {@link PostfixExpression}s where the current token is the operator and the previous expression is what is
+ * being operated on.</p>
  *
  * @author David B. Bracewell
  */
 public class PostfixOperatorHandler extends InfixHandler {
    private static final long serialVersionUID = 1L;
+
    /**
     * Default constructor
     *

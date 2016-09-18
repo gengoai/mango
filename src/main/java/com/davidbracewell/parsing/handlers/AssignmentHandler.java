@@ -29,7 +29,8 @@ import com.davidbracewell.parsing.expressions.AssignmentExpression;
 import com.davidbracewell.parsing.expressions.Expression;
 
 /**
- * A <code>InfixHandler</code> for assignment operations
+ * <p>Creates {@link AssignmentExpression}s where the object in the left expressions is being assigned the value of the
+ * right expression using the given assignment operator.</p>
  *
  * @author David B. Bracewell
  */

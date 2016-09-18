@@ -27,6 +27,8 @@ import com.davidbracewell.parsing.ParserToken;
 import com.davidbracewell.parsing.expressions.Expression;
 
 /**
+ * <p>A handler that defines the token type should be ignored.</p>
+ *
  * @author David B. Bracewell
  */
 public final class PrefixSkipHandler extends PrefixHandler {

@@ -29,7 +29,8 @@ import com.davidbracewell.parsing.expressions.Expression;
 import com.davidbracewell.parsing.expressions.PrefixExpression;
 
 /**
- * A <code>PrefixHandler</code> for prefix operators.
+ * <p>Creates {@link PrefixExpression}s where the current token is the operator and the next expression is what the
+ * operator is operating on.</p>
  *
  * @author David B. Bracewell
  */

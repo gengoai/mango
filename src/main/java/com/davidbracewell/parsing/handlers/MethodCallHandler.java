@@ -32,7 +32,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * An <code>InfixHandler</code> for method calls.
+ * <p>Creates {@link MethodCallExpression}s where the current token denotes the token type the signifies a method call
+ * and the left token is the method name. The handler will capture expressions separated by the defined
+ * <code>methodArgumentSeparator</code> until the <code>methodParamEnd</code> token type is reached.</p>
  *
  * @author David B. Bracewell
  */
