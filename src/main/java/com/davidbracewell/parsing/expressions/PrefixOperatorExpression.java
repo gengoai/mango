@@ -29,32 +29,32 @@ import lombok.NonNull;
  *
  * @author David B. Bracewell
  */
-public class PrefixExpression extends Expression {
-  /**
-   * The operator
-   */
-  public final ParserToken operator;
+public class PrefixOperatorExpression extends Expression {
+   /**
+    * The operator
+    */
+   public final ParserToken operator;
 
-  /**
-   * The expression which the operator is operating on
-   */
-  public final Expression right;
+   /**
+    * The expression which the operator is operating on
+    */
+   public final Expression right;
 
-  /**
-   * Default Constructor
-   *
-   * @param operator The prefix operator
-   * @param right    The expression on the right
-   */
-  public PrefixExpression(@NonNull ParserToken operator, @NonNull Expression right) {
-    super(operator.type);
-    this.operator = operator;
-    this.right = right;
-  }
+   /**
+    * Default Constructor
+    *
+    * @param operator The prefix operator
+    * @param right    The expression on the right
+    */
+   public PrefixOperatorExpression(@NonNull ParserToken operator, @NonNull Expression right) {
+      super(operator.type);
+      this.operator = operator;
+      this.right = right;
+   }
 
-  @Override
-  public String toString() {
-    return "(" + operator.text + right.toString() + ")";
-  }
+   @Override
+   public String toString() {
+      return "(" + operator.text + right.toString() + ")";
+   }
 
-}//END OF PrefixExpression
+}//END OF PrefixOperatorExpression

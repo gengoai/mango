@@ -26,7 +26,7 @@ import com.davidbracewell.io.resource.ClasspathResource;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.parsing.*;
 import com.davidbracewell.parsing.expressions.Expression;
-import com.davidbracewell.parsing.expressions.PrefixExpression;
+import com.davidbracewell.parsing.expressions.PrefixOperatorExpression;
 import com.davidbracewell.parsing.expressions.ValueExpression;
 import com.davidbracewell.parsing.handlers.PrefixOperatorHandler;
 import com.davidbracewell.parsing.handlers.ValueHandler;
@@ -144,7 +144,7 @@ class ConfigParser extends Parser {
       }
    }
 
-   private void setProperty(PrefixExpression assignment, String section) {
+   private void setProperty(PrefixOperatorExpression assignment, String section) {
       String key = section;
 
       if (assignment.operator.text.equals("_")) {
@@ -179,19 +179,19 @@ class ConfigParser extends Parser {
 
          if (exp.match(ConfigTokenizer.ConfigTokenType.IMPORT)) {
 
-            importConfig(exp.as(PrefixExpression.class).right.toString().trim());
+            importConfig(exp.as(PrefixOperatorExpression.class).right.toString().trim());
 
          } else if (exp.match(ConfigTokenizer.ConfigTokenType.SCRIPT)) {
 
-            importScript(exp.as(PrefixExpression.class).right.toString().trim());
+            importScript(exp.as(PrefixOperatorExpression.class).right.toString().trim());
 
          } else if (exp.match(ConfigTokenizer.ConfigTokenType.APPEND_PROPERTY)) {
 
-            setProperty(exp.as(PrefixExpression.class), "");
+            setProperty(exp.as(PrefixOperatorExpression.class), "");
 
          } else if (exp.match(ConfigTokenizer.ConfigTokenType.PROPERTY)) {
 
-            setProperty(exp.as(PrefixExpression.class), "");
+            setProperty(exp.as(PrefixOperatorExpression.class), "");
 
          } else if (exp.match(ConfigTokenizer.ConfigTokenType.SECTION_HEADER)) {
 
@@ -210,7 +210,7 @@ class ConfigParser extends Parser {
          if (x.isInstance(SectionExpression.class)) {
             handleSection(prefix, x.as(SectionExpression.class));
          } else {
-            setProperty(x.as(PrefixExpression.class), prefix + ".");
+            setProperty(x.as(PrefixOperatorExpression.class), prefix + ".");
          }
       }
    }

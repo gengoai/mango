@@ -26,10 +26,10 @@ import com.davidbracewell.parsing.ExpressionIterator;
 import com.davidbracewell.parsing.ParseException;
 import com.davidbracewell.parsing.ParserToken;
 import com.davidbracewell.parsing.expressions.Expression;
-import com.davidbracewell.parsing.expressions.PrefixExpression;
+import com.davidbracewell.parsing.expressions.PrefixOperatorExpression;
 
 /**
- * <p>Creates {@link PrefixExpression}s where the current token is the operator and the next expression is what the
+ * <p>Creates {@link PrefixOperatorExpression}s where the current token is the operator and the next expression is what the
  * operator is operating on.</p>
  *
  * @author David B. Bracewell
@@ -64,7 +64,7 @@ public class PrefixOperatorHandler extends PrefixHandler {
                                                                                                                              : right
                                                                                                                                   .getClass()));
       }
-      return new PrefixExpression(token, right);
+      return new PrefixOperatorExpression(token, right);
    }
 
 }//END OF PrefixOperatorHandler
