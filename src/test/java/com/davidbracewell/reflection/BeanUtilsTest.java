@@ -45,20 +45,20 @@ public class BeanUtilsTest {
    @Test
    public void testCollectionParam() throws Exception {
       TestBean testBean = BeanUtils.getBean(TestBean.class);
-      assertTrue(Sets.difference(Sets.newHashSet("None"), testBean.getChildren()).isEmpty());
+      assertTrue(testBean.getChildren().isEmpty());
 
       Map<String, Double> map = testBean.getStocks();
-      assertEquals((Double) 120.5, map.get("GE"));
-      assertEquals((Double) 45.8, map.get("ATT"));
-      assertEquals((Double) 98.7, map.get("ZEB"));
+      assertEquals(120.5, map.get("GE"), 0);
+      assertEquals(45.8, map.get("ATT"), 0);
+      assertEquals(98.7, map.get("ZEB"), 0);
 
       testBean = Config.get("bean.redirect").cast();
-      assertTrue(Sets.difference(Sets.newHashSet("None"), testBean.getChildren()).isEmpty());
+      assertEquals(Sets.newHashSet("Sam", "Ryan", "Billy"), testBean.getChildren());
 
       map = testBean.getStocks();
-      assertEquals((Double) 120.5, map.get("GE"));
-      assertEquals((Double) 45.8, map.get("ATT"));
-      assertEquals((Double) 98.7, map.get("ZEB"));
+      assertEquals(120.5, map.get("GE"), 0);
+      assertEquals(45.8, map.get("ATT"), 0);
+      assertEquals(98.7, map.get("ZEB"), 0);
 
    }
 
@@ -73,7 +73,7 @@ public class BeanUtilsTest {
    public void testNamedBeanWithConstructor() throws Exception {
       TestBean testBean = BeanUtils.getNamedBean("testbean2", TestBean.class);
       assertEquals("John", testBean.getName());
-      assertTrue(Sets.difference(Sets.newHashSet("None"), testBean.getChildren()).isEmpty());
+      assertTrue(Sets.difference(Sets.newHashSet("Sam", "Ryan", "Billy"), testBean.getChildren()).isEmpty());
    }
 
 }

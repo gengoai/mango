@@ -169,8 +169,10 @@ public final class Config implements Serializable {
    public static <K, V> Map<K, V> getMap(String mapName, Class<K> keyClass, Class<V> valueClass) {
       Map<K, V> map = new HashMap<>();
       getPropertiesMatching(StringPredicates.STARTS_WITH(mapName, true)).forEach(property -> {
-         String k = property.substring(mapName.length() + 1);
-         map.put(Convert.convert(k, keyClass), get(property).as(valueClass));
+         if (property.length() > mapName.length()) {
+            String k = property.substring(mapName.length() + 1);
+            map.put(Convert.convert(k, keyClass), get(property).as(valueClass));
+         }
       });
       return map;
    }

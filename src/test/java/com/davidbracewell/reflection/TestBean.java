@@ -73,4 +73,12 @@ public class TestBean {
       this.stocks = stocks;
    }
 
+   @Override
+   public String toString() {
+      return "TestBean{" +
+                "children=" + children +
+                ", name='" + name + '\'' +
+                ", stocks=" + stocks +
+                '}';
+   }
 }

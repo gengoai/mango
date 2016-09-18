@@ -27,7 +27,9 @@ import com.davidbracewell.conversion.Convert;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
@@ -36,55 +38,20 @@ import java.util.concurrent.ConcurrentSkipListMap;
  * @author David B. Bracewell
  */
 public class BeanUtils {
-
-
    private static final ConcurrentSkipListMap<String, Object> SINGLETONS = new ConcurrentSkipListMap<>();
 
-   private static boolean doCollection(BeanMap beanMap, String configProperty, String propertyName, Class<?> valueType) {
-      // Check if we need a Collection
-      if (Collection.class.isAssignableFrom(valueType)) {
-         String value = Config.get(configProperty).asString();
-         Class<?> elementType = Config.get(configProperty + ".elementType").asClass(String.class);
-         beanMap.put(propertyName, Convert.convert(value, valueType, elementType));
-         return true;
-      }
-      return false;
-   }
-
-   private static boolean doMap(BeanMap beanMap, String configProperty, String propertyName, Class<?> valueType) {
-      // Check if we need a Map
-      if (Map.class.isAssignableFrom(valueType)) {
-         String value = Config.get(configProperty).asString();
-         Class<?> mapKeyType = Config.get(configProperty + ".keyType").asClass(String.class);
-         Class<?> mapValueType = Config.get(configProperty + ".valueType").asClass(String.class);
-         beanMap.put(propertyName, Convert.convert(value, valueType, mapKeyType, mapValueType));
-         return true;
-      }
-      return false;
-   }
-
-   private static void doParametrization(BeanMap beanMap, String match) {
-      for (String propertyName : beanMap.getSetters()) {
-         String configOption = match + propertyName;
-         String typeProperty = configOption + ".type";
-         if (Config.hasProperty(typeProperty)) {
-            Class<?> valueType = Config.get(typeProperty).asClass();
-            if (valueType == null) {
-               throw new IllegalArgumentException(Config.get(typeProperty).asString() + " is not a valid class");
-            }
-            if (doCollection(beanMap, configOption, propertyName, valueType) ||
-                  doMap(beanMap, configOption, propertyName, valueType)) {
-               continue;
-            }
-            beanMap.put(propertyName, Config.get(configOption).as(valueType));
-         } else if (Config.hasProperty(configOption)) {
-            beanMap.put(propertyName, Config.get(configOption).as(Object.class));
-         }
-      }
+   private static void doParametrization(BeanMap beanMap, String className) {
+      beanMap.getSetters()
+             .stream()
+             .filter(propertyName -> Config.hasProperty(className, propertyName))
+             .forEach(propertyName -> {
+                ValueType valueType = ValueType.fromConfig(className + "." + propertyName);
+                beanMap.put(propertyName, valueType.convert(Config.get(className, propertyName).asString()));
+             });
    }
 
    /**
-    * Constructs a new instance of the given class and then sets it properties.
+    * Constructs a new instance of the given class and then sets it properties using configuration.
     *
     * @param clazz The class that we want to instantiate
     * @return A new instance of the given class
@@ -125,38 +92,18 @@ public class BeanUtils {
       boolean hadType = false;
 
       for (int i = 1; i <= 1000; i++) {
-         String typeName = name + ".constructor.param" + i + ".type";
-         String valueName = name + ".constructor.param" + i + ".value";
-
-         if (Config.hasProperty(typeName) || Config.hasProperty(valueName)) {
-            if (Config.hasProperty(typeName)) {
+         String cParam = name + ".constructor.param" + i;
+         if (Config.hasProperty(cParam) || Config.hasProperty(cParam, "value")) {
+            ValueType valueType = ValueType.fromConfig(name);
+            paramTypes.add(valueType.getType());
+            String valueCfg = Config.hasProperty(cParam, "value")
+                              ? Config.get(cParam, "value").asString()
+                              : Config.get(cParam).asString();
+            if (Config.hasProperty(name, "type")) {
                hadType = true;
             }
-            Class<?> typeClass = Config.get(typeName).asClass(String.class);
-            paramTypes.add(Config.get(typeName).asClass());
-            rawValues.add(Config.get(valueName).asString());
-            if (Map.class.isAssignableFrom(typeClass)) {
-               values.add(
-                     Config.get(valueName).asMap(typeClass,
-                                                 Config.get(name + ".constructor.param" + i + ".type.keyType")
-                                                       .asClass(String.class),
-                                                 Config.get(name + ".constructor.param" + i + ".type.valueType")
-                                                       .asClass(String.class)
-                                                )
-                         );
-            } else if (Collection.class.isAssignableFrom(typeClass)) {
-               values.add(
-                     Config.get(valueName).asCollection(typeClass,
-                                                        Config.get(name + ".constructor.param" + i + ".type.elementType")
-                                                              .asClass(String.class)
-                                                       )
-                         );
-            } else {
-               values.add(Config.get(valueName).as(Config.get(typeName).asClass()));
-            }
-
-         } else {
-            break;
+            rawValues.add(valueCfg);
+            values.add(valueType.convert(valueCfg));
          }
       }
 
@@ -173,23 +120,22 @@ public class BeanUtils {
          Constructor<?> constructor = ReflectionUtils.bestMatchingConstructor(reflect.getReflectedClass(),
                                                                               values.size());
          if (constructor == null) {
-            throw new ReflectionException("Cannot find a matching constructor for " + reflect.getReflectedClass() + " that takes " + values
-                  .size() + " arguments of types " + paramTypes);
+            throw new ReflectionException("Cannot find a matching constructor for " +
+                                             reflect.getReflectedClass() + " that takes " + values);
          }
          try {
             Object[] newValues = new Object[values.size()];
             for (int i = 0; i < newValues.length; i++) {
                newValues[i] = Convert.convert(rawValues.get(i), constructor.getParameterTypes()[i]);
             }
-            beanMap = new BeanMap(constructor.newInstance(newValues));
+            beanMap = new BeanMap(parameterizeObject(constructor.newInstance(newValues)));
          } catch (InstantiationException | IllegalAccessException | InvocationTargetException e1) {
             throw new ReflectionException(e1);
          }
       }
 
 
-      doParametrization(beanMap, name + ".");
-
+      doParametrization(beanMap, name);
       Object bean = beanMap.getBean();
       if (isSingleton) {
          SINGLETONS.putIfAbsent(name, bean);
@@ -214,8 +160,7 @@ public class BeanUtils {
       List<Class<?>> list = ReflectionUtils.getAllClasses(object);
       Collections.reverse(list);
       for (Class<?> clazz : list) {
-         String match = clazz.getName() + ".";
-         doParametrization(beanMap, match);
+         doParametrization(beanMap, clazz.getName());
       }
 
       return object;
