@@ -31,104 +31,134 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * The type Value type.
+ * <p>Encapsulates the definition of an object including methods to read its definition via configuration and convert
+ * values to is type. Definition via configuration is done in the following manner:</p> <p>For simple types:</p>
+ * <pre>{@code
+ *    property = TypeName
+ *    # or
+ *    property.type = TypeName
+ *    # or
+ *    property {
+ *       _ = TypeName
+ *    }
+ * }</pre>
+ * <p>where <code>property</code> is the name of the object whose value type we want. Collections can be defined in the
+ * following manner:</p>
+ * <pre>{@code
+ *    collection {
+ *       type = List
+ *       elementType = Integer
+ *    }
+ * } </pre>
+ * <p>where <code>collection</code> is the name of the collection'whose value type we want, type is the collection type,
+ * and elementType is the generic type (omitted elementType will result in String being used). Maps can be defined in
+ * the following manner:</p>
+ * <pre>{@code
+ *    map {
+ *       type = List
+ *       keyType = Integer
+ *       valueType = Double
+ *    }
+ * } </pre>
+ * <p>where <code>map</code> is the name of the map whose value type we want, type is the map type, keyType is the class
+ * of the key, and valueType is the class of the value (omitted keyType or valueType will result in String being
+ * used).</p>
  *
  * @author David B. Bracewell
  */
 public abstract class ValueType implements Serializable {
    private static final long serialVersionUID = 1L;
-
    /**
-    * The constant TYPE_PROPERTY.
+    * The property component defining the class type of a value
     */
    public static final String TYPE_PROPERTY = "type";
    /**
-    * The constant ELEMENT_TYPE_PROPERTY.
+    * The property component defining the class type of the elements in a collection
     */
    public static final String ELEMENT_TYPE_PROPERTY = "elementType";
    /**
-    * The constant KEY_TYPE_PROPERTY.
+    * The property component defining the class type of the keys in a map
     */
    public static final String KEY_TYPE_PROPERTY = "keyType";
    /**
-    * The constant VALUE_TYPE_PROPERTY.
+    * The property component defining the class type of the values in a map
     */
    public static final String VALUE_TYPE_PROPERTY = "valueType";
 
    /**
-    * Gets type.
+    * Gets the type, i.e. class, this value type will convert.
     *
-    * @return the type
+    * @return the type this value represents and will convert to
     */
    public abstract Class<?> getType();
 
    /**
-    * Get parameter types class [ ].
+    * Gets the parameter types, e.g. elementType, keyType, valueType.
     *
-    * @return the class [ ]
+    * @return An array of the parameter, e.g. generic types.
     */
    public abstract Class<?>[] getParameterTypes();
 
    /**
-    * Is collection boolean.
+    * Determines if this value type represents a collection
     *
-    * @return the boolean
+    * @return True if this value type is a collection, False otherwise
     */
    public boolean isCollection() {
       return false;
    }
 
    /**
-    * Is map boolean.
+    * Determines if this value type represents a map
     *
-    * @return the boolean
+    * @return True if this value type is a map, False otherwise
     */
    public boolean isMap() {
       return false;
    }
 
    /**
-    * From config value type.
+    * Creates a <code>ValueType</code> for the given configuration property. T
     *
-    * @param prefix the prefix
-    * @return the value type
+    * @param property the property name to create a ValueType from
+    * @return the value type representing the property
     */
-   public static ValueType fromConfig(String prefix) {
-      if (Config.hasProperty(prefix)) {
-         return new SimpleValueType(Config.get(prefix).asClass());
+   public static ValueType fromConfig(String property) {
+      //If the property is valid and we cannot find a "property.type" then the value of the property represents its simple type.
+      if (Config.hasProperty(property) && !Config.hasProperty(property, TYPE_PROPERTY)) {
+         return new SimpleValueType(Config.get(property).asClass());
       }
 
-      Map<String, Class> typeInfo = Config.getMap(prefix, String.class, Class.class);
+      //Read in the value type parameters from the configuration using the property as the prefix
+      Map<String, Class> typeInfo = Config.getMap(property, String.class, Class.class);
+      //Set the type class to the type property defaulting to String if not found
       Class<?> typeClass = typeInfo.getOrDefault(TYPE_PROPERTY, String.class);
 
 
       //Check for a collection
       if (Collection.class.isAssignableFrom(typeClass)) {
-         return new CollectionValueType(
-               typeClass,
-               typeInfo.getOrDefault(ELEMENT_TYPE_PROPERTY, String.class)
+         return new CollectionValueType(typeClass,
+                                        typeInfo.getOrDefault(ELEMENT_TYPE_PROPERTY, String.class)
          );
       }
 
       //Check for a Map
       if (Map.class.isAssignableFrom(typeClass)) {
-         return new MapValueType(
-               typeClass,
-               typeInfo.getOrDefault(KEY_TYPE_PROPERTY, String.class),
-               typeInfo.getOrDefault(VALUE_TYPE_PROPERTY, String.class)
+         return new MapValueType(typeClass,
+                                 typeInfo.getOrDefault(KEY_TYPE_PROPERTY, String.class),
+                                 typeInfo.getOrDefault(VALUE_TYPE_PROPERTY, String.class)
          );
       }
-
 
       return new SimpleValueType(typeClass);
    }
 
    /**
-    * Convert t.
+    * Converts the given input to the type wrapped by the ValueType
     *
-    * @param <T>   the type parameter
-    * @param input the input
-    * @return the t
+    * @param <T>   the wrapped type
+    * @param input the object to be converted
+    * @return the result of the conversion
     */
    public abstract <T> T convert(Object input);
 
