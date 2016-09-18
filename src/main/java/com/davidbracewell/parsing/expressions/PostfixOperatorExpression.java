@@ -29,7 +29,7 @@ import lombok.NonNull;
  *
  * @author David B. Bracewell
  */
-public class PostfixExpression extends Expression {
+public class PostfixOperatorExpression extends Expression {
 
   /**
    * The operator
@@ -47,7 +47,7 @@ public class PostfixExpression extends Expression {
    * @param operator The postfix operator
    * @param left     The expression on the right of the operator
    */
-  public PostfixExpression(@NonNull ParserToken operator, @NonNull Expression left) {
+  public PostfixOperatorExpression(@NonNull ParserToken operator, @NonNull Expression left) {
     super(operator.type);
     this.operator = operator;
     this.left = left;
@@ -58,4 +58,4 @@ public class PostfixExpression extends Expression {
     return "(" + left.toString() + operator.text + ")";
   }
 
-}//END OF PrefixExpression
+}//END OF PostfixOperatorExpression

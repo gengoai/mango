@@ -25,10 +25,10 @@ import com.davidbracewell.parsing.ExpressionIterator;
 import com.davidbracewell.parsing.ParseException;
 import com.davidbracewell.parsing.ParserToken;
 import com.davidbracewell.parsing.expressions.Expression;
-import com.davidbracewell.parsing.expressions.PostfixExpression;
+import com.davidbracewell.parsing.expressions.PostfixOperatorExpression;
 
 /**
- * <p>Captures {@link PostfixExpression}s where the current token is the operator and the previous expression is what is
+ * <p>Captures {@link PostfixOperatorExpression}s where the current token is the operator and the previous expression is what is
  * being operated on.</p>
  *
  * @author David B. Bracewell
@@ -47,7 +47,7 @@ public class PostfixOperatorHandler extends InfixHandler {
 
    @Override
    public Expression parse(ExpressionIterator expressionIterator, Expression left, ParserToken token) throws ParseException {
-      return new PostfixExpression(token, left);
+      return new PostfixOperatorExpression(token, left);
    }
 
 }//END OF PostfixOperatorHandler

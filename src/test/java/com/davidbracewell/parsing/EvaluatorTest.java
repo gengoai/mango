@@ -22,9 +22,11 @@
 package com.davidbracewell.parsing;
 
 import com.davidbracewell.parsing.expressions.BinaryOperatorExpression;
+import com.davidbracewell.parsing.expressions.PostfixOperatorExpression;
 import com.davidbracewell.parsing.expressions.ValueExpression;
 import com.davidbracewell.parsing.handlers.BinaryOperatorHandler;
 import com.davidbracewell.parsing.handlers.GroupHandler;
+import com.davidbracewell.parsing.handlers.PostfixOperatorHandler;
 import com.davidbracewell.parsing.handlers.ValueHandler;
 import org.junit.Test;
 
@@ -41,6 +43,7 @@ public class EvaluatorTest {
                                   .register(CommonTypes.MULTIPLY, new BinaryOperatorHandler(20, false))
                                   .register(CommonTypes.DIVIDE, new BinaryOperatorHandler(20, false))
                                   .register(CommonTypes.NUMBER, new ValueHandler())
+                                  .register(CommonTypes.BANG, new PostfixOperatorHandler(30))
                                   .register(CommonTypes.OPENPARENS, new GroupHandler(CommonTypes.CLOSEPARENS));
 
    Lexer lexer = RegularExpressionLexer.builder()
@@ -52,6 +55,7 @@ public class EvaluatorTest {
                                        .add(CommonTypes.DIVIDE)
                                        .add(CommonTypes.OPENPARENS)
                                        .add(CommonTypes.CLOSEPARENS)
+                                       .add(CommonTypes.BANG)
                                        .build();
 
    Evaluator<Double> mathEvaluator = new Evaluator<Double>() {
@@ -62,12 +66,19 @@ public class EvaluatorTest {
          $(BinaryOperatorExpression.class, CommonTypes.MINUS, boe -> eval(boe.left) - eval(boe.right));
          $(BinaryOperatorExpression.class, CommonTypes.MULTIPLY, boe -> eval(boe.left) * eval(boe.right));
          $(BinaryOperatorExpression.class, CommonTypes.DIVIDE, boe -> eval(boe.left) / eval(boe.right));
+         $(PostfixOperatorExpression.class, CommonTypes.BANG, pe -> eval(pe.left) * 10);
          $(ValueExpression.class, v -> Double.parseDouble(v.value));
       }
    };
 
    Parser parser = new Parser(grammar, lexer);
 
+
+   @Test
+   public void postfix() throws Exception {
+      assertEquals(50, parser.evaluate("(2 + 3)!", mathEvaluator), 0);
+      assertEquals(60, parser.evaluate("2 * 3!", mathEvaluator), 0);
+   }
 
    @Test
    public void order() throws Exception {
