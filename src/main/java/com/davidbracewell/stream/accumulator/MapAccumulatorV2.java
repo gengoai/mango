@@ -19,60 +19,56 @@
  * under the License.
  */
 
-package com.davidbracewell.stream.accumulator.v2;
+package com.davidbracewell.stream.accumulator;
 
-import com.davidbracewell.collection.counter.Counter;
-import com.davidbracewell.collection.counter.Counters;
 import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.tuple.Tuple2;
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import org.apache.spark.util.AccumulatorV2;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author David B. Bracewell
  */
-public class CounterAccumulatorV2<K> extends AccumulatorV2<K, Counter<K>> {
-   private Counter<K> counter = Counters.newCounter();
+public class MapAccumulatorV2<K, V> extends AccumulatorV2<Tuple2<K, V>, Map<K, V>> implements Serializable {
+   private static final long serialVersionUID = 1L;
+   private final Map<K, V> map = new HashMap<>();
 
    @Override
    public boolean isZero() {
-      return counter.isEmpty();
+      return map.isEmpty();
    }
 
    @Override
-   public AccumulatorV2<K, Counter<K>> copyAndReset() {
-      return new CounterAccumulatorV2<>();
-   }
-
-   @Override
-   public AccumulatorV2<K, Counter<K>> copy() {
-      CounterAccumulatorV2<K> copy = new CounterAccumulatorV2<>();
-      copy.counter.merge(this.counter);
+   public AccumulatorV2<Tuple2<K, V>, Map<K, V>> copy() {
+      MapAccumulatorV2<K, V> copy = new MapAccumulatorV2<>();
+      copy.map.putAll(map);
       return copy;
    }
 
    @Override
    public void reset() {
-      counter.clear();
+      map.clear();
    }
 
    @Override
-   public void add(K v) {
-      counter.increment(v);
+   public void add(@NonNull Tuple2<K, V> v) {
+      map.put(v.v1, v.v2);
    }
 
    @Override
-   public void merge(@NonNull AccumulatorV2<K, Counter<K>> other) {
-      if (other instanceof CounterAccumulatorV2) {
-         this.counter.merge(Cast.<CounterAccumulatorV2<K>>as(other).counter);
-      } else {
-         throw new UnsupportedOperationException("Cannot merge " + other.getClass()
-                                                                        .getName() + " with a Counter Accumulator");
-      }
+   public void merge(@NonNull AccumulatorV2<Tuple2<K, V>, Map<K, V>> other) {
+      Preconditions.checkArgument(other instanceof MapAccumulatorV2);
+      map.putAll(Cast.<MapAccumulatorV2<K, V>>as(other).map);
    }
 
    @Override
-   public Counter<K> value() {
-      return counter;
+   public Map<K, V> value() {
+      return map;
    }
 
-}//END OF CounterAccumulatorV2
+}//END OF MapAccumulatorV2

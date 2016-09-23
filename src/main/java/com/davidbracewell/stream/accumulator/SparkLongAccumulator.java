@@ -21,50 +21,21 @@
 
 package com.davidbracewell.stream.accumulator;
 
-
-import java.io.Serializable;
-import java.util.Optional;
+import org.apache.spark.util.AccumulatorV2;
 
 /**
- * The interface M accumulator.
- *
- * @param <IN>  the type parameter
- * @param <OUT> the type parameter
  * @author David B. Bracewell
  */
-public interface MAccumulator<IN, OUT> extends Serializable {
+public class SparkLongAccumulator extends BaseSparkAccumulator<Long, Long> implements MLongAccumulator {
+  private static final long serialVersionUID = 1L;
 
-  /**
-   * Add.
-   *
-   * @param in the in
-   */
-  void add(IN in);
+  public SparkLongAccumulator(AccumulatorV2<Long, Long> accumulatorV2) {
+    super(accumulatorV2);
+  }
 
-  /**
-   * Value out.
-   *
-   * @return the out
-   */
-  OUT value();
+  @Override
+  public void add(long value) {
+    accumulatorV2.add(value);
+  }
 
-  /**
-   * Merge.
-   *
-   * @param other the other
-   */
-  void merge(MAccumulator<IN, OUT> other);
-
-  /**
-   * Name optional.
-   *
-   * @return the optional
-   */
-  Optional<String> name();
-
-  /**
-   * Reset.
-   */
-  void reset();
-
-}// END OF MAcc
+}// END OF SparkMLongAccumulator

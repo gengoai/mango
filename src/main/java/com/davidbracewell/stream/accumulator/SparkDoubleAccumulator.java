@@ -21,56 +21,21 @@
 
 package com.davidbracewell.stream.accumulator;
 
-import lombok.NonNull;
-import org.apache.spark.Accumulator;
-import scala.runtime.AbstractFunction0;
+import org.apache.spark.util.DoubleAccumulator;
 
 /**
- * The type Spark accumulator.
- *
- * @param <T> the type parameter
  * @author David B. Bracewell
  */
-public class SparkAccumulator<T> implements MAccumulator<T> {
+public class SparkDoubleAccumulator extends BaseSparkAccumulator<Double, Double> implements MDoubleAccumulator {
   private static final long serialVersionUID = 1L;
 
-  /**
-   * The Spark accumulator.
-   */
-  final Accumulator<T> sparkAccumulator;
-
-  /**
-   * Instantiates a new Spark accumulator.
-   *
-   * @param sparkAccumulator the spark accumulator
-   */
-  public SparkAccumulator(@NonNull Accumulator<T> sparkAccumulator) {
-    this.sparkAccumulator = sparkAccumulator;
-  }
-
-
-  @Override
-  public void add(T value) {
-    sparkAccumulator.add(value);
+  public SparkDoubleAccumulator(DoubleAccumulator accumulatorV2) {
+    super(accumulatorV2);
   }
 
   @Override
-  public T value() {
-    return sparkAccumulator.value();
+  public void add(double value) {
+    accumulatorV2.add(value);
   }
 
-  @Override
-  public void setValue(T value) {
-    sparkAccumulator.setValue(value);
-  }
-
-  @Override
-  public String name() {
-    return sparkAccumulator.name().getOrElse(new AbstractFunction0<String>() {
-      @Override
-      public String apply() {
-        return null;
-      }
-    });
-  }
-}//END OF SparkAccumulator
+}// END OF SparkMDoubleAccumulator

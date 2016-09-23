@@ -19,36 +19,7 @@
  * under the License.
  */
 
-package com.davidbracewell.stream.accumulator;
-
-import com.davidbracewell.collection.Collect;
-import com.davidbracewell.conversion.Cast;
-
-import java.util.Collection;
-
 /**
- * @author David B. Bracewell
+ * Unified Accumulator interface to work for Local and Spark streams
  */
-public class CollectionAccumulatable<E, C extends Collection<E>> implements Accumulatable<C> {
-  private static final long serialVersionUID = 1L;
-
-  @Override
-  public C addAccumulator(C t1, C t2) {
-    Collection<E> cnew = Cast.as(Collect.create(t1.getClass()));
-    cnew.addAll(t1);
-    cnew.addAll(t2);
-    return Cast.as(cnew);
-  }
-
-  @Override
-  public C addInPlace(C t1, C t2) {
-    t1.addAll(t2);
-    return t1;
-  }
-
-  @Override
-  public C zero(C zeroValue) {
-    return zeroValue;
-  }
-
-}//END OF CollectionAccumulatable
+package com.davidbracewell.stream.accumulator;

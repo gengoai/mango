@@ -22,24 +22,17 @@
 package com.davidbracewell.stream;
 
 import com.davidbracewell.collection.Collect;
-import com.davidbracewell.collection.counter.Counter;
-import com.davidbracewell.collection.counter.Counters;
-import com.davidbracewell.collection.counter.HashMapMultiCounter;
-import com.davidbracewell.collection.counter.MultiCounter;
 import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
-import com.davidbracewell.function.SerializableSupplier;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.stream.accumulator.*;
 import com.davidbracewell.tuple.Tuple2;
-import lombok.NonNull;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Supplier;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
@@ -92,13 +85,22 @@ public interface StreamingContext extends AutoCloseable {
 
 
    /**
+    * Double accumulator m double accumulator.
+    *
+    * @return the m double accumulator
+    */
+   default MDoubleAccumulator doubleAccumulator() {
+      return doubleAccumulator(0d, null);
+   }
+
+   /**
     * Double accumulator m accumulator.
     *
     * @param initialValue the initial value
     * @return the m accumulator
     */
-   default MAccumulator<Double> accumulator(double initialValue) {
-      return accumulator(initialValue, null);
+   default MDoubleAccumulator doubleAccumulator(double initialValue) {
+      return doubleAccumulator(initialValue, null);
    }
 
    /**
@@ -108,7 +110,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param name         the name
     * @return the m accumulator
     */
-   MAccumulator<Double> accumulator(double initialValue, String name);
+   MDoubleAccumulator doubleAccumulator(double initialValue, String name);
 
    /**
     * Int accumulator m accumulator.
@@ -116,8 +118,17 @@ public interface StreamingContext extends AutoCloseable {
     * @param initialValue the initial value
     * @return the m accumulator
     */
-   default MAccumulator<Integer> accumulator(int initialValue) {
-      return accumulator(initialValue, null);
+   default MLongAccumulator longAccumulator(long initialValue) {
+      return longAccumulator(initialValue, null);
+   }
+
+   /**
+    * Long accumulator m long accumulator.
+    *
+    * @return the m long accumulator
+    */
+   default MLongAccumulator longAccumulator() {
+      return longAccumulator(0L, null);
    }
 
    /**
@@ -127,81 +138,8 @@ public interface StreamingContext extends AutoCloseable {
     * @param name         the name
     * @return the m accumulator
     */
-   MAccumulator<Integer> accumulator(int initialValue, String name);
+   MLongAccumulator longAccumulator(long initialValue, String name);
 
-   /**
-    * Accumulator m accumulator.
-    *
-    * @param <T>           the type parameter
-    * @param initialValue  the initial value
-    * @param accumulatable the accumulatable
-    * @return the m accumulator
-    */
-   default <T> MAccumulator<T> accumulator(T initialValue, Accumulatable<T> accumulatable) {
-      return accumulator(initialValue, accumulatable, null);
-   }
-
-   /**
-    * Accumulator m accumulator.
-    *
-    * @param <T>           the type parameter
-    * @param initialValue  the initial value
-    * @param accumulatable the accumulatable
-    * @param name          the name
-    * @return the m accumulator
-    */
-   <T> MAccumulator<T> accumulator(T initialValue, Accumulatable<T> accumulatable, String name);
-
-   /**
-    * Collection accumulator m accumulator.
-    *
-    * @param <E>                the type parameter
-    * @param <C>                the type parameter
-    * @param collectionSupplier the collection supplier
-    * @param name               the name
-    * @return the m accumulator
-    */
-   default <E, C extends Collection<E>> MAccumulator<C> accumulator(Supplier<C> collectionSupplier, String name) {
-      return accumulator(collectionSupplier.get(), new CollectionAccumulatable<>(), name);
-   }
-
-   /**
-    * Collection accumulator m accumulator.
-    *
-    * @param <E>                the type parameter
-    * @param <C>                the type parameter
-    * @param collectionSupplier the collection supplier
-    * @return the m accumulator
-    */
-   default <E, C extends Collection<E>> MAccumulator<C> accumulator(Supplier<C> collectionSupplier) {
-      return accumulator(collectionSupplier.get(), new CollectionAccumulatable<>());
-   }
-
-
-   /**
-    * Map accumulator m accumulator.
-    *
-    * @param <K>      the type parameter
-    * @param <V>      the type parameter
-    * @param supplier the supplier
-    * @return the m accumulator
-    */
-   default <K, V> MAccumulator<Map<K, V>> mapAccumulator(@NonNull SerializableSupplier<Map<K, V>> supplier) {
-      return accumulator(null, new MapAccumulatable<>(supplier));
-   }
-
-   /**
-    * Map accumulator m accumulator.
-    *
-    * @param <K>      the type parameter
-    * @param <V>      the type parameter
-    * @param supplier the supplier
-    * @param name     the name
-    * @return the m accumulator
-    */
-   default <K, V> MAccumulator<Map<K, V>> mapAccumulator(@NonNull SerializableSupplier<Map<K, V>> supplier, String name) {
-      return accumulator(null, new MapAccumulatable<>(supplier), name);
-   }
 
    /**
     * Counter accumulator m accumulator.
@@ -209,33 +147,10 @@ public interface StreamingContext extends AutoCloseable {
     * @param <E> the type parameter
     * @return the m accumulator
     */
-   default <E> MAccumulator<Counter<E>> counterAccumulator() {
-      return accumulator(Counters.newCounter(), new CounterAccumulatable<>());
+   default <E> MCounterAccumulator<E> counterAccumulator() {
+      return counterAccumulator(null);
    }
 
-   /**
-    * Multi counter accumulator m accumulator.
-    *
-    * @param <K> the type parameter
-    * @param <V> the type parameter
-    * @return the m accumulator
-    */
-   default <K, V> MAccumulator<MultiCounter<K, V>> multiCounterAccumulator() {
-      return accumulator(new HashMapMultiCounter<K, V>(), new MultiCounterAccumulatable<>());
-   }
-
-
-   /**
-    * Multi counter accumulator m accumulator.
-    *
-    * @param <K>  the type parameter
-    * @param <V>  the type parameter
-    * @param name the name
-    * @return the m accumulator
-    */
-   default <K, V> MAccumulator<MultiCounter<K, V>> multiCounterAccumulator(String name) {
-      return accumulator(new HashMapMultiCounter<K, V>(), new MultiCounterAccumulatable<>(), name);
-   }
 
    /**
     * Counter accumulator m accumulator.
@@ -244,9 +159,90 @@ public interface StreamingContext extends AutoCloseable {
     * @param name the name
     * @return the m accumulator
     */
-   default <E> MAccumulator<Counter<E>> counterAccumulator(String name) {
-      return accumulator(Counters.newCounter(), new CounterAccumulatable<>(), name);
+   <E> MCounterAccumulator<E> counterAccumulator(String name);
+
+
+   /**
+    * Multi counter accumulator m multi counter accumulator.
+    *
+    * @param <K1> the type parameter
+    * @param <K2> the type parameter
+    * @return the m multi counter accumulator
+    */
+   default <K1, K2> MMultiCounterAccumulator<K1, K2> multiCounterAccumulator() {
+      return multiCounterAccumulator(null);
    }
+
+   /**
+    * Multi counter accumulator m multi counter accumulator.
+    *
+    * @param <K1> the type parameter
+    * @param <K2> the type parameter
+    * @param name the name
+    * @return the m multi counter accumulator
+    */
+   <K1, K2> MMultiCounterAccumulator<K1, K2> multiCounterAccumulator(String name);
+
+
+   /**
+    * List accumulator m list accumulator.
+    *
+    * @param <E> the type parameter
+    * @return the m list accumulator
+    */
+   default <E> MListAccumulator<E> listAccumulator() {
+      return listAccumulator(null);
+   }
+
+
+   /**
+    * List accumulator m list accumulator.
+    *
+    * @param <E>  the type parameter
+    * @param name the name
+    * @return the m list accumulator
+    */
+   <E> MListAccumulator<E> listAccumulator(String name);
+
+   /**
+    * Map accumulator m map accumulator.
+    *
+    * @param <K> the type parameter
+    * @param <V> the type parameter
+    * @return the m map accumulator
+    */
+   default <K, V> MMapAccumulator<K, V> mapAccumulator() {
+      return mapAccumulator(null);
+   }
+
+
+   /**
+    * Map accumulator m map accumulator.
+    *
+    * @param <K>  the type parameter
+    * @param <V>  the type parameter
+    * @param name the name
+    * @return the m map accumulator
+    */
+   <K, V> MMapAccumulator<K, V> mapAccumulator(String name);
+
+
+   /**
+    * Statistics accumulator m statistics accumulator.
+    *
+    * @return the m statistics accumulator
+    */
+   default MStatisticsAccumulator statisticsAccumulator() {
+      return statisticsAccumulator(null);
+   }
+
+   /**
+    * Statistics accumulator m statistics accumulator.
+    *
+    * @param name the name
+    * @return the m statistics accumulator
+    */
+   MStatisticsAccumulator statisticsAccumulator(String name);
 
    /**
     * Of m stream.
@@ -360,6 +356,12 @@ public interface StreamingContext extends AutoCloseable {
     */
    MStream<String> textFile(String location);
 
+   /**
+    * Text file m stream.
+    *
+    * @param location the location
+    * @return the m stream
+    */
    MStream<String> textFile(Resource location);
 
    /**
@@ -390,6 +392,11 @@ public interface StreamingContext extends AutoCloseable {
       return empty().mapToPair(k -> null);
    }
 
+   /**
+    * Empty double m double stream.
+    *
+    * @return the m double stream
+    */
    default MDoubleStream emptyDouble() {
       return empty().mapToDouble(u -> Double.NaN);
    }

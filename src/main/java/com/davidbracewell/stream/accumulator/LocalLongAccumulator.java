@@ -23,58 +23,57 @@ package com.davidbracewell.stream.accumulator;
 
 import lombok.NonNull;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * The type Java accumulator.
- *
- * @param <T> the type parameter
  * @author David B. Bracewell
  */
-public class JavaAccumulator<T> implements MAccumulator<T> {
+public class LocalLongAccumulator implements MLongAccumulator {
   private static final long serialVersionUID = 1L;
-  /**
-   * The Accumulatable.
-   */
-  final Accumulatable<T> accumulatable;
-  /**
-   * The Value reference.
-   */
-  final AtomicReference<T> valueReference;
+  private final String name;
+  private final AtomicLong longValue;
 
-  final String name;
+  public LocalLongAccumulator() {
+    this(0, null);
+  }
 
-  /**
-   * Instantiates a new Java accumulator.
-   *
-   * @param accumulatable the accumulatable
-   * @param initialValue  the initial value
-   */
-  public JavaAccumulator(@NonNull Accumulatable<T> accumulatable, T initialValue, String name) {
-    this.accumulatable = accumulatable;
-    this.valueReference = new AtomicReference<>(accumulatable.zero(initialValue));
+  public LocalLongAccumulator(String name) {
+    this(0L, name);
+  }
+
+  public LocalLongAccumulator(long longValue) {
+    this(longValue, null);
+  }
+
+  public LocalLongAccumulator(long longValue, String name) {
     this.name = name;
-  }
-
-  @Override
-  public void add(T value) {
-    this.valueReference.accumulateAndGet(value, accumulatable::addAccumulator);
-  }
-
-  @Override
-  public T value() {
-    return this.valueReference.get();
-  }
-
-  @Override
-  public void setValue(T value) {
-    this.valueReference.getAndSet(value);
+    this.longValue = new AtomicLong(longValue);
   }
 
 
   @Override
-  public String name() {
-    return name;
+  public void add(long value) {
+    longValue.addAndGet(value);
   }
 
-}//END OF JavaAccumulator
+  @Override
+  public Long value() {
+    return longValue.longValue();
+  }
+
+  @Override
+  public void merge(@NonNull MAccumulator<Long, Long> other) {
+    longValue.addAndGet(other.value());
+  }
+
+  @Override
+  public Optional<String> name() {
+    return Optional.of(name);
+  }
+
+  @Override
+  public void reset() {
+    longValue.set(0);
+  }
+}// END OF LocalMLongAccumulator

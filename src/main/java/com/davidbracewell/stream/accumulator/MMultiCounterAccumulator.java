@@ -21,50 +21,16 @@
 
 package com.davidbracewell.stream.accumulator;
 
-
-import java.io.Serializable;
-import java.util.Optional;
+import com.davidbracewell.collection.counter.MultiCounter;
+import com.davidbracewell.tuple.Tuple2;
 
 /**
- * The interface M accumulator.
- *
- * @param <IN>  the type parameter
- * @param <OUT> the type parameter
  * @author David B. Bracewell
  */
-public interface MAccumulator<IN, OUT> extends Serializable {
+public interface MMultiCounterAccumulator<K1, K2> extends MAccumulator<Tuple2<K1, K2>, MultiCounter<K1, K2>> {
 
-  /**
-   * Add.
-   *
-   * @param in the in
-   */
-  void add(IN in);
+   void increment(K1 key, K2 value);
 
-  /**
-   * Value out.
-   *
-   * @return the out
-   */
-  OUT value();
+   void merge(MultiCounter<K1,K2> other);
 
-  /**
-   * Merge.
-   *
-   * @param other the other
-   */
-  void merge(MAccumulator<IN, OUT> other);
-
-  /**
-   * Name optional.
-   *
-   * @return the optional
-   */
-  Optional<String> name();
-
-  /**
-   * Reset.
-   */
-  void reset();
-
-}// END OF MAcc
+}//END OF MMapAccumulator

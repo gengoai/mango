@@ -24,21 +24,13 @@ package com.davidbracewell.stream.accumulator;
 /**
  * @author David B. Bracewell
  */
-public class DoubleAccumulatable implements Accumulatable<Double> {
-  private static final long serialVersionUID = 1L;
+public interface MDoubleAccumulator extends MAccumulator<Double, Double> {
+
+  void add(double value);
 
   @Override
-  public Double addAccumulator(Double t1, Double t2) {
-    return t1 + t2;
+  default void add(Double aDouble) {
+    add(aDouble == null ? 0 : aDouble);
   }
 
-  @Override
-  public Double zero(Double zeroValue) {
-    return zeroValue;
-  }
-
-  @Override
-  public Double addInPlace(Double t1, Double t2) {
-    return t1 + t2;
-  }
-}//END OF DoubleAccumulatable
+}// END OF MDoubleAccumulator

@@ -21,50 +21,16 @@
 
 package com.davidbracewell.stream.accumulator;
 
-
-import java.io.Serializable;
-import java.util.Optional;
+import com.davidbracewell.collection.counter.Counter;
+import org.apache.spark.util.AccumulatorV2;
 
 /**
- * The interface M accumulator.
- *
- * @param <IN>  the type parameter
- * @param <OUT> the type parameter
  * @author David B. Bracewell
  */
-public interface MAccumulator<IN, OUT> extends Serializable {
+public class SparkCounterAccumulator<E> extends BaseSparkAccumulator<E, Counter<E>> implements MCounterAccumulator<E> {
+   private static final long serialVersionUID = 1L;
 
-  /**
-   * Add.
-   *
-   * @param in the in
-   */
-  void add(IN in);
-
-  /**
-   * Value out.
-   *
-   * @return the out
-   */
-  OUT value();
-
-  /**
-   * Merge.
-   *
-   * @param other the other
-   */
-  void merge(MAccumulator<IN, OUT> other);
-
-  /**
-   * Name optional.
-   *
-   * @return the optional
-   */
-  Optional<String> name();
-
-  /**
-   * Reset.
-   */
-  void reset();
-
-}// END OF MAcc
+   public SparkCounterAccumulator(AccumulatorV2<E, Counter<E>> accumulatorV2) {
+      super(accumulatorV2);
+   }
+}//END OF SparkCounterAccumulator

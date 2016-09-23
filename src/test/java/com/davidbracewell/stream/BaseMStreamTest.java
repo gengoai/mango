@@ -1,13 +1,9 @@
 package com.davidbracewell.stream;
 
-import com.davidbracewell.collection.counter.Counter;
-import com.davidbracewell.collection.counter.Counters;
-import com.davidbracewell.collection.counter.MultiCounter;
-import com.davidbracewell.collection.counter.MultiCounters;
 import com.davidbracewell.collection.list.Lists;
 import com.davidbracewell.collection.map.Maps;
 import com.davidbracewell.config.Config;
-import com.davidbracewell.stream.accumulator.MAccumulator;
+import com.davidbracewell.stream.accumulator.*;
 import com.davidbracewell.string.StringUtils;
 import com.davidbracewell.tuple.Tuple2;
 import org.junit.Test;
@@ -17,7 +13,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import static com.davidbracewell.collection.list.Lists.list;
-import static com.davidbracewell.tuple.Tuples.$;
 import static org.junit.Assert.*;
 
 /**
@@ -363,37 +358,28 @@ public abstract class BaseMStreamTest {
 
    @Test
    public void accumulators() throws Exception {
-      MAccumulator<Double> dA = sc.accumulator(0d);
-      MAccumulator<Integer> iA = sc.accumulator(0);
-      MAccumulator<Set<String>> sA = sc.accumulator(HashSet::new);
-      MAccumulator<Map<String, Integer>> mA = sc.mapAccumulator(HashMap::new);
-      MAccumulator<Counter<String>> cA = sc.counterAccumulator();
-      MAccumulator<MultiCounter<Character, Character>> mcA = sc.multiCounterAccumulator();
+      MDoubleAccumulator dA = sc.doubleAccumulator(0d);
+      MLongAccumulator iA = sc.longAccumulator(0);
+      MListAccumulator<String> sA = sc.listAccumulator();
+      MCounterAccumulator<String> cA = sc.counterAccumulator();
+      MMapAccumulator<String, Integer> mA = sc.mapAccumulator();
       sc.stream("A", "B", "CC", "A").forEach(s -> {
          dA.add((double) s.length());
          iA.add(s.length());
-         sA.add(Collections.singleton(s));
-         mA.add(Maps.map(s, s.length()));
-         cA.add(Counters.newCounter(s));
-         if (s.length() == 1) {
-            mcA.add(MultiCounters.newMultiCounter($(s.charAt(0), ' ')));
-         } else {
-            mcA.add(MultiCounters.newMultiCounter($(s.charAt(0), s.charAt(1))));
-         }
+         sA.add(s);
+         mA.put(s, s.length());
+         cA.add(s);
       });
 
       assertEquals(5.0, dA.value(), 0.0);
       assertEquals(5, iA.value().intValue());
-      assertEquals(3, sA.value().size());
+      assertEquals(4, sA.value().size());
       assertEquals(1, mA.value().get("A").intValue());
       assertEquals(1, mA.value().get("B").intValue());
       assertEquals(2, mA.value().get("CC").intValue());
       assertEquals(2.0, cA.value().get("A"), 0.0);
       assertEquals(1.0, cA.value().get("B"), 0.0);
       assertEquals(1.0, cA.value().get("CC"), 0.0);
-      assertEquals(2.0, mcA.value().get('A', ' '), 0.0);
-      assertEquals(1.0, mcA.value().get('B', ' '), 0.0);
-      assertEquals(1.0, mcA.value().get('C', 'C'), 0.0);
    }
 
    @Test

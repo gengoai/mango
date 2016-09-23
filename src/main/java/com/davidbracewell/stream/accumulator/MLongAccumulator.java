@@ -21,50 +21,16 @@
 
 package com.davidbracewell.stream.accumulator;
 
-
-import java.io.Serializable;
-import java.util.Optional;
-
 /**
- * The interface M accumulator.
- *
- * @param <IN>  the type parameter
- * @param <OUT> the type parameter
  * @author David B. Bracewell
  */
-public interface MAccumulator<IN, OUT> extends Serializable {
+public interface MLongAccumulator extends MAccumulator<Long, Long> {
 
-  /**
-   * Add.
-   *
-   * @param in the in
-   */
-  void add(IN in);
+  void add(long value);
 
-  /**
-   * Value out.
-   *
-   * @return the out
-   */
-  OUT value();
+  @Override
+  default void add(Long aLong) {
+    add(aLong == null ? 0 : aLong);
+  }
 
-  /**
-   * Merge.
-   *
-   * @param other the other
-   */
-  void merge(MAccumulator<IN, OUT> other);
-
-  /**
-   * Name optional.
-   *
-   * @return the optional
-   */
-  Optional<String> name();
-
-  /**
-   * Reset.
-   */
-  void reset();
-
-}// END OF MAcc
+}// END OF MLongAccumulator

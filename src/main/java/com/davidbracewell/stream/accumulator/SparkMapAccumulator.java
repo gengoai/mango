@@ -21,31 +21,31 @@
 
 package com.davidbracewell.stream.accumulator;
 
-import org.apache.spark.AccumulatorParam;
+import com.davidbracewell.tuple.Tuple2;
+import org.apache.spark.util.AccumulatorV2;
+
+import java.util.Map;
+
+import static com.davidbracewell.tuple.Tuples.$;
 
 /**
  * @author David B. Bracewell
  */
-public class SparkAccumulatable<T> implements Accumulatable<T>, AccumulatorParam<T> {
-  private static final long serialVersionUID = 1L;
-  final Accumulatable<T> wrapped;
+public class SparkMapAccumulator<K, V> extends BaseSparkAccumulator<Tuple2<K, V>, Map<K, V>> implements MMapAccumulator<K, V> {
+   private static final long serialVersionUID = 1L;
 
-  public SparkAccumulatable(Accumulatable<T> wrapped) {
-    this.wrapped = wrapped;
-  }
+   public SparkMapAccumulator(AccumulatorV2<Tuple2<K, V>, Map<K, V>> accumulatorV2) {
+      super(accumulatorV2);
+   }
 
-  @Override
-  public T addAccumulator(T t1, T t2) {
-    return wrapped.addAccumulator(t1, t2);
-  }
+   @Override
+   public void put(K key, V value) {
+      accumulatorV2.add($(key, value));
+   }
 
-  @Override
-  public T addInPlace(T t1, T t2) {
-    return wrapped.addInPlace(t1, t2);
-  }
+   @Override
+   public void putAll(Map<? extends K, ? extends V> other) {
+      other.forEach(this::put);
+   }
 
-  @Override
-  public T zero(T zeroValue) {
-    return wrapped.zero(zeroValue);
-  }
-}//END OF SparkAccumulatable
+}//END OF SparkMapAccumulator

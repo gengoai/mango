@@ -21,50 +21,27 @@
 
 package com.davidbracewell.stream.accumulator;
 
-
-import java.io.Serializable;
-import java.util.Optional;
+import com.davidbracewell.EnhancedDoubleStatistics;
+import com.davidbracewell.conversion.Cast;
+import lombok.NonNull;
 
 /**
- * The interface M accumulator.
- *
- * @param <IN>  the type parameter
- * @param <OUT> the type parameter
  * @author David B. Bracewell
  */
-public interface MAccumulator<IN, OUT> extends Serializable {
+public class SparkStatisticsAccumulator extends BaseSparkAccumulator<Double, EnhancedDoubleStatistics> implements MStatisticsAccumulator {
+   private static final long serialVersionUID = -933772215431769352L;
 
-  /**
-   * Add.
-   *
-   * @param in the in
-   */
-  void add(IN in);
+   public SparkStatisticsAccumulator(StatisticsAccumulatorV2 accumulatorV2) {
+      super(accumulatorV2);
+   }
 
-  /**
-   * Value out.
-   *
-   * @return the out
-   */
-  OUT value();
+   @Override
+   public void add(double value) {
+      accumulatorV2.add(value);
+   }
 
-  /**
-   * Merge.
-   *
-   * @param other the other
-   */
-  void merge(MAccumulator<IN, OUT> other);
-
-  /**
-   * Name optional.
-   *
-   * @return the optional
-   */
-  Optional<String> name();
-
-  /**
-   * Reset.
-   */
-  void reset();
-
-}// END OF MAcc
+   @Override
+   public void combine(@NonNull EnhancedDoubleStatistics statistics) {
+      Cast.<StatisticsAccumulatorV2>as(accumulatorV2).combine(statistics);
+   }
+}//END OF SparkStatisticsAccumulator

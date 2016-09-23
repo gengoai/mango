@@ -21,24 +21,15 @@
 
 package com.davidbracewell.stream.accumulator;
 
+import com.davidbracewell.EnhancedDoubleStatistics;
+
 /**
  * @author David B. Bracewell
  */
-public class IntAccumulatable implements Accumulatable<Integer> {
-  private static final long serialVersionUID = 1L;
+public interface MStatisticsAccumulator extends MAccumulator<Double,EnhancedDoubleStatistics> {
 
-  @Override
-  public Integer addAccumulator(Integer t1, Integer t2) {
-    return t1 + t2;
-  }
+   void add(double value);
 
-  @Override
-  public Integer zero(Integer zeroValue) {
-    return zeroValue;
-  }
+   void combine(EnhancedDoubleStatistics statistics);
 
-  @Override
-  public Integer addInPlace(Integer t1, Integer t2) {
-    return t1 + t2;
-  }
-}//END OF IntAccumulatable
+}//END OF MStatisticsAccumulator

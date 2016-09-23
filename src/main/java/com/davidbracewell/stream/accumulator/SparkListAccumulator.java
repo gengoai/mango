@@ -21,42 +21,17 @@
 
 package com.davidbracewell.stream.accumulator;
 
-import java.io.Serializable;
+import org.apache.spark.util.CollectionAccumulator;
+
+import java.util.List;
 
 /**
- * The interface Accumulatable.
- *
- * @param <T> the type parameter
  * @author David B. Bracewell
  */
-public interface Accumulatable<T> extends Serializable {
+public class SparkListAccumulator<T> extends BaseSparkAccumulator<T, List<T>> implements MListAccumulator<T> {
+  private static final long serialVersionUID = 1L;
 
-
-  /**
-   * Add accumulator t.
-   *
-   * @param t1 the t 1
-   * @param t2 the t 2
-   * @return the t
-   */
-  T addAccumulator(T t1, T t2);
-
-  /**
-   * Add in place t.
-   *
-   * @param t1 the t 1
-   * @param t2 the t 2
-   * @return the t
-   */
-  T addInPlace(T t1, T t2);
-
-  /**
-   * Zero t.
-   *
-   * @param zeroValue the zero value
-   * @return the t
-   */
-  T zero(T zeroValue);
-
-
-}//END OF Accumulatable
+  public SparkListAccumulator(CollectionAccumulator<T> accumulatorV2) {
+    super(accumulatorV2);
+  }
+}// END OF SparkMListAccumulator

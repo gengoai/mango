@@ -19,7 +19,19 @@
  * under the License.
  */
 
+package com.davidbracewell.stream.accumulator;
+
+import com.davidbracewell.tuple.Tuple2;
+
+import java.util.Map;
+
 /**
- * Unified Accumulator interface to work for Local and Spark streams
+ * @author David B. Bracewell
  */
-package com.davidbracewell.stream.accumulator.v2;
+public interface MMapAccumulator<K, V> extends MAccumulator<Tuple2<K, V>, Map<K, V>> {
+
+   void put(K key, V value);
+
+   void putAll(Map<? extends K, ? extends V> other);
+
+}//END OF MMapAccumulator
