@@ -33,16 +33,48 @@ import java.util.PrimitiveIterator;
  */
 public interface MDoubleStream extends AutoCloseable {
 
+  /**
+   * Gets context.
+   *
+   * @return the context
+   */
   StreamingContext getContext();
 
+  /**
+   * Cache m double stream.
+   *
+   * @return the m double stream
+   */
   MDoubleStream cache();
 
+  /**
+   * Repartition m double stream.
+   *
+   * @param numberOfPartition the number of partition
+   * @return the m double stream
+   */
   MDoubleStream repartition(int numberOfPartition);
 
+  /**
+   * Union m double stream.
+   *
+   * @param other the other
+   * @return the m double stream
+   */
   MDoubleStream union(MDoubleStream other);
 
+  /**
+   * On close.
+   *
+   * @param onCloseHandler the on close handler
+   */
   void onClose(SerializableRunnable onCloseHandler);
 
+  /**
+   * Is empty boolean.
+   *
+   * @return the boolean
+   */
   boolean isEmpty();
 
   /**
