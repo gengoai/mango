@@ -45,11 +45,18 @@ import java.util.stream.Stream;
 public interface StreamingContext extends AutoCloseable {
 
    /**
+    * Updates the config object used by this stream (important for distributed environments).
+    */
+   default void updateConfig(){
+
+   }
+
+   /**
     * Gets the distributed streaming context. (requires Spark jars to be on classpath).
     *
     * @return the distributed streaming context
     */
-   static StreamingContext distributed() {
+   static SparkStreamingContext distributed() {
       return SparkStreamingContext.INSTANCE;
    }
 
@@ -78,7 +85,7 @@ public interface StreamingContext extends AutoCloseable {
     *
     * @return the local streaming context
     */
-   static StreamingContext local() {
+   static LocalStreamingContext local() {
       return LocalStreamingContext.INSTANCE;
    }
 

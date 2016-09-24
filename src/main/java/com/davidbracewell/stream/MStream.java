@@ -27,51 +27,54 @@ import com.davidbracewell.function.*;
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.Resource;
 import lombok.NonNull;
-import org.apache.spark.api.java.JavaRDD;
 
 import java.io.Closeable;
 import java.util.*;
 import java.util.stream.Collector;
+import java.util.stream.Stream;
 
 /**
- * The interface M stream.
+ * <p>A facade for stream classes, such as Java's <code>Stream</code> and Spark's <code>RDD</code> objects. Provides a
+ * common interface to working with an manipulating streams regardless of their backend implementation. </p>
  *
- * @param <T> the type parameter
+ * @param <T> the component type of the stream
  * @author David B. Bracewell
  */
 public interface MStream<T> extends Closeable {
 
-   default JavaRDD<T> asRDD() {
-      return new SparkStream<>(this).asRDD();
-   }
 
+   /**
+    * Gets the handler that is called when the stream is closed.
+    *
+    * @return the on close handler
+    */
    SerializableRunnable getOnCloseHandler();
 
    /**
-    * Filter m stream.
+    * Filters the stream.
     *
-    * @param predicate the predicate
-    * @return the m stream
+    * @param predicate the predicate to use to determine which objects are kept
+    * @return the new stream
     */
    MStream<T> filter(SerializablePredicate<? super T> predicate);
 
    /**
-    * Map m stream.
+    * Maps the objects in the stream using the given function
     *
-    * @param <R>      the type parameter
-    * @param function the function
-    * @return the m stream
+    * @param <R>      the component type of the returning stream
+    * @param function the function to use to map objects
+    * @return the new stream
     */
    <R> MStream<R> map(SerializableFunction<? super T, ? extends R> function);
 
    /**
-    * Flat map m stream.
+    * Maps the objects in this stream to one or more new objects using the given function.
     *
-    * @param <R>    the type parameter
-    * @param mapper the mapper
-    * @return the m stream
+    * @param <R>    the component type of the returning stream
+    * @param mapper he function to use to map objects
+    * @return the new stream
     */
-   <R> MStream<R> flatMap(SerializableFunction<? super T, Iterable<? extends R>> mapper);
+   <R> MStream<R> flatMap(SerializableFunction<? super T, Stream<? extends R>> mapper);
 
    /**
     * Flat map to pair m pair stream.
@@ -81,7 +84,7 @@ public interface MStream<T> extends Closeable {
     * @param function the function
     * @return the m pair stream
     */
-   <R, U> MPairStream<R, U> flatMapToPair(SerializableFunction<? super T, ? extends Iterable<? extends Map.Entry<? extends R, ? extends U>>> function);
+   <R, U> MPairStream<R, U> flatMapToPair(SerializableFunction<? super T, Stream<? extends Map.Entry<? extends R, ? extends U>>> function);
 
    /**
     * Map to pair m pair stream.
@@ -166,8 +169,9 @@ public interface MStream<T> extends Closeable {
    /**
     * Sample m stream.
     *
-    * @param number the number
-    * @return the m stream
+    * @param withReplacement the with replacement
+    * @param number          the number
+    * @return the new stream
     */
    MStream<T> sample(boolean withReplacement, int number);
 
@@ -195,7 +199,7 @@ public interface MStream<T> extends Closeable {
    /**
     * Distinct m stream.
     *
-    * @return the m stream
+    * @return the new stream
     */
    MStream<T> distinct();
 
@@ -203,7 +207,7 @@ public interface MStream<T> extends Closeable {
     * Limit m stream.
     *
     * @param number the number
-    * @return the m stream
+    * @return the new stream
     */
    MStream<T> limit(long number);
 
@@ -219,7 +223,7 @@ public interface MStream<T> extends Closeable {
     * Skip m stream.
     *
     * @param n the n
-    * @return the m stream
+    * @return the new stream
     */
    MStream<T> skip(long n);
 
@@ -252,7 +256,7 @@ public interface MStream<T> extends Closeable {
     * Sorted m stream.
     *
     * @param ascending the ascending
-    * @return the m stream
+    * @return the new stream
     */
    MStream<T> sorted(boolean ascending);
 
@@ -299,7 +303,7 @@ public interface MStream<T> extends Closeable {
    /**
     * Cache m stream.
     *
-    * @return the m stream
+    * @return the new stream
     */
    MStream<T> cache();
 
@@ -307,7 +311,7 @@ public interface MStream<T> extends Closeable {
     * Union m stream.
     *
     * @param other the other
-    * @return the m stream
+    * @return the new stream
     */
    MStream<T> union(MStream<T> other);
 
@@ -330,14 +334,14 @@ public interface MStream<T> extends Closeable {
    /**
     * Parallel m stream.
     *
-    * @return the m stream
+    * @return the new stream
     */
    MStream<T> parallel();
 
    /**
     * Shuffle m stream.
     *
-    * @return the m stream
+    * @return the new stream
     */
    default MStream<T> shuffle() {
       return shuffle(new Random());
@@ -347,14 +351,25 @@ public interface MStream<T> extends Closeable {
     * Shuffle m stream.
     *
     * @param random the random
-    * @return the m stream
+    * @return the new stream
     */
    MStream<T> shuffle(Random random);
 
 
+   /**
+    * Repartition m stream.
+    *
+    * @param numPartitions the num partitions
+    * @return the new stream
+    */
    MStream<T> repartition(int numPartitions);
 
 
+   /**
+    * Gets context.
+    *
+    * @return the context
+    */
    StreamingContext getContext();
 
 

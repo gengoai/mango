@@ -21,6 +21,7 @@
 
 package com.davidbracewell.stream;
 
+import com.clearspring.analytics.util.Lists;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.Unchecked;
 import com.davidbracewell.io.Resources;
@@ -29,7 +30,6 @@ import com.davidbracewell.stream.accumulator.*;
 import com.davidbracewell.string.StringUtils;
 import lombok.SneakyThrows;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -43,13 +43,26 @@ import java.util.stream.Stream;
  *
  * @author David B. Bracewell
  */
-public enum LocalStreamingContext implements StreamingContext, Serializable {
+public enum LocalStreamingContext implements StreamingContext {
    /**
     * The singleton instance of the context
     */
    INSTANCE;
-   private static final long serialVersionUID = 1L;
 
+   @Override
+   public void close() {
+
+   }
+
+   @Override
+   public <E> MCounterAccumulator<E> counterAccumulator(String name) {
+      return new LocalCounterAccumulator<>(name);
+   }
+
+   @Override
+   public MDoubleAccumulator doubleAccumulator(double initialValue, String name) {
+      return new LocalDoubleAccumulator(initialValue, name);
+   }
 
    @Override
    public MDoubleStream doubleStream(DoubleStream doubleStream) {
@@ -65,21 +78,8 @@ public enum LocalStreamingContext implements StreamingContext, Serializable {
    }
 
    @Override
-   public void close() {
-
-   }
-
-   @Override
-   public MStream<Integer> range(int startInclusive, int endExclusive) {
-      return new LocalStream<>(IntStream.range(startInclusive, endExclusive)
-                                        .boxed()
-                                        .parallel()
-      );
-   }
-
-   @Override
-   public MDoubleAccumulator doubleAccumulator(double initialValue, String name) {
-      return new LocalDoubleAccumulator(initialValue, name);
+   public <E> MListAccumulator<E> listAccumulator(String name) {
+      return new LocalListAccumulator<>(name);
    }
 
    @Override
@@ -88,8 +88,8 @@ public enum LocalStreamingContext implements StreamingContext, Serializable {
    }
 
    @Override
-   public <E> MCounterAccumulator<E> counterAccumulator(String name) {
-      return new LocalCounterAccumulator<>(name);
+   public <K, V> MMapAccumulator<K, V> mapAccumulator(String name) {
+      return new LocalMapAccumulator<>(name);
    }
 
    @Override
@@ -98,13 +98,24 @@ public enum LocalStreamingContext implements StreamingContext, Serializable {
    }
 
    @Override
-   public <E> MListAccumulator<E> listAccumulator(String name) {
-      return new LocalListAccumulator<>(name);
+   public <K, V> MPairStream<K, V> pairStream(Map<? extends K, ? extends V> map) {
+      if (map == null) {
+         return new LocalPairStream<>(Stream.empty());
+      }
+      return new ReusableLocalPairStream<>(map);
    }
 
    @Override
-   public <K, V> MMapAccumulator<K, V> mapAccumulator(String name) {
-      return new LocalMapAccumulator<>(name);
+   public <K, V> MPairStream<K, V> pairStream(Collection<Map.Entry<? extends K, ? extends V>> tuples) {
+      return new LocalPairStream<>(tuples.stream());
+   }
+
+   @Override
+   public MStream<Integer> range(int startInclusive, int endExclusive) {
+      return new LocalStream<>(IntStream.range(startInclusive, endExclusive)
+                                        .boxed()
+                                        .parallel()
+      );
    }
 
    @Override
@@ -130,27 +141,13 @@ public enum LocalStreamingContext implements StreamingContext, Serializable {
    }
 
    @Override
-   public <K, V> MPairStream<K, V> pairStream(Map<? extends K, ? extends V> map) {
-      if (map == null) {
-         return new LocalPairStream<>(Stream.empty());
-      }
-      return new ReusableLocalPairStream<>(map);
-   }
-
-   @Override
-   public <K, V> MPairStream<K, V> pairStream(Collection<Map.Entry<? extends K, ? extends V>> tuples) {
-      return new LocalPairStream<>(tuples.stream());
-   }
-
-
-   @Override
    public <T> MStream<T> stream(Iterable<? extends T> iterable) {
       if (iterable == null) {
          return empty();
       } else if (iterable instanceof Collection) {
          return new ReusableLocalStream<>(Cast.<Collection<T>>as(iterable));
       }
-      return new LocalStream<>(Cast.<Iterable<T>>as(iterable));
+      return new ReusableLocalStream<>(Lists.newArrayList(Cast.as(iterable)));
    }
 
 
@@ -174,8 +171,7 @@ public enum LocalStreamingContext implements StreamingContext, Serializable {
                                           .filter(r -> !r.isDirectory())
                                           .flatMap(Unchecked.function(r ->
                                                                          Cast.<LocalStream<String>>as(
-                                                                            r.lines()).stream()
-                                                                     )
+                                                                            r.lines()).stream())
                                                   ));
       }
       return resource.lines();

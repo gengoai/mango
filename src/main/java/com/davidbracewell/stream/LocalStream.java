@@ -118,16 +118,13 @@ public class LocalStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public <R> MStream<R> flatMap(@NonNull SerializableFunction<? super T, Iterable<? extends R>> mapper) {
-      return new LocalStream<>(stream.flatMap(t -> Streams.asStream(mapper.apply(t)).map(Cast::<R>as)));
+   public <R> MStream<R> flatMap(@NonNull SerializableFunction<? super T, Stream<? extends R>> mapper) {
+      return new LocalStream<>(stream.flatMap(mapper::apply));
    }
 
    @Override
-   public <R, U> MPairStream<R, U> flatMapToPair(SerializableFunction<? super T, ? extends Iterable<? extends Map.Entry<? extends R, ? extends U>>> function) {
-      return new LocalPairStream<>(
-                                     stream.flatMap(
-                                        t -> Streams.asStream(Cast.<Iterable<Map.Entry<R, U>>>as(function.apply(t))))
-      );
+   public <R, U> MPairStream<R, U> flatMapToPair(SerializableFunction<? super T, Stream<? extends Map.Entry<? extends R, ? extends U>>> function) {
+      return new LocalPairStream<>(stream.flatMap(function));
    }
 
    @Override
@@ -336,10 +333,9 @@ public class LocalStream<T> implements MStream<T>, Serializable {
 
    @Override
    public MStream<T> shuffle(@NonNull Random random) {
-      return new LocalStream<>(
-                                 stream.map(t -> Tuple2.of(random.nextDouble(), t))
-                                       .sorted(Map.Entry.comparingByKey())
-                                       .map(Tuple2::getValue)
+      return new LocalStream<>(stream.map(t -> Tuple2.of(random.nextDouble(), t))
+                                     .sorted(Map.Entry.comparingByKey())
+                                     .map(Tuple2::getValue)
       );
    }
 

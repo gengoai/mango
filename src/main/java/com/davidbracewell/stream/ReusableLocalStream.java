@@ -57,12 +57,12 @@ public class ReusableLocalStream<T> implements MStream<T> {
    }
 
    @Override
-   public <R> MStream<R> flatMap(SerializableFunction<? super T, Iterable<? extends R>> mapper) {
+   public <R> MStream<R> flatMap(SerializableFunction<? super T, Stream<? extends R>> mapper) {
       return getStream().flatMap(mapper);
    }
 
    @Override
-   public <R, U> MPairStream<R, U> flatMapToPair(SerializableFunction<? super T, ? extends Iterable<? extends Map.Entry<? extends R, ? extends U>>> function) {
+   public <R, U> MPairStream<R, U> flatMapToPair(SerializableFunction<? super T, Stream<? extends Map.Entry<? extends R, ? extends U>>> function) {
       return getStream().flatMapToPair(function);
    }
 

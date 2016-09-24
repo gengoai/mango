@@ -29,6 +29,7 @@ import com.davidbracewell.stream.accumulator.*;
 import com.davidbracewell.string.StringUtils;
 import lombok.NonNull;
 import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
@@ -45,71 +46,84 @@ import java.util.stream.Stream;
 
 
 /**
- * The enum Spark streaming context.
+ * Represents a distributed streaming context using Sparks's rdd classes
  *
  * @author David B. Bracewell
  */
 public enum SparkStreamingContext implements StreamingContext {
    /**
-    * Instance spark streaming context.
+    * The singleton instance of the context
     */
    INSTANCE;
 
    /**
-    * The constant SPARK_APPNAME.
+    * The config property name containing the spark application name
     */
    public static final String SPARK_APPNAME = "spark.appName";
    /**
-    * The constant SPARK_MASTER.
+    * The config property name specifying the spark master address
     */
    public static final String SPARK_MASTER = "spark.master";
+
    private static volatile JavaSparkContext context;
 
+   private volatile Broadcast<Config> configBroadcast;
+
+   public Broadcast<Config> getConfigBroadcast() {
+      if (configBroadcast == null || !configBroadcast.isValid()) {
+         synchronized (SparkStreamingContext.class) {
+            if (configBroadcast == null || !configBroadcast.isValid()) {
+               configBroadcast = broadcast(Config.getInstance());
+            }
+         }
+      }
+      return configBroadcast;
+   }
+
+   @Override
+   public synchronized void updateConfig() {
+      if (configBroadcast != null && configBroadcast.isValid()) {
+         configBroadcast.destroy();
+      }
+      configBroadcast = broadcast(Config.getInstance());
+   }
+
+
    /**
-    * Context of spark streaming context.
+    * Gets the streaming context of a given spark stream
     *
-    * @param stream the stream
+    * @param stream the stream whose context we want
     * @return the spark streaming context
     */
    public static SparkStreamingContext contextOf(@NonNull SparkStream<?> stream) {
-      if (context == null) {
-         synchronized (SparkStreamingContext.class) {
-            if (context == null) {
-               context = new JavaSparkContext(stream.asRDD().context());
-            }
-         }
-      }
-      return SparkStreamingContext.INSTANCE;
+      return contextOf(stream.getRDD().context());
    }
 
    /**
-    * Context of spark streaming context.
+    * Gets the streaming context of a given spark stream
     *
-    * @param stream the stream
+    * @param stream the stream whose context we want
     * @return the spark streaming context
     */
    public static SparkStreamingContext contextOf(@NonNull SparkDoubleStream stream) {
-      if (context == null) {
-         synchronized (SparkStreamingContext.class) {
-            if (context == null) {
-               context = new JavaSparkContext(stream.getRDD().context());
-            }
-         }
-      }
-      return SparkStreamingContext.INSTANCE;
+      return contextOf(stream.getRDD().context());
    }
 
    /**
-    * Context of spark streaming context.
+    * Gets the streaming context of a given spark stream
     *
-    * @param stream the stream
+    * @param stream the stream whose context we want
     * @return the spark streaming context
     */
    public static SparkStreamingContext contextOf(@NonNull SparkPairStream<?, ?> stream) {
-      if (context == null) {
+      return contextOf(stream.getRDD().context());
+   }
+
+   private static SparkStreamingContext contextOf(SparkContext sparkContext) {
+      if (context == null || context.sc().isStopped()) {
          synchronized (SparkStreamingContext.class) {
-            if (context == null) {
-               context = new JavaSparkContext(stream.getRDD().context());
+            if (context == null || context.sc().isStopped()) {
+               context = new JavaSparkContext(sparkContext);
             }
          }
       }
@@ -117,9 +131,9 @@ public enum SparkStreamingContext implements StreamingContext {
    }
 
    private static JavaSparkContext getSparkContext() {
-      if (context == null) {
+      if (context == null || context.sc().isStopped()) {
          synchronized (SparkStreamingContext.class) {
-            if (context == null) {
+            if (context == null || context.sc().isStopped()) {
                SparkConf conf = new SparkConf();
                if (Config.hasProperty(SPARK_MASTER)) {
                   conf.setMaster(Config.get(SPARK_MASTER).asString());
@@ -133,11 +147,11 @@ public enum SparkStreamingContext implements StreamingContext {
    }
 
    /**
-    * Broadcast broadcast.
+    * Broadcasts an object using Spark's broadcast functionality.
     *
-    * @param <T>    the type parameter
-    * @param object the object
-    * @return the broadcast
+    * @param <T>    the type of the object being broadcasted
+    * @param object the object to broadcast
+    * @return the broadcast wrapper around the object
     */
    public <T> Broadcast<T> broadcast(T object) {
       return getSparkContext().broadcast(object);
@@ -168,9 +182,8 @@ public enum SparkStreamingContext implements StreamingContext {
       if (doubleStream == null) {
          return empty().mapToDouble(o -> Double.NaN);
       }
-      return new SparkDoubleStream(
-                                     getSparkContext().parallelizeDoubles(
-                                        doubleStream.boxed().collect(Collectors.toList()))
+      return new SparkDoubleStream(getSparkContext().parallelizeDoubles(
+         doubleStream.boxed().collect(Collectors.toList()))
       );
    }
 
@@ -223,13 +236,11 @@ public enum SparkStreamingContext implements StreamingContext {
 
    @Override
    public MStream<Integer> range(int startInclusive, int endExclusive) {
-      return new SparkStream<>(
-                                 IntStream.range(startInclusive, endExclusive).boxed().collect(Collectors.toList())
-      );
+      return new SparkStream<>(IntStream.range(startInclusive, endExclusive).boxed().collect(Collectors.toList()));
    }
 
    /**
-    * Spark context java spark context.
+    * Gets the wrapped Spark context
     *
     * @return the java spark context
     */

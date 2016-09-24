@@ -23,19 +23,21 @@ package com.davidbracewell.stream;
 
 import com.davidbracewell.collection.Streams;
 import com.davidbracewell.config.Config;
+import com.davidbracewell.config.Configurator;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.*;
 import com.davidbracewell.io.resource.Resource;
 import lombok.NonNull;
+import org.apache.hadoop.io.compress.GzipCodec;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.PairFunction;
 import scala.Tuple2;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collector;
+import java.util.stream.Stream;
 
 /**
  * The type Spark stream.
@@ -44,300 +46,313 @@ import java.util.stream.Collector;
  * @author David B. Bracewell
  */
 public class SparkStream<T> implements MStream<T>, Serializable {
-  private static final long serialVersionUID = 1L;
-  private final JavaRDD<T> rdd;
-  private SerializableRunnable onClose;
+   private static final long serialVersionUID = 1L;
+   private final JavaRDD<T> rdd;
+   private SerializableRunnable onClose;
 
-  public SparkStream(@NonNull MStream<T> mStream) {
-    if (mStream instanceof SparkStream) {
-      this.rdd = Cast.<SparkStream<T>>as(mStream).asRDD();
-    } else {
-      List<T> collection = mStream.collect();
+   public SparkStream(@NonNull MStream<T> mStream) {
+      if (mStream instanceof SparkStream) {
+         this.rdd = Cast.<SparkStream<T>>as(mStream).getRDD();
+      } else {
+         List<T> collection = mStream.collect();
+         int slices = Math.max(1, collection.size() / Config.get("spark.partitions").asIntegerValue(100));
+         this.rdd = SparkStreamingContext.INSTANCE.sparkContext().parallelize(collection, slices);
+      }
+      this.onClose = mStream.getOnCloseHandler();
+   }
+
+   /**
+    * Instantiates a new Spark stream.
+    *
+    * @param rdd the rdd
+    */
+   SparkStream(JavaRDD<T> rdd) {
+      this.rdd = rdd;
+   }
+
+   /**
+    * Instantiates a new Spark stream.
+    *
+    * @param collection the collection
+    */
+   SparkStream(List<T> collection) {
       int slices = Math.max(1, collection.size() / Config.get("spark.partitions").asIntegerValue(100));
       this.rdd = SparkStreamingContext.INSTANCE.sparkContext().parallelize(collection, slices);
-    }
-    this.onClose = mStream.getOnCloseHandler();
-  }
+   }
 
-  /**
-   * Instantiates a new Spark stream.
-   *
-   * @param rdd the rdd
-   */
-  public SparkStream(JavaRDD<T> rdd) {
-    this.rdd = rdd;
-  }
+   @Override
+   public SerializableRunnable getOnCloseHandler() {
+      return onClose;
+   }
 
-  /**
-   * Instantiates a new Spark stream.
-   *
-   * @param collection the collection
-   */
-  public SparkStream(List<T> collection) {
-    int slices = Math.max(1, collection.size() / Config.get("spark.partitions").asIntegerValue(100));
-    this.rdd = SparkStreamingContext.INSTANCE.sparkContext().parallelize(collection, slices);
-  }
+   public JavaRDD<T> getRDD() {
+      return rdd;
+   }
 
-  @Override
-  public SerializableRunnable getOnCloseHandler() {
-    return onClose;
-  }
+   @Override
+   public StreamingContext getContext() {
+      return SparkStreamingContext.contextOf(this);
+   }
 
-  @Override
-  public JavaRDD<T> asRDD() {
-    return rdd;
-  }
-
-  @Override
-  public StreamingContext getContext() {
-    return SparkStreamingContext.contextOf(this);
-  }
-
-  @Override
-  public void close() throws IOException {
-    if (onClose != null) {
-      onClose.run();
-    }
-  }
-
-  @Override
-  public MStream<T> filter(SerializablePredicate<? super T> predicate) {
-    return new SparkStream<>(rdd.filter(predicate::test));
-  }
-
-  @Override
-  public <R> MStream<R> map(SerializableFunction<? super T, ? extends R> function) {
-    return new SparkStream<>(rdd.map(function::apply));
-  }
-
-  @Override
-  public <R> MStream<R> flatMap(SerializableFunction<? super T, Iterable<? extends R>> mapper) {
-    return new SparkStream<>(rdd.flatMap(t -> Cast.as(mapper.apply(t).iterator())));
-  }
-
-  @Override
-  public <R, U> MPairStream<R, U> flatMapToPair(SerializableFunction<? super T, ? extends Iterable<? extends Map.Entry<? extends R, ? extends U>>> function) {
-    return new SparkPairStream<>(rdd.flatMapToPair(t -> {
-      List<Tuple2<R, U>> list = new LinkedList<>();
-      function.apply(t).forEach(e -> list.add(new Tuple2<>(e.getKey(), e.getValue())));
-      return list.iterator();
-    }));
-  }
-
-  @Override
-  public <R, U> MPairStream<R, U> mapToPair(SerializableFunction<? super T, ? extends Map.Entry<? extends R, ? extends U>> function) {
-    return new SparkPairStream<>(
-      rdd.mapToPair(t -> {
-        Map.Entry<R, U> entry = Cast.as(function.apply(t));
-        return new Tuple2<>(entry.getKey(), entry.getValue());
-      })
-    );
-  }
-
-  @Override
-  public <U> MPairStream<U, Iterable<T>> groupBy(SerializableFunction<? super T, ? extends U> function) {
-    return new SparkPairStream<>(
-      rdd.groupBy(function::apply)
-    );
-  }
-
-  @Override
-  public <R> R collect(Collector<? super T, T, R> collector) {
-    return Streams.asStream(rdd.toLocalIterator()).collect(collector);
-  }
-
-  @Override
-  public List<T> collect() {
-    return rdd.collect();
-  }
-
-  @Override
-  public Optional<T> reduce(SerializableBinaryOperator<T> reducer) {
-    return Optional.of(rdd.reduce(reducer::apply));
-  }
-
-  @Override
-  public T fold(T zeroValue, SerializableBinaryOperator<T> operator) {
-    return rdd.fold(zeroValue, operator::apply);
-  }
-
-  @Override
-  public void forEach(SerializableConsumer<? super T> consumer) {
-    rdd.foreach(consumer::accept);
-  }
-
-  @Override
-  public void forEachLocal(SerializableConsumer<? super T> consumer) {
-    rdd.toLocalIterator().forEachRemaining(consumer);
-  }
-
-  @Override
-  public Iterator<T> iterator() {
-    return rdd.toLocalIterator();
-  }
-
-  @Override
-  public Optional<T> first() {
-    if (rdd.isEmpty()) {
-      return Optional.empty();
-    }
-    return Optional.ofNullable(rdd.first());
-  }
-
-  @Override
-  public MStream<T> sample(boolean withReplacement, int number) {
-    if (number <= 0) {
-      return getContext().empty();
-    }
-    if (withReplacement) {
-      MStream<T> sample = new SparkStream<>(rdd.sample(true, 0.5));
-      while (sample.count() < number) {
-        sample = sample.union(new SparkStream<>(rdd.sample(true, 0.5)));
+   @Override
+   public void close() throws IOException {
+      if (onClose != null) {
+         onClose.run();
       }
-      if (sample.count() > number) {
-        sample = sample.limit(number);
+   }
+
+   @Override
+   public MStream<T> filter(@NonNull SerializablePredicate<? super T> predicate) {
+      return new SparkStream<>(rdd.filter(t -> {
+         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         return predicate.test(t);
+      }));
+   }
+
+   @Override
+   public <R> MStream<R> map(@NonNull SerializableFunction<? super T, ? extends R> function) {
+      return new SparkStream<>(rdd.map(t -> {
+         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         return function.apply(t);
+      }));
+   }
+
+   @Override
+   public <R> MStream<R> flatMap(@NonNull SerializableFunction<? super T, Stream<? extends R>> mapper) {
+      return new SparkStream<>(rdd.flatMap(t -> {
+         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         return Cast.as(mapper.apply(t).iterator());
+      }));
+   }
+
+   @Override
+   public <R, U> MPairStream<R, U> flatMapToPair(@NonNull SerializableFunction<? super T, Stream<? extends Map.Entry<? extends R, ? extends U>>> function) {
+      return new SparkPairStream<>(rdd.flatMapToPair(t -> {
+         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         return Cast.as(function.apply(t).map(e -> new Tuple2<>(e.getKey(), e.getValue())).iterator());
+      }));
+   }
+
+   @Override
+   public <R, U> MPairStream<R, U> mapToPair(@NonNull SerializableFunction<? super T, ? extends Map.Entry<? extends R, ? extends U>> function) {
+      return new SparkPairStream<>(rdd.mapToPair(t -> {
+         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Map.Entry<R, U> entry = Cast.as(function.apply(t));
+         return Cast.as(new Tuple2<>(entry.getKey(), entry.getValue()));
+      }));
+   }
+
+   @Override
+   public <U> MPairStream<U, Iterable<T>> groupBy(@NonNull SerializableFunction<? super T, ? extends U> function) {
+      return new SparkPairStream<>(rdd.groupBy(function::apply));
+   }
+
+   @Override
+   public <R> R collect(@NonNull Collector<? super T, T, R> collector) {
+      return Streams.asStream(rdd.toLocalIterator()).collect(collector);
+   }
+
+   @Override
+   public List<T> collect() {
+      return rdd.collect();
+   }
+
+   @Override
+   public Optional<T> reduce(@NonNull SerializableBinaryOperator<T> reducer) {
+      return Optional.of(rdd.reduce((t, u) -> {
+         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         return reducer.apply(t, u);
+      }));
+   }
+
+   @Override
+   public T fold(T zeroValue, @NonNull SerializableBinaryOperator<T> operator) {
+      return rdd.fold(zeroValue, (t, u) -> {
+         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         return operator.apply(t, u);
+      });
+   }
+
+   @Override
+   public void forEach(@NonNull SerializableConsumer<? super T> consumer) {
+      rdd.foreach(t -> {
+         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         consumer.accept(t);
+      });
+   }
+
+   @Override
+   public void forEachLocal(SerializableConsumer<? super T> consumer) {
+      rdd.toLocalIterator().forEachRemaining(consumer);
+   }
+
+   @Override
+   public Iterator<T> iterator() {
+      return rdd.toLocalIterator();
+   }
+
+   @Override
+   public Optional<T> first() {
+      if (rdd.isEmpty()) {
+         return Optional.empty();
       }
-      return sample;
-    }
-    return shuffle().limit(number);
-  }
+      return Optional.ofNullable(rdd.first());
+   }
 
-  @Override
-  public long count() {
-    return rdd.count();
-  }
+   @Override
+   public MStream<T> sample(boolean withReplacement, int number) {
+      if (number <= 0) {
+         return getContext().empty();
+      }
+      if (withReplacement) {
+         MStream<T> sample = new SparkStream<>(rdd.sample(true, 0.5));
+         while (sample.count() < number) {
+            sample = sample.union(new SparkStream<>(rdd.sample(true, 0.5)));
+         }
+         if (sample.count() > number) {
+            sample = sample.limit(number);
+         }
+         return sample;
+      }
+      return shuffle().limit(number);
+   }
 
-  @Override
-  public boolean isEmpty() {
-    return rdd.isEmpty();
-  }
+   @Override
+   public long count() {
+      return rdd.count();
+   }
 
-  @Override
-  public Map<T, Long> countByValue() {
-    return rdd.countByValue();
-  }
+   @Override
+   public boolean isEmpty() {
+      return rdd.isEmpty();
+   }
 
-  @Override
-  public MStream<T> distinct() {
-    return new SparkStream<>(rdd.distinct());
-  }
+   @Override
+   public Map<T, Long> countByValue() {
+      return rdd.countByValue();
+   }
 
-  @Override
-  public MStream<T> limit(long number) {
-    if (number <= 0) {
-      return SparkStreamingContext.INSTANCE.empty();
-    }
-    return new SparkStream<>(rdd.zipWithIndex().filter(p -> p._2() < number).map(Tuple2::_1));
-  }
+   @Override
+   public MStream<T> distinct() {
+      return new SparkStream<>(rdd.distinct());
+   }
 
-  @Override
-  public List<T> take(int n) {
-    if (n <= 0) {
-      return Collections.emptyList();
-    }
-    return rdd.take(n);
-  }
+   @Override
+   public MStream<T> limit(long number) {
+      if (number <= 0) {
+         return SparkStreamingContext.INSTANCE.empty();
+      }
+      return new SparkStream<>(rdd.zipWithIndex().filter(p -> p._2() < number).map(Tuple2::_1));
+   }
 
-  @Override
-  public MStream<T> skip(long n) {
-    if (n > count()) {
-      return getContext().empty();
-    } else if (n <= 0) {
+   @Override
+   public List<T> take(int n) {
+      if (n <= 0) {
+         return Collections.emptyList();
+      }
+      return rdd.take(n);
+   }
+
+   @Override
+   public MStream<T> skip(long n) {
+      if (n > count()) {
+         return getContext().empty();
+      } else if (n <= 0) {
+         return this;
+      }
+      return new SparkStream<>(rdd.zipWithIndex().filter(p -> p._2() > n - 1).map(Tuple2::_1));
+   }
+
+   @Override
+   public void onClose(SerializableRunnable closeHandler) {
+      this.onClose = closeHandler;
+   }
+
+   @Override
+   public MStream<T> sorted(boolean ascending) {
+      return new SparkStream<>(rdd.sortBy(t -> t, ascending, rdd.partitions().size()));
+   }
+
+   @Override
+   public Optional<T> max(@NonNull SerializableComparator<? super T> comparator) {
+      return Optional.ofNullable(rdd.max(Cast.as(comparator)));
+   }
+
+   @Override
+   public Optional<T> min(@NonNull SerializableComparator<? super T> comparator) {
+      return Optional.ofNullable(rdd.min(Cast.as(comparator)));
+   }
+
+   @Override
+   public <U> MPairStream<T, U> zip(@NonNull MStream<U> other) {
+      if (other instanceof SparkStream) {
+         return new SparkPairStream<>(rdd.zip(Cast.<SparkStream<U>>as(other).rdd));
+      }
+      JavaSparkContext jsc = new JavaSparkContext(rdd.context());
+      return new SparkPairStream<>(rdd.zip(jsc.parallelize(other.collect(), rdd.partitions().size())));
+   }
+
+   @Override
+   public MPairStream<T, Long> zipWithIndex() {
+      return new SparkPairStream<>(rdd.zipWithIndex());
+   }
+
+
+   @Override
+   public MDoubleStream mapToDouble(@NonNull SerializableToDoubleFunction<? super T> function) {
+      return new SparkDoubleStream(rdd.mapToDouble(t -> {
+         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         return function.applyAsDouble(t);
+      }));
+   }
+
+   @Override
+   public MStream<T> cache() {
+      return new SparkStream<>(rdd.cache());
+   }
+
+   @Override
+   public MStream<T> union(@NonNull MStream<T> other) {
+      if (isEmpty()) {
+         return new SparkStream<>(other);
+      } else if (other instanceof SparkStream) {
+         return new SparkStream<>(rdd.union(Cast.<SparkStream<T>>as(other).rdd));
+      }
+      JavaSparkContext sc = new JavaSparkContext(rdd.context());
+      return new SparkStream<>(rdd.union(sc.parallelize(other.collect())));
+   }
+
+   @Override
+   public void saveAsTextFile(@NonNull Resource location) {
+      if (location.isCompressed()) {
+         rdd.saveAsTextFile(location.descriptor(), GzipCodec.class);
+      } else {
+         rdd.saveAsTextFile(location.descriptor());
+      }
+   }
+
+   @Override
+   public void saveAsTextFile(@NonNull String location) {
+      rdd.saveAsTextFile(location);
+   }
+
+
+   @Override
+   public MStream<T> parallel() {
       return this;
-    }
-    return new SparkStream<>(rdd.zipWithIndex().filter(p -> p._2() > n - 1).map(Tuple2::_1));
-  }
+   }
 
-  @Override
-  public void onClose(SerializableRunnable closeHandler) {
-    this.onClose = closeHandler;
-  }
+   @Override
+   public MStream<T> shuffle(@NonNull Random random) {
+      return new SparkStream<>(rdd.sortBy(t -> random.nextDouble(),
+                                          true,
+                                          rdd.getNumPartitions()
+                                         ));
+   }
 
-  @Override
-  public MStream<T> sorted(boolean ascending) {
-    return new SparkStream<>(rdd.sortBy(t -> t, ascending, rdd.partitions().size()));
-  }
-
-  @Override
-  public Optional<T> max(SerializableComparator<? super T> comparator) {
-    return Optional.ofNullable(rdd.max(Cast.as(comparator)));
-  }
-
-  @Override
-  public Optional<T> min(SerializableComparator<? super T> comparator) {
-    return Optional.ofNullable(rdd.min(Cast.as(comparator)));
-  }
-
-  @Override
-  public <U> MPairStream<T, U> zip(MStream<U> other) {
-    if (other instanceof SparkStream) {
-      return new SparkPairStream<>(rdd.zip(Cast.<SparkStream<U>>as(other).rdd));
-    }
-    JavaSparkContext jsc = new JavaSparkContext(rdd.context());
-    return new SparkPairStream<>(rdd.zip(jsc.parallelize(other.collect(), rdd.partitions().size())));
-  }
-
-  @Override
-  public MPairStream<T, Long> zipWithIndex() {
-    return new SparkPairStream<>(rdd.zipWithIndex());
-  }
-
-
-  @Override
-  public MDoubleStream mapToDouble(SerializableToDoubleFunction<? super T> function) {
-    return new SparkDoubleStream(rdd.mapToDouble(function::applyAsDouble));
-  }
-
-  @Override
-  public MStream<T> cache() {
-    return new SparkStream<>(rdd.cache());
-  }
-
-  @Override
-  public MStream<T> union(MStream<T> other) {
-    if (isEmpty()) {
-      return new SparkStream<>(other);
-    } else if (other instanceof SparkStream) {
-      return new SparkStream<>(rdd.union(Cast.<SparkStream<T>>as(other).rdd));
-    }
-    JavaSparkContext sc = new JavaSparkContext(rdd.context());
-    return new SparkStream<>(rdd.union(sc.parallelize(other.collect())));
-  }
-
-  @Override
-  public void saveAsTextFile(@NonNull Resource location) {
-    rdd.saveAsTextFile(location.descriptor());
-  }
-
-  @Override
-  public void saveAsTextFile(@NonNull String location) {
-    rdd.saveAsTextFile(location);
-  }
-
-
-  @Override
-  public MStream<T> parallel() {
-    return this;
-  }
-
-  @Override
-  public MStream<T> shuffle(@NonNull Random random) {
-    return new SparkStream<T>(rdd.mapToPair(new PairFunction<T, Double, T>() {
-      private static final long serialVersionUID = -6899379026863558151L;
-
-      @Override
-      public Tuple2<Double, T> call(T t) throws Exception {
-        return new Tuple2<>(random.nextDouble(), t);
-      }
-    })
-                                 .sortByKey()
-                                 .values()
-    );
-  }
-
-  @Override
-  public MStream<T> repartition(int numPartitions) {
-    return new SparkStream<>(rdd.repartition(numPartitions));
-  }
+   @Override
+   public MStream<T> repartition(int numPartitions) {
+      return new SparkStream<>(rdd.repartition(numPartitions));
+   }
 
 }//END OF SparkStream

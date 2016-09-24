@@ -108,11 +108,11 @@ public abstract class BaseMStreamTest {
 
    @Test
    public void flatMap() throws Exception {
-      assertEquals(
-         Arrays.asList("A", "B", "C"),
-         sc.stream(Collections.singletonList("A"), Collections.singletonList("B"), Collections.singletonList("C"))
-           .flatMap(c -> c)
-           .collect()
+      assertEquals(Arrays.asList("A", "B", "C"),
+                   sc.stream(Collections.singletonList("A"), Collections.singletonList("B"),
+                             Collections.singletonList("C"))
+                     .flatMap(List::stream)
+                     .collect()
                   );
    }
 
@@ -334,7 +334,7 @@ public abstract class BaseMStreamTest {
                                                                             for (char c : s.toCharArray()) {
                                                                                result.add(Tuple2.of(Character.toString(c), Character.isUpperCase(c)));
                                                                             }
-                                                                            return result;
+                                                                            return result.stream();
                                                                          }
                                                                         ).collectAsMap();
 
