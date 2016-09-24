@@ -280,6 +280,14 @@ public class LocalStream<T> implements MStream<T>, Serializable {
       return new LocalStream<>(stream.sorted(comparator));
    }
 
+
+   @Override
+   public <R extends Comparable<R>> MStream<T> sorted(boolean ascending, SerializableFunction<? super T, ? extends R> keyFunction) {
+      return new LocalStream<>(stream.sorted((t1, t2) ->
+                                                keyFunction.apply(t1).compareTo(keyFunction.apply(t2))
+                                            ));
+   }
+
    @Override
    public <U> MPairStream<T, U> zip(@NonNull MStream<U> other) {
       return new LocalPairStream<>(Collect.zip(iterator(), other.iterator()));
@@ -320,6 +328,11 @@ public class LocalStream<T> implements MStream<T>, Serializable {
                                            }
                                           ));
       }
+   }
+
+   @Override
+   public Stream<T> javaStream() {
+      return stream;
    }
 
    @Override

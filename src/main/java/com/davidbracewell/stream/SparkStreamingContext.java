@@ -188,7 +188,7 @@ public enum SparkStreamingContext implements StreamingContext {
    }
 
    @Override
-   public <T> MStream<T> empty() {
+   public <T> SparkStream<T> empty() {
       return new SparkStream<>(getSparkContext().parallelize(new ArrayList<>()));
    }
 
@@ -222,7 +222,7 @@ public enum SparkStreamingContext implements StreamingContext {
    }
 
    @Override
-   public <K, V> MPairStream<K, V> pairStream(Map<? extends K, ? extends V> map) {
+   public <K, V> SparkPairStream<K, V> pairStream(Map<? extends K, ? extends V> map) {
       if (map == null) {
          return new SparkPairStream<>(new HashMap<K, V>());
       }
@@ -230,12 +230,12 @@ public enum SparkStreamingContext implements StreamingContext {
    }
 
    @Override
-   public <K, V> MPairStream<K, V> pairStream(Collection<Map.Entry<? extends K, ? extends V>> tuples) {
+   public <K, V> SparkPairStream<K, V> pairStream(Collection<Map.Entry<? extends K, ? extends V>> tuples) {
       return stream(tuples).mapToPair(t -> t);
    }
 
    @Override
-   public MStream<Integer> range(int startInclusive, int endExclusive) {
+   public SparkStream<Integer> range(int startInclusive, int endExclusive) {
       return new SparkStream<>(IntStream.range(startInclusive, endExclusive).boxed().collect(Collectors.toList()));
    }
 
@@ -257,7 +257,7 @@ public enum SparkStreamingContext implements StreamingContext {
 
    @Override
    @SafeVarargs
-   public final <T> MStream<T> stream(T... items) {
+   public final <T> SparkStream<T> stream(T... items) {
       if (items == null) {
          return empty();
       }
@@ -265,7 +265,7 @@ public enum SparkStreamingContext implements StreamingContext {
    }
 
    @Override
-   public <T> MStream<T> stream(@NonNull Stream<T> stream) {
+   public <T> SparkStream<T> stream(@NonNull Stream<T> stream) {
       if (stream == null) {
          return empty();
       }
@@ -273,7 +273,7 @@ public enum SparkStreamingContext implements StreamingContext {
    }
 
    @Override
-   public <T> MStream<T> stream(Iterable<? extends T> iterable) {
+   public <T> SparkStream<T> stream(Iterable<? extends T> iterable) {
       JavaRDD<T> rdd;
       if (iterable == null) {
          return empty();
@@ -286,7 +286,7 @@ public enum SparkStreamingContext implements StreamingContext {
    }
 
    @Override
-   public MStream<String> textFile(String location) {
+   public SparkStream<String> textFile(String location) {
       if (StringUtils.isNullOrBlank(location)) {
          return empty();
       }
@@ -294,7 +294,7 @@ public enum SparkStreamingContext implements StreamingContext {
    }
 
    @Override
-   public MStream<String> textFile(Resource location) {
+   public SparkStream<String> textFile(Resource location) {
       if (location == null) {
          return empty();
       }

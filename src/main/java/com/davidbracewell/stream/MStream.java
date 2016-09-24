@@ -22,6 +22,7 @@
 package com.davidbracewell.stream;
 
 import com.davidbracewell.collection.Sorting;
+import com.davidbracewell.collection.Streams;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.*;
 import com.davidbracewell.io.Resources;
@@ -77,269 +78,296 @@ public interface MStream<T> extends Closeable {
    <R> MStream<R> flatMap(SerializableFunction<? super T, Stream<? extends R>> mapper);
 
    /**
-    * Flat map to pair m pair stream.
+    * Maps the objects in this stream to one or more new key-value pairs using the given function.
     *
-    * @param <R>      the type parameter
-    * @param <U>      the type parameter
-    * @param function the function
-    * @return the m pair stream
+    * @param <R>      the key type parameter
+    * @param <U>      the value type parameter
+    * @param function the function to use to map objects
+    * @return the new pair stream
     */
    <R, U> MPairStream<R, U> flatMapToPair(SerializableFunction<? super T, Stream<? extends Map.Entry<? extends R, ? extends U>>> function);
 
    /**
-    * Map to pair m pair stream.
+    * Maps the objects in this stream to a key-value pair using the given function.
     *
-    * @param <R>      the type parameter
-    * @param <U>      the type parameter
-    * @param function the function
-    * @return the m pair stream
+    * @param <R>      the key type parameter
+    * @param <U>      the value type parameter
+    * @param function the function to use to map objects
+    * @return the new pair stream
     */
    <R, U> MPairStream<R, U> mapToPair(SerializableFunction<? super T, ? extends Map.Entry<? extends R, ? extends U>> function);
 
    /**
-    * Group by m pair stream.
+    * Groups the items in the stream using the given function that maps objects to key values
     *
-    * @param <U>      the type parameter
-    * @param function the function
-    * @return the m pair stream
+    * @param <U>      the key type parameter
+    * @param function the function that determines the key of the objects in the stream
+    * @return the new pair stream
     */
    <U> MPairStream<U, Iterable<T>> groupBy(SerializableFunction<? super T, ? extends U> function);
 
    /**
-    * Collect r.
+    * Performs a reduction on the string using hte given collector.
     *
-    * @param <R>       the type parameter
-    * @param collector the collector
-    * @return the r
+    * @param <R>       the component type of the collection after applying the collector
+    * @param collector the collector to use in reducing the stream
+    * @return the result of the collector
     */
    <R> R collect(Collector<? super T, T, R> collector);
 
    /**
-    * Collect list.
+    * Collects the items in the stream as a list
     *
-    * @return the list
+    * @return the list of items in the stream
     */
    List<T> collect();
 
    /**
-    * Reduce optional.
+    * Performs a reduction on the elements of this stream using the given binary operator.
     *
-    * @param reducer the reducer
-    * @return the optional
+    * @param reducer the binary operator used to combine two objects
+    * @return the optional describing the reduction
     */
    Optional<T> reduce(SerializableBinaryOperator<T> reducer);
 
    /**
-    * Fold t.
+    * Performs a reduction on the elements of this stream using the given binary operator.
     *
-    * @param zeroValue the zero value
-    * @param operator  the operator
-    * @return the t
+    * @param zeroValue The initial value
+    * @param operator  the binary operator used to combine two objects
+    * @return the optional describing the reduction
     */
    T fold(T zeroValue, SerializableBinaryOperator<T> operator);
 
    /**
-    * For each.
+    * Performs an operation on each item in the stream
     *
-    * @param consumer the consumer
+    * @param consumer the consumer action to perform
     */
    void forEach(SerializableConsumer<? super T> consumer);
 
    /**
-    * For each local.
+    * Performs an operation on each item in the stream ensuring that is done locally and not distributed.
     *
-    * @param consumer the consumer
+    * @param consumer the consumer action to perform
     */
    void forEachLocal(SerializableConsumer<? super T> consumer);
 
    /**
-    * Iterator iterator.
+    * Gets an iterator for the stream
     *
-    * @return the iterator
+    * @return the iterator of items in the stream
     */
    Iterator<T> iterator();
 
    /**
-    * First optional.
+    * Gets the first item in the stream
     *
-    * @return the optional
+    * @return the optional containing the first item
     */
    Optional<T> first();
 
    /**
-    * Sample m stream.
+    * Randomly samples <code>number</code> items from the stream.
     *
-    * @param withReplacement the with replacement
-    * @param number          the number
+    * @param withReplacement true allow a single item to be represented in the sample multiple times, false allow a
+    *                        single item to only be picked once.
+    * @param number          the number of items desired in the sample
     * @return the new stream
     */
    MStream<T> sample(boolean withReplacement, int number);
 
    /**
-    * Size long.
+    * The number of items in the stream
     *
-    * @return the long
+    * @return the number of items in the stream
     */
    long count();
 
    /**
-    * Is empty boolean.
+    * Determines if the stream is empty or not
     *
-    * @return the boolean
+    * @return True if empty, False otherwise
     */
    boolean isEmpty();
 
    /**
-    * Count by value map.
+    * Counts the number of times each item occurs in the stream
     *
-    * @return the map
+    * @return a map of object - long counts
     */
    Map<T, Long> countByValue();
 
    /**
-    * Distinct m stream.
+    * Removes duplicates from the stream
     *
-    * @return the new stream
+    * @return the new stream without duplicates
     */
    MStream<T> distinct();
 
    /**
-    * Limit m stream.
+    * Limits the stream to the first <code>number</code> items.
     *
-    * @param number the number
-    * @return the new stream
+    * @param number the number of items desired
+    * @return the new stream of size <code>number</code>
     */
    MStream<T> limit(long number);
 
    /**
-    * Take list.
+    * Takes the first <code>n</code> items from the stream.
     *
-    * @param n the n
-    * @return the list
+    * @param n the number of items to take
+    * @return a list of the first n items
     */
    List<T> take(int n);
 
    /**
-    * Skip m stream.
+    * Skips the first <code>n</code> items in the stream
     *
-    * @param n the n
+    * @param n the number of items in the stream
     * @return the new stream
     */
    MStream<T> skip(long n);
 
    /**
-    * On close.
+    * Sets the handler to call when the stream is closed. Typically, this is to clean up any open resources, such as
+    * file handles.
     *
-    * @param closeHandler the close handler
+    * @param closeHandler the handler to run when the stream is closed.
     */
    void onClose(SerializableRunnable closeHandler);
 
    /**
-    * Max optional.
+    * Returns the max item in the stream requiring that the items be comparable.
     *
-    * @return the optional
+    * @return the optional containing the max value
     */
    default Optional<T> max() {
       return min((t1, t2) -> Sorting.natural().reversed().compare(Cast.as(t1), Cast.as(t2)));
    }
 
    /**
-    * Min optional.
+    * Returns the min item in the stream requiring that the items be comparable.
     *
-    * @return the optional
+    * @return the optional containing the min value
     */
    default Optional<T> min() {
       return min((t1, t2) -> Sorting.natural().compare(Cast.as(t1), Cast.as(t2)));
    }
 
    /**
-    * Sorted m stream.
+    * Sorts the items in the stream in ascending or descending order. Requires items to implement the
+    * <code>Comparable</code> interface.
     *
-    * @param ascending the ascending
+    * @param ascending determines if the items should be sorted in ascending (true) or descending (false) order
     * @return the new stream
     */
-   MStream<T> sorted(boolean ascending);
+   default MStream<T> sorted(boolean ascending) {
+      return sorted(ascending, Cast::as);
+   }
 
    /**
-    * Max optional.
+    * Sorts the items in the stream in ascending or descending order using the given keyFunction to determine how to
+    * compare.
     *
-    * @param comparator the comparator
-    * @return the optional
+    * @param ascending   determines if the items should be sorted in ascending (true) or descending (false) order
+    * @param keyFunction function to use to convert the items in the stream to something that is comparable.
+    * @return the new stream
+    */
+   <R extends Comparable<R>> MStream<T> sorted(boolean ascending, SerializableFunction<? super T, ? extends R> keyFunction);
+
+   /**
+    * Returns the max item in the stream using the given comparator to compare items.
+    *
+    * @param comparator the comparator to use to compare values in the stream
+    * @return the optional containing the max value
     */
    Optional<T> max(SerializableComparator<? super T> comparator);
 
    /**
-    * Min optional.
+    * Returns the min item in the stream using the given comparator to compare items.
     *
-    * @param comparator the comparator
-    * @return the optional
+    * @param comparator the comparator to use to compare values in the stream
+    * @return the optional containing the min value
     */
    Optional<T> min(SerializableComparator<? super T> comparator);
 
    /**
-    * Zip m pair stream.
+    * <p>Zips (combines) this stream together with the given other creating a pair stream. For example, if this stream
+    * contains [1,2,3] and stream 2 contains [4,5,6] the result would be a pair stream containing the key value pairs
+    * [(1,4), (2,5), (3,6)]. Note that the length of the resulting stream will be the minimum of the two streams.</p>
     *
-    * @param <U>   the type parameter
-    * @param other the other
-    * @return the m pair stream
+    * @param <U>   the component type of the second stream
+    * @param other the stream making up the value in the resulting entries
+    * @return a new pair stream with keys from this stream and values for the other stream
     */
    <U> MPairStream<T, U> zip(MStream<U> other);
 
    /**
-    * Zip with index m pair stream.
+    * Creates a pair stream where the keys are items in this stream and values are the index (starting at 0) of the item
+    * in the stream.
     *
-    * @return the m pair stream
+    * @return the new pair stream
     */
    MPairStream<T, Long> zipWithIndex();
 
    /**
-    * Map to double m double stream.
+    * Converts this stream into a java stream
     *
-    * @param function the function
-    * @return the m double stream
+    * @return the java stream
+    */
+   default Stream<T> javaStream() {
+      return Streams.asStream(iterator());
+   }
+
+   /**
+    * Maps objects in this stream to double values
+    *
+    * @param function the function to convert objects to doubles
+    * @return the new double stream
     */
    MDoubleStream mapToDouble(SerializableToDoubleFunction<? super T> function);
 
    /**
-    * Cache m stream.
+    * Caches the stream.
     *
-    * @return the new stream
+    * @return the cached stream
     */
    MStream<T> cache();
 
    /**
-    * Union m stream.
+    * Unions this stream with another.
     *
-    * @param other the other
+    * @param other the other stream to add to this one.
     * @return the new stream
     */
    MStream<T> union(MStream<T> other);
 
    /**
-    * Save as text file.
+    * Save as the stream to a text file at the given location. Writing may result in multiple files being created.
     *
-    * @param location the location
+    * @param location the location to write the stream to
     */
    void saveAsTextFile(Resource location);
 
    /**
-    * Save as text file.
+    * Save as the stream to a text file at the given location. Writing may result in multiple files being created.
     *
-    * @param location the location
+    * @param location the location to write the stream to
     */
    default void saveAsTextFile(@NonNull String location) {
       saveAsTextFile(Resources.from(location));
    }
 
    /**
-    * Parallel m stream.
+    * Ensures that the stream is parallel or distributed.
     *
     * @return the new stream
     */
    MStream<T> parallel();
 
    /**
-    * Shuffle m stream.
+    * Shuffles the items in the stream.
     *
     * @return the new stream
     */
@@ -348,25 +376,24 @@ public interface MStream<T> extends Closeable {
    }
 
    /**
-    * Shuffle m stream.
+    * Shuffles the items in the string using the given <code>Random</code> object.
     *
-    * @param random the random
+    * @param random the random number generator
     * @return the new stream
     */
    MStream<T> shuffle(Random random);
 
-
    /**
-    * Repartition m stream.
+    * Repartitions the stream to the given number of partitions. This may be a no-op for some streams, i.e. Local
+    * Streams.
     *
-    * @param numPartitions the num partitions
+    * @param numPartitions the number of partitions the stream should have
     * @return the new stream
     */
    MStream<T> repartition(int numPartitions);
 
-
    /**
-    * Gets context.
+    * Gets the context used to create the stream
     *
     * @return the context
     */

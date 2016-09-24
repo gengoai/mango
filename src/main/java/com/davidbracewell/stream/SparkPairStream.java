@@ -50,7 +50,7 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    public SparkPairStream(JavaSparkContext context, Map<? extends T, ? extends U> map) {
       List<scala.Tuple2<T, U>> tuples = new ArrayList<>();
       map.forEach((k, v) -> tuples.add(new scala.Tuple2<>(k, v)));
-      this.rdd = context.parallelize(tuples).mapToPair(t -> t);
+      this.rdd = context.parallelize(tuples).mapToPair(t -> Cast.as(t));
    }
 
    /**

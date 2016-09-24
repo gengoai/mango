@@ -66,7 +66,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
     *
     * @param rdd the rdd
     */
-   SparkStream(JavaRDD<T> rdd) {
+   public SparkStream(@NonNull JavaRDD<T> rdd) {
       this.rdd = rdd;
    }
 
@@ -90,7 +90,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public StreamingContext getContext() {
+   public SparkStreamingContext getContext() {
       return SparkStreamingContext.contextOf(this);
    }
 
@@ -102,7 +102,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public MStream<T> filter(@NonNull SerializablePredicate<? super T> predicate) {
+   public SparkStream<T> filter(@NonNull SerializablePredicate<? super T> predicate) {
       return new SparkStream<>(rdd.filter(t -> {
          Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
          return predicate.test(t);
@@ -110,7 +110,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public <R> MStream<R> map(@NonNull SerializableFunction<? super T, ? extends R> function) {
+   public <R> SparkStream<R> map(@NonNull SerializableFunction<? super T, ? extends R> function) {
       return new SparkStream<>(rdd.map(t -> {
          Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
          return function.apply(t);
@@ -118,7 +118,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public <R> MStream<R> flatMap(@NonNull SerializableFunction<? super T, Stream<? extends R>> mapper) {
+   public <R> SparkStream<R> flatMap(@NonNull SerializableFunction<? super T, Stream<? extends R>> mapper) {
       return new SparkStream<>(rdd.flatMap(t -> {
          Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
          return Cast.as(mapper.apply(t).iterator());
@@ -126,7 +126,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public <R, U> MPairStream<R, U> flatMapToPair(@NonNull SerializableFunction<? super T, Stream<? extends Map.Entry<? extends R, ? extends U>>> function) {
+   public <R, U> SparkPairStream<R, U> flatMapToPair(@NonNull SerializableFunction<? super T, Stream<? extends Map.Entry<? extends R, ? extends U>>> function) {
       return new SparkPairStream<>(rdd.flatMapToPair(t -> {
          Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
          return Cast.as(function.apply(t).map(e -> new Tuple2<>(e.getKey(), e.getValue())).iterator());
@@ -134,7 +134,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public <R, U> MPairStream<R, U> mapToPair(@NonNull SerializableFunction<? super T, ? extends Map.Entry<? extends R, ? extends U>> function) {
+   public <R, U> SparkPairStream<R, U> mapToPair(@NonNull SerializableFunction<? super T, ? extends Map.Entry<? extends R, ? extends U>> function) {
       return new SparkPairStream<>(rdd.mapToPair(t -> {
          Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
          Map.Entry<R, U> entry = Cast.as(function.apply(t));
@@ -143,7 +143,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public <U> MPairStream<U, Iterable<T>> groupBy(@NonNull SerializableFunction<? super T, ? extends U> function) {
+   public <U> SparkPairStream<U, Iterable<T>> groupBy(@NonNull SerializableFunction<? super T, ? extends U> function) {
       return new SparkPairStream<>(rdd.groupBy(function::apply));
    }
 
@@ -200,12 +200,12 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public MStream<T> sample(boolean withReplacement, int number) {
+   public SparkStream<T> sample(boolean withReplacement, int number) {
       if (number <= 0) {
          return getContext().empty();
       }
       if (withReplacement) {
-         MStream<T> sample = new SparkStream<>(rdd.sample(true, 0.5));
+         SparkStream<T> sample = new SparkStream<>(rdd.sample(true, 0.5));
          while (sample.count() < number) {
             sample = sample.union(new SparkStream<>(rdd.sample(true, 0.5)));
          }
@@ -233,12 +233,12 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public MStream<T> distinct() {
+   public SparkStream<T> distinct() {
       return new SparkStream<>(rdd.distinct());
    }
 
    @Override
-   public MStream<T> limit(long number) {
+   public SparkStream<T> limit(long number) {
       if (number <= 0) {
          return SparkStreamingContext.INSTANCE.empty();
       }
@@ -254,7 +254,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public MStream<T> skip(long n) {
+   public SparkStream<T> skip(long n) {
       if (n > count()) {
          return getContext().empty();
       } else if (n <= 0) {
@@ -268,9 +268,24 @@ public class SparkStream<T> implements MStream<T>, Serializable {
       this.onClose = closeHandler;
    }
 
+
+   /**
+    * Maps the objects in the stream by block using the given function
+    *
+    * @param <R>      the component type of the returning stream
+    * @param function the function to use to map objects
+    * @return the new stream
+    */
+   public <R> SparkStream<R> mapPartitions(@NonNull SerializableFunction<Iterator<? super T>, ? extends R> function) {
+      return new SparkStream<>(rdd.mapPartitions(iterator -> {
+         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         return Cast.as(function.apply(iterator));
+      }));
+   }
+
    @Override
-   public MStream<T> sorted(boolean ascending) {
-      return new SparkStream<>(rdd.sortBy(t -> t, ascending, rdd.partitions().size()));
+   public <R extends Comparable<R>> MStream<T> sorted(boolean ascending, @NonNull SerializableFunction<? super T, ? extends R> keyFunction) {
+      return new SparkStream<>(rdd.sortBy(keyFunction::apply, ascending, rdd.partitions().size()));
    }
 
    @Override
@@ -284,7 +299,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public <U> MPairStream<T, U> zip(@NonNull MStream<U> other) {
+   public <U> SparkPairStream<T, U> zip(@NonNull MStream<U> other) {
       if (other instanceof SparkStream) {
          return new SparkPairStream<>(rdd.zip(Cast.<SparkStream<U>>as(other).rdd));
       }
@@ -293,13 +308,13 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public MPairStream<T, Long> zipWithIndex() {
+   public SparkPairStream<T, Long> zipWithIndex() {
       return new SparkPairStream<>(rdd.zipWithIndex());
    }
 
 
    @Override
-   public MDoubleStream mapToDouble(@NonNull SerializableToDoubleFunction<? super T> function) {
+   public SparkDoubleStream mapToDouble(@NonNull SerializableToDoubleFunction<? super T> function) {
       return new SparkDoubleStream(rdd.mapToDouble(t -> {
          Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
          return function.applyAsDouble(t);
@@ -307,12 +322,12 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public MStream<T> cache() {
+   public SparkStream<T> cache() {
       return new SparkStream<>(rdd.cache());
    }
 
    @Override
-   public MStream<T> union(@NonNull MStream<T> other) {
+   public SparkStream<T> union(@NonNull MStream<T> other) {
       if (isEmpty()) {
          return new SparkStream<>(other);
       } else if (other instanceof SparkStream) {
@@ -338,12 +353,17 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
 
    @Override
-   public MStream<T> parallel() {
+   public SparkStream<T> parallel() {
       return this;
    }
 
    @Override
-   public MStream<T> shuffle(@NonNull Random random) {
+   public SparkStream<T> shuffle() {
+      return shuffle(new Random());
+   }
+
+   @Override
+   public SparkStream<T> shuffle(@NonNull Random random) {
       return new SparkStream<>(rdd.sortBy(t -> random.nextDouble(),
                                           true,
                                           rdd.getNumPartitions()
@@ -351,7 +371,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public MStream<T> repartition(int numPartitions) {
+   public SparkStream<T> repartition(int numPartitions) {
       return new SparkStream<>(rdd.repartition(numPartitions));
    }
 

@@ -3,6 +3,7 @@ package com.davidbracewell.stream;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.*;
 import com.davidbracewell.io.resource.Resource;
+import lombok.NonNull;
 
 import java.io.IOException;
 import java.util.*;
@@ -175,6 +176,11 @@ public class ReusableLocalStream<T> implements MStream<T> {
    @Override
    public MStream<T> sorted(boolean ascending) {
       return getStream().sorted(ascending);
+   }
+
+   @Override
+   public <R extends Comparable<R>> MStream<T> sorted(boolean ascending, @NonNull SerializableFunction<? super T, ? extends R> keyFunction) {
+      return getStream().sorted(ascending, keyFunction);
    }
 
    @Override
