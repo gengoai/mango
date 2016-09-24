@@ -350,7 +350,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
 
    @Override
    public StreamingContext getContext() {
-      return JavaStreamingContext.INSTANCE;
+      return LocalStreamingContext.INSTANCE;
    }
 
    @Override

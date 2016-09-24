@@ -1,42 +1,51 @@
 package com.davidbracewell.stream;
 
 import com.davidbracewell.conversion.Cast;
-import com.davidbracewell.function.SerializableBiConsumer;
-import com.davidbracewell.function.SerializableBiFunction;
-import com.davidbracewell.function.SerializableBiPredicate;
-import com.davidbracewell.function.SerializableBinaryOperator;
-import com.davidbracewell.function.SerializableComparator;
-import com.davidbracewell.function.SerializablePredicate;
-import com.davidbracewell.function.SerializableRunnable;
-import com.davidbracewell.function.SerializableToDoubleBiFunction;
+import com.davidbracewell.function.*;
 import com.davidbracewell.tuple.Tuple2;
 import lombok.NonNull;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
 import java.io.Serializable;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 /**
+ * The type Spark pair stream.
+ *
+ * @param <T> the type parameter
+ * @param <U> the type parameter
  * @author David B. Bracewell
  */
-public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
+class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
   private static final long serialVersionUID = 1L;
   private final JavaPairRDD<T, U> rdd;
   private SerializableRunnable onClose;
 
+  /**
+   * Instantiates a new Spark pair stream.
+   *
+   * @param rdd the rdd
+   */
   public SparkPairStream(JavaPairRDD<T, U> rdd) {
     this.rdd = rdd;
   }
 
+  /**
+   * Instantiates a new Spark pair stream.
+   *
+   * @param map the map
+   */
   public SparkPairStream(Map<? extends T, ? extends U> map) {
     this(SparkStreamingContext.INSTANCE.sparkContext(), map);
   }
 
+  /**
+   * Instantiates a new Spark pair stream.
+   *
+   * @param context the context
+   * @param map     the map
+   */
   public SparkPairStream(JavaSparkContext context, Map<? extends T, ? extends U> map) {
     List<scala.Tuple2<T, U>> tuples = new LinkedList<>();
     map.forEach((k, v) -> tuples.add(new scala.Tuple2<>(k, v)));
@@ -45,6 +54,14 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
       .mapToPair(t -> t);
   }
 
+  /**
+   * To map entry map . entry.
+   *
+   * @param <K>    the type parameter
+   * @param <V>    the type parameter
+   * @param tuple2 the tuple 2
+   * @return the map . entry
+   */
   static <K, V> Map.Entry<K, V> toMapEntry(scala.Tuple2<K, V> tuple2) {
     return Tuple2.of(tuple2._1(), tuple2._2());
   }
@@ -173,6 +190,11 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
     return this;
   }
 
+  /**
+   * Gets rdd.
+   *
+   * @return the rdd
+   */
   JavaPairRDD<T, U> getRDD() {
     return rdd;
   }

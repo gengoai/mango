@@ -56,32 +56,14 @@ public enum SparkStreamingContext implements StreamingContext {
    INSTANCE;
 
    /**
-    * The constant SPARK_MASTER.
-    */
-   public static final String SPARK_MASTER = "spark.master";
-   /**
     * The constant SPARK_APPNAME.
     */
    public static final String SPARK_APPNAME = "spark.appName";
-
+   /**
+    * The constant SPARK_MASTER.
+    */
+   public static final String SPARK_MASTER = "spark.master";
    private static volatile JavaSparkContext context;
-
-
-   private static JavaSparkContext getSparkContext() {
-      if (context == null) {
-         synchronized (SparkStreamingContext.class) {
-            if (context == null) {
-               SparkConf conf = new SparkConf();
-               if (Config.hasProperty(SPARK_MASTER)) {
-                  conf.setMaster(Config.get(SPARK_MASTER).asString());
-               }
-               conf.setAppName(Config.get(SPARK_APPNAME).asString(StringUtils.randomHexString(20)));
-               context = new JavaSparkContext(conf);
-            }
-         }
-      }
-      return context;
-   }
 
    /**
     * Context of spark streaming context.
@@ -134,13 +116,51 @@ public enum SparkStreamingContext implements StreamingContext {
       return SparkStreamingContext.INSTANCE;
    }
 
+   private static JavaSparkContext getSparkContext() {
+      if (context == null) {
+         synchronized (SparkStreamingContext.class) {
+            if (context == null) {
+               SparkConf conf = new SparkConf();
+               if (Config.hasProperty(SPARK_MASTER)) {
+                  conf.setMaster(Config.get(SPARK_MASTER).asString());
+               }
+               conf.setAppName(Config.get(SPARK_APPNAME).asString(StringUtils.randomHexString(20)));
+               context = new JavaSparkContext(conf);
+            }
+         }
+      }
+      return context;
+   }
+
    /**
-    * Spark context java spark context.
+    * Broadcast broadcast.
     *
-    * @return the java spark context
+    * @param <T>    the type parameter
+    * @param object the object
+    * @return the broadcast
     */
-   public JavaSparkContext sparkContext() {
-      return getSparkContext();
+   public <T> Broadcast<T> broadcast(T object) {
+      return getSparkContext().broadcast(object);
+   }
+
+   @Override
+   public void close() {
+      context.close();
+   }
+
+   @Override
+   public <E> MCounterAccumulator<E> counterAccumulator(String name) {
+      CounterAccumulatorV2<E> accumulator = new CounterAccumulatorV2<>();
+      accumulator.register(sparkContext().sc(), Option.apply(name), false);
+      return new SparkCounterAccumulator<>(accumulator);
+   }
+
+   @Override
+   public MDoubleAccumulator doubleAccumulator(double initialValue, String name) {
+      DoubleAccumulator accumulator = new DoubleAccumulator();
+      accumulator.setValue(initialValue);
+      accumulator.register(sparkContext().sc(), Option.apply(name), false);
+      return new SparkDoubleAccumulator(accumulator);
    }
 
    @Override
@@ -155,25 +175,50 @@ public enum SparkStreamingContext implements StreamingContext {
    }
 
    @Override
-   public MDoubleStream doubleStream(double... values) {
-      if (values == null) {
-         return empty().mapToDouble(o -> Double.NaN);
-      }
-      return new SparkDoubleStream(getSparkContext()
-                                      .parallelizeDoubles(DoubleStream.of(values)
-                                                                      .boxed()
-                                                                      .collect(Collectors.toList()))
-      );
-   }
-
-   @Override
    public <T> MStream<T> empty() {
       return new SparkStream<>(getSparkContext().parallelize(new ArrayList<>()));
    }
 
    @Override
-   public void close() {
-      context.close();
+   public <E> MListAccumulator<E> listAccumulator(String name) {
+      CollectionAccumulator<E> accumulator = new CollectionAccumulator<>();
+      accumulator.register(sparkContext().sc(), Option.apply(name), false);
+      return new SparkListAccumulator<>(accumulator);
+   }
+
+   @Override
+   public MLongAccumulator longAccumulator(long initialValue, String name) {
+      LongAccumulator accumulator = new LongAccumulator();
+      accumulator.setValue(initialValue);
+      accumulator.register(sparkContext().sc(), Option.apply(name), false);
+      return new SparkLongAccumulator(accumulator);
+   }
+
+   @Override
+   public <K, V> MMapAccumulator<K, V> mapAccumulator(String name) {
+      MapAccumulatorV2<K, V> accumulator = new MapAccumulatorV2<>();
+      accumulator.register(sparkContext().sc(), Option.apply(name), false);
+      return new SparkMapAccumulator<>(accumulator);
+   }
+
+   @Override
+   public <K1, K2> MMultiCounterAccumulator<K1, K2> multiCounterAccumulator(String name) {
+      MultiCounterAccumulatorV2<K1, K2> accumulator = new MultiCounterAccumulatorV2<>();
+      accumulator.register(sparkContext().sc(), Option.apply(name), false);
+      return new SparkMultiCounterAccumulator<>(accumulator);
+   }
+
+   @Override
+   public <K, V> MPairStream<K, V> pairStream(Map<? extends K, ? extends V> map) {
+      if (map == null) {
+         return new SparkPairStream<>(new HashMap<K, V>());
+      }
+      return new SparkPairStream<>(map);
+   }
+
+   @Override
+   public <K, V> MPairStream<K, V> pairStream(Collection<Map.Entry<? extends K, ? extends V>> tuples) {
+      return stream(tuples).mapToPair(t -> t);
    }
 
    @Override
@@ -181,6 +226,22 @@ public enum SparkStreamingContext implements StreamingContext {
       return new SparkStream<>(
                                  IntStream.range(startInclusive, endExclusive).boxed().collect(Collectors.toList())
       );
+   }
+
+   /**
+    * Spark context java spark context.
+    *
+    * @return the java spark context
+    */
+   public JavaSparkContext sparkContext() {
+      return getSparkContext();
+   }
+
+   @Override
+   public MStatisticsAccumulator statisticsAccumulator(String name) {
+      StatisticsAccumulatorV2 accumulator = new StatisticsAccumulatorV2();
+      accumulator.register(sparkContext().sc(), Option.apply(name), false);
+      return new SparkStatisticsAccumulator(accumulator);
    }
 
    @Override
@@ -201,32 +262,6 @@ public enum SparkStreamingContext implements StreamingContext {
    }
 
    @Override
-   public <K, V> MPairStream<K, V> pairStream(Map<? extends K, ? extends V> map) {
-      if (map == null) {
-         return new SparkPairStream<>(new HashMap<K, V>());
-      }
-      return new SparkPairStream<>(map);
-   }
-
-   @Override
-   public <K, V> MPairStream<K, V> pairStream(Collection<Map.Entry<K, V>> tuples) {
-      return stream(tuples).mapToPair(t -> t);
-   }
-
-   @Override
-   public <T> MStream<T> stream(Collection<? extends T> collection) {
-      JavaRDD<T> rdd;
-      if (collection == null) {
-         return empty();
-      } else if (collection instanceof List) {
-         rdd = getSparkContext().parallelize(Cast.<List<T>>as(collection));
-      } else {
-         rdd = getSparkContext().parallelize(new ArrayList<T>(collection));
-      }
-      return new SparkStream<>(rdd);
-   }
-
-   @Override
    public <T> MStream<T> stream(Iterable<? extends T> iterable) {
       JavaRDD<T> rdd;
       if (iterable == null) {
@@ -238,7 +273,6 @@ public enum SparkStreamingContext implements StreamingContext {
       }
       return new SparkStream<>(rdd);
    }
-
 
    @Override
    public MStream<String> textFile(String location) {
@@ -254,69 +288,6 @@ public enum SparkStreamingContext implements StreamingContext {
          return empty();
       }
       return textFile(location.path());
-   }
-
-   /**
-    * Broadcast broadcast.
-    *
-    * @param <T>    the type parameter
-    * @param object the object
-    * @return the broadcast
-    */
-   public <T> Broadcast<T> broadcast(T object) {
-      return getSparkContext().broadcast(object);
-   }
-
-
-   @Override
-   public MDoubleAccumulator doubleAccumulator(double initialValue, String name) {
-      DoubleAccumulator accumulator = new DoubleAccumulator();
-      accumulator.setValue(initialValue);
-      accumulator.register(sparkContext().sc(), Option.apply(name), false);
-      return new SparkDoubleAccumulator(accumulator);
-   }
-
-   @Override
-   public MLongAccumulator longAccumulator(long initialValue, String name) {
-      LongAccumulator accumulator = new LongAccumulator();
-      accumulator.setValue(initialValue);
-      accumulator.register(sparkContext().sc(), Option.apply(name), false);
-      return new SparkLongAccumulator(accumulator);
-   }
-
-   @Override
-   public <E> MCounterAccumulator<E> counterAccumulator(String name) {
-      CounterAccumulatorV2<E> accumulator = new CounterAccumulatorV2<>();
-      accumulator.register(sparkContext().sc(), Option.apply(name), false);
-      return new SparkCounterAccumulator<>(accumulator);
-   }
-
-   @Override
-   public <K1, K2> MMultiCounterAccumulator<K1, K2> multiCounterAccumulator(String name) {
-      MultiCounterAccumulatorV2<K1, K2> accumulator = new MultiCounterAccumulatorV2<>();
-      accumulator.register(sparkContext().sc(), Option.apply(name), false);
-      return new SparkMultiCounterAccumulator<>(accumulator);
-   }
-
-   @Override
-   public <E> MListAccumulator<E> listAccumulator(String name) {
-      CollectionAccumulator<E> accumulator = new CollectionAccumulator<>();
-      accumulator.register(sparkContext().sc(), Option.apply(name), false);
-      return new SparkListAccumulator<>(accumulator);
-   }
-
-   @Override
-   public <K, V> MMapAccumulator<K, V> mapAccumulator(String name) {
-      MapAccumulatorV2<K, V> accumulator = new MapAccumulatorV2<>();
-      accumulator.register(sparkContext().sc(), Option.apply(name), false);
-      return new SparkMapAccumulator<>(accumulator);
-   }
-
-   @Override
-   public MStatisticsAccumulator statisticsAccumulator(String name) {
-      StatisticsAccumulatorV2 accumulator = new StatisticsAccumulatorV2();
-      accumulator.register(sparkContext().sc(), Option.apply(name), false);
-      return new SparkStatisticsAccumulator(accumulator);
    }
 
 

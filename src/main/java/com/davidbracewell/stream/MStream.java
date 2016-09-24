@@ -41,321 +41,321 @@ import java.util.stream.Collector;
  */
 public interface MStream<T> extends Closeable {
 
-  default JavaRDD<T> asRDD() {
-    return new SparkStream<>(this).asRDD();
-  }
+   default JavaRDD<T> asRDD() {
+      return new SparkStream<>(this).asRDD();
+   }
 
-  SerializableRunnable getOnCloseHandler();
+   SerializableRunnable getOnCloseHandler();
 
-  /**
-   * Filter m stream.
-   *
-   * @param predicate the predicate
-   * @return the m stream
-   */
-  MStream<T> filter(SerializablePredicate<? super T> predicate);
+   /**
+    * Filter m stream.
+    *
+    * @param predicate the predicate
+    * @return the m stream
+    */
+   MStream<T> filter(SerializablePredicate<? super T> predicate);
 
-  /**
-   * Map m stream.
-   *
-   * @param <R>      the type parameter
-   * @param function the function
-   * @return the m stream
-   */
-  <R> MStream<R> map(SerializableFunction<? super T, ? extends R> function);
+   /**
+    * Map m stream.
+    *
+    * @param <R>      the type parameter
+    * @param function the function
+    * @return the m stream
+    */
+   <R> MStream<R> map(SerializableFunction<? super T, ? extends R> function);
 
-  /**
-   * Flat map m stream.
-   *
-   * @param <R>    the type parameter
-   * @param mapper the mapper
-   * @return the m stream
-   */
-  <R> MStream<R> flatMap(SerializableFunction<? super T, Iterable<? extends R>> mapper);
+   /**
+    * Flat map m stream.
+    *
+    * @param <R>    the type parameter
+    * @param mapper the mapper
+    * @return the m stream
+    */
+   <R> MStream<R> flatMap(SerializableFunction<? super T, Iterable<? extends R>> mapper);
 
-  /**
-   * Flat map to pair m pair stream.
-   *
-   * @param <R>      the type parameter
-   * @param <U>      the type parameter
-   * @param function the function
-   * @return the m pair stream
-   */
-  <R, U> MPairStream<R, U> flatMapToPair(SerializableFunction<? super T, ? extends Iterable<? extends Map.Entry<? extends R, ? extends U>>> function);
+   /**
+    * Flat map to pair m pair stream.
+    *
+    * @param <R>      the type parameter
+    * @param <U>      the type parameter
+    * @param function the function
+    * @return the m pair stream
+    */
+   <R, U> MPairStream<R, U> flatMapToPair(SerializableFunction<? super T, ? extends Iterable<? extends Map.Entry<? extends R, ? extends U>>> function);
 
-  /**
-   * Map to pair m pair stream.
-   *
-   * @param <R>      the type parameter
-   * @param <U>      the type parameter
-   * @param function the function
-   * @return the m pair stream
-   */
-  <R, U> MPairStream<R, U> mapToPair(SerializableFunction<? super T, ? extends Map.Entry<? extends R, ? extends U>> function);
+   /**
+    * Map to pair m pair stream.
+    *
+    * @param <R>      the type parameter
+    * @param <U>      the type parameter
+    * @param function the function
+    * @return the m pair stream
+    */
+   <R, U> MPairStream<R, U> mapToPair(SerializableFunction<? super T, ? extends Map.Entry<? extends R, ? extends U>> function);
 
-  /**
-   * Group by m pair stream.
-   *
-   * @param <U>      the type parameter
-   * @param function the function
-   * @return the m pair stream
-   */
-  <U> MPairStream<U, Iterable<T>> groupBy(SerializableFunction<? super T, ? extends U> function);
+   /**
+    * Group by m pair stream.
+    *
+    * @param <U>      the type parameter
+    * @param function the function
+    * @return the m pair stream
+    */
+   <U> MPairStream<U, Iterable<T>> groupBy(SerializableFunction<? super T, ? extends U> function);
 
-  /**
-   * Collect r.
-   *
-   * @param <R>       the type parameter
-   * @param collector the collector
-   * @return the r
-   */
-  <R> R collect(Collector<? super T, T, R> collector);
+   /**
+    * Collect r.
+    *
+    * @param <R>       the type parameter
+    * @param collector the collector
+    * @return the r
+    */
+   <R> R collect(Collector<? super T, T, R> collector);
 
-  /**
-   * Collect list.
-   *
-   * @return the list
-   */
-  List<T> collect();
+   /**
+    * Collect list.
+    *
+    * @return the list
+    */
+   List<T> collect();
 
-  /**
-   * Reduce optional.
-   *
-   * @param reducer the reducer
-   * @return the optional
-   */
-  Optional<T> reduce(SerializableBinaryOperator<T> reducer);
+   /**
+    * Reduce optional.
+    *
+    * @param reducer the reducer
+    * @return the optional
+    */
+   Optional<T> reduce(SerializableBinaryOperator<T> reducer);
 
-  /**
-   * Fold t.
-   *
-   * @param zeroValue the zero value
-   * @param operator  the operator
-   * @return the t
-   */
-  T fold(T zeroValue, SerializableBinaryOperator<T> operator);
+   /**
+    * Fold t.
+    *
+    * @param zeroValue the zero value
+    * @param operator  the operator
+    * @return the t
+    */
+   T fold(T zeroValue, SerializableBinaryOperator<T> operator);
 
-  /**
-   * For each.
-   *
-   * @param consumer the consumer
-   */
-  void forEach(SerializableConsumer<? super T> consumer);
+   /**
+    * For each.
+    *
+    * @param consumer the consumer
+    */
+   void forEach(SerializableConsumer<? super T> consumer);
 
-  /**
-   * For each local.
-   *
-   * @param consumer the consumer
-   */
-  void forEachLocal(SerializableConsumer<? super T> consumer);
+   /**
+    * For each local.
+    *
+    * @param consumer the consumer
+    */
+   void forEachLocal(SerializableConsumer<? super T> consumer);
 
-  /**
-   * Iterator iterator.
-   *
-   * @return the iterator
-   */
-  Iterator<T> iterator();
+   /**
+    * Iterator iterator.
+    *
+    * @return the iterator
+    */
+   Iterator<T> iterator();
 
-  /**
-   * First optional.
-   *
-   * @return the optional
-   */
-  Optional<T> first();
+   /**
+    * First optional.
+    *
+    * @return the optional
+    */
+   Optional<T> first();
 
-  /**
-   * Sample m stream.
-   *
-   * @param number the number
-   * @return the m stream
-   */
-  MStream<T> sample(boolean withReplacement, int number);
+   /**
+    * Sample m stream.
+    *
+    * @param number the number
+    * @return the m stream
+    */
+   MStream<T> sample(boolean withReplacement, int number);
 
-  /**
-   * Size long.
-   *
-   * @return the long
-   */
-  long count();
+   /**
+    * Size long.
+    *
+    * @return the long
+    */
+   long count();
 
-  /**
-   * Is empty boolean.
-   *
-   * @return the boolean
-   */
-  boolean isEmpty();
+   /**
+    * Is empty boolean.
+    *
+    * @return the boolean
+    */
+   boolean isEmpty();
 
-  /**
-   * Count by value map.
-   *
-   * @return the map
-   */
-  Map<T, Long> countByValue();
+   /**
+    * Count by value map.
+    *
+    * @return the map
+    */
+   Map<T, Long> countByValue();
 
-  /**
-   * Distinct m stream.
-   *
-   * @return the m stream
-   */
-  MStream<T> distinct();
+   /**
+    * Distinct m stream.
+    *
+    * @return the m stream
+    */
+   MStream<T> distinct();
 
-  /**
-   * Limit m stream.
-   *
-   * @param number the number
-   * @return the m stream
-   */
-  MStream<T> limit(long number);
+   /**
+    * Limit m stream.
+    *
+    * @param number the number
+    * @return the m stream
+    */
+   MStream<T> limit(long number);
 
-  /**
-   * Take list.
-   *
-   * @param n the n
-   * @return the list
-   */
-  List<T> take(int n);
+   /**
+    * Take list.
+    *
+    * @param n the n
+    * @return the list
+    */
+   List<T> take(int n);
 
-  /**
-   * Skip m stream.
-   *
-   * @param n the n
-   * @return the m stream
-   */
-  MStream<T> skip(long n);
+   /**
+    * Skip m stream.
+    *
+    * @param n the n
+    * @return the m stream
+    */
+   MStream<T> skip(long n);
 
-  /**
-   * On close.
-   *
-   * @param closeHandler the close handler
-   */
-  void onClose(SerializableRunnable closeHandler);
+   /**
+    * On close.
+    *
+    * @param closeHandler the close handler
+    */
+   void onClose(SerializableRunnable closeHandler);
 
-  /**
-   * Max optional.
-   *
-   * @return the optional
-   */
-  default Optional<T> max() {
-    return min((t1, t2) -> Sorting.natural().reversed().compare(Cast.as(t1), Cast.as(t2)));
-  }
+   /**
+    * Max optional.
+    *
+    * @return the optional
+    */
+   default Optional<T> max() {
+      return min((t1, t2) -> Sorting.natural().reversed().compare(Cast.as(t1), Cast.as(t2)));
+   }
 
-  /**
-   * Min optional.
-   *
-   * @return the optional
-   */
-  default Optional<T> min() {
-    return min((t1, t2) -> Sorting.natural().compare(Cast.as(t1), Cast.as(t2)));
-  }
+   /**
+    * Min optional.
+    *
+    * @return the optional
+    */
+   default Optional<T> min() {
+      return min((t1, t2) -> Sorting.natural().compare(Cast.as(t1), Cast.as(t2)));
+   }
 
-  /**
-   * Sorted m stream.
-   *
-   * @param ascending the ascending
-   * @return the m stream
-   */
-  MStream<T> sorted(boolean ascending);
+   /**
+    * Sorted m stream.
+    *
+    * @param ascending the ascending
+    * @return the m stream
+    */
+   MStream<T> sorted(boolean ascending);
 
-  /**
-   * Max optional.
-   *
-   * @param comparator the comparator
-   * @return the optional
-   */
-  Optional<T> max(SerializableComparator<? super T> comparator);
+   /**
+    * Max optional.
+    *
+    * @param comparator the comparator
+    * @return the optional
+    */
+   Optional<T> max(SerializableComparator<? super T> comparator);
 
-  /**
-   * Min optional.
-   *
-   * @param comparator the comparator
-   * @return the optional
-   */
-  Optional<T> min(SerializableComparator<? super T> comparator);
+   /**
+    * Min optional.
+    *
+    * @param comparator the comparator
+    * @return the optional
+    */
+   Optional<T> min(SerializableComparator<? super T> comparator);
 
-  /**
-   * Zip m pair stream.
-   *
-   * @param <U>   the type parameter
-   * @param other the other
-   * @return the m pair stream
-   */
-  <U> MPairStream<T, U> zip(MStream<U> other);
+   /**
+    * Zip m pair stream.
+    *
+    * @param <U>   the type parameter
+    * @param other the other
+    * @return the m pair stream
+    */
+   <U> MPairStream<T, U> zip(MStream<U> other);
 
-  /**
-   * Zip with index m pair stream.
-   *
-   * @return the m pair stream
-   */
-  MPairStream<T, Long> zipWithIndex();
+   /**
+    * Zip with index m pair stream.
+    *
+    * @return the m pair stream
+    */
+   MPairStream<T, Long> zipWithIndex();
 
-  /**
-   * Map to double m double stream.
-   *
-   * @param function the function
-   * @return the m double stream
-   */
-  MDoubleStream mapToDouble(SerializableToDoubleFunction<? super T> function);
+   /**
+    * Map to double m double stream.
+    *
+    * @param function the function
+    * @return the m double stream
+    */
+   MDoubleStream mapToDouble(SerializableToDoubleFunction<? super T> function);
 
-  /**
-   * Cache m stream.
-   *
-   * @return the m stream
-   */
-  MStream<T> cache();
+   /**
+    * Cache m stream.
+    *
+    * @return the m stream
+    */
+   MStream<T> cache();
 
-  /**
-   * Union m stream.
-   *
-   * @param other the other
-   * @return the m stream
-   */
-  MStream<T> union(MStream<T> other);
+   /**
+    * Union m stream.
+    *
+    * @param other the other
+    * @return the m stream
+    */
+   MStream<T> union(MStream<T> other);
 
-  /**
-   * Save as text file.
-   *
-   * @param location the location
-   */
-  void saveAsTextFile(Resource location);
+   /**
+    * Save as text file.
+    *
+    * @param location the location
+    */
+   void saveAsTextFile(Resource location);
 
-  /**
-   * Save as text file.
-   *
-   * @param location the location
-   */
-  default void saveAsTextFile(@NonNull String location) {
-    saveAsTextFile(Resources.from(location));
-  }
+   /**
+    * Save as text file.
+    *
+    * @param location the location
+    */
+   default void saveAsTextFile(@NonNull String location) {
+      saveAsTextFile(Resources.from(location));
+   }
 
-  /**
-   * Parallel m stream.
-   *
-   * @return the m stream
-   */
-  MStream<T> parallel();
+   /**
+    * Parallel m stream.
+    *
+    * @return the m stream
+    */
+   MStream<T> parallel();
 
-  /**
-   * Shuffle m stream.
-   *
-   * @return the m stream
-   */
-  default MStream<T> shuffle() {
-    return shuffle(new Random());
-  }
+   /**
+    * Shuffle m stream.
+    *
+    * @return the m stream
+    */
+   default MStream<T> shuffle() {
+      return shuffle(new Random());
+   }
 
-  /**
-   * Shuffle m stream.
-   *
-   * @param random the random
-   * @return the m stream
-   */
-  MStream<T> shuffle(Random random);
-
-
-  MStream<T> repartition(int numPartitions);
+   /**
+    * Shuffle m stream.
+    *
+    * @param random the random
+    * @return the m stream
+    */
+   MStream<T> shuffle(Random random);
 
 
-  StreamingContext getContext();
+   MStream<T> repartition(int numPartitions);
+
+
+   StreamingContext getContext();
 
 
 }//END OF MStream

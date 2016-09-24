@@ -1,12 +1,8 @@
 package com.davidbracewell.stream;
 
-import com.davidbracewell.collection.counter.HashMapMultiCounter;
-import com.davidbracewell.collection.counter.MultiCounter;
 import com.davidbracewell.collection.map.Maps;
 import com.davidbracewell.config.Config;
-import com.davidbracewell.stream.accumulator.MAccumulator;
 import com.davidbracewell.tuple.Tuple2;
-import com.davidbracewell.tuple.Tuple3;
 import org.junit.Test;
 
 import java.util.*;
@@ -191,7 +187,7 @@ public abstract class BaseMPairStreamTest {
 
     s1 = sc.pairStream(Maps.map("A", 1, "B", 2, "C", 3));
     StreamingContext other;
-    if (sc instanceof JavaStreamingContext) {
+    if (sc instanceof LocalStreamingContext) {
       Config.setProperty("spark.master", "local[*]");
       other = StreamingContext.distributed();
     } else {

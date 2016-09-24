@@ -57,7 +57,7 @@ public class LocalDoubleStream implements MDoubleStream, Serializable {
 
   @Override
   public StreamingContext getContext() {
-    return JavaStreamingContext.INSTANCE;
+    return LocalStreamingContext.INSTANCE;
   }
 
   @Override

@@ -221,7 +221,7 @@ public abstract class BaseMStreamTest {
                   );
 
       StreamingContext other;
-      if (sc instanceof JavaStreamingContext) {
+      if (sc instanceof LocalStreamingContext) {
          Config.setProperty("spark.master", "local[*]");
          other = StreamingContext.distributed();
       } else {

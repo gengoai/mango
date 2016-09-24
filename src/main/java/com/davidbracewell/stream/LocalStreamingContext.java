@@ -22,13 +22,13 @@
 package com.davidbracewell.stream;
 
 import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.function.Unchecked;
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.stream.accumulator.*;
 import com.davidbracewell.string.StringUtils;
 import lombok.SneakyThrows;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,9 +39,14 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
+ * Represents a local streaming context using Java's built-in streams
+ *
  * @author David B. Bracewell
  */
-public enum JavaStreamingContext implements StreamingContext, Serializable {
+public enum LocalStreamingContext implements StreamingContext, Serializable {
+   /**
+    * The singleton instance of the context
+    */
    INSTANCE;
    private static final long serialVersionUID = 1L;
 
@@ -52,14 +57,6 @@ public enum JavaStreamingContext implements StreamingContext, Serializable {
          return new LocalDoubleStream(DoubleStream.empty());
       }
       return new LocalDoubleStream(doubleStream);
-   }
-
-   @Override
-   public MDoubleStream doubleStream(double... values) {
-      if (values == null) {
-         return new LocalDoubleStream(DoubleStream.empty());
-      }
-      return new LocalDoubleStream(DoubleStream.of(values));
    }
 
    @Override
@@ -115,7 +112,6 @@ public enum JavaStreamingContext implements StreamingContext, Serializable {
       return new LocalStatisticsAccumulator(name);
    }
 
-
    @Override
    @SafeVarargs
    public final <T> MStream<T> stream(T... items) {
@@ -138,28 +134,21 @@ public enum JavaStreamingContext implements StreamingContext, Serializable {
       if (map == null) {
          return new LocalPairStream<>(Stream.empty());
       }
-      return new LocalPairStream<>(map);
+      return new ReusableLocalPairStream<>(map);
    }
 
    @Override
-   public <K, V> MPairStream<K, V> pairStream(Collection<Map.Entry<K, V>> tuples) {
+   public <K, V> MPairStream<K, V> pairStream(Collection<Map.Entry<? extends K, ? extends V>> tuples) {
       return new LocalPairStream<>(tuples.stream());
    }
 
-   @Override
-   public <T> MStream<T> stream(Collection<? extends T> collection) {
-      if (collection == null) {
-         return empty();
-      }
-      return new ReusableLocalStream<>(Cast.<Collection<T>>as(collection));
-   }
 
    @Override
    public <T> MStream<T> stream(Iterable<? extends T> iterable) {
       if (iterable == null) {
          return empty();
       } else if (iterable instanceof Collection) {
-         return stream(Cast.<Collection<T>>as(iterable));
+         return new ReusableLocalStream<>(Cast.<Collection<T>>as(iterable));
       }
       return new LocalStream<>(Cast.<Iterable<T>>as(iterable));
    }
@@ -181,21 +170,16 @@ public enum JavaStreamingContext implements StreamingContext, Serializable {
          return empty();
       }
       if (resource.isDirectory()) {
-         return new LocalStream<>(
-                                    resource.getChildren(true).stream()
-                                            .filter(r -> !r.isDirectory())
-                                            .flatMap(r -> {
-                                                        try {
-                                                           return Cast.<LocalStream<String>>as(r.lines()).stream();
-                                                        } catch (IOException e) {
-                                                           throw new RuntimeException(e);
-                                                        }
-                                                     }
-                                                    )
-         );
+         return new LocalStream<>(resource.getChildren(true).stream()
+                                          .filter(r -> !r.isDirectory())
+                                          .flatMap(Unchecked.function(r ->
+                                                                         Cast.<LocalStream<String>>as(
+                                                                            r.lines()).stream()
+                                                                     )
+                                                  ));
       }
       return resource.lines();
    }
 
 
-}//END OF JavaStreamingContext
+}//END OF LocalStreamingContext
