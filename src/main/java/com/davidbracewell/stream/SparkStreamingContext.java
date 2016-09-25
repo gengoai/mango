@@ -69,26 +69,6 @@ public enum SparkStreamingContext implements StreamingContext {
 
    private volatile Broadcast<Config> configBroadcast;
 
-   public Broadcast<Config> getConfigBroadcast() {
-      if (configBroadcast == null || !configBroadcast.isValid()) {
-         synchronized (SparkStreamingContext.class) {
-            if (configBroadcast == null || !configBroadcast.isValid()) {
-               configBroadcast = broadcast(Config.getInstance());
-            }
-         }
-      }
-      return configBroadcast;
-   }
-
-   @Override
-   public synchronized void updateConfig() {
-      if (configBroadcast != null && configBroadcast.isValid()) {
-         configBroadcast.destroy();
-      }
-      configBroadcast = broadcast(Config.getInstance());
-   }
-
-
    /**
     * Gets the streaming context of a given spark stream
     *
@@ -178,7 +158,7 @@ public enum SparkStreamingContext implements StreamingContext {
    }
 
    @Override
-   public MDoubleStream doubleStream(DoubleStream doubleStream) {
+   public SparkDoubleStream doubleStream(DoubleStream doubleStream) {
       if (doubleStream == null) {
          return empty().mapToDouble(o -> Double.NaN);
       }
@@ -190,6 +170,22 @@ public enum SparkStreamingContext implements StreamingContext {
    @Override
    public <T> SparkStream<T> empty() {
       return new SparkStream<>(getSparkContext().parallelize(new ArrayList<>()));
+   }
+
+   /**
+    * Gets the broadcasted version of the Config object
+    *
+    * @return the config broadcast
+    */
+   public Broadcast<Config> getConfigBroadcast() {
+      if (configBroadcast == null || !configBroadcast.isValid()) {
+         synchronized (SparkStreamingContext.class) {
+            if (configBroadcast == null || !configBroadcast.isValid()) {
+               configBroadcast = broadcast(Config.getInstance());
+            }
+         }
+      }
+      return configBroadcast;
    }
 
    @Override
@@ -299,6 +295,14 @@ public enum SparkStreamingContext implements StreamingContext {
          return empty();
       }
       return textFile(location.path());
+   }
+
+   @Override
+   public synchronized void updateConfig() {
+      if (configBroadcast != null && configBroadcast.isValid()) {
+         configBroadcast.destroy();
+      }
+      configBroadcast = broadcast(Config.getInstance());
    }
 
 

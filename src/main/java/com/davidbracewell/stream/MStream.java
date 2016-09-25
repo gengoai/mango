@@ -270,6 +270,7 @@ public interface MStream<T> extends Closeable {
     * Sorts the items in the stream in ascending or descending order using the given keyFunction to determine how to
     * compare.
     *
+    * @param <R>         the type parameter
     * @param ascending   determines if the items should be sorted in ascending (true) or descending (false) order
     * @param keyFunction function to use to convert the items in the stream to something that is comparable.
     * @return the new stream
@@ -399,5 +400,21 @@ public interface MStream<T> extends Closeable {
     */
    StreamingContext getContext();
 
+   /**
+    * Can this stream be consumed more the once?
+    *
+    * @return True the stream can be reused multiple times, False the stream can only be used once
+    */
+   default boolean isReusable() {
+      return false;
+   }
+
+   /**
+    * Partitions the stream into <code>numPartition</code> iterables.
+    *
+    * @param numPartitions the number of partitions to split the stream into
+    * @return the new stream
+    */
+   MStream<Iterable<T>> partition(int numPartitions);
 
 }//END OF MStream

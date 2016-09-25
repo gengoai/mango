@@ -27,6 +27,7 @@ import com.davidbracewell.config.Configurator;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.*;
 import com.davidbracewell.io.resource.Resource;
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import org.apache.hadoop.io.compress.GzipCodec;
 import org.apache.spark.api.java.JavaRDD;
@@ -39,10 +40,12 @@ import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 
+import static com.davidbracewell.tuple.Tuples.$;
+
 /**
- * The type Spark stream.
+ * A MStream wrapper around a Spark RDD.
  *
- * @param <T> the type parameter
+ * @param <T> the component type of the stream
  * @author David B. Bracewell
  */
 public class SparkStream<T> implements MStream<T>, Serializable {
@@ -50,6 +53,11 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    private final JavaRDD<T> rdd;
    private SerializableRunnable onClose;
 
+   /**
+    * Instantiates a new Spark stream.
+    *
+    * @param mStream the m stream
+    */
    public SparkStream(@NonNull MStream<T> mStream) {
       if (mStream instanceof SparkStream) {
          this.rdd = Cast.<SparkStream<T>>as(mStream).getRDD();
@@ -85,6 +93,11 @@ public class SparkStream<T> implements MStream<T>, Serializable {
       return onClose;
    }
 
+   /**
+    * Gets the wrapped rdd.
+    *
+    * @return the rdd
+    */
    public JavaRDD<T> getRDD() {
       return rdd;
    }
@@ -144,7 +157,10 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
    @Override
    public <U> SparkPairStream<U, Iterable<T>> groupBy(@NonNull SerializableFunction<? super T, ? extends U> function) {
-      return new SparkPairStream<>(rdd.groupBy(function::apply));
+      return new SparkPairStream<>(rdd.groupBy(e -> {
+         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         return function.apply(e);
+      }));
    }
 
    @Override
@@ -374,5 +390,18 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    public SparkStream<T> repartition(int numPartitions) {
       return new SparkStream<>(rdd.repartition(numPartitions));
    }
+
+   @Override
+   public boolean isReusable() {
+      return true;
+   }
+
+   @Override
+   public MStream<Iterable<T>> partition(int numPartitions) {
+      Preconditions.checkArgument(numPartitions > 0, "Number of partitions must be greater than zero.");
+      final long pSize = count() / numPartitions;
+      return zipWithIndex().mapToPair((k, v) -> $((long) Math.floor(v / pSize), k)).groupByKey().values();
+   }
+
 
 }//END OF SparkStream

@@ -169,10 +169,7 @@ public enum LocalStreamingContext implements StreamingContext {
       if (resource.isDirectory()) {
          return new LocalStream<>(resource.getChildren(true).stream()
                                           .filter(r -> !r.isDirectory())
-                                          .flatMap(Unchecked.function(r ->
-                                                                         Cast.<LocalStream<String>>as(
-                                                                            r.lines()).stream())
-                                                  ));
+                                          .flatMap(Unchecked.function(r -> r.lines().javaStream())));
       }
       return resource.lines();
    }

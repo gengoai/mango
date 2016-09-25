@@ -3,6 +3,8 @@ package com.davidbracewell.stream;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.*;
 import com.davidbracewell.io.resource.Resource;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import lombok.NonNull;
 
 import java.io.IOException;
@@ -11,9 +13,9 @@ import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 /**
- * The type Reusable local stream.
+ * <p>A reusable non-distributed stream backed by a collection.</p>
  *
- * @param <T> the type parameter
+ * @param <T> the component type of the stream
  * @author David B. Bracewell
  */
 public class ReusableLocalStream<T> implements MStream<T> {
@@ -22,11 +24,11 @@ public class ReusableLocalStream<T> implements MStream<T> {
    private boolean parallel = false;
 
    /**
-    * Instantiates a new Reusable local stream.
+    * Instantiates a new Reusable local stream backed by the the given collection.
     *
     * @param backingCollection the backing collection
     */
-   public ReusableLocalStream(Collection<T> backingCollection) {
+   public ReusableLocalStream(@NonNull Collection<T> backingCollection) {
       if (backingCollection instanceof List) {
          this.backingCollection = Cast.as(backingCollection);
       } else {
@@ -48,37 +50,37 @@ public class ReusableLocalStream<T> implements MStream<T> {
    }
 
    @Override
-   public MStream<T> filter(SerializablePredicate<? super T> predicate) {
+   public MStream<T> filter(@NonNull SerializablePredicate<? super T> predicate) {
       return getStream().filter(predicate);
    }
 
    @Override
-   public <R> MStream<R> map(SerializableFunction<? super T, ? extends R> function) {
+   public <R> MStream<R> map(@NonNull SerializableFunction<? super T, ? extends R> function) {
       return getStream().map(function);
    }
 
    @Override
-   public <R> MStream<R> flatMap(SerializableFunction<? super T, Stream<? extends R>> mapper) {
+   public <R> MStream<R> flatMap(@NonNull SerializableFunction<? super T, Stream<? extends R>> mapper) {
       return getStream().flatMap(mapper);
    }
 
    @Override
-   public <R, U> MPairStream<R, U> flatMapToPair(SerializableFunction<? super T, Stream<? extends Map.Entry<? extends R, ? extends U>>> function) {
+   public <R, U> MPairStream<R, U> flatMapToPair(@NonNull SerializableFunction<? super T, Stream<? extends Map.Entry<? extends R, ? extends U>>> function) {
       return getStream().flatMapToPair(function);
    }
 
    @Override
-   public <R, U> MPairStream<R, U> mapToPair(SerializableFunction<? super T, ? extends Map.Entry<? extends R, ? extends U>> function) {
+   public <R, U> MPairStream<R, U> mapToPair(@NonNull SerializableFunction<? super T, ? extends Map.Entry<? extends R, ? extends U>> function) {
       return getStream().mapToPair(function);
    }
 
    @Override
-   public <U> MPairStream<U, Iterable<T>> groupBy(SerializableFunction<? super T, ? extends U> function) {
+   public <U> MPairStream<U, Iterable<T>> groupBy(@NonNull SerializableFunction<? super T, ? extends U> function) {
       return getStream().groupBy(function);
    }
 
    @Override
-   public <R> R collect(Collector<? super T, T, R> collector) {
+   public <R> R collect(@NonNull Collector<? super T, T, R> collector) {
       return getStream().collect(collector);
    }
 
@@ -88,22 +90,22 @@ public class ReusableLocalStream<T> implements MStream<T> {
    }
 
    @Override
-   public Optional<T> reduce(SerializableBinaryOperator<T> reducer) {
+   public Optional<T> reduce(@NonNull SerializableBinaryOperator<T> reducer) {
       return getStream().reduce(reducer);
    }
 
    @Override
-   public T fold(T zeroValue, SerializableBinaryOperator<T> operator) {
+   public T fold(T zeroValue, @NonNull SerializableBinaryOperator<T> operator) {
       return getStream().fold(zeroValue, operator);
    }
 
    @Override
-   public void forEach(SerializableConsumer<? super T> consumer) {
+   public void forEach(@NonNull SerializableConsumer<? super T> consumer) {
       backingCollection.forEach(consumer);
    }
 
    @Override
-   public void forEachLocal(SerializableConsumer<? super T> consumer) {
+   public void forEachLocal(@NonNull SerializableConsumer<? super T> consumer) {
       backingCollection.forEach(consumer);
    }
 
@@ -184,17 +186,17 @@ public class ReusableLocalStream<T> implements MStream<T> {
    }
 
    @Override
-   public Optional<T> max(SerializableComparator<? super T> comparator) {
+   public Optional<T> max(@NonNull SerializableComparator<? super T> comparator) {
       return getStream().max(comparator);
    }
 
    @Override
-   public Optional<T> min(SerializableComparator<? super T> comparator) {
+   public Optional<T> min(@NonNull SerializableComparator<? super T> comparator) {
       return getStream().min(comparator);
    }
 
    @Override
-   public <U> MPairStream<T, U> zip(MStream<U> other) {
+   public <U> MPairStream<T, U> zip(@NonNull MStream<U> other) {
       return getStream().zip(other);
    }
 
@@ -204,7 +206,7 @@ public class ReusableLocalStream<T> implements MStream<T> {
    }
 
    @Override
-   public MDoubleStream mapToDouble(SerializableToDoubleFunction<? super T> function) {
+   public MDoubleStream mapToDouble(@NonNull SerializableToDoubleFunction<? super T> function) {
       return getStream().mapToDouble(function);
    }
 
@@ -214,13 +216,9 @@ public class ReusableLocalStream<T> implements MStream<T> {
    }
 
    @Override
-   public MStream<T> union(MStream<T> other) {
-      if (other == null || other.isEmpty()) {
+   public MStream<T> union(@NonNull MStream<T> other) {
+      if (other.isReusable() && other.isEmpty()) {
          return this;
-      } else if (other instanceof ReusableLocalStream || other instanceof LocalStream) {
-         List<T> list = new ArrayList<>(backingCollection);
-         list.addAll(other.collect());
-         return new ReusableLocalStream<>(list);
       }
       return getStream().union(other);
    }
@@ -256,5 +254,28 @@ public class ReusableLocalStream<T> implements MStream<T> {
       if (onClose != null) {
          onClose.run();
       }
+      try {
+         this.backingCollection.clear();
+      } catch (UnsupportedOperationException uoe) {
+         //noopt
+      }
    }
+
+   @Override
+   public MStream<Iterable<T>> partition(int numPartitions) {
+      Preconditions.checkArgument(numPartitions > 0, "Number of partitions must be greater than zero.");
+      ReusableLocalStream<Iterable<T>> stream = new ReusableLocalStream<>(Cast.cast(Lists.partition(
+         backingCollection,
+         numPartitions)));
+      if (parallel) {
+         stream.parallel = true;
+      }
+      return stream;
+   }
+
+   @Override
+   public boolean isReusable() {
+      return true;
+   }
+
 }// END OF ReusableLocalStream

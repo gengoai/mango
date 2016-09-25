@@ -1,6 +1,5 @@
 package com.davidbracewell.stream;
 
-import com.davidbracewell.collection.list.Lists;
 import com.davidbracewell.collection.map.Maps;
 import com.davidbracewell.config.Config;
 import com.davidbracewell.stream.accumulator.*;
@@ -12,6 +11,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
+import static com.davidbracewell.collection.list.Lists.asArrayList;
 import static com.davidbracewell.collection.list.Lists.list;
 import static org.junit.Assert.*;
 
@@ -144,7 +144,7 @@ public abstract class BaseMStreamTest {
 
       assertEquals(target.keySet(), calc.keySet());
       target.keySet().forEach(k -> {
-         assertEquals(Lists.asArrayList(target.get(k)), Lists.asArrayList(calc.get(k)));
+         assertEquals(asArrayList(target.get(k)), asArrayList(calc.get(k)));
       });
    }
 
@@ -159,9 +159,9 @@ public abstract class BaseMStreamTest {
                                                     .filter(Objects::nonNull)
                                                     .groupBy(s -> s.charAt(0))
                                                     .collectAsMap();
-      assertEquals(gold.get('A'), Lists.asArrayList(streamed.get('A')));
-      assertEquals(gold.get('B'), Lists.asArrayList(streamed.get('B')));
-      assertEquals(gold.get('C'), Lists.asArrayList(streamed.get('C')));
+      assertEquals(gold.get('A'), asArrayList(streamed.get('A')));
+      assertEquals(gold.get('B'), asArrayList(streamed.get('B')));
+      assertEquals(gold.get('C'), asArrayList(streamed.get('C')));
    }
 
    @Test
@@ -312,6 +312,17 @@ public abstract class BaseMStreamTest {
       assertEquals("ABC", sc.stream("A", "B", "C").fold("", (x, y) -> x + y));
    }
 
+
+   @Test
+   public void partition() throws Exception {
+      MStream<String> stream = sc.stream("A", "B", "C", "D", "E", "F", "G", "H", "I");
+      List<Iterable<String>> partitions = stream.partition(3).collect();
+      assertEquals(3, partitions.size());
+      assertEquals(list("A", "B", "C"), asArrayList(partitions.get(0)));
+      assertEquals(list("D", "E", "F"), asArrayList(partitions.get(1)));
+      assertEquals(list("G", "H", "I"), asArrayList(partitions.get(2)));
+   }
+
    @Test
    public void streamOps() throws Exception {
       MStream<String> stream = sc.stream("A", "V", "D");
@@ -319,9 +330,7 @@ public abstract class BaseMStreamTest {
       AtomicBoolean closed = new AtomicBoolean(false);
       stream.cache();
       stream.repartition(10);
-      stream.onClose(() -> {
-         closed.set(true);
-      });
+      stream.onClose(() -> closed.set(true));
       stream.close();
 
       assertTrue(closed.get());
