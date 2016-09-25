@@ -214,4 +214,8 @@ class ReusableLocalPairStream<K, V> implements MPairStream<K, V> {
       return new ReusableLocalStream<>(backingMap.values());
    }
 
+   @Override
+   public boolean isReusable() {
+      return true;
+   }
 }//END OF ReusableLocalPairStream

@@ -291,4 +291,10 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
       return new SparkStream<>(rdd.values());
    }
 
+
+   @Override
+   public boolean isReusable() {
+      return true;
+   }
+
 }// END OF SparkPairStream

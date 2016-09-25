@@ -36,15 +36,15 @@ import java.util.stream.Stream;
 import static com.davidbracewell.tuple.Tuples.$;
 
 /**
- * The type Local pair stream.
+ * A Java stream implementation of a MPairStream
  *
- * @param <T> the type parameter
- * @param <U> the type parameter
+ * @param <T> the key type parameter
+ * @param <U> the value type parameter
  * @author David B. Bracewell
  */
 class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
    private static final long serialVersionUID = 1L;
-   private volatile Stream<Entry<T, U>> stream;
+   private final Stream<Entry<T, U>> stream;
    private SerializableRunnable onClose;
 
    /**
@@ -77,7 +77,7 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
 
    @Override
    public List<Entry<T, U>> collectAsList() {
-      return stream.map(Cast::<Entry<T, U>>as).collect(Collectors.toList());
+      return stream.collect(Collectors.toList());
    }
 
    @Override
@@ -87,23 +87,21 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
 
    @Override
    public long count() {
-      List<Entry<T, U>> list = stream.collect(Collectors.toList());
-      stream = list.stream();
-      return list.size();
+      return stream.count();
    }
 
    @Override
-   public MPairStream<T, U> filter(SerializableBiPredicate<? super T, ? super U> predicate) {
+   public MPairStream<T, U> filter(@NonNull SerializableBiPredicate<? super T, ? super U> predicate) {
       return new LocalPairStream<>(stream.filter(e -> predicate.test(e.getKey(), e.getValue())));
    }
 
    @Override
-   public MPairStream<T, U> filterByKey(SerializablePredicate<T> predicate) {
+   public MPairStream<T, U> filterByKey(@NonNull SerializablePredicate<T> predicate) {
       return new LocalPairStream<>(stream.filter(e -> predicate.test(e.getKey())));
    }
 
    @Override
-   public MPairStream<T, U> filterByValue(SerializablePredicate<U> predicate) {
+   public MPairStream<T, U> filterByValue(@NonNull SerializablePredicate<U> predicate) {
       return new LocalPairStream<>(stream.filter(e -> predicate.test(e.getValue())));
    }
 
@@ -119,7 +117,7 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public void forEachLocal(SerializableBiConsumer<? super T, ? super U> consumer) {
+   public void forEachLocal(@NonNull SerializableBiConsumer<? super T, ? super U> consumer) {
       stream.sequential().forEach(e -> {
          if (e == null) {
             consumer.accept(null, null);
@@ -141,15 +139,7 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
 
    @Override
    public MPairStream<T, Iterable<U>> groupByKey() {
-      return new LocalPairStream<>(
-                                     stream.collect(Collectors.groupingBy(Entry::getKey))
-                                           .entrySet()
-                                           .stream()
-                                           .map(e -> Tuple2.of(e.getKey(), e.getValue()
-                                                                            .stream()
-                                                                            .map(Entry::getValue)
-                                                                            .collect(Collectors.toList())))
-      );
+      return new LocalPairStream<>(Cast.cast(stream.collect(Collectors.groupingBy(Entry::getKey))));
    }
 
    @Override
@@ -158,10 +148,7 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public <V> MPairStream<T, Entry<U, V>> join(MPairStream<? extends T, ? extends V> other) {
-      if (other == null) {
-         return getContext().emptyPair();
-      }
+   public <V> MPairStream<T, Entry<U, V>> join(@NonNull MPairStream<? extends T, ? extends V> other) {
       Map<T, Iterable<V>> map = Cast.as(other.groupByKey().collectAsMap());
       return new LocalPairStream<>(stream.flatMap(e -> {
          List<Entry<T, Entry<U, V>>> list = new LinkedList<>();
@@ -178,10 +165,7 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public <V> MPairStream<T, Entry<U, V>> leftOuterJoin(MPairStream<? extends T, ? extends V> other) {
-      if (other == null) {
-         return Cast.as(this);
-      }
+   public <V> MPairStream<T, Entry<U, V>> leftOuterJoin(@NonNull MPairStream<? extends T, ? extends V> other) {
       Map<T, Iterable<V>> map = Cast.as(other.groupByKey().collectAsMap());
       return new LocalPairStream<>(stream.flatMap(e -> {
          List<Entry<T, Entry<U, V>>> list = new LinkedList<>();
@@ -205,7 +189,7 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public <R, V> MPairStream<R, V> mapToPair(SerializableBiFunction<? super T, ? super U, ? extends Entry<? extends R, ? extends V>> function) {
+   public <R, V> MPairStream<R, V> mapToPair(@NonNull SerializableBiFunction<? super T, ? super U, ? extends Entry<? extends R, ? extends V>> function) {
       return new LocalPairStream<>(stream.map(entry -> Cast.as(function.apply(entry.getKey(), entry.getValue()))));
    }
 
@@ -231,7 +215,7 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public MPairStream<T, U> reduceByKey(SerializableBinaryOperator<U> operator) {
+   public MPairStream<T, U> reduceByKey(@NonNull SerializableBinaryOperator<U> operator) {
       return groupByKey().mapToPair((t, u) -> Tuple2.of(t, Streams.asStream(u).reduce(operator).orElse(null)));
    }
 
@@ -241,7 +225,7 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public <V> MPairStream<T, Entry<U, V>> rightOuterJoin(MPairStream<? extends T, ? extends V> other) {
+   public <V> MPairStream<T, Entry<U, V>> rightOuterJoin(@NonNull MPairStream<? extends T, ? extends V> other) {
       if (other == null) {
          return getContext().emptyPair();
       }
@@ -265,7 +249,7 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public MPairStream<T, U> shuffle(Random random) {
+   public MPairStream<T, U> shuffle(@NonNull Random random) {
       return new LocalPairStream<>(stream.map(t -> Tuple2.of(random.nextDouble(), t))
                                          .sorted(Entry.comparingByKey())
                                          .map(Tuple2::getValue)
@@ -278,8 +262,8 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public MPairStream<T, U> union(MPairStream<? extends T, ? extends U> other) {
-      if (other == null) {
+   public MPairStream<T, U> union(@NonNull MPairStream<? extends T, ? extends U> other) {
+      if (other.isReusable() && other.isEmpty()) {
          return this;
       }
       Stream<Entry<T, U>> oStream = Cast.as(other.collectAsList().stream());

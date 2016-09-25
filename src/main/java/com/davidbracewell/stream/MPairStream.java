@@ -373,4 +373,13 @@ public interface MPairStream<T, U> extends AutoCloseable {
     */
    MStream<U> values();
 
+   /**
+    * Can this stream be consumed more the once?
+    *
+    * @return True the stream can be reused multiple times, False the stream can only be used once
+    */
+   default boolean isReusable(){
+      return false;
+   }
+
 }//END OF MPairStream
