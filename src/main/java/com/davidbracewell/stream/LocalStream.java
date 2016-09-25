@@ -28,7 +28,7 @@ import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.function.*;
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.tuple.Tuple2;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -43,6 +43,8 @@ import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.davidbracewell.tuple.Tuples.$;
 
 /**
  * A wrapper around Java's <code>Stream</code> class.
@@ -171,9 +173,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
 
    @Override
    public MStream<T> limit(long number) {
-      if (number <= 0) {
-         return StreamingContext.local().empty();
-      }
+      Preconditions.checkArgument(number > 0, "Limit number must be greater than zero.");
       return new LocalStream<>(stream.limit(number));
    }
 
@@ -224,27 +224,25 @@ public class LocalStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public MStream<T> sample(boolean withReplacement, int count) {
-      if (count <= 0) {
-         return new LocalStream<>(Stream.<T>empty());
-      }
+   public MStream<T> sample(boolean withReplacement, int number) {
+      Preconditions.checkArgument(number > 0, "number must be greater than zero.");
       Random random = new Random();
       if (withReplacement) {
          List<T> all = collect();
          List<T> sample = new ArrayList<>();
-         while (sample.size() < count) {
+         while (sample.size() < number) {
             sample.add(all.get(random.nextInt(all.size())));
          }
          return new ReusableLocalStream<>(sample);
       } else {
          List<T> sample = new ArrayList<>();
-         AtomicInteger k = new AtomicInteger(count + 1);
+         AtomicInteger k = new AtomicInteger(number + 1);
          stream.sequential().forEach(document -> {
-            if (sample.size() < count) {
+            if (sample.size() < number) {
                sample.add(document);
             } else {
                int rndIndex = random.nextInt(k.getAndIncrement());
-               if (rndIndex < count) {
+               if (rndIndex < number) {
                   sample.set(rndIndex, document);
                }
             }
@@ -265,12 +263,24 @@ public class LocalStream<T> implements MStream<T>, Serializable {
       }
    }
 
+   private static class RandomComparator<T> implements Comparator<T> {
+      private final Map<T, Double> map = new HashMap<>();
+      private final Random random;
+
+      public RandomComparator(Random random) {
+         this.random = random;
+      }
+
+      @Override
+      public int compare(T o1, T o2) {
+         return Double.compare(map.computeIfAbsent(o1, o -> random.nextDouble()),
+                               map.computeIfAbsent(o2, o -> random.nextDouble()));
+      }
+   }
+
    @Override
    public MStream<T> shuffle(@NonNull Random random) {
-      return new LocalStream<>(stream.map(t -> Tuple2.of(random.nextDouble(), t))
-                                     .sorted(Map.Entry.comparingByKey())
-                                     .map(Tuple2::getValue)
-      );
+      return new LocalStream<>(stream.sorted(new RandomComparator<>(random)));
    }
 
    @Override
@@ -285,15 +295,13 @@ public class LocalStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public <R extends Comparable<R>> MStream<T> sorted(boolean ascending, SerializableFunction<? super T, ? extends R> keyFunction) {
+   public <R extends Comparable<R>> MStream<T> sorted(boolean ascending, @NonNull SerializableFunction<? super T, ? extends R> keyFunction) {
       return new LocalStream<>(stream.sorted((t1, t2) -> keyFunction.apply(t1).compareTo(keyFunction.apply(t2))));
    }
 
    @Override
    public List<T> take(int n) {
-      if (n <= 0) {
-         return Collections.emptyList();
-      }
+      Preconditions.checkArgument(n > 0, "N must be greater than zero.");
       return stream.limit(n).collect(Collectors.toList());
    }
 
@@ -313,15 +321,13 @@ public class LocalStream<T> implements MStream<T>, Serializable {
    @Override
    public MPairStream<T, Long> zipWithIndex() {
       final AtomicLong indexer = new AtomicLong();
-      return new LocalPairStream<>(stream.map(
-         t -> Cast.<Map.Entry<T, Long>>as(Tuple2.of(t, indexer.getAndIncrement()))));
+      return new LocalPairStream<>(stream.map(t -> $(t, indexer.get())));
    }
 
    @Override
    public MStream<Iterable<T>> split(int n) {
       return cache().split(n);
    }
-
 
    @Override
    public MStream<Iterable<T>> partition(long partitionSize) {

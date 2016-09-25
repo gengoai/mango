@@ -36,47 +36,21 @@ public class ReusableLocalStream<T> implements MStream<T> {
       }
    }
 
-   private MStream<T> getStream() {
-      MStream<T> stream = new LocalStream<>(backingCollection.stream());
-      if (parallel) {
-         stream = stream.parallel();
+   @Override
+   public MStream<T> cache() {
+      return this;
+   }
+
+   @Override
+   public void close() throws IOException {
+      if (onClose != null) {
+         onClose.run();
       }
-      return stream;
-   }
-
-   @Override
-   public SerializableRunnable getOnCloseHandler() {
-      return onClose;
-   }
-
-   @Override
-   public MStream<T> filter(@NonNull SerializablePredicate<? super T> predicate) {
-      return getStream().filter(predicate);
-   }
-
-   @Override
-   public <R> MStream<R> map(@NonNull SerializableFunction<? super T, ? extends R> function) {
-      return getStream().map(function);
-   }
-
-   @Override
-   public <R> MStream<R> flatMap(@NonNull SerializableFunction<? super T, Stream<? extends R>> mapper) {
-      return getStream().flatMap(mapper);
-   }
-
-   @Override
-   public <R, U> MPairStream<R, U> flatMapToPair(@NonNull SerializableFunction<? super T, Stream<? extends Map.Entry<? extends R, ? extends U>>> function) {
-      return getStream().flatMapToPair(function);
-   }
-
-   @Override
-   public <R, U> MPairStream<R, U> mapToPair(@NonNull SerializableFunction<? super T, ? extends Map.Entry<? extends R, ? extends U>> function) {
-      return getStream().mapToPair(function);
-   }
-
-   @Override
-   public <U> MPairStream<U, Iterable<T>> groupBy(@NonNull SerializableFunction<? super T, ? extends U> function) {
-      return getStream().groupBy(function);
+      try {
+         this.backingCollection.clear();
+      } catch (UnsupportedOperationException uoe) {
+         //noopt
+      }
    }
 
    @Override
@@ -90,8 +64,38 @@ public class ReusableLocalStream<T> implements MStream<T> {
    }
 
    @Override
-   public Optional<T> reduce(@NonNull SerializableBinaryOperator<T> reducer) {
-      return getStream().reduce(reducer);
+   public long count() {
+      return backingCollection.size();
+   }
+
+   @Override
+   public Map<T, Long> countByValue() {
+      return getStream().countByValue();
+   }
+
+   @Override
+   public MStream<T> distinct() {
+      return getStream().distinct();
+   }
+
+   @Override
+   public MStream<T> filter(@NonNull SerializablePredicate<? super T> predicate) {
+      return getStream().filter(predicate);
+   }
+
+   @Override
+   public Optional<T> first() {
+      return getStream().first();
+   }
+
+   @Override
+   public <R> MStream<R> flatMap(@NonNull SerializableFunction<? super T, Stream<? extends R>> mapper) {
+      return getStream().flatMap(mapper);
+   }
+
+   @Override
+   public <R, U> MPairStream<R, U> flatMapToPair(@NonNull SerializableFunction<? super T, Stream<? extends Map.Entry<? extends R, ? extends U>>> function) {
+      return getStream().flatMapToPair(function);
    }
 
    @Override
@@ -110,34 +114,26 @@ public class ReusableLocalStream<T> implements MStream<T> {
    }
 
    @Override
-   public Iterator<T> iterator() {
-      return backingCollection.iterator();
+   public StreamingContext getContext() {
+      return LocalStreamingContext.INSTANCE;
    }
 
    @Override
-   public Optional<T> first() {
-      return getStream().first();
+   public SerializableRunnable getOnCloseHandler() {
+      return onClose;
    }
 
-   @Override
-   public MStream<T> sample(boolean withReplacement, int number) {
-      if (number <= 0) {
-         return new LocalStream<>(Stream.<T>empty());
+   private MStream<T> getStream() {
+      MStream<T> stream = new LocalStream<>(backingCollection.stream());
+      if (parallel) {
+         stream = stream.parallel();
       }
-      Random random = new Random();
-      if (withReplacement) {
-         List<T> sample = new ArrayList<>();
-         while (sample.size() < number) {
-            sample.add(backingCollection.get(random.nextInt(backingCollection.size())));
-         }
-         return new ReusableLocalStream<>(sample);
-      }
-      return getStream().sample(false, number);
+      return stream;
    }
 
    @Override
-   public long count() {
-      return backingCollection.size();
+   public <U> MPairStream<U, Iterable<T>> groupBy(@NonNull SerializableFunction<? super T, ? extends U> function) {
+      return getStream().groupBy(function);
    }
 
    @Override
@@ -146,43 +142,34 @@ public class ReusableLocalStream<T> implements MStream<T> {
    }
 
    @Override
-   public Map<T, Long> countByValue() {
-      return getStream().countByValue();
+   public boolean isReusable() {
+      return true;
    }
 
    @Override
-   public MStream<T> distinct() {
-      return getStream().distinct();
+   public Iterator<T> iterator() {
+      return backingCollection.iterator();
    }
 
    @Override
    public MStream<T> limit(long number) {
+      Preconditions.checkArgument(number > 0, "Limit number must be greater than zero.");
       return getStream().limit(number);
    }
 
    @Override
-   public List<T> take(int n) {
-      return getStream().take(n);
+   public <R> MStream<R> map(@NonNull SerializableFunction<? super T, ? extends R> function) {
+      return getStream().map(function);
    }
 
    @Override
-   public MStream<T> skip(long n) {
-      return getStream().skip(n);
+   public MDoubleStream mapToDouble(@NonNull SerializableToDoubleFunction<? super T> function) {
+      return getStream().mapToDouble(function);
    }
 
    @Override
-   public void onClose(SerializableRunnable closeHandler) {
-      this.onClose = closeHandler;
-   }
-
-   @Override
-   public MStream<T> sorted(boolean ascending) {
-      return getStream().sorted(ascending);
-   }
-
-   @Override
-   public <R extends Comparable<R>> MStream<T> sorted(boolean ascending, @NonNull SerializableFunction<? super T, ? extends R> keyFunction) {
-      return getStream().sorted(ascending, keyFunction);
+   public <R, U> MPairStream<R, U> mapToPair(@NonNull SerializableFunction<? super T, ? extends Map.Entry<? extends R, ? extends U>> function) {
+      return getStream().mapToPair(function);
    }
 
    @Override
@@ -196,36 +183,8 @@ public class ReusableLocalStream<T> implements MStream<T> {
    }
 
    @Override
-   public <U> MPairStream<T, U> zip(@NonNull MStream<U> other) {
-      return getStream().zip(other);
-   }
-
-   @Override
-   public MPairStream<T, Long> zipWithIndex() {
-      return getStream().zipWithIndex();
-   }
-
-   @Override
-   public MDoubleStream mapToDouble(@NonNull SerializableToDoubleFunction<? super T> function) {
-      return getStream().mapToDouble(function);
-   }
-
-   @Override
-   public MStream<T> cache() {
-      return this;
-   }
-
-   @Override
-   public MStream<T> union(@NonNull MStream<T> other) {
-      if (other.isReusable() && other.isEmpty()) {
-         return this;
-      }
-      return getStream().union(other);
-   }
-
-   @Override
-   public void saveAsTextFile(Resource location) {
-      getStream().saveAsTextFile(location);
+   public void onClose(SerializableRunnable closeHandler) {
+      this.onClose = closeHandler;
    }
 
    @Override
@@ -235,8 +194,14 @@ public class ReusableLocalStream<T> implements MStream<T> {
    }
 
    @Override
-   public MStream<T> shuffle(Random random) {
-      return getStream().shuffle(random);
+   public MStream<Iterable<T>> partition(long partitionSize) {
+      Preconditions.checkArgument(partitionSize > 0, "Number of partitions must be greater than zero.");
+      return new ReusableLocalStream<>(Cast.cast(Lists.partition(backingCollection, (int) partitionSize)));
+   }
+
+   @Override
+   public Optional<T> reduce(@NonNull SerializableBinaryOperator<T> reducer) {
+      return getStream().reduce(reducer);
    }
 
    @Override
@@ -245,25 +210,49 @@ public class ReusableLocalStream<T> implements MStream<T> {
    }
 
    @Override
-   public StreamingContext getContext() {
-      return LocalStreamingContext.INSTANCE;
+   public MStream<T> sample(boolean withReplacement, int number) {
+      Preconditions.checkArgument(number > 0, "number must be greater than zero.");
+      Random random = new Random();
+      if (withReplacement) {
+         List<T> sample = new ArrayList<>();
+         while (sample.size() < number) {
+            sample.add(backingCollection.get(random.nextInt(backingCollection.size())));
+         }
+         return new ReusableLocalStream<>(sample);
+      }
+      return getStream().sample(false, number);
    }
 
    @Override
-   public void close() throws IOException {
-      if (onClose != null) {
-         onClose.run();
-      }
-      try {
-         this.backingCollection.clear();
-      } catch (UnsupportedOperationException uoe) {
-         //noopt
-      }
+   public void saveAsTextFile(Resource location) {
+      getStream().saveAsTextFile(location);
+   }
+
+   @Override
+   public MStream<T> shuffle(Random random) {
+      ReusableLocalStream<T> newStream = new ReusableLocalStream<>(new ArrayList<>(backingCollection));
+      Collections.shuffle(newStream.backingCollection);
+      return newStream;
+   }
+
+   @Override
+   public MStream<T> skip(long n) {
+      return getStream().skip(n);
+   }
+
+   @Override
+   public MStream<T> sorted(boolean ascending) {
+      return getStream().sorted(ascending);
+   }
+
+   @Override
+   public <R extends Comparable<R>> MStream<T> sorted(boolean ascending, @NonNull SerializableFunction<? super T, ? extends R> keyFunction) {
+      return getStream().sorted(ascending, keyFunction);
    }
 
    @Override
    public MStream<Iterable<T>> split(int n) {
-      Preconditions.checkArgument(n > 0, "Number of partitions must be greater than zero.");
+      Preconditions.checkArgument(n > 0, "N must be greater than zero.");
       final int pSize = backingCollection.size() / n;
       List<Iterable<T>> partitions = new ArrayList<>();
       for (int i = 0; i < n; i++) {
@@ -282,14 +271,29 @@ public class ReusableLocalStream<T> implements MStream<T> {
    }
 
    @Override
-   public MStream<Iterable<T>> partition(long partitionSize) {
-      Preconditions.checkArgument(partitionSize > 0, "Number of partitions must be greater than zero.");
-      return new ReusableLocalStream<>(Cast.cast(Lists.partition(backingCollection, (int) partitionSize)));
+   public List<T> take(int n) {
+      Preconditions.checkArgument(n > 0, "N must be greater than zero.");
+      return getStream().take(n);
    }
 
    @Override
-   public boolean isReusable() {
-      return true;
+   public MStream<T> union(@NonNull MStream<T> other) {
+      if (other.isReusable() && other.isEmpty()) {
+         return this;
+      } else if (this.isEmpty()) {
+         return other;
+      }
+      return getStream().union(other);
+   }
+
+   @Override
+   public <U> MPairStream<T, U> zip(@NonNull MStream<U> other) {
+      return getStream().zip(other);
+   }
+
+   @Override
+   public MPairStream<T, Long> zipWithIndex() {
+      return getStream().zipWithIndex();
    }
 
 }// END OF ReusableLocalStream
