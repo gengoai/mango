@@ -48,6 +48,21 @@ public class SparkDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
+   public boolean allMatch(@NonNull SerializableDoublePredicate predicate) {
+      return doubleStream.filter(predicate::test).count() == count();
+   }
+
+   @Override
+   public boolean anyMatch(@NonNull SerializableDoublePredicate predicate) {
+      return doubleStream.filter(predicate::test).count() != 0;
+   }
+
+   @Override
+   public MDoubleStream cache() {
+      return new SparkDoubleStream(doubleStream.cache());
+   }
+
+   @Override
    public void close() throws Exception {
       if (onClose != null) {
          onClose.run();
@@ -55,8 +70,18 @@ public class SparkDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
-   public double sum() {
-      return doubleStream.sum();
+   public long count() {
+      return doubleStream.count();
+   }
+
+   @Override
+   public MDoubleStream distinct() {
+      return new SparkDoubleStream(doubleStream.distinct());
+   }
+
+   @Override
+   public MDoubleStream filter(@NonNull SerializableDoublePredicate predicate) {
+      return new SparkDoubleStream(doubleStream.filter(predicate::test));
    }
 
    @Override
@@ -68,45 +93,34 @@ public class SparkDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
-   public long count() {
-      return doubleStream.count();
-   }
-
-   @Override
-   public <T> MStream<T> mapToObj(@NonNull SerializableDoubleFunction<? extends T> function) {
-      return new SparkStream<>(
-                                 doubleStream.map(function::apply)
-      );
-   }
-
-   @Override
-   public MDoubleStream distinct() {
-      return new SparkDoubleStream(doubleStream.distinct());
-   }
-
-   @Override
-   public boolean allMatch(@NonNull SerializableDoublePredicate predicate) {
-      return doubleStream.filter(predicate::test).count() == count();
-   }
-
-   @Override
-   public boolean anyMatch(@NonNull SerializableDoublePredicate predicate) {
-      return doubleStream.filter(predicate::test).count() != 0;
-   }
-
-   @Override
-   public boolean noneMatch(@NonNull SerializableDoublePredicate predicate) {
-      return doubleStream.filter(predicate::test).count() == 0;
-   }
-
-   @Override
-   public MDoubleStream filter(@NonNull SerializableDoublePredicate predicate) {
-      return new SparkDoubleStream(doubleStream.filter(predicate::test));
+   public MDoubleStream flatMap(@NonNull SerializableDoubleFunction<double[]> mapper) {
+      return new SparkDoubleStream(doubleStream.flatMapToDouble(d -> new PrimitiveArrayList<>(mapper.apply(d),
+                                                                                              Double.class
+      ).iterator()));
    }
 
    @Override
    public void forEach(@NonNull SerializableDoubleConsumer consumer) {
       doubleStream.foreach(consumer::accept);
+   }
+
+   @Override
+   public SparkStreamingContext getContext() {
+      return SparkStreamingContext.contextOf(this);
+   }
+
+   @Override
+   public SerializableRunnable getOnCloseHandler() {
+      return onClose;
+   }
+
+   JavaDoubleRDD getRDD() {
+      return doubleStream;
+   }
+
+   @Override
+   public boolean isEmpty() {
+      return doubleStream.isEmpty();
    }
 
    @Override
@@ -136,26 +150,15 @@ public class SparkDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
-   public MDoubleStream skip(int n) {
-      if (n > count()) {
-         return getContext().emptyDouble();
-      } else if (n <= 0) {
-         return this;
-      }
-      return new SparkDoubleStream(doubleStream.zipWithIndex().filter(p -> p._2() > n - 1).mapToDouble(Tuple2::_1));
-   }
-
-   @Override
    public MDoubleStream map(@NonNull SerializableDoubleUnaryOperator mapper) {
       return new SparkDoubleStream(doubleStream.mapToDouble(mapper::applyAsDouble));
    }
 
    @Override
-   public OptionalDouble min() {
-      if (doubleStream.isEmpty()) {
-         return OptionalDouble.empty();
-      }
-      return OptionalDouble.of(doubleStream.min());
+   public <T> MStream<T> mapToObj(@NonNull SerializableDoubleFunction<? extends T> function) {
+      return new SparkStream<>(
+                                 doubleStream.map(function::apply)
+      );
    }
 
    @Override
@@ -167,13 +170,31 @@ public class SparkDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
-   public double stddev() {
-      return doubleStream.stdev();
+   public double mean() {
+      return doubleStream.mean();
    }
 
    @Override
-   public double mean() {
-      return doubleStream.mean();
+   public OptionalDouble min() {
+      if (doubleStream.isEmpty()) {
+         return OptionalDouble.empty();
+      }
+      return OptionalDouble.of(doubleStream.min());
+   }
+
+   @Override
+   public boolean noneMatch(@NonNull SerializableDoublePredicate predicate) {
+      return doubleStream.filter(predicate::test).count() == 0;
+   }
+
+   @Override
+   public void onClose(SerializableRunnable onCloseHandler) {
+      this.onClose = onCloseHandler;
+   }
+
+   @Override
+   public MDoubleStream parallel() {
+      return this;
    }
 
    @Override
@@ -185,11 +206,6 @@ public class SparkDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
-   public boolean isEmpty() {
-      return doubleStream.isEmpty();
-   }
-
-   @Override
    public double reduce(double zeroValue, @NonNull SerializableDoubleBinaryOperator operator) {
       if (doubleStream.isEmpty()) {
          return zeroValue;
@@ -198,52 +214,40 @@ public class SparkDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
-   public MDoubleStream sorted() {
-      return new SparkDoubleStream(doubleStream.map(Double::valueOf)
-                                               .sortBy(d -> d, true, doubleStream.partitions().size())
-                                               .mapToDouble(d -> d));
-   }
-
-   @Override
-   public double[] toArray() {
-      return Convert.convert(doubleStream.collect(), double[].class);
-   }
-
-   @Override
-   public MDoubleStream flatMap(@NonNull SerializableDoubleFunction<double[]> mapper) {
-      return new SparkDoubleStream(doubleStream.flatMapToDouble(d -> new PrimitiveArrayList<>(mapper.apply(d),
-                                                                                              Double.class
-      ).iterator()));
-   }
-
-   @Override
-   public MDoubleStream parallel() {
-      return this;
-   }
-
-
-   JavaDoubleRDD getRDD() {
-      return doubleStream;
-   }
-
-   @Override
-   public SparkStreamingContext getContext() {
-      return SparkStreamingContext.contextOf(this);
-   }
-
-   @Override
-   public MDoubleStream cache() {
-      return new SparkDoubleStream(doubleStream.cache());
-   }
-
-   @Override
    public MDoubleStream repartition(int numberOfPartition) {
       return new SparkDoubleStream(doubleStream.repartition(numberOfPartition));
    }
 
    @Override
-   public void onClose(SerializableRunnable onCloseHandler) {
-      this.onClose = onCloseHandler;
+   public MDoubleStream skip(int n) {
+      if (n > count()) {
+         return getContext().emptyDouble();
+      } else if (n <= 0) {
+         return this;
+      }
+      return new SparkDoubleStream(doubleStream.zipWithIndex().filter(p -> p._2() > n - 1).mapToDouble(Tuple2::_1));
+   }
+
+   @Override
+   public MDoubleStream sorted(boolean ascending) {
+      return new SparkDoubleStream(doubleStream.map(Double::valueOf)
+                                               .sortBy(d -> d, ascending, doubleStream.partitions().size())
+                                               .mapToDouble(d -> d));
+   }
+
+   @Override
+   public double stddev() {
+      return doubleStream.stdev();
+   }
+
+   @Override
+   public double sum() {
+      return doubleStream.sum();
+   }
+
+   @Override
+   public double[] toArray() {
+      return Convert.convert(doubleStream.collect(), double[].class);
    }
 
    @Override
@@ -257,6 +261,5 @@ public class SparkDoubleStream implements MDoubleStream, Serializable {
       List<Double> doubleList = new PrimitiveArrayList<>(other.toArray(), Double.class);
       return new SparkDoubleStream(doubleStream.union(sc.sparkContext().parallelizeDoubles(doubleList)));
    }
-
 
 }//END OF SparkDoubleStream

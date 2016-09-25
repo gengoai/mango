@@ -64,12 +64,21 @@ public enum LocalStreamingContext implements StreamingContext {
       return new LocalDoubleAccumulator(initialValue, name);
    }
 
+
    @Override
    public MDoubleStream doubleStream(DoubleStream doubleStream) {
       if (doubleStream == null) {
          return new LocalDoubleStream(DoubleStream.empty());
       }
       return new LocalDoubleStream(doubleStream);
+   }
+
+   @Override
+   public MDoubleStream doubleStream(double... values) {
+      if (values == null || values.length == 0) {
+         return emptyDouble();
+      }
+      return new ReusableDoubleStream(values);
    }
 
    @Override

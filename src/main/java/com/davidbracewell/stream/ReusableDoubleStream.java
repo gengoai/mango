@@ -21,44 +21,43 @@
 
 package com.davidbracewell.stream;
 
-import com.davidbracewell.EnhancedDoubleStatistics;
-import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.Math2;
 import com.davidbracewell.function.*;
 import lombok.NonNull;
 
-import java.io.Serializable;
+import java.util.Arrays;
 import java.util.OptionalDouble;
 import java.util.PrimitiveIterator;
 import java.util.stream.DoubleStream;
 
 /**
- * The type Java double stream.
- *
  * @author David B. Bracewell
  */
-public class LocalDoubleStream implements MDoubleStream, Serializable {
-   private static final long serialVersionUID = 1L;
-
-   private final DoubleStream stream;
+public class ReusableDoubleStream implements MDoubleStream {
+   private final double[] array;
    private SerializableRunnable onCloseHandler;
+   private boolean parallel = false;
 
-   /**
-    * Instantiates a new Java double stream.
-    *
-    * @param stream the stream
-    */
-   public LocalDoubleStream(DoubleStream stream) {
-      this.stream = stream;
+   public ReusableDoubleStream(@NonNull double[] array) {
+      this.array = array;
+   }
+
+   private MDoubleStream getStream() {
+      MDoubleStream stream = new LocalDoubleStream(DoubleStream.of(array));
+      if (parallel) {
+         stream = stream.parallel();
+      }
+      return stream;
    }
 
    @Override
    public boolean allMatch(@NonNull SerializableDoublePredicate predicate) {
-      return stream.allMatch(predicate);
+      return getStream().allMatch(predicate);
    }
 
    @Override
    public boolean anyMatch(@NonNull SerializableDoublePredicate predicate) {
-      return stream.anyMatch(predicate);
+      return getStream().anyMatch(predicate);
    }
 
    @Override
@@ -68,39 +67,41 @@ public class LocalDoubleStream implements MDoubleStream, Serializable {
 
    @Override
    public void close() throws Exception {
-      stream.close();
+      if (onCloseHandler != null) {
+         onCloseHandler.run();
+      }
    }
 
    @Override
    public long count() {
-      return stream.count();
+      return array.length;
    }
 
    @Override
    public MDoubleStream distinct() {
-      return new LocalDoubleStream(stream.distinct());
+      return getStream().distinct();
    }
 
    @Override
    public MDoubleStream filter(@NonNull SerializableDoublePredicate predicate) {
-      return new LocalDoubleStream(stream.filter(predicate));
+      return getStream().filter(predicate);
    }
 
    @Override
    public OptionalDouble first() {
-      return stream.findFirst();
+      return array.length > 0 ? OptionalDouble.of(array[0]) : OptionalDouble.empty();
    }
 
    @Override
    public MDoubleStream flatMap(@NonNull SerializableDoubleFunction<double[]> mapper) {
-      return new LocalDoubleStream(
-                                     stream.flatMap(d -> DoubleStream.of(mapper.apply(d)).parallel())
-      );
+      return getStream().flatMap(mapper);
    }
 
    @Override
    public void forEach(@NonNull SerializableDoubleConsumer consumer) {
-      stream.forEach(consumer);
+      for (double v : array) {
+         consumer.accept(v);
+      }
    }
 
    @Override
@@ -115,69 +116,68 @@ public class LocalDoubleStream implements MDoubleStream, Serializable {
 
    @Override
    public boolean isEmpty() {
-      return count() == 0;
+      return array.length == 0;
    }
 
    @Override
    public PrimitiveIterator.OfDouble iterator() {
-      return stream.iterator();
+      return getStream().iterator();
    }
 
    @Override
    public MDoubleStream limit(int n) {
-      return new LocalDoubleStream(stream.limit(n));
+      return getStream().limit(n);
    }
 
    @Override
    public MDoubleStream map(@NonNull SerializableDoubleUnaryOperator mapper) {
-      return new LocalDoubleStream(stream.map(mapper));
+      return getStream().map(mapper);
    }
 
    @Override
    public <T> MStream<T> mapToObj(@NonNull SerializableDoubleFunction<? extends T> function) {
-      return new LocalStream<>(stream.mapToObj(function));
+      return getStream().mapToObj(function);
    }
 
    @Override
    public OptionalDouble max() {
-      return stream.max();
+      return getStream().max();
    }
 
    @Override
    public double mean() {
-      return stream.collect(EnhancedDoubleStatistics::new, EnhancedDoubleStatistics::accept,
-                            EnhancedDoubleStatistics::combine).getAverage();
+      return Math2.summaryStatistics(array).getAverage();
    }
 
    @Override
    public OptionalDouble min() {
-      return stream.min();
+      return getStream().min();
    }
 
    @Override
    public boolean noneMatch(@NonNull SerializableDoublePredicate predicate) {
-      return stream.noneMatch(predicate);
+      return getStream().noneMatch(predicate);
    }
 
    @Override
-   public void onClose(@NonNull SerializableRunnable onCloseHandler) {
+   public void onClose(SerializableRunnable onCloseHandler) {
       this.onCloseHandler = onCloseHandler;
-      stream.onClose(onCloseHandler);
    }
 
    @Override
    public MDoubleStream parallel() {
-      return new LocalDoubleStream(stream.parallel());
+      this.parallel = true;
+      return this;
    }
 
    @Override
    public OptionalDouble reduce(@NonNull SerializableDoubleBinaryOperator operator) {
-      return stream.reduce(operator);
+      return getStream().reduce(operator);
    }
 
    @Override
    public double reduce(double zeroValue, @NonNull SerializableDoubleBinaryOperator operator) {
-      return stream.reduce(zeroValue, operator);
+      return getStream().reduce(zeroValue, operator);
    }
 
    @Override
@@ -187,42 +187,32 @@ public class LocalDoubleStream implements MDoubleStream, Serializable {
 
    @Override
    public MDoubleStream skip(int n) {
-      return new LocalDoubleStream(stream.skip(n));
+      return getStream().skip(n);
    }
 
    @Override
    public MDoubleStream sorted(boolean ascending) {
-      if (ascending) {
-         return new LocalDoubleStream(stream.sorted());
-      }
-      return new LocalDoubleStream(stream.mapToObj(Double::valueOf)
-                                         .sorted((d1, d2) -> -Double.compare(d1, d2))
-                                         .mapToDouble(d -> d));
+      return getStream().sorted(ascending);
    }
 
    @Override
    public double stddev() {
-      return stream.collect(EnhancedDoubleStatistics::new, EnhancedDoubleStatistics::accept,
-                            EnhancedDoubleStatistics::combine).getSampleStandardDeviation();
+      return Math2.summaryStatistics(array).getSampleStandardDeviation();
    }
 
    @Override
    public double sum() {
-      return stream.sum();
+      return Math2.sum(array);
    }
 
    @Override
    public double[] toArray() {
-      return stream.toArray();
+      return Arrays.copyOf(array, array.length);
    }
 
    @Override
-   public MDoubleStream union(MDoubleStream other) {
-      if (other == null) {
-         return this;
-      } else if (other instanceof LocalDoubleStream) {
-         return new LocalDoubleStream(DoubleStream.concat(stream, Cast.<LocalDoubleStream>as(other).stream));
-      }
-      return new LocalDoubleStream(DoubleStream.concat(stream, DoubleStream.of(other.toArray())));
+   public MDoubleStream union(@NonNull MDoubleStream other) {
+      return getStream().union(other);
    }
-}//END OF LocalDoubleStream
+
+}//END OF ReusableDoubleStream

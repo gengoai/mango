@@ -32,6 +32,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
+ * <p>A reusable non-distributed pair stream backed by a map.</p>
+ *
+ * @param <K> the key type parameter
+ * @param <V> the value type parameter
  * @author David B. Bracewell
  */
 class ReusableLocalPairStream<K, V> implements MPairStream<K, V> {
@@ -39,7 +43,12 @@ class ReusableLocalPairStream<K, V> implements MPairStream<K, V> {
    private SerializableRunnable onClose;
    private boolean parallel = false;
 
-   public ReusableLocalPairStream(Map<? extends K, ? extends V> backingMap) {
+   /**
+    * Instantiates a new Reusable local pair stream.
+    *
+    * @param backingMap the backing map
+    */
+   public ReusableLocalPairStream(@NonNull Map<? extends K, ? extends V> backingMap) {
       this.backingMap = Cast.as(backingMap);
    }
 
@@ -86,6 +95,11 @@ class ReusableLocalPairStream<K, V> implements MPairStream<K, V> {
    }
 
    @Override
+   public <R, V1> MPairStream<R, V1> flatMapToPair(@NonNull SerializableBiFunction<? super K, ? super V, Stream<Map.Entry<? extends R, ? extends V1>>> function) {
+      return toStream().flatMapToPair(function);
+   }
+
+   @Override
    public void forEach(@NonNull SerializableBiConsumer<? super K, ? super V> consumer) {
       backingMap.forEach(consumer);
    }
@@ -113,6 +127,11 @@ class ReusableLocalPairStream<K, V> implements MPairStream<K, V> {
    @Override
    public boolean isEmpty() {
       return backingMap.isEmpty();
+   }
+
+   @Override
+   public boolean isReusable() {
+      return true;
    }
 
    @Override
@@ -215,13 +234,4 @@ class ReusableLocalPairStream<K, V> implements MPairStream<K, V> {
       return new ReusableLocalStream<>(backingMap.values());
    }
 
-   @Override
-   public <R, V1> MPairStream<R, V1> flatMapToPair(@NonNull SerializableBiFunction<? super K, ? super V, Stream<Map.Entry<? extends R, ? extends V1>>> function) {
-      return toStream().flatMapToPair(function);
-   }
-
-   @Override
-   public boolean isReusable() {
-      return true;
-   }
 }//END OF ReusableLocalPairStream

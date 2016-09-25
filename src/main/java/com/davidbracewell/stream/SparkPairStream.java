@@ -13,10 +13,10 @@ import java.util.*;
 import java.util.stream.Stream;
 
 /**
- * The type Spark pair stream.
+ * A MPairStream implementation backed by a JavaPairRDD.
  *
- * @param <T> the type parameter
- * @param <U> the type parameter
+ * @param <T> the key type parameter
+ * @param <U> the value type parameter
  * @author David B. Bracewell
  */
 class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
@@ -48,7 +48,7 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
     * @param context the context
     * @param map     the map
     */
-   public SparkPairStream(JavaSparkContext context, Map<? extends T, ? extends U> map) {
+   SparkPairStream(JavaSparkContext context, Map<? extends T, ? extends U> map) {
       List<scala.Tuple2<T, U>> tuples = new ArrayList<>();
       map.forEach((k, v) -> tuples.add(new scala.Tuple2<>(k, v)));
       this.rdd = context.parallelize(tuples).mapToPair(t -> Cast.as(t));
@@ -118,6 +118,16 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
+   public <R, V> SparkPairStream<R, V> flatMapToPair(@NonNull SerializableBiFunction<? super T, ? super U, Stream<Map.Entry<? extends R, ? extends V>>> function) {
+      return new SparkPairStream<>(rdd.flatMapToPair(t -> {
+         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         return Cast.cast(function.apply(t._1(), t._2())
+                                  .map(e -> new scala.Tuple2<>(e.getKey(), e.getValue()))
+                                  .iterator());
+      }));
+   }
+
+   @Override
    public void forEach(@NonNull SerializableBiConsumer<? super T, ? super U> consumer) {
       rdd.foreach(tuple -> {
          Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
@@ -126,7 +136,7 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public void forEachLocal(SerializableBiConsumer<? super T, ? super U> consumer) {
+   public void forEachLocal(@NonNull SerializableBiConsumer<? super T, ? super U> consumer) {
       rdd.toLocalIterator().forEachRemaining(e -> {
          Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
          consumer.accept(e._1(), e._2());
@@ -160,6 +170,11 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    @Override
    public boolean isEmpty() {
       return rdd.isEmpty();
+   }
+
+   @Override
+   public boolean isReusable() {
+      return true;
    }
 
    @Override
@@ -290,22 +305,5 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    @Override
    public MStream<U> values() {
       return new SparkStream<>(rdd.values());
-   }
-
-
-   @Override
-   public boolean isReusable() {
-      return true;
-   }
-
-
-   @Override
-   public <R, V> SparkPairStream<R, V> flatMapToPair(@NonNull SerializableBiFunction<? super T, ? super U, Stream<Map.Entry<? extends R, ? extends V>>> function) {
-      return new SparkPairStream<>(rdd.flatMapToPair(t -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
-         return Cast.cast(function.apply(t._1(), t._2())
-                                  .map(e -> new scala.Tuple2<>(e.getKey(), e.getValue()))
-                                  .iterator());
-      }));
    }
 }// END OF SparkPairStream

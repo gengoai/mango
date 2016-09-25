@@ -107,7 +107,7 @@ public interface MStream<T> extends Closeable {
     * Maps the objects in this stream to one or more new objects using the given function.
     *
     * @param <R>    the component type of the returning stream
-    * @param mapper he function to use to map objects
+    * @param mapper the function to use to map objects
     * @return the new stream
     */
    <R> MStream<R> flatMap(SerializableFunction<? super T, Stream<? extends R>> mapper);

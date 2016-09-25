@@ -154,9 +154,10 @@ public abstract class BaseDoubleStreamTest {
    public void distinctArray() throws Exception {
       assertArrayEquals(
          new double[]{1, 2, 3},
-         sc.doubleStream(1, 1, 2, 2, 3, 3).distinct().sorted().toArray(),
-         0.1
-                       );
+         sc.doubleStream(1, 1, 2, 2, 3, 3).distinct().sorted(true).toArray(), 0.1);
+      assertArrayEquals(
+         new double[]{3, 2, 1},
+         sc.doubleStream(1, 1, 2, 2, 3, 3).distinct().sorted(false).toArray(), 0.1);
    }
 
 
