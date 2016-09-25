@@ -32,7 +32,8 @@ import java.util.Optional;
 import java.util.Random;
 
 /**
- * The interface M pair stream.
+ * <p>A facade for stream classes which contain key-value pairs. Provides a common interface to working with an
+ * manipulating streams regardless of their backend implementation. </p>
  *
  * @param <T> the type parameter
  * @param <U> the type parameter
@@ -41,255 +42,306 @@ import java.util.Random;
 public interface MPairStream<T, U> extends AutoCloseable {
 
    /**
-    * Gets context.
+    * Caches the stream.
+    *
+    * @return the cached stream
+    */
+   MPairStream<T, U> cache();
+
+   /**
+    * Collects the items in the stream as a list
+    *
+    * @return the list of items in the stream
+    */
+   List<Map.Entry<T, U>> collectAsList();
+
+   /**
+    * Collects the items in the stream as a map
+    *
+    * @return the map of items in the stream
+    */
+   Map<T, U> collectAsMap();
+
+   /**
+    * The number of items in the stream
+    *
+    * @return the number of items in the stream
+    */
+   long count();
+
+   /**
+    * Filters the stream.
+    *
+    * @param predicate the predicate to use to determine which objects are kept
+    * @return the new stream
+    */
+   MPairStream<T, U> filter(SerializableBiPredicate<? super T, ? super U> predicate);
+
+   /**
+    * Filters the stream by key.
+    *
+    * @param predicate the predicate to apply to keys in order to determine which objects are kept
+    * @return the new stream
+    */
+   MPairStream<T, U> filterByKey(SerializablePredicate<T> predicate);
+
+   /**
+    * Filters the stream by value.
+    *
+    * @param predicate the predicate to apply to values in order to determine which objects are kept
+    * @return the new stream
+    */
+   MPairStream<T, U> filterByValue(SerializablePredicate<U> predicate);
+
+   /**
+    * Performs an operation on each item in the stream
+    *
+    * @param consumer the consumer action to perform
+    */
+   void forEach(SerializableBiConsumer<? super T, ? super U> consumer);
+
+   /**
+    * Performs an operation on each item in the stream ensuring that is done locally and not distributed.
+    *
+    * @param consumer the consumer action to perform
+    */
+   void forEachLocal(SerializableBiConsumer<? super T, ? super U> consumer);
+
+   /**
+    * Gets the context used to create the stream
     *
     * @return the context
     */
    StreamingContext getContext();
 
    /**
-    * Collect as list list.
+    * Gets the handler that is called when the stream is closed.
     *
-    * @return the list
+    * @return the on close handler
     */
-   List<Map.Entry<T, U>> collectAsList();
+   SerializableRunnable getOnCloseHandler();
 
    /**
-    * Collect as map map.
+    * Group bys the items in the stream by the key
     *
-    * @return the map
-    */
-   Map<T, U> collectAsMap();
-
-   /**
-    * Count long.
-    *
-    * @return the long
-    */
-   long count();
-
-   /**
-    * Filter m pair stream.
-    *
-    * @param predicate the predicate
-    * @return the m pair stream
-    */
-   MPairStream<T, U> filter(SerializableBiPredicate<? super T, ? super U> predicate);
-
-   /**
-    * Filter by key m pair stream.
-    *
-    * @param predicate the predicate
-    * @return the m pair stream
-    */
-   MPairStream<T, U> filterByKey(SerializablePredicate<T> predicate);
-
-   /**
-    * Filter by value m pair stream.
-    *
-    * @param predicate the predicate
-    * @return the m pair stream
-    */
-   MPairStream<T, U> filterByValue(SerializablePredicate<U> predicate);
-
-   /**
-    * For each.
-    *
-    * @param consumer the consumer
-    */
-   void forEach(SerializableBiConsumer<? super T, ? super U> consumer);
-
-   /**
-    * For each local.
-    *
-    * @param consumer the consumer
-    */
-   void forEachLocal(SerializableBiConsumer<? super T, ? super U> consumer);
-
-   /**
-    * Group by key m pair stream.
-    *
-    * @return the m pair stream
+    * @return the new stream
     */
    MPairStream<T, Iterable<U>> groupByKey();
 
    /**
-    * Join m pair stream.
+    * Determines if the stream is empty or not
     *
-    * @param <V>    the type parameter
-    * @param stream the stream
-    * @return the m pair stream
+    * @return True if empty, False otherwise
+    */
+   boolean isEmpty();
+
+   /**
+    * Performs an inner join between this stream and another using the key to match.
+    *
+    * @param <V>    the value type parameter of the stream to join with
+    * @param stream the other stream to inner join with
+    * @return the new stream
     */
    <V> MPairStream<T, Map.Entry<U, V>> join(MPairStream<? extends T, ? extends V> stream);
 
+   /**
+    * Returns a stream over the keys in this pair stream
+    *
+    * @return the key stream
+    */
+   MStream<T> keys();
 
    /**
-    * Left outer join m pair stream.
+    * Performs a left outer join between this stream and another using the key to match.
     *
-    * @param <V>    the type parameter
-    * @param stream the stream
-    * @return the m pair stream
+    * @param <V>    the value type parameter of the stream to join with
+    * @param stream the other stream to left outer join with
+    * @return the new stream
     */
    <V> MPairStream<T, Map.Entry<U, V>> leftOuterJoin(MPairStream<? extends T, ? extends V> stream);
 
    /**
-    * Right outer join m pair stream.
+    * Maps the key-value pairs to a new object
     *
-    * @param <V>    the type parameter
-    * @param stream the stream
-    * @return the m pair stream
+    * @param <R>      the type parameter being mapped to
+    * @param function the function to map from key-value pairs to objects of type <code>R</code>
+    * @return the new stream
     */
-   <V> MPairStream<T, Map.Entry<U, V>> rightOuterJoin(MPairStream<? extends T, ? extends V> stream);
-
+   <R> MStream<R> map(SerializableBiFunction<? super T, ? super U, ? extends R> function);
 
    /**
-    * Map to double m double stream.
+    * Maps the key-value pairs to doubles
     *
-    * @param function the function
-    * @return the m double stream
+    * @param function the function to map from key-value pairs to double values
+    * @return the new double stream
     */
    MDoubleStream mapToDouble(SerializableToDoubleBiFunction<? super T, ? super U> function);
 
    /**
-    * Min by key optional.
+    * Maps the key-value pairs to new key-value pairs
     *
-    * @return the optional
+    * @param <R>      the new key type parameter
+    * @param <V>      the new value type parameter
+    * @param function the function to map key-value pairs
+    * @return the new pair stream
     */
-   default Optional<Map.Entry<T, U>> minByKey() {
-      return minByKey((t1, t2) -> Sorting.natural().compare(Cast.as(t1), Cast.as(t2)));
-   }
+   <R, V> MPairStream<R, V> mapToPair(SerializableBiFunction<? super T, ? super U, ? extends Map.Entry<? extends R, ? extends V>> function);
 
    /**
-    * Min by key optional.
+    * Returns the max item in the stream using the given comparator to compare items.
     *
-    * @param comparator the comparator
-    * @return the optional
+    * @param comparator the comparator to use to compare values in the stream
+    * @return the optional containing the max value
     */
-   default Optional<Map.Entry<T, U>> minByKey(@NonNull SerializableComparator<? super T> comparator) {
-      return min((t1, t2) -> comparator.compare(t1.getKey(), t2.getKey()));
-   }
+   Optional<Map.Entry<T, U>> max(SerializableComparator<Map.Entry<T, U>> comparator);
 
    /**
-    * Min by value optional.
+    * Returns the maximum entry in the stream comparing on key
     *
-    * @return the optional
-    */
-   default Optional<Map.Entry<T, U>> minByValue() {
-      return minByKey((t1, t2) -> Sorting.natural().compare(Cast.as(t1), Cast.as(t2)));
-   }
-
-   /**
-    * Min by value optional.
-    *
-    * @param comparator the comparator
-    * @return the optional
-    */
-   default Optional<Map.Entry<T, U>> minByValue(@NonNull SerializableComparator<? super U> comparator) {
-      return min((t1, t2) -> comparator.compare(t1.getValue(), t2.getValue()));
-   }
-
-   /**
-    * Min optional.
-    *
-    * @param comparator the comparator
-    * @return the optional
-    */
-   Optional<Map.Entry<T, U>> min(SerializableComparator<Map.Entry<T, U>> comparator);
-
-
-   /**
-    * Max by key optional.
-    *
-    * @return the optional
+    * @return the optional containing the entry with max key
     */
    default Optional<Map.Entry<T, U>> maxByKey() {
       return minByKey((t1, t2) -> Sorting.natural().reversed().compare(Cast.as(t1), Cast.as(t2)));
    }
 
    /**
-    * Max by key optional.
+    * Returns the maximum entry in the stream comparing on key
     *
-    * @param comparator the comparator
-    * @return the optional
+    * @param comparator the comparator to use to compare keys in the stream
+    * @return the optional containing the entry with max key
     */
    default Optional<Map.Entry<T, U>> maxByKey(@NonNull SerializableComparator<? super T> comparator) {
       return min((t1, t2) -> comparator.compare(t1.getKey(), t2.getKey()));
    }
 
    /**
-    * Max by value optional.
+    * Returns the maximum entry in the stream comparing on value
     *
-    * @return the optional
+    * @return the optional containing the entry with max value
     */
    default Optional<Map.Entry<T, U>> maxByValue() {
       return minByKey((t1, t2) -> Sorting.natural().compare(Cast.as(t1), Cast.as(t2)));
    }
 
    /**
-    * Max by value optional.
+    * Returns the maximum entry in the stream comparing on value
     *
-    * @param comparator the comparator
-    * @return the optional
+    * @param comparator the comparator to use to compare value in the stream
+    * @return the optional containing the entry with max value
     */
    default Optional<Map.Entry<T, U>> maxByValue(@NonNull SerializableComparator<? super U> comparator) {
       return min((t1, t2) -> comparator.compare(t1.getValue(), t2.getValue()));
    }
 
    /**
-    * Max optional.
+    * Returns the min item in the stream requiring that the items be comparable.
     *
-    * @param comparator the comparator
-    * @return the optional
+    * @return the optional containing the min value
     */
-   Optional<Map.Entry<T, U>> max(SerializableComparator<Map.Entry<T, U>> comparator);
+   Optional<Map.Entry<T, U>> min(SerializableComparator<Map.Entry<T, U>> comparator);
 
    /**
-    * Is empty boolean.
+    * Returns the minimum entry in the stream comparing on key
     *
-    * @return the boolean
+    * @return the optional containing the entry with min key
     */
-   boolean isEmpty();
-
+   default Optional<Map.Entry<T, U>> minByKey() {
+      return minByKey((t1, t2) -> Sorting.natural().compare(Cast.as(t1), Cast.as(t2)));
+   }
 
    /**
-    * Keys m stream.
+    * Returns the minimum entry in the stream comparing on key
     *
-    * @return the m stream
+    * @param comparator the comparator to use to compare keys in the stream
+    * @return the optional containing the entry with min key
     */
-   MStream<T> keys();
+   default Optional<Map.Entry<T, U>> minByKey(@NonNull SerializableComparator<? super T> comparator) {
+      return min((t1, t2) -> comparator.compare(t1.getKey(), t2.getKey()));
+   }
 
    /**
-    * Map m stream.
+    * Returns the minimum entry in the stream comparing on value
     *
-    * @param <R>      the type parameter
-    * @param function the function
-    * @return the m stream
+    * @return the optional containing the entry with min value
     */
-   <R> MStream<R> map(SerializableBiFunction<? super T, ? super U, ? extends R> function);
+   default Optional<Map.Entry<T, U>> minByValue() {
+      return minByKey((t1, t2) -> Sorting.natural().compare(Cast.as(t1), Cast.as(t2)));
+   }
 
    /**
-    * Map to pair m pair stream.
+    * Returns the minimum entry in the stream comparing on value
     *
-    * @param <R>      the type parameter
-    * @param <V>      the type parameter
-    * @param function the function
-    * @return the m pair stream
+    * @param comparator the comparator to use to compare value in the stream
+    * @return the optional containing the entry with min value
     */
-   <R, V> MPairStream<R, V> mapToPair(SerializableBiFunction<? super T, ? super U, ? extends Map.Entry<? extends R, ? extends V>> function);
+   default Optional<Map.Entry<T, U>> minByValue(@NonNull SerializableComparator<? super U> comparator) {
+      return min((t1, t2) -> comparator.compare(t1.getValue(), t2.getValue()));
+   }
 
    /**
-    * Reduce by key m pair stream.
+    * Sets the handler to call when the stream is closed. Typically, this is to clean up any open resources, such as
+    * file handles.
     *
-    * @param operator the operator
-    * @return the m pair stream
+    * @param closeHandler the handler to run when the stream is closed.
+    */
+   void onClose(SerializableRunnable closeHandler);
+
+   /**
+    * Ensures that the stream is parallel or distributed.
+    *
+    * @return the new stream
+    */
+   MPairStream<T, U> parallel();
+
+   /**
+    * Performs a reduction by key on the elements of this stream using the given binary operator.
+    *
+    * @param operator the binary operator used to combine two objects
+    * @return the new stream containing keys and reduced values
     */
    MPairStream<T, U> reduceByKey(SerializableBinaryOperator<U> operator);
 
    /**
-    * Sort by key m pair stream.
+    * Repartitions the stream to the given number of partitions. This may be a no-op for some streams, i.e. Local
+    * Streams.
     *
-    * @param ascending the ascending
-    * @return the m pair stream
+    * @param numPartitions the number of partitions the stream should have
+    * @return the new stream
+    */
+   MPairStream<T, U> repartition(int numPartitions);
+
+   /**
+    * Performs a right outer join between this stream and another using the key to match.
+    *
+    * @param <V>    the value type parameter of the stream to join with
+    * @param stream the other stream to right outer join with
+    * @return the new stream
+    */
+   <V> MPairStream<T, Map.Entry<U, V>> rightOuterJoin(MPairStream<? extends T, ? extends V> stream);
+
+   /**
+    * Shuffles the items in the stream.
+    *
+    * @return the new stream
+    */
+   default MPairStream<T, U> shuffle() {
+      return shuffle(new Random());
+   }
+
+   /**
+    * Shuffles the items in the string using the given <code>Random</code> object.
+    *
+    * @param random the random number generator
+    * @return the new stream
+    */
+   MPairStream<T, U> shuffle(Random random);
+
+   /**
+    * Sorts the items in the stream by key in ascending or descending order. Requires items to implement the
+    * <code>Comparable</code> interface.
+    *
+    * @param ascending determines if the items should be sorted in ascending (true) or descending (false) order
+    * @return the new stream
     */
    default MPairStream<T, U> sortByKey(boolean ascending) {
       if (ascending) {
@@ -299,72 +351,26 @@ public interface MPairStream<T, U> extends AutoCloseable {
    }
 
    /**
-    * Sort by key m pair stream.
+    * Sorts the items in the stream by key using the given comparator.
     *
-    * @param comparator the comparator
-    * @return the m pair stream
+    * @param comparator The comparator to use to comapre keys
+    * @return the new stream
     */
    MPairStream<T, U> sortByKey(SerializableComparator<T> comparator);
 
    /**
-    * Union m pair stream.
+    * Unions this stream with another.
     *
-    * @param other the other
-    * @return the m pair stream
+    * @param other the other stream to add to this one.
+    * @return the new stream
     */
    MPairStream<T, U> union(MPairStream<? extends T, ? extends U> other);
 
    /**
-    * Values m stream.
+    * Returns a stream of values
     *
-    * @return the m stream
+    * @return the new stream of values
     */
    MStream<U> values();
-
-   /**
-    * Parallel m pair stream.
-    *
-    * @return the m pair stream
-    */
-   MPairStream<T, U> parallel();
-
-   /**
-    * Shuffle m stream.
-    *
-    * @return the m stream
-    */
-   default MPairStream<T, U> shuffle() {
-      return shuffle(new Random());
-   }
-
-   /**
-    * Shuffle m pair stream.
-    *
-    * @param random the random
-    * @return the m pair stream
-    */
-   MPairStream<T, U> shuffle(Random random);
-
-   /**
-    * Cache m pair stream.
-    *
-    * @return the m pair stream
-    */
-   MPairStream<T, U> cache();
-
-   /**
-    * Repartition m pair stream.
-    *
-    * @param partitions the partitions
-    * @return the m pair stream
-    */
-   MPairStream<T, U> repartition(int partitions);
-
-   /**
-    * On close.
-    *
-    * @param closeHandler the close handler
-    */
-   void onClose(SerializableRunnable closeHandler);
 
 }//END OF MPairStream

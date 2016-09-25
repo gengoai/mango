@@ -67,6 +67,13 @@ public abstract class BaseMStreamTest {
                   );
    }
 
+   @Test(expected = IllegalArgumentException.class)
+   public void limitError() throws Exception {
+      assertEquals(Collections.emptyList(),
+                   sc.range(1, 6).limit(-1).collect()
+                  );
+   }
+
    @Test
    public void limit() throws Exception {
       assertEquals(Arrays.asList(1, 2, 3, 4, 5),
@@ -80,9 +87,12 @@ public abstract class BaseMStreamTest {
       assertEquals(Collections.emptyList(),
                    sc.range(1, 6).limit(0).collect()
                   );
+   }
 
+   @Test(expected = IllegalArgumentException.class)
+   public void takeError() throws Exception {
       assertEquals(Collections.emptyList(),
-                   sc.range(1, 100).limit(-1).collect()
+                   sc.range(1, 100).take(-1)
                   );
    }
 
@@ -100,9 +110,6 @@ public abstract class BaseMStreamTest {
                    sc.range(1, 6).take(0)
                   );
 
-      assertEquals(Collections.emptyList(),
-                   sc.range(1, 100).take(-1)
-                  );
    }
 
 
@@ -191,7 +198,8 @@ public abstract class BaseMStreamTest {
 
    @Test
    public void zipWithIndex() throws Exception {
-      List<Map.Entry<String, Long>> result = sc.stream("A", "B", "C").zipWithIndex()
+      List<Map.Entry<String, Long>> result = sc.stream("A", "B", "C")
+                                               .zipWithIndex()
                                                .collectAsList();
       assertEquals("A", result.get(0).getKey());
       assertEquals("B", result.get(1).getKey());
@@ -267,11 +275,14 @@ public abstract class BaseMStreamTest {
    @Test
    public void sample() throws Exception {
       assertEquals(10, sc.range(0, 100).sample(false, 10).count());
-      assertEquals(0, sc.range(0, 100).sample(false, -1).count());
       assertEquals(100, sc.range(0, 100).sample(false, 200).count());
       assertEquals(10, sc.range(0, 100).sample(true, 10).count());
-      assertEquals(0, sc.range(0, 100).sample(true, -1).count());
       assertEquals(200, sc.range(0, 100).sample(true, 200).count());
+   }
+
+   @Test(expected = IllegalArgumentException.class)
+   public void sampleError() throws Exception {
+      assertEquals(0, sc.range(0, 100).sample(false, -1).count());
    }
 
    @Test

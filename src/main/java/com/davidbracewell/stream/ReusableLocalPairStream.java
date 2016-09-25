@@ -43,15 +43,15 @@ class ReusableLocalPairStream<K, V> implements MPairStream<K, V> {
    }
 
    @Override
+   public MPairStream<K, V> cache() {
+      return this;
+   }
+
+   @Override
    public void close() throws Exception {
       if (onClose != null) {
          onClose.run();
       }
-   }
-
-   @Override
-   public StreamingContext getContext() {
-      return LocalStreamingContext.INSTANCE;
    }
 
    @Override
@@ -67,14 +67,6 @@ class ReusableLocalPairStream<K, V> implements MPairStream<K, V> {
    @Override
    public long count() {
       return backingMap.size();
-   }
-
-   private MPairStream<K, V> toStream() {
-      MPairStream<K, V> stream = new LocalPairStream<>(backingMap);
-      if (parallel) {
-         stream = stream.parallel();
-      }
-      return stream;
    }
 
    @Override
@@ -103,45 +95,28 @@ class ReusableLocalPairStream<K, V> implements MPairStream<K, V> {
    }
 
    @Override
+   public StreamingContext getContext() {
+      return LocalStreamingContext.INSTANCE;
+   }
+
+   @Override
+   public SerializableRunnable getOnCloseHandler() {
+      return onClose;
+   }
+
+   @Override
    public MPairStream<K, Iterable<V>> groupByKey() {
       return toStream().groupByKey();
    }
 
    @Override
-   public <V1> MPairStream<K, Map.Entry<V, V1>> join(MPairStream<? extends K, ? extends V1> stream) {
-      return toStream().join(stream);
-   }
-
-   @Override
-   public <V1> MPairStream<K, Map.Entry<V, V1>> leftOuterJoin(MPairStream<? extends K, ? extends V1> stream) {
-      return toStream().leftOuterJoin(stream);
-   }
-
-   @Override
-   public <V1> MPairStream<K, Map.Entry<V, V1>> rightOuterJoin(MPairStream<? extends K, ? extends V1> stream) {
-      return toStream().rightOuterJoin(stream);
-   }
-
-   @Override
-   public MDoubleStream mapToDouble(@NonNull SerializableToDoubleBiFunction<? super K, ? super V> function) {
-      return new LocalDoubleStream(backingMap.entrySet()
-                                             .stream()
-                                             .mapToDouble(e -> function.applyAsDouble(e.getKey(), e.getValue())));
-   }
-
-   @Override
-   public Optional<Map.Entry<K, V>> min(@NonNull SerializableComparator<Map.Entry<K, V>> comparator) {
-      return toStream().min(comparator);
-   }
-
-   @Override
-   public Optional<Map.Entry<K, V>> max(@NonNull SerializableComparator<Map.Entry<K, V>> comparator) {
-      return toStream().max(comparator);
-   }
-
-   @Override
    public boolean isEmpty() {
       return backingMap.isEmpty();
+   }
+
+   @Override
+   public <V1> MPairStream<K, Map.Entry<V, V1>> join(MPairStream<? extends K, ? extends V1> stream) {
+      return toStream().join(stream);
    }
 
    @Override
@@ -154,8 +129,20 @@ class ReusableLocalPairStream<K, V> implements MPairStream<K, V> {
    }
 
    @Override
+   public <V1> MPairStream<K, Map.Entry<V, V1>> leftOuterJoin(MPairStream<? extends K, ? extends V1> stream) {
+      return toStream().leftOuterJoin(stream);
+   }
+
+   @Override
    public <R> MStream<R> map(@NonNull SerializableBiFunction<? super K, ? super V, ? extends R> function) {
       return toStream().map(function);
+   }
+
+   @Override
+   public MDoubleStream mapToDouble(@NonNull SerializableToDoubleBiFunction<? super K, ? super V> function) {
+      return new LocalDoubleStream(backingMap.entrySet()
+                                             .stream()
+                                             .mapToDouble(e -> function.applyAsDouble(e.getKey(), e.getValue())));
    }
 
    @Override
@@ -164,13 +151,57 @@ class ReusableLocalPairStream<K, V> implements MPairStream<K, V> {
    }
 
    @Override
+   public Optional<Map.Entry<K, V>> max(@NonNull SerializableComparator<Map.Entry<K, V>> comparator) {
+      return toStream().max(comparator);
+   }
+
+   @Override
+   public Optional<Map.Entry<K, V>> min(@NonNull SerializableComparator<Map.Entry<K, V>> comparator) {
+      return toStream().min(comparator);
+   }
+
+   @Override
+   public void onClose(SerializableRunnable closeHandler) {
+      this.onClose = closeHandler;
+   }
+
+   @Override
+   public MPairStream<K, V> parallel() {
+      this.parallel = true;
+      return this;
+   }
+
+   @Override
    public MPairStream<K, V> reduceByKey(@NonNull SerializableBinaryOperator<V> operator) {
       return groupByKey().mapToPair((t, u) -> Tuple2.of(t, Streams.asStream(u).reduce(operator).orElse(null)));
    }
 
    @Override
+   public MPairStream<K, V> repartition(int partitions) {
+      return this;
+   }
+
+   @Override
+   public <V1> MPairStream<K, Map.Entry<V, V1>> rightOuterJoin(MPairStream<? extends K, ? extends V1> stream) {
+      return toStream().rightOuterJoin(stream);
+   }
+
+   @Override
+   public MPairStream<K, V> shuffle(Random random) {
+      return toStream().shuffle();
+   }
+
+   @Override
    public MPairStream<K, V> sortByKey(@NonNull SerializableComparator<K> comparator) {
       return toStream().sortByKey(comparator);
+   }
+
+   private MPairStream<K, V> toStream() {
+      MPairStream<K, V> stream = new LocalPairStream<>(backingMap);
+      if (parallel) {
+         stream = stream.parallel();
+      }
+      return stream;
    }
 
    @Override
@@ -181,32 +212,6 @@ class ReusableLocalPairStream<K, V> implements MPairStream<K, V> {
    @Override
    public MStream<V> values() {
       return new ReusableLocalStream<>(backingMap.values());
-   }
-
-   @Override
-   public MPairStream<K, V> parallel() {
-      this.parallel = true;
-      return this;
-   }
-
-   @Override
-   public MPairStream<K, V> shuffle(Random random) {
-      return toStream().shuffle();
-   }
-
-   @Override
-   public MPairStream<K, V> cache() {
-      return this;
-   }
-
-   @Override
-   public MPairStream<K, V> repartition(int partitions) {
-      return this;
-   }
-
-   @Override
-   public void onClose(SerializableRunnable closeHandler) {
-      this.onClose = closeHandler;
    }
 
 }//END OF ReusableLocalPairStream

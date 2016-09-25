@@ -173,7 +173,10 @@ public class LocalStream<T> implements MStream<T>, Serializable {
 
    @Override
    public MStream<T> limit(long number) {
-      Preconditions.checkArgument(number > 0, "Limit number must be greater than zero.");
+      Preconditions.checkArgument(number >= 0, "Limit number must be non-negative.");
+      if (number == 0) {
+         return StreamingContext.local().empty();
+      }
       return new LocalStream<>(stream.limit(number));
    }
 
@@ -225,7 +228,10 @@ public class LocalStream<T> implements MStream<T>, Serializable {
 
    @Override
    public MStream<T> sample(boolean withReplacement, int number) {
-      Preconditions.checkArgument(number > 0, "number must be greater than zero.");
+      Preconditions.checkArgument(number >= 0, "Sample size must be non-negative.");
+      if (number == 0) {
+         return StreamingContext.local().empty();
+      }
       Random random = new Random();
       if (withReplacement) {
          List<T> all = collect();
@@ -301,7 +307,10 @@ public class LocalStream<T> implements MStream<T>, Serializable {
 
    @Override
    public List<T> take(int n) {
-      Preconditions.checkArgument(n > 0, "N must be greater than zero.");
+      Preconditions.checkArgument(n >= 0, "N must be non-negative.");
+      if (n == 0) {
+         return Collections.emptyList();
+      }
       return stream.limit(n).collect(Collectors.toList());
    }
 
@@ -321,7 +330,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
    @Override
    public MPairStream<T, Long> zipWithIndex() {
       final AtomicLong indexer = new AtomicLong();
-      return new LocalPairStream<>(stream.map(t -> $(t, indexer.get())));
+      return new LocalPairStream<>(stream.map(t -> $(t, indexer.getAndIncrement())));
    }
 
    @Override

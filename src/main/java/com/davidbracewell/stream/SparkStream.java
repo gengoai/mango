@@ -222,7 +222,10 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
    @Override
    public SparkStream<T> limit(long number) {
-      Preconditions.checkArgument(number > 0, "Limit number must be greater than zero.");
+      Preconditions.checkArgument(number >= 0, "Limit number must be non-negative.");
+      if (number == 0) {
+         StreamingContext.distributed().empty();
+      }
       return new SparkStream<>(rdd.zipWithIndex().filter(p -> p._2() < number).map(Tuple2::_1));
    }
 
@@ -313,7 +316,10 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
    @Override
    public SparkStream<T> sample(boolean withReplacement, int number) {
-      Preconditions.checkArgument(number > 0, "number must be greater than zero.");
+      Preconditions.checkArgument(number >= 0, "Sample size must be non-negative.");
+      if (number == 0) {
+         return StreamingContext.distributed().empty();
+      }
       if (withReplacement) {
          SparkStream<T> sample = new SparkStream<>(rdd.sample(true, 0.5));
          while (sample.count() < number) {
@@ -384,7 +390,10 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
    @Override
    public List<T> take(int n) {
-      Preconditions.checkArgument(n > 0, "N must be greater than zero.");
+      Preconditions.checkArgument(n >= 0, "N must be non-negative.");
+      if (n == 0) {
+         return Collections.emptyList();
+      }
       return rdd.take(n);
    }
 

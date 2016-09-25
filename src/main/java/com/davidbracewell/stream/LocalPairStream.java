@@ -44,9 +44,8 @@ import static com.davidbracewell.tuple.Tuples.$;
  */
 class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
    private static final long serialVersionUID = 1L;
-
    private volatile Stream<Entry<T, U>> stream;
-
+   private SerializableRunnable onClose;
 
    /**
     * Instantiates a new Local pair stream.
@@ -136,6 +135,11 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
+   public SerializableRunnable getOnCloseHandler() {
+      return onClose;
+   }
+
+   @Override
    public MPairStream<T, Iterable<U>> groupByKey() {
       return new LocalPairStream<>(
                                      stream.collect(Collectors.groupingBy(Entry::getKey))
@@ -216,7 +220,8 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public void onClose(@NonNull SerializableRunnable closeHandler) {
+   public void onClose(SerializableRunnable closeHandler) {
+      this.onClose = closeHandler;
       stream.onClose(closeHandler);
    }
 
