@@ -262,15 +262,29 @@ public class ReusableLocalStream<T> implements MStream<T> {
    }
 
    @Override
-   public MStream<Iterable<T>> partition(int numPartitions) {
-      Preconditions.checkArgument(numPartitions > 0, "Number of partitions must be greater than zero.");
-      ReusableLocalStream<Iterable<T>> stream = new ReusableLocalStream<>(Cast.cast(Lists.partition(
-         backingCollection,
-         numPartitions)));
+   public MStream<Iterable<T>> split(int n) {
+      Preconditions.checkArgument(n > 0, "Number of partitions must be greater than zero.");
+      final int pSize = backingCollection.size() / n;
+      List<Iterable<T>> partitions = new ArrayList<>();
+      for (int i = 0; i < n; i++) {
+         int start = i * pSize;
+         int end = Math.min(start + pSize, backingCollection.size());
+         if (i + 1 == n) {
+            end = Math.max(end, backingCollection.size());
+         }
+         partitions.add(backingCollection.subList(start, end));
+      }
+      ReusableLocalStream<Iterable<T>> stream = new ReusableLocalStream<>(partitions);
       if (parallel) {
          stream.parallel = true;
       }
       return stream;
+   }
+
+   @Override
+   public MStream<Iterable<T>> partition(long partitionSize) {
+      Preconditions.checkArgument(partitionSize > 0, "Number of partitions must be greater than zero.");
+      return new ReusableLocalStream<>(Cast.cast(Lists.partition(backingCollection, (int) partitionSize)));
    }
 
    @Override

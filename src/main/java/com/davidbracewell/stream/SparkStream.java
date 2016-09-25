@@ -397,10 +397,26 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public MStream<Iterable<T>> partition(int numPartitions) {
-      Preconditions.checkArgument(numPartitions > 0, "Number of partitions must be greater than zero.");
-      final long pSize = count() / numPartitions;
-      return zipWithIndex().mapToPair((k, v) -> $((long) Math.floor(v / pSize), k)).groupByKey().values();
+   public MStream<Iterable<T>> partition(long partitionSize) {
+      Preconditions.checkArgument(partitionSize > 0, "Number of partitions must be greater than zero.");
+      return zipWithIndex().mapToPair((k, v) -> $(pindex(v, partitionSize, Long.MAX_VALUE), k))
+                           .groupByKey()
+                           .sortByKey(true)
+                           .values();
+   }
+
+   @Override
+   public MStream<Iterable<T>> split(int n) {
+      Preconditions.checkArgument(n > 0, "N must be greater than zero.");
+      final long pSize = count() / n;
+      return zipWithIndex().mapToPair((k, v) -> $(pindex(v, pSize, n), k))
+                           .groupByKey()
+                           .sortByKey(true)
+                           .values();
+   }
+
+   private long pindex(double rawIndex, long partitionSize, long numPartitions) {
+      return Math.min(numPartitions - 1, (long) Math.floor(rawIndex / partitionSize));
    }
 
 

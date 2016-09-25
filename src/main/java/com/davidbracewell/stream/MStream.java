@@ -410,11 +410,19 @@ public interface MStream<T> extends Closeable {
    }
 
    /**
-    * Partitions the stream into <code>numPartition</code> iterables.
+    * Splits the stream into <code>n</code> equal sized iterables.
     *
-    * @param numPartitions the number of partitions to split the stream into
+    * @param n the number of iterables to split the stream into
     * @return the new stream
     */
-   MStream<Iterable<T>> partition(int numPartitions);
+   MStream<Iterable<T>> split(int n);
+
+   /**
+    * Partitions the stream into iterables each of size <= <code>partitionSize</code>.
+    *
+    * @param partitionSize the desired number of objects in each partition
+    * @return the new stream
+    */
+   MStream<Iterable<T>> partition(long partitionSize);
 
 }//END OF MStream

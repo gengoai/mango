@@ -23,11 +23,13 @@ package com.davidbracewell.stream;
 
 import com.davidbracewell.collection.Collect;
 import com.davidbracewell.collection.Sorting;
+import com.davidbracewell.collection.Streams;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.function.*;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.tuple.Tuple2;
+import com.google.common.collect.Iterators;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
@@ -316,8 +318,15 @@ public class LocalStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public MStream<Iterable<T>> partition(int numPartitions) {
-      return cache().partition(numPartitions);
+   public MStream<Iterable<T>> split(int n) {
+      return cache().split(n);
    }
+
+
+   @Override
+   public MStream<Iterable<T>> partition(long partitionSize) {
+      return new LocalStream<>(Streams.asStream(Iterators.partition(iterator(), (int) partitionSize)));
+   }
+
 
 }//END OF LocalStream
