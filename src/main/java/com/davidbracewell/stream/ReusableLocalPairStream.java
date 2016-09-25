@@ -29,6 +29,7 @@ import lombok.NonNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author David B. Bracewell
@@ -212,6 +213,11 @@ class ReusableLocalPairStream<K, V> implements MPairStream<K, V> {
    @Override
    public MStream<V> values() {
       return new ReusableLocalStream<>(backingMap.values());
+   }
+
+   @Override
+   public <R, V1> MPairStream<R, V1> flatMapToPair(@NonNull SerializableBiFunction<? super K, ? super V, Stream<Map.Entry<? extends R, ? extends V1>>> function) {
+      return toStream().flatMapToPair(function);
    }
 
    @Override

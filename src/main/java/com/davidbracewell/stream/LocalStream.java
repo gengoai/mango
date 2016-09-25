@@ -269,21 +269,6 @@ public class LocalStream<T> implements MStream<T>, Serializable {
       }
    }
 
-   private static class RandomComparator<T> implements Comparator<T> {
-      private final Map<T, Double> map = new HashMap<>();
-      private final Random random;
-
-      public RandomComparator(Random random) {
-         this.random = random;
-      }
-
-      @Override
-      public int compare(T o1, T o2) {
-         return Double.compare(map.computeIfAbsent(o1, o -> random.nextDouble()),
-                               map.computeIfAbsent(o2, o -> random.nextDouble()));
-      }
-   }
-
    @Override
    public MStream<T> shuffle(@NonNull Random random) {
       return new LocalStream<>(stream.sorted(new RandomComparator<>(random)));

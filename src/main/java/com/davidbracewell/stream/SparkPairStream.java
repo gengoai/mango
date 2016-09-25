@@ -10,6 +10,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * The type Spark pair stream.
@@ -297,4 +298,14 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
       return true;
    }
 
+
+   @Override
+   public <R, V> SparkPairStream<R, V> flatMapToPair(@NonNull SerializableBiFunction<? super T, ? super U, Stream<Map.Entry<? extends R, ? extends V>>> function) {
+      return new SparkPairStream<>(rdd.flatMapToPair(t -> {
+         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         return Cast.cast(function.apply(t._1(), t._2())
+                                  .map(e -> new scala.Tuple2<>(e.getKey(), e.getValue()))
+                                  .iterator());
+      }));
+   }
 }// END OF SparkPairStream

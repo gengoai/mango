@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.stream.Stream;
 
 /**
  * <p>A facade for stream classes which contain key-value pairs. Provides a common interface to working with an
@@ -186,6 +187,16 @@ public interface MPairStream<T, U> extends AutoCloseable {
     * @return the new pair stream
     */
    <R, V> MPairStream<R, V> mapToPair(SerializableBiFunction<? super T, ? super U, ? extends Map.Entry<? extends R, ? extends V>> function);
+
+   /**
+    * Maps the key-value pairs to one or more new key-value pairs
+    *
+    * @param <R>      the new key type parameter
+    * @param <V>      the new value type parameter
+    * @param function the function to map key-value pairs
+    * @return the new pair stream
+    */
+   <R, V> MPairStream<R, V> flatMapToPair(SerializableBiFunction<? super T, ? super U, Stream<Map.Entry<? extends R, ? extends V>>> function);
 
    /**
     * Returns the max item in the stream using the given comparator to compare items.
