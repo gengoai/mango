@@ -21,18 +21,27 @@
 
 package com.davidbracewell.stream;
 
-import java.util.Comparator;
+import com.davidbracewell.function.SerializableComparator;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
 /**
+ * A comparator that generates a random number that is used for comparison for each object
+ *
+ * @param <T> the type of object being compared
  * @author David B. Bracewell
  */
-class RandomComparator<T> implements Comparator<T> {
+class RandomComparator<T> implements SerializableComparator<T> {
    private final Map<T, Double> map = new HashMap<>();
    private final Random random;
 
+   /**
+    * Instantiates a new Random comparator.
+    *
+    * @param random the random
+    */
    public RandomComparator(Random random) {
       this.random = random;
    }

@@ -24,6 +24,7 @@ package com.davidbracewell.stream;
 import com.davidbracewell.EnhancedDoubleStatistics;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.*;
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -32,22 +33,22 @@ import java.util.PrimitiveIterator;
 import java.util.stream.DoubleStream;
 
 /**
- * The type Java double stream.
+ * <p>Implementation of a <code>MDoubleStream</code> that wraps a Java <code>DoubleStream</code>.</p>
  *
  * @author David B. Bracewell
  */
-public class LocalDoubleStream implements MDoubleStream, Serializable {
+class LocalDoubleStream implements MDoubleStream, Serializable {
    private static final long serialVersionUID = 1L;
 
    private final DoubleStream stream;
    private SerializableRunnable onCloseHandler;
 
    /**
-    * Instantiates a new Java double stream.
+    * Instantiates a new Local double stream.
     *
-    * @param stream the stream
+    * @param stream the double stream to wrap
     */
-   public LocalDoubleStream(DoubleStream stream) {
+   LocalDoubleStream(@NonNull DoubleStream stream) {
       this.stream = stream;
    }
 
@@ -63,7 +64,7 @@ public class LocalDoubleStream implements MDoubleStream, Serializable {
 
    @Override
    public MDoubleStream cache() {
-      return this;
+      return new ReusableDoubleStream(stream.toArray());
    }
 
    @Override
@@ -93,9 +94,7 @@ public class LocalDoubleStream implements MDoubleStream, Serializable {
 
    @Override
    public MDoubleStream flatMap(@NonNull SerializableDoubleFunction<double[]> mapper) {
-      return new LocalDoubleStream(
-                                     stream.flatMap(d -> DoubleStream.of(mapper.apply(d)).parallel())
-      );
+      return new LocalDoubleStream(stream.flatMap(d -> DoubleStream.of(mapper.apply(d))));
    }
 
    @Override
@@ -125,6 +124,7 @@ public class LocalDoubleStream implements MDoubleStream, Serializable {
 
    @Override
    public MDoubleStream limit(int n) {
+      Preconditions.checkArgument(n >= 0, "Limit number must be non-negative.");
       return new LocalDoubleStream(stream.limit(n));
    }
 
@@ -145,8 +145,7 @@ public class LocalDoubleStream implements MDoubleStream, Serializable {
 
    @Override
    public double mean() {
-      return stream.collect(EnhancedDoubleStatistics::new, EnhancedDoubleStatistics::accept,
-                            EnhancedDoubleStatistics::combine).getAverage();
+      return statistics().getAverage();
    }
 
    @Override
@@ -201,9 +200,14 @@ public class LocalDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
-   public double stddev() {
+   public EnhancedDoubleStatistics statistics() {
       return stream.collect(EnhancedDoubleStatistics::new, EnhancedDoubleStatistics::accept,
-                            EnhancedDoubleStatistics::combine).getSampleStandardDeviation();
+                            EnhancedDoubleStatistics::combine);
+   }
+
+   @Override
+   public double stddev() {
+      return statistics().getSampleStandardDeviation();
    }
 
    @Override
@@ -217,8 +221,8 @@ public class LocalDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
-   public MDoubleStream union(MDoubleStream other) {
-      if (other == null) {
+   public MDoubleStream union(@NonNull MDoubleStream other) {
+      if (other.isReusable() && other.isEmpty()) {
          return this;
       } else if (other instanceof LocalDoubleStream) {
          return new LocalDoubleStream(DoubleStream.concat(stream, Cast.<LocalDoubleStream>as(other).stream));

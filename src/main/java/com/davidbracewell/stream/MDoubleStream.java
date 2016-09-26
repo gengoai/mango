@@ -119,17 +119,6 @@ public interface MDoubleStream extends AutoCloseable {
    SerializableRunnable getOnCloseHandler();
 
    /**
-    * Calculates a number of useful statistics over the elements in the stream
-    *
-    * @return the statistics
-    */
-   default EnhancedDoubleStatistics statistics() {
-      MStatisticsAccumulator accumulator = getContext().statisticsAccumulator();
-      forEach(accumulator::add);
-      return accumulator.value();
-   }
-
-   /**
     * Determines if the stream is empty or not
     *
     * @return True if empty, False otherwise
@@ -255,6 +244,13 @@ public interface MDoubleStream extends AutoCloseable {
    MDoubleStream sorted(boolean ascending);
 
    /**
+    * Calculates a number of useful statistics over the elements in the stream
+    *
+    * @return the statistics
+    */
+   EnhancedDoubleStatistics statistics();
+
+   /**
     * Calculates the standard deviation of the stream
     *
     * @return the standard deviation
@@ -282,5 +278,14 @@ public interface MDoubleStream extends AutoCloseable {
     * @return the new double stream
     */
    MDoubleStream union(MDoubleStream other);
+
+   /**
+    * Can this stream be consumed more the once?
+    *
+    * @return True the stream can be reused multiple times, False the stream can only be used once
+    */
+   default boolean isReusable() {
+      return false;
+   }
 
 }//END OF MDoubleStream
