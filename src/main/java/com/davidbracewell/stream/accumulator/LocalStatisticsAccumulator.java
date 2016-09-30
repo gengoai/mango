@@ -58,6 +58,11 @@ public class LocalStatisticsAccumulator implements MStatisticsAccumulator {
    }
 
    @Override
+   public boolean isZero() {
+      return false;
+   }
+
+   @Override
    @Synchronized
    public void merge(@NonNull MAccumulator<Double, EnhancedDoubleStatistics> other) {
       eds.combine(other.value());

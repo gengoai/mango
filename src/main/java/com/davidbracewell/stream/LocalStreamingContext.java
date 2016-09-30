@@ -30,10 +30,7 @@ import com.davidbracewell.stream.accumulator.*;
 import com.davidbracewell.string.StringUtils;
 import lombok.SneakyThrows;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -56,7 +53,7 @@ public enum LocalStreamingContext implements StreamingContext {
 
    @Override
    public <E> MCounterAccumulator<E> counterAccumulator(String name) {
-      return new LocalCounterAccumulator<>(name);
+      return new LocalMCounterAccumulator<>(name);
    }
 
    @Override
@@ -87,8 +84,8 @@ public enum LocalStreamingContext implements StreamingContext {
    }
 
    @Override
-   public <E> MListAccumulator<E> listAccumulator(String name) {
-      return new LocalListAccumulator<>(name);
+   public <E> MAccumulator<E, List<E>> listAccumulator(String name) {
+      return new LocalMAccumulator<>(new CollectionAccumulator<>(),name);
    }
 
    @Override

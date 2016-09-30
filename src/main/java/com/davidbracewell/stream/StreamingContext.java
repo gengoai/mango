@@ -28,10 +28,7 @@ import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.stream.accumulator.*;
 import com.davidbracewell.tuple.Tuple2;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
@@ -184,7 +181,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param <E> the component type of the list
     * @return the list accumulator
     */
-   default <E> MListAccumulator<E> listAccumulator() {
+   default <E> MAccumulator<E, List<E>> listAccumulator() {
       return listAccumulator(null);
    }
 
@@ -195,7 +192,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param name the name of the accumulator
     * @return the list accumulator
     */
-   <E> MListAccumulator<E> listAccumulator(String name);
+   <E> MAccumulator<E, List<E>> listAccumulator(String name);
 
    /**
     * Creates a new long accumulator with the given initial value.

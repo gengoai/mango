@@ -46,8 +46,8 @@ public class BaseSparkAccumulator<IN, OUT> implements MAccumulator<IN, OUT> {
    }
 
    @Override
-   public OUT value() {
-      return accumulatorV2.value();
+   public boolean isZero() {
+      return accumulatorV2.isZero();
    }
 
    @Override
@@ -70,6 +70,11 @@ public class BaseSparkAccumulator<IN, OUT> implements MAccumulator<IN, OUT> {
    @Override
    public void reset() {
       accumulatorV2.reset();
+   }
+
+   @Override
+   public OUT value() {
+      return accumulatorV2.value();
    }
 
 }// END OF BaseSparkAccumulator

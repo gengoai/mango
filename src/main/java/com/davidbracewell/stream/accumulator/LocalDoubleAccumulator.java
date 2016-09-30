@@ -63,6 +63,11 @@ public class LocalDoubleAccumulator implements MDoubleAccumulator {
    }
 
    @Override
+   public boolean isZero() {
+      return false;
+   }
+
+   @Override
    public void merge(@NonNull MAccumulator<Double, Double> other) {
       add(other.value());
    }

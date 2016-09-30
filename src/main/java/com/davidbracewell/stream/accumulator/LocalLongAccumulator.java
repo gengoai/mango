@@ -63,6 +63,11 @@ public class LocalLongAccumulator implements MLongAccumulator {
   }
 
   @Override
+  public boolean isZero() {
+    return false;
+  }
+
+  @Override
   public void merge(@NonNull MAccumulator<Long, Long> other) {
     longValue.addAndGet(other.value());
   }

@@ -401,7 +401,7 @@ public abstract class BaseMStreamTest {
    public void accumulators() throws Exception {
       MDoubleAccumulator dA = sc.doubleAccumulator(0d);
       MLongAccumulator iA = sc.longAccumulator(0);
-      MListAccumulator<String> sA = sc.listAccumulator();
+      MAccumulator<String, List<String>> sA = sc.listAccumulator();
       MCounterAccumulator<String> cA = sc.counterAccumulator();
       MMapAccumulator<String, Integer> mA = sc.mapAccumulator();
       sc.stream("A", "B", "CC", "A").forEach(s -> {

@@ -52,6 +52,11 @@ public class LocalMapAccumulator<K, V> implements MMapAccumulator<K, V> {
    }
 
    @Override
+   public boolean isZero() {
+      return false;
+   }
+
+   @Override
    public void merge(@NonNull MAccumulator<Tuple2<K, V>, Map<K, V>> other) {
       Preconditions.checkArgument(LocalMapAccumulator.class == other.getClass(),
                                   "Only other " + this.getClass().getSimpleName() + " can be merged");

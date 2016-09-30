@@ -69,4 +69,11 @@ public interface MAccumulator<IN, OUT> extends Serializable {
     */
    OUT value();
 
+   /**
+    * Determines if the accumulator is a zero value
+    *
+    * @return True if the accumulator is in a zero state
+    */
+   boolean isZero();
+
 }// END OF MAcc

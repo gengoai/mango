@@ -52,6 +52,11 @@ public class LocalMultiCounterAccumulator<K1, K2> implements MMultiCounterAccumu
    }
 
    @Override
+   public boolean isZero() {
+      return false;
+   }
+
+   @Override
    public void merge(@NonNull MAccumulator<Tuple2<K1, K2>, MultiCounter<K1, K2>> other) {
       Preconditions.checkArgument(LocalMultiCounterAccumulator.class == other.getClass(),
                                   "Only other " + this.getClass().getSimpleName() + " can be merged");
@@ -71,6 +76,11 @@ public class LocalMultiCounterAccumulator<K1, K2> implements MMultiCounterAccumu
    @Override
    public void increment(K1 firstKey, K2 secondKey) {
       counter.increment(firstKey, secondKey);
+   }
+
+   @Override
+   public void increment(K1 firstKey, K2 secondKey, double value) {
+
    }
 
    @Override
