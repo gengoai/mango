@@ -26,45 +26,47 @@ import java.io.Serializable;
 import java.util.Optional;
 
 /**
- * The interface M accumulator.
+ * <p>Base interface for accumulators that can work across local and distributed streams.</p>
  *
- * @param <IN>  the type parameter
- * @param <OUT> the type parameter
+ * @param <IN>  the type parameter for what is being accumulated
+ * @param <OUT> the type parameter for the result of the accumulation
  * @author David B. Bracewell
  */
 public interface MAccumulator<IN, OUT> extends Serializable {
 
-  /**
-   * Add.
-   *
-   * @param in the in
-   */
-  void add(IN in);
+   /**
+    * Adds an item to the accumulator
+    *
+    * @param in the item to add
+    */
+   void add(IN in);
 
-  /**
-   * Value out.
-   *
-   * @return the out
-   */
-  OUT value();
+   /**
+    * Merges another accumulator with this one
+    *
+    * @param other the other accumulator to merge
+    * @throws NullPointerException     if the other accumulator is null
+    * @throws IllegalArgumentException if the other accumulator cannot be merged with this one
+    */
+   void merge(MAccumulator<IN, OUT> other);
 
-  /**
-   * Merge.
-   *
-   * @param other the other
-   */
-  void merge(MAccumulator<IN, OUT> other);
+   /**
+    * The name of the accumulator
+    *
+    * @return the optional name of the accumulator
+    */
+   Optional<String> name();
 
-  /**
-   * Name optional.
-   *
-   * @return the optional
-   */
-  Optional<String> name();
+   /**
+    * Resets the accumulator to its zero-value.
+    */
+   void reset();
 
-  /**
-   * Reset.
-   */
-  void reset();
+   /**
+    * The value of the accumulator.
+    *
+    * @return the result of the accumulator
+    */
+   OUT value();
 
 }// END OF MAcc

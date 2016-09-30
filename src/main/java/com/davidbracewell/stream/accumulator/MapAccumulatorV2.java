@@ -39,8 +39,8 @@ public class MapAccumulatorV2<K, V> extends AccumulatorV2<Tuple2<K, V>, Map<K, V
    private final Map<K, V> map = new HashMap<>();
 
    @Override
-   public boolean isZero() {
-      return map.isEmpty();
+   public void add(@NonNull Tuple2<K, V> v) {
+      map.put(v.v1, v.v2);
    }
 
    @Override
@@ -51,19 +51,19 @@ public class MapAccumulatorV2<K, V> extends AccumulatorV2<Tuple2<K, V>, Map<K, V
    }
 
    @Override
-   public void reset() {
-      map.clear();
-   }
-
-   @Override
-   public void add(@NonNull Tuple2<K, V> v) {
-      map.put(v.v1, v.v2);
+   public boolean isZero() {
+      return map.isEmpty();
    }
 
    @Override
    public void merge(@NonNull AccumulatorV2<Tuple2<K, V>, Map<K, V>> other) {
       Preconditions.checkArgument(other instanceof MapAccumulatorV2);
       map.putAll(Cast.<MapAccumulatorV2<K, V>>as(other).map);
+   }
+
+   @Override
+   public void reset() {
+      map.clear();
    }
 
    @Override

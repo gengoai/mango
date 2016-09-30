@@ -25,12 +25,36 @@ import com.davidbracewell.collection.counter.MultiCounter;
 import com.davidbracewell.tuple.Tuple2;
 
 /**
+ * An accumulator for {@link MultiCounter}s
+ *
+ * @param <K1> the first key type parameter
+ * @param <K2> the second key type parameter
  * @author David B. Bracewell
  */
 public interface MMultiCounterAccumulator<K1, K2> extends MAccumulator<Tuple2<K1, K2>, MultiCounter<K1, K2>> {
 
-   void increment(K1 key, K2 value);
+   /**
+    * Increments the count of the two keys.
+    *
+    * @param firstKey  the first key
+    * @param secondKey the second key
+    */
+   void increment(K1 firstKey, K2 secondKey);
 
-   void merge(MultiCounter<K1,K2> other);
+   /**
+    * Increments the count of the two keys by the given value.
+    *
+    * @param firstKey  the first key
+    * @param secondKey the second key
+    * @param value     the amount to increment by
+    */
+   void increment(K1 firstKey, K2 secondKey, double value);
+
+   /**
+    * Merges the given MultiCounter with this accumulator
+    *
+    * @param other the MultiCounter to merge
+    */
+   void merge(MultiCounter<K1, K2> other);
 
 }//END OF MMapAccumulator

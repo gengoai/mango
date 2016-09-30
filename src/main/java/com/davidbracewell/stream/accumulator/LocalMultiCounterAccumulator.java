@@ -69,8 +69,8 @@ public class LocalMultiCounterAccumulator<K1, K2> implements MMultiCounterAccumu
    }
 
    @Override
-   public void increment(K1 key, K2 value) {
-      counter.increment(key, value);
+   public void increment(K1 firstKey, K2 secondKey) {
+      counter.increment(firstKey, secondKey);
    }
 
    @Override

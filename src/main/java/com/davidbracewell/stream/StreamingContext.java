@@ -45,13 +45,6 @@ import java.util.stream.Stream;
 public interface StreamingContext extends AutoCloseable {
 
    /**
-    * Updates the config object used by this stream (important for distributed environments).
-    */
-   default void updateConfig(){
-
-   }
-
-   /**
     * Gets the distributed streaming context. (requires Spark jars to be on classpath).
     *
     * @return the distributed streaming context
@@ -194,7 +187,6 @@ public interface StreamingContext extends AutoCloseable {
    default <E> MListAccumulator<E> listAccumulator() {
       return listAccumulator(null);
    }
-
 
    /**
     * Creates a list accumulator
@@ -395,6 +387,13 @@ public interface StreamingContext extends AutoCloseable {
     * @return the new MStream backed by the lines of the files in the given location.
     */
    MStream<String> textFile(Resource location);
+
+   /**
+    * Updates the config object used by this stream (important for distributed environments).
+    */
+   default void updateConfig() {
+
+   }
 
 
 }//END OF StreamingContext

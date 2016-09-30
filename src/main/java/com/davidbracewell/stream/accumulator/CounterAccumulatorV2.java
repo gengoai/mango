@@ -30,6 +30,9 @@ import org.apache.spark.util.AccumulatorV2;
 import java.io.Serializable;
 
 /**
+ * The type Counter accumulator v 2.
+ *
+ * @param <K> the type parameter
  * @author David B. Bracewell
  */
 public class CounterAccumulatorV2<K> extends AccumulatorV2<K, Counter<K>> implements Serializable {
@@ -37,13 +40,8 @@ public class CounterAccumulatorV2<K> extends AccumulatorV2<K, Counter<K>> implem
    private Counter<K> counter = Counters.newCounter();
 
    @Override
-   public boolean isZero() {
-      return counter.isEmpty();
-   }
-
-   @Override
-   public AccumulatorV2<K, Counter<K>> copyAndReset() {
-      return new CounterAccumulatorV2<>();
+   public void add(K v) {
+      counter.increment(v);
    }
 
    @Override
@@ -54,13 +52,32 @@ public class CounterAccumulatorV2<K> extends AccumulatorV2<K, Counter<K>> implem
    }
 
    @Override
-   public void reset() {
-      counter.clear();
+   public AccumulatorV2<K, Counter<K>> copyAndReset() {
+      return new CounterAccumulatorV2<>();
+   }
+
+   /**
+    * Increment.
+    *
+    * @param key    the key
+    * @param amount the amount
+    */
+   public void increment(K key, double amount) {
+      this.counter.increment(key, amount);
    }
 
    @Override
-   public void add(K v) {
-      counter.increment(v);
+   public boolean isZero() {
+      return counter.isEmpty();
+   }
+
+   /**
+    * Merge.
+    *
+    * @param counter the counter
+    */
+   public void merge(@NonNull Counter<? extends K> counter) {
+      this.counter.merge(counter);
    }
 
    @Override
@@ -71,6 +88,11 @@ public class CounterAccumulatorV2<K> extends AccumulatorV2<K, Counter<K>> implem
          throw new UnsupportedOperationException("Cannot merge " + other.getClass()
                                                                         .getName() + " with a Counter Accumulator");
       }
+   }
+
+   @Override
+   public void reset() {
+      counter.clear();
    }
 
    @Override

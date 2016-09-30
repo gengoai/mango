@@ -28,9 +28,9 @@ import lombok.NonNull;
 import java.util.Optional;
 
 /**
- * The type Local counter accumulator.
+ * <p>A counter accumulator implementation ofr local Java streams</p>
  *
- * @param <T> the type parameter
+ * @param <T> the component type parameter of the counter
  * @author David B. Bracewell
  */
 public class LocalCounterAccumulator<T> implements MCounterAccumulator<T> {
@@ -38,19 +38,10 @@ public class LocalCounterAccumulator<T> implements MCounterAccumulator<T> {
    private final String name;
    private final Counter<T> counter = Counters.synchronizedCounter();
 
-
-   /**
-    * Instantiates a new Local counter accumulator.
-    */
-   public LocalCounterAccumulator() {
-      this(null);
-   }
-
-
    /**
     * Instantiates a new Local counter accumulator.
     *
-    * @param name the name
+    * @param name the name of the counter
     */
    public LocalCounterAccumulator(String name) {
       this.name = name;
@@ -62,8 +53,13 @@ public class LocalCounterAccumulator<T> implements MCounterAccumulator<T> {
    }
 
    @Override
-   public Counter<T> value() {
-      return counter;
+   public void increment(T item, double amount) {
+      counter.increment(item, amount);
+   }
+
+   @Override
+   public void merge(@NonNull Counter<T> counter) {
+      this.counter.merge(counter);
    }
 
    @Override
@@ -79,6 +75,11 @@ public class LocalCounterAccumulator<T> implements MCounterAccumulator<T> {
    @Override
    public void reset() {
       counter.clear();
+   }
+
+   @Override
+   public Counter<T> value() {
+      return counter;
    }
 
 }// END OF LocalCounterAccumulator

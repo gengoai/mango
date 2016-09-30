@@ -24,7 +24,26 @@ package com.davidbracewell.stream.accumulator;
 import com.davidbracewell.collection.counter.Counter;
 
 /**
+ * Accumulator for {@link Counter}s
+ *
+ * @param <T> the component type parameter of the counter
  * @author David B. Bracewell
  */
 public interface MCounterAccumulator<T> extends MAccumulator<T, Counter<T>> {
+
+   /**
+    * Increments the given item by the given amount.
+    *
+    * @param item   the item to increment
+    * @param amount the amount to increment the item by
+    */
+   void increment(T item, double amount);
+
+   /**
+    * Merges the given counter with this accumulator
+    *
+    * @param counter the counter to merge
+    */
+   void merge(Counter<T> counter);
+
 }// END OF MCounterAccumulator

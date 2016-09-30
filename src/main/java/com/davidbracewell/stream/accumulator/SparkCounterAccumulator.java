@@ -22,15 +22,36 @@
 package com.davidbracewell.stream.accumulator;
 
 import com.davidbracewell.collection.counter.Counter;
+import com.davidbracewell.conversion.Cast;
+import lombok.NonNull;
 import org.apache.spark.util.AccumulatorV2;
 
 /**
+ * <p>Counter accumulator implementation for Spark streams</p>
+ *
+ * @param <E> the component type parameter of the cunter
  * @author David B. Bracewell
  */
 public class SparkCounterAccumulator<E> extends BaseSparkAccumulator<E, Counter<E>> implements MCounterAccumulator<E> {
    private static final long serialVersionUID = 1L;
 
+   /**
+    * Instantiates a new Spark counter accumulator.
+    *
+    * @param accumulatorV2 the spark accumulator to wrap
+    */
    public SparkCounterAccumulator(AccumulatorV2<E, Counter<E>> accumulatorV2) {
       super(accumulatorV2);
    }
+
+   @Override
+   public void increment(E item, double amount) {
+      Cast.<CounterAccumulatorV2<E>>as(accumulatorV2).increment(item, amount);
+   }
+
+   @Override
+   public void merge(@NonNull Counter<E> counter) {
+      Cast.<CounterAccumulatorV2<E>>as(accumulatorV2).merge(counter);
+   }
+
 }//END OF SparkCounterAccumulator

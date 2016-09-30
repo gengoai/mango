@@ -43,8 +43,8 @@ public class SparkMultiCounterAccumulator<K1, K2> extends BaseSparkAccumulator<T
    }
 
    @Override
-   public void increment(K1 key, K2 value) {
-      accumulatorV2.add($(key, value));
+   public void increment(K1 firstKey, K2 secondKey) {
+      accumulatorV2.add($(firstKey, secondKey));
    }
 
 }//END OF SparkMapAccumulator
