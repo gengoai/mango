@@ -2,98 +2,133 @@ package com.davidbracewell.parsing;
 
 import com.davidbracewell.Regex;
 import com.davidbracewell.string.CharPredicate;
-import com.davidbracewell.tuple.Tuple2;
 import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import lombok.Value;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.davidbracewell.collection.list.Lists.list;
-import static com.davidbracewell.tuple.Tuples.$;
-
 /**
+ * The type Lexical pattern.
+ *
  * @author David B. Bracewell
  */
 public abstract class LexicalPattern implements Serializable {
+   /**
+    * The constant NO_MATCH.
+    */
    public static final int NO_MATCH = -1;
    private static final long serialVersionUID = 1L;
 
+   /**
+    * String literal lexical pattern.
+    *
+    * @param literal the literal
+    * @return the lexical pattern
+    */
    public static LexicalPattern stringLiteral(@NonNull String literal) {
       return new LiteralPattern(literal);
    }
 
+   /**
+    * Char literal lexical pattern.
+    *
+    * @param literal the literal
+    * @return the lexical pattern
+    */
    public static LexicalPattern charLiteral(@NonNull char literal) {
       return new CharLiteralPattern(CharPredicate.anyOf(Character.toString(literal)));
    }
 
+   /**
+    * Char literal lexical pattern.
+    *
+    * @param literal the literal
+    * @return the lexical pattern
+    */
    public static LexicalPattern charLiteral(@NonNull CharPredicate literal) {
       return new CharLiteralPattern(literal);
    }
 
-
+   /**
+    * Char predicate lexical pattern.
+    *
+    * @param predicate the predicate
+    * @return the lexical pattern
+    */
    public static LexicalPattern charPredicate(@NonNull CharPredicate predicate) {
       return new CharPredicatePattern(predicate);
    }
 
+   /**
+    * Regex lexical pattern.
+    *
+    * @param pattern the pattern
+    * @return the lexical pattern
+    */
    public static LexicalPattern regex(@NonNull Pattern pattern) {
       return new RegexPattern(pattern);
    }
 
+   /**
+    * Regex lexical pattern.
+    *
+    * @param pattern the pattern
+    * @return the lexical pattern
+    */
    public static LexicalPattern regex(@NonNull String pattern) {
       return new RegexPattern(Pattern.compile(pattern));
    }
 
+   /**
+    * Regex lexical pattern.
+    *
+    * @param pattern the pattern
+    * @return the lexical pattern
+    */
    public static LexicalPattern regex(@NonNull Regex pattern) {
       return new RegexPattern(pattern.toPattern());
    }
 
+   /**
+    * The entry point of application.
+    *
+    * @param args the input arguments
+    */
    public static void main(String[] args) {
-      CharPredicate reserved = CharPredicate.anyOf("={}[],\\\"");
-      List<Tuple2<String, LexicalPattern>> main = list(
-         $("ASSIGNMENT", charLiteral('=')),
-         $("BEGIN_ARRAY", charLiteral('[')),
-         $("END_ARRAY", charLiteral(']')),
-         $("BEGIN_MAP", charLiteral('{')),
-         $("END_MAP", charLiteral('}')),
-         $("COMMA", charLiteral(',')),
-         $("QUOTED_VALUE", regex("\"(\"\"|[^\"])+\"")),
-         $("VALUE", charPredicate(reserved.or(CharPredicate.anyOf("\r\n")).negate()))
-                                                      );
+      PatternLexer lexer = PatternLexer.builder()
+                                       .addReserved(CommonTypes.EQUALS, '=')
+                                       .addReserved(CommonTypes.OPENBRACKET, '[')
+                                       .addReserved(CommonTypes.CLOSEBRACKET, ']')
+                                       .addReserved(CommonTypes.OPENBRACE, '{')
+                                       .addReserved(CommonTypes.CLOSEBRACE, '}')
+                                       .addReserved(CommonTypes.COMMA, ',')
+                                       .addReserved(CommonTypes.BACKSLASH, '\\')
+                                       .setQuoteCharacter('"')
+                                       .add(CommonTypes.WHITESPACE, CharPredicate.WHITESPACE)
+                                       .add(CommonTypes.WORD, CharPredicate.ANY)
+                                       .addQuoted(CommonTypes.TILDE, regex("\"(\"\"|[^\"])+\""))
+                                       .build();
 
 
       String text = "key = \"value = 1\"\nkey = {value}\nblah = [\"1\",2,3,4,5]\n";
-      for (int i = 0; i < text.length(); ) {
-         int longest = -1;
-         String longestType = "";
-         for (Tuple2<String, LexicalPattern> entry : main) {
-            int match = entry.v2.match(text, i);
 
-            if (!entry.v1.equals("QUOTED_VALUE") && match > 1) {
-               int r = reserved.indexIn(text, i);
-               if (r >= 0 && r <= i + match) {
-                  match = r - i;
-               }
-            }
-
-            if (match > longest) {
-               longest = match;
-               longestType = entry.v1;
-            }
-         }
-
-         if (longest > 0) {
-            System.out.println(longestType + " : " + text.substring(i, i + longest).trim().replaceAll("\\\\(.)", "$1"));
-            i += longest;
-         } else {
-            i++;
-         }
+      ParserTokenStream ts = lexer.lex(text);
+      ParserToken token;
+      while ((token = ts.consume()) != null) {
+         System.out.println(token);
       }
    }
 
+   /**
+    * Match int.
+    *
+    * @param sequence the sequence
+    * @param start    the start
+    * @return the int
+    */
    public abstract int match(CharSequence sequence, int start);
 
    @Value
