@@ -47,7 +47,7 @@ public class CacheManagerTest {
    public void testGetCacheNames() throws Exception {
       CacheManager.getGlobalCache(); //Make sure the cache is loaded.
       assertTrue(CacheManager.exists(CacheManager.GLOBAL_CACHE));
-      assertTrue(CacheManager.existing().contains(CacheManager.GLOBAL_CACHE));
+      assertTrue(CacheManager.getCacheNames().contains(CacheManager.GLOBAL_CACHE));
    }
 
    @Test

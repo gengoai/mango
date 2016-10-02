@@ -105,7 +105,7 @@ public final class CacheManager {
     *
     * @return The names of all of the existing caches.
     */
-   public static Set<String> existing() {
+   public static Set<String> getCacheNames() {
       return caches.keySet();
    }
 
