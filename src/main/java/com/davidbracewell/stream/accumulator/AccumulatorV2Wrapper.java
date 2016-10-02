@@ -5,25 +5,36 @@ import lombok.NonNull;
 import org.apache.spark.util.AccumulatorV2;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 /**
- * The type Accumulator v 2 wrapper.
+ * Wraps a {@link LocalMAccumulator} making it usable by Spark
  *
- * @param <IN>  the type parameter
- * @param <OUT> the type parameter
+ * @param <IN>  the type parameter for what is being accumulated
+ * @param <OUT> the type parameter for the result of the accumulation
  * @author David B. Bracewell
  */
 public class AccumulatorV2Wrapper<IN, OUT> extends AccumulatorV2<IN, OUT> implements Serializable {
    private static final long serialVersionUID = 1L;
-   private final Accumulator<IN, OUT> accumulator;
+   /**
+    * The Accumulator.
+    */
+   public final LocalMAccumulator<IN, OUT> accumulator;
 
    /**
-    * Instantiates a new Accumulator v 2 wrapper.
+    * Instantiates a new AccumulatorV2Wrapper.
     *
-    * @param accumulator the accumulator
+    * @param accumulator the accumulator to wrap
     */
-   public AccumulatorV2Wrapper(@NonNull Accumulator<IN, OUT> accumulator) {
+   public AccumulatorV2Wrapper(@NonNull LocalMAccumulator<IN, OUT> accumulator) {
       this.accumulator = accumulator;
+   }
+
+   @Override
+   public AccumulatorV2<IN, OUT> copyAndReset() {
+      AccumulatorV2<IN, OUT> accumulator = copy();
+      accumulator.reset();
+      return accumulator;
    }
 
    @Override
@@ -45,10 +56,21 @@ public class AccumulatorV2Wrapper<IN, OUT> extends AccumulatorV2<IN, OUT> implem
    public void merge(@NonNull AccumulatorV2<IN, OUT> other) {
       if (other instanceof AccumulatorV2Wrapper) {
          accumulator.merge(Cast.<AccumulatorV2Wrapper<IN, OUT>>as(other).accumulator);
+      } else {
+         throw new IllegalArgumentException(getClass().getSimpleName() + " cannot merge with " + other.getClass()
+                                                                                                      .getSimpleName());
       }
-      throw new IllegalArgumentException(getClass().getSimpleName() + " cannot merge with " + other.getClass()
-                                                                                                   .getSimpleName());
    }
+
+   /**
+    * Gets the name of the wrapped accumulator
+    *
+    * @return the name of the wrapped accumulator as an optional
+    */
+   public Optional<String> getWrappedName() {
+      return accumulator.name();
+   }
+
 
    @Override
    public void reset() {
@@ -57,6 +79,8 @@ public class AccumulatorV2Wrapper<IN, OUT> extends AccumulatorV2<IN, OUT> implem
 
    @Override
    public OUT value() {
-      return null;
+      return accumulator.value();
    }
+
+
 }// END OF AccumulatorV2Wrapper

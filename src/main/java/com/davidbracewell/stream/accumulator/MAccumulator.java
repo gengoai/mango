@@ -76,4 +76,9 @@ public interface MAccumulator<IN, OUT> extends Serializable {
     */
    boolean isZero();
 
+   /**
+    * Registers the accumulator.
+    */
+   void register();
+
 }// END OF MAcc

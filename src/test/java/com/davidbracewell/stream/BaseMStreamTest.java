@@ -399,28 +399,31 @@ public abstract class BaseMStreamTest {
 
    @Test
    public void accumulators() throws Exception {
-      MDoubleAccumulator dA = sc.doubleAccumulator(0d);
-      MLongAccumulator iA = sc.longAccumulator(0);
-      MAccumulator<String, List<String>> sA = sc.listAccumulator();
-      MCounterAccumulator<String> cA = sc.counterAccumulator();
-      MMapAccumulator<String, Integer> mA = sc.mapAccumulator();
+      MDoubleAccumulator doubleA = sc.doubleAccumulator(0d);
+      MLongAccumulator longA = sc.longAccumulator(0);
+      MAccumulator<String, List<String>> listA = sc.listAccumulator();
+      MCounterAccumulator<String> counterA = sc.counterAccumulator();
+      MMapAccumulator<String, Integer> multicounterA = sc.mapAccumulator();
+      MAccumulator<String, Set<String>> setA = sc.setAccumulator();
       sc.stream("A", "B", "CC", "A").forEach(s -> {
-         dA.add((double) s.length());
-         iA.add(s.length());
-         sA.add(s);
-         mA.put(s, s.length());
-         cA.add(s);
+         doubleA.add((double) s.length());
+         longA.add(s.length());
+         listA.add(s);
+         multicounterA.put(s, s.length());
+         counterA.add(s);
+         setA.add(s);
       });
 
-      assertEquals(5.0, dA.value(), 0.0);
-      assertEquals(5, iA.value().intValue());
-      assertEquals(4, sA.value().size());
-      assertEquals(1, mA.value().get("A").intValue());
-      assertEquals(1, mA.value().get("B").intValue());
-      assertEquals(2, mA.value().get("CC").intValue());
-      assertEquals(2.0, cA.value().get("A"), 0.0);
-      assertEquals(1.0, cA.value().get("B"), 0.0);
-      assertEquals(1.0, cA.value().get("CC"), 0.0);
+      assertEquals(5.0, doubleA.value(), 0.0);
+      assertEquals(5, longA.value().intValue());
+      assertEquals(4, listA.value().size());
+      assertEquals(3, setA.value().size());
+      assertEquals(1, multicounterA.value().get("A").intValue());
+      assertEquals(1, multicounterA.value().get("B").intValue());
+      assertEquals(2, multicounterA.value().get("CC").intValue());
+      assertEquals(2.0, counterA.value().get("A"), 0.0);
+      assertEquals(1.0, counterA.value().get("B"), 0.0);
+      assertEquals(1.0, counterA.value().get("CC"), 0.0);
    }
 
    @Test

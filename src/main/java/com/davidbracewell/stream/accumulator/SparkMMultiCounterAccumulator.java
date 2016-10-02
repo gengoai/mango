@@ -24,31 +24,45 @@ package com.davidbracewell.stream.accumulator;
 import com.davidbracewell.collection.counter.MultiCounter;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.tuple.Tuple2;
-
-import static com.davidbracewell.tuple.Tuples.$;
+import lombok.NonNull;
 
 /**
+ * <p>An implementation of a {@link MMultiCounterAccumulator} for Spark streams</p>
+ *
+ * @param <K1> the first key type parameter of the MultiCounter
+ * @param <K2> the second key type parameter of the MultiCounter
  * @author David B. Bracewell
  */
-public class SparkMultiCounterAccumulator<K1, K2> extends BaseSparkAccumulator<Tuple2<K1, K2>, MultiCounter<K1, K2>> implements MMultiCounterAccumulator<K1, K2> {
+public class SparkMMultiCounterAccumulator<K1, K2> extends SparkMAccumulator<Tuple2<K1, K2>, MultiCounter<K1, K2>> implements MMultiCounterAccumulator<K1, K2> {
    private static final long serialVersionUID = 1L;
 
-   public SparkMultiCounterAccumulator(MultiCounterAccumulatorV2 accumulatorV2) {
-      super(Cast.as(accumulatorV2));
+   /**
+    * Instantiates a new Spark SparkMMultiCounterAccumulator.
+    *
+    * @param name the name of the accumulator
+    */
+   public SparkMMultiCounterAccumulator(String name) {
+      super(new LocalMMultiCounterAccumulator<>(name));
    }
 
+   private LocalMMultiCounterAccumulator<K1, K2> getAccumulator() {
+      return Cast.as(Cast.<AccumulatorV2Wrapper>as(accumulatorV2).accumulator);
+   }
+
+
    @Override
-   public void merge(MultiCounter<K1, K2> other) {
-      Cast.<MultiCounterAccumulatorV2<K1, K2>>as(accumulatorV2).merge(other);
+   public void merge(@NonNull MultiCounter<K1, K2> other) {
+      getAccumulator().merge(other);
    }
 
    @Override
    public void increment(K1 firstKey, K2 secondKey) {
-      accumulatorV2.add($(firstKey, secondKey));
+      getAccumulator().increment(firstKey, secondKey);
    }
 
    @Override
    public void increment(K1 firstKey, K2 secondKey, double value) {
+      getAccumulator().increment(firstKey, secondKey, value);
    }
 
 }//END OF SparkMapAccumulator

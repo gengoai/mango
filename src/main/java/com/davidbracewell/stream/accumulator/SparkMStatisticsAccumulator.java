@@ -26,22 +26,33 @@ import com.davidbracewell.conversion.Cast;
 import lombok.NonNull;
 
 /**
+ * <p>An implementation of a {@link MStatisticsAccumulator} for Spark streams</p>
+ *
  * @author David B. Bracewell
  */
-public class SparkStatisticsAccumulator extends BaseSparkAccumulator<Double, EnhancedDoubleStatistics> implements MStatisticsAccumulator {
+public class SparkMStatisticsAccumulator extends SparkMAccumulator<Double, EnhancedDoubleStatistics> implements MStatisticsAccumulator {
    private static final long serialVersionUID = -933772215431769352L;
 
-   public SparkStatisticsAccumulator(StatisticsAccumulatorV2 accumulatorV2) {
-      super(accumulatorV2);
+   /**
+    * Instantiates a new SparkMStatisticsAccumulator.
+    *
+    * @param name the name of the accumulator
+    */
+   public SparkMStatisticsAccumulator(String name) {
+      super(new AccumulatorV2Wrapper<>(new LocalMStatisticsAccumulator(name)));
+   }
+
+   private LocalMStatisticsAccumulator getAccumulator() {
+      return Cast.as(Cast.<AccumulatorV2Wrapper>as(accumulatorV2).accumulator);
    }
 
    @Override
    public void add(double value) {
-      accumulatorV2.add(value);
+      getAccumulator().add(value);
    }
 
    @Override
    public void combine(@NonNull EnhancedDoubleStatistics statistics) {
-      Cast.<StatisticsAccumulatorV2>as(accumulatorV2).combine(statistics);
+      getAccumulator().combine(statistics);
    }
-}//END OF SparkStatisticsAccumulator
+}//END OF SparkMStatisticsAccumulator

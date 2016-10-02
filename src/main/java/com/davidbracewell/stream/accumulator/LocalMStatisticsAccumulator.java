@@ -25,20 +25,24 @@ import com.davidbracewell.EnhancedDoubleStatistics;
 import lombok.NonNull;
 import lombok.Synchronized;
 
-import java.util.Optional;
-
 /**
+ * <p>An implementation of a {@link MStatisticsAccumulator} for local streams</p>
+ *
  * @author David B. Bracewell
  */
-public class LocalStatisticsAccumulator implements MStatisticsAccumulator {
+public class LocalMStatisticsAccumulator extends LocalMAccumulator<Double, EnhancedDoubleStatistics> implements MStatisticsAccumulator {
    private static final long serialVersionUID = 1L;
 
-   private final String name;
    private final EnhancedDoubleStatistics eds = new EnhancedDoubleStatistics();
 
-   public LocalStatisticsAccumulator() {this(null);}
-
-   public LocalStatisticsAccumulator(String name) {this.name = name;}
+   /**
+    * Instantiates a new LocalMStatisticsAccumulator.
+    *
+    * @param name the name of the accumulator
+    */
+   public LocalMStatisticsAccumulator(String name) {
+      super(name);
+   }
 
    @Override
    @Synchronized
@@ -53,25 +57,30 @@ public class LocalStatisticsAccumulator implements MStatisticsAccumulator {
    }
 
    @Override
+   public LocalMAccumulator<Double, EnhancedDoubleStatistics> copy() {
+      LocalMStatisticsAccumulator copy = new LocalMStatisticsAccumulator(name().orElse(null));
+      copy.combine(eds);
+      return copy;
+   }
+
+   @Override
    public EnhancedDoubleStatistics value() {
       return eds;
    }
 
    @Override
    public boolean isZero() {
-      return false;
+      return eds.getCount() == 0;
    }
 
    @Override
    @Synchronized
    public void merge(@NonNull MAccumulator<Double, EnhancedDoubleStatistics> other) {
-      eds.combine(other.value());
-   }
-
-   @Override
-   @Synchronized
-   public Optional<String> name() {
-      return Optional.ofNullable(name);
+      if (other instanceof LocalMAccumulator) {
+         eds.combine(other.value());
+      } else {
+         throw new IllegalArgumentException(getClass().getName() + " cannot merge with " + other.getClass().getName());
+      }
    }
 
    @Override
@@ -81,6 +90,7 @@ public class LocalStatisticsAccumulator implements MStatisticsAccumulator {
    }
 
    @Override
+   @Synchronized
    public void combine(@NonNull EnhancedDoubleStatistics statistics) {
       this.eds.combine(statistics);
    }

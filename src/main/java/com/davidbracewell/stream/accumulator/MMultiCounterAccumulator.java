@@ -57,4 +57,4 @@ public interface MMultiCounterAccumulator<K1, K2> extends MAccumulator<Tuple2<K1
     */
    void merge(MultiCounter<K1, K2> other);
 
-}//END OF MMapAccumulator
+}//END OF MMultiCounterAccumulator

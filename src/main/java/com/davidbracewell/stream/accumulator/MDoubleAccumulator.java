@@ -22,15 +22,22 @@
 package com.davidbracewell.stream.accumulator;
 
 /**
+ * Accumulator for doubles
+ *
  * @author David B. Bracewell
  */
 public interface MDoubleAccumulator extends MAccumulator<Double, Double> {
 
-  void add(double value);
+   /**
+    * Adds a primitive double value.
+    *
+    * @param value the value to add
+    */
+   void add(double value);
 
-  @Override
-  default void add(Double aDouble) {
-    add(aDouble == null ? 0 : aDouble);
-  }
+   @Override
+   default void add(Double aDouble) {
+      add(aDouble == null ? 0 : aDouble);
+   }
 
 }// END OF MDoubleAccumulator

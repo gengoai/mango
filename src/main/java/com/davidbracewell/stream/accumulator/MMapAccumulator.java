@@ -26,12 +26,27 @@ import com.davidbracewell.tuple.Tuple2;
 import java.util.Map;
 
 /**
+ * Accumulator for Maps
+ *
+ * @param <K> the key type parameter
+ * @param <V> the value type parameter
  * @author David B. Bracewell
  */
 public interface MMapAccumulator<K, V> extends MAccumulator<Tuple2<K, V>, Map<K, V>> {
 
+   /**
+    * Adds the given key-value pair ot the map
+    *
+    * @param key   the key to add
+    * @param value the value to associate with the key
+    */
    void put(K key, V value);
 
+   /**
+    * Adds all entries of the given map overriding any current entries.
+    *
+    * @param other the map whose key-value pairs are to be added
+    */
    void putAll(Map<? extends K, ? extends V> other);
 
 }//END OF MMapAccumulator

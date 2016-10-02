@@ -24,26 +24,38 @@ package com.davidbracewell.stream.accumulator;
 import com.davidbracewell.collection.counter.MultiCounter;
 import com.davidbracewell.collection.counter.MultiCounters;
 import com.davidbracewell.tuple.Tuple2;
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
-import java.util.Optional;
-
 /**
+ * <p>An implementation of a {@link MMultiCounterAccumulator} for local streams</p>
+ *
+ * @param <K1> the first key type parameter of the MultiCounter
+ * @param <K2> the second key type parameter of the MultiCounter
  * @author David B. Bracewell
  */
-public class LocalMultiCounterAccumulator<K1, K2> implements MMultiCounterAccumulator<K1, K2> {
+public class LocalMMultiCounterAccumulator<K1, K2> extends LocalMAccumulator<Tuple2<K1, K2>, MultiCounter<K1, K2>> implements MMultiCounterAccumulator<K1, K2> {
    private static final long serialVersionUID = 1L;
-   private final String name;
    private final MultiCounter<K1, K2> counter = MultiCounters.synchronizedMultiCounter();
 
-   public LocalMultiCounterAccumulator() { this(null);}
-
-   public LocalMultiCounterAccumulator(String name) {this.name = name;}
+   /**
+    * Instantiates a new LocalMMultiCounterAccumulator.
+    *
+    * @param name the name of the accumulator
+    */
+   public LocalMMultiCounterAccumulator(String name) {
+      super(name);
+   }
 
    @Override
    public void add(@NonNull Tuple2<K1, K2> objects) {
       counter.increment(objects.v1, objects.v2);
+   }
+
+   @Override
+   public LocalMAccumulator<Tuple2<K1, K2>, MultiCounter<K1, K2>> copy() {
+      LocalMMultiCounterAccumulator<K1, K2> copy = new LocalMMultiCounterAccumulator<>(name().orElse(null));
+      copy.counter.merge(counter);
+      return copy;
    }
 
    @Override
@@ -53,19 +65,16 @@ public class LocalMultiCounterAccumulator<K1, K2> implements MMultiCounterAccumu
 
    @Override
    public boolean isZero() {
-      return false;
+      return counter.isEmpty();
    }
 
    @Override
    public void merge(@NonNull MAccumulator<Tuple2<K1, K2>, MultiCounter<K1, K2>> other) {
-      Preconditions.checkArgument(LocalMultiCounterAccumulator.class == other.getClass(),
-                                  "Only other " + this.getClass().getSimpleName() + " can be merged");
-      counter.merge(other.value());
-   }
-
-   @Override
-   public Optional<String> name() {
-      return Optional.ofNullable(name);
+      if (other instanceof LocalMAccumulator) {
+         counter.merge(other.value());
+      } else {
+         throw new IllegalArgumentException(getClass().getName() + " cannot merge with " + other.getClass().getName());
+      }
    }
 
    @Override
@@ -80,11 +89,12 @@ public class LocalMultiCounterAccumulator<K1, K2> implements MMultiCounterAccumu
 
    @Override
    public void increment(K1 firstKey, K2 secondKey, double value) {
-
+      counter.increment(firstKey, secondKey, value);
    }
 
    @Override
    public void merge(@NonNull MultiCounter<K1, K2> other) {
       this.counter.merge(other);
    }
-}//END OF LocalMapAccumulator
+
+}//END OF LocalMMultiCounterAccumulator

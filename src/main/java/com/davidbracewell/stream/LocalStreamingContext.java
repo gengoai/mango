@@ -58,7 +58,7 @@ public enum LocalStreamingContext implements StreamingContext {
 
    @Override
    public MDoubleAccumulator doubleAccumulator(double initialValue, String name) {
-      return new LocalDoubleAccumulator(initialValue, name);
+      return new LocalMDoubleAccumulator(initialValue, name);
    }
 
 
@@ -78,29 +78,36 @@ public enum LocalStreamingContext implements StreamingContext {
       return new ReusableDoubleStream(values);
    }
 
+
+
    @Override
    public <T> MStream<T> empty() {
       return new ReusableLocalStream<>(new ArrayList<>());
    }
 
    @Override
+   public <E> MAccumulator<E, Set<E>> setAccumulator(String name) {
+      return new LocalMSetAccumulator<>(name);
+   }
+
+   @Override
    public <E> MAccumulator<E, List<E>> listAccumulator(String name) {
-      return new LocalMAccumulator<>(new CollectionAccumulator<>(),name);
+      return new LocalMListAccumulator<>(name);
    }
 
    @Override
    public MLongAccumulator longAccumulator(long initialValue, String name) {
-      return new LocalLongAccumulator(initialValue, name);
+      return new LocalMLongAccumulator(initialValue, name);
    }
 
    @Override
    public <K, V> MMapAccumulator<K, V> mapAccumulator(String name) {
-      return new LocalMapAccumulator<>(name);
+      return new LocalMMapAccumulator<>(name);
    }
 
    @Override
    public <K1, K2> MMultiCounterAccumulator<K1, K2> multiCounterAccumulator(String name) {
-      return new LocalMultiCounterAccumulator<>(name);
+      return new LocalMMultiCounterAccumulator<>(name);
    }
 
    @Override
@@ -126,7 +133,7 @@ public enum LocalStreamingContext implements StreamingContext {
 
    @Override
    public MStatisticsAccumulator statisticsAccumulator(String name) {
-      return new LocalStatisticsAccumulator(name);
+      return new LocalMStatisticsAccumulator(name);
    }
 
    @Override

@@ -44,6 +44,6 @@ public interface MCounterAccumulator<T> extends MAccumulator<T, Counter<T>> {
     *
     * @param counter the counter to merge
     */
-   void merge(Counter<T> counter);
+   void merge(Counter<? extends T> counter);
 
 }// END OF MCounterAccumulator

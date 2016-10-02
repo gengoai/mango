@@ -24,7 +24,6 @@ package com.davidbracewell.stream.accumulator;
 import com.davidbracewell.collection.counter.Counter;
 import com.davidbracewell.conversion.Cast;
 import lombok.NonNull;
-import org.apache.spark.util.AccumulatorV2;
 
 /**
  * <p>Counter accumulator implementation for Spark streams</p>
@@ -32,26 +31,30 @@ import org.apache.spark.util.AccumulatorV2;
  * @param <E> the component type parameter of the cunter
  * @author David B. Bracewell
  */
-public class SparkCounterAccumulator<E> extends BaseSparkAccumulator<E, Counter<E>> implements MCounterAccumulator<E> {
+public class SparkMCounterAccumulator<E> extends SparkMAccumulator<E, Counter<E>> implements MCounterAccumulator<E> {
    private static final long serialVersionUID = 1L;
 
    /**
-    * Instantiates a new Spark counter accumulator.
+    * Instantiates a new Spark m counter accumulator.
     *
-    * @param accumulatorV2 the spark accumulator to wrap
+    * @param name the name of the accumulator
     */
-   public SparkCounterAccumulator(AccumulatorV2<E, Counter<E>> accumulatorV2) {
-      super(accumulatorV2);
+   public SparkMCounterAccumulator(String name) {
+      super(new LocalMCounterAccumulator<>(name));
+   }
+
+   private LocalMCounterAccumulator<E> getAccumulator() {
+      return Cast.as(Cast.<AccumulatorV2Wrapper>as(accumulatorV2).accumulator);
    }
 
    @Override
    public void increment(E item, double amount) {
-      Cast.<CounterAccumulatorV2<E>>as(accumulatorV2).increment(item, amount);
+      getAccumulator().increment(item, amount);
    }
 
    @Override
-   public void merge(@NonNull Counter<E> counter) {
-      Cast.<CounterAccumulatorV2<E>>as(accumulatorV2).merge(counter);
+   public void merge(@NonNull Counter<? extends E> counter) {
+      getAccumulator().merge(counter);
    }
 
-}//END OF SparkCounterAccumulator
+}//END OF SparkMCounterAccumulator

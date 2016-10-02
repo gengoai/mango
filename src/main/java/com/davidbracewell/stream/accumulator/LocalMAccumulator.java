@@ -1,69 +1,58 @@
+/*
+ * (c) 2005 David B. Bracewell
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package com.davidbracewell.stream.accumulator;
 
-import com.davidbracewell.conversion.Cast;
-import lombok.NonNull;
+import com.davidbracewell.Copyable;
 
 import java.util.Optional;
 
 /**
- * The type Base local m accumulator.
+ * <p>Abstract base for local accumulators.</p>
  *
- * @param <IN>  the type parameter
- * @param <OUT> the type parameter
+ * @param <IN>  the type parameter for what is being accumulated
+ * @param <OUT> the type parameter for the result of the accumulation
  * @author David B. Bracewell
  */
-public class LocalMAccumulator<IN, OUT> implements MAccumulator<IN, OUT> {
+public abstract class LocalMAccumulator<IN, OUT> implements MAccumulator<IN, OUT>, Copyable<LocalMAccumulator<IN, OUT>> {
    private static final long serialVersionUID = 1L;
-   private final Accumulator<IN, OUT> accumulator;
    private final String name;
 
    /**
-    * Instantiates a new Base local m accumulator.
+    * Instantiates a new Local m accumulator.
     *
-    * @param accumulator the accumulator
-    * @param name        the name
+    * @param name the name of the accumulator (null is ok)
     */
-   public LocalMAccumulator(@NonNull Accumulator<IN, OUT> accumulator, String name) {
-      this.accumulator = accumulator;
+   protected LocalMAccumulator(String name) {
       this.name = name;
    }
 
    @Override
-   public void add(IN in) {
-      accumulator.add(in);
-   }
-
-   protected <T extends Accumulator<IN, OUT>> T getAccumulator() {
-      return Cast.as(accumulator);
-   }
-
-   @Override
-   public boolean isZero() {
-      return accumulator.isZero();
-   }
-
-   @Override
-   public void merge(@NonNull MAccumulator<IN, OUT> other) {
-      if (other instanceof LocalMAccumulator) {
-         accumulator.merge(Cast.<LocalMAccumulator<IN, OUT>>as(other).accumulator);
-      }
-      throw new IllegalArgumentException(getClass().getSimpleName() + " cannot merge with " + other.getClass()
-                                                                                                   .getSimpleName());
-   }
-
-   @Override
-   public Optional<String> name() {
+   public final Optional<String> name() {
       return Optional.ofNullable(name);
    }
 
    @Override
-   public void reset() {
-      accumulator.reset();
+   public void register() {
+
    }
 
-   @Override
-   public OUT value() {
-      return accumulator.value();
-   }
-
-}// END OF LocalMAccumulator
+}//END OF LocalMAccumulator

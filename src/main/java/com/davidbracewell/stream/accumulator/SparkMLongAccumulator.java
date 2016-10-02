@@ -21,17 +21,38 @@
 
 package com.davidbracewell.stream.accumulator;
 
-import org.apache.spark.util.CollectionAccumulator;
+import org.apache.spark.util.LongAccumulator;
 
-import java.util.List;
+import java.util.Optional;
 
 /**
+ * <p>An implementation of a {@link MLongAccumulator} for spark streams</p>
+ *
  * @author David B. Bracewell
  */
-public class SparkListAccumulator<T> extends BaseSparkAccumulator<T, List<T>> implements MListAccumulator<T> {
-  private static final long serialVersionUID = 1L;
+public class SparkMLongAccumulator extends SparkMAccumulator<Long, Long> implements MLongAccumulator {
+   private static final long serialVersionUID = 1L;
+   private final String name;
 
-  public SparkListAccumulator(CollectionAccumulator<T> accumulatorV2) {
-    super(accumulatorV2);
-  }
-}// END OF SparkMListAccumulator
+   /**
+    * Instantiates a new SparkMLongAccumulator
+    *
+    * @param name the name of the accumulator
+    */
+   public SparkMLongAccumulator(String name) {
+      super(new LongAccumulator());
+      this.name = name;
+   }
+
+   @Override
+   public void add(long value) {
+      accumulatorV2.add(value);
+   }
+
+
+   @Override
+   public Optional<String> name() {
+      return Optional.ofNullable(name);
+   }
+
+}// END OF SparkMLongAccumulator

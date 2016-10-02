@@ -22,15 +22,22 @@
 package com.davidbracewell.stream.accumulator;
 
 /**
+ * Accumulator for longs
+ *
  * @author David B. Bracewell
  */
 public interface MLongAccumulator extends MAccumulator<Long, Long> {
 
-  void add(long value);
+   /**
+    * Adds the primitive long value.
+    *
+    * @param value the value to add
+    */
+   void add(long value);
 
-  @Override
-  default void add(Long aLong) {
-    add(aLong == null ? 0 : aLong);
-  }
+   @Override
+   default void add(Long aLong) {
+      add(aLong == null ? 0 : aLong);
+   }
 
 }// END OF MLongAccumulator

@@ -23,52 +23,41 @@ package com.davidbracewell.stream.accumulator;
 
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.tuple.Tuple2;
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
-import org.apache.spark.util.AccumulatorV2;
 
-import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * <p>An implementation of a {@link MMapAccumulator} for Spark streams</p>
+ *
+ * @param <K> the key type parameter of the map
+ * @param <V> the value type parameter of the map
  * @author David B. Bracewell
  */
-public class MapAccumulatorV2<K, V> extends AccumulatorV2<Tuple2<K, V>, Map<K, V>> implements Serializable {
+public class SparkMMapAccumulator<K, V> extends SparkMAccumulator<Tuple2<K, V>, Map<K, V>> implements MMapAccumulator<K, V> {
    private static final long serialVersionUID = 1L;
-   private final Map<K, V> map = new HashMap<>();
 
-   @Override
-   public void add(@NonNull Tuple2<K, V> v) {
-      map.put(v.v1, v.v2);
+   /**
+    * Instantiates a new SparkMMapAccumulator.
+    *
+    * @param name the name of the accumulator
+    */
+   public SparkMMapAccumulator(String name) {
+      super(new LocalMMapAccumulator<>(name));
+   }
+
+   private LocalMMapAccumulator<K, V> getAccumulator() {
+      return Cast.as(Cast.<AccumulatorV2Wrapper>as(accumulatorV2).accumulator);
    }
 
    @Override
-   public AccumulatorV2<Tuple2<K, V>, Map<K, V>> copy() {
-      MapAccumulatorV2<K, V> copy = new MapAccumulatorV2<>();
-      copy.map.putAll(map);
-      return copy;
+   public void put(K key, V value) {
+      getAccumulator().put(key, value);
    }
 
    @Override
-   public boolean isZero() {
-      return map.isEmpty();
+   public void putAll(@NonNull Map<? extends K, ? extends V> other) {
+      getAccumulator().putAll(other);
    }
 
-   @Override
-   public void merge(@NonNull AccumulatorV2<Tuple2<K, V>, Map<K, V>> other) {
-      Preconditions.checkArgument(other instanceof MapAccumulatorV2);
-      map.putAll(Cast.<MapAccumulatorV2<K, V>>as(other).map);
-   }
-
-   @Override
-   public void reset() {
-      map.clear();
-   }
-
-   @Override
-   public Map<K, V> value() {
-      return map;
-   }
-
-}//END OF MapAccumulatorV2
+}//END OF SparkMMapAccumulator

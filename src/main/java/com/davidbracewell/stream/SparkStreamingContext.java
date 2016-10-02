@@ -34,8 +34,6 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.util.CollectionAccumulator;
-import org.apache.spark.util.DoubleAccumulator;
-import org.apache.spark.util.LongAccumulator;
 import scala.Option;
 
 import java.util.*;
@@ -144,17 +142,17 @@ public enum SparkStreamingContext implements StreamingContext {
 
    @Override
    public <E> MCounterAccumulator<E> counterAccumulator(String name) {
-      CounterAccumulatorV2<E> accumulator = new CounterAccumulatorV2<>();
-      accumulator.register(sparkContext().sc(), Option.apply(name), false);
-      return new SparkCounterAccumulator<>(accumulator);
+      SparkMCounterAccumulator<E> accumulator = new SparkMCounterAccumulator<>(name);
+      accumulator.register();
+      return accumulator;
    }
 
    @Override
    public MDoubleAccumulator doubleAccumulator(double initialValue, String name) {
-      DoubleAccumulator accumulator = new DoubleAccumulator();
-      accumulator.setValue(initialValue);
-      accumulator.register(sparkContext().sc(), Option.apply(name), false);
-      return new SparkDoubleAccumulator(accumulator);
+      SparkMDoubleAccumulator accumulator = new SparkMDoubleAccumulator(name);
+      accumulator.add(initialValue);
+      accumulator.register();
+      return accumulator;
    }
 
    @Override
@@ -170,6 +168,13 @@ public enum SparkStreamingContext implements StreamingContext {
    @Override
    public <T> SparkStream<T> empty() {
       return new SparkStream<>(getSparkContext().parallelize(new ArrayList<>()));
+   }
+
+   @Override
+   public <E> MAccumulator<E, Set<E>> setAccumulator(String name) {
+      SparkMAccumulator<E, Set<E>> setAccumulator = new SparkMAccumulator<>(new LocalMSetAccumulator<>(name));
+      setAccumulator.register();
+      return setAccumulator;
    }
 
    /**
@@ -189,32 +194,32 @@ public enum SparkStreamingContext implements StreamingContext {
    }
 
    @Override
-   public <E> MListAccumulator<E> listAccumulator(String name) {
+   public <E> MAccumulator<E, List<E>> listAccumulator(String name) {
       CollectionAccumulator<E> accumulator = new CollectionAccumulator<>();
       accumulator.register(sparkContext().sc(), Option.apply(name), false);
-      return new SparkListAccumulator<>(accumulator);
+      return new SparkMAccumulator<>(accumulator);
    }
 
    @Override
    public MLongAccumulator longAccumulator(long initialValue, String name) {
-      LongAccumulator accumulator = new LongAccumulator();
-      accumulator.setValue(initialValue);
-      accumulator.register(sparkContext().sc(), Option.apply(name), false);
-      return new SparkLongAccumulator(accumulator);
+      SparkMLongAccumulator accumulator = new SparkMLongAccumulator(name);
+      accumulator.add(initialValue);
+      accumulator.register();
+      return accumulator;
    }
 
    @Override
    public <K, V> MMapAccumulator<K, V> mapAccumulator(String name) {
-      MapAccumulatorV2<K, V> accumulator = new MapAccumulatorV2<>();
-      accumulator.register(sparkContext().sc(), Option.apply(name), false);
-      return new SparkMapAccumulator<>(accumulator);
+      SparkMMapAccumulator<K, V> accumulator = new SparkMMapAccumulator<>(name);
+      accumulator.register();
+      return accumulator;
    }
 
    @Override
    public <K1, K2> MMultiCounterAccumulator<K1, K2> multiCounterAccumulator(String name) {
-      MultiCounterAccumulatorV2<K1, K2> accumulator = new MultiCounterAccumulatorV2<>();
-      accumulator.register(sparkContext().sc(), Option.apply(name), false);
-      return new SparkMultiCounterAccumulator<>(accumulator);
+      SparkMMultiCounterAccumulator<K1, K2> accumulator = new SparkMMultiCounterAccumulator<>(name);
+      accumulator.register();
+      return accumulator;
    }
 
    @Override
@@ -246,9 +251,9 @@ public enum SparkStreamingContext implements StreamingContext {
 
    @Override
    public MStatisticsAccumulator statisticsAccumulator(String name) {
-      StatisticsAccumulatorV2 accumulator = new StatisticsAccumulatorV2();
-      accumulator.register(sparkContext().sc(), Option.apply(name), false);
-      return new SparkStatisticsAccumulator(accumulator);
+      SparkMStatisticsAccumulator accumulator = new SparkMStatisticsAccumulator(name);
+      accumulator.register();
+      return accumulator;
    }
 
    @Override

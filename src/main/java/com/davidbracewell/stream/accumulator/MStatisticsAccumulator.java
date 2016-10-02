@@ -24,12 +24,24 @@ package com.davidbracewell.stream.accumulator;
 import com.davidbracewell.EnhancedDoubleStatistics;
 
 /**
+ * Accumulator for calculating descriptive statistics
+ *
  * @author David B. Bracewell
  */
-public interface MStatisticsAccumulator extends MAccumulator<Double,EnhancedDoubleStatistics> {
+public interface MStatisticsAccumulator extends MAccumulator<Double, EnhancedDoubleStatistics> {
 
+   /**
+    * Adds a value to the statistics accumulator.
+    *
+    * @param value the value to add
+    */
    void add(double value);
 
+   /**
+    * Combines the given statistics with this one.
+    *
+    * @param statistics the statistics to combine
+    */
    void combine(EnhancedDoubleStatistics statistics);
 
 }//END OF MStatisticsAccumulator

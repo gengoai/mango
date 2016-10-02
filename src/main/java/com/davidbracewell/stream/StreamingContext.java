@@ -186,6 +186,26 @@ public interface StreamingContext extends AutoCloseable {
    }
 
    /**
+    * Creates a set accumulator
+    *
+    * @param <E> the component type of the set
+    * @return the set accumulator
+    */
+   default <E> MAccumulator<E, Set<E>> setAccumulator(){
+      return setAccumulator(null);
+   }
+
+   /**
+    * Creates a set accumulator
+    *
+    * @param <E>  the component type of the set
+    * @param name the name of the accumulator
+    * @return the set accumulator
+    */
+   <E> MAccumulator<E, Set<E>> setAccumulator(String name);
+
+
+   /**
     * Creates a list accumulator
     *
     * @param <E>  the component type of the list

@@ -21,31 +21,37 @@
 
 package com.davidbracewell.stream.accumulator;
 
-import com.davidbracewell.tuple.Tuple2;
-import org.apache.spark.util.AccumulatorV2;
+import org.apache.spark.util.DoubleAccumulator;
 
-import java.util.Map;
-
-import static com.davidbracewell.tuple.Tuples.$;
+import java.util.Optional;
 
 /**
+ * <p>An implementation of a {@link MDoubleAccumulator} for spark streams</p>
+ *
  * @author David B. Bracewell
  */
-public class SparkMapAccumulator<K, V> extends BaseSparkAccumulator<Tuple2<K, V>, Map<K, V>> implements MMapAccumulator<K, V> {
+public class SparkMDoubleAccumulator extends SparkMAccumulator<Double, Double> implements MDoubleAccumulator {
    private static final long serialVersionUID = 1L;
+   private final String name;
 
-   public SparkMapAccumulator(AccumulatorV2<Tuple2<K, V>, Map<K, V>> accumulatorV2) {
-      super(accumulatorV2);
+   /**
+    * Instantiates a new SparkMDoubleAccumulator.
+    *
+    * @param name the name of the accumulator
+    */
+   public SparkMDoubleAccumulator(String name) {
+      super(new DoubleAccumulator());
+      this.name = name;
    }
 
    @Override
-   public void put(K key, V value) {
-      accumulatorV2.add($(key, value));
+   public void add(double value) {
+      accumulatorV2.add(value);
    }
 
    @Override
-   public void putAll(Map<? extends K, ? extends V> other) {
-      other.forEach(this::put);
+   public Optional<String> name() {
+      return Optional.ofNullable(name);
    }
 
-}//END OF SparkMapAccumulator
+}// END OF SparkMDoubleAccumulator

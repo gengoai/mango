@@ -22,28 +22,42 @@
 package com.davidbracewell.stream.accumulator;
 
 import com.davidbracewell.tuple.Tuple2;
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * <p>An implementation of a {@link MMapAccumulator} for local streams</p>
+ *
+ * @param <K> the key type parameter of the map
+ * @param <V> the value type parameter of the map
  * @author David B. Bracewell
  */
-public class LocalMapAccumulator<K, V> implements MMapAccumulator<K, V> {
+public class LocalMMapAccumulator<K, V> extends LocalMAccumulator<Tuple2<K, V>, Map<K, V>> implements MMapAccumulator<K, V> {
    private static final long serialVersionUID = 1L;
-   private final String name;
    private final Map<K, V> map = new ConcurrentHashMap<>();
 
-   public LocalMapAccumulator() { this(null);}
 
-   public LocalMapAccumulator(String name) {this.name = name;}
+   /**
+    * Instantiates a new LocalMMapAccumulator.
+    *
+    * @param name the name of the accumulator
+    */
+   public LocalMMapAccumulator(String name) {
+      super(name);
+   }
 
    @Override
    public void add(@NonNull Tuple2<K, V> objects) {
       map.put(objects.v1, objects.v2);
+   }
+
+   @Override
+   public LocalMAccumulator<Tuple2<K, V>, Map<K, V>> copy() {
+      LocalMMapAccumulator<K, V> copy = new LocalMMapAccumulator<>(name().orElse(null));
+      copy.putAll(this.map);
+      return copy;
    }
 
    @Override
@@ -53,20 +67,18 @@ public class LocalMapAccumulator<K, V> implements MMapAccumulator<K, V> {
 
    @Override
    public boolean isZero() {
-      return false;
+      return map.isEmpty();
    }
 
    @Override
    public void merge(@NonNull MAccumulator<Tuple2<K, V>, Map<K, V>> other) {
-      Preconditions.checkArgument(LocalMapAccumulator.class == other.getClass(),
-                                  "Only other " + this.getClass().getSimpleName() + " can be merged");
-      map.putAll(other.value());
+      if (other instanceof LocalMAccumulator) {
+         map.putAll(other.value());
+      } else {
+         throw new IllegalArgumentException(getClass().getName() + " cannot merge with " + other.getClass().getName());
+      }
    }
 
-   @Override
-   public Optional<String> name() {
-      return Optional.ofNullable(name);
-   }
 
    @Override
    public void reset() {
@@ -83,4 +95,4 @@ public class LocalMapAccumulator<K, V> implements MMapAccumulator<K, V> {
       map.putAll(other);
    }
 
-}//END OF LocalMapAccumulator
+}//END OF LocalMMapAccumulator

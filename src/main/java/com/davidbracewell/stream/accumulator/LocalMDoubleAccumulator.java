@@ -23,38 +23,32 @@ package com.davidbracewell.stream.accumulator;
 
 import lombok.NonNull;
 
-import java.util.Optional;
 import java.util.concurrent.atomic.DoubleAdder;
 
 /**
- * The type Local double accumulator.
+ * <p>An implementation of a {@link MDoubleAccumulator} for local streams</p>
  *
  * @author David B. Bracewell
  */
-public class LocalDoubleAccumulator implements MDoubleAccumulator {
+public class LocalMDoubleAccumulator extends LocalMAccumulator<Double, Double> implements MDoubleAccumulator {
    private static final long serialVersionUID = 1L;
-   private final String name;
    private final DoubleAdder value;
 
    /**
     * Instantiates a new Local double accumulator.
     *
-    * @param value the value
+    * @param value the initial value of the accumulator
+    * @param name  the name of the accumulator
     */
-   public LocalDoubleAccumulator(double value) {
-      this(value, null);
-   }
-
-   /**
-    * Instantiates a new Local double accumulator.
-    *
-    * @param value the value
-    * @param name  the name
-    */
-   public LocalDoubleAccumulator(double value, String name) {
-      this.name = name;
+   public LocalMDoubleAccumulator(double value, String name) {
+      super(name);
       this.value = new DoubleAdder();
       this.value.add(value);
+   }
+
+   @Override
+   public LocalMAccumulator<Double, Double> copy() {
+      return new LocalMDoubleAccumulator(value.doubleValue(), name().orElse(null));
    }
 
    @Override
@@ -64,17 +58,16 @@ public class LocalDoubleAccumulator implements MDoubleAccumulator {
 
    @Override
    public boolean isZero() {
-      return false;
+      return value.doubleValue() == 0;
    }
 
    @Override
    public void merge(@NonNull MAccumulator<Double, Double> other) {
-      add(other.value());
-   }
-
-   @Override
-   public Optional<String> name() {
-      return Optional.of(name);
+      if (other instanceof LocalMAccumulator) {
+         add(other.value());
+      } else {
+         throw new IllegalArgumentException(getClass().getName() + " cannot merge with " + other.getClass().getName());
+      }
    }
 
    @Override
