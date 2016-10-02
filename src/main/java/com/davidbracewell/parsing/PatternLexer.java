@@ -27,29 +27,23 @@ import lombok.NonNull;
 import lombok.Value;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
- * The type Pattern lexer.
+ * <p>A lexer that uses {@link LexicalPattern}s in a longest match wins strategy.</p>
  *
  * @author David B. Bracewell
  */
-public class PatternLexer implements Lexer {
-   private final List<LexicalEntry> patterns = new ArrayList<>();
-   private final CharPredicate reserved;
+public class PatternLexer implements Lexer, Serializable {
+   private static final long serialVersionUID = 1L;
+   private final List<LexicalEntry> patterns;
 
-   /**
-    * Instantiates a new Pattern lexer.
-    *
-    * @param patterns the patterns
-    * @param reserved the reserved
-    */
-   protected PatternLexer(List<LexicalEntry> patterns, CharPredicate reserved) {
-      this.patterns.addAll(patterns);
-      this.reserved = reserved;
+   private PatternLexer(List<LexicalEntry> patterns) {
+      this.patterns = new ArrayList<>(patterns);
    }
 
    @Override
@@ -78,13 +72,6 @@ public class PatternLexer implements Lexer {
             int longest = 0;
             for (LexicalEntry entry : patterns) {
                int match = entry.getPattern().match(content, position);
-
-               if (!entry.isQuoted() && match > 1) {
-                  int r = reserved.indexIn(content, position);
-                  if (r >= 0 && r <= position + match) {
-                     match = r - position;
-                  }
-               }
                if (match > longest) {
                   longest = match;
                   longestType = entry.getTokenType();
@@ -120,12 +107,11 @@ public class PatternLexer implements Lexer {
    private static class LexicalEntry {
       LexicalPattern pattern;
       ParserTokenType tokenType;
-      boolean isQuoted;
    }
 
 
    /**
-    * Builder builder.
+    * <p>Creates a new builder to make constructing <code>PatternLexer</code> instances easier</p>
     *
     * @return the builder
     */
@@ -134,103 +120,56 @@ public class PatternLexer implements Lexer {
    }
 
    /**
-    * The type Builder.
+    * <p>Builder class for <code>PatternLexer</code>s.</p>
     */
    public static class Builder {
       private final List<LexicalEntry> patterns = new ArrayList<>();
-      private CharPredicate reserved = CharPredicate.NONE;
-      private String reservedString = "";
 
       /**
-       * Add builder.
+       * Adds a new lexical pattern
        *
-       * @param tokenType the token type
-       * @param pattern   the pattern
+       * @param tokenType the token type of the pattern
+       * @param pattern   the pattern to add
        * @return the builder
        */
       public Builder add(@NonNull ParserTokenType tokenType, @NonNull LexicalPattern pattern) {
-         patterns.add(new LexicalEntry(pattern, tokenType, false));
+         patterns.add(new LexicalEntry(pattern, tokenType));
          return this;
       }
 
       /**
-       * Add builder.
+       * Adds a character literal pattern
        *
-       * @param tokenType the token type
-       * @param character the character
+       * @param tokenType the token type of the pattern
+       * @param character the character associated with the token type
        * @return the builder
        */
       public Builder add(@NonNull ParserTokenType tokenType, char character) {
-         patterns.add(new LexicalEntry(LexicalPattern.charLiteral(character), tokenType, false));
+         patterns.add(new LexicalEntry(LexicalPattern.charLiteral(character), tokenType));
          return this;
       }
 
-      /**
-       * Add reserved builder.
-       *
-       * @param tokenType the token type
-       * @param character the character
-       * @return the builder
-       */
-      public Builder addReserved(@NonNull ParserTokenType tokenType, char character) {
-         patterns.add(new LexicalEntry(LexicalPattern.charLiteral(character), tokenType, false));
-         this.reservedString += character;
-         return this;
-      }
 
       /**
-       * Sets quote character.
+       * Adds a <code>CharPredicate</code> pattern.
        *
-       * @param character the character
-       * @return the quote character
-       */
-      public Builder setQuoteCharacter(char character) {
-         this.reservedString += character;
-         return this;
-      }
-
-      /**
-       * Add builder.
-       *
-       * @param tokenType the token type
-       * @param predicate the predicate
+       * @param tokenType the token type  of the pattern
+       * @param predicate the predicate associated with the pattern
        * @return the builder
        */
       public Builder add(@NonNull ParserTokenType tokenType, @NonNull CharPredicate predicate) {
-         patterns.add(new LexicalEntry(LexicalPattern.charPredicate(predicate), tokenType, false));
+         patterns.add(new LexicalEntry(LexicalPattern.charPredicate(predicate), tokenType));
          return this;
       }
 
-      /**
-       * Reserved chars builder.
-       *
-       * @param predicate the predicate
-       * @return the builder
-       */
-      public Builder reservedChars(@NonNull CharPredicate predicate) {
-         this.reserved = predicate;
-         return this;
-      }
 
       /**
-       * Add quoted builder.
+       * Creates a new <code>PatternLexer</code>
        *
-       * @param tokenType the token type
-       * @param pattern   the pattern
-       * @return the builder
-       */
-      public Builder addQuoted(@NonNull ParserTokenType tokenType, @NonNull LexicalPattern pattern) {
-         patterns.add(new LexicalEntry(pattern, tokenType, true));
-         return this;
-      }
-
-      /**
-       * Build pattern lexer.
-       *
-       * @return the pattern lexer
+       * @return the new spattern lexer
        */
       public PatternLexer build() {
-         return new PatternLexer(patterns, CharPredicate.anyOf(reservedString));
+         return new PatternLexer(patterns);
       }
 
    }

@@ -11,21 +11,21 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * The type Lexical pattern.
+ * <p>Methodology to find matches for patterns in CharSequences</p>
  *
  * @author David B. Bracewell
  */
 public abstract class LexicalPattern implements Serializable {
    /**
-    * The constant NO_MATCH.
+    * The constant returned when no match is found.
     */
    public static final int NO_MATCH = -1;
    private static final long serialVersionUID = 1L;
 
    /**
-    * String literal lexical pattern.
+    * Creates a literal pattern from the given string where a match exists when the entire literal string is found.
     *
-    * @param literal the literal
+    * @param literal the literal pattern
     * @return the lexical pattern
     */
    public static LexicalPattern stringLiteral(@NonNull String literal) {
@@ -33,7 +33,7 @@ public abstract class LexicalPattern implements Serializable {
    }
 
    /**
-    * Char literal lexical pattern.
+    * Creates a literal pattern from the given character where a match exists when the character is found
     *
     * @param literal the literal
     * @return the lexical pattern
@@ -43,9 +43,10 @@ public abstract class LexicalPattern implements Serializable {
    }
 
    /**
-    * Char literal lexical pattern.
+    * Creates a literal pattern from the given character predicate where a match exists when the character predicate
+    * evaluates to true. Maximum match is one character.
     *
-    * @param literal the literal
+    * @param literal the literal pattern
     * @return the lexical pattern
     */
    public static LexicalPattern charLiteral(@NonNull CharPredicate literal) {
@@ -53,9 +54,10 @@ public abstract class LexicalPattern implements Serializable {
    }
 
    /**
-    * Char predicate lexical pattern.
+    * Creates a pattern from the given character predicate where a matches are contiguous spans of characters that
+    * evaluate to true for the given predicate.
     *
-    * @param predicate the predicate
+    * @param predicate the predicate to match
     * @return the lexical pattern
     */
    public static LexicalPattern charPredicate(@NonNull CharPredicate predicate) {
@@ -63,9 +65,9 @@ public abstract class LexicalPattern implements Serializable {
    }
 
    /**
-    * Regex lexical pattern.
+    * Creates a pattern that checks for a regular expression match
     *
-    * @param pattern the pattern
+    * @param pattern the regular expression pattern
     * @return the lexical pattern
     */
    public static LexicalPattern regex(@NonNull Pattern pattern) {
@@ -73,9 +75,9 @@ public abstract class LexicalPattern implements Serializable {
    }
 
    /**
-    * Regex lexical pattern.
+    * Creates a pattern that checks for a regular expression match
     *
-    * @param pattern the pattern
+    * @param pattern the regular expression pattern
     * @return the lexical pattern
     */
    public static LexicalPattern regex(@NonNull String pattern) {
@@ -83,9 +85,9 @@ public abstract class LexicalPattern implements Serializable {
    }
 
    /**
-    * Regex lexical pattern.
+    * Creates a pattern that checks for a regular expression match
     *
-    * @param pattern the pattern
+    * @param pattern the regular expression pattern
     * @return the lexical pattern
     */
    public static LexicalPattern regex(@NonNull Regex pattern) {
@@ -93,41 +95,12 @@ public abstract class LexicalPattern implements Serializable {
    }
 
    /**
-    * The entry point of application.
+    * Determines the length of a potential match for this pattern in the given <code>CharSequence</code> starting at the
+    * given start position. Returns <code>NO_MATCH</code> when no match is found.
     *
-    * @param args the input arguments
-    */
-   public static void main(String[] args) {
-      PatternLexer lexer = PatternLexer.builder()
-                                       .addReserved(CommonTypes.EQUALS, '=')
-                                       .addReserved(CommonTypes.OPENBRACKET, '[')
-                                       .addReserved(CommonTypes.CLOSEBRACKET, ']')
-                                       .addReserved(CommonTypes.OPENBRACE, '{')
-                                       .addReserved(CommonTypes.CLOSEBRACE, '}')
-                                       .addReserved(CommonTypes.COMMA, ',')
-                                       .addReserved(CommonTypes.BACKSLASH, '\\')
-                                       .setQuoteCharacter('"')
-                                       .add(CommonTypes.WHITESPACE, CharPredicate.WHITESPACE)
-                                       .add(CommonTypes.WORD, CharPredicate.ANY)
-                                       .addQuoted(CommonTypes.TILDE, regex("\"(\"\"|[^\"])+\""))
-                                       .build();
-
-
-      String text = "key = \"value = 1\"\nkey = {value}\nblah = [\"1\",2,3,4,5]\n";
-
-      ParserTokenStream ts = lexer.lex(text);
-      ParserToken token;
-      while ((token = ts.consume()) != null) {
-         System.out.println(token);
-      }
-   }
-
-   /**
-    * Match int.
-    *
-    * @param sequence the sequence
-    * @param start    the start
-    * @return the int
+    * @param sequence the character sequence to match against
+    * @param start    the starting position in the character sequence to begin matching
+    * @return the length of the match or <code>NO_MATCH</code>
     */
    public abstract int match(CharSequence sequence, int start);
 

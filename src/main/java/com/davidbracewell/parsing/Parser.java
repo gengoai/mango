@@ -33,10 +33,10 @@ import java.util.List;
 
 /**
  * <p>An implementation of a <a href="http://en.wikipedia.org/wiki/Pratt_parser">Pratt Parser</a> inspired by <a
- * href="http://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/"></a>. An instance of
- * a Parser is tied to a specific <code>Grammar</code> and <code>TokenStream</code>. This implementation allows for
- * operator precedence to be defined for each <code>ParserHandler</code> and allows the precedence to be specified when
- * retrieving the next expression.</p>
+ * href="http://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/">Pratt Parsers:
+ * Expression Parsing Made Easy</a>. An instance of a Parser is tied to a specific <code>Grammar</code> and
+ * <code>TokenStream</code>. This implementation allows for operator precedence to be defined for each
+ * <code>ParserHandler</code> and allows the precedence to be specified when retrieving the next expression.</p>
  *
  * @author David B. Bracewell
  */
