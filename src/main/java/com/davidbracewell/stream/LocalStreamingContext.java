@@ -21,13 +21,13 @@
 
 package com.davidbracewell.stream;
 
-import com.clearspring.analytics.util.Lists;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.Unchecked;
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.stream.accumulator.*;
 import com.davidbracewell.string.StringUtils;
+import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
 
 import java.util.*;
@@ -160,7 +160,7 @@ public enum LocalStreamingContext implements StreamingContext {
       } else if (iterable instanceof Collection) {
          return new ReusableLocalStream<>(Cast.<Collection<T>>as(iterable));
       }
-      return new ReusableLocalStream<>(Lists.newArrayList(Cast.as(iterable)));
+      return new ReusableLocalStream<>(Lists.newArrayList(iterable));
    }
 
 
