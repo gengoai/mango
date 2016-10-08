@@ -1,5 +1,6 @@
 package com.davidbracewell.stream;
 
+import com.davidbracewell.config.Config;
 import com.davidbracewell.config.Configurator;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.function.*;
@@ -7,6 +8,7 @@ import com.davidbracewell.tuple.Tuple2;
 import lombok.NonNull;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.broadcast.Broadcast;
 
 import java.io.Serializable;
 import java.util.*;
@@ -23,6 +25,7 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    private static final long serialVersionUID = 1L;
    private final JavaPairRDD<T, U> rdd;
    private SerializableRunnable onClose;
+   private volatile Broadcast<Config> configBroadcast;
 
    /**
     * Instantiates a new Spark pair stream.
@@ -30,6 +33,7 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
     * @param rdd the rdd
     */
    public SparkPairStream(JavaPairRDD<T, U> rdd) {
+      this.configBroadcast = SparkStreamingContext.INSTANCE.getConfigBroadcast();
       this.rdd = rdd;
    }
 
@@ -49,6 +53,7 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
     * @param map     the map
     */
    SparkPairStream(JavaSparkContext context, Map<? extends T, ? extends U> map) {
+      this.configBroadcast = SparkStreamingContext.INSTANCE.getConfigBroadcast();
       List<scala.Tuple2<T, U>> tuples = new ArrayList<>();
       map.forEach((k, v) -> tuples.add(new scala.Tuple2<>(k, v)));
       this.rdd = context.parallelize(tuples).mapToPair(t -> Cast.as(t));
@@ -96,7 +101,7 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    @Override
    public MPairStream<T, U> filter(@NonNull SerializableBiPredicate<? super T, ? super U> predicate) {
       return new SparkPairStream<>(rdd.filter(tuple -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return predicate.test(tuple._1(), tuple._2());
       }));
    }
@@ -104,7 +109,7 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    @Override
    public MPairStream<T, U> filterByKey(@NonNull SerializablePredicate<T> predicate) {
       return new SparkPairStream<>(rdd.filter(tuple -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return predicate.test(tuple._1());
       }));
    }
@@ -112,7 +117,7 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    @Override
    public MPairStream<T, U> filterByValue(@NonNull SerializablePredicate<U> predicate) {
       return new SparkPairStream<>(rdd.filter(tuple -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return predicate.test(tuple._2());
       }));
    }
@@ -120,7 +125,7 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    @Override
    public <R, V> SparkPairStream<R, V> flatMapToPair(@NonNull SerializableBiFunction<? super T, ? super U, Stream<Map.Entry<? extends R, ? extends V>>> function) {
       return new SparkPairStream<>(rdd.flatMapToPair(t -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return Cast.cast(function.apply(t._1(), t._2())
                                   .map(e -> new scala.Tuple2<>(e.getKey(), e.getValue()))
                                   .iterator());
@@ -130,7 +135,7 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    @Override
    public void forEach(@NonNull SerializableBiConsumer<? super T, ? super U> consumer) {
       rdd.foreach(tuple -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          consumer.accept(tuple._1(), tuple._2());
       });
    }
@@ -138,7 +143,7 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    @Override
    public void forEachLocal(@NonNull SerializableBiConsumer<? super T, ? super U> consumer) {
       rdd.toLocalIterator().forEachRemaining(e -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          consumer.accept(e._1(), e._2());
       });
    }
@@ -200,7 +205,7 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    @Override
    public <R> MStream<R> map(@NonNull SerializableBiFunction<? super T, ? super U, ? extends R> function) {
       return new SparkStream<>(rdd.map(e -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return function.apply(e._1(), e._2());
       }));
    }
@@ -208,7 +213,7 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    @Override
    public MDoubleStream mapToDouble(@NonNull SerializableToDoubleBiFunction<? super T, ? super U> function) {
       return new SparkDoubleStream(rdd.mapToDouble(e -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return function.applyAsDouble(e._1(), e._2());
       }));
    }
@@ -217,7 +222,7 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    public <R, V> MPairStream<R, V> mapToPair(@NonNull SerializableBiFunction<? super T, ? super U, ? extends Map.Entry<? extends R, ? extends V>> function) {
       return new SparkPairStream<>(rdd.mapToPair((t) -> {
          Configurator.INSTANCE.configure(
-            SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+            configBroadcast.value());
          Map.Entry<? extends R, ? extends V> e = function.apply(t._1(), t._2());
          return Cast.as(new scala.Tuple2<>(e.getKey(), e.getValue()));
       }));
@@ -229,7 +234,7 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
          return Optional.empty();
       }
       return Optional.of(toMapEntry(rdd.max((t1, t2) -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return comparator.compare(toMapEntry(t1), toMapEntry(t2));
       })));
    }
@@ -240,7 +245,7 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
          return Optional.empty();
       }
       return Optional.of(toMapEntry(rdd.min((t1, t2) -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return comparator.compare(toMapEntry(t1), toMapEntry(t2));
       })));
    }
@@ -258,7 +263,7 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    @Override
    public MPairStream<T, U> reduceByKey(@NonNull SerializableBinaryOperator<U> operator) {
       return new SparkPairStream<>(rdd.reduceByKey((t, u) -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return operator.apply(t, u);
       }));
    }
@@ -306,4 +311,12 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    public MStream<U> values() {
       return new SparkStream<>(rdd.values());
    }
+
+
+   @Override
+   public void updateConfig() {
+      SparkStreamingContext.INSTANCE.updateConfig();
+      this.configBroadcast = SparkStreamingContext.INSTANCE.getConfigBroadcast();
+   }
+
 }// END OF SparkPairStream

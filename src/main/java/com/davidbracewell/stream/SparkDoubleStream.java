@@ -23,6 +23,7 @@ package com.davidbracewell.stream;
 
 import com.davidbracewell.EnhancedDoubleStatistics;
 import com.davidbracewell.collection.list.PrimitiveArrayList;
+import com.davidbracewell.config.Config;
 import com.davidbracewell.config.Configurator;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
@@ -31,6 +32,7 @@ import com.davidbracewell.stream.accumulator.MStatisticsAccumulator;
 import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import org.apache.spark.api.java.JavaDoubleRDD;
+import org.apache.spark.broadcast.Broadcast;
 import scala.Tuple2;
 
 import java.io.Serializable;
@@ -48,6 +50,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
    private static final long serialVersionUID = 1L;
    private final JavaDoubleRDD doubleStream;
    private SerializableRunnable onClose;
+   private volatile Broadcast<Config> configBroadcast;
 
    /**
     * Instantiates a new Spark double stream.
@@ -55,13 +58,14 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
     * @param doubleStream the double rdd to wrap
     */
    public SparkDoubleStream(JavaDoubleRDD doubleStream) {
+      this.configBroadcast = SparkStreamingContext.INSTANCE.getConfigBroadcast();
       this.doubleStream = doubleStream;
    }
 
    @Override
    public boolean allMatch(@NonNull SerializableDoublePredicate predicate) {
       return doubleStream.filter(d -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return predicate.test(d);
       }).count() == count();
    }
@@ -69,7 +73,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
    @Override
    public boolean anyMatch(@NonNull SerializableDoublePredicate predicate) {
       return doubleStream.filter(d -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return predicate.test(d);
       }).count() != 0;
    }
@@ -99,7 +103,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
    @Override
    public MDoubleStream filter(@NonNull SerializableDoublePredicate predicate) {
       return new SparkDoubleStream(doubleStream.filter(d -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return predicate.test(d);
       }));
    }
@@ -115,7 +119,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
    @Override
    public MDoubleStream flatMap(@NonNull SerializableDoubleFunction<double[]> mapper) {
       return new SparkDoubleStream(doubleStream.flatMapToDouble(d -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return new PrimitiveArrayList<>(mapper.apply(d), Double.class).iterator();
       }));
    }
@@ -123,7 +127,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
    @Override
    public void forEach(@NonNull SerializableDoubleConsumer consumer) {
       doubleStream.foreach(d -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          consumer.accept(d);
       });
    }
@@ -184,7 +188,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
    @Override
    public MDoubleStream map(@NonNull SerializableDoubleUnaryOperator mapper) {
       return new SparkDoubleStream(doubleStream.mapToDouble(d -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return mapper.applyAsDouble(d);
       }));
    }
@@ -192,7 +196,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
    @Override
    public <T> MStream<T> mapToObj(@NonNull SerializableDoubleFunction<? extends T> function) {
       return new SparkStream<>(doubleStream.map(d -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return function.apply(d);
       }));
    }
@@ -221,7 +225,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
    @Override
    public boolean noneMatch(@NonNull SerializableDoublePredicate predicate) {
       return doubleStream.filter(d -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return predicate.test(d);
       }).count() == 0;
    }
@@ -242,7 +246,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
          return OptionalDouble.empty();
       }
       return OptionalDouble.of(doubleStream.reduce((d1, d2) -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return operator.applyAsDouble(d1, d2);
       }));
    }
@@ -253,7 +257,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
          return zeroValue;
       }
       return zeroValue + doubleStream.reduce((d1, d2) -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return operator.applyAsDouble(d1, d2);
       });
    }
@@ -312,6 +316,12 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
       SparkStreamingContext sc = getContext();
       List<Double> doubleList = new PrimitiveArrayList<>(other.toArray(), Double.class);
       return new SparkDoubleStream(doubleStream.union(sc.sparkContext().parallelizeDoubles(doubleList)));
+   }
+
+   @Override
+   public void updateConfig() {
+      SparkStreamingContext.INSTANCE.updateConfig();
+      this.configBroadcast = SparkStreamingContext.INSTANCE.getConfigBroadcast();
    }
 
 }//END OF SparkDoubleStream

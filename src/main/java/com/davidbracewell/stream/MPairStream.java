@@ -393,4 +393,11 @@ public interface MPairStream<T, U> extends AutoCloseable {
       return false;
    }
 
+   /**
+    * Updates the config instance used for this String
+    */
+   default void updateConfig() {
+
+   }
+
 }//END OF MPairStream

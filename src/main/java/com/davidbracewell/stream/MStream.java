@@ -407,6 +407,13 @@ public interface MStream<T> extends Closeable {
    MStream<T> union(MStream<T> other);
 
    /**
+    * Updates the config instance used for this String
+    */
+   default void updateConfig(){
+
+   }
+
+   /**
     * <p>Zips (combines) this stream together with the given other creating a pair stream. For example, if this stream
     * contains [1,2,3] and stream 2 contains [4,5,6] the result would be a pair stream containing the key value pairs
     * [(1,4), (2,5), (3,6)]. Note that the length of the resulting stream will be the minimum of the two streams.</p>

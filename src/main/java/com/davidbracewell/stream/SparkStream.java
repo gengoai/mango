@@ -32,6 +32,7 @@ import lombok.NonNull;
 import org.apache.hadoop.io.compress.GzipCodec;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.broadcast.Broadcast;
 import scala.Tuple2;
 
 import java.io.IOException;
@@ -52,6 +53,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    private static final long serialVersionUID = 1L;
    private final JavaRDD<T> rdd;
    private SerializableRunnable onClose;
+   private volatile Broadcast<Config> configBroadcast;
 
    /**
     * Instantiates a new Spark stream.
@@ -59,6 +61,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
     * @param mStream the m stream
     */
    public SparkStream(@NonNull MStream<T> mStream) {
+      this.configBroadcast = SparkStreamingContext.INSTANCE.getConfigBroadcast();
       if (mStream instanceof SparkStream) {
          this.rdd = Cast.<SparkStream<T>>as(mStream).getRDD();
       } else {
@@ -75,6 +78,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
     * @param rdd the rdd
     */
    public SparkStream(@NonNull JavaRDD<T> rdd) {
+      this.configBroadcast = SparkStreamingContext.INSTANCE.getConfigBroadcast();
       this.rdd = rdd;
    }
 
@@ -84,6 +88,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
     * @param collection the collection
     */
    SparkStream(List<T> collection) {
+      this.configBroadcast = SparkStreamingContext.INSTANCE.getConfigBroadcast();
       int slices = Math.max(1, collection.size() / Config.get("spark.partitions").asIntegerValue(100));
       this.rdd = SparkStreamingContext.INSTANCE.sparkContext().parallelize(collection, slices);
    }
@@ -128,7 +133,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    @Override
    public SparkStream<T> filter(@NonNull SerializablePredicate<? super T> predicate) {
       return new SparkStream<>(rdd.filter(t -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return predicate.test(t);
       }));
    }
@@ -144,7 +149,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    @Override
    public <R> SparkStream<R> flatMap(@NonNull SerializableFunction<? super T, Stream<? extends R>> mapper) {
       return new SparkStream<>(rdd.flatMap(t -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return Cast.as(mapper.apply(t).iterator());
       }));
    }
@@ -152,7 +157,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    @Override
    public <R, U> SparkPairStream<R, U> flatMapToPair(@NonNull SerializableFunction<? super T, Stream<? extends Map.Entry<? extends R, ? extends U>>> function) {
       return new SparkPairStream<>(rdd.flatMapToPair(t -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return Cast.as(function.apply(t).map(e -> new Tuple2<>(e.getKey(), e.getValue())).iterator());
       }));
    }
@@ -160,7 +165,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    @Override
    public T fold(T zeroValue, @NonNull SerializableBinaryOperator<T> operator) {
       return rdd.fold(zeroValue, (t, u) -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return operator.apply(t, u);
       });
    }
@@ -168,7 +173,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    @Override
    public void forEach(@NonNull SerializableConsumer<? super T> consumer) {
       rdd.foreach(t -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          consumer.accept(t);
       });
    }
@@ -200,7 +205,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    @Override
    public <U> SparkPairStream<U, Iterable<T>> groupBy(@NonNull SerializableFunction<? super T, ? extends U> function) {
       return new SparkPairStream<>(rdd.groupBy(e -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return function.apply(e);
       }));
    }
@@ -232,7 +237,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    @Override
    public <R> SparkStream<R> map(@NonNull SerializableFunction<? super T, ? extends R> function) {
       return new SparkStream<>(rdd.map(t -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return function.apply(t);
       }));
    }
@@ -246,7 +251,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
     */
    public <R> SparkStream<R> mapPartitions(@NonNull SerializableFunction<Iterator<? super T>, ? extends R> function) {
       return new SparkStream<>(rdd.mapPartitions(iterator -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return Cast.as(function.apply(iterator));
       }));
    }
@@ -254,7 +259,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    @Override
    public SparkDoubleStream mapToDouble(@NonNull SerializableToDoubleFunction<? super T> function) {
       return new SparkDoubleStream(rdd.mapToDouble(t -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return function.applyAsDouble(t);
       }));
    }
@@ -262,7 +267,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    @Override
    public <R, U> SparkPairStream<R, U> mapToPair(@NonNull SerializableFunction<? super T, ? extends Map.Entry<? extends R, ? extends U>> function) {
       return new SparkPairStream<>(rdd.mapToPair(t -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          Map.Entry<R, U> entry = Cast.as(function.apply(t));
          return Cast.as(new Tuple2<>(entry.getKey(), entry.getValue()));
       }));
@@ -304,7 +309,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    @Override
    public Optional<T> reduce(@NonNull SerializableBinaryOperator<T> reducer) {
       return Optional.of(rdd.reduce((t, u) -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return reducer.apply(t, u);
       }));
    }
@@ -373,7 +378,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    @Override
    public <R extends Comparable<R>> MStream<T> sorted(boolean ascending, @NonNull SerializableFunction<? super T, ? extends R> keyFunction) {
       return new SparkStream<>(rdd.sortBy(t -> {
-         Configurator.INSTANCE.configure(SparkStreamingContext.INSTANCE.getConfigBroadcast().value());
+         Configurator.INSTANCE.configure(configBroadcast.value());
          return keyFunction.apply(t);
       }, ascending, rdd.partitions().size()));
    }
@@ -424,5 +429,11 @@ public class SparkStream<T> implements MStream<T>, Serializable {
       return new SparkPairStream<>(rdd.zipWithIndex());
    }
 
+
+   @Override
+   public void updateConfig() {
+      SparkStreamingContext.INSTANCE.updateConfig();
+      this.configBroadcast = SparkStreamingContext.INSTANCE.getConfigBroadcast();
+   }
 
 }//END OF SparkStream

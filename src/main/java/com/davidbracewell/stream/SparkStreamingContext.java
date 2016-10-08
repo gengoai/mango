@@ -63,7 +63,7 @@ public enum SparkStreamingContext implements StreamingContext {
     */
    public static final String SPARK_MASTER = "spark.master";
 
-   private static volatile JavaSparkContext context;
+   public static volatile JavaSparkContext context;
 
    private volatile Broadcast<Config> configBroadcast;
 
@@ -112,11 +112,11 @@ public enum SparkStreamingContext implements StreamingContext {
       if (context == null || context.sc().isStopped()) {
          synchronized (SparkStreamingContext.class) {
             if (context == null || context.sc().isStopped()) {
-               SparkConf conf = new SparkConf();
+               SparkConf conf = new SparkConf()
+                                   .setAppName(Config.get(SPARK_APPNAME).asString(StringUtils.randomHexString(20)));
                if (Config.hasProperty(SPARK_MASTER)) {
-                  conf.setMaster(Config.get(SPARK_MASTER).asString());
+                  conf = conf.setMaster(Config.get(SPARK_MASTER).asString("local[*]"));
                }
-               conf.setAppName(Config.get(SPARK_APPNAME).asString(StringUtils.randomHexString(20)));
                context = new JavaSparkContext(conf);
             }
          }

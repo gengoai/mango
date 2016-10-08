@@ -23,7 +23,6 @@ package com.davidbracewell.stream;
 
 import com.davidbracewell.EnhancedDoubleStatistics;
 import com.davidbracewell.function.*;
-import com.davidbracewell.stream.accumulator.MStatisticsAccumulator;
 
 import java.util.OptionalDouble;
 import java.util.PrimitiveIterator;
@@ -286,6 +285,13 @@ public interface MDoubleStream extends AutoCloseable {
     */
    default boolean isReusable() {
       return false;
+   }
+
+   /**
+    * Updates the config instance used for this String
+    */
+   default void updateConfig() {
+
    }
 
 }//END OF MDoubleStream
