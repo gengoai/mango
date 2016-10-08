@@ -24,6 +24,7 @@ package com.davidbracewell;
 import com.davidbracewell.collection.Streams;
 import lombok.NonNull;
 
+import java.math.BigDecimal;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
@@ -37,6 +38,61 @@ import static com.google.common.base.Preconditions.checkArgument;
  */
 public interface Math2 {
 
+   /**
+    * Adds two doubles (useful as a method reference)
+    *
+    * @param v1 value 1
+    * @param v2 value 2
+    * @return the sum of value 1 and value 2
+    */
+   static double add(double v1, double v2) {
+      return v1 + v2;
+   }
+
+   /**
+    * Divides two doubles (useful as a method reference)
+    *
+    * @param v1 value 1
+    * @param v2 value 2
+    * @return the result of value 1 divided by value 2
+    */
+   static double divide(double v1, double v2) {
+      return v1 / v2;
+   }
+
+
+   /**
+    * Multiplies two doubles (useful as a method reference)
+    *
+    * @param v1 value 1
+    * @param v2 value 2
+    * @return the result of value 1 * value 2
+    */
+   static double multiply(double v1, double v2) {
+      return v1 * v2;
+   }
+
+   /**
+    * Subtracts two doubles (useful as a method reference)
+    *
+    * @param v1 value 1
+    * @param v2 value 2
+    * @return the result of value 1 minus value 2
+    */
+   static double subtract(double v1, double v2) {
+      return v1 - v2;
+   }
+
+   /**
+    * Truncates a double to a given precision.
+    *
+    * @param value     the value to truncate
+    * @param precision the number of decimal places
+    * @return the double
+    */
+   static double truncate(double value, int precision) {
+      return BigDecimal.valueOf(value).setScale(precision, BigDecimal.ROUND_HALF_UP).doubleValue();
+   }
 
    /**
     * <p>Rescales a value from an old range to a new range, e.g. change the value 2 in a 1 to 5 scale to the value 3.25
