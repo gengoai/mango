@@ -5,11 +5,6 @@ A set of utilities, frameworks, and tools to speed up and ease programming in Ja
 
 See the [Wiki](https://github.com/dbracewell/mango/wiki) for more information!
 
-
-## Build Status
-Develop Status: <img src="https://travis-ci.org/dbracewell/mango.svg?branch=develop"/> <br/>
-Master Status: <img src="https://travis-ci.org/dbracewell/mango.svg?branch=master"/> <br/>
-
 ## License
 Copyright 2015 David B. Bracewell
 

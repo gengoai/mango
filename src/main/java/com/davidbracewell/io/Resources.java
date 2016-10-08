@@ -175,6 +175,8 @@ public final class Resources {
    }
 
    /**
+    * From stdin resource.
+    *
     * @return Resource that can read from standard in
     */
    public static Resource fromStdin() {
@@ -182,6 +184,8 @@ public final class Resources {
    }
 
    /**
+    * From stdout resource.
+    *
     * @return Resource that can output to standard out
     */
    public static Resource fromStdout() {
@@ -189,6 +193,8 @@ public final class Resources {
    }
 
    /**
+    * From output stream resource.
+    *
     * @param outputStream The output stream to wrap
     * @return Resource that can write to given output stream
     */
@@ -197,6 +203,8 @@ public final class Resources {
    }
 
    /**
+    * From input stream resource.
+    *
     * @param inputStream The input stream to wrap
     * @return Resource that can read from given input stream
     */
@@ -205,6 +213,8 @@ public final class Resources {
    }
 
    /**
+    * Creates a new Resource that wraps the given reader
+    *
     * @param reader The reader to wrap
     * @return Resource that can read from given reader
     */
@@ -213,6 +223,18 @@ public final class Resources {
    }
 
    /**
+    * Creates a new Resource that wraps the given writer
+    *
+    * @param writer the writer wrap
+    * @return the resource
+    */
+   public static Resource fromWriter(@NonNull Writer writer) {
+      return new WriterResource(writer);
+   }
+
+   /**
+    * Creates a new Resource that points to a temporary directory.
+    *
     * @return A resource which is a temporary directory on disk
     */
    public static Resource temporaryDirectory() {
@@ -228,6 +250,8 @@ public final class Resources {
    }
 
    /**
+    * Creates a new Resource that points to a temporary file.
+    *
     * @return A resource which is a temporary file on disk
     */
    @SneakyThrows
@@ -241,7 +265,7 @@ public final class Resources {
     * @param name      The file name
     * @param extension The file extension
     * @return The resource representing the temporary file
-    * @throws java.io.IOException Something went wrong creating the resource
+    * @throws IOException the io exception
     */
    public static Resource temporaryFile(String name, String extension) throws IOException {
       return new FileResource(File.createTempFile(name, extension));

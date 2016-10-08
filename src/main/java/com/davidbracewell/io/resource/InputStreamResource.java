@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
+ * Resource that wraps an <code>InputStream</code>
+ *
  * @author David B. Bracewell
  */
 public class InputStreamResource extends BaseResource implements ReadOnlyResource, NonTraversableResource {
@@ -35,9 +37,9 @@ public class InputStreamResource extends BaseResource implements ReadOnlyResourc
    private final InputStream inputStream;
 
    /**
-    * Default Constructor
+    * Instantiates a new Input stream resource.
     *
-    * @param stream The input stream
+    * @param stream the input stream to wrap
     */
    public InputStreamResource(@NonNull InputStream stream) {
       this.inputStream = stream;

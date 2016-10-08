@@ -24,25 +24,35 @@ package com.davidbracewell.io.resource;
 import lombok.NonNull;
 
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.Writer;
 
 /**
- * Resource that wraps an <Code>OutputStream</Code>
+ * The type Writer resource.
  *
  * @author David B. Bracewell
  */
-public class OutputStreamResource extends BaseResource implements WriteOnlyResource, NonTraversableResource {
+public class WriterResource extends BaseResource implements WriteOnlyResource, NonTraversableResource {
+   private static final long serialVersionUID = 1L;
 
-   private static final long serialVersionUID = 1233692902217463488L;
-   private final OutputStream outputStream;
+   private final Writer writer;
 
    /**
-    * Instantiates a new Output stream resource.
+    * Instantiates a new Writer resource.
     *
-    * @param stream the output stream to wrap
+    * @param writer the writer
     */
-   public OutputStreamResource(@NonNull OutputStream stream) {
-      this.outputStream = stream;
+   public WriterResource(@NonNull Writer writer) {
+      this.writer = writer;
+   }
+
+   @Override
+   public Writer writer() throws IOException {
+      return writer;
+   }
+
+   @Override
+   public Resource append(byte[] byteArray) throws IOException {
+      throw new UnsupportedOperationException();
    }
 
    @Override
@@ -50,15 +60,4 @@ public class OutputStreamResource extends BaseResource implements WriteOnlyResou
       return true;
    }
 
-   @Override
-   public OutputStream createOutputStream() throws IOException {
-      return outputStream;
-   }
-
-   @Override
-   public Resource append(byte[] byteArray) throws IOException {
-      outputStream.write(byteArray);
-      return this;
-   }
-
-}//END OF OutputStreamResource
+}//END OF WriterResource
