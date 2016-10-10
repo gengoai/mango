@@ -167,7 +167,7 @@ public enum SparkStreamingContext implements StreamingContext {
 
    @Override
    public <T> SparkStream<T> empty() {
-      return new SparkStream<>(getSparkContext().parallelize(new ArrayList<>()));
+      return new SparkStream<>(sparkContext().emptyRDD());
    }
 
    @Override
