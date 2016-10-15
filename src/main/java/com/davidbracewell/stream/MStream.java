@@ -29,7 +29,6 @@ import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.Resource;
 import lombok.NonNull;
 
-import java.io.Closeable;
 import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
@@ -41,7 +40,7 @@ import java.util.stream.Stream;
  * @param <T> the component type of the stream
  * @author David B. Bracewell
  */
-public interface MStream<T> extends Closeable {
+public interface MStream<T> extends AutoCloseable {
 
 
    /**

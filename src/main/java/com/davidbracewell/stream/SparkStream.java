@@ -100,6 +100,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
    @Override
    public void close() throws IOException {
+      this.rdd.unpersist();
       if (onClose != null) {
          onClose.run();
       }

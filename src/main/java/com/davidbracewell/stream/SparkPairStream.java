@@ -78,6 +78,7 @@ class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
 
    @Override
    public void close() throws Exception {
+      this.rdd.unpersist();
       if (onClose != null) {
          onClose.run();
       }

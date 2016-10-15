@@ -85,6 +85,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
 
    @Override
    public void close() throws Exception {
+      this.doubleStream.unpersist();
       if (onClose != null) {
          onClose.run();
       }

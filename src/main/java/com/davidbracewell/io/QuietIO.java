@@ -51,5 +51,16 @@ public class QuietIO {
       }
    }
 
+   public static void closeQuietly(AutoCloseable closeable) {
+      if (closeable == null) {
+         return;
+      }
+      try {
+         closeable.close();
+      } catch (Exception e) {
+         logger.fine(e);
+      }
+   }
+
 
 }// END OF QuietIO
