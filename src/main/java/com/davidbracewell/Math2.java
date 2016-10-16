@@ -37,6 +37,21 @@ import static com.google.common.base.Preconditions.checkArgument;
  * @author David B. Bracewell
  */
 public interface Math2 {
+   /**
+    * The constant LOG2.
+    */
+   double LOG2 = Math.log(2);
+
+
+   /**
+    * Calculates the base 2 log of a given number
+    *
+    * @param number the number to calculate the base 2 log of
+    * @return the base 2 log of the given number
+    */
+   static double log2(double number) {
+      return Math.log(number) / LOG2;
+   }
 
    /**
     * Adds two doubles (useful as a method reference)

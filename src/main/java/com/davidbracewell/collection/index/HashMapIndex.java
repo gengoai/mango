@@ -24,6 +24,7 @@ package com.davidbracewell.collection.index;
 import com.google.common.collect.Iterators;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.Synchronized;
 
 import java.io.Serializable;
 import java.util.*;
@@ -41,15 +42,11 @@ public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
    private final List<TYPE> list = new ArrayList<>();
 
    @Override
+   @Synchronized
    public int add(@NonNull TYPE item) {
       if (!map.containsKey(item)) {
-         synchronized (this) {
-            if (!map.containsKey(item)) {
-               list.add(item);
-               map.put(item, list.size() - 1);
-               return list.size() - 1;
-            }
-         }
+         list.add(item);
+         map.put(item, list.size() - 1);
       }
       return map.get(item);
    }
