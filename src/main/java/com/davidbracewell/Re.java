@@ -15,12 +15,10 @@ public interface Re {
     * The quote character.
     */
    Regex QUOTE = re("\"");
-
    /**
     * An unescaped period representing match anything.
     */
    Regex ANY = re(".");
-
    /**
     * matches unicode whitespace.
     */

@@ -22,6 +22,7 @@
 package com.davidbracewell;
 
 import com.davidbracewell.collection.Streams;
+import com.google.common.math.DoubleMath;
 import lombok.NonNull;
 
 import java.math.BigDecimal;
@@ -37,11 +38,6 @@ import static com.google.common.base.Preconditions.checkArgument;
  * @author David B. Bracewell
  */
 public interface Math2 {
-   /**
-    * The constant LOG2.
-    */
-   double LOG2 = Math.log(2);
-
 
    /**
     * Calculates the base 2 log of a given number
@@ -50,7 +46,7 @@ public interface Math2 {
     * @return the base 2 log of the given number
     */
    static double log2(double number) {
-      return Math.log(number) / LOG2;
+      return DoubleMath.log2(number);
    }
 
    /**
