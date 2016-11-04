@@ -168,7 +168,14 @@ public class JSONReader extends StructuredReader {
                currentValue = Tuple2.of(next, Val.of(reader.nextBoolean()));
                break;
             case NUMBER:
-               currentValue = Tuple2.of(next, Val.of(reader.nextDouble()));
+               double val = reader.nextDouble();
+               if( val == (int)val ){
+                  currentValue = Tuple2.of(next, Val.of((int)val));
+               } else if( val == (long)val ){
+                  currentValue = Tuple2.of(next, Val.of((long)val));
+               } else {
+                  currentValue = Tuple2.of(next, Val.of(val));
+               }
                break;
             case NULL:
                reader.nextNull();

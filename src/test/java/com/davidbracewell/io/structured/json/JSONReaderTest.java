@@ -22,7 +22,9 @@
 package com.davidbracewell.io.structured.json;
 
 import com.davidbracewell.io.Resources;
+import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.AbstractStructuredReaderTest;
+import org.junit.Test;
 
 import java.io.IOException;
 
@@ -31,11 +33,13 @@ import java.io.IOException;
  */
 public class JSONReaderTest extends AbstractStructuredReaderTest {
 
-  public JSONReaderTest() throws IOException {
-    super(new JSONReader(Resources.fromClasspath("com/davidbracewell/test.json")));
-  }
+   public JSONReaderTest() throws IOException {
+      super(new JSONReader(Resources.fromClasspath("com/davidbracewell/test.json")));
+   }
 
-//  @Test
+
+
+   //  @Test
 //  public void readerTest() throws Exception {
 //    Resource resource = Resources.fromClasspath("com/davidbracewell/test.json");
 //    try (JSONReader reader = new JSONReader(resource)) {
