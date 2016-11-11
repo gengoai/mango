@@ -35,6 +35,7 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -56,7 +57,6 @@ public class CacheProxy<T> implements InvocationHandler, Serializable {
       this.object = object;
       Reflect r = Reflect.onObject(object).allowPrivilegedAccess();
 
-
       if (r.getReflectedClass().isAnnotationPresent(Cached.class)) {
          Cached cached = r.getReflectedClass().getAnnotation(Cached.class);
          defaultCacheName = StringUtils.firstNonNullOrBlank(cacheName, cached.name(), CacheManager.GLOBAL_CACHE);
@@ -74,7 +74,7 @@ public class CacheProxy<T> implements InvocationHandler, Serializable {
             KeyMaker keyMaker = cached.keyMaker() == KeyMaker.DefaultKeyMaker.class
                                 ? defaultKeyMaker
                                 : Reflect.onClass(cached.keyMaker()).create().get();
-            cachedMethods.put(method.toGenericString(),
+            cachedMethods.put(createMethodKey(method),
                               new CacheInfo(
                                               CacheManager.get(
                                                  StringUtils.firstNonNullOrBlank(cached.name(), defaultCacheName)),
@@ -82,6 +82,11 @@ public class CacheProxy<T> implements InvocationHandler, Serializable {
                              );
          }
       }));
+   }
+
+   private String createMethodKey(Method method) {
+      return method.getName() + "::" + method.getParameterTypes().length + "::" + Arrays.toString(
+         method.getParameterTypes());
    }
 
    /**
@@ -106,9 +111,10 @@ public class CacheProxy<T> implements InvocationHandler, Serializable {
 
    @Override
    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+      final String methodKey = createMethodKey(method);
       //If this is a cached method then do the caching...
-      if (cachedMethods.containsKey(method.toGenericString())) {
-         CacheInfo cacheInfo = cachedMethods.get(method.toGenericString());
+      if (cachedMethods.containsKey(methodKey)) {
+         CacheInfo cacheInfo = cachedMethods.get(methodKey);
          Object key = cacheInfo.getKeyMaker().make(object.getClass(), method, args);
          try {
             return cacheInfo.getCache().get(key, Unchecked.supplier(() -> method.invoke(object, args)));
