@@ -405,9 +405,9 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
    @Override
    public SparkStream<T> union(@NonNull MStream<T> other) {
-      if (other.isReusable() && isEmpty()) {
+      if (other.isReusable() && other.isEmpty()) {
          return this;
-      } else if (this.isEmpty()) {
+      } else if (isReusable() && this.isEmpty()) {
          return new SparkStream<>(other);
       } else if (other instanceof SparkStream) {
          return new SparkStream<>(rdd.union(Cast.<SparkStream<T>>as(other).rdd));
