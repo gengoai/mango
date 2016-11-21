@@ -283,6 +283,8 @@ public class ReusableLocalStream<T> implements MStream<T> {
          return this;
       } else if (this.isEmpty()) {
          return other;
+      } else if (other instanceof ReusableLocalStream || other instanceof LocalStream) {
+         return getStream().union(other).cache();
       }
       return getStream().union(other);
    }
