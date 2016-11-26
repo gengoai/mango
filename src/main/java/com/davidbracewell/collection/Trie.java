@@ -3,6 +3,7 @@ package com.davidbracewell.collection;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.string.CharPredicate;
 import com.davidbracewell.string.StringUtils;
+import com.google.common.base.CharMatcher;
 import com.google.common.collect.Iterators;
 import lombok.NonNull;
 
@@ -12,7 +13,7 @@ import java.util.stream.Collectors;
 
 /**
  * <p>A basic <a href="https://en.wikipedia.org/wiki/Trie">Trie</a> implementation that uses hashmaps to store its child
- * nodes. The {@link #find(String, CharPredicate)} method provides functionality to find all elements of the trie in the
+ * nodes. The {@link #find(String, CharMatcher)} method provides functionality to find all elements of the trie in the
  * specified string in longest-first style using the specified CharPredicate to accept or reject matches based on the
  * character after the match, e.g. only match if the next character is whitespace.</p>
  *
@@ -43,6 +44,54 @@ public class Trie<V> implements Serializable, Map<String, V> {
       putAll(map);
    }
 
+   @Override
+   public void clear() {
+      root.children.clear();
+      root.size = 0;
+      root.matches = null;
+      root.value = null;
+      root.prune();
+   }
+
+   @Override
+   public boolean containsKey(Object key) {
+      if (key == null) {
+         return false;
+      }
+      TrieNode<V> match = root.find(key.toString());
+      return match != null && StringUtils.safeEquals(match.matches, Cast.as(key), true);
+   }
+
+   @Override
+   public boolean containsValue(Object value) {
+      return values().contains(value);
+   }
+
+   @Override
+   public Set<Entry<String, V>> entrySet() {
+      return new AbstractSet<Entry<String, V>>() {
+
+         @Override
+         public boolean contains(Object o) {
+            if (o instanceof Entry) {
+               Entry entry = Cast.as(o);
+               return Trie.this.containsKey(entry.getKey()) && Trie.this.get(entry.getKey()).equals(entry.getValue());
+            }
+            return false;
+         }
+
+         @Override
+         public Iterator<Entry<String, V>> iterator() {
+            return root.subTreeIterator();
+         }
+
+         @Override
+         public int size() {
+            return root.size;
+         }
+      };
+   }
+
    /**
     * Matches the strings in the trie against a specified text. Matching is doing using a greedy longest match wins way.
     * The give CharPredicate is used to determine if matches are accepted, e.g. only accept a match followed by a
@@ -52,12 +101,12 @@ public class Trie<V> implements Serializable, Map<String, V> {
     * @param delimiter the predicate that specifies acceptable delimiters
     * @return the list of matched elements
     */
-   public List<TrieMatch<V>> find(String text, CharPredicate delimiter) {
+   public List<TrieMatch<V>> find(String text, CharMatcher delimiter) {
       if (StringUtils.isNullOrBlank(text)) {
          return Collections.emptyList();
       }
       if (delimiter == null) {
-         delimiter = CharPredicate.ANY;
+         delimiter = CharMatcher.ANY;
       }
 
       int len = text.length();
@@ -122,31 +171,6 @@ public class Trie<V> implements Serializable, Map<String, V> {
 
    }
 
-
-   @Override
-   public int size() {
-      return root.size;
-   }
-
-   @Override
-   public boolean isEmpty() {
-      return root.size == 0;
-   }
-
-   @Override
-   public boolean containsKey(Object key) {
-      if (key == null) {
-         return false;
-      }
-      TrieNode<V> match = root.find(key.toString());
-      return match != null && StringUtils.safeEquals(match.matches, Cast.as(key), true);
-   }
-
-   @Override
-   public boolean containsValue(Object value) {
-      return values().contains(value);
-   }
-
    @Override
    public V get(Object key) {
       if (key == null) {
@@ -160,8 +184,32 @@ public class Trie<V> implements Serializable, Map<String, V> {
    }
 
    @Override
-   public String toString() {
-      return entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.joining(", ", "{", "}"));
+   public boolean isEmpty() {
+      return root.size == 0;
+   }
+
+   @Override
+   public Set<String> keySet() {
+      return new AbstractSet<String>() {
+
+         @Override
+         public boolean contains(Object o) {
+            return Trie.this.containsKey(o);
+         }
+
+
+         @Override
+         public Iterator<String> iterator() {
+            return new KeyIterator<>(root);
+         }
+
+         @Override
+         public int size() {
+            return root.size;
+         }
+
+
+      };
    }
 
    /**
@@ -194,72 +242,13 @@ public class Trie<V> implements Serializable, Map<String, V> {
    }
 
    @Override
-   public Set<String> keySet() {
-      return new AbstractSet<String>() {
-
-         @Override
-         public boolean contains(Object o) {
-            return Trie.this.containsKey(o);
-         }
-
-
-         @Override
-         public Iterator<String> iterator() {
-            return new KeyIterator<>(root);
-         }
-
-         @Override
-         public int size() {
-            return root.size;
-         }
-
-
-      };
-   }
-
-   @Override
-   public Collection<V> values() {
-      return new AbstractCollection<V>() {
-         @Override
-         public Iterator<V> iterator() {
-            return new ValueIterator<>(root);
-         }
-
-         @Override
-         public int size() {
-            return root.size;
-         }
-      };
-   }
-
-   @Override
-   public Set<Entry<String, V>> entrySet() {
-      return new AbstractSet<Entry<String, V>>() {
-
-         @Override
-         public boolean contains(Object o) {
-            if (o instanceof Entry) {
-               Entry entry = Cast.as(o);
-               return Trie.this.containsKey(entry.getKey()) && Trie.this.get(entry.getKey()).equals(entry.getValue());
-            }
-            return false;
-         }
-
-         @Override
-         public Iterator<Entry<String, V>> iterator() {
-            return root.subTreeIterator();
-         }
-
-         @Override
-         public int size() {
-            return root.size;
-         }
-      };
-   }
-
-   @Override
    public V put(@NonNull String key, V value) {
       return root.extend(key.toCharArray(), 0, value);
+   }
+
+   @Override
+   public void putAll(Map<? extends String, ? extends V> m) {
+      m.forEach(this::put);
    }
 
    @Override
@@ -282,17 +271,28 @@ public class Trie<V> implements Serializable, Map<String, V> {
    }
 
    @Override
-   public void putAll(Map<? extends String, ? extends V> m) {
-      m.forEach(this::put);
+   public int size() {
+      return root.size;
    }
 
    @Override
-   public void clear() {
-      root.children.clear();
-      root.size = 0;
-      root.matches = null;
-      root.value = null;
-      root.prune();
+   public String toString() {
+      return entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.joining(", ", "{", "}"));
+   }
+
+   @Override
+   public Collection<V> values() {
+      return new AbstractCollection<V>() {
+         @Override
+         public Iterator<V> iterator() {
+            return new ValueIterator<>(root);
+         }
+
+         @Override
+         public int size() {
+            return root.size;
+         }
+      };
    }
 
    private static class TrieNode<V> implements Serializable {
@@ -305,26 +305,6 @@ public class Trie<V> implements Serializable, Map<String, V> {
       private int size = 0;
       private Map<Character, TrieNode<V>> children = new HashMap<>(1);
 
-      TrieNode<V> find(String string) {
-         if (string == null || string.length() == 0) {
-            return null;
-         }
-         TrieNode<V> node = this;
-         if (nodeChar == null) {
-            node = children.get(string.charAt(0));
-         } else if (nodeChar != string.charAt(0)) {
-            return null;
-         }
-         for (int i = 1; node != null && i < string.length(); i++) {
-            node = node.children.get(string.charAt(i));
-         }
-         return node;
-      }
-
-      public boolean contains(String string) {
-         return find(string) != null;
-      }
-
       private TrieNode(Character nodeChar, TrieNode<V> parent) {
          this.nodeChar = nodeChar;
          this.parent = parent;
@@ -335,24 +315,8 @@ public class Trie<V> implements Serializable, Map<String, V> {
          }
       }
 
-      @Override
-      public String toString() {
-         return "(" + matches + ", " + value + ")";
-      }
-
-      void prune() {
-         if (parent == null) {
-            return;
-         }
-         if (matches == null && children.isEmpty()) {
-            parent.children.remove(nodeChar);
-         }
-         parent.size--;
-         parent.prune();
-      }
-
-      Iterator<Map.Entry<String, V>> subTreeIterator() {
-         return new EntryIterator<>(this);
+      public boolean contains(String string) {
+         return find(string) != null;
       }
 
       /**
@@ -384,6 +348,42 @@ public class Trie<V> implements Serializable, Map<String, V> {
          return toReturn;
       }
 
+      TrieNode<V> find(String string) {
+         if (string == null || string.length() == 0) {
+            return null;
+         }
+         TrieNode<V> node = this;
+         if (nodeChar == null) {
+            node = children.get(string.charAt(0));
+         } else if (nodeChar != string.charAt(0)) {
+            return null;
+         }
+         for (int i = 1; node != null && i < string.length(); i++) {
+            node = node.children.get(string.charAt(i));
+         }
+         return node;
+      }
+
+      void prune() {
+         if (parent == null) {
+            return;
+         }
+         if (matches == null && children.isEmpty()) {
+            parent.children.remove(nodeChar);
+         }
+         parent.size--;
+         parent.prune();
+      }
+
+      Iterator<Map.Entry<String, V>> subTreeIterator() {
+         return new EntryIterator<>(this);
+      }
+
+      @Override
+      public String toString() {
+         return "(" + matches + ", " + value + ")";
+      }
+
    }
 
    private static abstract class TrieIterator<V, E> implements Iterator<E> {
@@ -399,6 +399,13 @@ public class Trie<V> implements Serializable, Map<String, V> {
          }
       }
 
+      abstract E convert(TrieNode<V> node);
+
+      @Override
+      public boolean hasNext() {
+         return move() != null;
+      }
+
       private TrieNode<V> move() {
          while (current == null || current.matches == null) {
             if (queue.isEmpty()) {
@@ -411,12 +418,6 @@ public class Trie<V> implements Serializable, Map<String, V> {
       }
 
       @Override
-      public boolean hasNext() {
-         return move() != null;
-      }
-
-
-      @Override
       public E next() {
          old = move();
          if (old == null) {
@@ -425,8 +426,6 @@ public class Trie<V> implements Serializable, Map<String, V> {
          current = null;
          return convert(old);
       }
-
-      abstract E convert(TrieNode<V> node);
 
    }
 
@@ -464,6 +463,17 @@ public class Trie<V> implements Serializable, Map<String, V> {
       @Override
       Map.Entry<String, V> convert(final TrieNode<V> old) {
          return new Map.Entry<String, V>() {
+            TrieNode<V> node = old;
+
+            @Override
+            public boolean equals(Object obj) {
+               if (obj == null || !(obj instanceof Entry)) {
+                  return false;
+               }
+               Entry e = Cast.as(obj);
+               return e.getKey().equals(node.matches) && e.getValue().equals(node.value);
+            }
+
             @Override
             public String getKey() {
                return node.matches;
@@ -481,20 +491,9 @@ public class Trie<V> implements Serializable, Map<String, V> {
                return oldValue;
             }
 
-            TrieNode<V> node = old;
-
             @Override
             public String toString() {
                return node.matches + "=" + node.value;
-            }
-
-            @Override
-            public boolean equals(Object obj) {
-               if (obj == null || !(obj instanceof Entry)) {
-                  return false;
-               }
-               Entry e = Cast.as(obj);
-               return e.getKey().equals(node.matches) && e.getValue().equals(node.value);
             }
          };
       }

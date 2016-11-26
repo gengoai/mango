@@ -23,6 +23,7 @@ package com.davidbracewell.concurrent;
 
 import com.davidbracewell.string.CharPredicate;
 import com.davidbracewell.string.StringUtils;
+import com.google.common.base.CharMatcher;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -52,7 +53,7 @@ public class BrokerTest {
     public void produce() {
       start();
       for (int i = 0; i < 100; i++) {
-        String s = StringUtils.randomString(3, CharPredicate.LETTER_OR_DIGIT);
+        String s = StringUtils.randomString(3, CharMatcher.JAVA_LETTER_OR_DIGIT);
         yield(s);
       }
       stop();

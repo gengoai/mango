@@ -24,8 +24,8 @@ package com.davidbracewell.io;
 import com.davidbracewell.collection.Streams;
 import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.function.Unchecked;
-import com.davidbracewell.string.CharPredicate;
 import com.davidbracewell.string.StringUtils;
+import com.google.common.base.CharMatcher;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
@@ -170,7 +170,7 @@ public class CSVReader implements Closeable, AutoCloseable, Iterable<List<String
    }
 
    private void gobbleWhiteSpace() throws IOException {
-      while (bufferPeek() != -1 && Character.isWhitespace(bufferPeek()) && !CharPredicate.BREAKING_WHITESPACE.matches(
+      while (bufferPeek() != -1 && Character.isWhitespace(bufferPeek()) && !CharMatcher.BREAKING_WHITESPACE.matches(
          (char) bufferPeek())) {
          read();
       }

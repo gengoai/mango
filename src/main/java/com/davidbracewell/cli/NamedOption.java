@@ -87,7 +87,7 @@ public final class NamedOption {
 
       this.name = StringUtils.isNullOrBlank(option.name()) ? field.getName() : option.name();
 
-      checkArgument(!StringUtils.isNullOrBlank(this.name) && !CharPredicate.WHITESPACE.matchesAnyOf(this.name),
+      checkArgument(!StringUtils.isNullOrBlank(this.name) && !StringUtils.WHITESPACE.matchesAnyOf(this.name),
                     "Option name must have at least one character and must not have a space");
 
       this.type = field.getType();
@@ -119,7 +119,7 @@ public final class NamedOption {
     */
    @Builder
    protected NamedOption(@NonNull String name, @NonNull Class<?> type, @NonNull String description, Object defaultValue, @Singular Collection<String> aliases, boolean required) {
-      checkArgument(!StringUtils.isNullOrBlank(name) && !CharPredicate.WHITESPACE.matchesAnyOf(name),
+      checkArgument(!StringUtils.isNullOrBlank(name) && !StringUtils.WHITESPACE.matchesAnyOf(name),
                     "Option name must have at least one character and must not have a space");
       checkArgument(!StringUtils.isNullOrBlank(description), "Description must not be blank");
 

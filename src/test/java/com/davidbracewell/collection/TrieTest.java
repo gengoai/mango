@@ -23,6 +23,7 @@ package com.davidbracewell.collection;
 
 import com.davidbracewell.collection.map.Maps;
 import com.davidbracewell.string.CharPredicate;
+import com.davidbracewell.string.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -55,7 +56,7 @@ public class TrieTest {
    @Test
    public void findAll() throws Exception {
       String content = "I ran the rand program and wasn't happy";
-      List<TrieMatch<String>> matches = trie.find(content, CharPredicate.WHITESPACE);
+      List<TrieMatch<String>> matches = trie.find(content, StringUtils.WHITESPACE);
       assertEquals(3, matches.size());
 
       assertEquals("run", matches.get(0).getValue());

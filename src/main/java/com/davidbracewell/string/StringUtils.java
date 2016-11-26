@@ -23,6 +23,7 @@ package com.davidbracewell.string;
 
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.CSVReader;
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -43,15 +44,15 @@ import static com.davidbracewell.collection.Streams.asStream;
 public final class StringUtils {
 
    /**
-    * CharPredicate combining INVISIBLE, BREAKING_WHITESPACE, and WHITESPACE
-    */
-   public static final CharPredicate WHITESPACE = CharPredicate.INVISIBLE.and(CharPredicate.BREAKING_WHITESPACE)
-                                                                         .and(CharPredicate.WHITESPACE);
-   /**
     * Empty String
     */
    public static final String EMPTY = "";
-
+   /**
+    * CharMatcher combining INVISIBLE, BREAKING_WHITESPACE, and WHITESPACE
+    */
+   public static final CharMatcher WHITESPACE = CharMatcher.INVISIBLE
+                                                   .and(CharMatcher.BREAKING_WHITESPACE)
+                                                   .and(CharMatcher.WHITESPACE);
    /**
     * The constant SINGLE_UNICODE_WHITESPACE.
     */
@@ -70,42 +71,6 @@ public final class StringUtils {
    }
 
    /**
-    * <p>Replaces repeated characters with a single instance. e.g. <code>Gooooood</code> would become <code>God</code>.</p>
-    *
-    * @param sequence The character sequence
-    * @return The compacted string
-    * @throws NullPointerException when the sequence is null
-    */
-   public static String compactRepeatedChars(@NonNull CharSequence sequence) {
-      StringBuilder builder = new StringBuilder();
-      for (int i = 0; i < sequence.length(); i++) {
-         char c = sequence.charAt(i);
-         if (builder.length() == 0 || builder.charAt(builder.length() - 1) != c) {
-            builder.append(c);
-         }
-      }
-      return builder.toString();
-   }
-
-
-   public static String join(Iterable<?> iterable, CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
-      return asStream(iterable).map(Object::toString).collect(Collectors.joining(delimiter, prefix, suffix));
-   }
-
-   public static String join(Iterable<?> iterable, CharSequence delimiter) {
-      return asStream(iterable).map(Object::toString).collect(Collectors.joining(delimiter));
-   }
-
-   public static <T> String join(T[] values, CharSequence delimiter) {
-      return asStream(values).map(Object::toString).collect(Collectors.joining(delimiter));
-   }
-
-   public static <T> String join(T[] values, CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
-      return asStream(values).map(Object::toString).collect(Collectors.joining(delimiter, prefix, suffix));
-   }
-
-
-   /**
     * <p>Abbreviates a string to a desired length and adds "..." at the end.</p>
     *
     * @param input  The input string
@@ -122,24 +87,6 @@ public final class StringUtils {
       return input.substring(0, length) + "...";
    }
 
-   public static String padEnd(CharSequence sequence, int desiredLength, char paddingCharacter) {
-      if (sequence == null) {
-         return repeat(paddingCharacter, desiredLength);
-      } else if (sequence.length() == desiredLength) {
-         return sequence.toString();
-      }
-      return sequence.toString() + repeat(paddingCharacter, desiredLength - sequence.length());
-   }
-
-   public static String padStart(CharSequence sequence, int desiredLength, char paddingCharacter) {
-      if (sequence == null) {
-         return repeat(paddingCharacter, desiredLength);
-      } else if (sequence.length() == desiredLength) {
-         return sequence.toString();
-      }
-      return repeat(paddingCharacter, desiredLength - sequence.length()) + sequence.toString();
-   }
-
    /**
     * Center string.
     *
@@ -153,6 +100,25 @@ public final class StringUtils {
       }
       int start = (int) Math.floor(Math.max(0, (length - s.length()) / 2d));
       return padEnd(repeat(' ', start) + s, length, ' ');
+   }
+
+   /**
+    * <p>Replaces repeated characters with a single instance. e.g. <code>Gooooood</code> would become
+    * <code>God</code>.</p>
+    *
+    * @param sequence The character sequence
+    * @return The compacted string
+    * @throws NullPointerException when the sequence is null
+    */
+   public static String compactRepeatedChars(@NonNull CharSequence sequence) {
+      StringBuilder builder = new StringBuilder();
+      for (int i = 0; i < sequence.length(); i++) {
+         char c = sequence.charAt(i);
+         if (builder.length() == 0 || builder.charAt(builder.length() - 1) != c) {
+            builder.append(c);
+         }
+      }
+      return builder.toString();
    }
 
    /**
@@ -172,6 +138,24 @@ public final class StringUtils {
          return 1;
       }
       return ignoreCase ? s1.compareToIgnoreCase(s2) : s1.compareTo(s2);
+   }
+
+   /**
+    * First non null or blank string.
+    *
+    * @param strings the strings
+    * @return the string
+    */
+   public static String firstNonNullOrBlank(String... strings) {
+      if (strings == null || strings.length == 0) {
+         return null;
+      }
+      for (String s : strings) {
+         if (isNotNullOrBlank(s)) {
+            return s;
+         }
+      }
+      return null;
    }
 
    /**
@@ -265,16 +249,6 @@ public final class StringUtils {
    }
 
    /**
-    * Determines if a string is null or blank (trimmed string is empty).
-    *
-    * @param input The input string
-    * @return True when the input string is null or the trimmed version of the string is empty.
-    */
-   public static boolean isNullOrBlank(CharSequence input) {
-      return StringPredicates.IS_NULL_OR_BLANK.test(input);
-   }
-
-   /**
     * Determines if a string is not null or blank (trimmed string is empty).
     *
     * @param input The input string
@@ -285,21 +259,13 @@ public final class StringUtils {
    }
 
    /**
-    * First non null or blank string.
+    * Determines if a string is null or blank (trimmed string is empty).
     *
-    * @param strings the strings
-    * @return the string
+    * @param input The input string
+    * @return True when the input string is null or the trimmed version of the string is empty.
     */
-   public static String firstNonNullOrBlank(String... strings) {
-      if (strings == null || strings.length == 0) {
-         return null;
-      }
-      for (String s : strings) {
-         if (isNotNullOrBlank(s)) {
-            return s;
-         }
-      }
-      return null;
+   public static boolean isNullOrBlank(CharSequence input) {
+      return StringPredicates.IS_NULL_OR_BLANK.test(input);
    }
 
    /**
@@ -343,6 +309,22 @@ public final class StringUtils {
       return StringPredicates.IS_UPPER_CASE.test(input);
    }
 
+   public static String join(Iterable<?> iterable, CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
+      return asStream(iterable).map(Object::toString).collect(Collectors.joining(delimiter, prefix, suffix));
+   }
+
+   public static String join(Iterable<?> iterable, CharSequence delimiter) {
+      return asStream(iterable).map(Object::toString).collect(Collectors.joining(delimiter));
+   }
+
+   public static <T> String join(T[] values, CharSequence delimiter) {
+      return asStream(values).map(Object::toString).collect(Collectors.joining(delimiter));
+   }
+
+   public static <T> String join(T[] values, CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
+      return asStream(values).map(Object::toString).collect(Collectors.joining(delimiter, prefix, suffix));
+   }
+
    /**
     * Left trim.
     *
@@ -356,6 +338,24 @@ public final class StringUtils {
       return StringFunctions.LEFT_TRIM.apply(input.toString());
    }
 
+   public static String padEnd(CharSequence sequence, int desiredLength, char paddingCharacter) {
+      if (sequence == null) {
+         return repeat(paddingCharacter, desiredLength);
+      } else if (sequence.length() == desiredLength) {
+         return sequence.toString();
+      }
+      return sequence.toString() + repeat(paddingCharacter, desiredLength - sequence.length());
+   }
+
+   public static String padStart(CharSequence sequence, int desiredLength, char paddingCharacter) {
+      if (sequence == null) {
+         return repeat(paddingCharacter, desiredLength);
+      } else if (sequence.length() == desiredLength) {
+         return sequence.toString();
+      }
+      return repeat(paddingCharacter, desiredLength - sequence.length()) + sequence.toString();
+   }
+
    /**
     * Generates a random string of given length made up of valid hexadecimal characters.
     *
@@ -363,7 +363,7 @@ public final class StringUtils {
     * @return the random string
     */
    public static String randomHexString(int length) {
-      return randomString(length, CharPredicate.anyOf("ABCDEF1234567890"));
+      return randomString(length, CharMatcher.anyOf("ABCDEF1234567890"));
    }
 
    /**
@@ -375,7 +375,7 @@ public final class StringUtils {
     * @return A string of random characters
     */
    public static String randomString(int length, int min, int max) {
-      return randomString(length, min, max, CharPredicate.ANY);
+      return randomString(length, min, max, CharMatcher.ANY);
    }
 
    /**
@@ -385,7 +385,7 @@ public final class StringUtils {
     * @param validChar CharPredicate that must match for a character to be returned in the string
     * @return A string of random characters
     */
-   public static String randomString(int length, CharPredicate validChar) {
+   public static String randomString(int length, @NonNull CharMatcher validChar) {
       return randomString(length, 0, Integer.MAX_VALUE, validChar);
    }
 
@@ -398,7 +398,7 @@ public final class StringUtils {
     * @param validChar CharPredicate that must match for a character to be returned in the string
     * @return A string of random characters
     */
-   public static String randomString(int length, int min, int max, CharPredicate validChar) {
+   public static String randomString(int length, int min, int max, @NonNull CharMatcher validChar) {
       if (length <= 0) {
          return EMPTY;
       }
@@ -410,8 +410,8 @@ public final class StringUtils {
          do {
             c = (char) (random.nextInt(maxRandom) + min);
          } while (Character.isLowSurrogate(c) ||
-               Character.isHighSurrogate(c) ||
-               !validChar.matches(c));
+                     Character.isHighSurrogate(c) ||
+                     !validChar.matches(c));
          array[i] = c;
       }
       return new String(array);

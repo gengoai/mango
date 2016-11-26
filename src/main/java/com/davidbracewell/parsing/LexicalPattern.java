@@ -2,6 +2,7 @@ package com.davidbracewell.parsing;
 
 import com.davidbracewell.Regex;
 import com.davidbracewell.string.CharPredicate;
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import lombok.Value;
@@ -23,23 +24,13 @@ public abstract class LexicalPattern implements Serializable {
    private static final long serialVersionUID = 1L;
 
    /**
-    * Creates a literal pattern from the given string where a match exists when the entire literal string is found.
-    *
-    * @param literal the literal pattern
-    * @return the lexical pattern
-    */
-   public static LexicalPattern stringLiteral(@NonNull String literal) {
-      return new LiteralPattern(literal);
-   }
-
-   /**
     * Creates a literal pattern from the given character where a match exists when the character is found
     *
     * @param literal the literal
     * @return the lexical pattern
     */
    public static LexicalPattern charLiteral(@NonNull char literal) {
-      return new CharLiteralPattern(CharPredicate.anyOf(Character.toString(literal)));
+      return new CharLiteralPattern(CharMatcher.anyOf(Character.toString(literal)));
    }
 
    /**
@@ -49,7 +40,7 @@ public abstract class LexicalPattern implements Serializable {
     * @param literal the literal pattern
     * @return the lexical pattern
     */
-   public static LexicalPattern charLiteral(@NonNull CharPredicate literal) {
+   public static LexicalPattern charLiteral(@NonNull CharMatcher literal) {
       return new CharLiteralPattern(literal);
    }
 
@@ -95,6 +86,16 @@ public abstract class LexicalPattern implements Serializable {
    }
 
    /**
+    * Creates a literal pattern from the given string where a match exists when the entire literal string is found.
+    *
+    * @param literal the literal pattern
+    * @return the lexical pattern
+    */
+   public static LexicalPattern stringLiteral(@NonNull String literal) {
+      return new LiteralPattern(literal);
+   }
+
+   /**
     * Determines the length of a potential match for this pattern in the given <code>CharSequence</code> starting at the
     * given start position. Returns <code>NO_MATCH</code> when no match is found.
     *
@@ -131,7 +132,7 @@ public abstract class LexicalPattern implements Serializable {
    @Value
    private static class CharLiteralPattern extends LexicalPattern {
       private static final long serialVersionUID = 1L;
-      private final CharPredicate predicate;
+      private final CharMatcher predicate;
 
       @Override
       public int match(@NonNull CharSequence sequence, int start) {
