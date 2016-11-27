@@ -518,6 +518,26 @@ public final class StringUtils {
       }
    }
 
+
+   /**
+    * Escapes the unicode in the given string using the Java specification
+    *
+    * @param string The string to escape
+    * @return The escaped string
+    */
+   public static String javaStringEscape(@NonNull String string) {
+      StringBuilder b = new StringBuilder();
+      for (char c : string.toCharArray()) {
+         if (c >= 128) {
+            b.append("\\u").append(String.format("%04X", (int) c));
+         } else {
+            b.append(c);
+         }
+      }
+      return b.toString();
+   }
+
+
    /**
     * Normalize to canonical form.
     *
