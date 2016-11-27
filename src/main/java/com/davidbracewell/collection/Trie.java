@@ -1,7 +1,6 @@
 package com.davidbracewell.collection;
 
 import com.davidbracewell.conversion.Cast;
-import com.davidbracewell.string.CharPredicate;
 import com.davidbracewell.string.StringUtils;
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.Iterators;

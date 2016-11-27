@@ -25,7 +25,6 @@ import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.string.CharPredicate;
 import com.davidbracewell.string.StringUtils;
 import lombok.Builder;
 import lombok.Data;
@@ -249,7 +248,7 @@ public final class NamedOption {
                                                        .name("config")
                                                        .type(Resource.class)
                                                        .description(
-                                                             "Configuration file that can be specified on the command line.")
+                                                          "Configuration file that can be specified on the command line.")
                                                        .build();
 
    /**

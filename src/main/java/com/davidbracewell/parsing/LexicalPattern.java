@@ -1,7 +1,6 @@
 package com.davidbracewell.parsing;
 
 import com.davidbracewell.Regex;
-import com.davidbracewell.string.CharPredicate;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
 import lombok.NonNull;
@@ -51,7 +50,7 @@ public abstract class LexicalPattern implements Serializable {
     * @param predicate the predicate to match
     * @return the lexical pattern
     */
-   public static LexicalPattern charPredicate(@NonNull CharPredicate predicate) {
+   public static LexicalPattern charPredicate(@NonNull CharMatcher predicate) {
       return new CharPredicatePattern(predicate);
    }
 
@@ -144,9 +143,9 @@ public abstract class LexicalPattern implements Serializable {
    @Value
    private static class CharPredicatePattern extends LexicalPattern {
       private static final long serialVersionUID = 1L;
-      private final CharPredicate pattern;
+      private final CharMatcher pattern;
 
-      private CharPredicatePattern(CharPredicate pattern) {
+      private CharPredicatePattern(CharMatcher pattern) {
          this.pattern = pattern;
       }
 

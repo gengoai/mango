@@ -22,7 +22,7 @@
 package com.davidbracewell.parsing;
 
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.string.CharPredicate;
+import com.google.common.base.CharMatcher;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -157,7 +157,7 @@ public class PatternLexer implements Lexer, Serializable {
        * @param predicate the predicate associated with the pattern
        * @return the builder
        */
-      public Builder add(@NonNull ParserTokenType tokenType, @NonNull CharPredicate predicate) {
+      public Builder add(@NonNull ParserTokenType tokenType, @NonNull CharMatcher predicate) {
          patterns.add(new LexicalEntry(LexicalPattern.charPredicate(predicate), tokenType));
          return this;
       }

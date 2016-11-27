@@ -22,7 +22,6 @@
 package com.davidbracewell.collection;
 
 import com.davidbracewell.collection.map.Maps;
-import com.davidbracewell.string.CharPredicate;
 import com.davidbracewell.string.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -147,8 +146,7 @@ public class TrieTest {
       assertEquals("run", trie.put("ran", null));
 
 
-
-      Map<String,String> prefix = trie.prefix("ran");
+      Map<String, String> prefix = trie.prefix("ran");
 
       assertEquals(2, prefix.size());
       assertEquals(Sets.set("ran", "rand"), prefix.keySet());
