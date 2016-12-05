@@ -122,6 +122,11 @@ public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> ext
       this.parent = parent;
    }
 
+   protected HierarchicalEnumValue(String canonicalName, String name, T parent) {
+      super(canonicalName,name);
+      this.parent = parent;
+   }
+
    /**
     * <p>Determines if this element is the root.</p>
     *

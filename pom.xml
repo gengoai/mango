@@ -77,14 +77,14 @@
             <version>2.7</version>
         </dependency>
         <dependency>
-            <groupId>com.ibm.icu</groupId>
-            <artifactId>icu4j</artifactId>
-            <version>57.1</version>
-        </dependency>
-        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>19.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.icu</groupId>
+            <artifactId>icu4j</artifactId>
+            <version>57.1</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -219,6 +219,51 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.4.3</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <createSourcesJar>true</createSourcesJar>
+                    <artifactSet>
+                        <includes>
+                            <artifact>com.google.guava:guava</artifact>
+                        </includes>
+                    </artifactSet>
+
+                    <filters>
+                        <filter>
+                            <!-- Modify the below patterns if a later guava
+                                 contains other packages
+                            -->
+                            <artifact>com.google.guava:guava</artifact>
+                            <includes>
+                                <include>com/google/common/**</include>
+                                <include>com/google/thirdparty/**</include>
+                            </includes>
+                        </filter>
+                    </filters>
+                    <relocations>
+                        <relocation>
+                            <pattern>com.google.common</pattern>
+                            <shadedPattern>com.davidbracewell.guava.common</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.google.thirdparty</pattern>
+                            <shadedPattern>com.davidbracewell.guava.thirdparty</shadedPattern>
+                        </relocation>
+                    </relocations>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 

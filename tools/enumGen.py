@@ -34,11 +34,12 @@ import lombok.NonNull;
 * The type {{CLASS_NAME}}. 
 */
 public final class {{CLASS_NAME}} extends EnumValue implements Comparable<{{CLASS_NAME}}> {
+    public static final String CANONICAL_NAME = {{CLASS_NAME}}.class..getCanonicalName();
     private static final long serialVersionUID = 1L;
     private static final Set<{{CLASS_NAME}}> values = Sets.newConcurrentHashSet();
 
     private {{CLASS_NAME}}(String name){
-        super(name);
+        super(CANONICAL_NAME, name);
     }
 
     /**
@@ -95,13 +96,14 @@ import java.util.stream.Collectors;
  * The type {{CLASS_NAME}}.
  */
 public final class {{CLASS_NAME}} extends HierarchicalEnumValue<{{CLASS_NAME}}> implements Comparable<{{CLASS_NAME}}> {
+  public static final String CANONICAL_NAME = {{CLASS_NAME}}.class..getCanonicalName();
   private static final long serialVersionUID = 1L;
   private static final Set<{{CLASS_NAME}}> values = Sets.newConcurrentHashSet();
 
   public static final {{CLASS_NAME}} ROOT = RanksEnum.create("{{CLASS_NAME}}_ROOT");
 
   private {{CLASS_NAME}}(String name, {{CLASS_NAME}} parent) {
-    super(name, parent);
+    super(CANONICAL_NAME,name, parent);
   }
 
    @Override

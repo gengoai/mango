@@ -80,6 +80,13 @@ public abstract class EnumValue implements Tag, Serializable, Cloneable {
       this.fullName = getClass().getCanonicalName() + "." + this.name;
    }
 
+   protected EnumValue(String cannonicalName, String name) {
+      Preconditions.checkArgument(StringUtils.isNotNullOrBlank(name), name + " is invalid.");
+      this.name = normalize(name);
+      Preconditions.checkArgument(!name.contains(".") && name.length() > 0, name + " is invalid.");
+      this.fullName = cannonicalName + "." + this.name;
+   }
+
    /**
     * <p>Normalizes a string to be uppercase and use and underscore in place of whitespace.</p>
     *
@@ -88,7 +95,20 @@ public abstract class EnumValue implements Tag, Serializable, Cloneable {
     * @throws NullPointerException if the name is null
     */
    static String normalize(@NonNull String name) {
-      return name.toUpperCase().replaceAll("\\s+", "_");
+      StringBuilder toReturn = new StringBuilder();
+      boolean previousSpace = false;
+      for( char c : name.toCharArray()){
+         if( Character.isWhitespace(c) ){
+            if( !previousSpace ){
+               toReturn.append('_');
+            }
+            previousSpace = true;
+         } else {
+            previousSpace = false;
+            toReturn.append(Character.toUpperCase(c));
+         }
+      }
+      return toReturn.toString();//name.toUpperCase().replaceAll("\\s+", "_");
    }
 
 
