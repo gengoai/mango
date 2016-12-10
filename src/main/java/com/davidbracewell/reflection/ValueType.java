@@ -24,6 +24,7 @@ package com.davidbracewell.reflection;
 import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
+import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -166,6 +167,17 @@ public abstract class ValueType implements Serializable {
    public String toString() {
       return this.getClass()
                  .getSimpleName() + "{type=" + getType() + ", generics=" + Arrays.toString(getParameterTypes()) + "}";
+   }
+
+
+   /**
+    * Creates a value type for the given class
+    *
+    * @param clazz the class information for the value type
+    * @return the value type
+    */
+   public static ValueType of(@NonNull Class<?> clazz) {
+      return new SimpleValueType(clazz);
    }
 
    private static class SimpleValueType extends ValueType implements Serializable {

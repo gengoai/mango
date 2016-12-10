@@ -232,7 +232,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <createSourcesJar>true</createSourcesJar>
+                    <createSourcesJar>false</createSourcesJar>
                     <artifactSet>
                         <includes>
                             <artifact>com.google.guava:guava</artifact>
