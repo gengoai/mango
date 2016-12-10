@@ -115,8 +115,6 @@ public final class Convert {
       register(Date.class, CommonTypeConverter.JAVA_DATE);
       register(java.sql.Date.class, CommonTypeConverter.SQL_DATE);
 
-      register(Object.class, CommonTypeConverter.OBJECT);
-
       register(Class.class, CommonTypeConverter.CLASS);
 
    }

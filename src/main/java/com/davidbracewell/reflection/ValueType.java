@@ -185,7 +185,7 @@ public abstract class ValueType implements Serializable {
 
       private final Class<?> clazz;
 
-      private SimpleValueType(Class<?> clazz) {
+      SimpleValueType(Class<?> clazz) {
          this.clazz = clazz;
       }
 
@@ -201,6 +201,9 @@ public abstract class ValueType implements Serializable {
 
       @Override
       public <T> T convert(Object input) {
+         if (clazz.isInstance(input)) {
+            return Cast.as(input);
+         }
          return Cast.as(Convert.convert(input, clazz));
       }
 
@@ -219,7 +222,7 @@ public abstract class ValueType implements Serializable {
        * @param collectionType the collection type
        * @param genericType    the generic type
        */
-      public CollectionValueType(Class<?> collectionType, Class<?> genericType) {
+      CollectionValueType(Class<?> collectionType, Class<?> genericType) {
          this.collectionType = collectionType;
          this.genericType = genericType;
       }
@@ -259,7 +262,7 @@ public abstract class ValueType implements Serializable {
        * @param keyType   the key type
        * @param valueType the value type
        */
-      public MapValueType(Class<?> mapType, Class<?> keyType, Class<?> valueType) {
+      MapValueType(Class<?> mapType, Class<?> keyType, Class<?> valueType) {
          this.keyType = keyType;
          this.mapType = mapType;
          this.valueType = valueType;

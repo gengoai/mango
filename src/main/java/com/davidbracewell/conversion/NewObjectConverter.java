@@ -46,64 +46,88 @@ import java.util.function.Function;
  */
 public class NewObjectConverter<T> implements Function<Object, T> {
 
-  private static final Logger log = Logger.getLogger(NewObjectConverter.class);
+   private static final Logger log = Logger.getLogger(NewObjectConverter.class);
 
 
-  private final Class<T> convertToClass;
+   private final Class<T> convertToClass;
 
-  public NewObjectConverter(@NonNull Class<T> convertToClass) {
-    this.convertToClass = convertToClass;
-  }
+   public NewObjectConverter(@NonNull Class<T> convertToClass) {
+      this.convertToClass = convertToClass;
+   }
 
-  @Override
-  @SuppressWarnings("unchecked")
-  public T apply(Object obj) {
+   @Override
+   @SuppressWarnings("unchecked")
+   public T apply(Object obj) {
 
-    if (convertToClass != Object.class && Convert.hasConverter(convertToClass)) {
-      return Cast.as(Convert.convert(obj, convertToClass));
-    } else if (Map.class.isAssignableFrom(convertToClass)) {
-      return Cast.as(Convert.convert(obj, convertToClass, Object.class, Object.class));
-    } else if (Collection.class.isAssignableFrom(convertToClass)) {
-      return Cast.as(Convert.convert(obj, convertToClass, Object.class));
-    } else if (convertToClass.isEnum()) {
-      return Cast.as(Convert.convert(obj, Cast.<Class<? extends Enum>>as(convertToClass)));
-    }
-
-    if (EnumValue.class.isAssignableFrom(convertToClass)) {
-      if (obj.getClass().isAssignableFrom(convertToClass)) {
-        return Cast.as(obj);
-      } else if (obj instanceof CharSequence) {
-        if (Reflect.onClass(convertToClass).containsMethod("create")) {
-          try {
-            return Reflect.onClass(convertToClass).invoke("create", obj.toString()).get();
-          } catch (ReflectionException e) {
-
-          }
-        }
-
-        try {
-          return Reflect.onClass(convertToClass).allowPrivilegedAccess().create(obj.toString()).get();
-        } catch (ReflectionException e) {
-
-        }
-
+      if (convertToClass != Object.class && Convert.hasConverter(convertToClass)) {
+         return Cast.as(Convert.convert(obj, convertToClass));
+      } else if (Map.class.isAssignableFrom(convertToClass)) {
+         return Cast.as(Convert.convert(obj, convertToClass, Object.class, Object.class));
+      } else if (Collection.class.isAssignableFrom(convertToClass)) {
+         return Cast.as(Convert.convert(obj, convertToClass, Object.class));
+      } else if (convertToClass.isEnum()) {
+         return Cast.as(Convert.convert(obj, Cast.<Class<? extends Enum>>as(convertToClass)));
       }
-    }
 
-    if (obj instanceof CharSequence) {
-      Object o = ReflectionUtils.createObject(obj.toString());
-      if (convertToClass.isInstance(o)) {
-        return Cast.as(o);
+
+      if (convertToClass == Object.class && obj instanceof CharSequence) {
+         String seq = obj.toString();
+         int index = seq.lastIndexOf('.');
+         if (index > 0) {
+            Class<?> clazz = ReflectionUtils.getClassForNameQuietly(seq.substring(0, index));
+            if (clazz != null && EnumValue.class.isAssignableFrom(clazz)) {
+               if (Reflect.onClass(clazz).allowPrivilegedAccess().containsMethod("create")) {
+                  try {
+                     return Reflect.onClass(clazz).allowPrivilegedAccess().invoke("create", seq.substring(index+1)).get();
+                  } catch (ReflectionException e) {
+                     e.printStackTrace();
+                  }
+               }
+
+               try {
+                  return Reflect.onClass(clazz).allowPrivilegedAccess().create(seq.substring(index + 1)).get();
+               } catch (ReflectionException e) {
+
+               }
+            }
+         }
       }
-    }
 
-    try {
-      return Reflect.onClass(convertToClass).create(obj).get();
-    } catch (ReflectionException e) {
-      //ignore
-    }
+      if (EnumValue.class.isAssignableFrom(convertToClass)) {
+         if (obj.getClass().isAssignableFrom(convertToClass)) {
+            return Cast.as(obj);
+         } else if (obj instanceof CharSequence) {
+            if (Reflect.onClass(convertToClass).containsMethod("create")) {
+               try {
+                  return Reflect.onClass(convertToClass).invoke("create", obj.toString()).get();
+               } catch (ReflectionException e) {
 
-    log.fine("Could not convert {0} to {1}.", obj.getClass(), convertToClass);
-    return null;
-  }
+               }
+            }
+
+            try {
+               return Reflect.onClass(convertToClass).allowPrivilegedAccess().create(obj.toString()).get();
+            } catch (ReflectionException e) {
+
+            }
+
+         }
+      }
+
+      if (obj instanceof CharSequence) {
+         Object o = ReflectionUtils.createObject(obj.toString());
+         if (convertToClass.isInstance(o)) {
+            return Cast.as(o);
+         }
+      }
+
+      try {
+         return Reflect.onClass(convertToClass).create(obj).get();
+      } catch (ReflectionException e) {
+         //ignore
+      }
+
+      log.fine("Could not convert {0} to {1}.", obj.getClass(), convertToClass);
+      return null;
+   }
 }
