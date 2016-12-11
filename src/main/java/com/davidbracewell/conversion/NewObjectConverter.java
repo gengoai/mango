@@ -78,7 +78,10 @@ public class NewObjectConverter<T> implements Function<Object, T> {
             if (clazz != null && EnumValue.class.isAssignableFrom(clazz)) {
                if (Reflect.onClass(clazz).allowPrivilegedAccess().containsMethod("create")) {
                   try {
-                     return Reflect.onClass(clazz).allowPrivilegedAccess().invoke("create", seq.substring(index+1)).get();
+                     return Reflect.onClass(clazz)
+                                   .allowPrivilegedAccess()
+                                   .invoke("create", seq.substring(index + 1))
+                                   .get();
                   } catch (ReflectionException e) {
                      e.printStackTrace();
                   }
@@ -87,7 +90,13 @@ public class NewObjectConverter<T> implements Function<Object, T> {
                try {
                   return Reflect.onClass(clazz).allowPrivilegedAccess().create(seq.substring(index + 1)).get();
                } catch (ReflectionException e) {
-
+                  // No Opt
+               }
+            } else if (clazz != null && Enum.class.isAssignableFrom(clazz)) {
+               try {
+                  return Enum.valueOf(Cast.as(clazz), seq.substring(index + 1));
+               } catch (Exception e) {
+                  // No Opt
                }
             }
          }
@@ -101,14 +110,14 @@ public class NewObjectConverter<T> implements Function<Object, T> {
                try {
                   return Reflect.onClass(convertToClass).invoke("create", obj.toString()).get();
                } catch (ReflectionException e) {
-
+                  //No opt
                }
             }
 
             try {
                return Reflect.onClass(convertToClass).allowPrivilegedAccess().create(obj.toString()).get();
             } catch (ReflectionException e) {
-
+                  //No opt
             }
 
          }
