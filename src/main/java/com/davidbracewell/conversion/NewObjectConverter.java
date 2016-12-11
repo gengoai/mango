@@ -94,7 +94,7 @@ public class NewObjectConverter<T> implements Function<Object, T> {
                }
             } else if (clazz != null && Enum.class.isAssignableFrom(clazz)) {
                try {
-                  return Enum.valueOf(Cast.as(clazz), seq.substring(index + 1));
+                  return Cast.as(Enum.valueOf(Cast.as(clazz), seq.substring(index + 1)));
                } catch (Exception e) {
                   // No Opt
                }
