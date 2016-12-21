@@ -59,6 +59,10 @@ public class NewObjectConverter<T> implements Function<Object, T> {
    @SuppressWarnings("unchecked")
    public T apply(Object obj) {
 
+      if (obj == null) {
+         return null;
+      }
+
       if (convertToClass != Object.class && Convert.hasConverter(convertToClass)) {
          return Cast.as(Convert.convert(obj, convertToClass));
       } else if (Map.class.isAssignableFrom(convertToClass)) {
@@ -67,68 +71,48 @@ public class NewObjectConverter<T> implements Function<Object, T> {
          return Cast.as(Convert.convert(obj, convertToClass, Object.class));
       } else if (convertToClass.isEnum()) {
          return Cast.as(Convert.convert(obj, Cast.<Class<? extends Enum>>as(convertToClass)));
+      } else if (convertToClass != Object.class && convertToClass.isInstance(obj)) {
+         return Cast.as(obj);
       }
 
 
-      if (convertToClass == Object.class && obj instanceof CharSequence) {
+      if (obj instanceof CharSequence) {
          String seq = obj.toString();
          int index = seq.lastIndexOf('.');
          if (index > 0) {
             Class<?> clazz = ReflectionUtils.getClassForNameQuietly(seq.substring(0, index));
             if (clazz != null && EnumValue.class.isAssignableFrom(clazz)) {
-               if (Reflect.onClass(clazz).allowPrivilegedAccess().containsMethod("create")) {
-                  try {
-                     return Reflect.onClass(clazz)
-                                   .allowPrivilegedAccess()
-                                   .invoke("create", seq.substring(index + 1))
-                                   .get();
-                  } catch (ReflectionException e) {
-                     e.printStackTrace();
+               try {
+                  Object converted = Reflect.onClass(clazz)
+                                            .allowPrivilegedAccess()
+                                            .invoke("create", seq.substring(index + 1))
+                                            .get();
+                  if (EnumValue.class.isAssignableFrom(convertToClass) || convertToClass == Object.class) {
+                     return Cast.as(converted);
                   }
-               }
-
-               try {
-                  return Reflect.onClass(clazz).allowPrivilegedAccess().create(seq.substring(index + 1)).get();
-               } catch (ReflectionException e) {
-                  // No Opt
-               }
-            } else if (clazz != null && Enum.class.isAssignableFrom(clazz)) {
-               try {
-                  return Cast.as(Enum.valueOf(Cast.as(clazz), seq.substring(index + 1)));
-               } catch (Exception e) {
-                  // No Opt
-               }
-            }
-         }
-      }
-
-      if (EnumValue.class.isAssignableFrom(convertToClass)) {
-         if (obj.getClass().isAssignableFrom(convertToClass)) {
-            return Cast.as(obj);
-         } else if (obj instanceof CharSequence) {
-            if (Reflect.onClass(convertToClass).containsMethod("create")) {
-               try {
-                  return Reflect.onClass(convertToClass).invoke("create", obj.toString()).get();
+                  return apply(converted);
                } catch (ReflectionException e) {
                   //No opt
                }
             }
+         }
 
+         if (EnumValue.class.isAssignableFrom(convertToClass)) {
             try {
-               return Reflect.onClass(convertToClass).allowPrivilegedAccess().create(obj.toString()).get();
+               return Reflect.onClass(convertToClass).allowPrivilegedAccess()
+                             .invoke("create", obj).get();
             } catch (ReflectionException e) {
-                  //No opt
+               //nopt
             }
-
          }
-      }
 
-      if (obj instanceof CharSequence) {
          Object o = ReflectionUtils.createObject(obj.toString());
          if (convertToClass.isInstance(o)) {
             return Cast.as(o);
          }
+
       }
+
 
       try {
          return Reflect.onClass(convertToClass).create(obj).get();

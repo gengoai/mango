@@ -30,6 +30,7 @@ import com.davidbracewell.io.serialization.JavaSerializer;
 import com.davidbracewell.stream.LocalStream;
 import com.davidbracewell.stream.MStream;
 import com.google.common.base.Preconditions;
+import com.google.common.io.ByteStreams;
 import lombok.NonNull;
 
 import java.io.*;
@@ -57,6 +58,30 @@ public interface Resource {
     */
    Pattern ALL_FILE_PATTERN = Pattern.compile(".*");
 
+
+   /**
+    * Copies the contents of this resource to another
+    *
+    * @param copyTo The resource to copy to
+    * @throws IOException Something went wrong copying.
+    */
+   default void copy(@NonNull Resource copyTo) throws IOException {
+      Preconditions.checkState(copyTo.canWrite(), "The resource being copied to cannot be written to.");
+      if (isDirectory()) {
+         copyTo.mkdirs();
+         for (Resource child : getChildren(true)) {
+            Resource copyToChild = copyTo.getChild(child.path().substring(path().length()).replaceAll("^[\\/]+", ""));
+            copyTo.getParent().mkdirs();
+            child.copy(copyToChild);
+         }
+      } else {
+         Preconditions.checkState(canRead(), "This resource cannot be read from.");
+         try (InputStream is = inputStream(); OutputStream os = copyTo.outputStream()) {
+            ByteStreams.copy(is, os);
+         }
+      }
+   }
+
    /**
     * <p> Appends content to this resource. </p>
     *
@@ -65,7 +90,7 @@ public interface Resource {
     * @throws IOException the io exception
     */
    default Resource append(String content) throws IOException {
-      Preconditions.checkState(canWrite(), "This is resource cannot be written to.");
+      Preconditions.checkState(canWrite(), "This resource cannot be written to.");
       if (content == null) {
          return this;
       }
