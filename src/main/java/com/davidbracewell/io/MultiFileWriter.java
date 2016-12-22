@@ -11,6 +11,9 @@ import java.io.Writer;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * <p>A writer that will write content to different files using a round robin strategy. It is important that the full
+ * content is written using one call to the write method to ensure the content goes to the same file. </p>
+ *
  * @author David B. Bracewell
  */
 public class MultiFileWriter extends Writer implements Serializable, AutoCloseable {
@@ -19,12 +22,20 @@ public class MultiFileWriter extends Writer implements Serializable, AutoCloseab
    private final AtomicInteger lockId = new AtomicInteger();
    private final int numberOfFiles;
 
+   /**
+    * Instantiates a new Multi file writer.
+    *
+    * @param baseDirectory the base directory which will contain the files
+    * @param filePrefix    the file prefix (each file have XXXXX appended on where XX is the file number)
+    * @param numberOfFiles the number of files
+    * @throws IOException Something went wrong initializing the files
+    */
    public MultiFileWriter(@NonNull Resource baseDirectory, @NonNull String filePrefix, int numberOfFiles) throws IOException {
       Preconditions.checkArgument(!baseDirectory.exists() || baseDirectory.isDirectory(),
                                   "Resource base must not exist or be a directory");
       Preconditions.checkArgument(numberOfFiles > 0, "Must specify at least one file");
       baseDirectory.mkdirs();
-      this.writers = new AsyncWriter[numberOfFiles];
+      this.writers = new Writer[numberOfFiles];
       this.numberOfFiles = numberOfFiles;
       for (int i = 0; i < numberOfFiles; i++) {
          String name = filePrefix + Strings.padStart(Integer.toString(i), 5, '0');
