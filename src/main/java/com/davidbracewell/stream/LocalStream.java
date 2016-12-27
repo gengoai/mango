@@ -133,7 +133,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
 
    @Override
    public void forEach(@NonNull SerializableConsumer<? super T> consumer) {
-      stream.forEachOrdered(consumer);
+      stream.forEach(consumer);
    }
 
    @Override
@@ -213,6 +213,9 @@ public class LocalStream<T> implements MStream<T>, Serializable {
 
    @Override
    public MStream<T> parallel() {
+      if (stream.isParallel()) {
+         return this;
+      }
       return new LocalStream<>(stream.parallel());
    }
 
