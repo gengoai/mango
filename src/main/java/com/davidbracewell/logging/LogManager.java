@@ -54,7 +54,7 @@ public final class LogManager {
                                             .getLogger("");
          for (Handler h : root.getHandlers()) {
             h.setFormatter(new LogFormatter());
-            h.setLevel(Level.INFO);
+            h.setLevel(Level.ALL);
          }
       }
    }
