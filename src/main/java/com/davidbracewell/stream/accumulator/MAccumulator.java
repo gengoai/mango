@@ -22,8 +22,11 @@
 package com.davidbracewell.stream.accumulator;
 
 
+import com.davidbracewell.function.SerializablePredicate;
+
 import java.io.Serializable;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * <p>Base interface for accumulators that can work across local and distributed streams.</p>
@@ -80,5 +83,9 @@ public interface MAccumulator<IN, OUT> extends Serializable {
     * Registers the accumulator.
     */
    void register();
+
+   default void report(SerializablePredicate<? super OUT> when, Consumer<OUT> message){
+
+   }
 
 }// END OF MAcc

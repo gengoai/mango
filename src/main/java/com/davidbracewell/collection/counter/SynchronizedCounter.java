@@ -245,7 +245,7 @@ final class SynchronizedCounter<TYPE> implements Counter<TYPE>, Serializable {
    }
 
    @Override
-   public synchronized Counter<TYPE> filterByKey(@NonNull Predicate<TYPE> predicate) {
+   public synchronized Counter<TYPE> filterByKey(@NonNull Predicate<? super TYPE> predicate) {
       return delegate.filterByKey(predicate);
    }
 

@@ -80,4 +80,5 @@ public class LocalMLongAccumulator extends LocalMAccumulator<Long, Long> impleme
    public void reset() {
       longValue.set(0);
    }
+
 }// END OF LocalMLongAccumulator

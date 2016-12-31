@@ -423,7 +423,7 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
    }
 
    @Override
-   public Counter<T> filterByKey(@NonNull Predicate<T> predicate) {
+   public Counter<T> filterByKey(@NonNull Predicate<? super T> predicate) {
       Counter<T> counter = newInstance();
       map.entrySet().stream()
          .filter(e -> predicate.test(e.getKey()))

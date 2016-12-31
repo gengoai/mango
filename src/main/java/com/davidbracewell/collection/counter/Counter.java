@@ -175,7 +175,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
     * @param predicate the predicate to use to filter the keys
     * @return A new counter containing only those items that evaluate true for the given predicate
     */
-   Counter<T> filterByKey(Predicate<T> predicate);
+   Counter<T> filterByKey(Predicate<? super T> predicate);
 
    /**
     * Creates a new counter containing only those items whose value evaluate true for the given predicate

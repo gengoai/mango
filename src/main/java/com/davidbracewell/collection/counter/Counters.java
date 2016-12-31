@@ -35,6 +35,7 @@ import lombok.NonNull;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * Common methods for reading counters from structured files, creating synchronized and unmodifiable wrappers.
@@ -67,6 +68,19 @@ public interface Counters {
    static <T> Counter<T> newCounter(@NonNull Iterable<? extends T> iterable) {
       Counter<T> counter = new HashMapCounter<>();
       counter.incrementAll(iterable);
+      return counter;
+   }
+
+   /**
+    * <p>Creates a new {@link HashMapMultiCounter} which is initialized with the given items</p>
+    *
+    * @param <T>    the component type of the counter
+    * @param stream the items to add to the counter
+    * @return the counter
+    */
+   static <T> Counter<T> newCounter(@NonNull Stream<? extends T> stream) {
+      Counter<T> counter = new HashMapCounter<>();
+      stream.forEach(counter::increment);
       return counter;
    }
 

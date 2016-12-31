@@ -320,7 +320,7 @@ public abstract class ForwardingCounter<TYPE> implements Counter<TYPE>, Serializ
    }
 
    @Override
-   public Counter<TYPE> filterByKey(@NonNull Predicate<TYPE> predicate) {
+   public Counter<TYPE> filterByKey(@NonNull Predicate<? super TYPE> predicate) {
       if (delegate() == null) {
          return this;
       }

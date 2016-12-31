@@ -22,8 +22,11 @@
 package com.davidbracewell.stream.accumulator;
 
 import com.davidbracewell.Copyable;
+import com.davidbracewell.function.SerializablePredicate;
+import lombok.NonNull;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * <p>Abstract base for local accumulators.</p>
@@ -53,6 +56,13 @@ public abstract class LocalMAccumulator<IN, OUT> implements MAccumulator<IN, OUT
    @Override
    public void register() {
 
+   }
+
+   @Override
+   public void report(@NonNull SerializablePredicate<? super OUT> when, @NonNull Consumer<OUT> message) {
+      if (when.test(value())) {
+         message.accept(value());
+      }
    }
 
 }//END OF LocalMAccumulator
