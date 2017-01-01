@@ -32,7 +32,6 @@ import lombok.NonNull;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -136,13 +135,11 @@ public class FileResource extends BaseResource {
 
    @Override
    public MStream<String> lines() throws IOException {
-      if (isCompressed()) {
-         return new LocalStream<>(gzippedStream());
-      }
-      return new LocalStream<>(Files.lines(asPath().orElse(null)));
+      return new LocalStream<>(lineStream());
+//      return new LocalStream<>(Files.lines(asPath().orElse(null)));
    }
 
-   private Stream<String> gzippedStream() {
+   private Stream<String> lineStream() {
       try {
          BufferedReader reader = new BufferedReader(reader());
          return reader.lines().onClose(() -> QuietIO.closeQuietly(reader));

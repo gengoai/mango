@@ -472,8 +472,7 @@ public interface Resource {
     */
    default Reader reader() throws IOException {
       Preconditions.checkState(canRead(), "This is resource cannot be read from.");
-      CharsetDetectingReader reader = new CharsetDetectingReader(inputStream(), getCharset());
-      return reader;
+      return new CharsetDetectingReader(inputStream(), getCharset());
    }
 
    /**
