@@ -84,7 +84,13 @@ public interface MAccumulator<IN, OUT> extends Serializable {
     */
    void register();
 
-   default void report(SerializablePredicate<? super OUT> when, Consumer<OUT> message){
+   /**
+    * Reports the given message when the given predicate evaluates to true.
+    *
+    * @param when    the predicate controlling when the message should be performed
+    * @param message a consumer processing the current value of the accumulator
+    */
+   default void report(SerializablePredicate<? super OUT> when, Consumer<OUT> message) {
 
    }
 
