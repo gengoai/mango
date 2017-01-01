@@ -21,6 +21,7 @@
 
 package com.davidbracewell.io.resource;
 
+import com.davidbracewell.io.QuietIO;
 import com.davidbracewell.io.resource.spi.FileResourceProvider;
 import com.davidbracewell.stream.LocalStream;
 import com.davidbracewell.stream.MStream;
@@ -36,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * <p> A <code>Resource</code> implementation that wraps a <code>File</code>. </p>
@@ -134,7 +136,19 @@ public class FileResource extends BaseResource {
 
    @Override
    public MStream<String> lines() throws IOException {
-      return new LocalStream<>(Files.lines(asPath().get()));
+      if (isCompressed()) {
+         return new LocalStream<>(gzippedStream());
+      }
+      return new LocalStream<>(Files.lines(asPath().orElse(null)));
+   }
+
+   private Stream<String> gzippedStream() {
+      try {
+         BufferedReader reader = new BufferedReader(reader());
+         return reader.lines().onClose(() -> QuietIO.closeQuietly(reader));
+      } catch (IOException ioe) {
+         throw new UncheckedIOException(ioe);
+      }
    }
 
    @Override
