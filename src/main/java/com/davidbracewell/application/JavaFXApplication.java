@@ -22,107 +22,132 @@
 package com.davidbracewell.application;
 
 
+import com.davidbracewell.logging.Loggable;
+import com.davidbracewell.string.StringUtils;
 import javafx.stage.Stage;
-import lombok.NonNull;
 
 import java.util.List;
 
 /**
  * <p>An JavaFX {@link Application} implementation. Child classes should define their UI via the {@link #setup()}
- * method and should define a <code>main</code> method that calls {@link #launch(String...)}. </p>
+ * method and should define a <code>main</code> method that calls {@link #launch(String...)}. An example application is
+ * listed below.</p>
+ * <pre>
+ * {@code
+ *    public class MyApplication extends JavaFXApplication {
+ *
+ *      public static void main(String[] args)  {
+ *        new launch(args);
+ *      }
+ *
+ *      public void setup() throws Exception {
+ *        //GUI setup goes here.
+ *      }
+ *
+ *    }
+ * }
+ * </pre>
  *
  * @author David B. Bracewell
  */
-public abstract class JavaFXApplication extends javafx.application.Application implements Application {
+public abstract class JavaFXApplication extends javafx.application.Application implements Application, Loggable {
 
-  private static final long serialVersionUID = 1L;
-  private final String applicationName;
-  private final String packageName;
-  private String[] nonNamedArguments;
-  private String[] allArgs;
-  private Stage stage;
-
-  /**
-   * Instantiates a new Java fx application.
-   *
-   * @param applicationName the application name
-   */
-  public JavaFXApplication(String applicationName) {
-    this(applicationName, null);
-  }
-
-  /**
-   * Instantiates a new Application.
-   *
-   * @param applicationName the application name
-   * @param packageName     the package name to use for the application, which is important for loading the correct
-   *                        configuration.
-   */
-  protected JavaFXApplication(@NonNull String applicationName, String packageName) {
-    this.applicationName = applicationName;
-    this.packageName = packageName;
-  }
+   private static final long serialVersionUID = 1L;
+   private final String applicationName;
+   private final String packageName;
+   private String[] nonNamedArguments;
+   private String[] allArgs;
+   private Stage stage;
 
 
-  @Override
-  public String getConfigPackageName() {
-    return packageName;
-  }
+   /**
+    * Instantiates a new Java fx application.
+    */
+   public JavaFXApplication() {
+      this(null, null);
+   }
 
-  @Override
-  public final String[] getAllArguments() {
-    return allArgs;
-  }
+   /**
+    * Instantiates a new Java fx application.
+    *
+    * @param applicationName the application name
+    */
+   public JavaFXApplication(String applicationName) {
+      this(applicationName, null);
+   }
 
-  @Override
-  public final void setAllArguments(String[] allArguments) {
-    this.allArgs = allArguments;
-  }
+   /**
+    * Instantiates a new Application.
+    *
+    * @param applicationName the application name
+    * @param packageName     the package name to use for the application, which is important for loading the correct
+    *                        configuration.
+    */
+   protected JavaFXApplication(String applicationName, String packageName) {
+      this.applicationName = StringUtils.isNullOrBlank(applicationName) ? getClass().getSimpleName() : applicationName;
+      this.packageName = packageName;
+   }
 
-  @Override
-  public String getName() {
-    return applicationName;
-  }
 
-  @Override
-  public final String[] getNonParsableArguments() {
-    return nonNamedArguments;
-  }
+   @Override
+   public String getConfigPackageName() {
+      return packageName;
+   }
 
-  @Override
-  public final void setNonParsableArguments(String[] nonParsableArguments) {
-    this.nonNamedArguments = nonParsableArguments;
-  }
+   @Override
+   public final String[] getAllArguments() {
+      return allArgs;
+   }
 
-  /**
-   * Gets stage.
-   *
-   * @return the stage
-   */
-  protected final Stage getStage() {
-    return stage;
-  }
+   @Override
+   public final void setAllArguments(String[] allArguments) {
+      this.allArgs = allArguments;
+   }
 
-  @Override
-  public final void run(String[] args) {
-    Application.super.run(args);
-  }
+   @Override
+   public String getName() {
+      return applicationName;
+   }
 
-  @Override
-  public final void run() {
+   @Override
+   public final String[] getNonSpecifiedArguments() {
+      return nonNamedArguments;
+   }
 
-  }
+   @Override
+   public final void setNonSpecifiedArguments(String[] nonSpecifiedArguments) {
+      this.nonNamedArguments = nonSpecifiedArguments;
+   }
 
-  @Override
-  public final void start(Stage primaryStage) throws Exception {
-    primaryStage.setTitle(getName());
-    this.stage = primaryStage;
-    List<String> parameters = getParameters().getRaw();
-    if (parameters == null) {
-      run(new String[0]);
-    } else {
-      run(parameters.toArray(new String[parameters.size()]));
-    }
-  }
+   /**
+    * Gets stage.
+    *
+    * @return the stage
+    */
+   protected final Stage getStage() {
+      return stage;
+   }
+
+   @Override
+   public final void run(String[] args) {
+      Application.super.run(args);
+   }
+
+   @Override
+   public final void run() {
+
+   }
+
+   @Override
+   public final void start(Stage primaryStage) throws Exception {
+      primaryStage.setTitle(getName());
+      this.stage = primaryStage;
+      List<String> parameters = getParameters().getRaw();
+      if (parameters == null) {
+         run(new String[0]);
+      } else {
+         run(parameters.toArray(new String[parameters.size()]));
+      }
+   }
 
 }//END OF JavaFXApplication

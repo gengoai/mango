@@ -21,9 +21,8 @@
 
 package com.davidbracewell.io;
 
-import com.google.common.base.Charsets;
-
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Enumeration of common Unicode Byte Order Marks
@@ -31,85 +30,85 @@ import java.nio.charset.Charset;
  * @author David B. Bracewell
  */
 public enum CommonBOM {
-  /**
-   * The UTF_8 BOM
-   */
-  UTF_8(new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF}, Charsets.UTF_8),
-  /**
-   * The UTF_16BE BOM.
-   */
-  UTF_16BE(new byte[]{(byte) 0xFE, (byte) 0xFF}, Charsets.UTF_16BE),
-  /**
-   * The UTF_16LE BOM.
-   */
-  UTF_16LE(new byte[]{(byte) 0xFF, (byte) 0xFE}, Charsets.UTF_16LE),
-  /**
-   * The UTF_32BE BOM.
-   */
-  UTF_32BE(new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0xFE, (byte) 0xFF}, Charset.forName("UTF-32BE")),
-  /**
-   * The UTF_32LE BOM.
-   */
-  UTF_32LE(new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0xFF, (byte) 0xFE}, Charset.forName("UTF-32LE"));
+   /**
+    * The UTF_8 BOM
+    */
+   UTF_8(new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF}, StandardCharsets.UTF_8),
+   /**
+    * The UTF_16BE BOM.
+    */
+   UTF_16BE(new byte[]{(byte) 0xFE, (byte) 0xFF}, StandardCharsets.UTF_16BE),
+   /**
+    * The UTF_16LE BOM.
+    */
+   UTF_16LE(new byte[]{(byte) 0xFF, (byte) 0xFE}, StandardCharsets.UTF_16LE),
+   /**
+    * The UTF_32BE BOM.
+    */
+   UTF_32BE(new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0xFE, (byte) 0xFF}, Charset.forName("UTF-32BE")),
+   /**
+    * The UTF_32LE BOM.
+    */
+   UTF_32LE(new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0xFF, (byte) 0xFE}, Charset.forName("UTF-32LE"));
 
-  /**
-   * The constant MAX_BOM_SIZE.
-   */
-  public final static int MAX_BOM_SIZE;
+   /**
+    * The constant MAX_BOM_SIZE.
+    */
+   public final static int MAX_BOM_SIZE;
 
-  //Determine the max BOM size based on the current items in the enum
-  static {
-    int max = 0;
-    for (CommonBOM bom : CommonBOM.values()) {
-      if (bom.length() > max) {
-        max = bom.length();
+   //Determine the max BOM size based on the current items in the enum
+   static {
+      int max = 0;
+      for (CommonBOM bom : CommonBOM.values()) {
+         if (bom.length() > max) {
+            max = bom.length();
+         }
       }
-    }
-    MAX_BOM_SIZE = max;
-  }
+      MAX_BOM_SIZE = max;
+   }
 
-  private final byte[] bom;
-  private final Charset charset;
+   private final byte[] bom;
+   private final Charset charset;
 
-  CommonBOM(byte[] bom, Charset charset) {
-    this.bom = bom;
-    this.charset = charset;
-  }
+   CommonBOM(byte[] bom, Charset charset) {
+      this.bom = bom;
+      this.charset = charset;
+   }
 
-  /**
-   * The number of byhtes in the bom
-   *
-   * @return The BOM length
-   */
-  public int length() {
-    return bom.length;
-  }
+   /**
+    * The number of byhtes in the bom
+    *
+    * @return The BOM length
+    */
+   public int length() {
+      return bom.length;
+   }
 
-  /**
-   * The charset associated with the bom
-   *
-   * @return The associated <code>Charset</code>
-   */
-  public Charset getCharset() {
-    return charset;
-  }
+   /**
+    * The charset associated with the bom
+    *
+    * @return The associated <code>Charset</code>
+    */
+   public Charset getCharset() {
+      return charset;
+   }
 
-  /**
-   * Determines if the BOM is at the beginning of a given byte array.
-   *
-   * @param rhs The byte array to compare against
-   * @return True if the BOM is present, false otherwise
-   */
-  public boolean matches(byte[] rhs) {
-    if (rhs == null || rhs.length < bom.length) {
-      return false;
-    }
-    for (int i = 0; i < bom.length; i++) {
-      if (bom[i] != rhs[i]) {
-        return false;
+   /**
+    * Determines if the BOM is at the beginning of a given byte array.
+    *
+    * @param rhs The byte array to compare against
+    * @return True if the BOM is present, false otherwise
+    */
+   public boolean matches(byte[] rhs) {
+      if (rhs == null || rhs.length < bom.length) {
+         return false;
       }
-    }
-    return true;
-  }
+      for (int i = 0; i < bom.length; i++) {
+         if (bom[i] != rhs[i]) {
+            return false;
+         }
+      }
+      return true;
+   }
 
 }// END OF CommonBOM

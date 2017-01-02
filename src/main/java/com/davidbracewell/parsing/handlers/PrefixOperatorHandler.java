@@ -22,49 +22,49 @@
 package com.davidbracewell.parsing.handlers;
 
 
+import com.davidbracewell.parsing.ExpressionIterator;
 import com.davidbracewell.parsing.ParseException;
-import com.davidbracewell.parsing.Parser;
 import com.davidbracewell.parsing.ParserToken;
 import com.davidbracewell.parsing.expressions.Expression;
-import com.davidbracewell.parsing.expressions.PrefixExpression;
+import com.davidbracewell.parsing.expressions.PrefixOperatorExpression;
 
 /**
- * A <code>PrefixHandler</code> for prefix operators.
+ * <p>Creates {@link PrefixOperatorExpression}s where the current token is the operator and the next expression is what the
+ * operator is operating on.</p>
  *
  * @author David B. Bracewell
  */
 public class PrefixOperatorHandler extends PrefixHandler {
+   private static final long serialVersionUID = 1L;
+   private final Class<? extends Expression> expectedRightHandType;
 
-  private final Class<? extends Expression> expectedRightHandType;
 
+   /**
+    * Default constructor
+    */
+   public PrefixOperatorHandler() {
+      this(null);
+   }
 
-  /**
-   * Default constructor
-   *
-   * @param precedence The precedence of the handler
-   */
-  public PrefixOperatorHandler(int precedence) {
-    this(precedence, null);
-  }
+   /**
+    * Default constructor
+    *
+    * @param expectedRightHandType the expected right hand type
+    */
+   public PrefixOperatorHandler(Class<? extends Expression> expectedRightHandType) {
+      this.expectedRightHandType = expectedRightHandType;
+   }
 
-  /**
-   * Default constructor
-   *
-   * @param precedence            The precedence of the handler
-   * @param expectedRightHandType the expected right hand type
-   */
-  public PrefixOperatorHandler(int precedence, Class<? extends Expression> expectedRightHandType) {
-    super(precedence);
-    this.expectedRightHandType = expectedRightHandType;
-  }
-
-  @Override
-  public Expression parse(Parser parser, ParserToken token) throws ParseException {
-    Expression right = parser.next(precedence());
-    if (expectedRightHandType != null && (right == null || right.as(expectedRightHandType) == null)) {
-      throw new ParseException("Expecting the right hand argument to be of type" + expectedRightHandType + " but got " + (right == null ? "null" : right.getClass()));
-    }
-    return new PrefixExpression(token, right);
-  }
+   @Override
+   public Expression parse(ExpressionIterator expressionIterator, ParserToken token) throws ParseException {
+      Expression right = expressionIterator.next(precedence());
+      if (expectedRightHandType != null && (right == null || right.as(expectedRightHandType) == null)) {
+         throw new ParseException("Expecting the right hand argument to be of type" + expectedRightHandType + " but got " + (right == null
+                                                                                                                             ? "null"
+                                                                                                                             : right
+                                                                                                                                  .getClass()));
+      }
+      return new PrefixOperatorExpression(token, right);
+   }
 
 }//END OF PrefixOperatorHandler

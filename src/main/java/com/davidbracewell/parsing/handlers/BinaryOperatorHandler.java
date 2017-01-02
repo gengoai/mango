@@ -22,37 +22,38 @@
 package com.davidbracewell.parsing.handlers;
 
 
+import com.davidbracewell.parsing.ExpressionIterator;
 import com.davidbracewell.parsing.ParseException;
-import com.davidbracewell.parsing.Parser;
 import com.davidbracewell.parsing.ParserToken;
 import com.davidbracewell.parsing.expressions.BinaryOperatorExpression;
 import com.davidbracewell.parsing.expressions.Expression;
 
 /**
- * A <code>InfixHandler</code> for binary operators
+ * <p>Creates {@link BinaryOperatorExpression}s where the left and right expressions are being operated on by the
+ * operator represented by the current token.</p>
  *
  * @author David B. Bracewell
  */
 public class BinaryOperatorHandler extends InfixHandler {
+   private static final long serialVersionUID = 1L;
+   private final boolean rightAssociative;
 
-  private final boolean rightAssociative;
+   /**
+    * Default constructor
+    *
+    * @param precedence       The precedence of the handler
+    * @param rightAssociative true if the handler is right associative
+    */
+   public BinaryOperatorHandler(int precedence, boolean rightAssociative) {
+      super(precedence);
+      this.rightAssociative = rightAssociative;
+   }
 
-  /**
-   * Default constructor
-   *
-   * @param precedence       The precedence of the handler
-   * @param rightAssociative true if the handler is right associative
-   */
-  public BinaryOperatorHandler(int precedence, boolean rightAssociative) {
-    super(precedence);
-    this.rightAssociative = rightAssociative;
-  }
-
-  @Override
-  public Expression parse(Parser parser, Expression left, ParserToken token) throws ParseException {
-    Expression right = parser.next(precedence() - (rightAssociative ? 1 : 0));
-    return new BinaryOperatorExpression(left, token, right);
-  }
+   @Override
+   public Expression parse(ExpressionIterator expressionIterator, Expression left, ParserToken token) throws ParseException {
+      Expression right = expressionIterator.next(precedence() - (rightAssociative ? 1 : 0));
+      return new BinaryOperatorExpression(left, token, right);
+   }
 
 
 }//END OF BinaryOperatorHandler

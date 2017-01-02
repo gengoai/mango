@@ -35,18 +35,18 @@ import java.io.OutputStream;
  */
 public class XMLSerializer implements Serializer {
 
-  @Override
-  public void serialize(@NonNull Object o, @NonNull Resource resource) throws Exception {
-    try (OutputStream outputStream = resource.outputStream()) {
-      JAXB.marshal(o, outputStream);
-    }
-  }
+   @Override
+   public void serialize(@NonNull Object o, @NonNull Resource resource) throws Exception {
+      try (OutputStream outputStream = resource.outputStream()) {
+         JAXB.marshal(o, outputStream);
+      }
+   }
 
-  @Override
-  public <T> T deserialize(@NonNull Resource resource, @NonNull Class<T> clazz) throws Exception {
-    try (InputStream inputStream = resource.inputStream()) {
-      return JAXB.unmarshal(inputStream, clazz);
-    }
-  }
+   @Override
+   public <T> T deserialize(@NonNull Resource resource, @NonNull Class<T> clazz) throws Exception {
+      try (InputStream inputStream = resource.inputStream()) {
+         return JAXB.unmarshal(inputStream, clazz);
+      }
+   }
 
 }//END OF XMLSerializer

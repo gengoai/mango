@@ -24,11 +24,11 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of LongUnaryOperator that is serializable
+ * Version of LongUnaryOperator that is serializable and checked
  */
 @FunctionalInterface
 public interface CheckedLongUnaryOperator extends Serializable {
 
-  long applyAsLong(long t) throws Throwable;
+   long applyAsLong(long t) throws Throwable;
 
 }//END OF CheckedLongUnaryOperator

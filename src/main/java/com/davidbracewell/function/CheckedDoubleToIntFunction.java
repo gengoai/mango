@@ -24,11 +24,11 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of DoubleToIntFunction that is serializable
+ * Version of DoubleToIntFunction that is serializable and checked
  */
 @FunctionalInterface
 public interface CheckedDoubleToIntFunction extends Serializable {
 
-  int applyAsInt(double t) throws Throwable;
+   int applyAsInt(double t) throws Throwable;
 
 }//END OF CheckedDoubleToIntFunction

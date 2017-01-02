@@ -25,6 +25,7 @@ import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.CSV;
 import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -54,8 +55,7 @@ public class CSVFormatter implements Serializable {
    *
    * @param csvFormat the csv format
    */
-  public CSVFormatter(CSV csvFormat) {
-    Preconditions.checkNotNull(csvFormat);
+  public CSVFormatter(@NonNull CSV csvFormat) {
     this.delimiter = Character.toString(csvFormat.getDelimiter());
     this.escape = Character.toString(csvFormat.getEscape());
     this.quote = Character.toString(csvFormat.getQuote());
@@ -169,7 +169,9 @@ public class CSVFormatter implements Serializable {
    * @return A String representing the single DSV formatted row of Map entries
    */
   public String format(Map<?, ?> map, char keyValueSeparator) {
-    Preconditions.checkNotNull(map);
+    if (map == null) {
+      return StringUtils.EMPTY;
+    }
     Preconditions.checkArgument(keyValueSeparator != ' ');
 
     StringBuilder rowString = new StringBuilder();
@@ -185,7 +187,7 @@ public class CSVFormatter implements Serializable {
 
       if (key.indexOf(keyValueSeparator) >= 0) {
         rowString.append(doubleQuote).append(key.replaceAll(quote, doubleQuote))
-            .append(doubleQuote);
+                 .append(doubleQuote);
       } else {
         rowString.append(key.replaceAll(quote, doubleQuote));
       }
@@ -194,7 +196,7 @@ public class CSVFormatter implements Serializable {
 
       if (value.indexOf(keyValueSeparator) >= 0) {
         rowString.append(doubleQuote).append(value.replaceAll(quote, doubleQuote))
-            .append(doubleQuote);
+                 .append(doubleQuote);
       } else {
         rowString.append(value.replaceAll(quote, doubleQuote));
       }
@@ -217,7 +219,9 @@ public class CSVFormatter implements Serializable {
    * @return the string
    */
   public String format(Iterable<?> iterable) {
-    Preconditions.checkNotNull(iterable);
+    if (iterable == null) {
+      return StringUtils.EMPTY;
+    }
     return format(iterable.iterator());
   }
 
@@ -229,7 +233,9 @@ public class CSVFormatter implements Serializable {
    * @return A String representing the single DSV formatted row
    */
   public String format(Object... array) {
-    Preconditions.checkNotNull(array);
+    if (array == null) {
+      return StringUtils.EMPTY;
+    }
     if (array.length == 1 && array[0].getClass().isArray()) {
       return format(Convert.convert(array[0], Iterable.class));
     }

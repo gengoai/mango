@@ -23,14 +23,15 @@ package com.davidbracewell.io;
 
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.collect.Lists;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author David B. Bracewell
@@ -38,11 +39,7 @@ import static org.junit.Assert.*;
 public class AsyncWriterTest {
 
   private static List<String> randomList() {
-    List<String> list = Lists.newArrayList();
-    for (int i = 0; i < 100; i++) {
-      list.add(StringUtils.randomString(10, 'a', 'z'));
-    }
-    return list;
+    return IntStream.range(0, 100).mapToObj(i -> StringUtils.randomString(10, 'a', 'z')).collect(Collectors.toList());
   }
 
   @Test

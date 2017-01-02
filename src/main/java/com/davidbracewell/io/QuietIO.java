@@ -22,11 +22,9 @@
 package com.davidbracewell.io;
 
 
-import com.davidbracewell.conversion.IOConverter;
 import com.davidbracewell.logging.Logger;
 
 import java.io.Closeable;
-import java.nio.charset.Charset;
 
 /**
  * IO Operations that suppress exceptions
@@ -35,36 +33,34 @@ import java.nio.charset.Charset;
  */
 public class QuietIO {
 
-  private final static Logger logger = Logger.getLogger(QuietIO.class);
+   private final static Logger logger = Logger.getLogger(QuietIO.class);
 
-  /**
-   * Closes the <code>Closeable</code>ignoring any exception
-   *
-   * @param closeable thing to close
-   */
-  public static void closeQuietly(Closeable closeable) {
-    if (closeable == null) {
-      return;
-    }
-    try {
-      closeable.close();
-    } catch (Exception e) {
-      logger.fine(e);
-    }
-  }
+   /**
+    * Closes the <code>Closeable</code>ignoring any exception
+    *
+    * @param closeable thing to close
+    */
+   public static void closeQuietly(Closeable closeable) {
+      if (closeable == null) {
+         return;
+      }
+      try {
+         closeable.close();
+      } catch (Exception e) {
+         logger.fine(e);
+      }
+   }
 
-  /**
-   * Char set for name.
-   *
-   * @param name the name
-   * @return the charset
-   */
-  public static Charset charSetForName(String name) {
-   return IOConverter.CHARSET.apply(name);
-  }
-
-
-
+   public static void closeQuietly(AutoCloseable closeable) {
+      if (closeable == null) {
+         return;
+      }
+      try {
+         closeable.close();
+      } catch (Exception e) {
+         logger.fine(e);
+      }
+   }
 
 
 }// END OF QuietIO

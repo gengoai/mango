@@ -23,12 +23,12 @@ package com.davidbracewell.cache;
 
 import com.davidbracewell.concurrent.Threads;
 import com.davidbracewell.config.Config;
-import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import static org.junit.Assert.*;
 
@@ -56,7 +56,7 @@ public class CacheProxyTest {
     Config.setProperty("com.davidbracewell.cache.globalCache.class", "com.davidbracewell.cache.impl.GuavaCache");
     Config.setProperty("com.davidbracewell.cache.globalCache.constructor.param1.type", "String");
     Config.setProperty("com.davidbracewell.cache.globalCache.constructor.param1.value", "maximumSize=10000");
-    CacheManager.getInstance().getGlobalCache().clear();
+    CacheManager.getGlobalCache().invalidateAll();
   }
 
   @Test

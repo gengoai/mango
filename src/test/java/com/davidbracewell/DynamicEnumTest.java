@@ -19,61 +19,62 @@ package com.davidbracewell;/*
  * under the License.
  */
 
-import com.google.common.collect.Sets;
+import com.davidbracewell.io.resource.ByteArrayResource;
+import com.davidbracewell.io.resource.Resource;
 import org.junit.Test;
-
-import java.util.Collection;
 
 import static org.junit.Assert.*;
 
 public class DynamicEnumTest {
 
+   public static final NamesEnum WITH_SPACE = NamesEnum.create("WITH spAce");
 
-  @Test
-  public void testStaticDeclerations() throws Exception {
-    assertEquals(NamesEnum.PEDRO, NamesEnum.valueOf("pedro"));
-    assertEquals(NamesEnum.AKI, NamesEnum.valueOf("AkI"));
-    assertEquals("PABLO", NamesEnum.PABLO.name());
-  }
+   @Test
+   public void testName() throws Exception {
+      assertEquals("WITH_SPACE", WITH_SPACE.name());
+      assertEquals(NamesEnum.class.getCanonicalName() + ".WITH_SPACE", WITH_SPACE.canonicalName());
+   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testBadValue() throws Exception {
-    assertNotEquals(NamesEnum.PEDRO, NamesEnum.valueOf("pEdRos"));
-  }
+   @Test(expected = IllegalArgumentException.class)
+   public void testBadPeriod() throws Exception {
+      NamesEnum.create(".");
+   }
 
-  @Test
-  public void testValues() throws Exception {
-    assertEquals(
-        Sets.newHashSet(NamesEnum.PEDRO, NamesEnum.PABLO, NamesEnum.AKI),
-        Sets.newHashSet(NamesEnum.values())
-    );
-  }
+   @Test(expected = IllegalArgumentException.class)
+   public void testBadEmpty() throws Exception {
+      NamesEnum.create("");
+   }
 
-  private static class NamesEnum extends EnumValue {
-    private static final DynamicEnum<NamesEnum> ENUM = new DynamicEnum<>();
-    private static final long serialVersionUID = -2068686615518994186L;
+   @Test(expected = IllegalArgumentException.class)
+   public void testBadBlank() throws Exception {
+      NamesEnum.create("   ");
+   }
 
-    public NamesEnum(String name) {
-      super(name);
-    }
+   @Test
+   public void testIsInstance() throws Exception {
+      assertTrue(WITH_SPACE.isInstance(WITH_SPACE));
+      assertFalse(WITH_SPACE.isInstance(NamesEnum.create("NOT A SPACE")));
+   }
 
-    public static NamesEnum create(String name){
-      return ENUM.register(new NamesEnum(name));
-    }
+   @Test
+   public void testReferenceEquality() throws Exception {
+      assertTrue(WITH_SPACE == NamesEnum.create("with space"));
+      Resource bytes = new ByteArrayResource();
+      bytes.writeObject(WITH_SPACE);
+      NamesEnum isItWhiteSpace = bytes.readObject();
+      assertTrue(WITH_SPACE == isItWhiteSpace);
+      assertTrue(WITH_SPACE == NamesEnum.valueOf("with space"));
+   }
 
-    public static NamesEnum valueOf(String name) {
-      return ENUM.valueOf(name);
-    }
 
-    public static Collection<NamesEnum> values() {
-      return ENUM.values();
-    }
+   @Test
+   public void testValues() throws Exception {
+      assertTrue(NamesEnum.values().contains(WITH_SPACE));
+   }
 
-    public static final NamesEnum AKI = create("AKI");
-    public static final NamesEnum PABLO = create("PABLO");
-    public static final NamesEnum PEDRO = create("PEDRO");
-
-  }
-
+   @Test
+   public void testCompare() throws Exception {
+      assertTrue(WITH_SPACE.compareTo(NamesEnum.create("ZEBRA")) < 0);
+   }
 
 }

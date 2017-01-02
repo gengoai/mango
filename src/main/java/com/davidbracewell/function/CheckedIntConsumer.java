@@ -24,11 +24,11 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of IntConsumer that is serializable
+ * Version of IntConsumer that is serializable and checked
  */
 @FunctionalInterface
 public interface CheckedIntConsumer extends Serializable {
 
-  void accept(int t) throws Throwable;
+   void accept(int t) throws Throwable;
 
 }//END OF CheckedIntConsumer

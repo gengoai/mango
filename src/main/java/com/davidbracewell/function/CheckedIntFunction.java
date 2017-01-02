@@ -24,13 +24,13 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of IntFunction that is serializable
+ * Version of IntFunction that is serializable and checked
  *
  * @param <R> Functional parameter
  */
 @FunctionalInterface
 public interface CheckedIntFunction<R> extends Serializable {
 
-  R apply(int t) throws Throwable;
+   R apply(int t) throws Throwable;
 
 }//END OF CheckedIntFunction

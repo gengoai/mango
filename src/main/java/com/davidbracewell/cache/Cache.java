@@ -21,6 +21,11 @@
 package com.davidbracewell.cache;
 
 
+import com.davidbracewell.function.SerializableSupplier;
+import lombok.NonNull;
+
+import java.util.concurrent.ExecutionException;
+
 /**
  * <p>A generic cache interface that allows multiple implementations, definition through specification, management, and
  * auto cached interfaces.</p>
@@ -31,75 +36,82 @@ package com.davidbracewell.cache;
  */
 public interface Cache<K, V> {
 
-  /**
-   * Clears the cache of all stored keys and values
-   */
-  void clear();
+   /**
+    * Determines if a key is in the cache or not
+    *
+    * @param key The key to check
+    * @return True if the key is in the cache, False if not
+    */
+   boolean containsKey(K key);
 
-  /**
-   * Determines if a key is in the cache or not
-   *
-   * @param key The key to check
-   * @return True if the key is in the cache, False if not
-   */
-  boolean containsKey(K key);
+   /**
+    * Gets the value associated with a key
+    *
+    * @param key The key
+    * @return The value associated with the key or null
+    */
+   V get(K key);
 
-  /**
-   * Gets the value associated with a key
-   *
-   * @param key The key
-   * @return The value associated with the key or null
-   */
-  V get(K key);
+   /**
+    * Gets name.
+    *
+    * @return The name of the cache
+    */
+   String getName();
 
-  /**
-   * Gets name.
-   *
-   * @return The name of the cache
-   */
-  String getName();
+   /**
+    * Removes a single key
+    *
+    * @param key The key to remove
+    */
+   void invalidate(K key);
 
-  /**
-   * Removes a single key
-   *
-   * @param key The key to remove
-   */
-  void invalidate(K key);
+   /**
+    * Clears the cache of all given keys
+    *
+    * @param keys The keys to remove
+    */
+   void invalidateAll(@NonNull Iterable<? extends K> keys);
 
-  /**
-   * Clears the cache of all given keys
-   *
-   * @param keys The keys to remove
-   */
-  default void invalidateAll(Iterable<? extends K> keys) {
-    if (keys != null) {
-      keys.forEach(this::invalidate);
-    }
-  }
 
-  /**
-   * Adds a key value pair to the cache overwriting any value that is there
-   *
-   * @param key   The key
-   * @param value The value
-   */
-  void put(K key, V value);
+   /**
+    * Clears the cache
+    */
+   void invalidateAll();
 
-  /**
-   * Adds a key value pair if the key is not already in the cache
-   *
-   * @param key   The key
-   * @param value The value
-   * @return The old value if put, null if not
-   */
-  V putIfAbsent(K key, V value);
+   /**
+    * Adds a key value pair to the cache overwriting any value that is there
+    *
+    * @param key   The key
+    * @param value The value
+    */
+   void put(K key, V value);
 
-  /**
-   * Size long.
-   *
-   * @return The current size of the cache
-   */
-  long size();
+   /**
+    * Gets the value associated with the given key when available and if not available calculates and stores the value
+    * using the given supplier.
+    *
+    * @param key      The key
+    * @param supplier The supplier to use to generate the value
+    * @return The old value if put, null if not
+    */
+   V get(K key, SerializableSupplier<? extends V> supplier) throws ExecutionException;
+
+   /**
+    * The number of items cached.
+    *
+    * @return The current size of the cache
+    */
+   long size();
+
+   /**
+    * Determines if the cache is empty or not
+    *
+    * @return True if empty, False if not
+    */
+   default boolean isEmpty() {
+      return size() == 0;
+   }
 
 
 }//END OF Cache

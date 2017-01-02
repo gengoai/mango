@@ -21,36 +21,38 @@
 
 package com.davidbracewell.io.resource;
 
-import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 /**
+ * Resource that wraps an <code>InputStream</code>
+ *
  * @author David B. Bracewell
  */
 public class InputStreamResource extends BaseResource implements ReadOnlyResource, NonTraversableResource {
 
-  private static final long serialVersionUID = -4341744444291053097L;
-  private final InputStream inputStream;
+   private static final long serialVersionUID = -4341744444291053097L;
+   private final InputStream inputStream;
 
-  /**
-   * Default Constructor
-   *
-   * @param stream The input stream
-   */
-  public InputStreamResource(InputStream stream) {
-    this.inputStream = Preconditions.checkNotNull(stream);
-  }
+   /**
+    * Instantiates a new Input stream resource.
+    *
+    * @param stream the input stream to wrap
+    */
+   public InputStreamResource(@NonNull InputStream stream) {
+      this.inputStream = stream;
+   }
 
-  @Override
-  public InputStream createInputStream() throws IOException {
-    return inputStream;
-  }
+   @Override
+   public InputStream createInputStream() throws IOException {
+      return inputStream;
+   }
 
-  @Override
-  public boolean exists() {
-    return true;
-  }
+   @Override
+   public boolean exists() {
+      return true;
+   }
 
 }//END OF InputStreamResource

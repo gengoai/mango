@@ -22,8 +22,8 @@
 package com.davidbracewell.string;
 
 import com.davidbracewell.function.SerializablePredicate;
-import com.google.common.base.Predicates;
-import com.google.common.base.Strings;
+
+import java.util.regex.Pattern;
 
 /**
  * Commonly used predicates over strings.
@@ -46,13 +46,13 @@ public enum StringPredicates implements SerializablePredicate<CharSequence> {
   IS_NULL_OR_EMPTY {
     @Override
     public boolean test(CharSequence input) {
-      return Strings.isNullOrEmpty(input.toString());
+      return input == null || input.length() == 0;
     }
   },
   IS_NOT_NULL_OR_EMPTY {
     @Override
-    public boolean test(CharSequence charSequence) {
-      return !Strings.isNullOrEmpty(charSequence.toString());
+    public boolean test(CharSequence input) {
+      return input != null && input.length() > 0;
     }
   },
   /**
@@ -123,7 +123,7 @@ public enum StringPredicates implements SerializablePredicate<CharSequence> {
     }
   },
   /**
-   * True if the input string is all letter or digits
+   * True if the input string is all letter or whitespace
    */
   IS_LETTER_OR_WHITESPACE {
     @Override
@@ -354,7 +354,8 @@ public enum StringPredicates implements SerializablePredicate<CharSequence> {
    * @return the predicate
    */
   public static SerializablePredicate<CharSequence> REGEX_MATCH(String pattern) {
-    return Predicates.containsPattern(pattern)::apply;
+    final Pattern re = Pattern.compile(pattern);
+    return input -> re.matcher(input).find();
   }
 
   /**

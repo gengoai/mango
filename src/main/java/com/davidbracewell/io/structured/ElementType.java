@@ -27,14 +27,44 @@ package com.davidbracewell.io.structured;
  * @author David B. Bracewell
  */
 public enum ElementType {
-  BEGIN_OBJECT,
-  END_OBJECT,
-  VALUE,
-  BEGIN_ARRAY,
-  END_ARRAY,
-  BEGIN_DOCUMENT,
-  END_DOCUMENT,
-  NAME,
-  OTHER,
-  END_KEY_VALUE
+   /**
+    * Marks the beginning of an object
+    */
+   BEGIN_OBJECT,
+   /**
+    * Marks the end of an object
+    */
+   END_OBJECT,
+   /**
+    * Marks a value in an array
+    */
+   VALUE,
+   /**
+    * Marks the beginning of an array
+    */
+   BEGIN_ARRAY,
+   /**
+    * Marks the end of an array
+    */
+   END_ARRAY,
+   /**
+    * Marks the beginning of a document
+    */
+   BEGIN_DOCUMENT,
+   /**
+    * Marks the end of a document
+    */
+   END_DOCUMENT,
+   /**
+    * Marks the beginning of a key-value pair
+    */
+   NAME,
+   /**
+    * Something unknown
+    */
+   OTHER,
+   /**
+    * Marks the end of a key value pair
+    */
+   END_KEY_VALUE
 } //END OF StructuredElement

@@ -34,24 +34,24 @@ import java.util.Map;
  */
 public interface ResourceProvider {
 
-  /**
-   * @return The protocols that this provider supports (e.g. http, file, string, etc.)
-   */
-  String[] getProtocols();
+   /**
+    * @return The protocols that this provider supports (e.g. http, file, string, etc.)
+    */
+   String[] getProtocols();
 
-  /**
-   * Creates a resource with the given specification and properties using a {@link
-   * com.davidbracewell.reflection.BeanMap}.
-   *
-   * @param specification The specification
-   * @param properties    The properties
-   * @return A resource
-   */
-  Resource createResource(String specification, Map<String, String> properties);
+   /**
+    * Creates a resource with the given specification and properties using a {@link
+    * com.davidbracewell.reflection.BeanMap}.
+    *
+    * @param specification The specification
+    * @param properties    The properties
+    * @return A resource
+    */
+   Resource createResource(String specification, Map<String, String> properties);
 
-  /**
-   * @return True if the protocol is required as part of the specification
-   */
-  boolean requiresProtocol();
+   /**
+    * @return True if the protocol is required as part of the specification
+    */
+   boolean requiresProtocol();
 
 }//END OF ResourceProvider

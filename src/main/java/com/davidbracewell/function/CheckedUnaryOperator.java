@@ -24,13 +24,13 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of UnaryOperator that is serializable
+ * Version of UnaryOperator that is serializable and checked
  *
  * @param <T> Functional parameter
  */
 @FunctionalInterface
 public interface CheckedUnaryOperator<T> extends Serializable {
 
-  T apply(T t) throws Throwable;
+   T apply(T t) throws Throwable;
 
 }//END OF CheckedUnaryOperator

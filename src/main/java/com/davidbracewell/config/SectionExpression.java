@@ -27,24 +27,32 @@ import com.davidbracewell.parsing.expressions.Expression;
 import java.util.List;
 
 /**
+ * The type Section expression.
+ *
  * @author David B. Bracewell
  */
-public class SectionExpression extends Expression {
+class SectionExpression extends Expression {
 
-  public final List<Expression> assignments;
-  public final String sectionPrefix;
+   /**
+    * The Assignments.
+    */
+   public final List<Expression> assignments;
+   /**
+    * The Section prefix.
+    */
+   public final String sectionPrefix;
 
-  /**
-   * Default Constructor
-   *
-   * @param sectionPrefix
-   * @param assignments
-   */
-  public SectionExpression(String sectionPrefix, List<Expression> assignments) {
-    super(ConfigTokenizer.ConfigTokenType.SECTION_HEADER);
-    this.sectionPrefix = sectionPrefix;
-    this.assignments = assignments;
-  }
+   /**
+    * Default Constructor
+    *
+    * @param sectionPrefix the section prefix
+    * @param assignments   the assignments
+    */
+   public SectionExpression(String sectionPrefix, List<Expression> assignments) {
+      super(ConfigTokenizer.ConfigTokenType.SECTION_HEADER);
+      this.sectionPrefix = sectionPrefix;
+      this.assignments = assignments;
+   }
 
 
 }//END OF SectionExpression

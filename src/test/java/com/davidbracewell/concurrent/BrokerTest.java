@@ -23,7 +23,6 @@ package com.davidbracewell.concurrent;
 
 import com.davidbracewell.string.StringUtils;
 import com.google.common.base.CharMatcher;
-import com.google.common.base.Strings;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,41 +34,41 @@ import static org.junit.Assert.*;
  */
 public class BrokerTest {
 
-  @Test
-  public void runTest() throws Exception {
-    StringConsumer consumer = new StringConsumer();
-    Broker<String> pc = Broker.<String>builder()
-        .bufferSize(100)
-        .addConsumer(consumer)
-        .addProducer(new RandomStringProducer())
-        .build();
-    pc.run();
-    assertEquals(100, consumer.ai.get());
-  }
+   @Test
+   public void runTest() throws Exception {
+      StringConsumer consumer = new StringConsumer();
+      Broker<String> pc = Broker.<String>builder()
+                             .bufferSize(100)
+                             .addConsumer(consumer)
+                             .addProducer(new RandomStringProducer())
+                             .build();
+      pc.run();
+      assertEquals(100, consumer.ai.get());
+   }
 
-  public static class RandomStringProducer extends Broker.Producer<String> {
+   public static class RandomStringProducer extends Broker.Producer<String> {
 
-    @Override
-    public void produce() {
-      start();
-      for (int i = 0; i < 100; i++) {
-        String s = StringUtils.randomString(3, CharMatcher.JAVA_LETTER_OR_DIGIT);
-        yield(s);
+      @Override
+      public void produce() {
+         start();
+         for (int i = 0; i < 100; i++) {
+            String s = StringUtils.randomString(3, CharMatcher.JAVA_LETTER_OR_DIGIT);
+            yield(s);
+         }
+         stop();
       }
-      stop();
-    }
 
-  }
+   }
 
-  public static class StringConsumer implements java.util.function.Consumer<String> {
-    public final AtomicInteger ai = new AtomicInteger();
+   public static class StringConsumer implements java.util.function.Consumer<String> {
+      public final AtomicInteger ai = new AtomicInteger();
 
-    @Override
-    public void accept(String input) {
-      if (!Strings.isNullOrEmpty(input)) {
-        ai.incrementAndGet();
+      @Override
+      public void accept(String input) {
+         if (StringUtils.isNotNullOrBlank(input)) {
+            ai.incrementAndGet();
+         }
       }
-    }
-  }
+   }
 
 }//END OF ProducerConsumerTest

@@ -22,9 +22,8 @@
 package com.davidbracewell;
 
 /**
- * <p>
- * The Copyable interface defines the <code>copy</code> method that returns a copy of the given object.
- * </p>
+ * <p> The Copyable interface defines a method for returning a copy of an object. Individual implementations are left
+ * to determine if the copy is deep or shallow. However, a prefernce is for deep copies.</p>
  *
  * @param <E> The type of object that being copied
  * @author David B. Bracewell
@@ -32,11 +31,9 @@ package com.davidbracewell;
 public interface Copyable<E> {
 
   /**
-   * <p>
-   * Makes a copy of this object.
-   * </p>
+   * <p> Makes a copy of this object. </p>
    *
-   * @return A copy (deep) of this object.
+   * @return A copy of this object.
    */
   E copy();
 

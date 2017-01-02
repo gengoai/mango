@@ -24,8 +24,8 @@ package com.davidbracewell.io.resource;
 import com.davidbracewell.io.FileUtils;
 import com.davidbracewell.string.StringUtils;
 import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
-import javax.annotation.Nonnull;
 import java.io.*;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -35,120 +35,141 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
+ * Abstract base resource
+ *
  * @author David B. Bracewell
  */
 public abstract class BaseResource implements Resource, Serializable {
-  private static final long serialVersionUID = 1L;
+   private static final long serialVersionUID = 1L;
 
-  private Charset charset = StandardCharsets.UTF_8;
-  private boolean isCompressed = false;
+   private Charset charset = StandardCharsets.UTF_8;
+   private boolean isCompressed = false;
 
-  @Override
-  public final Charset getCharset() {
-    if( charset == null ){
-      return StandardCharsets.UTF_8;
-    }
-    return charset;
-  }
+   @Override
+   public final Charset getCharset() {
+      if (charset == null) {
+         return StandardCharsets.UTF_8;
+      }
+      return charset;
+   }
 
-  @Override
-  public final boolean isCompressed() {
-    return isCompressed;
-  }
+   @Override
+   public final boolean isCompressed() {
+      return isCompressed;
+   }
 
-  @Override
-  public final Resource setIsCompressed(boolean isCompressed) {
-    this.isCompressed = isCompressed;
-    return this;
-  }
+   @Override
+   public final Resource setIsCompressed(boolean isCompressed) {
+      this.isCompressed = isCompressed;
+      return this;
+   }
 
-  @Override
-  public final Resource setCharset(@Nonnull Charset charset) {
-    this.charset = charset;
-    return this;
-  }
+   @Override
+   public final Resource setCharset(@NonNull Charset charset) {
+      this.charset = charset;
+      return this;
+   }
 
-  @Override
-  public final Resource compressed() {
-    return setIsCompressed(true);
-  }
+   @Override
+   public final Resource compressed() {
+      return setIsCompressed(true);
+   }
 
-  @Override
-  public final Resource uncompressed() {
-    return setIsCompressed(false);
-  }
+   @Override
+   public final Resource uncompressed() {
+      return setIsCompressed(false);
+   }
 
-  @Override
-  public InputStream inputStream() throws IOException {
-    Preconditions.checkState(canRead(), "This is resource cannot be read from.");
-    PushbackInputStream is = new PushbackInputStream(createInputStream(), 2);
-    if (FileUtils.isCompressed(is)) {
-      setIsCompressed(true);
-      return new GZIPInputStream(is);
-    }
-    return is;
-  }
+   @Override
+   public InputStream inputStream() throws IOException {
+      Preconditions.checkState(canRead(), "This is resource cannot be read from.");
+      PushbackInputStream is = new PushbackInputStream(createInputStream(), 2);
+      if (FileUtils.isCompressed(is)) {
+         setIsCompressed(true);
+         return new GZIPInputStream(is);
+      }
+      return is;
+   }
 
-  @Override
-  public OutputStream outputStream() throws IOException {
-    Preconditions.checkState(canWrite(), "This is resource cannot be written to.");
-    if (isCompressed) {
-      return new GZIPOutputStream(createOutputStream());
-    }
-    return createOutputStream();
-  }
+   @Override
+   public OutputStream outputStream() throws IOException {
+      Preconditions.checkState(canWrite(), "This is resource cannot be written to.");
+      if (isCompressed) {
+         return new GZIPOutputStream(createOutputStream());
+      }
+      return createOutputStream();
+   }
 
-  protected OutputStream createOutputStream() throws IOException {
-    return null;
-  }
+   /**
+    * Create output stream output stream.
+    *
+    * @return the output stream
+    * @throws IOException the io exception
+    */
+   protected OutputStream createOutputStream() throws IOException {
+      if (asFile().isPresent()) {
+         return new FileOutputStream(asFile().orElse(null));
+      }
+      return null;
 
-  protected InputStream createInputStream() throws IOException {
-    return null;
-  }
+   }
 
-  @Override
-  public boolean canRead() {
-    return true;
-  }
+   /**
+    * Create input stream input stream.
+    *
+    * @return the input stream
+    * @throws IOException the io exception
+    */
+   protected InputStream createInputStream() throws IOException {
+      if (asFile().isPresent()) {
+         return new FileInputStream(asFile().orElse(null));
+      }
+      return null;
+   }
 
-  @Override
-  public boolean canWrite() {
-    return true;
-  }
+   @Override
+   public boolean canRead() {
+      return true;
+   }
 
-  @Override
-  public final String toString() {
-    return descriptor();
-  }
+   @Override
+   public boolean canWrite() {
+      return true;
+   }
 
-  @Override
-  public Optional<File> asFile() {
-    return Optional.empty();
-  }
+   @Override
+   public final String toString() {
+      return descriptor();
+   }
 
-  @Override
-  public Optional<URI> asURI() {
-    return Optional.empty();
-  }
+   @Override
+   public Optional<File> asFile() {
+      return Optional.empty();
+   }
 
-  @Override
-  public String baseName() {
-    return StringUtils.EMPTY;
-  }
+   @Override
+   public Optional<URI> asURI() {
+      return Optional.empty();
+   }
 
-  @Override
-  public String descriptor() {
-    return super.toString();
-  }
+   @Override
+   public String baseName() {
+      return StringUtils.EMPTY;
+   }
 
-  @Override
-  public boolean isDirectory() {
-    return false;
-  }
+   @Override
+   public String descriptor() {
+      return super.toString();
+   }
 
-  @Override
-  public String path() {
-    return StringUtils.EMPTY;
-  }
+   @Override
+   public boolean isDirectory() {
+      return false;
+   }
+
+   @Override
+   public String path() {
+      return StringUtils.EMPTY;
+   }
 
 }//END OF BaseResource

@@ -22,7 +22,7 @@
 package com.davidbracewell.parsing.expressions;
 
 import com.davidbracewell.parsing.ParserToken;
-import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 /**
  * An <code>Expression</code> representing a binary operation, eg. plus, minus, etc.
@@ -53,10 +53,10 @@ public class BinaryOperatorExpression extends Expression {
    * @param operator The operator
    * @param right    The expresison on the right of the operator
    */
-  public BinaryOperatorExpression(Expression left, ParserToken operator, Expression right) {
-    super(Preconditions.checkNotNull(operator).type);
-    this.left = Preconditions.checkNotNull(left);
-    this.right = Preconditions.checkNotNull(right);
+  public BinaryOperatorExpression(@NonNull Expression left, @NonNull ParserToken operator, @NonNull Expression right) {
+    super(operator.type);
+    this.left = left;
+    this.right = right;
     this.operator = operator;
   }
 

@@ -22,8 +22,8 @@
 package com.davidbracewell.config;
 
 
+import com.davidbracewell.parsing.ExpressionIterator;
 import com.davidbracewell.parsing.ParseException;
-import com.davidbracewell.parsing.Parser;
 import com.davidbracewell.parsing.ParserToken;
 import com.davidbracewell.parsing.expressions.Expression;
 import com.davidbracewell.parsing.handlers.PrefixHandler;
@@ -32,25 +32,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * The type Section handler.
+ *
  * @author David B. Bracewell
  */
 class SectionHandler extends PrefixHandler {
+   private static final long serialVersionUID = 1L;
 
-  /**
-   * Instantiates a new Section handler.
-   */
-  public SectionHandler() {
-    super(100);
-  }
-
-  @Override
-  public Expression parse(Parser parser, ParserToken token) throws ParseException {
-    List<Expression> subExpressions = new ArrayList<>();
-    while (parser.tokenStream().lookAheadType(0) != ConfigTokenizer.ConfigTokenType.END_SECTION) {
-      subExpressions.add(parser.next());
-    }
-    parser.tokenStream().consume();
-    return new SectionExpression(token.text, subExpressions);
-  }
+   @Override
+   public Expression parse(ExpressionIterator expressionIterator, ParserToken token) throws ParseException {
+      List<Expression> subExpressions = new ArrayList<>();
+      while (expressionIterator.tokenStream().lookAheadType(0) != ConfigTokenizer.ConfigTokenType.END_SECTION) {
+         subExpressions.add(expressionIterator.next());
+      }
+      expressionIterator.tokenStream().consume();
+      return new SectionExpression(token.text, subExpressions);
+   }
 
 }//END OF SectionHandler

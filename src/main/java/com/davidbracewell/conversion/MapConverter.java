@@ -22,20 +22,13 @@
 package com.davidbracewell.conversion;
 
 import com.davidbracewell.collection.Collect;
-import com.davidbracewell.function.Serialized;
+import com.davidbracewell.collection.map.Maps;
+import com.davidbracewell.function.SerializableSupplier;
 import com.davidbracewell.logging.Logger;
-import com.davidbracewell.reflection.Reflect;
-import com.davidbracewell.reflection.ReflectionException;
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.Iterables;
+import lombok.NonNull;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 /**
  * <p> Converts an <code>Object</code> to a <code>Map</code>. </p> <p> If the object is a collection, array, iterator,
@@ -49,81 +42,65 @@ import java.util.function.Supplier;
  */
 public class MapConverter<K, V, T extends Map<K, V>> implements Function<Object, T> {
 
-  private static final Logger log = Logger.getLogger(MapConverter.class);
+   private static final Logger log = Logger.getLogger(MapConverter.class);
 
-  private final Function<Object, K> keyConverter;
-  private final Supplier<T> mapSupplier;
-  private final Function<Object, V> valueConverter;
+   private final Function<Object, K> keyConverter;
+   private final SerializableSupplier<T> mapSupplier;
+   private final Function<Object, V> valueConverter;
 
-  public MapConverter(Function<Object, K> keyConverter, Function<Object, V> valueConverter, final Class<?> mapClass) {
-    Preconditions.checkNotNull(mapClass);
-    Preconditions.checkNotNull(keyConverter);
-    Preconditions.checkNotNull(valueConverter);
-    Preconditions.checkArgument(Map.class.isAssignableFrom(mapClass), "Must specify a class that implements Map.");
-    this.keyConverter = keyConverter;
-    this.valueConverter = valueConverter;
-    this.mapSupplier = Serialized.<T>supplier(() -> {
-        if (BiMap.class.equals(mapClass)) {
-          return Cast.as(HashBiMap.create());
-        } else if (Map.class.equals(mapClass)) {
-          return Cast.as(new HashMap());
-        }
-        try {
-          return Reflect.onClass(mapClass).create().get();
-        } catch (ReflectionException e) {
-          throw Throwables.propagate(e);
-        }
+   public MapConverter(@NonNull Function<Object, K> keyConverter, @NonNull Function<Object, V> valueConverter, @NonNull final Class<? extends Map> mapClass) {
+      this.keyConverter = keyConverter;
+      this.valueConverter = valueConverter;
+      this.mapSupplier = () -> Cast.as(Maps.create(Cast.as(mapClass)));
+   }
+
+   @Override
+   @SuppressWarnings("unchecked")
+   public T apply(Object obj) {
+      if (obj == null) {
+         return null;
       }
-    );
-  }
+      T map = mapSupplier.get();
 
-  @Override
-  @SuppressWarnings("unchecked")
-  public T apply(Object obj) {
-    if (obj == null) {
+      if (obj instanceof Map) {
+         for (Map.Entry<?, ?> entry : ((Map<?, ?>) obj).entrySet()) {
+            map.put(keyConverter.apply(entry.getKey()), valueConverter.apply(entry.getValue()));
+         }
+         return map;
+      }
+
+      if (obj instanceof CharSequence) {
+         return Cast.as(Maps.parseString(obj.toString(), keyConverter, valueConverter));
+      } else if (obj.getClass().isArray() && Map.Entry.class.isAssignableFrom(obj.getClass().getComponentType())) {
+         for (Object o : Convert.convert(obj, Iterable.class)) {
+            Map.Entry<?, ?> e = Cast.as(o);
+            map.put(keyConverter.apply(e.getKey()), valueConverter.apply(e.getValue()));
+         }
+         return map;
+      } else if (obj instanceof Map.Entry) {
+         Map.Entry<?, ?> e = Cast.as(obj);
+         map.put(keyConverter.apply(e.getKey()), valueConverter.apply(e.getValue()));
+         return map;
+      } else if (obj instanceof Iterable) {
+         Object o = Collect.getFirst(Cast.as(obj, Iterable.class)).orElse(null);
+         if (o != null && o instanceof Map.Entry) {
+            for (Object inner : Cast.as(obj, Iterable.class)) {
+               Map.Entry<?, ?> e = Cast.as(inner);
+               map.put(keyConverter.apply(e.getKey()), valueConverter.apply(e.getValue()));
+            }
+            return map;
+         }
+      }
+
+      try {
+         return Cast.as(Maps.fillMap(map, Convert.convert(obj, Iterable.class), keyConverter, valueConverter));
+      } catch (Exception e) {
+         //ignore
+      }
+
+      log.fine("Cannot convert {0} to a Map.", obj.getClass());
       return null;
-    }
-    T map = mapSupplier.get();
-
-    if (obj instanceof Map) {
-      for (Map.Entry<?, ?> entry : ((Map<?, ?>) obj).entrySet()) {
-        map.put(keyConverter.apply(entry.getKey()), valueConverter.apply(entry.getValue()));
-      }
-      return map;
-    }
-
-    if (obj instanceof CharSequence) {
-      return Cast.as(Collect.fromString(obj.toString(), keyConverter, valueConverter));
-    } else if (obj.getClass().isArray() && Map.Entry.class.isAssignableFrom(obj.getClass().getComponentType())) {
-      for (Object o : Convert.convert(obj, Iterable.class)) {
-        Map.Entry<?, ?> e = Cast.as(o);
-        map.put(keyConverter.apply(e.getKey()), valueConverter.apply(e.getValue()));
-      }
-      return map;
-    } else if (obj instanceof Map.Entry) {
-      Map.Entry<?, ?> e = Cast.as(obj);
-      map.put(keyConverter.apply(e.getKey()), valueConverter.apply(e.getValue()));
-      return map;
-    } else if (obj instanceof Iterable) {
-      Object o = Iterables.getFirst(Cast.as(obj, Iterable.class), null);
-      if (o != null && o instanceof Map.Entry) {
-        for (Object inner : Cast.as(obj, Iterable.class)) {
-          Map.Entry<?, ?> e = Cast.as(inner);
-          map.put(keyConverter.apply(e.getKey()), valueConverter.apply(e.getValue()));
-        }
-        return map;
-      }
-    }
-
-    try {
-      return Cast.as(Collect.fillMap(map, Convert.convert(obj, Iterable.class), keyConverter, valueConverter));
-    } catch (Exception e) {
-      //ignore
-    }
-
-    log.fine("Cannot convert {0} to a Map.", obj.getClass());
-    return null;
-  }
+   }
 
 }//END OF MapConverter
 

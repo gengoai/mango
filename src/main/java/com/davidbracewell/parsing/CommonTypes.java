@@ -21,13 +21,28 @@
 
 package com.davidbracewell.parsing;
 
+import com.davidbracewell.Re;
+import com.davidbracewell.Regex;
+
+import static com.davidbracewell.Re.nmGroup;
+import static com.davidbracewell.Re.quote;
+import static com.davidbracewell.Re.re;
+import static com.davidbracewell.Re.seq;
+
+
 /**
  * A enum of common Parser Token Types.
  *
  * @author David B. Bracewell
  */
 public enum CommonTypes implements ParserTokenType, HasLexicalPattern {
-  NUMBER("\\p{N}+(,\\p{N}{3})*(\\.\\p{N}+)*"),
+  NUMBER(
+    seq(
+      Re.NUMBER.plus(),
+      nmGroup(re(","), Re.NUMBER.nTimes(3)).star(),
+      nmGroup(quote("."), Re.NUMBER.plus()).star()
+    )
+  ),
   WORD("\\p{L}+"),
   OPENPARENS("\\("),
   CLOSEPARENS("\\)"),
@@ -61,6 +76,10 @@ public enum CommonTypes implements ParserTokenType, HasLexicalPattern {
   PIPE("\\|");
 
   private final String pattern;
+
+  CommonTypes(Regex pattern) {
+    this.pattern = pattern.toString();
+  }
 
   CommonTypes(String pattern) {
     this.pattern = pattern;

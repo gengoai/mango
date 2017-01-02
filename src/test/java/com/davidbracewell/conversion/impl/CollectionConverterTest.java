@@ -21,79 +21,96 @@
 
 package com.davidbracewell.conversion.impl;
 
+import com.davidbracewell.collection.Sets;
 import com.davidbracewell.conversion.CollectionConverter;
+import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.conversion.Val;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import org.junit.Test;
 
 import java.util.*;
 
+import static com.davidbracewell.collection.Sets.asLinkedHashSet;
+import static com.davidbracewell.collection.Sets.asSet;
+import static com.davidbracewell.collection.list.Lists.list;
 import static org.junit.Assert.*;
 
 public class CollectionConverterTest {
 
-  @Test
-  public void testRawCollection() throws Exception {
-    //Null
-    assertNull(CollectionConverter.COLLECTION(List.class).apply(null));
-    assertNull(CollectionConverter.COLLECTION(null).apply("1"));
+   @Test
+   public void testRawCollection() throws Exception {
+      //Null
+      assertNull(CollectionConverter.COLLECTION(List.class).apply(null));
+      assertNull(CollectionConverter.COLLECTION(null).apply("1"));
 
-    List<String> stringList = Lists.newArrayList("A", "B", "C");
-    Set<String> stringSet = Sets.newHashSet(stringList);
+      List<String> stringList = list("A", "B", "C");
+      Set<String> stringSet = asSet(stringList);
 
-    //Test cast
-    assertEquals(stringList, CollectionConverter.COLLECTION(ArrayList.class).apply(stringList));
+      //Test cast
+      assertEquals(stringList, CollectionConverter.COLLECTION(ArrayList.class).apply(stringList));
 
-    //Test collection conversion
-    assertEquals(stringList, CollectionConverter.COLLECTION(ArrayList.class).apply(stringSet));
+      //Test collection conversion
+      assertEquals(stringList, CollectionConverter.COLLECTION(ArrayList.class).apply(stringSet));
 
-    //Test conversion
-    assertEquals(stringList, CollectionConverter.COLLECTION(ArrayList.class).apply("A,B,C"));
-
-
-    //Check that no conversion is done
-    assertNotEquals(stringList, CollectionConverter.COLLECTION(Set.class).apply(new char[]{'A', 'B', 'C'}));
-
-    assertNotEquals(stringList, CollectionConverter.COLLECTION(ArrayList.class).apply(new int[]{'A', 'B', 'C'}));
-
-  }
-
-  @Test
-  public void testComponentConversionCollection() throws Exception {
-    //Null
-    assertNull(CollectionConverter.COLLECTION(List.class, String.class).apply(null));
-    assertNull(CollectionConverter.COLLECTION(null, String.class).apply("1"));
-    assertNull(CollectionConverter.COLLECTION(HashSet.class, null).apply("1"));
+      //Test conversion
+      assertEquals(stringList, CollectionConverter.COLLECTION(ArrayList.class).apply("A,B,C"));
 
 
-    List<String> stringList = Lists.newArrayList("A", "B", "C");
-    List<Integer> integerList = Lists.newArrayList(1,3,4);
-    Set<String> stringSet = Sets.newHashSet(stringList);
+      //Check that no conversion is done
+      assertNotEquals(stringList, CollectionConverter.COLLECTION(Set.class).apply(new char[]{'A', 'B', 'C'}));
 
-    //Test cast
-    assertEquals(stringList, CollectionConverter.COLLECTION(ArrayList.class,String.class).apply(stringList));
+      assertNotEquals(stringList, CollectionConverter.COLLECTION(ArrayList.class).apply(new int[]{'A', 'B', 'C'}));
 
-    //Test collection conversion
-    assertEquals(stringList, CollectionConverter.COLLECTION(ArrayList.class,String.class).apply(stringSet));
+   }
+
+   @Test
+   public void iterator() throws Exception {
+      Iterator<?> itr = Convert.convert("1,2,3", Iterator.class);
+      assertTrue(itr.hasNext());
+      assertEquals("1", itr.next());
+      assertTrue(itr.hasNext());
+      assertEquals("2", itr.next());
+      assertTrue(itr.hasNext());
+      assertEquals("3", itr.next());
+      assertFalse(itr.hasNext());
+   }
+
+   @Test
+   public void testComponentConversionCollection() throws Exception {
+      //Null
+      assertNull(CollectionConverter.COLLECTION(List.class, String.class).apply(null));
+      assertNull(CollectionConverter.COLLECTION(null, String.class).apply("1"));
+
+      assertEquals(Sets.set("1"), CollectionConverter.COLLECTION(HashSet.class, null).apply("1"));
 
 
-    //Test conversion
-    assertEquals(integerList, CollectionConverter.COLLECTION(ArrayList.class,Integer.class).apply("1,3,4.678"));
+      List<String> stringList = list("A", "B", "C");
+      List<Integer> integerList = list(1, 3, 4);
+      Set<String> stringSet = asSet(stringList);
+
+      //Test cast
+      assertEquals(stringList, CollectionConverter.COLLECTION(ArrayList.class, String.class).apply(stringList));
+
+      //Test collection conversion
+      assertEquals(stringList, CollectionConverter.COLLECTION(ArrayList.class, String.class).apply(stringSet));
 
 
-    //Check failed conversion
-    assertNull(CollectionConverter.COLLECTION(Set.class, Integer.class).apply(new Object[]{new ArrayList<>()}));
+      //Test conversion
+      assertEquals(integerList, CollectionConverter.COLLECTION(ArrayList.class, Integer.class).apply("1,3,4.678"));
 
 
-    //Val
-    assertEquals(integerList, Val.of("1,3,4.678").asList(Integer.class));
-    assertEquals(Sets.newHashSet(integerList), Val.of("1,3,4.678").asSet(Integer.class));
-    assertEquals(integerList, Val.of("1,3,4.678").asCollection(LinkedList.class, Integer.class));
-    assertEquals(Sets.newLinkedHashSet(integerList), Val.of("1,3,4.678").asCollection(LinkedHashSet.class, Integer.class));
-    assertEquals(integerList, Val.of("1,3,4.678").asCollection(Queue.class, Integer.class));
-    assertEquals(integerList, Val.of("1,3,4.678").asCollection(Deque.class, Integer.class));
-    assertEquals(integerList, Val.of("1,3,4.678").asCollection(Stack.class, Integer.class));
-  }
+      //Check failed conversion
+      assertNull(CollectionConverter.COLLECTION(Set.class, Integer.class).apply(new Object[]{new ArrayList<>()}));
+
+
+      //Val
+      assertEquals(integerList, Val.of("1,3,4.678").asList(Integer.class));
+      assertEquals(asLinkedHashSet(integerList), Val.of("1,3,4.678").asSet(Integer.class));
+      assertEquals(integerList, Val.of("1,3,4.678").asCollection(LinkedList.class, Integer.class));
+      assertEquals(asLinkedHashSet(integerList),
+                   Val.of("1,3,4.678").asCollection(LinkedHashSet.class, Integer.class));
+      assertEquals(integerList, Val.of("1,3,4.678").asCollection(Queue.class, Integer.class));
+      assertEquals(integerList, Val.of("1,3,4.678").asCollection(Deque.class, Integer.class));
+      assertEquals(integerList, Val.of("1,3,4.678").asCollection(Stack.class, Integer.class));
+   }
 
 }//END OF CollectionConverterTest

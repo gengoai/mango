@@ -22,81 +22,81 @@
 package com.davidbracewell;
 
 import com.davidbracewell.conversion.Cast;
-import com.davidbracewell.string.StringUtils;
+import lombok.NonNull;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.davidbracewell.EnumValue.normalize;
+
 /**
- * <p>Allows for additions to the set of enumed values. Standard usage is to extend {@link EnumValue}
- * and have a static <code>DynamicEnum</code> field in the extended class.</p>
+ * <p>Acts a global repository for dynamically generated {@link EnumValue}s. Each EnumValue acts like a Java
+ * <code>enum</code> that can have elements created at runtime. Most interactions should be done with {@link EnumValue}
+ * implementations.</p>
  *
- * @param <E> the type parameter
  * @author David B. Bracewell
  */
-public final class DynamicEnum<E extends EnumValue> implements Serializable {
+public final class DynamicEnum implements Serializable {
+   private static final long serialVersionUID = 1L;
 
-  private static final long serialVersionUID = 1L;
-  private volatile ConcurrentHashMap<String, E> values = new ConcurrentHashMap<>();
-
-  /**
-   * Normalizes the string.
-   *
-   * @param input the input
-   * @return the string
-   */
-  public static String normalize(String input) {
-    return StringUtils.trim(input.toUpperCase()).replaceAll(StringUtils.MULTIPLE_WHITESPACE, "_");
-  }
-
-  /**
-   * Registers an enum value into the enum
-   *
-   * @param value the enum value
-   * @return the e
-   */
-  public final E register(E value) {
-    values.putIfAbsent(value.name(), Cast.<E>as(value));
-    return values.get(value.name());
-  }
+   private static final Map<String, EnumValue> GLOBAL_REPOSITORY = new ConcurrentHashMap<>();
 
 
-  /**
-   * Gets the enum value associated with a name or throws an <code>IllegalArgumentException</code> if the name is
-   * invalid.
-   *
-   * @param name the name whose enum value we want.
-   * @return the enum value
-   */
-  public final E valueOf(String name) {
-    String norm = normalize(name);
-    if (values.containsKey(norm)) {
-      return values.get(norm);
-    }
-    throw new IllegalArgumentException(norm + " is not a valid enum value");
-  }
+   private DynamicEnum() {
+      throw new IllegalAccessError();
+   }
 
+   private static String toKey(@NonNull Class<? extends EnumValue> enumClass, String name) {
+      if( name.startsWith(enumClass.getCanonicalName())){
+         return name;
+      }
+      return enumClass.getCanonicalName() + "." + normalize(name);
+   }
 
-  /**
-   * Determines if an enum value for the given name is defined or not
-   *
-   * @param name the name of the enum value
-   * @return True if an enum value exists with the given name, False otherwise
-   */
-  public final boolean isDefined(String name) {
-    return values.containsKey(normalize(name));
-  }
+   /**
+    * <p>Determines if the specified name is a defined value of the specified {@link EnumValue} class}.</p>
+    *
+    * @param enumClass Class information for the EnumValue that we will check.
+    * @param name      the name of the specified value
+    * @return True if the specified value has been defined for the given EnumValue class
+    * @throws NullPointerException if either the enumClass or name are null
+    */
+   public static boolean isDefined(@NonNull Class<? extends EnumValue> enumClass, @NonNull String name) {
+      return GLOBAL_REPOSITORY.containsKey(toKey(enumClass, name));
+   }
 
-  /**
-   * All enum values known for this enum
-   *
-   * @return the collection of enum values
-   */
-  public final Collection<E> values() {
-    return Collections.unmodifiableCollection(values.values());
-  }
+   /**
+    * <p>Returns the constant of the given {@link EnumValue} class  with the specified name.The normalized version of the
+    * specified name will be matched allowing for case and space variations.</p>
+    *
+    * @param <T>       Specific type of EnumValue being looked up
+    * @param enumClass Class information for the EnumValue that we will check.
+    * @param name      the name of the specified value
+    * @return The constant of enumClass with the specified name
+    * @throws IllegalArgumentException if the specified name is not a member of enumClass.
+    * @throws NullPointerException     if either the enumClass or name are null
+    */
+   public static <T extends EnumValue> T valueOf(@NonNull Class<T> enumClass, @NonNull String name) {
+      String key = toKey(enumClass, name);
+      T toReturn = Cast.as(GLOBAL_REPOSITORY.get(key));
+      if (toReturn == null) {
+         throw new IllegalArgumentException("No enum constant " + key);
+      }
+      return toReturn;
+   }
 
+   /**
+    * <p>Attempts to register a given {@link EnumValue} instance to its associated class type. If an instance with the
+    * same name has already been registered, that instance will be returned.</p>
+    *
+    * @param <T>       Specific type of EnumValue being registered
+    * @param enumValue the value to register
+    * @return the previously defined EnumValue with specified name and type or the one passed into register
+    * @throws NullPointerException if enumValue is null
+    */
+   public static <T extends EnumValue> T register(@NonNull T enumValue) {
+      return Cast.as(GLOBAL_REPOSITORY.computeIfAbsent(enumValue.canonicalName(), s -> enumValue));
+   }
 
 }//END OF DynamicEnum

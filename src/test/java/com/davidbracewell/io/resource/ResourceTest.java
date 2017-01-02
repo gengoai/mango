@@ -22,11 +22,11 @@
 package com.davidbracewell.io.resource;
 
 import com.davidbracewell.io.Resources;
-import com.google.common.base.Charsets;
 import org.junit.Test;
 
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -51,7 +51,7 @@ public class ResourceTest {
     r = Resources.from("bytes[isCompressed=true, charset=UTF-8]:");
     assertTrue(r instanceof ByteArrayResource);
     assertTrue(r.isCompressed());
-    assertTrue(r.getCharset() == Charsets.UTF_8);
+    assertTrue(r.getCharset() == StandardCharsets.UTF_8);
   }
 
   @Test

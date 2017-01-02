@@ -40,68 +40,59 @@ import java.util.logging.LogRecord;
 
 
 /**
- * <p> Custom logging formatter for Espresso. </p>
+ * <p>Custom logging formatter in the form <code>[time] [level] [class:line] message</code>. The class name and line
+ * number only show on warning and severe level.</p>
  *
  * @author David B. Bracewell
  */
 public class LogFormatter extends Formatter {
 
-  private final DateFormat dateFormatter = new SimpleDateFormat("H:mm:ss");
+   private final DateFormat dateFormatter = new SimpleDateFormat("H:mm:ss");
 
-  @Override
-  public String format(LogRecord arg0) {
-    StringBuilder msg = new StringBuilder();
+   @Override
+   public String format(LogRecord arg0) {
+      StringBuilder msg = new StringBuilder();
+      String className;
+      int lineNumber = -1;
 
-    StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-    String className = null;
-    int lineNumber = -1;
-
-    Throwable thrown = arg0.getThrown();
-
-    if (thrown == null) {
-      // No Throwable so guess the class and method names
-      for (int i = 1; i < stackTrace.length; i++) {
-        StackTraceElement element = stackTrace[i];
-        if (!element.getClassName().startsWith("com.davidbracewell.logging")
-            && !element.getClassName().startsWith("java.util.logging")) {
-          className = element.getClassName();
-          lineNumber = element.getLineNumber();
-          break;
-        }
+      Throwable thrown = arg0.getThrown();
+      if (thrown == null) {
+         className = arg0.getSourceClassName();
+      } else {
+         StackTraceElement element = thrown.getStackTrace()[0];
+         className = element.getClassName();
+         lineNumber = element.getLineNumber();
       }
-    } else {
-      StackTraceElement element = thrown.getStackTrace()[0];
-      className = element.getClassName();
-      lineNumber = element.getLineNumber();
-    }
 
-    Date date = new Date();
-    date.setTime(arg0.getMillis());
-    msg.append('[')
-        .append(dateFormatter.format(date))
-        .append("] [")
-        .append(arg0.getLevel())
-        .append("] ");
+      Date date = new Date();
+      date.setTime(arg0.getMillis());
+      msg.append('[')
+         .append(dateFormatter.format(date))
+         .append("] [")
+         .append(arg0.getLevel())
+         .append("] ");
 
-    if( arg0.getLevel().intValue() > Level.INFO.intValue()){
-      msg.append("[")
-          .append(className)
-          .append(':')
-          .append(lineNumber)
-          .append("] ");
-    }
-    msg.append(MessageFormat.format(arg0.getMessage(), arg0.getParameters()));
+      if (arg0.getLevel() == Level.WARNING || arg0.getLevel() == Level.SEVERE) {
+         msg.append("[")
+            .append(className);
+         if (lineNumber >= 0) {
+            msg.append(':')
+               .append(lineNumber)
+               .append("] ");
+         }
+      }
+      msg.append(MessageFormat.format(arg0.getMessage(), arg0.getParameters()));
 
-    if (thrown != null) {
-      StringWriter sw = new StringWriter();
-      thrown.printStackTrace(new PrintWriter(sw));
-      msg.append(sw.toString());
-      QuietIO.closeQuietly(sw);
-    } else {
-      msg.append(SystemInfo.LINE_SEPARATOR);
-    }
+      if (thrown != null) {
+         StringWriter sw = new StringWriter();
+         thrown.printStackTrace(new PrintWriter(sw));
+         msg.append(sw.toString());
+         QuietIO.closeQuietly(sw);
+      } else {
+         msg.append(SystemInfo.LINE_SEPARATOR);
+      }
 
-    return msg.toString();
-  }
+      return msg.toString();
+   }
 
 }//END OF LogFormatter

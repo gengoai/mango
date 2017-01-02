@@ -22,10 +22,9 @@
 package com.davidbracewell.io;
 
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.io.structured.csv.CSVReader;
-import com.davidbracewell.io.structured.csv.CSVWriter;
 import com.davidbracewell.reflection.Specification;
 import com.davidbracewell.string.CSVFormatter;
+import lombok.NonNull;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -35,221 +34,275 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * The type Csv.
+ * <p>Specification of a delimited separated file, or more commonly refereed to as CSV. Provides methods to build a CSV
+ * specification and then create a reader, writer, or formatter.</p>
  *
  * @author David B. Bracewell
  */
 public class CSV implements Specification, Serializable {
+   private static final long serialVersionUID = 1L;
 
-  private static final long serialVersionUID = 1L;
+   private char comment = '#';
+   private char delimiter = ',';
+   private char escape = '\\';
+   private boolean keepEmptyCells = true;
+   private char quote = '\"';
+   private boolean hasHeader = false;
+   private List<String> header = null;
 
-  char comment = '#';
-  char delimiter = ',';
-  char escape = '\\';
-  boolean keepEmptyCells = true;
-  char quote = '\"';
-  boolean hasHeader = false;
-  List<String> header = null;
 
-  /**
-   * Builder csv.
-   *
-   * @return the csv
-   */
-  public static CSV builder() {
-    return new CSV();
-  }
+   /**
+    * <p>Convenience method for quickly retrieving a csv version of a CSV builder</p>
+    *
+    * @return the csv builder builder with delimiter set to a comma character
+    */
+   public static CSV csv() {
+      return CSV.builder();
+   }
 
-  public CSV hasHeader() {
-    hasHeader = true;
-    return this;
-  }
+   /**
+    * <p>Convenience method for quickly retrieving a tsv version of a CSV builder</p>
+    *
+    * @return the csv builder builder with delimiter set to a tab character
+    */
+   public static CSV tsv() {
+      return CSV.builder().delimiter('\t');
+   }
 
-  public CSV hasHeader(boolean hasHeader) {
-    hasHeader = hasHeader;
-    return this;
-  }
+   /**
+    * <p>Creates a CSV builder object</p>
+    *
+    * @return the csv builder builder object
+    */
+   public static CSV builder() {
+      return new CSV();
+   }
 
-  public CSV noHeader() {
-    hasHeader = false;
-    return this;
-  }
+   /**
+    * Specifies that the CSV file has a header.
+    *
+    * @return the csv builder builder
+    */
+   public CSV hasHeader() {
+      return hasHeader(true);
+   }
 
-  public CSV header(String... items) {
-    this.header = (items == null ? null : Arrays.asList(items));
-    return this;
-  }
+   /**
+    * Specifies whether or not the CSV file has a header.
+    *
+    * @param hasHeader true the csv has a header, false it does not
+    * @return the csv builder
+    */
+   public CSV hasHeader(boolean hasHeader) {
+      this.hasHeader = hasHeader;
+      return this;
+   }
 
-  public CSV header(List<String> items) {
-    this.header = items;
-    return this;
-  }
+   /**
+    * Specifies the names of the items in the CSV header.
+    *
+    * @param items the names of the columns (i.e. header names)
+    * @return the csv builder
+    */
+   public CSV header(String... items) {
+      this.header = (items == null ? null : Arrays.asList(items));
+      if (header != null && header.size() > 0) {
+         this.hasHeader = true;
+      }
+      return this;
+   }
 
-  public boolean getHasHeader() {
-    return hasHeader;
-  }
+   /**
+    * Specifies the names of the items in the CSV header.
+    *
+    * @param items the names of the columns (i.e. header names)
+    * @return the csv builder
+    */
+   public CSV header(List<String> items) {
+      this.header = items;
+      if (header != null && header.size() > 0) {
+         this.hasHeader = true;
+      }
+      return this;
+   }
 
-  public List<String> getHeader() {
-    return header;
-  }
+   /**
+    * Determines if the CSV file is expected to have a header or not
+    *
+    * @return True if the first line of the csv file is the header, false if there is no header
+    */
+   public boolean getHasHeader() {
+      return hasHeader;
+   }
 
-  /**
-   * Comment csv.
-   *
-   * @param commentChar the comment char
-   * @return the csv
-   */
-  public CSV comment(char commentChar) {
-    this.comment = commentChar;
-    return this;
-  }
+   /**
+    * Gets the name of the column headers.
+    *
+    * @return the names of the column headers
+    */
+   public List<String> getHeader() {
+      return header;
+   }
 
-  /**
-   * Delimiter csv.
-   *
-   * @param delimiter the delimiter
-   * @return the csv
-   */
-  public CSV delimiter(char delimiter) {
-    this.delimiter = delimiter;
-    return this;
-  }
+   /**
+    * Sets the character that signifies a comment
+    *
+    * @param commentChar the comment char
+    * @return the csv builder
+    */
+   public CSV comment(char commentChar) {
+      this.comment = commentChar;
+      return this;
+   }
 
-  /**
-   * Escape csv.
-   *
-   * @param escape the escape
-   * @return the csv
-   */
-  public CSV escape(char escape) {
-    this.escape = escape;
-    return this;
-  }
+   /**
+    * Sets the delimiter character
+    *
+    * @param delimiter the delimiter
+    * @return the csv builder
+    */
+   public CSV delimiter(char delimiter) {
+      this.delimiter = delimiter;
+      return this;
+   }
 
-  /**
-   * Quote csv.
-   *
-   * @param quote the quote
-   * @return the csv
-   */
-  public CSV quote(char quote) {
-    this.quote = quote;
-    return this;
-  }
+   /**
+    * Sets the escape character
+    *
+    * @param escape the escape
+    * @return the csv builder
+    */
+   public CSV escape(char escape) {
+      this.escape = escape;
+      return this;
+   }
 
-  /**
-   * Keep empty cells.
-   *
-   * @return the csv
-   */
-  public CSV keepEmptyCells() {
-    this.keepEmptyCells = true;
-    return this;
-  }
+   /**
+    * Sets the quote character
+    *
+    * @param quote the quote
+    * @return the csv builder
+    */
+   public CSV quote(char quote) {
+      this.quote = quote;
+      return this;
+   }
 
-  /**
-   * Remove empty cells.
-   *
-   * @return the csv
-   */
-  public CSV removeEmptyCells() {
-    this.keepEmptyCells = false;
-    return this;
-  }
+   /**
+    * Specifies that empty cells should be kept
+    *
+    * @return the csv builder
+    */
+   public CSV keepEmptyCells() {
+      this.keepEmptyCells = true;
+      return this;
+   }
 
-  /**
-   * Build cSV reader.
-   *
-   * @param reader the reader
-   * @return the cSV reader
-   */
-  public CSVReader reader(Reader reader) throws IOException {
-    return new CSVReader(this, reader);
-  }
+   /**
+    * Specifies that empty cells should be removed
+    *
+    * @return the csv builder
+    */
+   public CSV removeEmptyCells() {
+      this.keepEmptyCells = false;
+      return this;
+   }
 
-  /**
-   * Reader cSV reader.
-   *
-   * @param resource the resource
-   * @return the cSV reader
-   * @throws IOException the iO exception
-   */
-  public CSVReader reader(Resource resource) throws IOException {
-    return reader(resource.reader());
-  }
+   /**
+    * Creates a CSVReader using this specification from a given reader
+    *
+    * @param reader the reader to wrap
+    * @return The CSVReader
+    * @throws IOException Something went wrong initializing the reader
+    */
+   public CSVReader reader(@NonNull Reader reader) throws IOException {
+      return new CSVReader(this, reader);
+   }
 
-  /**
-   * Writer cSV writer.
-   *
-   * @param writer the writer
-   * @return the cSV writer
-   */
-  public CSVWriter writer(Writer writer) throws IOException {
-    return new CSVWriter(this, writer);
-  }
+   /**
+    * Creates a CSVReader using this specification from a given resource
+    *
+    * @param resource the resource to read from
+    * @return The CSVReader
+    * @throws IOException Something went wrong initializing the resource
+    */
+   public CSVReader reader(Resource resource) throws IOException {
+      return reader(resource.reader());
+   }
 
-  /**
-   * Writer cSV writer.
-   *
-   * @param resource the resource
-   * @return the cSV writer
-   * @throws IOException the iO exception
-   */
-  public CSVWriter writer(Resource resource) throws IOException {
-    return writer(resource.writer());
-  }
+   /**
+    * Creates a CSVWriter using this specification from a given writer
+    *
+    * @param writer the writer to wrap
+    * @return The CSVWriter
+    * @throws IOException Something went wrong initializing the writer
+    */
+   public CSVWriter writer(Writer writer) throws IOException {
+      return new CSVWriter(this, writer);
+   }
 
-  /**
-   * Formatter cSV formatter.
-   *
-   * @return the cSV formatter
-   */
-  public CSVFormatter formatter() {
-    return new CSVFormatter(this);
-  }
+   /**
+    * Creates a CSVWriter using this specification from a given resource
+    *
+    * @param resource the resource to write to
+    * @return The CSVWriter
+    * @throws IOException Something went wrong initializing the resource
+    */
+   public CSVWriter writer(Resource resource) throws IOException {
+      return writer(resource.writer());
+   }
 
-  /**
-   * Gets comment.
-   *
-   * @return the comment
-   */
-  public char getComment() {
-    return comment;
-  }
+   /**
+    * Creates a CSVFormatter using this specification
+    *
+    * @return the CSVFormatter
+    */
+   public CSVFormatter formatter() {
+      return new CSVFormatter(this);
+   }
 
-  /**
-   * Gets delimiter.
-   *
-   * @return the delimiter
-   */
-  public char getDelimiter() {
-    return delimiter;
-  }
+   /**
+    * Gets the comment character.
+    *
+    * @return the comment character.
+    */
+   public char getComment() {
+      return comment;
+   }
 
-  /**
-   * Gets escape.
-   *
-   * @return the escape
-   */
-  public char getEscape() {
-    return escape;
-  }
+   /**
+    * Gets the delimiter character.
+    *
+    * @return the delimiter character
+    */
+   public char getDelimiter() {
+      return delimiter;
+   }
 
-  /**
-   * Is keep empty cells.
-   *
-   * @return the boolean
-   */
-  public boolean isKeepEmptyCells() {
-    return keepEmptyCells;
-  }
+   /**
+    * Gets the escape character.
+    *
+    * @return the escape character
+    */
+   public char getEscape() {
+      return escape;
+   }
 
-  /**
-   * Gets quote.
-   *
-   * @return the quote
-   */
-  public char getQuote() {
-    return quote;
-  }
+   /**
+    * Determines if empty cells should be kept or not
+    *
+    * @return True if empty cells are kept, False if they are removed
+    */
+   public boolean isKeepEmptyCells() {
+      return keepEmptyCells;
+   }
+
+   /**
+    * Gets the quote character.
+    *
+    * @return the quote character
+    */
+   public char getQuote() {
+      return quote;
+   }
 }//END OF CSV

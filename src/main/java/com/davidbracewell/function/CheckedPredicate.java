@@ -24,13 +24,13 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of Predicate that is serializable
+ * Version of Predicate that is serializable and checked
  *
  * @param <T> Functional parameter
  */
 @FunctionalInterface
 public interface CheckedPredicate<T> extends Serializable {
 
-  boolean test(T t) throws Throwable;
+   boolean test(T t) throws Throwable;
 
 }//END OF CheckedPredicate

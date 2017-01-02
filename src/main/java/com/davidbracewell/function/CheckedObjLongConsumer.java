@@ -24,13 +24,13 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of ObjLongConsumer that is serializable
+ * Version of ObjLongConsumer that is serializable and checked
  *
  * @param <T> Functional parameter
  */
 @FunctionalInterface
 public interface CheckedObjLongConsumer<T> extends Serializable {
 
-  void accept(T t, long value) throws Throwable;
+   void accept(T t, long value) throws Throwable;
 
 }//END OF CheckedObjLongConsumer

@@ -21,7 +21,6 @@
 
 package com.davidbracewell.conversion;
 
-import com.davidbracewell.function.SerializableFunction;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -39,6 +38,7 @@ import java.util.*;
 public final class Cast {
 
   private Cast() {
+    throw new IllegalAccessError();
   }
 
   /**
@@ -67,30 +67,6 @@ public final class Cast {
     } catch (Exception e) {
       return null;
     }
-  }
-
-  /**
-   * Creates a casting function that casts objects from one type to another using {@link #as(Object)}.
-   *
-   * @param <F> the type parameter
-   * @param <T> the type parameter
-   * @return A Function for casting objects to other types
-   */
-  public static <F, T> SerializableFunction<? super F, T> castingFunction() {
-    return input -> Cast.as(input);
-  }
-
-
-  /**
-   * Creates a casting function that casts objects from one type to another using {@link #as(Object, Class)}.
-   *
-   * @param <F>   the type parameter
-   * @param <T>   the type parameter
-   * @param clazz The class to cast to
-   * @return A Function for casting objects to other types
-   */
-  public static <F, T> SerializableFunction<? super F, T> castingFunction(@NonNull final Class<? extends T> clazz) {
-    return input -> Cast.as(input, clazz);
   }
 
   /**

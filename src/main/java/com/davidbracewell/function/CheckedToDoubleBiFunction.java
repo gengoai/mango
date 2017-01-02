@@ -24,7 +24,7 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of ToDoubleBiFunction that is serializable
+ * Version of ToDoubleBiFunction that is serializable and checked
  *
  * @param <T> Functional parameter
  * @param <U> Functional parameter
@@ -32,6 +32,6 @@ import java.io.Serializable;
 @FunctionalInterface
 public interface CheckedToDoubleBiFunction<T, U> extends Serializable {
 
-  double applyAsDouble(T t, U u) throws Throwable;
+   double applyAsDouble(T t, U u) throws Throwable;
 
 }//END OF CheckedToDoubleBiFunction

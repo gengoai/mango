@@ -40,8 +40,8 @@ public class SortingTest {
     String s2 = "a";
     String s3 = "b";
     String s4 = "b";
-    assertEquals(Sorting.hashCodeComparator().compare(s1, s2), -1);
-    assertEquals(Sorting.hashCodeComparator().compare(s2, s1), 1);
+    assertEquals(Sorting.hashCodeComparator().compare(s1, s2), 1);
+    assertEquals(Sorting.hashCodeComparator().compare(s2, s1), -1);
     assertEquals(Sorting.hashCodeComparator().compare(s4, s3), 0);
   }
 

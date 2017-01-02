@@ -24,9 +24,9 @@ package com.davidbracewell.utils;
 import com.davidbracewell.application.CommandLineApplication;
 import com.davidbracewell.cli.Option;
 import com.davidbracewell.io.CSV;
+import com.davidbracewell.io.CSVReader;
+import com.davidbracewell.io.CSVWriter;
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.io.structured.csv.CSVReader;
-import com.davidbracewell.io.structured.csv.CSVWriter;
 
 import java.util.List;
 

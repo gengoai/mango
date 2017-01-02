@@ -37,7 +37,7 @@ public class BlockingThreadPoolExecutorTest {
 
     @Override
     public void run() {
-      Threads.sleep(1000);
+      Threads.sleep(100);
       ai.incrementAndGet();
     }
   }

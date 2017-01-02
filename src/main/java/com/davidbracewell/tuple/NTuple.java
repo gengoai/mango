@@ -1,7 +1,7 @@
 package com.davidbracewell.tuple;
 
 import com.davidbracewell.conversion.Cast;
-import com.google.common.base.Joiner;
+import com.davidbracewell.string.StringUtils;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -84,7 +84,7 @@ public class NTuple extends Tuple {
 
   @Override
   public String toString() {
-    return "(" + Joiner.on(',').join(array) + ")";
+    return StringUtils.join(array(), ", ", "(", ")");
   }
 
 }// END OF NTuple

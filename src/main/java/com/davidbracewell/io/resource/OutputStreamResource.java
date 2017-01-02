@@ -21,40 +21,44 @@
 
 package com.davidbracewell.io.resource;
 
+import lombok.NonNull;
+
 import java.io.IOException;
 import java.io.OutputStream;
 
 /**
+ * Resource that wraps an <Code>OutputStream</Code>
+ *
  * @author David B. Bracewell
  */
 public class OutputStreamResource extends BaseResource implements WriteOnlyResource, NonTraversableResource {
 
-  private static final long serialVersionUID = 1233692902217463488L;
-  private final OutputStream outputStream;
+   private static final long serialVersionUID = 1233692902217463488L;
+   private final OutputStream outputStream;
 
-  /**
-   * Default Constructor
-   *
-   * @param stream The output stream
-   */
-  public OutputStreamResource(OutputStream stream) {
-    this.outputStream = stream;
-  }
+   /**
+    * Instantiates a new Output stream resource.
+    *
+    * @param stream the output stream to wrap
+    */
+   public OutputStreamResource(@NonNull OutputStream stream) {
+      this.outputStream = stream;
+   }
 
-  @Override
-  public boolean exists() {
-    return true;
-  }
+   @Override
+   public boolean exists() {
+      return true;
+   }
 
-  @Override
-  public OutputStream createOutputStream() throws IOException {
-    return outputStream;
-  }
+   @Override
+   public OutputStream createOutputStream() throws IOException {
+      return outputStream;
+   }
 
-  @Override
-  public Resource append(byte[] byteArray) throws IOException {
-    outputStream.write(byteArray);
-    return this;
-  }
+   @Override
+   public Resource append(byte[] byteArray) throws IOException {
+      outputStream.write(byteArray);
+      return this;
+   }
 
 }//END OF OutputStreamResource

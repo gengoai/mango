@@ -21,49 +21,51 @@
 
 package com.davidbracewell.parsing.handlers;
 
+import com.davidbracewell.parsing.ExpressionIterator;
 import com.davidbracewell.parsing.ParseException;
-import com.davidbracewell.parsing.Parser;
 import com.davidbracewell.parsing.ParserToken;
 import com.davidbracewell.parsing.ParserTokenType;
 import com.davidbracewell.parsing.expressions.Expression;
 import com.davidbracewell.parsing.expressions.MethodCallExpression;
-import com.google.common.collect.Lists;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * An <code>InfixHandler</code> for method calls.
+ * <p>Creates {@link MethodCallExpression}s where the current token denotes the token type the signifies a method call
+ * and the left token is the method name. The handler will capture expressions separated by the defined
+ * <code>methodArgumentSeparator</code> until the <code>methodParamEnd</code> token type is reached.</p>
  *
  * @author David B. Bracewell
  */
 public class MethodCallHandler extends InfixHandler {
+   private static final long serialVersionUID = 1L;
+   private final ParserTokenType methodParamEnd;
+   private final ParserTokenType methodArgumentSeparator;
 
-  private final ParserTokenType methodParamEnd;
-  private final ParserTokenType methodArgumentSeparator;
+   /**
+    * Default constructor
+    *
+    * @param precedence              The precedence of the handler
+    * @param methodParamEnd          The token type indicating the end of the method call
+    * @param methodArgumentSeparator The token type for the argument separator
+    */
+   public MethodCallHandler(int precedence, ParserTokenType methodParamEnd, ParserTokenType methodArgumentSeparator) {
+      super(precedence);
+      this.methodParamEnd = methodParamEnd;
+      this.methodArgumentSeparator = methodArgumentSeparator;
+   }
 
-  /**
-   * Default constructor
-   *
-   * @param precedence              The precedence of the handler
-   * @param methodParamEnd          The token type indicating the end of the method call
-   * @param methodArgumentSeparator The token type for the argument separator
-   */
-  public MethodCallHandler(int precedence, ParserTokenType methodParamEnd, ParserTokenType methodArgumentSeparator) {
-    super(precedence);
-    this.methodParamEnd = methodParamEnd;
-    this.methodArgumentSeparator = methodArgumentSeparator;
-  }
-
-  @Override
-  public Expression parse(Parser parser, Expression left, ParserToken token) throws ParseException {
-    List<Expression> args = Lists.newArrayList();
-    if (!parser.tokenStream().match(methodParamEnd)) {
-      do {
-        args.add(parser.next());
-      } while (parser.tokenStream().match(methodArgumentSeparator));
-      parser.tokenStream().consume(methodParamEnd);
-    }
-    return new MethodCallExpression(left.toString(), args, token.type);
-  }
+   @Override
+   public Expression parse(ExpressionIterator expressionIterator, Expression left, ParserToken token) throws ParseException {
+      List<Expression> args = new ArrayList<>();
+      if (!expressionIterator.tokenStream().match(methodParamEnd)) {
+         do {
+            args.add(expressionIterator.next());
+         } while (expressionIterator.tokenStream().match(methodArgumentSeparator));
+         expressionIterator.tokenStream().consume(methodParamEnd);
+      }
+      return new MethodCallExpression(left.toString(), args, token.type);
+   }
 
 }

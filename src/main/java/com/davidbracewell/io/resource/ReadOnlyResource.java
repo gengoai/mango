@@ -24,24 +24,26 @@ package com.davidbracewell.io.resource;
 import java.io.IOException;
 
 /**
+ * Defines a resource as being Read Only
+ *
  * @author David B. Bracewell
  */
 public interface ReadOnlyResource extends Resource {
 
-  @Override
-  default boolean canWrite() {
-    return false;
-  }
+   @Override
+   default boolean canWrite() {
+      return false;
+   }
 
-  @Override
-  default boolean canRead() {
-    return true;
-  }
+   @Override
+   default boolean canRead() {
+      return true;
+   }
 
-  @Override
-  default Resource append(byte[] byteArray) throws IOException {
-    throw new IllegalStateException("This is resource cannot be written to.");
-  }
+   @Override
+   default Resource append(byte[] byteArray) throws IOException {
+      throw new IllegalStateException("This is resource cannot be written to.");
+   }
 
 
 }//END OF ReadOnlyResource

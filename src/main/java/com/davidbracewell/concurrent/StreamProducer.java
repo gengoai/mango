@@ -26,20 +26,28 @@ import lombok.NonNull;
 import java.util.stream.Stream;
 
 /**
+ * <p>A producer implementation that produces items from a string</p>
+ *
+ * @param <V> the type of item being produced.
  * @author David B. Bracewell
  */
 public class StreamProducer<V> extends Broker.Producer<V> {
-  final Stream<V> stream;
+   private final Stream<V> stream;
 
-  public StreamProducer(@NonNull Stream<V> stream) {
-    this.stream = stream;
-  }
+   /**
+    * Instantiates a new Stream producer.
+    *
+    * @param stream the stream
+    */
+   public StreamProducer(@NonNull Stream<V> stream) {
+      this.stream = stream;
+   }
 
-  @Override
-  public void produce() {
-    start();
-    stream.forEach(this::yield);
-    stop();
-  }
+   @Override
+   public void produce() {
+      start();
+      stream.forEach(this::yield);
+      stop();
+   }
 
 }//END OF StreamProducer

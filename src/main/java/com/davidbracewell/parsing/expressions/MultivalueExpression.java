@@ -22,7 +22,7 @@
 package com.davidbracewell.parsing.expressions;
 
 import com.davidbracewell.parsing.ParserTokenType;
-import com.google.common.base.Joiner;
+import com.davidbracewell.string.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,7 +47,7 @@ public class MultivalueExpression extends Expression {
 
   @Override
   public String toString() {
-    return Joiner.on(" ").join(expressions);
+    return StringUtils.join(expressions, " ");
   }
 
 }//END OF MultivalueExpression

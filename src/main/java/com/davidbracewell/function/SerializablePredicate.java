@@ -34,27 +34,27 @@ import java.util.function.Predicate;
 @FunctionalInterface
 public interface SerializablePredicate<T> extends Predicate<T>, Serializable {
 
-  @Override
-  default SerializablePredicate<T> negate() {
-    return t -> !this.test(t);
-  }
+   @Override
+   default SerializablePredicate<T> negate() {
+      return t -> !this.test(t);
+   }
 
-  @Override
-  default SerializablePredicate<T> or(@NonNull Predicate<? super T> other) {
-    return t -> this.test(t) || other.test(t);
-  }
+   @Override
+   default SerializablePredicate<T> or(@NonNull Predicate<? super T> other) {
+      return t -> this.test(t) || other.test(t);
+   }
 
-  @Override
-  default SerializablePredicate<T> and(@NonNull Predicate<? super T> other) {
-    return t -> this.test(t) && other.test(t);
-  }
+   @Override
+   default SerializablePredicate<T> and(@NonNull Predicate<? super T> other) {
+      return t -> this.test(t) && other.test(t);
+   }
 
-  default SerializablePredicate<T> or(@NonNull SerializablePredicate<? super T> other) {
-    return t -> this.test(t) || other.test(t);
-  }
+   default SerializablePredicate<T> or(@NonNull SerializablePredicate<? super T> other) {
+      return t -> this.test(t) || other.test(t);
+   }
 
-  default SerializablePredicate<T> and(@NonNull SerializablePredicate<? super T> other) {
-    return t -> this.test(t) && other.test(t);
-  }
+   default SerializablePredicate<T> and(@NonNull SerializablePredicate<? super T> other) {
+      return t -> this.test(t) && other.test(t);
+   }
 
 }//END OF SerializablePredicate

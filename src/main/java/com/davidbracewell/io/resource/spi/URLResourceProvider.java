@@ -25,10 +25,9 @@ import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.resource.URLResource;
 import com.davidbracewell.reflection.BeanMap;
-import com.google.common.base.Throwables;
+import lombok.SneakyThrows;
 import org.kohsuke.MetaInfServices;
 
-import java.net.MalformedURLException;
 import java.util.Map;
 
 /**
@@ -39,26 +38,22 @@ import java.util.Map;
 @MetaInfServices
 public class URLResourceProvider implements ResourceProvider {
 
-  @Override
-  public String[] getProtocols() {
-    return new String[]{"http", "https"};
-  }
+   @Override
+   public String[] getProtocols() {
+      return new String[]{"http", "https"};
+   }
 
-  @Override
-  public Resource createResource(String specification, Map<String, String> properties) {
-    BeanMap beanMap = null;
-    try {
-      beanMap = new BeanMap(new URLResource(specification));
-    } catch (MalformedURLException e) {
-      throw Throwables.propagate(e);
-    }
-    beanMap.putAll(properties);
-    return Cast.as(beanMap.getBean());
-  }
+   @Override
+   @SneakyThrows
+   public Resource createResource(String specification, Map<String, String> properties) {
+      BeanMap beanMap = new BeanMap(new URLResource(specification));
+      beanMap.putAll(properties);
+      return Cast.as(beanMap.getBean());
+   }
 
-  @Override
-  public boolean requiresProtocol() {
-    return true;
-  }
+   @Override
+   public boolean requiresProtocol() {
+      return true;
+   }
 
 }//END OF FileResourceProvider

@@ -23,7 +23,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.davidbracewell</groupId>
     <artifactId>mango</artifactId>
-    <version>0.3</version>
+    <version>0.4</version>
     <packaging>jar</packaging>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>A set of utilities and tools to speed up and ease programming in Java.</description>
@@ -41,7 +41,7 @@
         <connection>scm:git:git@github.com:dbracewell/mango.git</connection>
         <developerConnection>scm:git:git@github.com:dbracewell/mango.git</developerConnection>
         <url>git@github.com:dbracewell/mango.git</url>
-        <tag>mango-0.3</tag>
+        <tag>mango-0.4</tag>
     </scm>
 
     <developers>
@@ -73,12 +73,7 @@
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.6.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.ibm.icu</groupId>
-            <artifactId>icu4j</artifactId>
-            <version>57.1</version>
+            <version>2.7</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -86,9 +81,14 @@
             <version>19.0</version>
         </dependency>
         <dependency>
+            <groupId>com.ibm.icu</groupId>
+            <artifactId>icu4j</artifactId>
+            <version>58.2</version>
+        </dependency>
+        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.16.8</version>
+            <version>1.16.12</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -100,7 +100,15 @@
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_2.11</artifactId>
-            <version>1.6.1</version>
+            <version>2.0.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
+            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
@@ -139,6 +147,7 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
+                    <compilerArgument>-Xlint:unchecked</compilerArgument>
                 </configuration>
             </plugin>
             <plugin>
@@ -209,6 +218,51 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.4.3</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <createSourcesJar>false</createSourcesJar>
+                    <artifactSet>
+                        <includes>
+                            <artifact>com.google.guava:guava</artifact>
+                        </includes>
+                    </artifactSet>
+
+                    <filters>
+                        <filter>
+                            <!-- Modify the below patterns if a later guava
+                                 contains other packages
+                            -->
+                            <artifact>com.google.guava:guava</artifact>
+                            <includes>
+                                <include>com/google/common/**</include>
+                                <include>com/google/thirdparty/**</include>
+                            </includes>
+                        </filter>
+                    </filters>
+                    <relocations>
+                        <relocation>
+                            <pattern>com.google.common</pattern>
+                            <shadedPattern>com.davidbracewell.guava.common</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.google.thirdparty</pattern>
+                            <shadedPattern>com.davidbracewell.guava.thirdparty</shadedPattern>
+                        </relocation>
+                    </relocations>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 

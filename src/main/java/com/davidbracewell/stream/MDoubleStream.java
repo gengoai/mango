@@ -21,197 +21,277 @@
 
 package com.davidbracewell.stream;
 
+import com.davidbracewell.EnhancedDoubleStatistics;
 import com.davidbracewell.function.*;
 
 import java.util.OptionalDouble;
 import java.util.PrimitiveIterator;
 
 /**
- * The interface M double stream.
+ * <p>A facade for double stream classes, such as Java's <code>DoubleStream</code> and Spark's <code>DoubleRDD</code>
+ * objects. Provides a common interface to working with an manipulating streams regardless of their backend
+ * implementation. </p>
  *
  * @author David B. Bracewell
  */
 public interface MDoubleStream extends AutoCloseable {
 
-  /**
-   * Sum double.
-   *
-   * @return the double
-   */
-  double sum();
+   /**
+    * Determines if all doubles in the stream evaluate to true with the given predicate
+    *
+    * @param predicate the predicate to test double entries with
+    * @return True if all elements in the stream evaluate to true
+    */
+   boolean allMatch(SerializableDoublePredicate predicate);
 
-  /**
-   * First optional double.
-   *
-   * @return the optional double
-   */
-  OptionalDouble first();
+   /**
+    * Determines if any of the doubles in the stream evaluate to true with the given predicate
+    *
+    * @param predicate the predicate to test double entries with
+    * @return True if any of the elements in the stream evaluate to true
+    */
+   boolean anyMatch(SerializableDoublePredicate predicate);
 
-  /**
-   * Count long.
-   *
-   * @return the long
-   */
-  long count();
+   /**
+    * Caches the stream.
+    *
+    * @return the cached stream
+    */
+   MDoubleStream cache();
 
-  /**
-   * Map to obj m stream.
-   *
-   * @param <T>      the type parameter
-   * @param function the function
-   * @return the m stream
-   */
-  <T> MStream<T> mapToObj(SerializableDoubleFunction<? extends T> function);
+   /**
+    * The number of items in the stream
+    *
+    * @return the number of items in the stream
+    */
+   long count();
 
-  /**
-   * Distinct m double stream.
-   *
-   * @return the m double stream
-   */
-  MDoubleStream distinct();
+   /**
+    * Removes duplicates from the stream
+    *
+    * @return the new stream without duplicates
+    */
+   MDoubleStream distinct();
 
-  /**
-   * All match boolean.
-   *
-   * @param predicate the predicate
-   * @return the boolean
-   */
-  boolean allMatch(SerializableDoublePredicate predicate);
+   /**
+    * Filters the stream.
+    *
+    * @param predicate the predicate to use to determine which objects are kept
+    * @return the new stream
+    */
+   MDoubleStream filter(SerializableDoublePredicate predicate);
 
-  /**
-   * Any match boolean.
-   *
-   * @param predicate the predicate
-   * @return the boolean
-   */
-  boolean anyMatch(SerializableDoublePredicate predicate);
+   /**
+    * Gets the first item in the stream
+    *
+    * @return the optional containing the first item
+    */
+   OptionalDouble first();
 
-  /**
-   * None match boolean.
-   *
-   * @param predicate the predicate
-   * @return the boolean
-   */
-  boolean noneMatch(SerializableDoublePredicate predicate);
+   /**
+    * Maps the doubles in this stream to one or more new doubles using the given function.
+    *
+    * @param mapper the function to use to map objects
+    * @return the new stream
+    */
+   MDoubleStream flatMap(SerializableDoubleFunction<double[]> mapper);
 
-  /**
-   * Filter m double stream.
-   *
-   * @param predicate the predicate
-   * @return the m double stream
-   */
-  MDoubleStream filter(SerializableDoublePredicate predicate);
+   /**
+    * Performs an operation on each item in the stream
+    *
+    * @param consumer the consumer action to perform
+    */
+   void forEach(SerializableDoubleConsumer consumer);
 
-  /**
-   * For each.
-   *
-   * @param consumer the consumer
-   */
-  void forEach(SerializableDoubleConsumer consumer);
+   /**
+    * Gets the context used to create the stream
+    *
+    * @return the context
+    */
+   StreamingContext getContext();
 
-  /**
-   * Iterator primitive iterator . of double.
-   *
-   * @return the primitive iterator . of double
-   */
-  PrimitiveIterator.OfDouble iterator();
+   /**
+    * Gets the handler that is called when the stream is closed.
+    *
+    * @return the on close handler
+    */
+   SerializableRunnable getOnCloseHandler();
 
-  /**
-   * Limit m double stream.
-   *
-   * @param n the n
-   * @return the m double stream
-   */
-  MDoubleStream limit(int n);
+   /**
+    * Determines if the stream is empty or not
+    *
+    * @return True if empty, False otherwise
+    */
+   boolean isEmpty();
 
-  /**
-   * Skip m double stream.
-   *
-   * @param n the n
-   * @return the m double stream
-   */
-  MDoubleStream skip(int n);
+   /**
+    * Gets an iterator for the stream
+    *
+    * @return the iterator of items in the stream
+    */
+   PrimitiveIterator.OfDouble iterator();
 
-  /**
-   * Map m double stream.
-   *
-   * @param mapper the mapper
-   * @return the m double stream
-   */
-  MDoubleStream map(SerializableDoubleUnaryOperator mapper);
+   /**
+    * Limits the stream to the first <code>number</code> items.
+    *
+    * @param n the number of items desired
+    * @return the new stream of size <code>number</code>
+    */
+   MDoubleStream limit(int n);
 
-  /**
-   * Min optional double.
-   *
-   * @return the optional double
-   */
-  OptionalDouble min();
+   /**
+    * Maps the doubles in the stream using the given function
+    *
+    * @param mapper the function to use to map doubles
+    * @return the new stream
+    */
+   MDoubleStream map(SerializableDoubleUnaryOperator mapper);
 
-  /**
-   * Max optional double.
-   *
-   * @return the optional double
-   */
-  OptionalDouble max();
+   /**
+    * Maps the doubles in the stream to objects using the given function
+    *
+    * @param <T>      the component type of the returning stream
+    * @param function the function to use to map doubles
+    * @return the new stream
+    */
+   <T> MStream<T> mapToObj(SerializableDoubleFunction<? extends T> function);
 
-  /**
-   * Stddev double.
-   *
-   * @return the double
-   */
-  double stddev();
+   /**
+    * Returns the max item in the stream.
+    *
+    * @return the optional containing the max value
+    */
+   OptionalDouble max();
 
-  /**
-   * Mean double.
-   *
-   * @return the double
-   */
-  double mean();
+   /**
+    * The mean value of the stream
+    *
+    * @return the mean value
+    */
+   double mean();
 
-  /**
-   * Reduce optional double.
-   *
-   * @param operator the operator
-   * @return the optional double
-   */
-  OptionalDouble reduce(SerializableDoubleBinaryOperator operator);
+   /**
+    * Returns the min item in the stream.
+    *
+    * @return the optional containing the min value
+    */
+   OptionalDouble min();
 
-  /**
-   * Reduce double.
-   *
-   * @param zeroValue the zero value
-   * @param operator  the operator
-   * @return the double
-   */
-  double reduce(double zeroValue, SerializableDoubleBinaryOperator operator);
+   /**
+    * Determines if none of the doubles in the stream evaluate to true with the given predicate
+    *
+    * @param predicate the predicate to test double entries with
+    * @return True if none of the elements in the stream evaluate to true
+    */
+   boolean noneMatch(SerializableDoublePredicate predicate);
 
-  /**
-   * Sorted m double stream.
-   *
-   * @return the m double stream
-   */
-  MDoubleStream sorted();
+   /**
+    * Sets the handler to call when the stream is closed. Typically, this is to clean up any open resources, such as
+    * file handles.
+    *
+    * @param onCloseHandler the handler to run when the stream is closed.
+    */
+   void onClose(SerializableRunnable onCloseHandler);
 
-  /**
-   * To array double [ ].
-   *
-   * @return the double [ ]
-   */
-  double[] toArray();
+   /**
+    * Ensures that the stream is parallel or distributed.
+    *
+    * @return the new stream
+    */
+   MDoubleStream parallel();
 
-  /**
-   * Flat map m double stream.
-   *
-   * @param mapper the mapper
-   * @return the m double stream
-   */
-  MDoubleStream flatMap(SerializableDoubleFunction<double[]> mapper);
+   /**
+    * Performs a reduction on the elements of this stream using the given binary operator.
+    *
+    * @param operator the binary operator used to combine two objects
+    * @return the optional describing the reduction
+    */
+   OptionalDouble reduce(SerializableDoubleBinaryOperator operator);
 
-  /**
-   * Parallel m double stream.
-   *
-   * @return the m double stream
-   */
-  MDoubleStream parallel();
+   /**
+    * Performs a reduction on the elements of this stream using the given binary operator.
+    *
+    * @param zeroValue the starting value for the reduction
+    * @param operator  the binary operator used to combine two objects
+    * @return the optional describing the reduction
+    */
+   double reduce(double zeroValue, SerializableDoubleBinaryOperator operator);
+
+   /**
+    * Repartitions the stream to the given number of partitions. This may be a no-op for some streams, i.e. Local
+    * Streams.
+    *
+    * @param numberOfPartition the number of partitions the stream should have
+    * @return the new stream
+    */
+   MDoubleStream repartition(int numberOfPartition);
+
+   /**
+    * Skips the first <code>n</code> items in the stream
+    *
+    * @param n the number of items in the stream
+    * @return the new stream
+    */
+   MDoubleStream skip(int n);
+
+   /**
+    * Sorts the double stream in ascending order.
+    *
+    * @param ascending determines if the items should be sorted in ascending (true) or descending (false) order
+    * @return the new double stream
+    */
+   MDoubleStream sorted(boolean ascending);
+
+   /**
+    * Calculates a number of useful statistics over the elements in the stream
+    *
+    * @return the statistics
+    */
+   EnhancedDoubleStatistics statistics();
+
+   /**
+    * Calculates the standard deviation of the stream
+    *
+    * @return the standard deviation
+    */
+   double stddev();
+
+   /**
+    * Calculates the sum of the stream
+    *
+    * @return the sum
+    */
+   double sum();
+
+   /**
+    * Collects the values of the stream as a double array.
+    *
+    * @return the double array
+    */
+   double[] toArray();
+
+   /**
+    * Unions this stream with another
+    *
+    * @param other the other stream to append to this one
+    * @return the new double stream
+    */
+   MDoubleStream union(MDoubleStream other);
+
+   /**
+    * Can this stream be consumed more the once?
+    *
+    * @return True the stream can be reused multiple times, False the stream can only be used once
+    */
+   default boolean isReusable() {
+      return false;
+   }
+
+   /**
+    * Updates the config instance used for this String
+    */
+   default void updateConfig() {
+
+   }
 
 }//END OF MDoubleStream

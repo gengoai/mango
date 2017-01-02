@@ -15,7 +15,6 @@ package com.davidbracewell.config;
 import com.davidbracewell.parsing.*;
 import java.util.*;
 import java.io.*;
-import com.google.common.base.Throwables;
 
 %%
 

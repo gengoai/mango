@@ -25,35 +25,35 @@ import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.tuple.Tuple2;
 import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.davidbracewell.collection.map.Maps.map;
 import static org.junit.Assert.*;
 
 public class MapConverterTest {
 
-  @Test
-  public void testMapConvert() throws Exception {
-    assertNull(Convert.convert(null,BiMap.class, String.class, String.class));
+   @Test
+   public void testMapConvert() throws Exception {
+      assertNull(Convert.convert(null, BiMap.class, String.class, String.class));
 
-    //Map Conversion
-    Map<String,Integer> gold = ImmutableMap.<String,Integer>builder().put("A",1).build();
-    assertEquals(gold, Val.of(ImmutableMap.builder().put("A", "1").build()).asMap(String.class,Integer.class));
+      //Map Conversion
+      Map<String, Integer> gold = map("A", 1);
+      assertEquals(gold, Val.of(map("A", "1")).asMap(String.class, Integer.class));
 
-    //String conversion
-    assertEquals(gold, Val.of("{A=1}").asMap(String.class, Integer.class));
+      //String conversion
+      assertEquals(gold, Val.of("{A=1}").asMap(String.class, Integer.class));
 
-    //Entry conversion
-    assertEquals(gold, Val.of(Tuple2.of("A",1)).asMap(String.class, Integer.class));
+      //Entry conversion
+      assertEquals(gold, Val.of(Tuple2.of("A", 1)).asMap(String.class, Integer.class));
 
-    //Entry[] conversion
-    List<Tuple2<String,Integer>> list = new ArrayList<>();
-    list.add(Tuple2.of("A", 1));
-    assertEquals(gold, Val.of(list).asMap(String.class, Integer.class));
+      //Entry[] conversion
+      List<Tuple2<String, Integer>> list = new ArrayList<>();
+      list.add(Tuple2.of("A", 1));
+      assertEquals(gold, Val.of(list).asMap(String.class, Integer.class));
 
-  }
+   }
 }//END OF MapConverterTest

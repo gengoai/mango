@@ -24,31 +24,36 @@ package com.davidbracewell.io.resource;
 import java.io.IOException;
 
 /**
+ * An empty resource
+ *
  * @author David B. Bracewell
  */
 public class EmptyResource extends BaseResource implements NonTraversableResource {
-  private static final long serialVersionUID = 1L;
+   private static final long serialVersionUID = 1L;
 
-  public static final EmptyResource INSTANCE = new EmptyResource();
+   /**
+    * The singleton instance
+    */
+   public static final EmptyResource INSTANCE = new EmptyResource();
 
-  @Override
-  public Resource append(byte[] byteArray) throws IOException {
-    throw new IllegalStateException("This is resource cannot be written to.");
-  }
+   @Override
+   public Resource append(byte[] byteArray) throws IOException {
+      throw new IllegalStateException("This is resource cannot be written to.");
+   }
 
-  @Override
-  public boolean exists() {
-    return false;
-  }
+   @Override
+   public boolean exists() {
+      return false;
+   }
 
-  @Override
-  public boolean canWrite() {
-    return false;
-  }
+   @Override
+   public boolean canWrite() {
+      return false;
+   }
 
-  @Override
-  public boolean canRead() {
-    return false;
-  }
+   @Override
+   public boolean canRead() {
+      return false;
+   }
 
 }//END OF EmptyResource

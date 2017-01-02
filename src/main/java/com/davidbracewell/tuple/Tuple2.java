@@ -21,6 +21,7 @@
 
 package com.davidbracewell.tuple;
 
+import com.davidbracewell.conversion.Cast;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -57,6 +58,7 @@ public class Tuple2<K, V> extends Tuple implements Map.Entry<K, V> {
     this.v1 = v1;
     this.v2 = v2;
   }
+
 
   @Override
   public Tuple2<K, V> copy() {
@@ -101,33 +103,6 @@ public class Tuple2<K, V> extends Tuple implements Map.Entry<K, V> {
     return new Tuple2<>(key, value);
   }
 
-  /**
-   * Expand tuple 3.
-   *
-   * @param <Z> the type parameter
-   * @param z   the z
-   * @return the tuple 3
-   */
-  public <Z> Tuple3<K, V, Z> append(Z z) {
-    return Tuple3.of(v1, v2, z);
-  }
-
-
-  /**
-   * Append tuple 4.
-   *
-   * @param <K2>  the type parameter
-   * @param <V2>  the type parameter
-   * @param other the other
-   * @return the tuple 4
-   */
-  public <K2, V2> Tuple4<K, V, K2, V2> append(Tuple2<K2, V2> other) {
-    if (other == null) {
-      return Tuple4.of(v1, v2, null, null);
-    }
-    return Tuple4.of(v1, v2, other.v1, other.v2);
-  }
-
   @Override
   public <T> Tuple3<T, K, V> appendLeft(T object) {
     return Tuple3.of(object, v1, v2);
@@ -152,5 +127,16 @@ public class Tuple2<K, V> extends Tuple implements Map.Entry<K, V> {
   public String toString() {
     return "(" + v1 + ", " + v2 + ")";
   }
+
+  @Override
+  public <T> T get(int i) {
+    switch (i){
+      case 0: return Cast.as(v1);
+      case 1: return Cast.as(v2);
+      default:
+        throw new ArrayIndexOutOfBoundsException(i);
+    }
+  }
+
 
 }//END OF Tuple2

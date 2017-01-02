@@ -22,14 +22,14 @@
 package com.davidbracewell.collection;
 
 
-import com.davidbracewell.conversion.Cast;
+import com.davidbracewell.collection.list.Lists;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import static com.davidbracewell.collection.list.Lists.list;
 import static org.junit.Assert.*;
 
 /**
@@ -37,20 +37,98 @@ import static org.junit.Assert.*;
  */
 public class CollectTest {
 
-  @Test
-  public void testAsIterable() throws Exception {
-    List<String> list = new ArrayList<>();
-    list.add("1");
-    assertEquals("1", Iterables.getFirst(Collect.asIterable(list.iterator()), null));
-  }
+   @Test
+   public void iteratorToIterable() throws Exception {
+      Iterable<CharSequence> ibl1 = Collect.asIterable(list("A", "B", "C").iterator());
+      assertEquals(3, Iterables.size(ibl1));
 
-  @Test
-  public void testCast() throws Exception {
-    List<Double> list = Lists.newArrayList(1.0, 2.5, 3.0);
-    List<Number> numList = Cast.cast(list);
-    assertEquals(1d,numList.get(0).doubleValue(), 0d);
-    assertEquals(2.5d, numList.get(1).doubleValue(), 0d);
-    assertEquals(3d, numList.get(2).doubleValue(), 0d);
-  }
+      Iterable<CharSequence> ibl2 = Collect.asIterable(null);
+      assertEquals(0, Iterables.size(ibl2));
+
+      Iterable<CharSequence> ibl3 = Collect.asIterable(Collections.emptyIterator());
+      assertEquals(0, Iterables.size(ibl3));
+   }
+
+   @Test
+   public void sort() throws Exception {
+      assertEquals(list("a", "b", "c"), Collect.sort(Sets.set("c", "b", "a")));
+      assertEquals(list(3, 2, 1), Collect.sort(Lists.list(1, 2, 3), Sorting.natural().reversed()));
+   }
+
+
+   @Test
+   public void arrayAsIterable() throws Exception {
+      assertEquals(list(1, 2, 3), Lists.asArrayList(Collect.asIterable(new int[]{1, 2, 3}, Integer.class)));
+      assertEquals(list(1, 2, 3), Lists.asArrayList(Collect.asIterable(new Integer[]{1, 2, 3}, Integer.class)));
+      assertEquals(list(1, 2, 3), Lists.asArrayList(Collect.asIterable(new double[]{1.0, 2.0, 3.0}, Integer.class)));
+   }
+
+   @Test(expected = ClassCastException.class)
+   public void arrayAsIterableBadCast() throws Exception {
+      assertEquals(list(1, 2, 3), Lists.asArrayList(Collect.asIterable(new Double[]{1.0, 2.0, 3.0}, Integer.class)));
+   }
+
+
+   @Test
+   public void getFirst() throws Exception {
+      assertTrue(Collect.getFirst(Arrays.asList("A", "B", "C")).isPresent());
+      assertFalse(Collect.getFirst(Collections.emptySet()).isPresent());
+      assertEquals("A", Collect.getFirst(Arrays.asList("A", "B", "C")).orElse(null));
+   }
+
+   @Test
+   public void getLast() throws Exception {
+      assertTrue(Collect.getLast(Arrays.asList("A", "B", "C")).isPresent());
+      assertFalse(Collect.getLast(Collections.emptySet()).isPresent());
+      assertEquals("C", Collect.getLast(Arrays.asList("A", "B", "C")).orElse(null));
+   }
+
+
+   @Test
+   public void create() throws Exception {
+      assertNull(Collect.create(null));
+      assertTrue(Collect.create(List.class) instanceof ArrayList);
+      assertTrue(Collect.create(Set.class) instanceof HashSet);
+      assertTrue(Collect.create(NavigableSet.class) instanceof TreeSet);
+      assertTrue(Collect.create(Queue.class) instanceof LinkedList);
+      assertTrue(Collect.create(Deque.class) instanceof LinkedList);
+      assertTrue(Collect.create(Stack.class).getClass() == Stack.class);
+      assertTrue(Collect.create(LinkedHashSet.class).getClass() == LinkedHashSet.class);
+   }
+
+   @Test(expected = InstantiationException.class)
+   public void badCreate() throws Exception {
+      Collect.create(NoNoArg.class);
+   }
+
+   @Test
+   public void zip() throws Exception {
+      assertEquals(list(new AbstractMap.SimpleEntry<>("A", 1),
+                        new AbstractMap.SimpleEntry<>("B", 2),
+                        new AbstractMap.SimpleEntry<>("C", 3)
+                       ),
+                   Collect.zip(Arrays.asList("A", "B", "C"), Arrays.asList(1, 2, 3, 4)).collect(Collectors.toList())
+                  );
+
+      assertEquals(0L, Collect.zip(Collections.emptySet(), Arrays.asList(1, 2, 3, 4)).count());
+   }
+
+
+   static class NoNoArg extends AbstractCollection<String> {
+
+      public NoNoArg(String param) {
+
+      }
+
+      @Override
+      public Iterator<String> iterator() {
+         return null;
+      }
+
+      @Override
+      public int size() {
+         return 0;
+      }
+   }
 
 }//END OF CollectionUtilsTest

@@ -34,21 +34,21 @@ import java.io.*;
  */
 public class JavaSerializer implements Serializer, Serializable {
 
-  private static final long serialVersionUID = 4353403790890512522L;
+   private static final long serialVersionUID = 4353403790890512522L;
 
-  @Override
-  public void serialize(@NonNull Object o, @NonNull Resource resource) throws Exception {
-    try (OutputStream os = resource.outputStream(); ObjectOutputStream oos = new ObjectOutputStream(os)) {
-      oos.writeObject(o);
-      oos.flush();
-    }
-  }
+   @Override
+   public void serialize(@NonNull Object o, @NonNull Resource resource) throws Exception {
+      try (OutputStream os = resource.outputStream(); ObjectOutputStream oos = new ObjectOutputStream(os)) {
+         oos.writeObject(o);
+         oos.flush();
+      }
+   }
 
-  @Override
-  public <T> T deserialize(@NonNull Resource resource, Class<T> clazz) throws Exception {
-    try (InputStream is = resource.inputStream(); ObjectInputStream ois = new ObjectInputStream(is);) {
-      return Cast.as(ois.readObject(), clazz);
-    }
-  }
+   @Override
+   public <T> T deserialize(@NonNull Resource resource, Class<T> clazz) throws Exception {
+      try (InputStream is = resource.inputStream(); ObjectInputStream ois = new ObjectInputStream(is);) {
+         return Cast.as(ois.readObject(), clazz);
+      }
+   }
 
 }//END OF JavaSerializer

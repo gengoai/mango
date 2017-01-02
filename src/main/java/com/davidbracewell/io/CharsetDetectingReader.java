@@ -21,10 +21,9 @@
 
 package com.davidbracewell.io;
 
-import com.google.common.base.Charsets;
-
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * <p>A reader that understands Unicode Byte Order Marks and can also guess the character set if a BOM is not present
@@ -34,95 +33,95 @@ import java.nio.charset.Charset;
  */
 public class CharsetDetectingReader extends Reader {
 
-  private final static int BUFFER_SIZE = 8000;
+   private final static int BUFFER_SIZE = 8000;
 
-  private final InputStream inStream;
-  private Reader backing = null;
-  private final Charset defaultCharset;
-  private Charset charset = null;
-
-
-  /**
-   * Instantiates a new Espresso reader.
-   *
-   * @param inStream the in stream
-   */
-  public CharsetDetectingReader(InputStream inStream) {
-    this(inStream, null);
-  }
-
-  /**
-   * Instantiates a new Espresso reader.
-   *
-   * @param inStream the in stream
-   * @param defaultCharset the default charset
-   */
-  public CharsetDetectingReader(InputStream inStream, Charset defaultCharset) {
-    this.inStream = inStream;
-    this.defaultCharset = defaultCharset;
-    this.charset = null;
-  }
+   private final InputStream inStream;
+   private Reader backing = null;
+   private final Charset defaultCharset;
+   private Charset charset = null;
 
 
-  private void determineCharset() throws IOException {
-    PushbackInputStream pbIStream = new PushbackInputStream(inStream, BUFFER_SIZE);
+   /**
+    * Instantiates a new Espresso reader.
+    *
+    * @param inStream the in stream
+    */
+   public CharsetDetectingReader(InputStream inStream) {
+      this(inStream, null);
+   }
 
-    byte[] buffer = new byte[BUFFER_SIZE];
-    int read = pbIStream.read(buffer, 0, buffer.length);
-    if (read == -1) {
-      return;
-    }
+   /**
+    * Instantiates a new Espresso reader.
+    *
+    * @param inStream       the in stream
+    * @param defaultCharset the default charset
+    */
+   public CharsetDetectingReader(InputStream inStream, Charset defaultCharset) {
+      this.inStream = inStream;
+      this.defaultCharset = defaultCharset;
+      this.charset = null;
+   }
 
-    int bomOffset = 0;
 
-    for (CommonBOM bom : CommonBOM.values()) {
-      if (bom.matches(buffer)) {
-        charset = bom.getCharset();
-        bomOffset = bom.length();
-        break;
+   private void determineCharset() throws IOException {
+      PushbackInputStream pbIStream = new PushbackInputStream(inStream, BUFFER_SIZE);
+
+      byte[] buffer = new byte[BUFFER_SIZE];
+      int read = pbIStream.read(buffer, 0, buffer.length);
+      if (read == -1) {
+         return;
       }
-    }
 
-    if (charset == null && defaultCharset == null) {
-      charset = CharsetDetector.detect(buffer, 0, read);
-      if (charset == null) {
-        charset = Charsets.UTF_8;
+      int bomOffset = 0;
+
+      for (CommonBOM bom : CommonBOM.values()) {
+         if (bom.matches(buffer)) {
+            charset = bom.getCharset();
+            bomOffset = bom.length();
+            break;
+         }
       }
-    } else if (charset == null) {
-      charset = defaultCharset;
-    }
 
-    pbIStream.unread(buffer, bomOffset, read - bomOffset);
+      if (charset == null && defaultCharset == null) {
+         charset = CharsetDetector.detect(buffer, 0, read);
+         if (charset == null) {
+            charset = StandardCharsets.UTF_8;
+         }
+      } else if (charset == null) {
+         charset = defaultCharset;
+      }
 
-    backing = new InputStreamReader(pbIStream, charset);
-  }
+      pbIStream.unread(buffer, bomOffset, read - bomOffset);
+
+      backing = new InputStreamReader(pbIStream, charset);
+   }
 
 
-  @Override
-  public int read(char[] cbuf, int off, int len) throws IOException {
-    if (backing == null) {
-      determineCharset();
-    }
-    if (backing == null) {
-      return -1;
-    }
-    return backing.read(cbuf, off, len);
-  }
+   @Override
+   public int read(char[] cbuf, int off, int len) throws IOException {
+      if (backing == null) {
+         determineCharset();
+      }
+      if (backing == null) {
+         return -1;
+      }
+      return backing.read(cbuf, off, len);
+   }
 
-  @Override
-  public void close() throws IOException {
-    if (backing != null) {
-      backing.close();
-    }
-  }
+   @Override
+   public void close() throws IOException {
+      if (backing != null) {
+         backing.close();
+      }
+   }
 
-  /**
-   * Gets charset.
-   *
-   * @return the charset
-   */
-  public Charset getCharset() {
-    return charset;
-  }
+   /**
+    * Gets charset.
+    *
+    * @return the charset
+    */
+   public Charset getCharset() {
+      return charset;
+   }
 
 }//END OF CharsetDetectingReader

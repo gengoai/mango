@@ -22,8 +22,8 @@
 package com.davidbracewell.scripting;
 
 import com.davidbracewell.io.resource.Resource;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
+import com.davidbracewell.string.StringUtils;
+import lombok.NonNull;
 
 import javax.script.Invocable;
 import javax.script.ScriptContext;
@@ -46,7 +46,7 @@ public class ScriptEnvironment {
    * @param engine The scripting engine
    */
   ScriptEnvironment(ScriptEngine engine) {
-    this.engine = Preconditions.checkNotNull(engine, "The scripting engine must not be null");
+    this.engine = engine;
   }
 
   /**
@@ -57,8 +57,8 @@ public class ScriptEnvironment {
    * @throws javax.script.ScriptException Something went wrong
    * @throws java.io.IOException     Something went wrong reading the file
    */
-  public Object eval(Resource script) throws ScriptException, IOException {
-    String fileText = Preconditions.checkNotNull(script, "Script cannot be null").readToString();
+  public Object eval(@NonNull Resource script) throws ScriptException, IOException {
+    String fileText = script.readToString();
     return eval(fileText, null);
   }
 
@@ -71,8 +71,8 @@ public class ScriptEnvironment {
    * @throws javax.script.ScriptException Something went wrong
    * @throws java.io.IOException     Something went wrong reading the file
    */
-  public Object eval(Resource script, ScriptContext context) throws ScriptException, IOException {
-    String fileText = Preconditions.checkNotNull(script, "Script cannot be null").readToString();
+  public Object eval(@NonNull Resource script, ScriptContext context) throws ScriptException, IOException {
+    String fileText = script.readToString();
     if (context != null) {
       return eval(fileText, context);
     } else {
@@ -100,7 +100,7 @@ public class ScriptEnvironment {
    * @throws javax.script.ScriptException Something went wrong
    */
   public Object eval(String script, ScriptContext context) throws ScriptException {
-    if (Strings.isNullOrEmpty(script)) {
+    if (StringUtils.isNullOrBlank(script)) {
       return null;
     }
     Object obj;
@@ -122,7 +122,7 @@ public class ScriptEnvironment {
    * @throws NoSuchMethodException Method did not exist
    */
   public Object invokeFunction(String name, Object... args) throws ScriptException,
-      NoSuchMethodException {
+    NoSuchMethodException {
     Invocable inv = (Invocable) engine;
     return inv.invokeFunction(name, args);
   }
@@ -143,7 +143,7 @@ public class ScriptEnvironment {
    * @throws NoSuchMethodException Method did not exist
    */
   public Object invokeMethod(Object o, String name, Object... args) throws ScriptException,
-      NoSuchMethodException {
+    NoSuchMethodException {
     Invocable inv = (Invocable) engine;
     return inv.invokeMethod(o, name, args);
   }

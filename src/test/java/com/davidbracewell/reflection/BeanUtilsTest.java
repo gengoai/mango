@@ -21,51 +21,59 @@
 
 package com.davidbracewell.reflection;
 
+import com.davidbracewell.config.Config;
+import com.davidbracewell.io.Resources;
+import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Map;
+
+import static org.junit.Assert.*;
 
 /**
  * @author David B. Bracewell
  */
 public class BeanUtilsTest {
 
-  @Before
-  public void setup() throws Exception {
-//    Config.loadConfig(Resources.fromClasspath("iknowledge/espresso/testing.conf"));
-  }
+   @Before
+   public void setup() throws Exception {
+      Config.initializeTest();
+      Config.loadConfig(Resources.fromClasspath("com/davidbracewell/testing.conf"));
+   }
 
-  @Test
-  public void testCollectionParam() throws Exception {
-//    TestBean testBean = BeanUtils.getBean(TestBean.class);
-//    assertTrue(Sets.difference(Sets.newHashSet("None"), testBean.getChildren()).isEmpty());
-//
-//    Map<String, Double> map = testBean.getStocks();
-//    assertEquals((Double) 120.5, map.get("GE"));
-//    assertEquals((Double) 45.8, map.get("ATT"));
-//    assertEquals((Double) 98.7, map.get("ZEB"));
-//
-//    testBean = Config.get("bean.redirect").cast();
-//    assertTrue(Sets.difference(Sets.newHashSet("None"), testBean.getChildren()).isEmpty());
+   @Test
+   public void testCollectionParam() throws Exception {
+      TestBean testBean = BeanUtils.getBean(TestBean.class);
+      assertTrue(testBean.getChildren().isEmpty());
 
-//    map = testBean.getStocks();
-//    assertEquals((Double) 120.5, map.get("GE"));
-//    assertEquals((Double) 45.8, map.get("ATT"));
-//    assertEquals((Double) 98.7, map.get("ZEB"));
-//
-  }
+      Map<String, Double> map = testBean.getStocks();
+      assertEquals(120.5, map.get("GE"), 0);
+      assertEquals(45.8, map.get("ATT"), 0);
+      assertEquals(98.7, map.get("ZEB"), 0);
 
-  @Test
-  public void test() throws Exception {
-//    TestBean testBean = BeanUtils.getNamedBean("testbean", TestBean.class);
-//    assertEquals("John", testBean.getName());
-//    assertTrue(Sets.difference(Sets.newHashSet("Sam", "Ryan", "Billy"), testBean.getChildren()).isEmpty());
-  }
+      testBean = Config.get("bean.redirect").cast();
+      assertEquals(Sets.newHashSet("Sam", "Ryan", "Billy"), testBean.getChildren());
 
-  @Test
-  public void testNamedBeanWithConstructor() throws Exception {
-//    TestBean testBean = BeanUtils.getNamedBean("testbean2", TestBean.class);
-//    assertEquals("John", testBean.getName());
-//    assertTrue(Sets.difference(Sets.newHashSet("None"), testBean.getChildren()).isEmpty());
-  }
+      map = testBean.getStocks();
+      assertEquals(120.5, map.get("GE"), 0);
+      assertEquals(45.8, map.get("ATT"), 0);
+      assertEquals(98.7, map.get("ZEB"), 0);
+
+   }
+
+   @Test
+   public void test() throws Exception {
+      TestBean testBean = BeanUtils.getNamedBean("testbean", TestBean.class);
+      assertEquals("John", testBean.getName());
+      assertTrue(Sets.difference(Sets.newHashSet("Sam", "Ryan", "Billy"), testBean.getChildren()).isEmpty());
+   }
+
+   @Test
+   public void testNamedBeanWithConstructor() throws Exception {
+      TestBean testBean = BeanUtils.getNamedBean("testbean2", TestBean.class);
+      assertEquals("John", testBean.getName());
+      assertTrue(Sets.difference(Sets.newHashSet("Sam", "Ryan", "Billy"), testBean.getChildren()).isEmpty());
+   }
 
 }

@@ -21,184 +21,155 @@
 
 package com.davidbracewell.logging;
 
+import com.davidbracewell.SystemInfo;
+import com.davidbracewell.config.Config;
+import com.davidbracewell.io.Resources;
 import com.davidbracewell.string.StringUtils;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
 /**
- * Logging Manager for Espresso loggers.
+ * Wrapper around the Java LogManager that does default setup if no logging config file is defined. Note: that if a
+ * config file for java.util.logging is specified default initialization will not place. File handlers can be added
+ * using a common based name and the log directory will be read from the config property
+ * <code>com.davidbracewell.logging.dir</code> and default to <code>%HOME/logs/</code>. The file handler will produce up
+ * to 100MB logs and rotate over 50 log files.
  *
  * @author David B. Bracewell
  */
-public class LogManager {
+public final class LogManager {
 
-  private static volatile LogManager INSTANCE = null;
+   private static final LogManager INSTANCE = new LogManager();
 
-  /**
-   * Hidden Constructor
-   */
-  private LogManager() {
-
-  }
-
-  /**
-   * Gets log manager.
-   *
-   * @return The log manager
-   */
-  public static LogManager getLogManager() {
-    if (INSTANCE == null) {
-      synchronized (LogManager.class) {
-        if (INSTANCE == null) {
-          INSTANCE = new LogManager();
-          java.util.logging.Logger root = java.util.logging.LogManager
-              .getLogManager()
-              .getLogger("");
-          for (Handler h : root.getHandlers()) {
+   private LogManager() {
+      if (System.getProperty("java.util.logging.config.file") == null) {
+         java.util.logging.Logger root = java.util.logging.LogManager
+                                            .getLogManager()
+                                            .getLogger("");
+         for (Handler h : root.getHandlers()) {
             h.setFormatter(new LogFormatter());
-            h.setLevel(Level.INFO);
-          }
-        }
+            h.setLevel(Level.ALL);
+         }
       }
-    }
-    return INSTANCE;
-  }
+   }
+
+   /**
+    * Gets the log manager instance
+    *
+    * @return The log manager instance
+    */
+   public static LogManager getLogManager() {
+      return INSTANCE;
+   }
 
 
-  /**
-   * Sets formatter.
-   *
-   * @param formatter the formatter
-   */
-  public synchronized static void setFormatter(Formatter formatter) {
-    LogManager.getLogManager();
-    java.util.logging.Logger root = java.util.logging.LogManager.getLogManager().getLogger(StringUtils.EMPTY);
-    for (Handler h : root.getHandlers()) {
-      h.setFormatter(formatter);
-    }
-  }
-
-  /**
-   * Clear handlers.
-   */
-  public synchronized static void clearHandlers() {
-    LogManager.getLogManager();
-    java.util.logging.Logger root = java.util.logging.LogManager.getLogManager().getLogger(StringUtils.EMPTY);
-    Handler[] handlers = root.getHandlers();
-    for (Handler h : handlers) {
-      root.removeHandler(h);
-    }
-  }
-
-  /**
-   * Add handler.
-   *
-   * @param handler the handler
-   */
-  public synchronized static void addHandler(Handler handler) {
-    LogManager.getLogManager();
-    java.util.logging.Logger root = java.util.logging.LogManager.getLogManager().getLogger(StringUtils.EMPTY);
-    root.addHandler(handler);
-  }
-
-  /**
-   * Remove handlers of type.
-   *
-   * @param handlerClass the handler class
-   */
-  public synchronized void removeHandlersOfType(Class<?> handlerClass) {
-    java.util.logging.Logger root = java.util.logging.LogManager.getLogManager().getLogger(StringUtils.EMPTY);
-    for (Handler handler : root.getHandlers()) {
-      if (handlerClass.isAssignableFrom(handler.getClass())) {
-        root.removeHandler(handler);
+   /**
+    * Sets the formatter to use for all handlers.
+    *
+    * @param formatter the formatter to use
+    */
+   public synchronized static void setFormatter(Formatter formatter) {
+      java.util.logging.Logger root = java.util.logging.LogManager.getLogManager().getLogger(StringUtils.EMPTY);
+      for (Handler h : root.getHandlers()) {
+         h.setFormatter(formatter);
       }
-    }
-  }
+   }
 
-  /**
-   * Gets the logger for the given class.
-   *
-   * @param clazz The class whose logger we want
-   * @return A logger associated with the given class
-   */
-  public Logger getLogger(Class<?> clazz) {
-    if (clazz == null) {
-      return getGlobalLogger();
-    }
-    return getLogger(clazz.getName());
-  }
-
-  private String getParentLogger(String logger) {
-    int index = logger.lastIndexOf('.');
-    if (index == -1) {
-      return StringUtils.EMPTY;
-    }
-    return logger.substring(0, index);
-  }
-
-  private Logger getLogger(String name) {
-    java.util.logging.Logger jul = java.util.logging.LogManager.getLogManager().getLogger(name);
-    if (jul == null) {
-      jul = java.util.logging.Logger.getLogger(name);
-//      if (Config.hasProperty(name + ".level")) {
-//        jul.setLevel(Level.parse(Config.get(name + ".level").asString()));
-//      } else {
-//        String parent = getParentLogger(name);
-//        while (true) {
-//          if (Strings.isNullOrEmpty(parent)) {
-//            break;
-//          } else if (java.util.logging.LogManager.getLogManager().getLogger(parent) != null) {
-//            jul.setLevel(java.util.logging.LogManager.getLogManager().getLogger(parent).getLevel());
-//            break;
-//          } else if (Config.hasProperty(parent + ".level")) {
-//            jul.setLevel(Level.parse(Config.get(parent + ".level").asString()));
-//            break;
-//          }
-//          parent = getParentLogger(parent);
-//        }
-//      }
-      java.util.logging.LogManager.getLogManager().addLogger(jul);
-    }
-    return new Logger(jul);
-  }
-
-  /**
-   * Gets the global Logger
-   *
-   * @return The global logger
-   */
-  public Logger getGlobalLogger() {
-    return new Logger(java.util.logging.Logger
-        .getLogger(java.util.logging.Logger.GLOBAL_LOGGER_NAME));
-  }
-
-  /**
-   * Gets an Enumeration of all of the current loggers.
-   *
-   * @return An of logger names
-   */
-  public List<String> getLoggerNames() {
-    return Collections.list(java.util.logging.LogManager.getLogManager().getLoggerNames());
-  }
-
-  /**
-   * Sets the level of a logger
-   *
-   * @param logger The name of the logger to set the level for.
-   * @param level The level to set the logger at
-   */
-  public void setLevel(String logger, Level level) {
-    Logger log = getLogger(logger);
-    log.setLevel(level);
-    for( String loggerName : getLoggerNames() ){
-      if( loggerName.startsWith(logger) && !loggerName.equals(logger) ){
-        getLogger(loggerName).setLevel(level);
+   /**
+    * Clears all handlers from the logger
+    */
+   public synchronized static void clearHandlers() {
+      java.util.logging.Logger root = java.util.logging.LogManager.getLogManager().getLogger(StringUtils.EMPTY);
+      Handler[] handlers = root.getHandlers();
+      for (Handler h : handlers) {
+         root.removeHandler(h);
       }
-    }
-  }
+   }
+
+   /**
+    * Adds a file handler that writes to the location specified in <code>com.davidbracewell.logging.dir</code> or if not
+    * set <code>USER_HOME/logs/</code>. The filenames are in the form of <code>basename%g</code> where %g is the rotated
+    * file number. Max file size is 100MB and 50 files will be used.
+    */
+   public synchronized static void addFileHandler(String basename) throws IOException {
+      String dir = Config.get("com.davidbracewell.logging.dir").asString(SystemInfo.USER_HOME + "/logs/");
+      Resources.from(dir).mkdirs();
+      FileHandler fh = new FileHandler(dir + "/" + basename + "%g.log", 100000000, 50, false);
+      fh.setFormatter(new LogFormatter());
+      addHandler(fh);
+   }
+
+   /**
+    * Adds a handler to the root.
+    *
+    * @param handler the handler to add
+    */
+   public synchronized static void addHandler(Handler handler) {
+      java.util.logging.Logger root = java.util.logging.LogManager.getLogManager().getLogger(StringUtils.EMPTY);
+      root.addHandler(handler);
+   }
+
+   /**
+    * Gets the logger for the given class.
+    *
+    * @param clazz The class whose logger we want
+    * @return A logger associated with the given class
+    */
+   public Logger getLogger(Class<?> clazz) {
+      if (clazz == null) {
+         return getGlobalLogger();
+      }
+      return getLogger(clazz.getName());
+   }
+
+   private Logger getLogger(String name) {
+      java.util.logging.Logger jul = java.util.logging.LogManager.getLogManager().getLogger(name);
+      if (jul == null) {
+         jul = java.util.logging.Logger.getLogger(name);
+         java.util.logging.LogManager.getLogManager().addLogger(jul);
+      }
+      return new Logger(jul);
+   }
+
+   /**
+    * Gets the global Logger
+    *
+    * @return The global logger
+    */
+   public Logger getGlobalLogger() {
+      return new Logger(java.util.logging.Logger
+                           .getLogger(java.util.logging.Logger.GLOBAL_LOGGER_NAME));
+   }
+
+   /**
+    * Gets an Enumeration of all of the current loggers.
+    *
+    * @return An of logger names
+    */
+   public List<String> getLoggerNames() {
+      return Collections.list(java.util.logging.LogManager.getLogManager().getLoggerNames());
+   }
+
+   /**
+    * Sets the level of a logger
+    *
+    * @param logger The name of the logger to set the level for.
+    * @param level  The level to set the logger at
+    */
+   public void setLevel(String logger, Level level) {
+      Logger log = getLogger(logger);
+      log.setLevel(level);
+      for (String loggerName : getLoggerNames()) {
+         if (loggerName.startsWith(logger) && !loggerName.equals(logger)) {
+            getLogger(loggerName).setLevel(level);
+         }
+      }
+   }
 
 }// END OF CLASS LogManager

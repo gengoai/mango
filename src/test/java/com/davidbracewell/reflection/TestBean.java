@@ -21,11 +21,12 @@
 
 package com.davidbracewell.reflection;
 
-import com.google.common.collect.Sets;
-
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import static com.davidbracewell.collection.Sets.set;
 
 /**
  * @author David B. Bracewell
@@ -33,38 +34,51 @@ import java.util.Set;
 public class TestBean {
 
 
-  private Set<String> children;
-  private final String name;
-  private Map<String, Double> stocks = new HashMap<>();
+   private Set<String> children;
+   private final String name;
+   private Map<String, Double> stocks = new HashMap<>();
 
-  public TestBean() {
-    this.name = "";
-    this.children = Sets.newHashSet();
-  }
+   public TestBean() {
+      this.name = "";
+      this.children = new HashSet<>();
+   }
 
-  public TestBean(String name, String... children) {
-    this.name = name;
-    this.children = Sets.newHashSet(children);
-  }
+   public TestBean(String name) {
+      this.name = name;
+      this.children = new HashSet<>();
+   }
 
-  public String getName() {
-    return name;
-  }
+   public TestBean(String name, String... children) {
+      this.name = name;
+      this.children = set(children);
+   }
 
-  public Set<String> getChildren() {
-    return children;
-  }
+   public String getName() {
+      return name;
+   }
 
-  public void setChildren(Set<String> children) {
-    this.children = children;
-  }
+   public Set<String> getChildren() {
+      return children;
+   }
 
-  public Map<String, Double> getStocks() {
-    return stocks;
-  }
+   public void setChildren(Set<String> children) {
+      this.children = children;
+   }
 
-  public void setStocks(Map<String, Double> stocks) {
-    this.stocks = stocks;
-  }
+   public Map<String, Double> getStocks() {
+      return stocks;
+   }
 
+   public void setStocks(Map<String, Double> stocks) {
+      this.stocks = stocks;
+   }
+
+   @Override
+   public String toString() {
+      return "TestBean{" +
+                "children=" + children +
+                ", name='" + name + '\'' +
+                ", stocks=" + stocks +
+                '}';
+   }
 }

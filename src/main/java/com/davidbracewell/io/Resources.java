@@ -21,19 +21,19 @@
 
 package com.davidbracewell.io;
 
+import com.davidbracewell.SystemInfo;
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.io.resource.*;
 import com.davidbracewell.io.resource.spi.ResourceProvider;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Maps;
-import com.google.common.io.Files;
+import com.davidbracewell.string.StringUtils;
+import lombok.NonNull;
+import lombok.SneakyThrows;
 
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.UUID;
@@ -47,187 +47,228 @@ import java.util.regex.Pattern;
  */
 public final class Resources {
 
-  private static final Map<String, ResourceProvider> resourceProviders = Maps.newHashMap();
+   private static final Map<String, ResourceProvider> resourceProviders = new HashMap<>();
 
-  static {
-    for (ResourceProvider provider : ServiceLoader.load(ResourceProvider.class)) {
-      for (String protocol : provider.getProtocols()) {
-        resourceProviders.put(protocol.toLowerCase(), provider);
+   static {
+      for (ResourceProvider provider : ServiceLoader.load(ResourceProvider.class)) {
+         for (String protocol : provider.getProtocols()) {
+            resourceProviders.put(protocol.toLowerCase(), provider);
+         }
       }
-    }
-  }
+   }
 
 
-  private static final Pattern protocolPattern = Pattern.compile("^(?<PROTOCOL>\\w+)(?<OPTIONS>\\[(?:[^\\]]+)\\])?:(?<PATH>.*)?");
+   private static final Pattern protocolPattern = Pattern.compile(
+      "^(?<PROTOCOL>\\w+)(?<OPTIONS>\\[(?:[^\\]]+)\\])?:(?<PATH>.*)?");
 
-  /**
-   * Constructs a resource from a string representation. Defaults to a file based resource if no schema is present.
-   *
-   * @param resource The string representation of the resource
-   * @return A resource representing the string representation
-   */
-  public static Resource from(String resource) {
-    if (Strings.isNullOrEmpty(resource)) {
+   /**
+    * Constructs a resource from a string representation. Defaults to a file based resource if no schema is present.
+    *
+    * @param resource The string representation of the resource
+    * @return A resource representing the string representation
+    */
+   public static Resource from(String resource) {
+      if (StringUtils.isNullOrBlank(resource)) {
+         return new StringResource();
+      }
+      Matcher matcher = protocolPattern.matcher(resource);
+      if (matcher.find()) {
+         String schema = matcher.group("PROTOCOL");
+         String options = matcher.group("OPTIONS");
+         String path = matcher.group("PATH");
+
+         if (StringUtils.isNullOrBlank(options)) {
+            options = "";
+         } else {
+            options = options.replaceFirst("\\[", "").replaceFirst("\\]$", "");
+         }
+         ResourceProvider provider = resourceProviders.get(schema.toLowerCase());
+
+
+         if (provider == null) {
+            try {
+               return new URIResource(new URI(resource));
+            } catch (URISyntaxException e) {
+               throw new IllegalStateException(schema + " is an unknown protocol.");
+            }
+         }
+
+
+         if (provider.requiresProtocol()) {
+            path = schema + ":" + path;
+         }
+
+         return provider.createResource(path, Val.of(options).asMap(String.class, String.class));
+      }
+
+      return new FileResource(resource);
+   }
+
+   /**
+    * Creates a <code>StringResource</code> from the given string.
+    *
+    * @param stringResource the string resource
+    * @return the resource
+    */
+   public static Resource fromString(String stringResource) {
+      return new StringResource(stringResource);
+   }
+
+   /**
+    * Creates a <code>StringResource</code> that is empty.
+    *
+    * @return the resource
+    */
+   public static Resource fromString() {
       return new StringResource();
-    }
-    Matcher matcher = protocolPattern.matcher(resource);
-    if (matcher.find()) {
-      String schema = matcher.group("PROTOCOL");
-      String options = matcher.group("OPTIONS");
-      String path = matcher.group("PATH");
+   }
 
-      if (Strings.isNullOrEmpty(options)) {
-        options = "";
-      } else {
-        options = options.replaceFirst("\\[", "").replaceFirst("\\]$", "");
+   /**
+    * <p> Creates a new {@link com.davidbracewell.io.resource.URLResource}. </p>
+    *
+    * @param resource The url to wrap.
+    * @return A new Resource wrapping a url.
+    */
+   public static URLResource fromUrl(URL resource) {
+      return new URLResource(resource);
+   }
+
+   /**
+    * <p> Creates a new {@link com.davidbracewell.io.resource.URIResource}. </p>
+    *
+    * @param resource The uri to wrap.
+    * @return A new Resource wrapping a uri.
+    */
+   public static URIResource fromURI(URI resource) {
+      return new URIResource(resource);
+   }
+
+
+   /**
+    * <p> Creases a new {@link FileResource}. </p>
+    *
+    * @param resource The file making up the resource
+    * @return A new Resource associated with the file
+    */
+   public static Resource fromFile(File resource) {
+      return new FileResource(resource);
+   }
+
+   /**
+    * <p> Creases a new {@link FileResource}. </p>
+    *
+    * @param resource The file making up the resource
+    * @return A new Resource associated with the file
+    */
+   public static Resource fromFile(String resource) {
+      return new FileResource(resource);
+   }
+
+   /**
+    * <p> Creases a new {@link com.davidbracewell.io.resource.ClasspathResource}. </p>
+    *
+    * @param resource The classpath making up the resource
+    * @return A new Resource associated with the classpath
+    */
+   public static Resource fromClasspath(String resource) {
+      return new ClasspathResource(resource);
+   }
+
+   /**
+    * From stdin resource.
+    *
+    * @return Resource that can read from standard in
+    */
+   public static Resource fromStdin() {
+      return new StdinResource();
+   }
+
+   /**
+    * From stdout resource.
+    *
+    * @return Resource that can output to standard out
+    */
+   public static Resource fromStdout() {
+      return new StdoutResource();
+   }
+
+   /**
+    * From output stream resource.
+    *
+    * @param outputStream The output stream to wrap
+    * @return Resource that can write to given output stream
+    */
+   public static Resource fromOutputStream(OutputStream outputStream) {
+      return new OutputStreamResource(outputStream);
+   }
+
+   /**
+    * From input stream resource.
+    *
+    * @param inputStream The input stream to wrap
+    * @return Resource that can read from given input stream
+    */
+   public static Resource fromInputStream(@NonNull InputStream inputStream) {
+      return new InputStreamResource(inputStream);
+   }
+
+   /**
+    * Creates a new Resource that wraps the given reader
+    *
+    * @param reader The reader to wrap
+    * @return Resource that can read from given reader
+    */
+   public static Resource fromReader(@NonNull Reader reader) {
+      return new ReaderResource(reader);
+   }
+
+   /**
+    * Creates a new Resource that wraps the given writer
+    *
+    * @param writer the writer wrap
+    * @return the resource
+    */
+   public static Resource fromWriter(@NonNull Writer writer) {
+      return new WriterResource(writer);
+   }
+
+   /**
+    * Creates a new Resource that points to a temporary directory.
+    *
+    * @return A resource which is a temporary directory on disk
+    */
+   public static Resource temporaryDirectory() {
+      File tempDir = new File(SystemInfo.JAVA_IO_TMPDIR);
+      String baseName = System.currentTimeMillis() + "-";
+      for (int i = 0; i < 1_000_000; i++) {
+         File tmp = new File(tempDir, baseName + i);
+         if (tmp.mkdir()) {
+            return new FileResource(tmp);
+         }
       }
-      ResourceProvider provider = resourceProviders.get(schema.toLowerCase());
+      throw new RuntimeException("Unable to create temp directory");
+   }
 
-
-      if (provider == null) {
-        try {
-          return new URIResource(new URI(resource));
-        } catch (URISyntaxException e) {
-          throw new IllegalStateException(schema + " is an unknown protocol.");
-        }
-      }
-
-
-      if (provider.requiresProtocol()) {
-        path = schema + ":" + path;
-      }
-
-      return provider.createResource(path, Val.of(options).asMap(String.class, String.class));
-    }
-
-    return new FileResource(resource);
-  }
-
-  /**
-   * Creates a <code>StringResource</code> from the given string.
-   *
-   * @param stringResource the string resource
-   * @return the resource
-   */
-  public static Resource fromString(String stringResource) {
-    return new StringResource(stringResource);
-  }
-
-  /**
-   * Creates a <code>StringResource</code> that is empty.
-   *
-   * @return the resource
-   */
-  public static Resource fromString() {
-    return new StringResource();
-  }
-
-  /**
-   * <p> Creates a new {@link com.davidbracewell.io.resource.URLResource}. </p>
-   *
-   * @param resource The url to wrap.
-   * @return A new Resource wrapping a url.
-   */
-  public static URLResource fromUrl(URL resource) {
-    return new URLResource(resource);
-  }
-
-  /**
-   * <p> Creases a new {@link FileResource}. </p>
-   *
-   * @param resource The file making up the resource
-   * @return A new Resource associated with the file
-   */
-  public static Resource fromFile(File resource) {
-    return new FileResource(resource);
-  }
-
-  /**
-   * <p> Creases a new {@link FileResource}. </p>
-   *
-   * @param resource The file making up the resource
-   * @return A new Resource associated with the file
-   */
-  public static Resource fromFile(String resource) {
-    return new FileResource(resource);
-  }
-
-  /**
-   * <p> Creases a new {@link com.davidbracewell.io.resource.ClasspathResource}. </p>
-   *
-   * @param resource The classpath making up the resource
-   * @return A new Resource associated with the classpath
-   */
-  public static Resource fromClasspath(String resource) {
-    return new ClasspathResource(resource);
-  }
-
-  /**
-   * @return Resource that can read from standard in
-   */
-  public static Resource fromStdin() {
-    return new StdinResource();
-  }
-
-  /**
-   * @return Resource that can output to standard out
-   */
-  public static Resource fromStdout() {
-    return new StdoutResource();
-  }
-
-  /**
-   * @param outputStream The output stream to wrap
-   * @return Resource that can write to given output stream
-   */
-  public static Resource fromOutputStream(OutputStream outputStream) {
-    return new OutputStreamResource(outputStream);
-  }
-
-  /**
-   * @param inputStream The input stream to wrap
-   * @return Resource that can read from given input stream
-   */
-  public static Resource fromInputStream(InputStream inputStream) {
-    return new InputStreamResource(Preconditions.checkNotNull(inputStream));
-  }
-
-  /**
-   * @param reader The reader to wrap
-   * @return Resource that can read from given reader
-   */
-  public static Resource fromReader(Reader reader) {
-    return new ReaderResource(Preconditions.checkNotNull(reader));
-  }
-
-  /**
-   * @return A resource which is a temporary directory on disk
-   */
-  public static Resource temporaryDirectory() {
-    return new FileResource(Files.createTempDir());
-  }
-
-  /**
-   * @return A resource which is a temporary file on disk
-   */
-  public static Resource temporaryFile() {
-    try {
+   /**
+    * Creates a new Resource that points to a temporary file.
+    *
+    * @return A resource which is a temporary file on disk
+    */
+   @SneakyThrows
+   public static Resource temporaryFile() {
       return temporaryFile(UUID.randomUUID().toString(), "tmp");
-    } catch (IOException e) {
-      throw Throwables.propagate(e);
-    }
-  }
+   }
 
-  /**
-   * Creates a resource wrapping a temporary file
-   *
-   * @param name      The file name
-   * @param extension The file extension
-   * @return The resource representing the temporary file
-   * @throws java.io.IOException Something went wrong creating the resource
-   */
-  public static Resource temporaryFile(String name, String extension) throws IOException {
-    return new FileResource(File.createTempFile(name, extension));
-  }
+   /**
+    * Creates a resource wrapping a temporary file
+    *
+    * @param name      The file name
+    * @param extension The file extension
+    * @return The resource representing the temporary file
+    * @throws IOException the io exception
+    */
+   public static Resource temporaryFile(String name, String extension) throws IOException {
+      return new FileResource(File.createTempFile(name, extension));
+   }
 
 }// END OF Resources

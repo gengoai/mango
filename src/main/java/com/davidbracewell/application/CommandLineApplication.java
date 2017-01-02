@@ -21,112 +21,116 @@
 
 package com.davidbracewell.application;
 
-import com.davidbracewell.logging.Logger;
-import lombok.NonNull;
+import com.davidbracewell.logging.Loggable;
+import com.davidbracewell.string.StringUtils;
 
 import java.io.Serializable;
 
 /**
- * <p>
- * Abstract base class for an application. The Application class takes care of boilerplate command line and config
- * methodology. Calling the <code>run(String[] args)</code> method will parse the command line, set the values of the
- * associated fields and initialize the configuration. Non-named arguments are stored in a private array and can be
- * accessed through the <code>getOtherArguments</code> method. An <code>Description</code> annotation can be added to a
- * class extending Application to provide a short description of what the program does for use when displaying help.
- * </p>
- * <p>
- * Child classes should implement the <code>programLogic</code> method and create the following main method:
- * <code>
- * public static void main(String[] args) {
- * new MyApplication.run(args);
+ * <p> Abstract base class for a command line application. Child classes should implement the <code>programLogic</code>
+ * method and create a main method calling the {@link #run(String[])} method. An example application is listed
+ * below.</p>
+ * <pre>
+ * {@code
+ *    public class MyApplication extends CommandLineApplication {
+ *
+ *      public static void main(String[] args)  {
+ *        new MyApplication().run(args);
+ *      }
+ *
+ *      public void programLogic() throws Exception {
+ *        //Logic goes here.
+ *      }
+ *
+ *    }
  * }
- * </code>
- * where <code>MyApplication</code> is the name of your child class.
- * </p>
+ * </pre>
  *
  * @author David B. Bracewell
  */
-public abstract class CommandLineApplication implements Application, Serializable {
-  private static final Logger log = Logger.getLogger(CommandLineApplication.class);
-  private static final long serialVersionUID = 1L;
+public abstract class CommandLineApplication implements Application, Serializable, Loggable {
+   private static final long serialVersionUID = 1L;
 
-  public final String applicationName;
-  private String[] nonNamedArguments;
-  private String[] allArgs;
-  private String packageName;
+   public final String applicationName;
+   private String[] nonNamedArguments;
+   private String[] allArgs;
+   private String packageName;
 
-  /**
-   * Instantiates a new Application.
-   *
-   * @param applicationName the application name
-   */
-  protected CommandLineApplication(String applicationName) {
-    this(applicationName, null);
-  }
+   protected CommandLineApplication() {
+      this(null, null);
+   }
 
-  /**
-   * Instantiates a new Application.
-   *
-   * @param applicationName the application name
-   * @param packageName     the package name to use for the application, which is important for loading the correct
-   *                        configuration.
-   */
-  protected CommandLineApplication(@NonNull String applicationName, String packageName) {
-    this.applicationName = applicationName;
-    this.packageName = packageName;
-  }
+   /**
+    * Instantiates a new Application.
+    *
+    * @param applicationName the application name
+    */
+   protected CommandLineApplication(String applicationName) {
+      this(applicationName, null);
+   }
 
-  @Override
-  public final String[] getAllArguments() {
-    return allArgs;
-  }
+   /**
+    * Instantiates a new Application.
+    *
+    * @param applicationName the application name
+    * @param packageName     the package name to use for the application, which is important for loading the correct
+    *                        configuration.
+    */
+   protected CommandLineApplication(String applicationName, String packageName) {
+      this.applicationName = StringUtils.isNullOrBlank(applicationName) ? getClass().getSimpleName() : applicationName;
+      this.packageName = packageName;
+   }
 
-  @Override
-  public void setAllArguments(String[] allArguments) {
-    this.allArgs = allArguments;
-  }
+   @Override
+   public final String[] getAllArguments() {
+      return allArgs;
+   }
 
-  @Override
-  public String getConfigPackageName() {
-    return packageName;
-  }
+   @Override
+   public void setAllArguments(String[] allArguments) {
+      this.allArgs = allArguments;
+   }
 
-  @Override
-  public String getName() {
-    return applicationName;
-  }
+   @Override
+   public String getConfigPackageName() {
+      return packageName;
+   }
 
+   @Override
+   public String getName() {
+      return applicationName;
+   }
 
-  @Override
-  public final String[] getNonParsableArguments() {
-    return nonNamedArguments;
-  }
+   @Override
+   public final String[] getNonSpecifiedArguments() {
+      return nonNamedArguments;
+   }
 
-  /**
-   * Child classes override this method adding their program logic.
-   *
-   * @throws Exception Something abnormal happened.
-   */
-  protected abstract void programLogic() throws Exception;
+   @Override
+   public void setNonSpecifiedArguments(String[] nonSpecifiedArguments) {
+      this.nonNamedArguments = nonSpecifiedArguments;
+   }
 
-  @Override
-  public final void run() {
-    try {
-      programLogic();
-    } catch (Exception e) {
-      log.severe(e);
-      System.exit(-1);
-    }
-  }
+   /**
+    * Child classes override this method adding their program logic.
+    *
+    * @throws Exception Something abnormal happened.
+    */
+   protected abstract void programLogic() throws Exception;
 
-  @Override
-  public void setNonParsableArguments(String[] nonParsableArguments) {
-    this.nonNamedArguments = nonParsableArguments;
-  }
+   @Override
+   public final void run() {
+      try {
+         programLogic();
+      } catch (Exception e) {
+         logSevere(e);
+         System.exit(-1);
+      }
+   }
 
-  @Override
-  public void setup() throws Exception {
+   @Override
+   public void setup() throws Exception {
 
-  }
+   }
 
 }//END OF Application

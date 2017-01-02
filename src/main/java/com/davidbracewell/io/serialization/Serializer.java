@@ -31,25 +31,25 @@ import com.davidbracewell.io.resource.Resource;
  */
 public interface Serializer {
 
-  /**
-   * Serializes the object saving the results to the resource
-   *
-   * @param o        The object
-   * @param resource The resource to serialize to
-   * @throws Exception Something went wrong serializing
-   */
-  void serialize(Object o, Resource resource) throws Exception;
+   /**
+    * Serializes the object saving the results to the resource
+    *
+    * @param o        The object
+    * @param resource The resource to serialize to
+    * @throws Exception Something went wrong serializing
+    */
+   void serialize(Object o, Resource resource) throws Exception;
 
-  /**
-   * Deserializes an object from a resource
-   *
-   * @param resource The resource containing the object
-   * @param clazz    Class information for the object
-   * @param <T>      the type of object
-   * @return The deserialized object
-   * @throws Exception Something went wrong deserializing the object
-   */
-  <T> T deserialize(Resource resource, Class<T> clazz) throws Exception;
+   /**
+    * Deserializes an object from a resource
+    *
+    * @param resource The resource containing the object
+    * @param clazz    Class information for the object
+    * @param <T>      the type of object
+    * @return The deserialized object
+    * @throws Exception Something went wrong deserializing the object
+    */
+   <T> T deserialize(Resource resource, Class<T> clazz) throws Exception;
 
 
 }//END OF Serializer

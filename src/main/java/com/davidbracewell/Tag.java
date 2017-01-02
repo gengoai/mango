@@ -22,9 +22,9 @@
 package com.davidbracewell;
 
 /**
- * An interface that defines a tag name and a methodology to determine if one tag is an instance of another. Individual
- * implementations may define the <code>isInstance</code> method to take into account a hierarchy or other attributes
- * that define a tag.
+ * <p>An interface that defines a tag name and a methodology to determine if one tag is an instance of another.
+ * Individual implementations may define the <code>isInstance</code> method to take into account a hierarchy or other
+ * attributes that define a tag.</p>
  *
  * @author David B. Bracewell
  */
@@ -61,6 +61,5 @@ public interface Tag {
    * @return The name of the enum value
    */
   String name();
-
 
 }//END OF Tag

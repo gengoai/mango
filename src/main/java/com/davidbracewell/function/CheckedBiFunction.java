@@ -24,7 +24,7 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of BiFunction that is serializable
+ * Version of BiFunction that is serializable and checked
  *
  * @param <T> Functional parameter
  * @param <U> Functional parameter
@@ -33,6 +33,6 @@ import java.io.Serializable;
 @FunctionalInterface
 public interface CheckedBiFunction<T, U, R> extends Serializable {
 
-  R apply(T t, U u) throws Throwable;
+   R apply(T t, U u) throws Throwable;
 
 }//END OF CheckedBiFunction

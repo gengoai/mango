@@ -22,31 +22,39 @@
 package com.davidbracewell.io.resource;
 
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
 import java.io.IOException;
 import java.io.Reader;
 
 /**
+ * Resource that wraps a <code>Reader</code>
+ *
  * @author David B. Bracewell
  */
 @EqualsAndHashCode(callSuper = true)
 public class ReaderResource extends BaseResource implements ReadOnlyResource, NonTraversableResource {
 
-  private static final long serialVersionUID = 6220239496470153511L;
-  private final Reader reader;
+   private static final long serialVersionUID = 6220239496470153511L;
+   private final Reader reader;
 
-  public ReaderResource(Reader reader) {
-    this.reader = reader;
-  }
+   /**
+    * Instantiates a new Reader resource.
+    *
+    * @param reader the reader to wrap
+    */
+   public ReaderResource(@NonNull Reader reader) {
+      this.reader = reader;
+   }
 
-  @Override
-  public Reader reader() throws IOException {
-    return reader;
-  }
+   @Override
+   public Reader reader() throws IOException {
+      return reader;
+   }
 
-  @Override
-  public boolean exists() {
-    return true;
-  }
+   @Override
+   public boolean exists() {
+      return true;
+   }
 
 }//END OF ReaderResource

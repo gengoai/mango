@@ -21,9 +21,9 @@
 
 package com.davidbracewell.tuple;
 
+import com.davidbracewell.conversion.Cast;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 
 /**
  * A tuple of degree one.
@@ -31,13 +31,12 @@ import lombok.Setter;
  * @param <V1> the type parameter
  * @author David B. Bracewell
  */
-@Getter
-@Setter
 public class Tuple1<V1> extends Tuple {
   private static final long serialVersionUID = 1L;
   /**
    * The V 1.
    */
+  @Getter
   public final V1 v1;
 
   /**
@@ -58,9 +57,20 @@ public class Tuple1<V1> extends Tuple {
     this.v1 = other.v1;
   }
 
+  /**
+   * Of tuple 1.
+   *
+   * @param <V1> the type parameter
+   * @param v1   the v 1
+   * @return the tuple 1
+   */
+  public static <V1> Tuple1<V1> of(V1 v1) {
+    return new Tuple1<>(v1);
+  }
+
   @Override
   public Tuple1<V1> copy() {
-    return new Tuple1<>(this);
+    return of(v1);
   }
 
   @Override
@@ -78,7 +88,6 @@ public class Tuple1<V1> extends Tuple {
     return "(" + v1 + ")";
   }
 
-
   @Override
   public <T> Tuple2<T, V1> appendLeft(T object) {
     return Tuple2.of(object, v1);
@@ -89,16 +98,14 @@ public class Tuple1<V1> extends Tuple {
     return Tuple2.of(v1, object);
   }
 
-  /**
-   * Of tuple 1.
-   *
-   * @param <V1> the type parameter
-   * @param v1   the v 1
-   * @return the tuple 1
-   */
-  public static <V1> Tuple1<V1> of(V1 v1) {
-    return new Tuple1<>(v1);
+  @Override
+  public <T> T get(int i) {
+    switch (i) {
+      case 0:
+        return Cast.as(v1);
+      default:
+        throw new ArrayIndexOutOfBoundsException();
+    }
   }
-
 
 }//END OF Tuple0

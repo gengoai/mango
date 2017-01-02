@@ -27,11 +27,11 @@ import com.davidbracewell.logging.Logger;
 import com.davidbracewell.reflection.Reflect;
 import com.davidbracewell.reflection.ReflectionException;
 import com.davidbracewell.reflection.ReflectionUtils;
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * <p> Converter that tries to create a new object from the object it is given. </p> <p> <ul> <li>If the object is an
@@ -46,64 +46,81 @@ import java.util.Map;
  */
 public class NewObjectConverter<T> implements Function<Object, T> {
 
-  private static final Logger log = Logger.getLogger(NewObjectConverter.class);
+   private static final Logger log = Logger.getLogger(NewObjectConverter.class);
 
 
-  private final Class<T> convertToClass;
+   private final Class<T> convertToClass;
 
-  public NewObjectConverter(Class<T> convertToClass) {
-    this.convertToClass = Preconditions.checkNotNull(convertToClass);
-  }
+   public NewObjectConverter(@NonNull Class<T> convertToClass) {
+      this.convertToClass = convertToClass;
+   }
 
-  @Override
-  @SuppressWarnings("unchecked")
-  public T apply(Object obj) {
+   @Override
+   @SuppressWarnings("unchecked")
+   public T apply(Object obj) {
 
-    if (convertToClass != Object.class && Convert.hasConverter(convertToClass)) {
-      return Cast.as(Convert.convert(obj, convertToClass));
-    } else if (Map.class.isAssignableFrom(convertToClass)) {
-      return Cast.as(Convert.convert(obj, convertToClass, Object.class, Object.class));
-    } else if (Collection.class.isAssignableFrom(convertToClass)) {
-      return Cast.as(Convert.convert(obj, convertToClass, Object.class));
-    } else if (convertToClass.isEnum()) {
-      return Cast.as(Convert.convert(obj, Cast.<Class<? extends Enum>>as(convertToClass)));
-    }
+      if (obj == null) {
+         return null;
+      }
 
-    if (EnumValue.class.isAssignableFrom(convertToClass)) {
-      if (obj.getClass().isAssignableFrom(convertToClass)) {
-        return Cast.as(obj);
-      } else if (obj instanceof CharSequence) {
-        if (Reflect.onClass(convertToClass).containsMethod("create")) {
-          try {
-            return Reflect.onClass(convertToClass).invoke("create", obj.toString()).get();
-          } catch (ReflectionException e) {
+      if (convertToClass != Object.class && Convert.hasConverter(convertToClass)) {
+         return Cast.as(Convert.convert(obj, convertToClass));
+      } else if (Map.class.isAssignableFrom(convertToClass)) {
+         return Cast.as(Convert.convert(obj, convertToClass, Object.class, Object.class));
+      } else if (Collection.class.isAssignableFrom(convertToClass)) {
+         return Cast.as(Convert.convert(obj, convertToClass, Object.class));
+      } else if (convertToClass.isEnum()) {
+         return Cast.as(Convert.convert(obj, Cast.<Class<? extends Enum>>as(convertToClass)));
+      } else if (convertToClass != Object.class && convertToClass.isInstance(obj)) {
+         return Cast.as(obj);
+      }
 
-          }
-        }
 
-        try {
-          return Reflect.onClass(convertToClass).allowPrivilegedAccess().create(obj.toString()).get();
-        } catch (ReflectionException e) {
+      if (obj instanceof CharSequence) {
+         String seq = obj.toString();
+         int index = seq.lastIndexOf('.');
+         if (index > 0) {
+            Class<?> clazz = ReflectionUtils.getClassForNameQuietly(seq.substring(0, index));
+            if (clazz != null && EnumValue.class.isAssignableFrom(clazz)) {
+               try {
+                  Object converted = Reflect.onClass(clazz)
+                                            .allowPrivilegedAccess()
+                                            .invoke("create", seq.substring(index + 1))
+                                            .get();
+                  if (EnumValue.class.isAssignableFrom(convertToClass) || convertToClass == Object.class) {
+                     return Cast.as(converted);
+                  }
+                  return apply(converted);
+               } catch (ReflectionException e) {
+                  //No opt
+               }
+            }
+         }
 
-        }
+         if (EnumValue.class.isAssignableFrom(convertToClass)) {
+            try {
+               return Reflect.onClass(convertToClass).allowPrivilegedAccess()
+                             .invoke("create", obj).get();
+            } catch (ReflectionException e) {
+               //nopt
+            }
+         }
+
+         Object o = ReflectionUtils.createObject(obj.toString());
+         if (convertToClass.isInstance(o)) {
+            return Cast.as(o);
+         }
 
       }
-    }
 
-    if (obj instanceof CharSequence) {
-      Object o = ReflectionUtils.createObject(obj.toString());
-      if (convertToClass.isInstance(o)) {
-        return Cast.as(o);
+
+      try {
+         return Reflect.onClass(convertToClass).create(obj).get();
+      } catch (ReflectionException e) {
+         //ignore
       }
-    }
 
-    try {
-      return Reflect.onClass(convertToClass).create(obj).get();
-    } catch (ReflectionException e) {
-      //ignore
-    }
-
-    log.fine("Could not convert {0} to {1}.", obj.getClass(), convertToClass);
-    return null;
-  }
+      log.fine("Could not convert {0} to {1}.", obj.getClass(), convertToClass);
+      return null;
+   }
 }

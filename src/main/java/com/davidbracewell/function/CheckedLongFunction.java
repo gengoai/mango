@@ -24,13 +24,13 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of LongFunction that is serializable
+ * Version of LongFunction that is serializable and checked
  *
  * @param <R> Functional parameter
  */
 @FunctionalInterface
 public interface CheckedLongFunction<R> extends Serializable {
 
-  R apply(long t) throws Throwable;
+   R apply(long t) throws Throwable;
 
 }//END OF CheckedLongFunction

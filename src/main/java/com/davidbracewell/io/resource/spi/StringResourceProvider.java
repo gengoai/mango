@@ -37,23 +37,23 @@ import java.util.Map;
 @MetaInfServices
 public class StringResourceProvider implements ResourceProvider {
 
-  public static final String PROTOCOL = "string";
+   public static final String PROTOCOL = "string";
 
-  @Override
-  public String[] getProtocols() {
-    return new String[]{PROTOCOL};
-  }
+   @Override
+   public String[] getProtocols() {
+      return new String[]{PROTOCOL};
+   }
 
-  @Override
-  public Resource createResource(String specification, Map<String, String> properties) {
-    BeanMap beanMap = new BeanMap(new StringResource(specification));
-    beanMap.putAll(properties);
-    return Cast.as(beanMap.getBean());
-  }
+   @Override
+   public Resource createResource(String specification, Map<String, String> properties) {
+      BeanMap beanMap = new BeanMap(new StringResource(specification));
+      beanMap.putAll(properties);
+      return Cast.as(beanMap.getBean());
+   }
 
-  @Override
-  public boolean requiresProtocol() {
-    return false;
-  }
+   @Override
+   public boolean requiresProtocol() {
+      return false;
+   }
 
 }//END OF FileResourceProvider

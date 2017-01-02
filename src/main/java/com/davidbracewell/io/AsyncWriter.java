@@ -24,7 +24,8 @@ package com.davidbracewell.io;
 import com.davidbracewell.concurrent.Threads;
 import com.davidbracewell.logging.Logger;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
+import lombok.NonNull;
+import lombok.SneakyThrows;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -40,82 +41,79 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class AsyncWriter extends Writer implements Runnable {
 
-  private static final Logger log = Logger.getLogger(AsyncWriter.class);
-  private final AtomicBoolean isStopped = new AtomicBoolean(false);
-  private final BlockingQueue<String> queue = new LinkedBlockingQueue<>();
-  private final AtomicBoolean isTerminated = new AtomicBoolean(false);
-  private final Writer wrap;
-  private Thread thread;
+   private static final Logger log = Logger.getLogger(AsyncWriter.class);
+   private final AtomicBoolean isStopped = new AtomicBoolean(false);
+   private final BlockingQueue<String> queue = new LinkedBlockingQueue<>();
+   private final AtomicBoolean isTerminated = new AtomicBoolean(false);
+   private final Writer wrap;
+   private Thread thread;
 
-  /**
-   * Creates an instance of an Asynchronous writer wrapping a given writer.
-   *
-   * @param wrap The writer being wrapped
-   */
-  public AsyncWriter(Writer wrap) {
-    this.wrap = Preconditions.checkNotNull(wrap);
-    thread = new Thread(this);
-    thread.start();
-  }
+   /**
+    * Creates an instance of an Asynchronous writer wrapping a given writer.
+    *
+    * @param wrap The writer being wrapped
+    */
+   public AsyncWriter(@NonNull Writer wrap) {
+      this.wrap = wrap;
+      thread = new Thread(this);
+      thread.start();
+   }
 
-  @Override
-  public void write(char[] cbuf, int off, int len) throws IOException {
-    Preconditions.checkArgument(!isStopped.get(), "Cannot write to a closed writer.");
-    try {
-      queue.put(new String(cbuf, off, len));
-    } catch (InterruptedException e) {
-      throw new IOException(e);
-    }
-  }
-
-  @Override
-  public void flush() throws IOException {
-    wrap.flush();
-  }
-
-  @Override
-  public void close() throws IOException {
-    isStopped.set(true);
-    while (thread.isAlive()) {
-      Threads.sleep(100);
-    }
-  }
-
-
-  /**
-   * Is terminated.
-   *
-   * @return the boolean
-   */
-  public boolean isTerminated() {
-    return isTerminated.get();
-  }
-
-  @Override
-  public void run() {
-    while (!Thread.currentThread().isInterrupted()) {
+   @Override
+   public void write(char[] cbuf, int off, int len) throws IOException {
+      Preconditions.checkArgument(!isStopped.get(), "Cannot write to a closed writer.");
       try {
-        String out = queue.poll(100, TimeUnit.MILLISECONDS);
-        if (out != null) {
-          wrap.write(out);
-        }
-        if (queue.isEmpty() && isStopped.get()) {
-          break;
-        }
+         queue.put(new String(cbuf, off, len));
       } catch (InterruptedException e) {
-        break;
-      } catch (IOException e) {
-        log.severe(e);
-        break;
+         throw new IOException(e);
       }
-    }
-    try {
+   }
+
+   @Override
+   public void flush() throws IOException {
       wrap.flush();
-    } catch (IOException e) {
-      throw Throwables.propagate(e);
-    }
-    QuietIO.closeQuietly(wrap);
-    isTerminated.set(true);
-  }
+   }
+
+   @Override
+   public void close() throws IOException {
+      isStopped.set(true);
+      while (thread.isAlive()) {
+         Threads.sleep(100);
+      }
+   }
+
+
+   /**
+    * Determines if the writing has been terminated
+    *
+    * @return True if terminate, False if not
+    */
+   public boolean isTerminated() {
+      return isTerminated.get();
+   }
+
+   @Override
+   @SneakyThrows
+   public void run() {
+      while (!Thread.currentThread().isInterrupted()) {
+         try {
+            String out = queue.poll(100, TimeUnit.MILLISECONDS);
+            if (out != null) {
+               wrap.write(out);
+            }
+            if (queue.isEmpty() && isStopped.get()) {
+               break;
+            }
+         } catch (InterruptedException e) {
+            break;
+         } catch (IOException e) {
+            log.severe(e);
+            break;
+         }
+      }
+      wrap.flush();
+      QuietIO.closeQuietly(wrap);
+      isTerminated.set(true);
+   }
 
 }//END OF AsyncWriter

@@ -25,7 +25,7 @@ import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.io.resource.ByteArrayResource;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.reflection.BeanMap;
-import com.google.common.base.Strings;
+import com.davidbracewell.string.StringUtils;
 import org.kohsuke.MetaInfServices;
 
 import java.util.Map;
@@ -38,28 +38,28 @@ import java.util.Map;
 @MetaInfServices
 public class ByteArrayResourceProvider implements ResourceProvider {
 
-  public static final String PROTOCOL = "bytes";
+   public static final String PROTOCOL = "bytes";
 
-  @Override
-  public String[] getProtocols() {
-    return new String[]{PROTOCOL};
-  }
+   @Override
+   public String[] getProtocols() {
+      return new String[]{PROTOCOL};
+   }
 
-  @Override
-  public Resource createResource(String specification, Map<String, String> properties) {
-    BeanMap beanMap;
-    if (Strings.isNullOrEmpty(specification)) {
-      beanMap = new BeanMap(new ByteArrayResource());
-    } else {
-      beanMap = new BeanMap(new ByteArrayResource(specification.getBytes()));
-    }
-    beanMap.putAll(properties);
-    return Cast.as(beanMap.getBean());
-  }
+   @Override
+   public Resource createResource(String specification, Map<String, String> properties) {
+      BeanMap beanMap;
+      if (StringUtils.isNullOrBlank(specification)) {
+         beanMap = new BeanMap(new ByteArrayResource());
+      } else {
+         beanMap = new BeanMap(new ByteArrayResource(specification.getBytes()));
+      }
+      beanMap.putAll(properties);
+      return Cast.as(beanMap.getBean());
+   }
 
-  @Override
-  public boolean requiresProtocol() {
-    return false;
-  }
+   @Override
+   public boolean requiresProtocol() {
+      return false;
+   }
 
 }//END OF FileResourceProvider

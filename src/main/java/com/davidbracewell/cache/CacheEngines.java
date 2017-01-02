@@ -21,7 +21,7 @@
 
 package com.davidbracewell.cache;
 
-import com.davidbracewell.collection.NormalizedStringMap;
+import com.davidbracewell.collection.map.NormalizedStringMap;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -36,42 +36,42 @@ import java.util.ServiceLoader;
  */
 public final class CacheEngines {
 
-  private static final Map<String, CacheEngine> engines = new NormalizedStringMap<>();
+   private static final Map<String, CacheEngine> engines = new NormalizedStringMap<>();
 
-  static {
-    for (CacheEngine engine : ServiceLoader.load(CacheEngine.class)) {
-      engines.put(engine.name(), engine);
-    }
-  }
-
-
-  private CacheEngines() {
-    throw new IllegalAccessError();
-  }
+   static {
+      for (CacheEngine engine : ServiceLoader.load(CacheEngine.class)) {
+         engines.put(engine.name(), engine);
+      }
+   }
 
 
-  /**
-   * Gets the cache engine associated with the given name
-   *
-   * @param name the name of the cache engine
-   * @return the cache engine associated with the given name
-   * @throws IllegalArgumentException If the name is not a valid cache engine name
-   */
-  public static CacheEngine get(String name) {
-    if (!engines.containsKey(name)) {
-      throw new IllegalArgumentException(name + " is not a valid cache engine name.");
-    }
-    return engines.get(name);
-  }
+   private CacheEngines() {
+      throw new IllegalAccessError();
+   }
 
-  /**
-   * Gets the names of all available cache engines.
-   *
-   * @return the names of all available cache engines.
-   */
-  public static Collection<String> getNames() {
-    return Collections.unmodifiableSet(engines.keySet());
-  }
+
+   /**
+    * Gets the cache engine associated with the given name
+    *
+    * @param name the name of the cache engine
+    * @return the cache engine associated with the given name
+    * @throws IllegalArgumentException If the name is not a valid cache engine name
+    */
+   public static CacheEngine get(String name) {
+      if (!engines.containsKey(name)) {
+         throw new IllegalArgumentException(name + " is not a valid cache engine name.");
+      }
+      return engines.get(name);
+   }
+
+   /**
+    * Gets the names of all available cache engines.
+    *
+    * @return the names of all available cache engines.
+    */
+   public static Collection<String> getNames() {
+      return Collections.unmodifiableSet(engines.keySet());
+   }
 
 
 }//END OF CacheEngines

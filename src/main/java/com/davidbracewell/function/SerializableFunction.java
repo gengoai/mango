@@ -36,13 +36,13 @@ import java.util.function.Function;
 public interface SerializableFunction<T, R> extends Function<T, R>, Serializable {
 
 
-  default <F> SerializableFunction<T, F> andThen(@NonNull SerializableFunction<? super R, ? extends F> function) {
-    return t -> function.apply(this.apply(t));
-  }
+   default <F> SerializableFunction<T, F> andThen(@NonNull SerializableFunction<? super R, ? extends F> function) {
+      return t -> function.apply(this.apply(t));
+   }
 
-  default <V> SerializableFunction<V, R> compose(@NonNull SerializableFunction<? super V, ? extends T> function) {
-    return v -> this.apply(function.apply(v));
-  }
+   default <V> SerializableFunction<V, R> compose(@NonNull SerializableFunction<? super V, ? extends T> function) {
+      return v -> this.apply(function.apply(v));
+   }
 
 
 }//END OF SerializableFunction

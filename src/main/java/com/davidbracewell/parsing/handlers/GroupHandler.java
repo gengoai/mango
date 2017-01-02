@@ -22,42 +22,42 @@
 package com.davidbracewell.parsing.handlers;
 
 
+import com.davidbracewell.parsing.ExpressionIterator;
 import com.davidbracewell.parsing.ParseException;
-import com.davidbracewell.parsing.Parser;
 import com.davidbracewell.parsing.ParserToken;
 import com.davidbracewell.parsing.ParserTokenType;
 import com.davidbracewell.parsing.expressions.Expression;
 import com.davidbracewell.parsing.expressions.ValueExpression;
 
 /**
- * A <code>PrefixHandler</code> that captures groups.
+ * <p>Treats everything between the open group type and closed group type as a single group which should result in a
+ * single expression.</p>
  *
  * @author David B. Bracewell
  */
 public class GroupHandler extends PrefixHandler {
+   private static final long serialVersionUID = 1L;
+   private final ParserTokenType closeGroupType;
 
-  private final ParserTokenType closeGroupType;
+   /**
+    * Default Constructor
+    *
+    * @param closeGroupType The token type that indicates the end of the group
+    */
+   public GroupHandler(ParserTokenType closeGroupType) {
+      this.closeGroupType = closeGroupType;
+   }
 
-  /**
-   * Default Constructor
-   *
-   * @param closeGroupType The token type that indicates the end of the group
-   */
-  public GroupHandler(ParserTokenType closeGroupType) {
-    super(0);
-    this.closeGroupType = closeGroupType;
-  }
-
-  @Override
-  public Expression parse(Parser parser, ParserToken token) throws ParseException {
-    Expression right;
-    if (!parser.tokenStream().nonConsumingMatch(closeGroupType)) {
-      right = parser.next();
-    } else {
-      right = new ValueExpression("", null);
-    }
-    parser.tokenStream().consume(closeGroupType);
-    return right;
-  }
+   @Override
+   public Expression parse(ExpressionIterator expressionIterator, ParserToken token) throws ParseException {
+      Expression right;
+      if (!expressionIterator.tokenStream().nonConsumingMatch(closeGroupType)) {
+         right = expressionIterator.next();
+      } else {
+         right = new ValueExpression("", null);
+      }
+      expressionIterator.tokenStream().consume(closeGroupType);
+      return right;
+   }
 
 }//END OF GroupHandler

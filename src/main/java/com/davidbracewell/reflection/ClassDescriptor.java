@@ -21,8 +21,8 @@
 
 package com.davidbracewell.reflection;
 
-import com.davidbracewell.conversion.Cast;
-import com.google.common.collect.Sets;
+import com.davidbracewell.collection.Sets;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -35,65 +35,95 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
+ * Contains basic information about the methods, fields and constructors for a class.
+ *
  * @author David B. Bracewell
  */
-final class ClassDescriptor implements Serializable {
-  private static final long serialVersionUID = 1L;
-  private final Set<Method> methods = new HashSet<>();
-  private final Set<Method> declaredMethods = new HashSet<>();
-  private final Set<Field> fields = new HashSet<>();
-  private final Set<Field> declaredFields = new HashSet<>();
-  private final Set<Constructor<?>> constructors = new HashSet<>();
-  private final Set<Constructor<?>> declaredConstructors = new HashSet<>();
-  private final Class<?> clazz;
+@EqualsAndHashCode(callSuper = false)
+public final class ClassDescriptor implements Serializable {
+   private static final long serialVersionUID = 1L;
+   private final Set<Method> methods = new HashSet<>();
+   private final Set<Method> declaredMethods = new HashSet<>();
+   private final Set<Field> fields = new HashSet<>();
+   private final Set<Field> declaredFields = new HashSet<>();
+   private final Set<Constructor<?>> constructors = new HashSet<>();
+   private final Set<Constructor<?>> declaredConstructors = new HashSet<>();
+   private final Class<?> clazz;
 
-  public ClassDescriptor(@NonNull Class<?> clazz) {
-    this.clazz = clazz;
-    this.methods.addAll(Arrays.asList(clazz.getMethods()));
-    this.declaredMethods.addAll(Arrays.asList(clazz.getDeclaredMethods()));
-    this.constructors.addAll(Arrays.asList(clazz.getConstructors()));
-    this.declaredConstructors.addAll(Arrays.asList(clazz.getDeclaredConstructors()));
-    this.fields.addAll(ReflectionUtils.getFields(clazz,true));
-    this.declaredFields.addAll(ReflectionUtils.getDeclaredFields(clazz, true));
-  }
+   /**
+    * Instantiates a new Class descriptor.
+    *
+    * @param clazz the clazz
+    */
+   public ClassDescriptor(@NonNull Class<?> clazz) {
+      this.clazz = clazz;
+      this.methods.addAll(Arrays.asList(clazz.getMethods()));
+      this.declaredMethods.addAll(Arrays.asList(clazz.getDeclaredMethods()));
+      this.constructors.addAll(Arrays.asList(clazz.getConstructors()));
+      this.declaredConstructors.addAll(Arrays.asList(clazz.getDeclaredConstructors()));
+      this.fields.addAll(Arrays.asList(clazz.getFields()));
+      this.declaredFields.addAll(ReflectionUtils.getDeclaredFields(clazz, true));
+   }
 
 
-  public Set<Method> getMethods(boolean privileged) {
-    if (privileged) {
-      return Collections.unmodifiableSet(Sets.union(methods, declaredMethods));
-    } else {
-      return Collections.unmodifiableSet(methods);
-    }
-  }
+   /**
+    * Gets methods.
+    *
+    * @param privileged the privileged
+    * @return the methods
+    */
+   public Set<Method> getMethods(boolean privileged) {
+      if (privileged) {
+         return Collections.unmodifiableSet(Sets.union(methods, declaredMethods));
+      } else {
+         return Collections.unmodifiableSet(methods);
+      }
+   }
 
-  public Set<Constructor<?>> getConstructors(boolean privileged) {
-    if (privileged) {
-      return Collections.unmodifiableSet(Sets.union(constructors, declaredConstructors));
-    } else {
-      return Collections.unmodifiableSet(constructors);
-    }
-  }
+   /**
+    * Gets constructors.
+    *
+    * @param privileged the privileged
+    * @return the constructors
+    */
+   public Set<Constructor<?>> getConstructors(boolean privileged) {
+      if (privileged) {
+         return Collections.unmodifiableSet(Sets.union(constructors, declaredConstructors));
+      } else {
+         return Collections.unmodifiableSet(constructors);
+      }
+   }
 
-  public Set<Field> getFields(boolean privileged) {
-    if (privileged) {
-      return Collections.unmodifiableSet(Sets.union(fields, declaredFields));
-    } else {
-      return Collections.unmodifiableSet(fields);
-    }
-  }
+   /**
+    * Gets fields.
+    *
+    * @param privileged the privileged
+    * @return the fields
+    */
+   public Set<Field> getFields(boolean privileged) {
+      if (privileged) {
+         return Collections.unmodifiableSet(Sets.union(fields, declaredFields));
+      } else {
+         return Collections.unmodifiableSet(fields);
+      }
+   }
 
-  public Class<?> getClazz() {
-    return clazz;
-  }
+   /**
+    * Gets clazz.
+    *
+    * @return the clazz
+    */
+   public Class<?> getClazz() {
+      return clazz;
+   }
 
-  @Override
-  public boolean equals(Object o) {
-    return o != null && o instanceof ClassDescriptor && Cast.<ClassDescriptor>as(o).clazz == this.clazz;
-  }
-
-  @Override
-  public int hashCode() {
-    return clazz.hashCode();
-  }
+   /**
+    * Gets super class descriptor.
+    *
+    * @return the super class descriptor
+    */
+   public ClassDescriptor getSuperClassDescriptor() {
+      return ClassDescriptorCache.getInstance().getClassDescriptor(this.clazz.getSuperclass());
+   }
 
 }//END OF ClassDescriptor

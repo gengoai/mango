@@ -23,6 +23,7 @@ package com.davidbracewell.tuple;
 
 import lombok.NonNull;
 
+import java.io.ObjectStreamException;
 import java.util.function.Function;
 
 /**
@@ -30,13 +31,16 @@ import java.util.function.Function;
  *
  * @author David B. Bracewell
  */
-public class Tuple0 extends Tuple {
+public final class Tuple0 extends Tuple {
   private static final long serialVersionUID = 1L;
 
   /**
    * The constant INSTANCE.
    */
   public static Tuple0 INSTANCE = new Tuple0();
+
+  private Tuple0() {
+  }
 
   @Override
   public Tuple0 copy() {
@@ -64,13 +68,12 @@ public class Tuple0 extends Tuple {
   }
 
   @Override
-  public boolean equals(Object o) {
-    return o != null && o instanceof Tuple0;
-  }
-
-  @Override
   public String toString() {
     return "()";
+  }
+
+  protected Object readResolve() throws ObjectStreamException {
+    return INSTANCE;
   }
 
 }//END OF Tuple0

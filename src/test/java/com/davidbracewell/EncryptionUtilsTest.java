@@ -34,7 +34,6 @@ public class EncryptionUtilsTest {
   public void testEncrypt() throws Exception {
     String content = "all things come to an end.";
     String key = "ABCDEF1234567890ABCDEF";
-
     String encryptedContent = EncryptionMethod.DES.encrypt(content, key);
     assertEquals(content, new String(EncryptionMethod.DES.decrypt(encryptedContent, key)));
     encryptedContent = EncryptionMethod.AES.encrypt(content, key);

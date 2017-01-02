@@ -27,53 +27,55 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 /**
+ * Defines a resources whose hierarchy is not traversable.
+ *
  * @author David B. Bracewell
  */
 public interface NonTraversableResource extends Resource {
 
-  @Override
-  default Resource getChild(String relativePath) {
-    return EmptyResource.INSTANCE;
-  }
+   @Override
+   default Resource getChild(String relativePath) {
+      return EmptyResource.INSTANCE;
+   }
 
-  @Override
-  default Resource getParent() {
-    return EmptyResource.INSTANCE;
-  }
+   @Override
+   default Resource getParent() {
+      return EmptyResource.INSTANCE;
+   }
 
-  @Override
-  default Iterator<Resource> childIterator(String pattern, boolean recursive) {
-    return Collections.emptyIterator();
-  }
+   @Override
+   default Iterator<Resource> childIterator(String pattern, boolean recursive) {
+      return Collections.emptyIterator();
+   }
 
-  @Override
-  default List<Resource> getChildren() {
-    return Collections.emptyList();
-  }
+   @Override
+   default List<Resource> getChildren() {
+      return Collections.emptyList();
+   }
 
-  @Override
-  default List<Resource> getChildren(Pattern pattern, boolean recursive) {
-    return Collections.emptyList();
-  }
+   @Override
+   default List<Resource> getChildren(Pattern pattern, boolean recursive) {
+      return Collections.emptyList();
+   }
 
-  @Override
-  default List<Resource> getChildren(String pattern) {
-    return Collections.emptyList();
-  }
+   @Override
+   default List<Resource> getChildren(String pattern) {
+      return Collections.emptyList();
+   }
 
-  @Override
-  default List<Resource> getChildren(String pattern, boolean recursive) {
-    return Collections.emptyList();
-  }
+   @Override
+   default List<Resource> getChildren(String pattern, boolean recursive) {
+      return Collections.emptyList();
+   }
 
-  @Override
-  default List<Resource> getChildren(boolean recursive) {
-    return Collections.emptyList();
-  }
+   @Override
+   default List<Resource> getChildren(boolean recursive) {
+      return Collections.emptyList();
+   }
 
-  @Override
-  default Iterator<Resource> childIterator(boolean recursive) {
-    return Collections.emptyIterator();
-  }
+   @Override
+   default Iterator<Resource> childIterator(boolean recursive) {
+      return Collections.emptyIterator();
+   }
 
 }//END OF NonTraversableResource

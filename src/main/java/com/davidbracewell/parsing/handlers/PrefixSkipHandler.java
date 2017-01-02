@@ -21,27 +21,23 @@
 
 package com.davidbracewell.parsing.handlers;
 
+import com.davidbracewell.parsing.ExpressionIterator;
 import com.davidbracewell.parsing.ParseException;
-import com.davidbracewell.parsing.Parser;
 import com.davidbracewell.parsing.ParserToken;
 import com.davidbracewell.parsing.expressions.Expression;
 
 /**
+ * <p>A handler that defines the token type should be ignored.</p>
+ *
  * @author David B. Bracewell
  */
-public class PrefixSkipHandler extends PrefixHandler {
+public final class PrefixSkipHandler extends PrefixHandler {
+   private static final long serialVersionUID = 1L;
 
-  /**
-   * Default constructor
-   */
-  public PrefixSkipHandler() {
-    super(0);
-  }
-
-  @Override
-  public Expression parse(Parser parser, ParserToken token) throws ParseException {
-    return null;
-  }
+   @Override
+   public Expression parse(ExpressionIterator expressionIterator, ParserToken token) throws ParseException {
+      return null;
+   }
 
 }//END OF SkipHandler
 

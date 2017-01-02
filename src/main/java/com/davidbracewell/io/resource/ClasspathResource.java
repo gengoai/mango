@@ -28,10 +28,11 @@ import com.davidbracewell.io.resource.spi.ClasspathResourceProvider;
 import com.davidbracewell.logging.Logger;
 import com.davidbracewell.string.StringUtils;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
+import lombok.NonNull;
 
 import java.io.*;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -46,206 +47,205 @@ import java.util.zip.GZIPInputStream;
  */
 public class ClasspathResource extends BaseResource {
 
-  private static final Logger log = Logger.getLogger(ClasspathResource.class);
-  private static final long serialVersionUID = -1977592698953910323L;
-  private final String resource;
-  private final ClassLoader classLoader;
+   private static final Logger log = Logger.getLogger(ClasspathResource.class);
+   private static final long serialVersionUID = -1977592698953910323L;
+   private final String resource;
+   private final ClassLoader classLoader;
 
 
-  /**
-   * Constructs a ClasspathResource resource with a given charset, compression and encoding setting
-   *
-   * @param resource The resource
-   */
-  public ClasspathResource(String resource) {
-    this(resource, ClasspathResource.class.getClassLoader());
-  }
+   /**
+    * Constructs a ClasspathResource resource with a given charset, compression and encoding setting
+    *
+    * @param resource The resource
+    */
+   public ClasspathResource(String resource) {
+      this(resource, ClasspathResource.class.getClassLoader());
+   }
 
-  /**
-   * <p> Creates a classpath resource that uses the given class loader to load the resource. </p>
-   *
-   * @param resource    The path to the resource.
-   * @param classLoader The class loader to use.
-   */
-  public ClasspathResource(String resource, ClassLoader classLoader) {
-    Preconditions.checkNotNull(resource);
-    Preconditions.checkNotNull(classLoader);
-    this.resource = FileUtils.toUnix(resource);
-    this.classLoader = classLoader;
-  }
+   /**
+    * <p> Creates a classpath resource that uses the given class loader to load the resource. </p>
+    *
+    * @param resource    The path to the resource.
+    * @param classLoader The class loader to use.
+    */
+   public ClasspathResource(@NonNull String resource, @NonNull ClassLoader classLoader) {
+      this.resource = FileUtils.toUnix(resource);
+      this.classLoader = classLoader;
+   }
 
-  @Override
-  public Resource append(byte[] byteArray) throws IOException {
-    Preconditions.checkState(canWrite(), "Unable to write to this resource");
-    new FileResource(asFile().get()).append(byteArray);
-    return this;
-  }
+   @Override
+   public Resource append(byte[] byteArray) throws IOException {
+      Preconditions.checkState(canWrite(), "Unable to write to this resource");
+      new FileResource(asFile().get()).append(byteArray);
+      return this;
+   }
 
-  @Override
-  public Optional<File> asFile() {
-    return asURL()
-      .filter(u -> u.getProtocol() != null && u.getProtocol().equalsIgnoreCase("file"))
-      .map(u -> {
-        try {
-          return new File(u.toURI());
-        } catch (Exception e) {
-          return null;
-        }
-      })
-      .filter(Objects::nonNull);
-  }
+   @Override
+   public Optional<File> asFile() {
+      return asURL()
+                .filter(u -> u.getProtocol() != null && u.getProtocol().equalsIgnoreCase("file"))
+                .map(u -> {
+                   try {
+                      return new File(u.toURI());
+                   } catch (Exception e) {
+                      return null;
+                   }
+                })
+                .filter(Objects::nonNull);
+   }
 
-  @Override
-  public String descriptor() {
-    return ClasspathResourceProvider.PROTOCOL + ":" + resource;
-  }
+   @Override
+   public String descriptor() {
+      return ClasspathResourceProvider.PROTOCOL + ":" + resource;
+   }
 
-  @Override
-  public Optional<URL> asURL() {
-    return Optional.ofNullable(classLoader.getResource(resource));
-  }
+   @Override
+   public Optional<URL> asURL() {
+      return Optional.ofNullable(classLoader.getResource(resource));
+   }
 
-  @Override
-  public boolean isDirectory() {
-    return asFile().map(File::isDirectory).orElse(StringUtils.isNullOrBlank(FileUtils.extension(resource)) && !canRead());
-  }
+   @Override
+   public boolean isDirectory() {
+      return asFile().map(File::isDirectory)
+                     .orElse(StringUtils.isNullOrBlank(FileUtils.extension(resource)) && !canRead());
+   }
 
-  @Override
-  public String path() {
-    return FileUtils.path(resource);
-  }
+   @Override
+   public String path() {
+      return FileUtils.path(resource);
+   }
 
-  @Override
-  public String baseName() {
-    if (asFile().isPresent()) {
-      return asFile().get().getName();
-    }
-    String path = path();
-    int index = Math.max(0, Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\')) + 1);
-    return path.substring(index);
-  }
-
-  @Override
-  public boolean canWrite() {
-    return asFile().map(File::canWrite).orElse(false);
-  }
-
-  @Override
-  public boolean canRead() {
-    if (asFile().isPresent()) {
-      return asFile().get().canRead();
-    }
-    try (InputStream is = inputStream()) {
-      return true;
-    } catch (Exception e) {
-      return false;
-    }
-  }
-
-  @Override
-  public Resource getChild(String relativePath) {
-    if (relativePath == null) {
-      relativePath = StringUtils.EMPTY;
-    }
-    relativePath = relativePath.replaceFirst("^[\\\\/]+", "");
-    if (resource.endsWith("/")) {
-      return new ClasspathResource(resource + relativePath, classLoader);
-    } else {
-      return new ClasspathResource(resource + "/" + relativePath, classLoader);
-    }
-  }
-
-  @Override
-  public boolean exists() {
-    return classLoader.getResource(resource) != null;
-  }
-
-  @Override
-  public List<Resource> getChildren(Pattern filePattern, boolean recursive) {
-    List<Resource> rval = Lists.newArrayList();
-
-    if (!isDirectory()) {
-      return rval;
-    }
-
-    if (asFile().isPresent()) {
-      return Resources.fromFile(asFile().get()).getChildren(filePattern, recursive);
-    }
-
-    String matchText = path();
-    matchText = matchText.endsWith("/") ? matchText : matchText + "/";
-    String path = path() + "/";
-
-    for (Resource resource : JarUtils.getClasspathResources()) {
-      String rName = resource.baseName();
-      String rPath = resource.path() + "/";
-      String rParent = resource.getParent().path() + "/";
-      if (rPath.startsWith(matchText) && (recursive || rParent.equals(path)) && filePattern.matcher(rName).find()) {
-        rval.add(resource);
+   @Override
+   public String baseName() {
+      if (asFile().isPresent()) {
+         return asFile().get().getName();
       }
-    }
-    return rval;
-  }
+      String path = path();
+      int index = Math.max(0, Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\')) + 1);
+      return path.substring(index);
+   }
 
-  @Override
-  public Resource getParent() {
-    String parent = FileUtils.parent(resource);
-    if (parent == null) {
-      return EmptyResource.INSTANCE;
-    }
-    return new ClasspathResource(parent);
-  }
+   @Override
+   public boolean canWrite() {
+      return asFile().map(File::canWrite).orElse(false);
+   }
+
+   @Override
+   public boolean canRead() {
+      if (asFile().isPresent()) {
+         return asFile().get().canRead();
+      }
+      try (InputStream is = inputStream()) {
+         return true;
+      } catch (Exception e) {
+         return false;
+      }
+   }
+
+   @Override
+   public Resource getChild(String relativePath) {
+      if (relativePath == null) {
+         relativePath = StringUtils.EMPTY;
+      }
+      relativePath = relativePath.replaceFirst("^[\\\\/]+", "");
+      if (resource.endsWith("/")) {
+         return new ClasspathResource(resource + relativePath, classLoader);
+      } else {
+         return new ClasspathResource(resource + "/" + relativePath, classLoader);
+      }
+   }
+
+   @Override
+   public boolean exists() {
+      return classLoader.getResource(resource) != null;
+   }
+
+   @Override
+   public List<Resource> getChildren(Pattern filePattern, boolean recursive) {
+      List<Resource> rval = new ArrayList<>();
+
+      if (!isDirectory()) {
+         return rval;
+      }
+
+      if (asFile().isPresent()) {
+         return Resources.fromFile(asFile().get()).getChildren(filePattern, recursive);
+      }
+
+      String matchText = path();
+      matchText = matchText.endsWith("/") ? matchText : matchText + "/";
+      String path = path() + "/";
+
+      for (Resource resource : JarUtils.getClasspathResources()) {
+         String rName = resource.baseName();
+         String rPath = resource.path() + "/";
+         String rParent = resource.getParent().path() + "/";
+         if (rPath.startsWith(matchText) && (recursive || rParent.equals(path)) && filePattern.matcher(rName).find()) {
+            rval.add(resource);
+         }
+      }
+      return rval;
+   }
+
+   @Override
+   public Resource getParent() {
+      String parent = FileUtils.parent(resource);
+      if (parent == null) {
+         return EmptyResource.INSTANCE;
+      }
+      return new ClasspathResource(parent);
+   }
 
 
-  @Override
-  public InputStream inputStream() throws IOException {
-    InputStream rawis = createInputStream();
-    Preconditions.checkState(rawis != null, "This resource cannot be read from.");
-    PushbackInputStream is = new PushbackInputStream(rawis, 2);
-    if (FileUtils.isCompressed(is)) {
-      setIsCompressed(true);
-      return new GZIPInputStream(is);
-    }
-    return is;
-  }
+   @Override
+   public InputStream inputStream() throws IOException {
+      InputStream rawis = createInputStream();
+      Preconditions.checkState(rawis != null, "This resource cannot be read from.");
+      PushbackInputStream is = new PushbackInputStream(rawis, 2);
+      if (FileUtils.isCompressed(is)) {
+         setIsCompressed(true);
+         return new GZIPInputStream(is);
+      }
+      return is;
+   }
 
-  @Override
-  public InputStream createInputStream() throws IOException {
-    return classLoader.getResourceAsStream(resource);
-  }
+   @Override
+   public InputStream createInputStream() throws IOException {
+      return classLoader.getResourceAsStream(resource);
+   }
 
-  @Override
-  public OutputStream createOutputStream() throws IOException {
-    Preconditions.checkState(canWrite(), "Unable to write to this resource");
-    return new FileOutputStream(this.asFile().get());
-  }
+   @Override
+   public OutputStream createOutputStream() throws IOException {
+      Preconditions.checkState(canWrite(), "Unable to write to this resource");
+      return new FileOutputStream(this.asFile().get());
+   }
 
-  @Override
-  public boolean mkdirs() {
-    return asFile().map(File::mkdirs).orElse(false);
-  }
+   @Override
+   public boolean mkdirs() {
+      return asFile().map(File::mkdirs).orElse(false);
+   }
 
-  @Override
-  public boolean mkdir() {
-    return asFile().map(File::mkdir).orElse(false);
-  }
+   @Override
+   public boolean mkdir() {
+      return asFile().map(File::mkdir).orElse(false);
+   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(classLoader, resource);
-  }
+   @Override
+   public int hashCode() {
+      return Objects.hash(classLoader, resource);
+   }
 
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
-    ClasspathResource other = (ClasspathResource) obj;
-    return Objects.equals(classLoader, other.classLoader) &&
-      Objects.equals(resource, other.resource);
-  }
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      ClasspathResource other = (ClasspathResource) obj;
+      return Objects.equals(classLoader, other.classLoader) &&
+                Objects.equals(resource, other.resource);
+   }
 
 }// END OF ClasspathResource

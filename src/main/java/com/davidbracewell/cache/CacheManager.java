@@ -24,14 +24,16 @@ package com.davidbracewell.cache;
 import com.davidbracewell.config.Config;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.reflection.Reflect;
-import com.davidbracewell.reflection.ReflectionException;
 import com.davidbracewell.string.StringUtils;
-import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
+import com.google.common.base.Preconditions;
+import lombok.NonNull;
+import lombok.SneakyThrows;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * Manages the creation and retrieval of caches. Caches are defined as specification {@link CacheSpec}. Additionally,
@@ -42,157 +44,132 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class CacheManager {
 
-  /**
-   * The name of the global cache.
-   */
-  public static final String GLOBAL_CACHE = "com.davidbracewell.cache.globalCache";
-  private static volatile CacheManager INSTANCE = null;
-  private volatile Map<String, Cache<?, ?>> caches = new ConcurrentHashMap<>();
+   private CacheManager() {
+      throw new IllegalAccessError();
+   }
+
+   /**
+    * The name of the global cache.
+    */
+   public static final String GLOBAL_CACHE = "com.davidbracewell.cache.globalCache";
+   private static final Map<String, Cache<?, ?>> caches = new ConcurrentHashMap<>();
 
 
-  private CacheManager() {
+   /**
+    * Creates an object that automatically caches results for methods annotated with the <Code>@Cached</Code>
+    * annotation.
+    *
+    * @param <T>    The type of the object
+    * @param object The object, which must implement an interface,  that we are wrapping
+    * @return The Proxy object
+    */
+   public static <T> T cacheObject(T object) {
+      return CacheProxy.cache(object);
+   }
 
-  }
 
-  /**
-   * Creates an object that automatically caches results for methods annotated with the <Code>@Cached</Code>
-   * annotation.
-   *
-   * @param <T>    The type of the object
-   * @param object The object, which must implement an interface,  that we are wrapping
-   * @return The Proxy object
-   */
-  public static <T> T cacheObject(T object) {
-    return CacheProxy.cache(object);
-  }
+   /**
+    * Determines if a cache with a given name has been created via the CacheManager
+    *
+    * @param name The cache name
+    * @return True if the cache has been created, false if not.
+    */
+   public static boolean exists(String name) {
+      return caches.containsKey(name);
+   }
 
-  /**
-   * Gets instance.
-   *
-   * @return The CacheManager instance
-   */
-  public static CacheManager getInstance() {
-    if (INSTANCE == null) {
-      synchronized (CacheManager.class) {
-        if (INSTANCE == null) {
-          INSTANCE = new CacheManager();
-        }
+   /**
+    * Gets the cache associated with the given name. If the name is not known, i.e. the associated cache has not been
+    * defined, a no operation cache (no cache) is returned.
+    *
+    * @param <K>  the type parameter
+    * @param <V>  the type parameter
+    * @param name The name of the cache
+    * @return A cache
+    */
+   @SuppressWarnings("unchecked")
+   public static <K, V> Cache<K, V> get(String name) {
+      Preconditions.checkArgument(StringUtils.isNotNullOrBlank(name), "Cache name must not be null or blank.");
+      if (GLOBAL_CACHE.equals(name)) {
+         return Cast.as(getGlobalCache());
+      } else if (caches.containsKey(name)) {
+         return Cast.as(caches.get(name));
+      } else if (Config.hasProperty(name) && caches.containsKey(Config.get(name).asString())) {
+         return Cast.as(caches.get(Config.get(name).asString()));
       }
-    }
-    return INSTANCE;
-  }
+      return register(getCacheSpec(name));
+   }
 
-  /**
-   * Determines if a cache with a given name has been created
-   *
-   * @param name The cache name
-   * @return True if the cache has been created, false if not.
-   */
-  public boolean contains(String name) {
-    return caches.containsKey(name);
-  }
+   /**
+    * Gets the names of the existing managed caches
+    *
+    * @return The names of all of the existing caches.
+    */
+   public static Set<String> getCacheNames() {
+      return caches.keySet();
+   }
 
-  /**
-   * Gets the cache associated with the given name. If the name is not known, i.e. the associated cache has not been
-   * defined, a no operation cache (no cache) is returned.
-   *
-   * @param <K>  the type parameter
-   * @param <V>  the type parameter
-   * @param name The name of the cache
-   * @return A cache
-   */
-  public <K, V> Cache<K, V> get(String name) {
-    if (StringUtils.isNullOrBlank(name)) {
-      throw new IllegalArgumentException("Cache name must not be null or blank.");
-    }
+   @SneakyThrows
+   private static CacheSpec getCacheSpec(String property) {
 
-    if (GLOBAL_CACHE.equals(name)) {
-      return Cast.as(getGlobalCache());
-    } else if (caches.containsKey(name)) {
-      return Cast.as(caches.get(name));
-    } else if (Config.hasProperty(name) && caches.containsKey(Config.get(name).asString())) {
-      return Cast.as(caches.get(Config.get(name).asString()));
-    }
+      //Sanity check for the global cache. If one is not defined in the configuration create a default with max size 1,000
+      if (GLOBAL_CACHE.equals(property) && !Config.hasProperty(property)) {
+         return new CacheSpec<>().name(GLOBAL_CACHE).maxSize(1000);
+      }
 
-    return register(this.<K, V>getCacheSpec(name));
-  }
+      String specString = Config.get(property).asString();
 
-  /**
-   * Gets cache names.
-   *
-   * @return The names of all of the initialized caches.
-   */
-  public Set<String> getCacheNames() {
-    return caches.keySet();
-  }
+      //Make sure the cache is defined
+      checkArgument(StringUtils.isNotNullOrBlank(specString),
+                    property + " is not a known cache and is not defined via a config file.");
 
-  private <K, V> CacheSpec<K, V> getCacheSpec(String property) {
+      CacheSpec spec;
+      //See if there is special implementation of the cache spec class
+      if (Config.hasProperty(property + ".cacheSpecClass")) {
+         spec = Reflect.onClass(Config.get(property + ".cacheSpecClass").asClass()).create().get();
+      } else {
+         spec = new CacheSpec<>();
+      }
 
-    //Sanity check for the global cache. If one is not defined in the configuration create a default with max size 1,000
-    if (GLOBAL_CACHE.equals(property) && !Config.hasProperty(property)) {
-      return new CacheSpec<K, V>().name(GLOBAL_CACHE).maxSize(1000);
-    }
-
-    String specString = Config.get(property).asString();
-
-    //Make sure the cache is defined
-    if (Strings.isNullOrEmpty(specString)) {
-      throw new IllegalArgumentException(property + " is not a known cache and is not defined via a config file.");
-    }
-
-    CacheSpec<K, V> spec;
-    //See if there is special implementation of the cache spec class
-    if (Config.hasProperty(property + ".cacheSpecClass")) {
       try {
-        spec = Reflect.onClass(Config.get(property + ".cacheSpecClass").asClass()).create().get();
-      } catch (ReflectionException e) {
-        throw Throwables.propagate(e);
+         spec.fromString(specString);
+         if (!specString.contains("name:")) {
+            spec.name(property);
+         }
+      } catch (Exception e) {
+         throw new IllegalStateException(specString + " is an invalid specification string.");
       }
-    } else {
-      spec = new CacheSpec<>();
-    }
 
-    try {
-      spec.fromString(specString);
-      if (!specString.contains("name:")) {
-        spec.name(property);
+      return spec;
+   }
+
+   /**
+    * Gets global cache.
+    *
+    * @return The global cache
+    */
+   @SuppressWarnings("unchecked")
+   public static <K, V> Cache<K, V> getGlobalCache() {
+      if (caches.containsKey(GLOBAL_CACHE)) {
+         return Cast.as(caches.get(GLOBAL_CACHE));
       }
-    } catch (Exception e) {
-      throw new IllegalStateException(specString + " is an invalid specification string.");
-    }
+      return register(getCacheSpec(GLOBAL_CACHE));
+   }
 
-    return spec;
-  }
-
-  /**
-   * Gets global cache.
-   *
-   * @return The global cache
-   */
-  public <K, V> Cache<K, V> getGlobalCache() {
-    if (caches.containsKey(GLOBAL_CACHE)) {
-      return Cast.as(caches.get(GLOBAL_CACHE));
-    }
-    Cache<K, V> cache = Cast.as(register(getCacheSpec(GLOBAL_CACHE)));
-    caches.put(GLOBAL_CACHE, cache);
-    return cache;
-  }
-
-  /**
-   * Creates a cache for a given cache specification. If the name in the specification is a known cache, then
-   * it will return that cache.
-   *
-   * @param <K>           The key type
-   * @param <V>           The value type
-   * @param specification The specification
-   * @return A cache for the specification
-   */
-  public <K, V> Cache<K, V> register(CacheSpec<?, ?> specification) {
-    if (!caches.containsKey(specification.getName())) {
-      Cache<?, ?> cache = specification.getEngine().create(specification);
-      caches.putIfAbsent(cache.getName(), cache);
-    }
-    return Cast.as(caches.get(specification.getName()));
-  }
+   /**
+    * Creates a cache for a given cache specification. If the name in the specification is a known cache, then
+    * it will return that cache.
+    *
+    * @param <K>           The key type
+    * @param <V>           The value type
+    * @param specification The specification
+    * @return A cache for the specification
+    */
+   public static <K, V> Cache<K, V> register(@NonNull CacheSpec<K, V> specification) {
+      return Cast.as(caches.computeIfAbsent(specification.getName(),
+                                            name -> Cast.as(specification.getEngine().create(specification))
+                                           )
+                    );
+   }
 
 }//END OF CacheManager

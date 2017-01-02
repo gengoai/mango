@@ -24,13 +24,13 @@ package com.davidbracewell.function;
 import java.io.Serializable;
 
 /**
- * Version of ObjDoubleConsumer that is serializable
+ * Version of ObjDoubleConsumer that is serializable and checked
  *
  * @param <T> Functional parameter
  */
 @FunctionalInterface
 public interface CheckedObjDoubleConsumer<T> extends Serializable {
 
-  void accept(T t, double value) throws Throwable;
+   void accept(T t, double value) throws Throwable;
 
 }//END OF CheckedObjDoubleConsumer

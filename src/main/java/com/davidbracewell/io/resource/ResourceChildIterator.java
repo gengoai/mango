@@ -21,65 +21,68 @@
 
 package com.davidbracewell.io.resource;
 
-import com.google.common.collect.Lists;
 import lombok.NonNull;
 
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.regex.Pattern;
 
 /**
+ * Iterates over the children of a given resource.
+ *
  * @author David B. Bracewell
  */
 public class ResourceChildIterator implements Iterator<Resource> {
 
-  private final Pattern filePattern;
-  private final Queue<Resource> queue = Lists.newLinkedList();
-  private final boolean recursive;
+   private final Pattern filePattern;
+   private final Queue<Resource> queue = new LinkedList<>();
+   private final boolean recursive;
 
-  /**
-   * Instantiates a new Child iterator.
-   *
-   * @param startingPoint the starting point
-   * @param filePattern   the file pattern
-   * @param recursive     the recursive
-   */
-  public ResourceChildIterator(@NonNull Resource startingPoint, @NonNull Pattern filePattern, boolean recursive) {
-    this.filePattern = filePattern;
-    queue.addAll(startingPoint.getChildren(filePattern, false));
-    this.recursive = recursive;
-    advance();
-  }
+   /**
+    * Instantiates a new Child iterator.
+    *
+    * @param startingPoint the starting point
+    * @param filePattern   the file pattern
+    * @param recursive     the recursive
+    */
+   public ResourceChildIterator(@NonNull Resource startingPoint, @NonNull Pattern filePattern, boolean recursive) {
+      this.filePattern = filePattern;
+      queue.addAll(startingPoint.getChildren(filePattern, false));
+      this.recursive = recursive;
+      advance();
+   }
 
-  private void advance() {
-    if (queue.isEmpty()) {
-      return;
-    }
-    if (queue.peek().isDirectory()) {
-      if (recursive) {
-        queue.addAll(queue.peek().getChildren(filePattern, false));
+   private void advance() {
+      if (queue.isEmpty()) {
+         return;
       }
-    }
-  }
+      if (queue.peek().isDirectory()) {
+         if (recursive) {
+            queue.addAll(queue.peek().getChildren(filePattern, false));
+         }
+      }
+   }
 
-  @Override
-  public boolean hasNext() {
-    return !queue.isEmpty();
-  }
+   @Override
+   public boolean hasNext() {
+      return !queue.isEmpty();
+   }
 
-  @Override
-  public Resource next() {
-    if (queue.isEmpty()) {
-      throw new NoSuchElementException();
-    }
-    Resource next = queue.remove();
-    advance();
-    return next;
-  }
+   @Override
+   public Resource next() {
+      if (queue.isEmpty()) {
+         throw new NoSuchElementException();
+      }
+      Resource next = queue.remove();
+      advance();
+      return next;
+   }
 
-  @Override
-  public void remove() {
-    throw new UnsupportedOperationException();
-  }
+   @Override
+   public void remove() {
+      throw new UnsupportedOperationException();
+   }
+
 }//END OF ResourceChildIterator

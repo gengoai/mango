@@ -35,27 +35,27 @@ import java.util.function.BiPredicate;
 @FunctionalInterface
 public interface SerializableBiPredicate<T, U> extends BiPredicate<T, U>, Serializable {
 
-  @Override
-  default SerializableBiPredicate<T, U> negate() {
-    return (t, u) -> !this.test(t, u);
-  }
+   @Override
+   default SerializableBiPredicate<T, U> negate() {
+      return (t, u) -> !this.test(t, u);
+   }
 
-  @Override
-  default SerializableBiPredicate<T, U> and(@NonNull BiPredicate<? super T, ? super U> other) {
-    return (t, u) -> this.test(t, u) && other.test(t, u);
-  }
+   @Override
+   default SerializableBiPredicate<T, U> and(@NonNull BiPredicate<? super T, ? super U> other) {
+      return (t, u) -> this.test(t, u) && other.test(t, u);
+   }
 
-  @Override
-  default SerializableBiPredicate<T, U> or(BiPredicate<? super T, ? super U> other) {
-    return (t, u) -> this.test(t, u) || other.test(t, u);
-  }
+   @Override
+   default SerializableBiPredicate<T, U> or(BiPredicate<? super T, ? super U> other) {
+      return (t, u) -> this.test(t, u) || other.test(t, u);
+   }
 
-  default SerializableBiPredicate<T, U> and(@NonNull SerializableBiPredicate<? super T, ? super U> other) {
-    return (t, u) -> this.test(t, u) && other.test(t, u);
-  }
+   default SerializableBiPredicate<T, U> and(@NonNull SerializableBiPredicate<? super T, ? super U> other) {
+      return (t, u) -> this.test(t, u) && other.test(t, u);
+   }
 
-  default SerializableBiPredicate<T, U> or(SerializableBiPredicate<? super T, ? super U> other) {
-    return (t, u) -> this.test(t, u) || other.test(t, u);
-  }
+   default SerializableBiPredicate<T, U> or(SerializableBiPredicate<? super T, ? super U> other) {
+      return (t, u) -> this.test(t, u) || other.test(t, u);
+   }
 
 }//END OF SerializableBiPredicate

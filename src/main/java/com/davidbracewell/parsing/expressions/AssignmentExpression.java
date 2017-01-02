@@ -23,7 +23,7 @@ package com.davidbracewell.parsing.expressions;
 
 import com.davidbracewell.parsing.ParserToken;
 import com.davidbracewell.parsing.ParserTokenType;
-import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 /**
  * An <code>Expression</code> for assignment operations.
@@ -52,11 +52,11 @@ public class AssignmentExpression extends Expression {
    * @param operator     The assignment operator
    * @param right        The expression which the variable should be assigned
    */
-  public AssignmentExpression(String variableName, ParserToken operator, Expression right) {
-    super(Preconditions.checkNotNull(operator).type);
-    this.variableName = Preconditions.checkNotNull(variableName);
+  public AssignmentExpression(@NonNull String variableName, @NonNull ParserToken operator, @NonNull Expression right) {
+    super(operator.type);
+    this.variableName = variableName;
     this.operator = operator.text;
-    this.right = Preconditions.checkNotNull(right);
+    this.right = right;
   }
 
   /**
@@ -67,11 +67,11 @@ public class AssignmentExpression extends Expression {
    * @param right        The expression which the variable should be assigned
    * @param type         The tyoke type of the assignemt
    */
-  public AssignmentExpression(String variableName, String operator, Expression right, ParserTokenType type) {
+  public AssignmentExpression(@NonNull String variableName, @NonNull String operator, @NonNull Expression right, @NonNull ParserTokenType type) {
     super(type);
-    this.variableName = Preconditions.checkNotNull(variableName);
+    this.variableName = variableName;
     this.operator = operator;
-    this.right = Preconditions.checkNotNull(right);
+    this.right = right;
   }
 
   @Override

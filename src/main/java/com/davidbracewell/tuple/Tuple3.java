@@ -21,6 +21,7 @@
 
 package com.davidbracewell.tuple;
 
+import com.davidbracewell.conversion.Cast;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -61,17 +62,6 @@ public class Tuple3<A, B, C> extends Tuple {
     this.v1 = v1;
     this.v2 = v2;
     this.v3 = v3;
-  }
-
-  /**
-   * Expand tuple 4.
-   *
-   * @param <D> the type parameter
-   * @param d   the d
-   * @return the tuple 4
-   */
-  public <D> Tuple4<A, B, C, D> append(D d) {
-    return Tuple4.of(v1, v2, v3, d);
   }
 
   /**
@@ -129,4 +119,16 @@ public class Tuple3<A, B, C> extends Tuple {
   public String toString() {
     return "(" + v1 + ", " + v2 + "," + v3 + ")";
   }
+
+  @Override
+  public <T> T get(int i) {
+    switch (i){
+      case 0: return Cast.as(v1);
+      case 1: return Cast.as(v2);
+      case 2: return Cast.as(v3);
+      default:
+        throw new ArrayIndexOutOfBoundsException();
+    }
+  }
+
 }//END OF Tuple2
