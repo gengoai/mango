@@ -22,6 +22,8 @@
 package com.davidbracewell.collection.index;
 
 import com.google.common.collect.Iterators;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Synchronized;
@@ -38,7 +40,7 @@ import java.util.*;
 @EqualsAndHashCode(exclude = "map", callSuper = false)
 public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
    private static final long serialVersionUID = -288128807385573349L;
-   private final Map<TYPE, Integer> map = new HashMap<>();
+   private final Object2IntMap<TYPE> map = new Object2IntOpenHashMap<>();
    private final List<TYPE> list = new ArrayList<>();
 
    @Override

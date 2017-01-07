@@ -24,6 +24,7 @@ package com.davidbracewell.collection.counter;
 import com.davidbracewell.Math2;
 import com.davidbracewell.conversion.Cast;
 import com.google.common.collect.Iterators;
+import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
@@ -33,6 +34,7 @@ import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of a Counter using a HashMap
@@ -43,7 +45,7 @@ import java.util.function.Predicate;
 @EqualsAndHashCode(exclude = {"sum"})
 public class HashMapCounter<T> implements Counter<T>, Serializable {
    private static final long serialVersionUID = 1L;
-   private final Map<T, Double> map = new HashMap<>();
+   private final Object2DoubleOpenHashMap<T> map = new Object2DoubleOpenHashMap<>();
    private double sum = 0;
 
 
@@ -65,9 +67,9 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
          return this;
       }
       sum += amount;
-      double value = map.compute(item, (i, v) -> (v == null ? 0 : v) + amount);
-      if (value == 0) {
-         map.remove(item);
+      map.compute(item, (i, v) -> (v == null ? 0 : v) + amount);
+      if (map.getDouble(item) == 0) {
+         map.removeDouble(item);
       }
       return this;
    }
@@ -257,14 +259,15 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
    @Override
    public Counter<T> set(T item, double count) {
       if (count == 0) {
-         map.remove(item);
+         sum -= map.getDouble(item);
+         map.removeDouble(item);
          return this;
       }
-      Double value = map.remove(item);
-      if (value != null) {
+      double value = map.getDouble(item);
+      map.put(item, count);
+      if (value != 0) {
          sum -= value;
       }
-      map.put(item, count);
       sum += count;
       return this;
    }
@@ -402,6 +405,16 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
                          .limit(n)
                          .forEach(t -> cprime.set(t, get(t)));
       return cprime;
+   }
+
+   @Override
+   public List<T> itemsByCount(boolean ascending) {
+      return map.entrySet().stream()
+                .sorted(ascending
+                        ? Map.Entry.<T, Double>comparingByValue()
+                        : Map.Entry.<T, Double>comparingByValue().reversed())
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
    }
 
    @Override
