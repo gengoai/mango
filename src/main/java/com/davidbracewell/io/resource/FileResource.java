@@ -212,7 +212,7 @@ public class FileResource extends BaseResource {
 
 
    @Override
-   public void deleteOnExit() {
+   public Resource deleteOnExit() {
       if (file.isDirectory()) {
          Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
@@ -223,6 +223,7 @@ public class FileResource extends BaseResource {
       } else {
          file.deleteOnExit();
       }
+      return this;
    }
 
    @Override

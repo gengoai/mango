@@ -24,6 +24,8 @@ package com.davidbracewell.collection;
 import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.function.SerializablePredicate;
 import lombok.NonNull;
+import org.eclipse.collections.impl.set.mutable.UnifiedSet;
+import org.eclipse.collections.impl.set.sorted.mutable.TreeSortedSet;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -110,7 +112,7 @@ public interface Sets {
    @SafeVarargs
    @SuppressWarnings("varargs")
    static <T> Set<T> set(T... elements) {
-      return createSet(HashSet::new, elements);
+      return createSet(UnifiedSet::new, elements);
    }
 
 
@@ -124,7 +126,7 @@ public interface Sets {
    @SafeVarargs
    @SuppressWarnings("varargs")
    static <T> Set<T> treeSet(T... elements) {
-      return createSet(TreeSet::new, elements);
+      return createSet(TreeSortedSet::new, elements);
    }
 
 
@@ -181,7 +183,7 @@ public interface Sets {
     * @return the new hash set containing the given elements
     */
    static <T> Set<T> asSet(Iterator<? extends T> iterator) {
-      return createSet(HashSet::new, Streams.asStream(iterator));
+      return createSet(UnifiedSet::new, Streams.asStream(iterator));
    }
 
    /**
@@ -192,7 +194,7 @@ public interface Sets {
     * @return the new tree set containing the given elements
     */
    static <T> Set<T> asTreeSet(Iterator<? extends T> iterator) {
-      return createSet(TreeSet::new, Streams.asStream(iterator));
+      return createSet(TreeSortedSet::new, Streams.asStream(iterator));
    }
 
    /**
@@ -225,7 +227,7 @@ public interface Sets {
     * @return the new hash set containing the given elements
     */
    static <T> Set<T> asSet(Iterable<? extends T> iterable) {
-      return createSet(HashSet::new, Streams.asStream(iterable));
+      return createSet(UnifiedSet::new, Streams.asStream(iterable));
    }
 
    /**
@@ -236,7 +238,7 @@ public interface Sets {
     * @return the new tree hash set containing the given elements
     */
    static <T> Set<T> asTreeSet(Iterable<? extends T> iterable) {
-      return createSet(TreeSet::new, Streams.asStream(iterable));
+      return createSet(TreeSortedSet::new, Streams.asStream(iterable));
    }
 
    /**
@@ -269,7 +271,7 @@ public interface Sets {
     * @return the new hash set containing the given elements
     */
    static <T> Set<T> asSet(Stream<? extends T> stream) {
-      return createSet(HashSet::new, stream);
+      return createSet(UnifiedSet::new, stream);
    }
 
    /**
@@ -280,7 +282,7 @@ public interface Sets {
     * @return the new tree hash set containing the given elements
     */
    static <T> Set<T> asTreeSet(Stream<? extends T> stream) {
-      return createSet(TreeSet::new, stream);
+      return createSet(TreeSortedSet::new, stream);
    }
 
    /**

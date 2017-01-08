@@ -5,6 +5,7 @@ import com.davidbracewell.string.StringUtils;
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.Iterators;
 import lombok.NonNull;
+import org.eclipse.collections.impl.map.mutable.primitive.CharObjectHashMap;
 
 import java.io.Serializable;
 import java.util.*;
@@ -302,7 +303,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
       private V value;
       private String matches;
       private int size = 0;
-      private Map<Character, TrieNode<V>> children = new HashMap<>(1);
+      private CharObjectHashMap<TrieNode<V>> children = new CharObjectHashMap<>();
 
       private TrieNode(Character nodeChar, TrieNode<V> parent) {
          this.nodeChar = nodeChar;

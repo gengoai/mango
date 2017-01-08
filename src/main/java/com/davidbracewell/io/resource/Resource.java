@@ -209,8 +209,8 @@ public interface Resource {
    /**
     * Deletes the resource on ext
     */
-   default void deleteOnExit() {
-
+   default Resource deleteOnExit() {
+      return this;
    }
 
    /**
