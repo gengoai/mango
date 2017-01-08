@@ -31,6 +31,8 @@ import com.davidbracewell.reflection.Reflect;
 import com.davidbracewell.string.StringUtils;
 import lombok.NonNull;
 import lombok.SneakyThrows;
+import org.eclipse.collections.impl.map.mutable.UnifiedMap;
+import org.eclipse.collections.impl.map.sorted.mutable.TreeSortedMap;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -61,11 +63,11 @@ public interface Maps {
    @SneakyThrows
    static <K, V> Map<K, V> create(@NonNull Class<? extends Map> clazz) {
       if (clazz == Map.class || clazz == HashMap.class) {
-         return new HashMap<>();
+         return new UnifiedMap<>();
       } else if (clazz == LinkedHashMap.class) {
          return new LinkedHashMap<>();
       } else if (clazz == TreeMap.class) {
-         return new TreeMap<>();
+         return new TreeSortedMap<>();
       } else if (clazz == ConcurrentMap.class || clazz == ConcurrentHashMap.class) {
          return new ConcurrentHashMap<>();
       }
@@ -83,7 +85,7 @@ public interface Maps {
    @SafeVarargs
    @SuppressWarnings("varargs")
    static <K, V> Map<K, V> asMap(Map.Entry<K, V>... entries) {
-      return createMap(HashMap::new, entries);
+      return createMap(UnifiedMap::new, entries);
    }
 
    /**
@@ -96,7 +98,7 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> map(K key1, V value1) {
-      return createMap(HashMap::new, $(key1, value1));
+      return createMap(UnifiedMap::new, $(key1, value1));
    }
 
    /**
@@ -111,7 +113,7 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2) {
-      return createMap(HashMap::new, $(key1, value1), $(key2, value2));
+      return createMap(UnifiedMap::new, $(key1, value1), $(key2, value2));
    }
 
    /**
@@ -128,7 +130,7 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3) {
-      return createMap(HashMap::new, $(key1, value1), $(key2, value2), $(key3, value3));
+      return createMap(UnifiedMap::new, $(key1, value1), $(key2, value2), $(key3, value3));
    }
 
    /**
@@ -147,7 +149,7 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4) {
-      return createMap(HashMap::new, $(key1, value1), $(key2, value2), $(key3, value3), $(key4, value4));
+      return createMap(UnifiedMap::new, $(key1, value1), $(key2, value2), $(key3, value3), $(key4, value4));
    }
 
    /**
@@ -168,7 +170,7 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5) {
-      return createMap(HashMap::new, $(key1, value1), $(key2, value2), $(key3, value3), $(key4, value4),
+      return createMap(UnifiedMap::new, $(key1, value1), $(key2, value2), $(key3, value3), $(key4, value4),
                        $(key5, value5));
    }
 
@@ -192,7 +194,7 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6) {
-      return createMap(HashMap::new,
+      return createMap(UnifiedMap::new,
                        $(key1, value1),
                        $(key2, value2),
                        $(key3, value3),
@@ -224,7 +226,7 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7) {
-      return createMap(HashMap::new,
+      return createMap(UnifiedMap::new,
                        $(key1, value1),
                        $(key2, value2),
                        $(key3, value3),
@@ -259,7 +261,7 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8) {
-      return createMap(HashMap::new,
+      return createMap(UnifiedMap::new,
                        $(key1, value1),
                        $(key2, value2),
                        $(key3, value3),
@@ -297,7 +299,7 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8, K key9, V value9) {
-      return createMap(HashMap::new,
+      return createMap(UnifiedMap::new,
                        $(key1, value1),
                        $(key2, value2),
                        $(key3, value3),
@@ -338,7 +340,7 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8, K key9, V value9, K key10, V value10) {
-      return createMap(HashMap::new,
+      return createMap(UnifiedMap::new,
                        $(key1, value1),
                        $(key2, value2),
                        $(key3, value3),
@@ -378,7 +380,7 @@ public interface Maps {
    @SafeVarargs
    @SuppressWarnings("varargs")
    static <K, V> Map<K, V> treeMap(Map.Entry<K, V>... entries) {
-      return createMap(TreeMap::new, entries);
+      return createMap(TreeSortedMap::new, entries);
    }
 
 
@@ -392,7 +394,7 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> treeMap(K key1, V value1) {
-      return createMap(TreeMap::new, $(key1, value1));
+      return createMap(TreeSortedMap::new, $(key1, value1));
    }
 
    /**
@@ -407,7 +409,7 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2) {
-      return createMap(TreeMap::new, $(key1, value1), $(key2, value2));
+      return createMap(TreeSortedMap::new, $(key1, value1), $(key2, value2));
    }
 
    /**
@@ -424,7 +426,7 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3) {
-      return createMap(TreeMap::new, $(key1, value1), $(key2, value2), $(key3, value3));
+      return createMap(TreeSortedMap::new, $(key1, value1), $(key2, value2), $(key3, value3));
    }
 
    /**
@@ -443,7 +445,7 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4) {
-      return createMap(TreeMap::new, $(key1, value1), $(key2, value2), $(key3, value3), $(key4, value4));
+      return createMap(TreeSortedMap::new, $(key1, value1), $(key2, value2), $(key3, value3), $(key4, value4));
    }
 
    /**
@@ -464,7 +466,7 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5) {
-      return createMap(TreeMap::new, $(key1, value1), $(key2, value2), $(key3, value3), $(key4, value4),
+      return createMap(TreeSortedMap::new, $(key1, value1), $(key2, value2), $(key3, value3), $(key4, value4),
                        $(key5, value5));
    }
 
@@ -488,7 +490,7 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6) {
-      return createMap(TreeMap::new,
+      return createMap(TreeSortedMap::new,
                        $(key1, value1),
                        $(key2, value2),
                        $(key3, value3),
@@ -520,7 +522,7 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7) {
-      return createMap(TreeMap::new,
+      return createMap(TreeSortedMap::new,
                        $(key1, value1),
                        $(key2, value2),
                        $(key3, value3),
@@ -555,7 +557,7 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8) {
-      return createMap(TreeMap::new,
+      return createMap(TreeSortedMap::new,
                        $(key1, value1),
                        $(key2, value2),
                        $(key3, value3),
@@ -593,7 +595,7 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8, K key9, V value9) {
-      return createMap(TreeMap::new,
+      return createMap(TreeSortedMap::new,
                        $(key1, value1),
                        $(key2, value2),
                        $(key3, value3),
@@ -634,7 +636,7 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8, K key9, V value9, K key10, V value10) {
-      return createMap(TreeMap::new,
+      return createMap(TreeSortedMap::new,
                        $(key1, value1),
                        $(key2, value2),
                        $(key3, value3),

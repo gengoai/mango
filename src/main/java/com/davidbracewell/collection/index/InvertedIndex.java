@@ -23,8 +23,8 @@ package com.davidbracewell.collection.index;
 
 import com.davidbracewell.collection.Streams;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.HashMultimap;
 import lombok.NonNull;
+import org.eclipse.collections.impl.multimap.set.UnifiedSetMultimap;
 
 import java.io.Serializable;
 import java.util.*;
@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
  */
 public class InvertedIndex<DOCUMENT, KEY> implements Serializable {
    private static final long serialVersionUID = 1L;
-   private final HashMultimap<KEY, Integer> index;
+   private final UnifiedSetMultimap<KEY, Integer> index;
    private final List<DOCUMENT> documents;
    private final Function<? super DOCUMENT, Collection<KEY>> documentMapper;
 
@@ -51,7 +51,7 @@ public class InvertedIndex<DOCUMENT, KEY> implements Serializable {
     * @param documentMapper the document mapper
     */
    public InvertedIndex(@NonNull Function<? super DOCUMENT, Collection<KEY>> documentMapper) {
-      this.index = HashMultimap.create();
+      this.index = new UnifiedSetMultimap<>();
       this.documents = new ArrayList<>();
       this.documentMapper = Preconditions.checkNotNull(documentMapper);
    }

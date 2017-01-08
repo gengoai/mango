@@ -28,6 +28,7 @@ import com.davidbracewell.tuple.Tuple3;
 import com.google.common.collect.Iterators;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.eclipse.collections.impl.map.mutable.UnifiedMap;
 
 import java.io.Serializable;
 import java.util.*;
@@ -46,7 +47,7 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode
 public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializable {
    private static final long serialVersionUID = 1L;
-   private final Map<K, Counter<V>> map = new HashMap<>();
+   private final Map<K, Counter<V>> map = new UnifiedMap<>();
 
 
    @Override
