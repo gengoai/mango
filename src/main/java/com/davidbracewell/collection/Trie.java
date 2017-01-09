@@ -44,6 +44,22 @@ public class Trie<V> implements Serializable, Map<String, V> {
       putAll(map);
    }
 
+   /**
+    * Compresses the memory of the individual trie nodes.
+    *
+    * @return this trie
+    */
+   public Trie<V> trimToSize() {
+      Queue<TrieNode<V>> queue = new LinkedList<>();
+      queue.add(root);
+      while (!queue.isEmpty()) {
+         TrieNode<V> node = queue.remove();
+         node.children.compact();
+         queue.addAll(node.children.values());
+      }
+      return this;
+   }
+
    @Override
    public void clear() {
       root.children.clear();
@@ -315,6 +331,12 @@ public class Trie<V> implements Serializable, Map<String, V> {
          }
       }
 
+      /**
+       * Contains boolean.
+       *
+       * @param string the string
+       * @return the boolean
+       */
       public boolean contains(String string) {
          return find(string) != null;
       }
@@ -348,6 +370,12 @@ public class Trie<V> implements Serializable, Map<String, V> {
          return toReturn;
       }
 
+      /**
+       * Find trie node.
+       *
+       * @param string the string
+       * @return the trie node
+       */
       TrieNode<V> find(String string) {
          if (string == null || string.length() == 0) {
             return null;
@@ -364,6 +392,9 @@ public class Trie<V> implements Serializable, Map<String, V> {
          return node;
       }
 
+      /**
+       * Prune.
+       */
       void prune() {
          if (parent == null) {
             return;
@@ -375,6 +406,11 @@ public class Trie<V> implements Serializable, Map<String, V> {
          parent.prune();
       }
 
+      /**
+       * Sub tree iterator iterator.
+       *
+       * @return the iterator
+       */
       Iterator<Map.Entry<String, V>> subTreeIterator() {
          return new EntryIterator<>(this);
       }
@@ -399,6 +435,12 @@ public class Trie<V> implements Serializable, Map<String, V> {
          }
       }
 
+      /**
+       * Convert e.
+       *
+       * @param node the node
+       * @return the e
+       */
       abstract E convert(TrieNode<V> node);
 
       @Override
