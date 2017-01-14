@@ -1,10 +1,12 @@
 package com.davidbracewell.collection;
 
+import com.davidbracewell.collection.map.Maps;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.string.StringUtils;
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.Iterators;
 import lombok.NonNull;
+import org.eclipse.collections.impl.map.mutable.UnifiedMap;
 import org.eclipse.collections.impl.map.mutable.primitive.CharObjectHashMap;
 
 import java.io.Serializable;
@@ -265,6 +267,64 @@ public class Trie<V> implements Serializable, Map<String, V> {
    @Override
    public void putAll(Map<? extends String, ? extends V> m) {
       m.forEach(this::put);
+   }
+
+   public Map<String, Integer> suggest(String string) {
+      return suggest(string, 3, 1);
+   }
+
+   public Map<String, Integer> suggest(String string, int maxCost) {
+      return suggest(string, maxCost, 1);
+   }
+
+   public Map<String, Integer> suggest(String string, int maxCost, int substitutionCost) {
+      if (StringUtils.isNullOrBlank(string)) {
+         return Collections.emptyMap();
+      } else if (containsKey(string)) {
+         return Maps.map(string, 0);
+      }
+      Map<String, Integer> results = new UnifiedMap<>();
+      int[] current = new int[string.length() + 1];
+      for (int i = 0; i < current.length; i++) {
+         current[i] = i;
+      }
+      for (TrieNode<V> child : root.children) {
+         if (child != null) {
+            search(child, child.nodeChar, string, current, results, maxCost, substitutionCost);
+         }
+      }
+      return results;
+   }
+
+   private void search(TrieNode<V> node, char letter, String word, int[] previous, Map<String, Integer> results, int maxCost, int substitutionCost) {
+      int columns = word.length() + 1;
+      int[] current = new int[columns];
+      current[0] = previous[0] + 1;
+      int rowMin = current[0];
+
+      for (int i = 1; i < columns; i++) {
+         int insertCost = current[i - 1] + 1;
+         int deleteCost = previous[i] + 1;
+         int replaceCost = previous[i - 1];
+         if (word.charAt(i - 1) != letter) {
+            replaceCost += substitutionCost;
+         }
+         current[i] = Math.min(insertCost, Math.min(deleteCost, replaceCost));
+         rowMin = Math.min(rowMin, current[i]);
+      }
+
+      if (current[columns - 1] <= maxCost && node.matches != null) {
+         results.put(node.matches, current[columns - 1]);
+      }
+
+      if (rowMin <= maxCost) {
+         for (TrieNode<V> child : node.children) {
+            if (child != null) {
+               search(child, child.nodeChar, word, current, results, maxCost, substitutionCost);
+            }
+         }
+      }
+
    }
 
    @Override
