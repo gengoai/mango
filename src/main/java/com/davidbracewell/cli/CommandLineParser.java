@@ -206,8 +206,7 @@ public final class CommandLineParser {
             }
 
          } else {
-            //Not a long, not a short, we got an error
-            throw new CommandLineParserException(current, null);
+            filtered.add(current);
          }
 
       }
