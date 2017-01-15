@@ -269,14 +269,35 @@ public class Trie<V> implements Serializable, Map<String, V> {
       m.forEach(this::put);
    }
 
+   /**
+    * Suggest map.
+    *
+    * @param string the string
+    * @return the map
+    */
    public Map<String, Integer> suggest(String string) {
       return suggest(string, 3, 1);
    }
 
+   /**
+    * Suggest map.
+    *
+    * @param string  the string
+    * @param maxCost the max cost
+    * @return the map
+    */
    public Map<String, Integer> suggest(String string, int maxCost) {
       return suggest(string, maxCost, 1);
    }
 
+   /**
+    * Suggest map.
+    *
+    * @param string           the string
+    * @param maxCost          the max cost
+    * @param substitutionCost the substitution cost
+    * @return the map
+    */
    public Map<String, Integer> suggest(String string, int maxCost, int substitutionCost) {
       if (StringUtils.isNullOrBlank(string)) {
          return Collections.emptyMap();
