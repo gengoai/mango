@@ -27,6 +27,7 @@ import com.davidbracewell.Math2;
 import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.CSVWriter;
+import com.davidbracewell.io.Commitable;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.structured.StructuredFormat;
 import com.davidbracewell.io.structured.StructuredWriter;
@@ -44,7 +45,7 @@ import java.util.stream.Collectors;
  * @param <T> Component type being counted.
  * @author David B. Bracewell
  */
-public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable {
+public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable, Commitable {
 
    /**
     * Constructs a new counter made up of counts that are adjusted using the supplied function.
