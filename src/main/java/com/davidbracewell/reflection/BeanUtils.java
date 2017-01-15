@@ -112,10 +112,11 @@ public class BeanUtils {
       }
 
       BeanMap beanMap;
-      if (hadType) {
+      if (values.isEmpty()) {
+         beanMap = new BeanMap(parameterizeObject(reflect.create().get()));
+      } else if (hadType) {
          beanMap = new BeanMap(parameterizeObject(reflect.create(paramTypes.toArray(new Class[paramTypes.size()]),
-                                                                 values.toArray()
-                                                                ).<T>get()));
+                                                                 values.toArray()).<T>get()));
       } else {
          Constructor<?> constructor = ClassDescriptorCache.getInstance()
                                                           .getClassDescriptor(clazz)
