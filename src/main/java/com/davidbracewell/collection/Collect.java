@@ -26,6 +26,7 @@ import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.tuple.Tuple2;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Ordering;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.davidbracewell.collection.Streams.asStream;
+import static com.davidbracewell.tuple.Tuples.$;
 import static com.google.common.base.Preconditions.checkArgument;
 
 /**
@@ -43,30 +45,6 @@ import static com.google.common.base.Preconditions.checkArgument;
  * @author David B. Bracewell
  */
 public interface Collect {
-
-
-   /**
-    * <p>Sorts the items of an iterable returning an array of the sorted items.</p>
-    *
-    * @param iterable The iterable instance to sort
-    * @param <E>      The component type of the iterable which implements the <code>Comparable</code> interface.
-    * @return A list of the items in the given iterable sorted using the items natural comparator.
-    */
-   static <E extends Comparable<? super E>> List<E> sort(@NonNull Iterable<E> iterable) {
-      return asStream(iterable).sorted().collect(Collectors.toList());
-   }
-
-   /**
-    * <p>Sorts the items of an iterable returning an array of the sorted items.</p>
-    *
-    * @param iterable   The iterable instance to sort
-    * @param comparator The comparator to use for sorting
-    * @param <E>        The component type of the iterable.
-    * @return A list of the items in the given iterable sorted using the given comparator.
-    */
-   static <E> List<E> sort(@NonNull Iterable<E> iterable, @NonNull Comparator<? super E> comparator) {
-      return asStream(iterable).sorted(comparator).collect(Collectors.toList());
-   }
 
    /**
     * Wraps an <code>array</code> as an <code>Iterable</code>
@@ -111,30 +89,6 @@ public interface Collect {
       return () -> Cast.as(iterator);
    }
 
-
-   /**
-    * <p>Returns the first item in an iterable. </p>
-    *
-    * @param <T>      the type of element in the iterable
-    * @param iterable the iterable
-    * @return An optional containing the first element in the iterable or null if none
-    */
-   static <T> Optional<T> getFirst(@NonNull Iterable<? extends T> iterable) {
-      return Optional.ofNullable(Iterables.getFirst(iterable, null));
-   }
-
-   /**
-    * <p>Returns the last item in an iterable. </p>
-    *
-    * @param <T>      the type of element in the iterable
-    * @param iterable the iterable
-    * @return An optional containing the last element in the iterable or null if none
-    */
-   static <T> Optional<T> getLast(@NonNull Iterable<T> iterable) {
-      return Optional.ofNullable(Iterables.getLast(iterable, null));
-   }
-
-
    /**
     * <p>Creates a default instance of a collection type. If the passed in class is an implementation then that
     * implementation is created using the no-arg constructor. Interfaces (e.g. Set and List) have default
@@ -162,6 +116,89 @@ public interface Collect {
          return Cast.as(new TreeSet<>());
       }
       return collectionClass.newInstance();
+   }
+
+   /**
+    * <p>Returns the first item in an iterable. </p>
+    *
+    * @param <T>      the type of element in the iterable
+    * @param iterable the iterable
+    * @return An optional containing the first element in the iterable or null if none
+    */
+   static <T> Optional<T> getFirst(@NonNull Iterable<? extends T> iterable) {
+      return Optional.ofNullable(Iterables.getFirst(iterable, null));
+   }
+
+   /**
+    * <p>Returns the last item in an iterable. </p>
+    *
+    * @param <T>      the type of element in the iterable
+    * @param iterable the iterable
+    * @return An optional containing the last element in the iterable or null if none
+    */
+   static <T> Optional<T> getLast(@NonNull Iterable<T> iterable) {
+      return Optional.ofNullable(Iterables.getLast(iterable, null));
+   }
+
+   static <E extends Comparable<? super E>> Tuple2<Integer, E> maxIndexAndValue(@NonNull Iterable<? extends E> iterable) {
+      return maxIndexAndValue(iterable, Ordering.natural());
+   }
+
+   static <E extends Comparable<? super E>> Tuple2<Integer, E> maxIndexAndValue(@NonNull Iterable<? extends E> iterable, @NonNull Comparator<? super E> comparator) {
+      int index = -1;
+      E max = null;
+      int i = 0;
+      for (E e : iterable) {
+         if (max == null || comparator.compare(e,max) > 0) {
+            max = e;
+            index = i;
+         }
+         i++;
+      }
+
+      return $(index, max);
+   }
+
+   static <E extends Comparable<? super E>> Tuple2<Integer, E> minIndexAndValue(@NonNull Iterable<? extends E> iterable) {
+      return minIndexAndValue(iterable, Ordering.natural());
+   }
+
+   static <E extends Comparable<? super E>> Tuple2<Integer, E> minIndexAndValue(@NonNull Iterable<? extends E> iterable, @NonNull Comparator<? super E> comparator) {
+      int index = -1;
+      E min = null;
+      int i = 0;
+      for (E e : iterable) {
+         if (min == null || comparator.compare(e,min) < 0) {
+            min = e;
+            index = i;
+         }
+         i++;
+      }
+
+      return $(index, min);
+   }
+
+   /**
+    * <p>Sorts the items of an iterable returning an array of the sorted items.</p>
+    *
+    * @param iterable The iterable instance to sort
+    * @param <E>      The component type of the iterable which implements the <code>Comparable</code> interface.
+    * @return A list of the items in the given iterable sorted using the items natural comparator.
+    */
+   static <E extends Comparable<? super E>> List<E> sort(@NonNull Iterable<E> iterable) {
+      return asStream(iterable).sorted().collect(Collectors.toList());
+   }
+
+   /**
+    * <p>Sorts the items of an iterable returning an array of the sorted items.</p>
+    *
+    * @param iterable   The iterable instance to sort
+    * @param comparator The comparator to use for sorting
+    * @param <E>        The component type of the iterable.
+    * @return A list of the items in the given iterable sorted using the given comparator.
+    */
+   static <E> List<E> sort(@NonNull Iterable<E> iterable, @NonNull Comparator<? super E> comparator) {
+      return asStream(iterable).sorted(comparator).collect(Collectors.toList());
    }
 
    /**
