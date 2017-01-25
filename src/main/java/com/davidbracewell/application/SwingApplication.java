@@ -62,6 +62,7 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
    protected SwingApplication(String applicationName, String packageName) {
       this.applicationName = StringUtils.isNullOrBlank(applicationName) ? getClass().getSimpleName() : applicationName;
       this.packageName = packageName;
+      nativeLookAndFeel();
    }
 
    @Override
@@ -96,7 +97,6 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
 
    @Override
    public void run() {
-      nativeLookAndFeel();
       SwingUtilities.invokeLater(() -> this.setVisible(true));
    }
 
