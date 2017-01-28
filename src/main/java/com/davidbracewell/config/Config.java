@@ -329,6 +329,11 @@ public final class Config implements Serializable {
       return key == null ? Val.of(null) : get(key);
    }
 
+
+   static String getRaw(String property){
+      return getInstance().properties.get(property);
+   }
+
    /**
     * <p>Gets the value associated with a property. The property name is constructed as <code>propertyPrefix + . +
     * propertyComponent[0] + . + propertyComponent[1] + ...</code></p>

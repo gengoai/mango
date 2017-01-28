@@ -165,7 +165,7 @@ class ConfigParser extends Parser {
 
       if (assignment.operator.type == ConfigTokenizer.ConfigTokenType.APPEND_PROPERTY) {
          if (Config.hasProperty(key)) {
-            value = Config.get(key).asString() + "," + value;
+            value = Config.getRaw(key) + "," + value;
          }
       }
 
