@@ -24,6 +24,7 @@ package com.davidbracewell.conversion;
 
 import com.davidbracewell.EnumValue;
 import com.davidbracewell.logging.Logger;
+import com.davidbracewell.reflection.BeanUtils;
 import com.davidbracewell.reflection.Reflect;
 import com.davidbracewell.reflection.ReflectionException;
 import com.davidbracewell.reflection.ReflectionUtils;
@@ -99,8 +100,8 @@ public class NewObjectConverter<T> implements Function<Object, T> {
 
          if (EnumValue.class.isAssignableFrom(convertToClass)) {
             try {
-               return Reflect.onClass(convertToClass).allowPrivilegedAccess()
-                             .invoke("create", obj).get();
+               return BeanUtils.parameterizeObject(Reflect.onClass(convertToClass).allowPrivilegedAccess()
+                                                          .invoke("create", obj).get());
             } catch (ReflectionException e) {
                //nopt
             }
@@ -108,14 +109,14 @@ public class NewObjectConverter<T> implements Function<Object, T> {
 
          Object o = ReflectionUtils.createObject(obj.toString());
          if (convertToClass.isInstance(o)) {
-            return Cast.as(o);
+            return Cast.as(BeanUtils.parameterizeObject(o));
          }
 
       }
 
 
       try {
-         return Reflect.onClass(convertToClass).create(obj).get();
+         return BeanUtils.parameterizeObject(Reflect.onClass(convertToClass).create(obj).get());
       } catch (ReflectionException e) {
          //ignore
       }
