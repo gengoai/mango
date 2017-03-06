@@ -22,11 +22,16 @@
 package com.davidbracewell;
 
 import com.davidbracewell.conversion.Cast;
+import com.google.common.base.Throwables;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 import static com.davidbracewell.EnumValue.normalize;
 
@@ -41,17 +46,29 @@ public final class DynamicEnum implements Serializable {
    private static final long serialVersionUID = 1L;
 
    private static final Map<String, EnumValue> GLOBAL_REPOSITORY = new ConcurrentHashMap<>();
-
+   private static LoadingCache<Class<?>, String> nameCache = CacheBuilder.newBuilder()
+                                                                         .build(new CacheLoader<Class<?>, String>() {
+                                                                            @Override
+                                                                            public String load(Class<?> key) throws Exception {
+                                                                               return key.getCanonicalName();
+                                                                            }
+                                                                         });
 
    private DynamicEnum() {
       throw new IllegalAccessError();
    }
 
    private static String toKey(@NonNull Class<? extends EnumValue> enumClass, String name) {
-      if( name.startsWith(enumClass.getCanonicalName())){
+      String canonicalName = null;
+      try {
+         canonicalName = nameCache.get(enumClass);
+      } catch (ExecutionException e) {
+         throw Throwables.propagate(e);
+      }
+      if (name.startsWith(canonicalName)) {
          return name;
       }
-      return enumClass.getCanonicalName() + "." + normalize(name);
+      return canonicalName + "." + normalize(name);
    }
 
    /**
@@ -67,8 +84,8 @@ public final class DynamicEnum implements Serializable {
    }
 
    /**
-    * <p>Returns the constant of the given {@link EnumValue} class  with the specified name.The normalized version of the
-    * specified name will be matched allowing for case and space variations.</p>
+    * <p>Returns the constant of the given {@link EnumValue} class  with the specified name.The normalized version of
+    * the specified name will be matched allowing for case and space variations.</p>
     *
     * @param <T>       Specific type of EnumValue being looked up
     * @param enumClass Class information for the EnumValue that we will check.
