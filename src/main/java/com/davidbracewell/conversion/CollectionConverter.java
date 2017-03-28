@@ -55,7 +55,9 @@ public final class CollectionConverter {
       } else if (object.getClass().isArray()) {
          return as(Collect.asIterable(object, Object.class));
       } else if (object instanceof CharSequence) {
-         return StringUtils.split(object.toString(), ',');
+         return StringUtils.split(object.toString()
+                                        .replaceAll("^\\[", "")
+                                        .replaceAll("\\]$", ""), ',');
       }
       return as(Collections.singletonList(object));
    };

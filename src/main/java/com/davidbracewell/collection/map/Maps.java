@@ -222,7 +222,7 @@ public interface Maps {
                        $(key3, value3),
                        $(key4, value4),
                        $(key5, value5)
-      );
+                      );
    }
 
    /**
@@ -252,7 +252,7 @@ public interface Maps {
                        $(key4, value4),
                        $(key5, value5),
                        $(key6, value6)
-      );
+                      );
    }
 
    /**
@@ -285,7 +285,7 @@ public interface Maps {
                        $(key5, value5),
                        $(key6, value6),
                        $(key7, value7)
-      );
+                      );
    }
 
    /**
@@ -321,7 +321,7 @@ public interface Maps {
                        $(key6, value6),
                        $(key7, value7),
                        $(key8, value8)
-      );
+                      );
    }
 
    /**
@@ -360,7 +360,7 @@ public interface Maps {
                        $(key7, value7),
                        $(key8, value8),
                        $(key9, value9)
-      );
+                      );
    }
 
    /**
@@ -402,7 +402,7 @@ public interface Maps {
                        $(key8, value8),
                        $(key9, value9),
                        $(key10, value10)
-      );
+                      );
    }
 
    /**
@@ -532,7 +532,7 @@ public interface Maps {
                        $(key4, value4),
                        $(key5, value5),
                        $(key6, value6)
-      );
+                      );
    }
 
    /**
@@ -565,7 +565,7 @@ public interface Maps {
                        $(key5, value5),
                        $(key6, value6),
                        $(key7, value7)
-      );
+                      );
    }
 
    /**
@@ -601,7 +601,7 @@ public interface Maps {
                        $(key6, value6),
                        $(key7, value7),
                        $(key8, value8)
-      );
+                      );
    }
 
    /**
@@ -640,7 +640,7 @@ public interface Maps {
                        $(key7, value7),
                        $(key8, value8),
                        $(key9, value9)
-      );
+                      );
    }
 
    /**
@@ -682,13 +682,13 @@ public interface Maps {
                        $(key8, value8),
                        $(key9, value9),
                        $(key10, value10)
-      );
+                      );
    }
 
    static <K, V extends Comparable<? super V>> K maxKeyByValue(@NonNull Map<K, V> map) {
       return map.entrySet()
                 .stream()
-                .sorted(Map.Entry.<K,V>comparingByValue().reversed())
+                .sorted(Map.Entry.<K, V>comparingByValue().reversed())
                 .findFirst()
                 .map(Map.Entry::getKey)
                 .orElse(null);
@@ -740,7 +740,7 @@ public interface Maps {
       if (StringUtils.isNullOrBlank(input)) {
          return Collections.emptyMap();
       }
-      String str = input.replaceFirst("^\\s*\\{", "").replaceFirst("}$\\s*", "");
+      String str = input.replaceAll("^\\s*\\{", "").replaceAll("}$\\s*", "");
       Map<K, V> map = new HashMap<>();
 
       try (CSVReader reader = CSV.builder().reader(new StringReader(str))) {
@@ -754,7 +754,7 @@ public interface Maps {
                               String value = keyValuePair.size() > 1 ? keyValuePair.get(1) : null;
                               map.put(keyConverter.apply(key), valueConverter.apply(value));
                            })
-         );
+                       );
       }
       return map;
    }
@@ -793,8 +793,8 @@ public interface Maps {
                                              map.put(keyConverter.apply(row.get(0)), valueConverter.apply(row.get(1)));
                                           }
                                        }
-                           )
-         );
+                                      )
+                       );
       }
       return map;
    }
@@ -926,7 +926,7 @@ public interface Maps {
                        $(key4, value4),
                        $(key5, value5),
                        $(key6, value6)
-      );
+                      );
    }
 
    /**
@@ -959,7 +959,7 @@ public interface Maps {
                        $(key5, value5),
                        $(key6, value6),
                        $(key7, value7)
-      );
+                      );
    }
 
    /**
@@ -995,7 +995,7 @@ public interface Maps {
                        $(key6, value6),
                        $(key7, value7),
                        $(key8, value8)
-      );
+                      );
    }
 
    /**
@@ -1034,7 +1034,7 @@ public interface Maps {
                        $(key7, value7),
                        $(key8, value8),
                        $(key9, value9)
-      );
+                      );
    }
 
    /**
@@ -1076,7 +1076,7 @@ public interface Maps {
                        $(key8, value8),
                        $(key9, value9),
                        $(key10, value10)
-      );
+                      );
    }
 
    /**
@@ -1093,7 +1093,7 @@ public interface Maps {
          for (Map.Entry<K, V> kvEntry : map.entrySet()) {
             writer.write(Convert.convert(kvEntry.getKey(), String.class),
                          Convert.convert(kvEntry.getValue(), String.class)
-            );
+                        );
          }
       }
    }

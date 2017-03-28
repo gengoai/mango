@@ -22,10 +22,14 @@
 package com.davidbracewell.conversion;
 
 import com.davidbracewell.io.CSV;
+import com.davidbracewell.io.CSVWriter;
+import com.davidbracewell.io.resource.Resource;
+import com.davidbracewell.io.resource.StringResource;
 import com.davidbracewell.logging.Logger;
 import com.davidbracewell.reflection.ReflectionUtils;
 import com.davidbracewell.string.CSVFormatter;
 import com.davidbracewell.string.StringUtils;
+import com.google.common.base.Throwables;
 import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Chars;
 
@@ -111,11 +115,19 @@ public class CommonTypeConverter {
       } else if (input instanceof Date) {
          return SimpleDateFormat.getDateTimeInstance().format(input);
       } else if (input instanceof Map) {
-         StringBuilder builder = new StringBuilder("{");
          CSVFormatter mapFormat = CSV.builder().delimiter('=').formatter();
-         Cast.<Map<?, ?>>as(input).forEach((o, o2) -> builder.append(
-            mapFormat.format(Convert.convert(o, String.class), Convert.convert(o2, String.class))));
-         return builder.append("}").toString();
+         Resource out = new StringResource();
+         Map<?, ?> m = Cast.as(input);
+         try (CSVWriter writer = CSV.csv().writer(out)) {
+            writer.write(m.entrySet().stream()
+                          .map(e -> mapFormat.format(e.getKey(), e.getValue()))
+                          .iterator()
+                        );
+            writer.close();
+            return "{" + out.readToString().trim() + "}";
+         } catch (Exception e) {
+            throw Throwables.propagate(e);
+         }
       }
 
       return input.toString();
