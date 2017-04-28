@@ -1,6 +1,7 @@
 package com.davidbracewell.io.structured;
 
 import com.davidbracewell.DynamicEnum;
+import com.davidbracewell.EnumValue;
 import com.davidbracewell.collection.counter.Counter;
 import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.conversion.Convert;
@@ -206,7 +207,7 @@ public abstract class StructuredWriter implements Closeable {
          writeString(Cast.as(object));
       } else if (object instanceof Boolean) {
          writeBoolean(Cast.as(object));
-      } else if (object instanceof Enum || object instanceof DynamicEnum) {
+      } else if (object instanceof Enum || object instanceof EnumValue) {
          writeString(Convert.convert(object, String.class));
       } else if (object instanceof Collection) {
          writeCollection(Cast.as(object));
