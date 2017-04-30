@@ -26,8 +26,8 @@ import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.CSVWriter;
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.io.structured.StructuredFormat;
-import com.davidbracewell.io.structured.StructuredWriter;
+import com.davidbracewell.json.JsonWriter;
+import com.davidbracewell.json.Json;
 import com.davidbracewell.tuple.Tuple3;
 import lombok.NonNull;
 
@@ -449,13 +449,13 @@ public interface MultiCounter<K, V> {
     * @throws IOException Something went wrong writing
     */
    default void writeJson(@NonNull Resource output) throws IOException {
-      try (StructuredWriter writer = StructuredFormat.JSON.createWriter(output)) {
+      try (JsonWriter writer = Json.createWriter(output)) {
          writer.beginDocument();
          for (Tuple3<K, V, Double> entry : entries()) {
             writer.beginObject("entry");
-            writer.writeKeyValue("k1", Convert.convert(entry.v1, String.class));
-            writer.writeKeyValue("k2", Convert.convert(entry.v2, String.class));
-            writer.writeKeyValue("v", entry.v3);
+            writer.property("k1", Convert.convert(entry.v1, String.class));
+            writer.property("k2", Convert.convert(entry.v2, String.class));
+            writer.property("v", entry.v3);
             writer.endObject();
          }
          writer.endDocument();

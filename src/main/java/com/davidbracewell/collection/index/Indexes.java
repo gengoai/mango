@@ -26,13 +26,14 @@ import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.CSVReader;
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.io.structured.ElementType;
-import com.davidbracewell.io.structured.StructuredFormat;
-import com.davidbracewell.io.structured.StructuredReader;
+import com.davidbracewell.json.JsonReader;
+import com.davidbracewell.json.Json;
 import lombok.NonNull;
 
 import java.io.IOException;
 import java.util.Arrays;
+
+import static com.davidbracewell.json.JsonTokenType.END_DOCUMENT;
 
 /**
  * Common methods for reading counters from structured files, creating synchronized and unmodifiable wrappers.
@@ -131,9 +132,9 @@ public interface Indexes {
     */
    static <TYPE> Index<TYPE> readJson(@NonNull Resource resource, @NonNull Class<TYPE> keyClass) throws IOException {
       Index<TYPE> index = newIndex();
-      try (StructuredReader reader = StructuredFormat.JSON.createReader(resource)) {
+      try (JsonReader reader = Json.createReader(resource)) {
          reader.beginDocument();
-         while (reader.peek() != ElementType.END_DOCUMENT) {
+         while (reader.peek() != END_DOCUMENT) {
             index.add(reader.nextValue().as(keyClass));
          }
          reader.endDocument();

@@ -26,8 +26,8 @@ import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.CSVWriter;
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.io.structured.StructuredFormat;
-import com.davidbracewell.io.structured.StructuredWriter;
+import com.davidbracewell.json.JsonWriter;
+import com.davidbracewell.json.Json;
 import lombok.NonNull;
 
 import java.io.IOException;
@@ -166,10 +166,10 @@ public interface Index<E> extends Iterable<E>, Copyable<Index<E>> {
     * @throws IOException Something went wrong writing to the output
     */
    default void writeJson(@NonNull Resource output) throws IOException {
-      try (StructuredWriter writer = StructuredFormat.JSON.createWriter(output)) {
+      try (JsonWriter writer = Json.createWriter(output)) {
          writer.beginDocument(true);
          for (E item : this) {
-            writer.writeValue(Convert.convert(item, String.class));
+            writer.value(Convert.convert(item, String.class));
          }
          writer.endDocument();
       }

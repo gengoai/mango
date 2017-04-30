@@ -19,7 +19,52 @@
  * under the License.
  */
 
+package com.davidbracewell.json;
+
 /**
- * Json StructuredFormat reader and writer
+ * The types of elements that are encountered in an structured document.
+ *
+ * @author David B. Bracewell
  */
-package com.davidbracewell.io.structured.xml;
+public enum JsonTokenType {
+   /**
+    * Marks the beginning of an object
+    */
+   BEGIN_OBJECT,
+   /**
+    * Marks the end of an object
+    */
+   END_OBJECT,
+   /**
+    * Marks a value in an array
+    */
+   VALUE,
+   /**
+    * Marks the beginning of an array
+    */
+   BEGIN_ARRAY,
+   /**
+    * Marks the end of an array
+    */
+   END_ARRAY,
+   /**
+    * Marks the beginning of a document
+    */
+   BEGIN_DOCUMENT,
+   /**
+    * Marks the end of a document
+    */
+   END_DOCUMENT,
+   /**
+    * Marks the beginning of a key-value pair
+    */
+   NAME,
+   /**
+    * Something unknown
+    */
+   OTHER,
+   /**
+    * Marks the end of a key value pair
+    */
+   END_KEY_VALUE
+} //END OF StructuredElement

@@ -25,6 +25,7 @@ import com.davidbracewell.collection.list.Lists;
 import com.davidbracewell.collection.map.Maps;
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.io.Resources;
+import com.davidbracewell.json.Json;
 import org.junit.Test;
 
 import java.util.Map;
@@ -38,27 +39,19 @@ public class StructuredFormatTest {
 
    @Test
    public void loadAndDump() throws Exception {
-      Map<String, Object> map = Maps.map("A", 1.0, "B", 2.0, "C", 3.0, "D", Lists.list(1.0, 2.0, 3.0), "E",
-                                         Maps.map("A", "B"));
+      Map<String, Object> map = Maps.map("A", 1.0,
+                                         "B", 2.0,
+                                         "C", 3.0,
+                                         "D", Lists.list(1.0, 2.0, 3.0),
+                                         "E", Maps.map("A", "B"));
 
-      String json = StructuredFormat.JSON.dumps(map);
-      Map<String, Val> jsonMap = StructuredFormat.JSON.loads(Resources.fromString(json));
+      String json = Json.dumps(map);
+      Map<String, Val> jsonMap = Json.loads(Resources.fromString(json));
       assertEquals(1.0, jsonMap.get("A").asDoubleValue(), 0);
       assertEquals(2.0, jsonMap.get("B").asDoubleValue(), 0);
       assertEquals(3.0, jsonMap.get("C").asDoubleValue(), 0);
       assertEquals(map.get("D"), jsonMap.get("D").asList(Double.class));
       assertEquals(map.get("E"), jsonMap.get("E").asMap(String.class, String.class));
-
-
-      String xml = StructuredFormat.XML.dumps(map);
-      Map<String, Val> xmlMap = StructuredFormat.XML.loads(Resources.fromString(xml));
-      assertEquals(1.0, xmlMap.get("A").asDoubleValue(), 0);
-      assertEquals(2.0, xmlMap.get("B").asDoubleValue(), 0);
-      assertEquals(3.0, xmlMap.get("C").asDoubleValue(), 0);
-      assertEquals(map.get("D"), xmlMap.get("D").asList(Double.class));
-      assertEquals(map.get("E"), xmlMap.get("E").asMap(String.class, String.class));
-
-
    }
 
 

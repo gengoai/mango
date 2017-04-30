@@ -26,14 +26,15 @@ import com.davidbracewell.conversion.Val;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.CSVReader;
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.io.structured.ElementType;
-import com.davidbracewell.io.structured.StructuredFormat;
-import com.davidbracewell.io.structured.StructuredReader;
+import com.davidbracewell.json.JsonReader;
+import com.davidbracewell.json.Json;
 import lombok.NonNull;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
+
+import static com.davidbracewell.json.JsonTokenType.END_DOCUMENT;
 
 /**
  * Common methods for reading multi-counters from structured files, creating synchronized and unmodifiable wrappers.
@@ -168,9 +169,9 @@ public interface MultiCounters {
     */
    static <K1, K2> MultiCounter<K1, K2> readJson(@NonNull Resource resource, @NonNull Class<K1> key1Class, @NonNull Class<K2> key2Class) throws IOException {
       MultiCounter<K1, K2> counter = newMultiCounter();
-      try (StructuredReader reader = StructuredFormat.JSON.createReader(resource)) {
+      try (JsonReader reader = Json.createReader(resource)) {
          reader.beginDocument();
-         while (reader.peek() != ElementType.END_DOCUMENT) {
+         while (reader.peek() != END_DOCUMENT) {
             Map<String, Val> map = reader.nextMap();
             counter.set(map.get("k1").as(key1Class), map.get("k2").as(key2Class), map.get("v").asDoubleValue());
          }

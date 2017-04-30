@@ -29,8 +29,8 @@ import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.CSVWriter;
 import com.davidbracewell.io.Commitable;
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.io.structured.StructuredFormat;
-import com.davidbracewell.io.structured.StructuredWriter;
+import com.davidbracewell.json.JsonWriter;
+import com.davidbracewell.json.Json;
 import lombok.NonNull;
 
 import java.io.IOException;
@@ -472,10 +472,10 @@ public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable, Commita
     * @throws IOException Something went wrong writing
     */
    default void writeJson(@NonNull Resource output) throws IOException {
-      try (StructuredWriter writer = StructuredFormat.JSON.createWriter(output)) {
+      try (JsonWriter writer = Json.createWriter(output)) {
          writer.beginDocument();
          for (Map.Entry<T, Double> entry : entries()) {
-            writer.writeKeyValue(Convert.convert(entry.getKey(), String.class), entry.getValue());
+            writer.property(Convert.convert(entry.getKey(), String.class), entry.getValue());
          }
          writer.endDocument();
       }

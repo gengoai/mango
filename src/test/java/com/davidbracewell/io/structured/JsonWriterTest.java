@@ -19,12 +19,14 @@
  * under the License.
  */
 
-package com.davidbracewell.io.structured.json;
+package com.davidbracewell.io.structured;
 
 import com.davidbracewell.conversion.Val;
 import com.davidbracewell.io.Resources;
 import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.io.resource.StringResource;
+import com.davidbracewell.json.JsonReader;
+import com.davidbracewell.json.JsonWriter;
 import com.davidbracewell.tuple.Tuple2;
 import org.junit.Test;
 
@@ -36,19 +38,22 @@ import static org.junit.Assert.*;
 /**
  * @author David B. Bracewell
  */
-public class JSONWriterTest {
+public class JsonWriterTest {
+
+
+
 
   @Test
   public void writerTest() throws Exception {
     Resource resource = Resources.fromString("");
-    try (JSONWriter writer = new JSONWriter(resource)) {
+    try (JsonWriter writer = new JsonWriter(resource)) {
       writer.beginDocument();
-      writer.writeKeyValue("name", "value");
-      writer.beginArray("array").writeValue("value1").endArray();
+      writer.property("name", "value");
+      writer.beginArray("array").value("value1").endArray();
       writer.beginObject("innerObject");
-      writer.writeKeyValue("arg", null);
+      writer.property("arg", null);
       writer.endObject();
-      writer.writeKeyValue("int", 3);
+      writer.property("int", 3);
       writer.endDocument();
     }
 
@@ -56,15 +61,15 @@ public class JSONWriterTest {
 
 
     resource = new StringResource();
-    try (JSONWriter writer = new JSONWriter(resource)) {
+    try (JsonWriter writer = new JsonWriter(resource)) {
       writer.beginDocument();
-      writer.writeKeyValue("List", Tuple2.of("String1", 34d));
+      writer.property("List", Tuple2.of("String1", 34d));
       writer.endDocument();
     }
     assertEquals("{\"List\":[\"String1\",34.0]}", resource.readToString().trim());
 
 
-    try (JSONReader reader = new JSONReader(resource)) {
+    try (JsonReader reader = new JsonReader(resource)) {
       reader.beginDocument();
       List<Val> list = reader.nextCollection(ArrayList::new);
       assertTrue(list.size() == 2);
