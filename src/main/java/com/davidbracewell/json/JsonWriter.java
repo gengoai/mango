@@ -497,7 +497,7 @@ public final class JsonWriter implements AutoCloseable, Closeable {
       } else if (object instanceof Enum) {
          value(Cast.<Enum>as(object).name());
       } else if (object instanceof EnumValue) {
-         value(Cast.<EnumValue>as(object).canonicalName());
+         value(Cast.<EnumValue>as(object).name());
       } else if (object instanceof Map) {
          value(Cast.<Map<String, ?>>as(object));
       } else if (object.getClass().isArray()) {

@@ -74,14 +74,14 @@ public abstract class EnumValue implements Tag, Serializable, Cloneable {
     * @param name the name of the enum value
     */
    protected EnumValue(String name) {
-      Preconditions.checkArgument(StringUtils.isNotNullOrBlank(name), name + " is invalid.");
+      Preconditions.checkArgument(StringUtils.isNotNullOrBlank(name), "[" + name + " ]is invalid.");
       this.name = normalize(name);
       Preconditions.checkArgument(!name.contains(".") && name.length() > 0, name + " is invalid.");
       this.fullName = getClass().getCanonicalName() + "." + this.name;
    }
 
    protected EnumValue(String cannonicalName, String name) {
-      Preconditions.checkArgument(StringUtils.isNotNullOrBlank(name), name + " is invalid.");
+      Preconditions.checkArgument(StringUtils.isNotNullOrBlank(name), "[" + name + " ]is invalid.");
       this.name = normalize(name);
       Preconditions.checkArgument(!name.contains(".") && name.length() > 0, name + " is invalid.");
       this.fullName = cannonicalName + "." + this.name;
