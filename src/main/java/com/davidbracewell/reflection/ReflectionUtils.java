@@ -22,6 +22,7 @@
 package com.davidbracewell.reflection;
 
 import com.davidbracewell.conversion.Val;
+import com.davidbracewell.io.resource.Resource;
 import com.davidbracewell.logging.Loggable;
 import com.davidbracewell.logging.Logger;
 import com.davidbracewell.string.StringUtils;
@@ -223,6 +224,10 @@ public final class ReflectionUtils implements Loggable {
             return isArray ? byte[].class : byte.class;
          case "long":
             return isArray ? long[].class : long.class;
+         case "String":
+            return isArray ? String[].class : String.class;
+         case "Resource":
+            return isArray ? Resource[].class : Resource.class;
       }
 
       Class<?> clazz;

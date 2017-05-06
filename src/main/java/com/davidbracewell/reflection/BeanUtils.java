@@ -45,8 +45,16 @@ public class BeanUtils {
              .stream()
              .filter(propertyName -> Config.hasProperty(className, propertyName))
              .forEach(propertyName -> {
-                ValueType valueType = ValueType.fromConfig(className + "." + propertyName);
-                beanMap.put(propertyName, valueType.convert(Config.get(className, propertyName).asString()));
+                String property = className + "." + propertyName;
+                Object val = null;
+                if (Config.isBean(property)) {
+                   val = Config.get(property);
+                } else {
+                   ValueType valueType = ValueType.fromConfig(className + "." + propertyName);
+                   val = valueType.convert(Config.get(className, propertyName).asString());
+                }
+                System.err.println(className + "." + propertyName + " : " + val);
+                beanMap.put(propertyName, val);
              });
    }
 
@@ -141,7 +149,6 @@ public class BeanUtils {
             throw new ReflectionException(e1);
          }
       }
-
 
       doParametrization(beanMap, name);
       Object bean = beanMap.getBean();
