@@ -53,7 +53,6 @@ public class BeanUtils {
                    ValueType valueType = ValueType.fromConfig(className + "." + propertyName);
                    val = valueType.convert(Config.get(className, propertyName).asString());
                 }
-                System.err.println(className + "." + propertyName + " : " + val);
                 beanMap.put(propertyName, val);
              });
    }
