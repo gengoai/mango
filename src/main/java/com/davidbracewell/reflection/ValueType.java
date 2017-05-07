@@ -130,6 +130,11 @@ public abstract class ValueType implements Serializable {
          return new SimpleValueType(Config.get(property).asClass());
       }
 
+      if( Config.isBean(property) ){
+         Object o = Config.get(property);
+         return new SimpleValueType(o.getClass());
+      }
+
       //Read in the value type parameters from the configuration using the property as the prefix
       Map<String, Class> typeInfo = Config.getMap(property, String.class, Class.class);
       //Set the type class to the type property defaulting to String if not found
