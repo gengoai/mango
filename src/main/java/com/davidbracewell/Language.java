@@ -1,22 +1,22 @@
 /*
  * (c) 2005 David B. Bracewell
  *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
+ * Licensed to Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See NOTICE file
  * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
+ * regarding copyright ownership.  ASF licenses this file
+ * to you under Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * with License.  You may obtain a copy of License at
  *
  *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
+ * software distributed under License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
+ * KIND, either express or implied.  See License for the
  * specific language governing permissions and limitations
- * under the License.
+ * under License.
  */
 
 package com.davidbracewell;
@@ -32,14 +32,14 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * <p>Enumeration of world languages with helpful information on whether or not the language is Whitespace delimited
- * or if the language is read right to left (May not be complete).</p>
+ * <p>Enumeration of world languages with helpful information on whether or not language is Whitespace delimited
+ * or if language is read right to left (May not be complete).</p>
  *
  * @author David B. Bracewell
  */
 public enum Language {
    /**
-    * The English.
+    * English.
     */
    ENGLISH("EN") {
       @Override
@@ -49,7 +49,7 @@ public enum Language {
 
    },
    /**
-    * The Japanese.
+    * Japanese.
     */
    JAPANESE("JA") {
       @Override
@@ -64,7 +64,7 @@ public enum Language {
 
    },
    /**
-    * The Chinese.
+    * Chinese.
     */
    CHINESE("ZH") {
       @Override
@@ -99,7 +99,7 @@ public enum Language {
     */
    AMHARIC("AM"),
    /**
-    * The Arabic.
+    * Arabic.
     */
    ARABIC("AR") {
       @Override
@@ -256,7 +256,7 @@ public enum Language {
     */
    HAUSA("HA"),
    /**
-    * The Hebrew.
+    * Hebrew.
     */
    HEBREW("IW") {
       @Override
@@ -301,7 +301,7 @@ public enum Language {
     */
    ITALIAN("IT"),
    /**
-    * The Javanese.
+    * Javanese.
     */
    JAVANESE("JW") {
       @Override
@@ -314,7 +314,7 @@ public enum Language {
     */
    KANNADA("KN"),
    /**
-    * The Kashmiri.
+    * Kashmiri.
     */
    KASHMIRI("KS") {
       @Override
@@ -343,7 +343,7 @@ public enum Language {
     */
    KOREAN("KO"),
    /**
-    * The Kurdish.
+    * Kurdish.
     */
    KURDISH("KU") {
       @Override
@@ -380,7 +380,7 @@ public enum Language {
     */
    MALAGASY("MG"),
    /**
-    * The Malay.
+    * Malay.
     */
    MALAY("MS") {
       @Override
@@ -389,7 +389,7 @@ public enum Language {
       }
    },
    /**
-    * The Malayalam.
+    * Malayalam.
     */
    MALAYALAM("ML") {
       @Override
@@ -442,7 +442,7 @@ public enum Language {
     */
    OROMO("OM"),
    /**
-    * The Pashto.
+    * Pashto.
     */
    PASHTO("PS") {
       @Override
@@ -451,7 +451,7 @@ public enum Language {
       }
    },
    /**
-    * The Persian.
+    * Persian.
     */
    PERSIAN("FA") {
       @Override
@@ -468,7 +468,7 @@ public enum Language {
     */
    PORTUGUESE("PT"),
    /**
-    * The Punjabi.
+    * Punjabi.
     */
    PUNJABI("PA") {
       @Override
@@ -521,7 +521,7 @@ public enum Language {
     */
    SHONA("SN"),
    /**
-    * The Sindhi.
+    * Sindhi.
     */
    SINDHI("SD") {
       @Override
@@ -546,7 +546,7 @@ public enum Language {
     */
    SLOVENIAN("SL"),
    /**
-    * The Somali.
+    * Somali.
     */
    SOMALI("SO") {
       @Override
@@ -615,7 +615,7 @@ public enum Language {
     */
    TURKISH("TR"),
    /**
-    * The Turkmen.
+    * Turkmen.
     */
    TURKMEN("TK") {
       @Override
@@ -632,7 +632,7 @@ public enum Language {
     */
    UKRAINIAN("UK"),
    /**
-    * The Urdu.
+    * Urdu.
     */
    URDU("UR") {
       @Override
@@ -665,7 +665,7 @@ public enum Language {
     */
    XHOSA("XH"),
    /**
-    * The Yiddish.
+    * Yiddish.
     */
    YIDDISH("JI") {
       @Override
@@ -684,7 +684,7 @@ public enum Language {
 
 
    /**
-    * The Unknown.
+    * Unknown.
     */
    UNKNOWN("UNKNOWN") {
       @Override
@@ -705,7 +705,7 @@ public enum Language {
     * Parses a language code to get its corresponding LanguageId
     *
     * @param code language code
-    * @return The parsed language or null
+    * @return parsed language or null
     */
    public static Language fromString(String code) {
       try {
@@ -731,8 +731,8 @@ public enum Language {
    /**
     * From locale language.
     *
-    * @param locale the locale
-    * @return the language
+    * @param locale locale
+    * @return language
     */
    public static Language fromLocale(Locale locale) {
       if (locale == null) {
@@ -749,7 +749,7 @@ public enum Language {
    /**
     * Gets locales.
     *
-    * @return The possible locales associated with the language.
+    * @return possible locales associated with language.
     */
    public synchronized List<Locale> getLocales() {
       if (locales != null) {
@@ -767,7 +767,7 @@ public enum Language {
    /**
     * Uses whitespace boolean.
     *
-    * @return True if the language uses white space to separate words, false if not
+    * @return True if language uses white space to separate words, false if not
     */
    public boolean usesWhitespace() {
       return true;
@@ -776,16 +776,16 @@ public enum Language {
    /**
     * Is right to left boolean.
     *
-    * @return True if the language is written  right to left
+    * @return True if language is written  right to left
     */
    public boolean isRightToLeft() {
       return false;
    }
 
    /**
-    * Gets the language as a {@link java.util.Locale}
+    * Gets language as a {@link java.util.Locale}
     *
-    * @return The language locale
+    * @return language locale
     */
    public Locale asLocale() {
       return Locale.forLanguageTag(name());
@@ -794,7 +794,7 @@ public enum Language {
    /**
     * Gets number format.
     *
-    * @return the number format
+    * @return number format
     */
    public NumberFormat getNumberFormat() {
       return DecimalFormat.getNumberInstance(asLocale());
@@ -803,7 +803,7 @@ public enum Language {
    /**
     * Gets currency format.
     *
-    * @return the currency format
+    * @return currency format
     */
    public NumberFormat getCurrencyFormat() {
       return DecimalFormat.getCurrencyInstance(asLocale());
@@ -812,7 +812,7 @@ public enum Language {
    /**
     * Gets percent format.
     *
-    * @return the percent format
+    * @return percent format
     */
    public NumberFormat getPercentFormat() {
       return DecimalFormat.getPercentInstance(asLocale());
@@ -821,8 +821,8 @@ public enum Language {
    /**
     * Gets date format.
     *
-    * @param style the style
-    * @return the date format
+    * @param style style
+    * @return date format
     */
    public DateFormat getDateFormat(int style) {
       return DateFormat.getDateInstance(style, asLocale());
@@ -831,7 +831,7 @@ public enum Language {
    /**
     * Gets code.
     *
-    * @return The ISO2 Language code
+    * @return ISO2 Language code
     */
    public String getCode() {
       return code;
@@ -840,9 +840,9 @@ public enum Language {
    /**
     * Convenience method for constructing a collator.
     *
-    * @param strength      The strength of the {@link Collator}
-    * @param decomposition The decomposition of the {@link Collator}
-    * @return The collator
+    * @param strength      strength of {@link Collator}
+    * @param decomposition decomposition of {@link Collator}
+    * @return collator
     */
    public final Collator getCollator(int strength, int decomposition) {
       Collator collator = Collator.getInstance(asLocale());
@@ -854,8 +854,8 @@ public enum Language {
    /**
     * Convenience method for constructing a collator using <code>FULL_DECOMPOSITION</code>
     *
-    * @param strength The strength of the {@link Collator}
-    * @return The collator
+    * @param strength strength of {@link Collator}
+    * @return collator
     */
    public final Collator getCollator(int strength) {
       return getCollator(strength, Collator.FULL_DECOMPOSITION);
@@ -865,7 +865,7 @@ public enum Language {
     * Convenience method for constructing a collator using a strength of <code>TERTIARY</code> and decomposition of
     * <code>FULL_DECOMPOSITION</code>
     *
-    * @return The collator
+    * @return collator
     */
    public final Collator getCollator() {
       return getCollator(Collator.TERTIARY, Collator.FULL_DECOMPOSITION);

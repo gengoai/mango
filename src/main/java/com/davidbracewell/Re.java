@@ -22,7 +22,7 @@ public interface Re {
    /**
     * matches unicode whitespace.
     */
-   Regex WHITESPACE = re("\\p{Z}\t\n\r\f");
+   Regex WHITESPACE = chars("\\p{Z}\t\n\r\f");
    /**
     * Unicode letter
     */
