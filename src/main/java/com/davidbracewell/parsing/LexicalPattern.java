@@ -28,7 +28,7 @@ public abstract class LexicalPattern implements Serializable {
     * @param literal the literal
     * @return the lexical pattern
     */
-   public static LexicalPattern charLiteral(@NonNull char literal) {
+   public static LexicalPattern charLiteral(char literal) {
       return new CharLiteralPattern(CharMatcher.anyOf(Character.toString(literal)));
    }
 
