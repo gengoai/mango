@@ -431,4 +431,8 @@ public interface MStream<T> extends AutoCloseable {
     */
    MPairStream<T, Long> zipWithIndex();
 
+   default SparkStream<T> toDistributedStream(){
+      return new SparkStream<>(this);
+   }
+
 }//END OF MStream

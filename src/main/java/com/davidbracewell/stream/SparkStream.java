@@ -72,6 +72,11 @@ public class SparkStream<T> implements MStream<T>, Serializable {
       this.onClose = mStream.getOnCloseHandler();
    }
 
+   @Override
+   public SparkStream<T> toDistributedStream() {
+      return this;
+   }
+
    /**
     * Instantiates a new Spark stream.
     *

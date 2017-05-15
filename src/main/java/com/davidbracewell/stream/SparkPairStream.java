@@ -21,7 +21,7 @@ import java.util.stream.Stream;
  * @param <U> the value type parameter
  * @author David B. Bracewell
  */
-class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
+public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    private static final long serialVersionUID = 1L;
    private final JavaPairRDD<T, U> rdd;
    private SerializableRunnable onClose;

@@ -49,7 +49,6 @@ import static com.davidbracewell.tuple.Tuples.$;
 public class HashMapCounter<T> implements Counter<T>, Serializable {
    private static final long serialVersionUID = 1L;
    private final ObjectDoubleHashMap<T> map = new ObjectDoubleHashMap<>();
-   //Object2DoubleOpenHashMap<T> map = new Object2DoubleOpenHashMap<>();
    private double sum = 0;
 
 
