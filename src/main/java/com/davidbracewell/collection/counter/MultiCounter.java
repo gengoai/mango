@@ -26,8 +26,8 @@ import com.davidbracewell.conversion.Convert;
 import com.davidbracewell.io.CSV;
 import com.davidbracewell.io.CSVWriter;
 import com.davidbracewell.io.resource.Resource;
-import com.davidbracewell.json.JsonWriter;
 import com.davidbracewell.json.Json;
+import com.davidbracewell.json.JsonWriter;
 import com.davidbracewell.tuple.Tuple3;
 import lombok.NonNull;
 
@@ -50,6 +50,12 @@ import java.util.stream.Collectors;
  * @author David B. Bracewell
  */
 public interface MultiCounter<K, V> {
+
+   default MultiCounter<V, K> transpose() {
+      MultiCounter<V, K> mc = MultiCounters.newMultiCounter();
+      entries().forEach(e -> mc.set(e.v2, e.v1, e.v3));
+      return mc;
+   }
 
    /**
     * A set of triplies entries (key1,key2,double) making up the counter
