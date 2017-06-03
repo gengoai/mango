@@ -24,6 +24,7 @@ package com.davidbracewell.collection.counter;
 import com.davidbracewell.Math2;
 import com.davidbracewell.conversion.Cast;
 import com.google.common.collect.Iterators;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
@@ -46,7 +47,7 @@ import static com.davidbracewell.tuple.Tuples.$;
 @EqualsAndHashCode(exclude = {"sum"})
 public class HashMapCounter<T> implements Counter<T>, Serializable {
    private static final long serialVersionUID = 1L;
-   private final Map<T, Double> map = new HashMap<>();
+   private final Map<T, Double> map = new Object2ObjectOpenHashMap<>();
    private double sum = 0;
 
 
@@ -311,22 +312,22 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
          @Override
          public boolean removeAll(@NonNull Collection<?> c) {
             int size = map.size();
-            new HashSet<>(map.entrySet()
-                             .stream()
-                             .filter(p -> c.contains($(p.getKey(), p.getValue())))
-                             .collect(Collectors.toSet()))
-               .forEach(p -> map.remove(p.getKey()));
+            map.keySet().removeAll(map.entrySet()
+                                      .stream()
+                                      .filter(p -> c.contains($(p.getKey(), p.getValue())))
+                                      .map(Map.Entry::getKey)
+                                      .collect(Collectors.toSet()));
             sum = Double.NaN;
             return (map.size() - size) == c.size();
          }
 
          @Override
          public boolean retainAll(@NonNull Collection<?> c) {
-            new HashSet<>(map.entrySet()
-                             .stream()
-                             .filter(e -> !c.contains($(e.getKey(), e.getValue())))
-                             .collect(Collectors.toSet()))
-               .forEach(p -> map.remove(p.getKey()));
+            map.keySet().retainAll(new HashSet<>(map.entrySet()
+                                                    .stream()
+                                                    .filter(e -> c.contains($(e.getKey(), e.getValue())))
+                                                    .map(Map.Entry::getKey)
+                                                    .collect(Collectors.toSet())));
             sum = Double.NaN;
             return map.size() == c.size();
          }
@@ -334,11 +335,10 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
          @Override
          public boolean removeIf(Predicate<? super Map.Entry<T, Double>> filter) {
             int size = map.size();
-            new HashSet<>(map.keySet()
-                             .stream()
-                             .filter(p -> filter.test($(p, map.get(p))))
-                             .collect(Collectors.toSet()))
-               .forEach(map::remove);
+            map.keySet().removeAll(new HashSet<>(map.keySet()
+                                                    .stream()
+                                                    .filter(p -> filter.test($(p, map.get(p))))
+                                                    .collect(Collectors.toSet())));
             sum = Double.NaN;
             return size != map.size();
          }
