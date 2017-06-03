@@ -27,7 +27,10 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
@@ -73,17 +76,7 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
 
    @Override
    public Map<T, Double> asMap() {
-      return new AbstractMap<T, Double>() {
-         @Override
-         public boolean containsKey(Object key) {
-            return map.containsKey(key);
-         }
-
-         @Override
-         public Set<Entry<T, Double>> entrySet() {
-            return entries();
-         }
-      };
+      return map;
    }
 
 
