@@ -22,9 +22,9 @@
 package com.davidbracewell.collection.map;
 
 import com.davidbracewell.tuple.Tuple2;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import org.eclipse.collections.impl.map.mutable.UnifiedMap;
 
 import java.io.Serializable;
 import java.text.CollationKey;
@@ -71,7 +71,7 @@ public class NormalizedStringMap<V> implements Map<String, V>, Serializable {
     * @param strength the collation strength(e.g. <code>Collator.PRIMARY</code> )
     */
    public NormalizedStringMap(Locale locale, int strength) {
-      this(UnifiedMap::new, locale, strength);
+      this(Object2ObjectOpenHashMap::new, locale, strength);
    }
 
    /**

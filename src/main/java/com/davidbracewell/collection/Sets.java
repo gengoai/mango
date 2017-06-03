@@ -23,9 +23,10 @@ package com.davidbracewell.collection;
 
 import com.davidbracewell.function.SerializableFunction;
 import com.davidbracewell.function.SerializablePredicate;
+import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import lombok.NonNull;
-import org.eclipse.collections.impl.set.mutable.UnifiedSet;
-import org.eclipse.collections.impl.set.sorted.mutable.TreeSortedSet;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -112,7 +113,7 @@ public interface Sets {
    @SafeVarargs
    @SuppressWarnings("varargs")
    static <T> Set<T> set(T... elements) {
-      return createSet(UnifiedSet::new, elements);
+      return createSet(ObjectOpenHashSet::new, elements);
    }
 
 
@@ -126,7 +127,7 @@ public interface Sets {
    @SafeVarargs
    @SuppressWarnings("varargs")
    static <T> Set<T> treeSet(T... elements) {
-      return createSet(TreeSortedSet::new, elements);
+      return createSet(ObjectAVLTreeSet::new, elements);
    }
 
 
@@ -140,7 +141,7 @@ public interface Sets {
    @SafeVarargs
    @SuppressWarnings("varargs")
    static <T> Set<T> linkedHashSet(T... elements) {
-      return createSet(LinkedHashSet::new, elements);
+      return createSet(ObjectLinkedOpenHashSet::new, elements);
    }
 
 
@@ -183,7 +184,7 @@ public interface Sets {
     * @return the new hash set containing the given elements
     */
    static <T> Set<T> asSet(Iterator<? extends T> iterator) {
-      return createSet(UnifiedSet::new, Streams.asStream(iterator));
+      return createSet(ObjectOpenHashSet::new, Streams.asStream(iterator));
    }
 
    /**
@@ -194,7 +195,7 @@ public interface Sets {
     * @return the new tree set containing the given elements
     */
    static <T> Set<T> asTreeSet(Iterator<? extends T> iterator) {
-      return createSet(TreeSortedSet::new, Streams.asStream(iterator));
+      return createSet(ObjectAVLTreeSet::new, Streams.asStream(iterator));
    }
 
    /**
@@ -205,7 +206,7 @@ public interface Sets {
     * @return the new linked hash set containing the given elements
     */
    static <T> Set<T> asLinkedHashSet(Iterator<? extends T> iterator) {
-      return createSet(LinkedHashSet::new, Streams.asStream(iterator));
+      return createSet(ObjectLinkedOpenHashSet::new, Streams.asStream(iterator));
    }
 
    /**
@@ -227,7 +228,7 @@ public interface Sets {
     * @return the new hash set containing the given elements
     */
    static <T> Set<T> asSet(Iterable<? extends T> iterable) {
-      return createSet(UnifiedSet::new, Streams.asStream(iterable));
+      return createSet(ObjectOpenHashSet::new, Streams.asStream(iterable));
    }
 
    /**
@@ -238,7 +239,7 @@ public interface Sets {
     * @return the new tree hash set containing the given elements
     */
    static <T> Set<T> asTreeSet(Iterable<? extends T> iterable) {
-      return createSet(TreeSortedSet::new, Streams.asStream(iterable));
+      return createSet(ObjectAVLTreeSet::new, Streams.asStream(iterable));
    }
 
    /**
@@ -249,7 +250,7 @@ public interface Sets {
     * @return the new linked hash set containing the given elements
     */
    static <T> Set<T> asLinkedHashSet(Iterable<? extends T> iterable) {
-      return createSet(LinkedHashSet::new, Streams.asStream(iterable));
+      return createSet(ObjectLinkedOpenHashSet::new, Streams.asStream(iterable));
    }
 
    /**
@@ -271,7 +272,7 @@ public interface Sets {
     * @return the new hash set containing the given elements
     */
    static <T> Set<T> asSet(Stream<? extends T> stream) {
-      return createSet(UnifiedSet::new, stream);
+      return createSet(ObjectOpenHashSet::new, stream);
    }
 
    /**
@@ -282,7 +283,7 @@ public interface Sets {
     * @return the new tree hash set containing the given elements
     */
    static <T> Set<T> asTreeSet(Stream<? extends T> stream) {
-      return createSet(TreeSortedSet::new, stream);
+      return createSet(ObjectAVLTreeSet::new, stream);
    }
 
    /**
@@ -293,7 +294,7 @@ public interface Sets {
     * @return the new linked hash set containing the given elements
     */
    static <T> Set<T> asLinkedHashSet(Stream<? extends T> stream) {
-      return createSet(LinkedHashSet::new, stream);
+      return createSet(ObjectLinkedOpenHashSet::new, stream);
    }
 
    /**

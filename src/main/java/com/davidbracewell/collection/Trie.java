@@ -5,8 +5,8 @@ import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.string.StringUtils;
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.Iterators;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.NonNull;
-import org.eclipse.collections.impl.map.mutable.UnifiedMap;
 
 import java.io.Serializable;
 import java.util.*;
@@ -342,7 +342,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
       } else if (containsKey(string)) {
          return Maps.map(string, 0);
       }
-      Map<String, Integer> results = new UnifiedMap<>();
+      Map<String, Integer> results = new Object2ObjectOpenHashMap<>();
       int[] current = new int[string.length() + 1];
       for (int i = 0; i < current.length; i++) {
          current[i] = i;

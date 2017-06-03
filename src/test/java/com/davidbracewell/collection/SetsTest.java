@@ -84,13 +84,13 @@ public class SetsTest {
 
    @Test
    public void treeSet() throws Exception {
-      assertEquals("[A, B, C]", Sets.treeSet("A", "B", "C").toString());
+      assertEquals("{A, B, C}", Sets.treeSet("A", "B", "C").toString());
       assertTrue(Sets.treeSet().isEmpty());
    }
 
    @Test
    public void linkedHashSet() throws Exception {
-      assertEquals("[A, B, C]", Sets.linkedHashSet("A", "B", "C").toString());
+      assertEquals("{A, B, C}", Sets.linkedHashSet("A", "B", "C").toString());
       assertTrue(Sets.linkedHashSet().isEmpty());
    }
 
@@ -120,18 +120,18 @@ public class SetsTest {
 
    @Test
    public void asTreeSet() throws Exception {
-      assertEquals("[A, B, C]", Sets.asTreeSet(Arrays.asList("A", "B", "C")).toString());
-      assertEquals("[A, B, C]", Sets.asTreeSet(Stream.of("A", "B", "C")).toString());
-      assertEquals("[A, B, C]", Sets.asTreeSet(Arrays.asList("A", "B", "C").iterator()).toString());
+      assertEquals("{A, B, C}", Sets.asTreeSet(Arrays.asList("A", "B", "C")).toString());
+      assertEquals("{A, B, C}", Sets.asTreeSet(Stream.of("A", "B", "C")).toString());
+      assertEquals("{A, B, C}", Sets.asTreeSet(Arrays.asList("A", "B", "C").iterator()).toString());
       assertTrue(Sets.asTreeSet(Collections.emptyList()).isEmpty());
       assertTrue(Sets.asTreeSet(Collections.emptyIterator()).isEmpty());
    }
 
    @Test
    public void asLinkedHashSet() throws Exception {
-      assertEquals("[A, B, C]", Sets.asLinkedHashSet(Arrays.asList("A", "B", "C")).toString());
-      assertEquals("[A, B, C]", Sets.asLinkedHashSet(Stream.of("A", "B", "C")).toString());
-      assertEquals("[A, B, C]", Sets.asLinkedHashSet(Arrays.asList("A", "B", "C").iterator()).toString());
+      assertEquals("{A, B, C}", Sets.asLinkedHashSet(Arrays.asList("A", "B", "C")).toString());
+      assertEquals("{A, B, C}", Sets.asLinkedHashSet(Stream.of("A", "B", "C")).toString());
+      assertEquals("{A, B, C}", Sets.asLinkedHashSet(Arrays.asList("A", "B", "C").iterator()).toString());
       assertTrue(Sets.asLinkedHashSet(Collections.emptyList()).isEmpty());
       assertTrue(Sets.asLinkedHashSet(Collections.emptyIterator()).isEmpty());
 

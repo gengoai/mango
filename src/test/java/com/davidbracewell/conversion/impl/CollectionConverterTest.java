@@ -30,7 +30,7 @@ import org.junit.Test;
 import java.util.*;
 
 import static com.davidbracewell.collection.Sets.asLinkedHashSet;
-import static com.davidbracewell.collection.Sets.asSet;
+import static com.davidbracewell.collection.Sets.asTreeSet;
 import static com.davidbracewell.collection.list.Lists.list;
 import static org.junit.Assert.*;
 
@@ -43,7 +43,7 @@ public class CollectionConverterTest {
       assertNull(CollectionConverter.COLLECTION(null).apply("1"));
 
       List<String> stringList = list("A", "B", "C");
-      Set<String> stringSet = asSet(stringList);
+      Set<String> stringSet = asTreeSet(stringList);
 
       //Test cast
       assertEquals(stringList, CollectionConverter.COLLECTION(ArrayList.class).apply(stringList));
@@ -85,7 +85,7 @@ public class CollectionConverterTest {
 
       List<String> stringList = list("A", "B", "C");
       List<Integer> integerList = list(1, 3, 4);
-      Set<String> stringSet = asSet(stringList);
+      Set<String> stringSet = asTreeSet(stringList);
 
       //Test cast
       assertEquals(stringList, CollectionConverter.COLLECTION(ArrayList.class, String.class).apply(stringList));

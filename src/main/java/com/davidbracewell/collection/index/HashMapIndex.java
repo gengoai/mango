@@ -22,10 +22,11 @@
 package com.davidbracewell.collection.index;
 
 import com.google.common.collect.Iterators;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Synchronized;
-import org.eclipse.collections.impl.map.mutable.primitive.ObjectIntHashMap;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ import java.util.List;
 @EqualsAndHashCode(exclude = "map", callSuper = false)
 public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
    private static final long serialVersionUID = -288128807385573349L;
-   private final ObjectIntHashMap<TYPE> map = new ObjectIntHashMap<>();
+   private final Object2IntMap<TYPE> map = new Object2IntOpenHashMap<>();
    private final List<TYPE> list = new ArrayList<>();
 
    @Override
@@ -74,7 +75,7 @@ public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
 
    @Override
    public int getId(TYPE item) {
-      return map.getIfAbsent(item, -1);
+      return map.getOrDefault(item, -1);
    }
 
    @Override

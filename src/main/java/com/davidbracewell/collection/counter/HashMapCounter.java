@@ -26,8 +26,6 @@ import com.davidbracewell.conversion.Cast;
 import com.google.common.collect.Iterators;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import org.eclipse.collections.api.tuple.primitive.ObjectDoublePair;
-import org.eclipse.collections.impl.map.mutable.primitive.ObjectDoubleHashMap;
 
 import java.io.Serializable;
 import java.util.*;
@@ -48,7 +46,7 @@ import static com.davidbracewell.tuple.Tuples.$;
 @EqualsAndHashCode(exclude = {"sum"})
 public class HashMapCounter<T> implements Counter<T>, Serializable {
    private static final long serialVersionUID = 1L;
-   private final ObjectDoubleHashMap<T> map = new ObjectDoubleHashMap<>();
+   private final Map<T, Double> map = new HashMap<>();
    private double sum = 0;
 
 
@@ -61,7 +59,7 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
 
    @Override
    public double get(T item) {
-      return map.getIfAbsent(item, 0d);
+      return map.getOrDefault(item, 0d);
    }
 
    @Override
@@ -70,7 +68,7 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
          return this;
       }
       sum += amount;
-      map.updateValue(item, 0, d -> d + amount);
+      map.merge(item, amount, Math2::add);
       if (map.get(item) == 0) {
          map.remove(item);
       }
@@ -261,7 +259,7 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
       if (item == null) {
          return 0d;
       }
-      double value = map.getIfAbsent(item, 0);
+      double value = map.getOrDefault(item, 0d);
       sum -= value;
       map.remove(item);
       return value;
@@ -274,7 +272,7 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
          remove(item);
          return this;
       }
-      sum -= map.getIfAbsent(item, 0);
+      sum -= map.getOrDefault(item, 0d);
       map.put(item, count);
       sum += count;
       return this;
@@ -287,9 +285,7 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
          return this;
       }
       final double tmpSum = sum();
-      for (T item : map.keySet()) {
-         map.updateValue(item, 0d, d -> d / tmpSum);
-      }
+      map.replaceAll((key, value) -> value / tmpSum);
       sum = 1d;
       return this;
    }
@@ -303,7 +299,7 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
             if (o instanceof Map.Entry) {
                Map.Entry entry = Cast.as(o);
                if (entry.getValue() instanceof Number
-                      && map.getIfAbsent(entry.getKey(), 0) == Cast.<Number>as(entry.getValue()).doubleValue()) {
+                      && map.getOrDefault(entry.getKey(), 0d) == Cast.<Number>as(entry.getValue()).doubleValue()) {
                   map.remove(entry.getKey());
                   sum = Double.NaN;
                   return true;
@@ -315,18 +311,22 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
          @Override
          public boolean removeAll(@NonNull Collection<?> c) {
             int size = map.size();
-            map.keyValuesView()
-               .select(p -> c.contains($(p.getOne(), p.getTwo())))
-               .forEach(p -> map.remove(p.getOne()));
+            new HashSet<>(map.entrySet()
+                             .stream()
+                             .filter(p -> c.contains($(p.getKey(), p.getValue())))
+                             .collect(Collectors.toSet()))
+               .forEach(p -> map.remove(p.getKey()));
             sum = Double.NaN;
             return (map.size() - size) == c.size();
          }
 
          @Override
          public boolean retainAll(@NonNull Collection<?> c) {
-            map.keyValuesView()
-               .select(e -> !c.contains($(e.getOne(), e.getTwo())))
-               .forEach(p -> map.remove(p.getOne()));
+            new HashSet<>(map.entrySet()
+                             .stream()
+                             .filter(e -> !c.contains($(e.getKey(), e.getValue())))
+                             .collect(Collectors.toSet()))
+               .forEach(p -> map.remove(p.getKey()));
             sum = Double.NaN;
             return map.size() == c.size();
          }
@@ -334,9 +334,11 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
          @Override
          public boolean removeIf(Predicate<? super Map.Entry<T, Double>> filter) {
             int size = map.size();
-            map.keyValuesView()
-               .select(p -> filter.test($(p.getOne(), p.getTwo())))
-               .forEach(p -> map.remove(p.getOne()));
+            new HashSet<>(map.keySet()
+                             .stream()
+                             .filter(p -> filter.test($(p, map.get(p))))
+                             .collect(Collectors.toSet()))
+               .forEach(map::remove);
             sum = Double.NaN;
             return size != map.size();
          }
@@ -344,8 +346,8 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
          @Override
          public Iterator<Map.Entry<T, Double>> iterator() {
             return new Iterator<Map.Entry<T, Double>>() {
-               final Iterator<ObjectDoublePair<T>> iterator = map.keyValuesView().iterator();
-               ObjectDoublePair<T> entry;
+               final Iterator<Map.Entry<T, Double>> iterator = map.entrySet().iterator();
+               Map.Entry<T, Double> entry;
 
                @Override
                public boolean hasNext() {
@@ -357,7 +359,7 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
                public Map.Entry<T, Double> next() {
                   entry = iterator.next();
                   return new Map.Entry<T, Double>() {
-                     Map.Entry<T, Double> wrapped = new HashMap.SimpleEntry<>(entry.getOne(), entry.getTwo());
+                     Map.Entry<T, Double> wrapped = new HashMap.SimpleEntry<>(entry.getKey(), entry.getValue());
 
                      @Override
                      public T getKey() {
@@ -402,16 +404,14 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
    @Override
    public Counter<T> adjustValues(@NonNull DoubleUnaryOperator function) {
       Counter<T> newCounter = newInstance();
-      map.keyValuesView().forEach(
-         entry -> newCounter.increment(entry.getOne(), function.applyAsDouble(entry.getTwo())));
+      map.entrySet().forEach(
+         entry -> newCounter.increment(entry.getKey(), function.applyAsDouble(entry.getValue())));
       return newCounter;
    }
 
    @Override
    public Counter<T> adjustValuesSelf(@NonNull DoubleUnaryOperator function) {
-      for (T item : map.keySet()) {
-         map.updateValue(item, 0d, function::applyAsDouble);
-      }
+      map.replaceAll((key, value) -> function.applyAsDouble(value));
       sum = Double.NaN;
       return this;
    }
@@ -437,10 +437,10 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
 
    @Override
    public List<T> itemsByCount(boolean ascending) {
-      return map.keyValuesView()
-                .toSortedList((e1, e2) -> (ascending ? 1 : -1) * Double.compare(e1.getTwo(), e2.getTwo()))
+      return map.entrySet()
                 .stream()
-                .map(ObjectDoublePair::getOne)
+                .sorted((e1, e2) -> (ascending ? 1 : -1) * Double.compare(e1.getValue(), e2.getValue()))
+                .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
    }
 
@@ -456,18 +456,20 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
    @Override
    public Counter<T> filterByValue(@NonNull DoublePredicate doublePredicate) {
       Counter<T> counter = newInstance();
-      map.keyValuesView()
-         .select(e -> doublePredicate.test(e.getTwo()))
-         .forEach(e -> counter.set(e.getOne(), e.getTwo()));
+      map.entrySet()
+         .stream()
+         .filter(e -> doublePredicate.test(e.getValue()))
+         .forEach(e -> counter.set(e.getKey(), e.getValue()));
       return counter;
    }
 
    @Override
    public Counter<T> filterByKey(@NonNull Predicate<? super T> predicate) {
       Counter<T> counter = newInstance();
-      map.keyValuesView()
-         .select(e -> predicate.test(e.getOne()))
-         .forEach(e -> counter.set(e.getOne(), e.getTwo()));
+      map.entrySet()
+         .stream()
+         .filter(e -> predicate.test(e.getKey()))
+         .forEach(e -> counter.set(e.getKey(), e.getValue()));
       return counter;
    }
 
@@ -480,10 +482,12 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
       return sum;
    }
 
+
    @Override
    public <R> Counter<R> mapKeys(@NonNull Function<? super T, ? extends R> function) {
       Counter<R> result = newInstance();
-      map.keyValuesView().forEach(e -> result.increment(function.apply(e.getOne()), e.getTwo()));
+      map.entrySet()
+         .stream().forEach(e -> result.increment(function.apply(e.getKey()), e.getValue()));
       return result;
    }
 

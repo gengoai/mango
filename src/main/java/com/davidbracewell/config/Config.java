@@ -136,6 +136,9 @@ public final class Config implements Serializable {
    }
 
    public static boolean isBean(String property) {
+      if( StringUtils.isNullOrBlank(Config.getRaw(property))){
+         return false;
+      }
       Matcher m = BEAN_SUBSTITUTION.matcher(Config.getRaw(property));
       return m.find();
    }
