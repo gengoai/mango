@@ -21,6 +21,8 @@
 
 package com.davidbracewell.function;
 
+import com.google.common.base.Throwables;
+
 import java.util.function.LongFunction;
 
 /**
@@ -39,7 +41,7 @@ public interface Unchecked {
          try {
             runnable.run();
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -56,7 +58,7 @@ public interface Unchecked {
          try {
             return checked.applyAsInt(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -73,7 +75,7 @@ public interface Unchecked {
          try {
             return checked.applyAsDouble(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -91,7 +93,7 @@ public interface Unchecked {
          try {
             checked.accept(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -108,7 +110,7 @@ public interface Unchecked {
          try {
             return checked.test(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -126,7 +128,7 @@ public interface Unchecked {
          try {
             checked.accept(t, value);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -145,7 +147,7 @@ public interface Unchecked {
          try {
             return checked.test(t, U);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -162,7 +164,7 @@ public interface Unchecked {
          try {
             return checked.applyAsDouble(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -179,7 +181,7 @@ public interface Unchecked {
          try {
             return checked.applyAsInt(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -196,7 +198,7 @@ public interface Unchecked {
          try {
             return checked.applyAsLong(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -213,7 +215,7 @@ public interface Unchecked {
          try {
             return checked.getAsBoolean();
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -230,7 +232,7 @@ public interface Unchecked {
          try {
             return checked.getAsInt();
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -247,7 +249,7 @@ public interface Unchecked {
          try {
             return checked.applyAsInt(t, u);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -265,7 +267,7 @@ public interface Unchecked {
          try {
             checked.accept(t, value);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -282,7 +284,7 @@ public interface Unchecked {
          try {
             return checked.applyAsLong(t, u);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -300,7 +302,7 @@ public interface Unchecked {
          try {
             return checked.apply(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -318,7 +320,7 @@ public interface Unchecked {
          try {
             return checked.apply(t, u);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -336,7 +338,7 @@ public interface Unchecked {
          try {
             return checked.test(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -354,7 +356,7 @@ public interface Unchecked {
          try {
             return checked.applyAsDouble(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -372,7 +374,7 @@ public interface Unchecked {
          try {
             return checked.get();
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -391,7 +393,7 @@ public interface Unchecked {
          try {
             return checked.applyAsDouble(t, u);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -408,7 +410,7 @@ public interface Unchecked {
          try {
             return checked.test(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -427,7 +429,7 @@ public interface Unchecked {
          try {
             checked.accept(t, u);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -444,7 +446,7 @@ public interface Unchecked {
          try {
             return checked.getAsLong();
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -462,7 +464,7 @@ public interface Unchecked {
          try {
             return checked.applyAsLong(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -480,7 +482,7 @@ public interface Unchecked {
          try {
             return checked.apply(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -497,7 +499,7 @@ public interface Unchecked {
          try {
             checked.accept(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -517,7 +519,7 @@ public interface Unchecked {
          try {
             return checked.apply(t, u);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -534,7 +536,7 @@ public interface Unchecked {
          try {
             return checked.applyAsDouble(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -551,7 +553,7 @@ public interface Unchecked {
          try {
             return checked.applyAsDouble(t, u);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -569,7 +571,7 @@ public interface Unchecked {
          try {
             return checked.apply(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -586,7 +588,7 @@ public interface Unchecked {
          try {
             return checked.applyAsInt(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -605,7 +607,7 @@ public interface Unchecked {
          try {
             return checked.applyAsLong(t, u);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -622,7 +624,7 @@ public interface Unchecked {
          try {
             return checked.test(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -640,7 +642,7 @@ public interface Unchecked {
          try {
             return checked.apply(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -657,7 +659,7 @@ public interface Unchecked {
          try {
             checked.accept(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -676,7 +678,7 @@ public interface Unchecked {
          try {
             return checked.apply(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -693,7 +695,7 @@ public interface Unchecked {
          try {
             return checked.applyAsLong(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -710,7 +712,7 @@ public interface Unchecked {
          try {
             checked.accept(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -727,7 +729,7 @@ public interface Unchecked {
          try {
             return checked.applyAsLong(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -745,7 +747,7 @@ public interface Unchecked {
          try {
             return checked.applyAsInt(t);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -762,7 +764,7 @@ public interface Unchecked {
          try {
             return checked.getAsDouble();
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -781,7 +783,7 @@ public interface Unchecked {
          try {
             return checked.applyAsInt(t, u);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
@@ -799,7 +801,7 @@ public interface Unchecked {
          try {
             checked.accept(t, value);
          } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw Throwables.propagate(e);
          }
       };
    }
