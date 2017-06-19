@@ -13,7 +13,7 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
 
    protected static final Node NULL = new Node(null, null, null, new Span(0, Integer.MAX_VALUE));
    private static final long serialVersionUID = 1L;
-   protected Node root = NULL;
+   protected Node root = Cast.as(NULL);
    protected int size = 0;
 
    private boolean isRed(Node node) {
@@ -36,8 +36,8 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
          return true;
       }
 
-      Node iNode = root;
-      Node parent = NULL;
+      Node<T> iNode = root;
+      Node<T> parent = Cast.as(NULL);
       while (!isNull(iNode)) {
          parent = iNode;
          if (T.start() == iNode.span.start() && T.end() == iNode.span.end()) {
@@ -131,7 +131,7 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
 
    @Override
    public void clear() {
-      this.root = NULL;
+      this.root = Cast.as(NULL);
    }
 
    @Override
@@ -156,7 +156,7 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
       return true;
    }
 
-   private Node findNode(Node n, Span span) {
+   private Node<T> findNode(Node<T> n, Span span) {
       while (!n.isNull()) {
          if (n.span.start() == span.start() && n.span.end() == span.end()) {
             return n;
@@ -167,7 +167,7 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
             n = n.right;
          }
       }
-      return NULL;
+      return Cast.as(NULL);
    }
 
    @Override
@@ -229,15 +229,15 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
             return true;
          }
 
-         Node x = NULL;
-         Node y = NULL;
+         Node x = Cast.as(NULL);
+         Node y = Cast.as(NULL);
 
          //Leaf Node
          if (isNull(n.left) && isNull(n.left)) {
             if (y.getParent().left == y) {
-               y.getParent().left = NULL;
+               y.getParent().left = Cast.as(NULL);
             } else {
-               y.getParent().right = NULL;
+               y.getParent().right = Cast.as(NULL);
             }
             return true;
          }
@@ -567,9 +567,9 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
    }
 
    static {
-      NULL.left = NULL;
-      NULL.right = NULL;
-      NULL.parent = NULL;
+      NULL.left = Cast.as(NULL);
+      NULL.right = Cast.as(NULL);
+      NULL.parent = Cast.as(NULL);
    }
 
 
