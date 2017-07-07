@@ -29,11 +29,7 @@ public class ReusableLocalStream<T> implements MStream<T> {
     * @param backingCollection the backing collection
     */
    public ReusableLocalStream(@NonNull Collection<T> backingCollection) {
-      if (backingCollection instanceof List) {
-         this.backingCollection = Cast.as(backingCollection);
-      } else {
-         this.backingCollection = new ArrayList<>(backingCollection);
-      }
+      this.backingCollection = new ArrayList<>(backingCollection);
    }
 
    @Override
