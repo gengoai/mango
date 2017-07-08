@@ -40,7 +40,7 @@ import java.util.stream.Stream;
  * @param <T> the component type of the stream
  * @author David B. Bracewell
  */
-public interface MStream<T> extends AutoCloseable {
+public interface MStream<T> extends AutoCloseable, Iterable<T> {
 
 
    /**
