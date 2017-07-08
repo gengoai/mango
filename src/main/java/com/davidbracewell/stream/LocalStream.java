@@ -88,7 +88,9 @@ public class LocalStream<T> implements MStream<T>, Serializable {
 
    @Override
    public List<T> collect() {
-      return stream.collect(Collectors.toList());
+      ArrayList<T> list = new ArrayList<>();
+      stream.sequential().forEach(list::add);
+      return list;
    }
 
    @Override
