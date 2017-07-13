@@ -24,6 +24,7 @@ package com.davidbracewell;
 import com.davidbracewell.collection.Streams;
 import com.google.common.math.DoubleMath;
 import lombok.NonNull;
+import org.apache.commons.math3.util.FastMath;
 
 import java.math.BigDecimal;
 import java.util.stream.DoubleStream;
@@ -40,16 +41,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 public interface Math2 {
 
    /**
-    * Calculates the base 2 log of a given number
-    *
-    * @param number the number to calculate the base 2 log of
-    * @return the base 2 log of the given number
-    */
-   static double log2(double number) {
-      return DoubleMath.log2(number);
-   }
-
-   /**
     * Adds two doubles (useful as a method reference)
     *
     * @param v1 value 1
@@ -58,69 +49,6 @@ public interface Math2 {
     */
    static double add(double v1, double v2) {
       return v1 + v2;
-   }
-
-   /**
-    * Divides two doubles (useful as a method reference)
-    *
-    * @param v1 value 1
-    * @param v2 value 2
-    * @return the result of value 1 divided by value 2
-    */
-   static double divide(double v1, double v2) {
-      return v1 / v2;
-   }
-
-
-   /**
-    * Multiplies two doubles (useful as a method reference)
-    *
-    * @param v1 value 1
-    * @param v2 value 2
-    * @return the result of value 1 * value 2
-    */
-   static double multiply(double v1, double v2) {
-      return v1 * v2;
-   }
-
-   /**
-    * Subtracts two doubles (useful as a method reference)
-    *
-    * @param v1 value 1
-    * @param v2 value 2
-    * @return the result of value 1 minus value 2
-    */
-   static double subtract(double v1, double v2) {
-      return v1 - v2;
-   }
-
-   /**
-    * Truncates a double to a given precision.
-    *
-    * @param value     the value to truncate
-    * @param precision the number of decimal places
-    * @return the double
-    */
-   static double truncate(double value, int precision) {
-      return BigDecimal.valueOf(value).setScale(precision, BigDecimal.ROUND_HALF_UP).doubleValue();
-   }
-
-   /**
-    * <p>Rescales a value from an old range to a new range, e.g. change the value 2 in a 1 to 5 scale to the value 3.25
-    * in a 1 to 10 scale</p>
-    *
-    * @param value       the value to rescale
-    * @param originalMin the lower bound of the original range
-    * @param originalMax the upper bound of the original range
-    * @param newMin      the lower bound of the new range
-    * @param newMax      the upper bound of the new range
-    * @return the given value rescaled to fall between newMin and new Max
-    * @throws IllegalArgumentException if originalMax <= originalMin or newMax <= newMin
-    */
-   static double rescale(double value, double originalMin, double originalMax, double newMin, double newMax) {
-      checkArgument(originalMax > originalMin, "original upper bound must be > original lower bound");
-      checkArgument(newMax > newMin, "new upper bound must be > new lower bound");
-      return ((value - originalMin) / (originalMax - originalMin)) * (newMax - newMin) + newMin;
    }
 
    /**
@@ -141,6 +69,73 @@ public interface Math2 {
       return value;
    }
 
+   /**
+    * Divides two doubles (useful as a method reference)
+    *
+    * @param v1 value 1
+    * @param v2 value 2
+    * @return the result of value 1 divided by value 2
+    */
+   static double divide(double v1, double v2) {
+      return v1 / v2;
+   }
+
+   /**
+    * Calculates the base 2 log of a given number
+    *
+    * @param number the number to calculate the base 2 log of
+    * @return the base 2 log of the given number
+    */
+   static double log2(double number) {
+      return DoubleMath.log2(number);
+   }
+
+   /**
+    * Multiplies two doubles (useful as a method reference)
+    *
+    * @param v1 value 1
+    * @param v2 value 2
+    * @return the result of value 1 * value 2
+    */
+   static double multiply(double v1, double v2) {
+      return v1 * v2;
+   }
+
+   /**
+    * <p>Rescales a value from an old range to a new range, e.g. change the value 2 in a 1 to 5 scale to the value 3.25
+    * in a 1 to 10 scale</p>
+    *
+    * @param value       the value to rescale
+    * @param originalMin the lower bound of the original range
+    * @param originalMax the upper bound of the original range
+    * @param newMin      the lower bound of the new range
+    * @param newMax      the upper bound of the new range
+    * @return the given value rescaled to fall between newMin and new Max
+    * @throws IllegalArgumentException if originalMax <= originalMin or newMax <= newMin
+    */
+   static double rescale(double value, double originalMin, double originalMax, double newMin, double newMax) {
+      checkArgument(originalMax > originalMin, "original upper bound must be > original lower bound");
+      checkArgument(newMax > newMin, "new upper bound must be > new lower bound");
+      return ((value - originalMin) / (originalMax - originalMin)) * (newMax - newMin) + newMin;
+   }
+
+   static double safeLog(double d) {
+      if (Double.isFinite(d)) {
+         return (d <= 0d || d <= -0d) ? -10 : FastMath.log(d);
+      }
+      return 0d;
+   }
+
+   /**
+    * Subtracts two doubles (useful as a method reference)
+    *
+    * @param v1 value 1
+    * @param v2 value 2
+    * @return the result of value 1 minus value 2
+    */
+   static double subtract(double v1, double v2) {
+      return v1 - v2;
+   }
 
    /**
     * <p>Sums the numbers in a given iterable treating them as doubles.</p>
@@ -244,5 +239,15 @@ public interface Math2 {
                              EnhancedDoubleStatistics::combine);
    }
 
+   /**
+    * Truncates a double to a given precision.
+    *
+    * @param value     the value to truncate
+    * @param precision the number of decimal places
+    * @return the double
+    */
+   static double truncate(double value, int precision) {
+      return BigDecimal.valueOf(value).setScale(precision, BigDecimal.ROUND_HALF_UP).doubleValue();
+   }
 
 }//END OF Math2
