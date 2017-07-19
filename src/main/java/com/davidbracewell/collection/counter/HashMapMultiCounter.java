@@ -26,7 +26,6 @@ import com.davidbracewell.conversion.Cast;
 import com.davidbracewell.tuple.Tuple2;
 import com.davidbracewell.tuple.Tuple3;
 import com.google.common.collect.Iterators;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
@@ -47,7 +46,7 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode
 public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializable {
    private static final long serialVersionUID = 1L;
-   private final Map<K, Counter<V>> map = new Object2ObjectOpenHashMap<>();
+   private final Map<K, Counter<V>> map = new HashMap<>();
 
 
    @Override

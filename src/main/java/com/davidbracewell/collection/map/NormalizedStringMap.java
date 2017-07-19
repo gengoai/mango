@@ -22,7 +22,6 @@
 package com.davidbracewell.collection.map;
 
 import com.davidbracewell.tuple.Tuple2;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
@@ -71,7 +70,7 @@ public class NormalizedStringMap<V> implements Map<String, V>, Serializable {
     * @param strength the collation strength(e.g. <code>Collator.PRIMARY</code> )
     */
    public NormalizedStringMap(Locale locale, int strength) {
-      this(Object2ObjectOpenHashMap::new, locale, strength);
+      this(HashMap::new, locale, strength);
    }
 
    /**

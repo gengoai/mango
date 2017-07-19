@@ -22,15 +22,11 @@
 package com.davidbracewell.collection.counter;
 
 import com.davidbracewell.Math2;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
@@ -43,10 +39,10 @@ import java.util.stream.Collectors;
  * @param <T> the component type of the counter
  * @author David B. Bracewell
  */
-@EqualsAndHashCode(exclude = {"sum"})
+@EqualsAndHashCode()
 public class HashMapCounter<T> implements Counter<T>, Serializable {
    private static final long serialVersionUID = 1L;
-   private final Map<T, Double> map = new Object2ObjectOpenHashMap<>();
+   private final Map<T, Double> map = new HashMap<>();
 
 
    /**
