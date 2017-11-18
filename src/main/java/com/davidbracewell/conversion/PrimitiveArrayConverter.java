@@ -48,6 +48,7 @@ import java.util.function.Function;
 public final class PrimitiveArrayConverter {
 
 
+   private static final Logger log = Logger.getLogger(PrimitiveArrayConverter.class);
    /**
     * The constant BOOLEAN.
     */
@@ -286,7 +287,6 @@ public final class PrimitiveArrayConverter {
          return null;
       }
    };
-   private static final Logger log = Logger.getLogger(PrimitiveArrayConverter.class);
 
 
    private PrimitiveArrayConverter() {
@@ -295,6 +295,14 @@ public final class PrimitiveArrayConverter {
    private static Object convertToArray(Class<?> itemClass, Object obj) {
       if (obj.getClass().isArray() && obj.getClass().getComponentType().equals(itemClass)) {
          return obj;
+      }
+
+      if (obj.getClass().isArray() && obj.getClass().getComponentType().isPrimitive()) {
+         Object out = Array.newInstance(itemClass, Array.getLength(obj));
+         for (int i = 0; i < Array.getLength(obj); i++) {
+            Array.set(out, i, Convert.convert(Array.get(obj, i), itemClass));
+         }
+         return out;
       }
 
       Iterable<?> iterable = CollectionConverter.ITERABLE.apply(obj);
