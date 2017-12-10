@@ -31,6 +31,8 @@ import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -100,14 +102,30 @@ public class ClasspathResource extends BaseResource {
    }
 
    @Override
+   public Optional<URI> asURI() {
+      return asURL().map(url -> {
+         try {
+            return url.toURI();
+         } catch (URISyntaxException e) {
+            return null;
+         }
+      });
+   }
+
+   @Override
    public Optional<URL> asURL() {
       return Optional.ofNullable(classLoader.getResource(resource));
    }
 
    @Override
    public boolean isDirectory() {
-      return asFile().map(File::isDirectory)
-                     .orElse(StringUtils.isNullOrBlank(FileUtils.extension(resource)) && !canRead());
+      if( canRead() ) {
+         return false;
+      }
+//      return FileUtils.
+//      return asFile().map(File::isDirectory)
+//                     .orElse(StringUtils.isNullOrBlank(FileUtils.extension(resource)) && !canRead());
+      return true;
    }
 
    @Override

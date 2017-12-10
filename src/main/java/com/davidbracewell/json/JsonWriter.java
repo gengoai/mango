@@ -511,7 +511,7 @@ public final class JsonWriter implements AutoCloseable, Closeable {
       } else if (object instanceof Iterator) {
          value(Cast.<Iterator>as(object));
       } else {
-         this.value(Convert.convert(object, String.class));
+         value(Convert.convert(object, String.class));
       }
       return this;
    }
