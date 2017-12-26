@@ -131,7 +131,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
 
             lastMatch = -1;
             //check if we accept
-            if (delimiter.matches(text.charAt(nextI))) {
+            if (nextI >= len || delimiter.matches(text.charAt(nextI))) {
                V value = get(key.toString());
                results.add(new TrieMatch<>(start, nextI, value));
                start = nextI;
