@@ -59,7 +59,7 @@ public final class DynamicEnum implements Serializable {
    }
 
    private static String toKey(@NonNull Class<? extends EnumValue> enumClass, String name) {
-      String canonicalName = null;
+      String canonicalName;
       try {
          canonicalName = nameCache.get(enumClass);
       } catch (ExecutionException e) {

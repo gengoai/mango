@@ -39,9 +39,26 @@ public final class EnhancedDoubleStatistics implements SerializableDoubleConsume
    private double sum = 0;
    private double sumOfSq = 0;
    private int count = 0;
+   private double median = 0;
+   private double median_step = 1e-9;
+
 
    @Override
    public void accept(double value) {
+      if (count == 0) {
+         median = value;
+         median_step = Math.max(value / 2, 1e-9);
+      } else {
+         if (median > value) {
+            median -= median_step;
+         } else if (median < value) {
+            median += median_step;
+         }
+
+         if (Math.abs(value - median) < median_step) {
+            median_step /= 2.0;
+         }
+      }
       min = Math.min(min, value);
       max = Math.max(max, value);
       sum += value;
@@ -168,6 +185,18 @@ public final class EnhancedDoubleStatistics implements SerializableDoubleConsume
          return 0d;
       }
       return Math.sqrt(getPopulationVariance());
+   }
+
+   /**
+    * Gets the estimated median using the FAME algorithm
+    *
+    * @return The median
+    */
+   public double getMedian() {
+      if (getCount() == 0) {
+         return Double.NaN;
+      }
+      return median;
    }
 
    /**

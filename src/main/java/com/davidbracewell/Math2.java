@@ -121,7 +121,7 @@ public interface Math2 {
 
    static double safeLog(double d) {
       if (Double.isFinite(d)) {
-         return (d <= 0d || d <= -0d) ? -10 : FastMath.log(d);
+         return d <= 0d ? -10 : FastMath.log(d);
       }
       return 0d;
    }

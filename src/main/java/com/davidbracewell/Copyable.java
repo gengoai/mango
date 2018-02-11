@@ -23,18 +23,20 @@ package com.davidbracewell;
 
 /**
  * <p> The Copyable interface defines a method for returning a copy of an object. Individual implementations are left
- * to determine if the copy is deep or shallow. However, a prefernce is for deep copies.</p>
+ * to determine if the copy is deep or shallow. However, a preference is for deep copies.</p>
+ *
+ * <p>This interface acts an alternative to Java's clone method providing a generic return type.</p>
  *
  * @param <E> The type of object that being copied
  * @author David B. Bracewell
  */
 public interface Copyable<E> {
 
-  /**
-   * <p> Makes a copy of this object. </p>
-   *
-   * @return A copy of this object.
-   */
-  E copy();
+   /**
+    * <p> Makes a copy of this object. </p>
+    *
+    * @return A copy of this object.
+    */
+   E copy();
 
 }// END OF INTERFACE Copyable
