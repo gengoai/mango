@@ -78,7 +78,7 @@ public class ClasspathResource extends BaseResource {
    @Override
    public Resource append(byte[] byteArray) throws IOException {
       Preconditions.checkState(canWrite(), "Unable to write to this resource");
-      new FileResource(asFile().get()).append(byteArray);
+      new FileResource(asFile().orElseThrow(NullPointerException::new)).append(byteArray);
       return this;
    }
 
@@ -92,8 +92,7 @@ public class ClasspathResource extends BaseResource {
                    } catch (Exception e) {
                       return null;
                    }
-                })
-                .filter(Objects::nonNull);
+                });
    }
 
    @Override
