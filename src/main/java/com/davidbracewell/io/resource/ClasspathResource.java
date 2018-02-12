@@ -232,7 +232,7 @@ public class ClasspathResource extends BaseResource {
    @Override
    public OutputStream createOutputStream() throws IOException {
       Preconditions.checkState(canWrite(), "Unable to write to this resource");
-      return new FileOutputStream(this.asFile().get());
+      return new FileOutputStream(this.asFile().orElseThrow(NullPointerException::new));
    }
 
    @Override
