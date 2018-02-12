@@ -168,8 +168,7 @@ public final class CacheManager {
    public static <K, V> Cache<K, V> register(@NonNull CacheSpec<K, V> specification) {
       return Cast.as(caches.computeIfAbsent(specification.getName(),
                                             name -> Cast.as(specification.getEngine().create(specification))
-                                           )
-                    );
+                                           ));
    }
 
 }//END OF CacheManager
