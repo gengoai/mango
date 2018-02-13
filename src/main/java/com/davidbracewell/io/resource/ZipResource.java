@@ -18,7 +18,7 @@ public class ZipResource extends BaseResource implements ReadOnlyResource {
    private ZipEntry entry;
    private ZipFile zipFile;
 
-   ZipResource(String zipFile, String entry) {
+   public ZipResource(String zipFile, String entry) {
       try {
          this.zipFile = new ZipFile(zipFile);
       } catch (IOException e) {
