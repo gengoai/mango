@@ -44,9 +44,7 @@ import java.util.stream.Stream;
  * arguments can be specified at one time (e.g. -xzf would set the x, z, and f options to true). Short arguments may
  * have values (e.g. -f FILENAME).</p>
  *
- * <p>Long arguments whose are defined as being boolean require their value to be set. Boolean valued long arguments can
- * specified without the true/false value.</p>
- *
+    *
  * <p>Values for options will be specified on the corresponding {@link NamedOption} instance. The value can be retrieved
  * either directly from the NamedOption or by using the {@link #get(String)} method. Argument names need not specify the
  * "--" or "-" prefix.</p>
@@ -131,7 +129,7 @@ public final class CommandLineParser {
       List<String> filtered = new ArrayList<>();
       List<String> cleanedArgs = new ArrayList<>();
 
-      //Pass through the args once to do a clean up will make the next round easier to parser.
+      //Pass through the args once to do a clean up. Will make the next round easier to parser.
       for (String c : args) {
          if (c.endsWith(KEY_VALUE_SEPARATOR) && isOptionName(c)) {
             //If it is ends with a key/value separator and is an option
@@ -141,7 +139,7 @@ public final class CommandLineParser {
          } else if (c.contains(KEY_VALUE_SEPARATOR) && isOptionName(c)) {
             //If it contains a key/value separator, but doesn't end in one and is an option
             //then we have a key value pair that will split into three tokens [key, =, value]
-            int index = c.lastIndexOf(KEY_VALUE_SEPARATOR);
+            int index = c.indexOf(KEY_VALUE_SEPARATOR);
             cleanedArgs.add(c.substring(0, index));
             cleanedArgs.add(KEY_VALUE_SEPARATOR);
             cleanedArgs.add(c.substring(index + KEY_VALUE_SEPARATOR.length()));
