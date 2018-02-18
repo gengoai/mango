@@ -398,6 +398,20 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
    List<T> take(int n);
 
    /**
+    *
+    * @return True if the stream is distributed
+    */
+   boolean isDistributed();
+
+   /**
+    * Returns a new MStream containing the intersection of elements in this stream and the argument stream.
+    *
+    * @param other Stream to perform intersection with
+    * @return the new stream
+    */
+   MStream<T> intersection(MStream<T> other);
+
+   /**
     * Unions this stream with another.
     *
     * @param other the other stream to add to this one.
@@ -408,7 +422,7 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
    /**
     * Updates the config instance used for this String
     */
-   default void updateConfig(){
+   default void updateConfig() {
 
    }
 
@@ -431,7 +445,7 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
     */
    MPairStream<T, Long> zipWithIndex();
 
-   default SparkStream<T> toDistributedStream(){
+   default SparkStream<T> toDistributedStream() {
       return new SparkStream<>(this);
    }
 

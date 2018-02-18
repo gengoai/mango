@@ -409,6 +409,16 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
+   public boolean isDistributed() {
+      return true;
+   }
+
+   @Override
+   public MStream<T> intersection(MStream<T> other) {
+      return new SparkStream<>(rdd.intersection(other.toDistributedStream().rdd));
+   }
+
+   @Override
    public SparkStream<T> union(@NonNull MStream<T> other) {
       if (other.isReusable() && other.isEmpty()) {
          return this;

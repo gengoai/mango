@@ -23,6 +23,17 @@ public class ReusableLocalStream<T> implements MStream<T> {
    private SerializableRunnable onClose;
    private boolean parallel = false;
 
+
+   @Override
+   @SuppressWarnings("unchecked")
+   public MStream<T> intersection(@NonNull MStream<T> other) {
+      if (other.isDistributed()) {
+         return other.intersection(this);
+      }
+      Set<T> set = new HashSet<>(backingCollection);
+      return other.filter(set::contains);
+   }
+
    /**
     * Instantiates a new Reusable local stream backed by the the given collection.
     *
@@ -271,6 +282,11 @@ public class ReusableLocalStream<T> implements MStream<T> {
    @Override
    public List<T> take(int n) {
       return getStream().take(n);
+   }
+
+   @Override
+   public boolean isDistributed() {
+      return false;
    }
 
    @Override

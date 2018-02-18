@@ -298,12 +298,27 @@ public class LocalStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
+   public boolean isDistributed() {
+      return false;
+   }
+
+   @Override
    public List<T> take(int n) {
       Preconditions.checkArgument(n >= 0, "N must be non-negative.");
       if (n == 0) {
          return Collections.emptyList();
       }
       return stream.limit(n).collect(Collectors.toList());
+   }
+
+   @Override
+   @SuppressWarnings("unchecked")
+   public MStream<T> intersection(@NonNull MStream<T> other) {
+      if (other.isDistributed()) {
+         return other.intersection(this);
+      }
+      Set<T> set = (Set<T>) other.collect(Collectors.toSet());
+      return filter(set::contains);
    }
 
    @Override
