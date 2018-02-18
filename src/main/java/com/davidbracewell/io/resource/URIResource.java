@@ -96,20 +96,20 @@ public class URIResource extends BaseResource {
 
    @Override
    protected OutputStream createOutputStream() throws IOException {
-      OutputStream os = super.createOutputStream();
-      if (os == null) {
+      try {
+         return super.createOutputStream();
+      } catch (UnsupportedOperationException ue) {
          return uri.toURL().openConnection().getOutputStream();
       }
-      return os;
    }
 
    @Override
    protected InputStream createInputStream() throws IOException {
-      InputStream is = super.createInputStream();
-      if (is == null) {
+      try {
+         return super.createInputStream();
+      } catch (UnsupportedOperationException ue) {
          return uri.toURL().openConnection().getInputStream();
       }
-      return is;
    }
 
    @Override

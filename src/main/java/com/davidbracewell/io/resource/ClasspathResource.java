@@ -150,7 +150,7 @@ public class ClasspathResource extends BaseResource {
          return !asFile().get().isDirectory() && asFile().get().canRead();
       }
       try (InputStream is = inputStream()) {
-         return true;
+         return is.read() > 0 ;
       } catch (Exception e) {
          return false;
       }
@@ -177,6 +177,7 @@ public class ClasspathResource extends BaseResource {
    @Override
    public List<Resource> getChildren(Pattern filePattern, boolean recursive) {
       List<Resource> rval = new ArrayList<>();
+
 
       if (!isDirectory()) {
          return rval;
@@ -260,6 +261,13 @@ public class ClasspathResource extends BaseResource {
       ClasspathResource other = (ClasspathResource) obj;
       return Objects.equals(classLoader, other.classLoader) &&
                 Objects.equals(resource, other.resource);
+   }
+
+   public static void main(String[] args) throws Exception {
+      ClasspathResource cpr = new ClasspathResource("com/ibm/icu/text/");
+      for (Resource r : cpr.getChildren()) {
+         System.out.println(r);
+      }
    }
 
 }// END OF ClasspathResource

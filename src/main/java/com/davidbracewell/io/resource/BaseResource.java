@@ -110,8 +110,7 @@ public abstract class BaseResource implements Resource, Serializable {
       if (asFile().isPresent()) {
          return new FileOutputStream(asFile().orElseThrow(NullPointerException::new));
       }
-      return null;
-
+      throw new UnsupportedOperationException();
    }
 
    /**
@@ -124,7 +123,7 @@ public abstract class BaseResource implements Resource, Serializable {
       if (asFile().isPresent()) {
          return new FileInputStream(asFile().orElseThrow(NullPointerException::new));
       }
-      return null;
+      throw new UnsupportedOperationException();
    }
 
    @Override
