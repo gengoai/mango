@@ -82,7 +82,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public <R> R collect(@NonNull Collector<? super T, T, R> collector) {
+   public <R> R collect(@NonNull Collector<? super T, ?, R> collector) {
       return stream.collect(collector);
    }
 
@@ -317,7 +317,8 @@ public class LocalStream<T> implements MStream<T>, Serializable {
       if (other.isDistributed()) {
          return other.intersection(this);
       }
-      Set<T> set = (Set<T>) other.collect(Collectors.toSet());
+      Collector<T, ?, Set<T>> collector= Collectors.toSet();
+      Set<T> set = other.collect(collector);
       return filter(set::contains);
    }
 

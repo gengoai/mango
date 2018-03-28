@@ -112,7 +112,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public <R> R collect(@NonNull Collector<? super T, T, R> collector) {
+   public <R> R collect(@NonNull Collector<? super T, ?, R> collector) {
       return Streams.asStream(rdd.toLocalIterator()).collect(collector);
    }
 

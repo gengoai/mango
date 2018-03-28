@@ -57,7 +57,7 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
     * @param collector the collector to use in reducing the stream
     * @return the result of the collector
     */
-   <R> R collect(Collector<? super T, T, R> collector);
+   <R> R collect(Collector<? super T, ?, R> collector);
 
    /**
     * Collects the items in the stream as a list

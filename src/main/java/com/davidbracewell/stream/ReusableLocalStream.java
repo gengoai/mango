@@ -61,7 +61,7 @@ public class ReusableLocalStream<T> implements MStream<T> {
    }
 
    @Override
-   public <R> R collect(@NonNull Collector<? super T, T, R> collector) {
+   public <R> R collect(@NonNull Collector<? super T,  ?, R> collector) {
       return getStream().collect(collector);
    }
 
