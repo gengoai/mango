@@ -10,9 +10,9 @@
  * obtained from Illuminating Knowledge.
  */
 
-package com.davidbracewell.config;
+package com.gengoai.mango.config;
 
-import com.davidbracewell.parsing.*;
+import com.gengoai.mango.parsing.*;
 import java.util.*;
 import java.io.*;
 
@@ -21,13 +21,13 @@ import java.io.*;
 %class ConfigTokenizer
 %public
 %unicode
-%type com.davidbracewell.parsing.ParserToken
+%type com.gengoai.mango.parsing.ParserToken
 %function next
 %pack
 %char
 %line
 %yylexthrow{
-    com.davidbracewell.parsing.ParseException
+    com.gengoai.mango.parsing.ParseException
 %yylexthrow}
 
 %{
@@ -152,4 +152,4 @@ IMPORT_SCRIPT = [^\n]+
 {COMMENT}                       {}
 {WHITESPACE}                    {}
 {NEWLINE}                       {}
-[^]                             {throw new com.davidbracewell.parsing.ParseException("UNEXPECTED TOKEN \"" + yytext() +"\" at line: " + yyline + " char offset: " + yychar + " state: " + yystate());}
+[^]                             {throw new com.gengoai.mango.parsing.ParseException("UNEXPECTED TOKEN \"" + yytext() +"\" at line: " + yyline + " char offset: " + yychar + " state: " + yystate());}
