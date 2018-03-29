@@ -27,7 +27,7 @@
     <packaging>jar</packaging>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>A set of utilities and tools to speed up and ease programming in Java.</description>
-    <url>https://github.com/dbracewell/davidbracewell-common</url>
+    <url>http://www.gengoai.com/mango</url>
 
     <prerequisites>
         <maven>3.0.4</maven>
@@ -47,9 +47,9 @@
     <developers>
         <developer>
             <name>David B. Bracewell</name>
-            <email>david@davidbracewell.com</email>
-            <organization>David Bracewell</organization>
-            <organizationUrl>http://www.davidbracewell.com</organizationUrl>
+            <email>david@gengoai.com</email>
+            <organization>GengoAI</organization>
+            <organizationUrl>http://www.gengoai.com</organizationUrl>
         </developer>
     </developers>
 
@@ -258,11 +258,11 @@
                     <relocations>
                         <relocation>
                             <pattern>com.google.common</pattern>
-                            <shadedPattern>com.davidbracewell.guava.common</shadedPattern>
+                            <shadedPattern>com.gengoai.guava.common</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>com.google.thirdparty</pattern>
-                            <shadedPattern>com.davidbracewell.guava.thirdparty</shadedPattern>
+                            <shadedPattern>com.gengoai.guava.thirdparty</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
