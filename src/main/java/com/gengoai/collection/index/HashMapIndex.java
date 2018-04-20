@@ -24,7 +24,6 @@ package com.gengoai.collection.index;
 import com.google.common.collect.Iterators;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.Synchronized;
 import org.apache.mahout.math.map.OpenObjectIntHashMap;
 
 import java.io.Serializable;
@@ -46,11 +45,14 @@ public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
    private final List<TYPE> list = new ArrayList<>();
 
    @Override
-   @Synchronized
    public int add(@NonNull TYPE item) {
       if (!map.containsKey(item)) {
-         list.add(item);
-         map.put(item, list.size() - 1);
+         synchronized (map) {
+            if (!map.containsKey(item)) {
+               list.add(item);
+               map.put(item, list.size() - 1);
+            }
+         }
       }
       return map.get(item);
    }
