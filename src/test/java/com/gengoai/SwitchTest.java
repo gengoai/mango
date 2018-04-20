@@ -49,7 +49,7 @@ public class SwitchTest {
       assertEquals(0, stringToNumber.apply(null), 0);
    }
 
-   @Test(expected = IllegalArgumentException.class)
+   @Test(expected = RuntimeException.class)
    public void noDefault() {
       Switch<String, Integer> stringToNumber = Switch.<String, Integer>switchBuilder()
             .caseStmt(StringPredicates.MATCHES("one", false), s -> 1)
