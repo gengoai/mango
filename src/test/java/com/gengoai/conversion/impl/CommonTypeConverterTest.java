@@ -21,10 +21,10 @@
 
 package com.gengoai.conversion.impl;
 
+import com.gengoai.Defaults;
 import com.gengoai.collection.map.Maps;
 import com.gengoai.conversion.Convert;
 import com.gengoai.conversion.Val;
-import com.google.common.base.Defaults;
 import org.junit.Assert;
 import org.junit.Test;
 

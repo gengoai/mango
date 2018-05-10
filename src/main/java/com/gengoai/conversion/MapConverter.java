@@ -21,7 +21,7 @@
 
 package com.gengoai.conversion;
 
-import com.gengoai.collection.Collect;
+import com.gengoai.collection.Iterables;
 import com.gengoai.collection.map.Maps;
 import com.gengoai.function.SerializableSupplier;
 import com.gengoai.logging.Logger;
@@ -82,7 +82,7 @@ public class MapConverter<K, V, T extends Map<K, V>> implements Function<Object,
          map.put(keyConverter.apply(e.getKey()), valueConverter.apply(e.getValue()));
          return map;
       } else if (obj instanceof Iterable) {
-         Object o = Collect.getFirst(Cast.as(obj, Iterable.class)).orElse(null);
+         Object o = Iterables.getFirst(Cast.as(obj, Iterable.class)).orElse(null);
          if (o != null && o instanceof Map.Entry) {
             for (Object inner : Cast.as(obj, Iterable.class)) {
                Map.Entry<?, ?> e = Cast.as(inner);

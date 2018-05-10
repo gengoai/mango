@@ -21,8 +21,8 @@
 
 package com.gengoai.collection.list;
 
+import com.gengoai.Validation;
 import com.gengoai.conversion.Convert;
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
@@ -47,9 +47,9 @@ public final class PrimitiveArrayIterator<E> implements Iterator<E>, Serializabl
    private int index = 0;
 
    protected PrimitiveArrayIterator(@NonNull Object array, @NonNull Class<E> rClass) {
-      Preconditions.checkArgument(array.getClass().isArray(), "Object must be an array.");
-      Preconditions.checkArgument(array.getClass().getComponentType().isPrimitive(),
-                                  "Object must be a primitive array.");
+      Validation.checkArgument(array.getClass().isArray(), "Object must be an array.");
+      Validation.checkArgument(array.getClass().getComponentType().isPrimitive(),
+                               "Object must be a primitive array.");
       this.array = array;
       this.length = Array.getLength(array);
       this.rClass = rClass;
@@ -143,7 +143,7 @@ public final class PrimitiveArrayIterator<E> implements Iterator<E>, Serializabl
    @Override
    @SneakyThrows
    public E next() {
-      Preconditions.checkElementIndex(index, length);
+      Validation.checkElementIndex(index, length);
       Object val = Array.get(array, index);
       index++;
       return Convert.convert(val, rClass);

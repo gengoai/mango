@@ -21,10 +21,10 @@
 
 package com.gengoai.string;
 
+import com.gengoai.Validation;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Convert;
 import com.gengoai.io.CSV;
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -172,7 +172,7 @@ public class CSVFormatter implements Serializable {
       if (map == null) {
          return StringUtils.EMPTY;
       }
-      Preconditions.checkArgument(keyValueSeparator != ' ');
+      Validation.checkArgument(keyValueSeparator != ' ');
 
       StringBuilder rowString = new StringBuilder();
       for (Iterator<?> itr = map.entrySet().iterator(); itr.hasNext(); ) {

@@ -21,15 +21,16 @@
 
 package com.gengoai.conversion;
 
+import com.gengoai.Primitives;
 import com.gengoai.collection.list.Lists;
 import com.gengoai.collection.list.PrimitiveArrayList;
-import com.gengoai.io.CharsetDetectingReader;
+import com.gengoai.io.Resources;
 import com.gengoai.logging.Logger;
-import com.google.common.io.CharStreams;
-import com.google.common.primitives.Bytes;
-import com.google.common.primitives.Chars;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 import java.lang.reflect.Array;
 import java.net.URI;
 import java.net.URL;
@@ -83,11 +84,11 @@ public final class PrimitiveArrayConverter {
          if (o instanceof byte[]) {
             return Cast.as(o);
          } else if (o instanceof Byte[]) {
-            return Bytes.toArray(Arrays.asList((Byte[]) o));
+            return Primitives.toByteArray(Arrays.asList((Byte[]) o));
          } else if (o instanceof CharSequence) {
             return o.toString().getBytes();
          } else if (o.getClass().isArray() && o.getClass().getComponentType().isPrimitive()) {
-            return Bytes.toArray(new PrimitiveArrayList<>(o, Byte.class));
+            return Primitives.toByteArray(new PrimitiveArrayList<>(o, Byte.class));
          } else if (o.getClass().isArray()) {
             byte[] bytes = new byte[Array.getLength(o)];
             for (int i = 0; i < bytes.length; i++) {
@@ -100,18 +101,14 @@ public final class PrimitiveArrayConverter {
                   log.fine("Could not open input stream for {0}", o);
                   return null;
                }
-               return CharStreams.toString(new CharsetDetectingReader(inputStream)).getBytes();
+               return Resources.fromInputStream(inputStream).readBytes();
             } catch (IOException e) {
                log.fine("Error reading in {0}: {1}", o, e);
                return null;
             }
          } else if (o instanceof Reader) {
-            try (Reader reader = Cast.as(o); ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-               int read;
-               while ((read = reader.read()) != -1) {
-                  baos.write(read);
-               }
-               return baos.toByteArray();
+            try{
+               return Resources.fromReader(Cast.as(o)).readToString().getBytes();
             } catch (IOException e) {
                log.fine(e);
                return null;
@@ -128,7 +125,7 @@ public final class PrimitiveArrayConverter {
                }
             }
             if (!bytes.isEmpty()) {
-               return Bytes.toArray(bytes);
+               return Primitives.toByteArray(bytes);
             }
          }
 
@@ -153,11 +150,11 @@ public final class PrimitiveArrayConverter {
          if (o instanceof char[]) {
             return Cast.as(o);
          } else if (o instanceof Character[]) {
-            return Chars.toArray(Arrays.asList(Cast.<Character[]>as(o)));
+            return Primitives.toCharArray(Arrays.asList(Cast.<Character[]>as(o)));
          } else if (o instanceof CharSequence) {
             return o.toString().toCharArray();
          } else if (o.getClass().isArray() && o.getClass().getComponentType().isPrimitive()) {
-            return Chars.toArray(new PrimitiveArrayList<>(o, Character.class));
+            return Primitives.toCharArray(new PrimitiveArrayList<>(o, Character.class));
          } else if (o.getClass().isArray()) {
             char[] chars = new char[Array.getLength(o)];
             for (int i = 0; i < chars.length; i++) {
@@ -170,7 +167,7 @@ public final class PrimitiveArrayConverter {
                   log.fine("Could not open reader for {0}", o);
                   return null;
                }
-               return CharStreams.toString(reader).toCharArray();
+               return Resources.fromReader(reader).readToString().toCharArray();
             } catch (IOException e) {
                log.fine("Error reading in {0}: {1}", o, e);
                return null;
@@ -187,7 +184,7 @@ public final class PrimitiveArrayConverter {
                }
             }
             if (!chars.isEmpty()) {
-               return Chars.toArray(chars);
+               return Primitives.toCharArray(chars);
             }
          }
 

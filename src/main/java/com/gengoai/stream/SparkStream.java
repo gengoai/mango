@@ -21,6 +21,7 @@
 
 package com.gengoai.stream;
 
+import com.gengoai.Validation;
 import com.gengoai.collection.Streams;
 import com.gengoai.config.Config;
 import com.gengoai.config.Configurator;
@@ -28,7 +29,6 @@ import com.gengoai.conversion.Cast;
 import com.gengoai.function.*;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.tuple.Tuples;
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import org.apache.hadoop.io.compress.GzipCodec;
 import org.apache.spark.api.java.JavaRDD;
@@ -233,7 +233,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
    @Override
    public SparkStream<T> limit(long number) {
-      Preconditions.checkArgument(number >= 0, "Limit number must be non-negative.");
+      Validation.checkArgument(number >= 0, "Limit number must be non-negative.");
       if (number == 0) {
          StreamingContext.distributed().empty();
       }
@@ -301,7 +301,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
    @Override
    public MStream<Iterable<T>> partition(long partitionSize) {
-      Preconditions.checkArgument(partitionSize > 0, "Number of partitions must be greater than zero.");
+      Validation.checkArgument(partitionSize > 0, "Number of partitions must be greater than zero.");
       return zipWithIndex().mapToPair((k, v) -> Tuples.$(pindex(v, partitionSize, Long.MAX_VALUE), k))
                            .groupByKey()
                            .sortByKey(true)
@@ -327,7 +327,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
    @Override
    public SparkStream<T> sample(boolean withReplacement, int number) {
-      Preconditions.checkArgument(number >= 0, "Sample size must be non-negative.");
+      Validation.checkArgument(number >= 0, "Sample size must be non-negative.");
       if (number == 0) {
          return StreamingContext.distributed().empty();
       }
@@ -391,7 +391,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
    @Override
    public MStream<Iterable<T>> split(int n) {
-      Preconditions.checkArgument(n > 0, "N must be greater than zero.");
+      Validation.checkArgument(n > 0, "N must be greater than zero.");
       final long pSize = count() / n;
       return zipWithIndex().mapToPair((k, v) -> Tuples.$(pindex(v, pSize, n), k))
                            .groupByKey()
@@ -401,7 +401,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
    @Override
    public List<T> take(int n) {
-      Preconditions.checkArgument(n >= 0, "N must be non-negative.");
+      Validation.checkArgument(n >= 0, "N must be non-negative.");
       if (n == 0) {
          return Collections.emptyList();
       }

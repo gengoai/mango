@@ -21,9 +21,9 @@
 
 package com.gengoai.io.resource;
 
+import com.gengoai.Validation;
 import com.gengoai.io.FileUtils;
 import com.gengoai.string.StringUtils;
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.*;
@@ -82,7 +82,7 @@ public abstract class BaseResource implements Resource, Serializable {
 
    @Override
    public InputStream inputStream() throws IOException {
-      Preconditions.checkState(canRead(), "This is resource cannot be read from.");
+      Validation.checkState(canRead(), "This is resource cannot be read from.");
       PushbackInputStream is = new PushbackInputStream(createInputStream(), 2);
       if (FileUtils.isCompressed(is)) {
          setIsCompressed(true);
@@ -93,7 +93,7 @@ public abstract class BaseResource implements Resource, Serializable {
 
    @Override
    public OutputStream outputStream() throws IOException {
-      Preconditions.checkState(canWrite(), "This is resource cannot be written to.");
+      Validation.checkState(canWrite(), "This is resource cannot be written to.");
       if (isCompressed) {
          return new GZIPOutputStream(createOutputStream());
       }

@@ -23,8 +23,8 @@ package com.gengoai.stream;
 
 import com.gengoai.EnhancedDoubleStatistics;
 import com.gengoai.Math2;
+import com.gengoai.Validation;
 import com.gengoai.function.*;
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.util.Arrays;
@@ -140,7 +140,7 @@ class ReusableDoubleStream implements MDoubleStream {
 
    @Override
    public MDoubleStream limit(int n) {
-      Preconditions.checkArgument(n >= 0, "Limit number must be non-negative.");
+      Validation.checkArgument(n >= 0, "Limit number must be non-negative.");
       return getStream().limit(n);
    }
 

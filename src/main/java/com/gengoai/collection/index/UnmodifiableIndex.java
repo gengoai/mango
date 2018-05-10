@@ -22,7 +22,7 @@
 package com.gengoai.collection.index;
 
 
-import com.google.common.collect.Iterators;
+import com.gengoai.collection.Iterators;
 
 import java.util.Iterator;
 

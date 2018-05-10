@@ -22,7 +22,6 @@
 package com.gengoai;
 
 import com.gengoai.collection.Streams;
-import com.google.common.math.DoubleMath;
 import lombok.NonNull;
 import org.apache.commons.math3.util.FastMath;
 
@@ -31,7 +30,6 @@ import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
-import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * <p>Commonly needed math routines and methods that work over arrays and iterable. </p>
@@ -39,6 +37,8 @@ import static com.google.common.base.Preconditions.checkArgument;
  * @author David B. Bracewell
  */
 public interface Math2 {
+
+   double LOG_2 = FastMath.log(2);
 
    /**
     * Adds two doubles (useful as a method reference)
@@ -60,7 +60,7 @@ public interface Math2 {
     * @return the clipped value
     */
    static double clip(double value, double min, double max) {
-      checkArgument(max > min, "upper bound must be > lower bound");
+      Validation.checkArgument(max > min, "upper bound must be > lower bound");
       if (value < min) {
          return min;
       } else if (value > max) {
@@ -87,7 +87,7 @@ public interface Math2 {
     * @return the base 2 log of the given number
     */
    static double log2(double number) {
-      return DoubleMath.log2(number);
+      return FastMath.log(number) / LOG_2;
    }
 
    /**
@@ -114,8 +114,8 @@ public interface Math2 {
     * @throws IllegalArgumentException if originalMax <= originalMin or newMax <= newMin
     */
    static double rescale(double value, double originalMin, double originalMax, double newMin, double newMax) {
-      checkArgument(originalMax > originalMin, "original upper bound must be > original lower bound");
-      checkArgument(newMax > newMin, "new upper bound must be > new lower bound");
+      Validation.checkArgument(originalMax > originalMin, "original upper bound must be > original lower bound");
+      Validation.checkArgument(newMax > newMin, "new upper bound must be > new lower bound");
       return ((value - originalMin) / (originalMax - originalMin)) * (newMax - newMin) + newMin;
    }
 

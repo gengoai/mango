@@ -1,6 +1,6 @@
 package com.gengoai;
 
-import com.gengoai.string.StringPredicates;
+import com.gengoai.string.StringMatcher;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -14,9 +14,9 @@ public class SwitchTest {
    @Test
    public void builderTest() {
       Switch<String, Integer> stringToNumber = Switch.<String, Integer>switchBuilder()
-            .caseStmt(StringPredicates.MATCHES("one", false), s -> 1)
-            .caseStmt(StringPredicates.MATCHES("two", false), s -> 2)
-            .caseStmt(StringPredicates.MATCHES("three", false), s -> 3)
+            .caseStmt(StringMatcher.matches("one", false), s -> 1)
+            .caseStmt(StringMatcher.matches("two", false), s -> 2)
+            .caseStmt(StringMatcher.matches("three", false), s -> 3)
             .defaultStatement(s -> 0)
             .build();
 
@@ -34,9 +34,9 @@ public class SwitchTest {
          private static final long serialVersionUID = 1L;
 
          {
-            $case(StringPredicates.MATCHES("one", false), s -> 1);
-            $case(StringPredicates.MATCHES("two", false), s -> 2);
-            $case(StringPredicates.MATCHES("three", false), s -> 3);
+            $case(StringMatcher.matches("one", false), s -> 1);
+            $case(StringMatcher.matches("two", false), s -> 2);
+            $case(StringMatcher.matches("three", false), s -> 3);
             $default(s -> 0);
          }
       };
@@ -52,9 +52,9 @@ public class SwitchTest {
    @Test(expected = RuntimeException.class)
    public void noDefault() {
       Switch<String, Integer> stringToNumber = Switch.<String, Integer>switchBuilder()
-            .caseStmt(StringPredicates.MATCHES("one", false), s -> 1)
-            .caseStmt(StringPredicates.MATCHES("two", false), s -> 2)
-            .caseStmt(StringPredicates.MATCHES("three", false), s -> 3)
+            .caseStmt(StringMatcher.matches("one", false), s -> 1)
+            .caseStmt(StringMatcher.matches("two", false), s -> 2)
+            .caseStmt(StringMatcher.matches("three", false), s -> 3)
             .build();
 
       assertEquals(1, stringToNumber.apply("one"), 0);
@@ -72,9 +72,9 @@ public class SwitchTest {
          private static final long serialVersionUID = 1L;
 
          {
-            $case(StringPredicates.MATCHES("one", false), s -> 1, s -> 1);
-            $case(StringPredicates.MATCHES("two", false), s -> 1, s -> 2);
-            $case(StringPredicates.MATCHES("three", false), s -> 1, s -> 3);
+            $case(StringMatcher.matches("one", false), s -> 1, s -> 1);
+            $case(StringMatcher.matches("two", false), s -> 1, s -> 2);
+            $case(StringMatcher.matches("three", false), s -> 1, s -> 3);
             $default(s -> 0);
          }
       };
@@ -90,9 +90,9 @@ public class SwitchTest {
    @Test
    public void builderMappingTest() {
       Switch<String, Integer> stringToNumber = Switch.<String, Integer>switchBuilder()
-            .caseStmt(StringPredicates.MATCHES("one", false), s -> 1, s -> 1)
-            .caseStmt(StringPredicates.MATCHES("two", false), s -> 1, s -> 2)
-            .caseStmt(StringPredicates.MATCHES("three", false), s -> 1, s -> 3)
+            .caseStmt(StringMatcher.matches("one", false), s -> 1, s -> 1)
+            .caseStmt(StringMatcher.matches("two", false), s -> 1, s -> 2)
+            .caseStmt(StringMatcher.matches("three", false), s -> 1, s -> 3)
             .defaultStatement(s -> 0)
             .build();
 

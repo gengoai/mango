@@ -21,11 +21,11 @@
 
 package com.gengoai.conversion;
 
+import com.gengoai.Primitives;
 import com.gengoai.io.CharsetDetectingReader;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.*;
 import com.gengoai.logging.Logger;
-import com.google.common.primitives.Bytes;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -154,7 +154,7 @@ public final class IOConverter {
             return new ByteArrayInputStream(Cast.as(input));
          } else if (input instanceof Byte[]) {
             Byte[] bytes = Cast.as(input);
-            return new ByteArrayInputStream(Bytes.toArray(Arrays.asList(bytes)));
+            return new ByteArrayInputStream(Primitives.toByteArray(Arrays.asList(bytes)));
          } else if (input instanceof Blob) {
             try {
                return Cast.<Blob>as(input).getBinaryStream();

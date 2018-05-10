@@ -21,13 +21,13 @@
 
 package com.gengoai.io.resource;
 
+import com.gengoai.Validation;
 import com.gengoai.io.FileUtils;
 import com.gengoai.io.JarUtils;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.spi.ClasspathResourceProvider;
 import com.gengoai.logging.Logger;
 import com.gengoai.string.StringUtils;
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.*;
@@ -77,7 +77,7 @@ public class ClasspathResource extends BaseResource {
 
    @Override
    public Resource append(byte[] byteArray) throws IOException {
-      Preconditions.checkState(canWrite(), "Unable to write to this resource");
+      Validation.checkState(canWrite(), "Unable to write to this resource");
       new FileResource(asFile().orElseThrow(NullPointerException::new)).append(byteArray);
       return this;
    }
@@ -215,7 +215,7 @@ public class ClasspathResource extends BaseResource {
    @Override
    public InputStream inputStream() throws IOException {
       InputStream rawis = createInputStream();
-      Preconditions.checkState(rawis != null, "This resource cannot be read from.");
+      Validation.checkState(rawis != null, "This resource cannot be read from.");
       PushbackInputStream is = new PushbackInputStream(rawis, 2);
       if (FileUtils.isCompressed(is)) {
          setIsCompressed(true);
@@ -231,7 +231,7 @@ public class ClasspathResource extends BaseResource {
 
    @Override
    public OutputStream createOutputStream() throws IOException {
-      Preconditions.checkState(canWrite(), "Unable to write to this resource");
+      Validation.checkState(canWrite(), "Unable to write to this resource");
       return new FileOutputStream(this.asFile().orElseThrow(NullPointerException::new));
    }
 

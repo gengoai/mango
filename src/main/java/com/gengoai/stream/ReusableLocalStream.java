@@ -1,10 +1,10 @@
 package com.gengoai.stream;
 
+import com.gengoai.Validation;
+import com.gengoai.collection.list.Lists;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.*;
 import com.gengoai.io.resource.Resource;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import lombok.NonNull;
 
 import java.io.IOException;
@@ -61,7 +61,7 @@ public class ReusableLocalStream<T> implements MStream<T> {
    }
 
    @Override
-   public <R> R collect(@NonNull Collector<? super T,  ?, R> collector) {
+   public <R> R collect(@NonNull Collector<? super T, ?, R> collector) {
       return getStream().collect(collector);
    }
 
@@ -201,7 +201,7 @@ public class ReusableLocalStream<T> implements MStream<T> {
 
    @Override
    public MStream<Iterable<T>> partition(long partitionSize) {
-      Preconditions.checkArgument(partitionSize > 0, "Number of partitions must be greater than zero.");
+      Validation.checkArgument(partitionSize > 0, "Number of partitions must be greater than zero.");
       return new ReusableLocalStream<>(Cast.cast(Lists.partition(backingCollection, (int) partitionSize)));
    }
 
@@ -217,7 +217,7 @@ public class ReusableLocalStream<T> implements MStream<T> {
 
    @Override
    public MStream<T> sample(boolean withReplacement, int number) {
-      Preconditions.checkArgument(number >= 0, "Sample size must be non-negative.");
+      Validation.checkArgument(number >= 0, "Sample size must be non-negative.");
       if (number == 0) {
          return StreamingContext.local().empty();
       }
@@ -261,7 +261,7 @@ public class ReusableLocalStream<T> implements MStream<T> {
 
    @Override
    public MStream<Iterable<T>> split(int n) {
-      Preconditions.checkArgument(n > 0, "N must be greater than zero.");
+      Validation.checkArgument(n > 0, "N must be greater than zero.");
       final int pSize = backingCollection.size() / n;
       List<Iterable<T>> partitions = new ArrayList<>();
       for (int i = 0; i < n; i++) {

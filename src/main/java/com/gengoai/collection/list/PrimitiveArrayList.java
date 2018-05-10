@@ -21,6 +21,7 @@
 
 package com.gengoai.collection.list;
 
+import com.gengoai.Validation;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -30,7 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * <p> A fixed size list backed by a primitive array. The items in the array are converted through calling the {@link
@@ -58,8 +58,8 @@ public final class PrimitiveArrayList<E> extends AbstractList<E> implements Seri
     *                                  component type is not a primitive
     */
    public PrimitiveArrayList(@NonNull Object array, @NonNull Class<E> objectType) {
-      checkArgument(array.getClass().isArray(), "The object must be an array of primitives.");
-      checkArgument(array.getClass().getComponentType().isPrimitive(), "The object must be an array of primitives.");
+      Validation.checkArgument(array.getClass().isArray(), "The object must be an array of primitives.");
+      Validation.checkArgument(array.getClass().getComponentType().isPrimitive(), "The object must be an array of primitives.");
       this.array = array;
       this.arraySize = Array.getLength(array);
       this.objectType = objectType;

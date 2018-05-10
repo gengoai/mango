@@ -1,0 +1,160 @@
+package com.gengoai;
+
+import com.gengoai.string.StringUtils;
+
+/**
+ * The type Validation.
+ *
+ * @author David B. Bracewell
+ */
+public final class Validation {
+
+   private Validation() {
+      throw new IllegalAccessError();
+   }
+
+   /**
+    * Throws a <code>NullPointerException</code> if the given object is null.
+    *
+    * @param <T>    the type of the given object
+    * @param object the object to check
+    * @return the object
+    */
+   public static <T> T notNull(T object) {
+      if (object == null) {
+         throw new NullPointerException();
+      }
+      return object;
+   }
+
+   /**
+    * Throws a <code>NullPointerException</code> if the given object is null.
+    *
+    * @param <T>     the type of the given object
+    * @param object  the object to check
+    * @param message the message to use in the <code>NullPointerException</code>
+    * @return the object
+    */
+   public static <T> T notNull(T object, String message) {
+      if (object == null) {
+         if (message != null) {
+            throw new NullPointerException(message);
+         } else {
+            throw new NullPointerException();
+         }
+      }
+      return object;
+   }
+
+   /**
+    * Throws a <code>IllegalArgumentException</code> if the given string is null or blank.
+    *
+    * @param string the string to check
+    * @return the object
+    */
+   public static String notNullOrBlank(String string) {
+      if (StringUtils.isNullOrBlank(string)) {
+         throw new IllegalArgumentException("String must not be null or blank.");
+      }
+      return string;
+   }
+
+   /**
+    * Throws a <code>IllegalArgumentException</code> if the given string is null or blank.
+    *
+    * @param string  the string to check
+    * @param message the message to use in the <code>IllegalArgumentException</code>
+    * @return the object
+    */
+   public static String notNullOrBlank(String string, String message) {
+      if (StringUtils.isNullOrBlank(string)) {
+         if (message != null) {
+            throw new IllegalArgumentException(message);
+         } else {
+            throw new IllegalArgumentException("String must not be null or blank.");
+         }
+      }
+      return string;
+   }
+
+   /**
+    * Throws a <code>IllegalArgumentException</code> if the given boolean evaluates to false.
+    *
+    * @param evaluation the object to check
+    */
+   public static void checkArgument(boolean evaluation) {
+      if (!evaluation) {
+         throw new IllegalArgumentException();
+      }
+   }
+
+   /**
+    * Throws a <code>IllegalArgumentException</code> if the given boolean evaluates to false.
+    *
+    * @param evaluation the object to check
+    * @param message    the message to use in the <code>IllegalArgumentException</code>
+    */
+   public static void checkArgument(boolean evaluation, String message) {
+      if (!evaluation) {
+         if (message != null) {
+            throw new IllegalArgumentException(message);
+         } else {
+            throw new IllegalArgumentException();
+         }
+      }
+   }
+
+   private static String createIndexErrorMessage(int index, int size, String message) {
+      message = message == null ? StringUtils.EMPTY : message + " ";
+      if (index < 0) {
+         return String.format("%s(%s) must be non-negative.", message, index);
+      } else if (size < 0) {
+         throw new IllegalArgumentException("negative size: " + size);
+      } else {
+         return String.format("%s(%s) must be less than the size (%s).", message, index, size);
+      }
+   }
+
+   public static int checkElementIndex(int index, int size) {
+      if (index < 0 || index >= size) {
+         throw new IndexOutOfBoundsException(createIndexErrorMessage(index, size, StringUtils.EMPTY));
+      }
+      return index;
+   }
+
+   public static int checkElementIndex(int index, int size, String message) {
+      if (index < 0 || index >= size) {
+         throw new IndexOutOfBoundsException(createIndexErrorMessage(index, size, message));
+      }
+      return index;
+   }
+
+
+   /**
+    * Throws a <code>IllegalStateException</code> if the given boolean evaluates to false.
+    *
+    * @param evaluation the object to check
+    */
+   public static void checkState(boolean evaluation) {
+      if (!evaluation) {
+         throw new IllegalStateException();
+      }
+   }
+
+   /**
+    * Throws a <code>IllegalStateException</code> if the given boolean evaluates to false.
+    *
+    * @param evaluation the object to check
+    * @param message    the message to use in the <code>IllegalStateException</code>
+    */
+   public static void checkState(boolean evaluation, String message) {
+      if (!evaluation) {
+         if (message != null) {
+            throw new IllegalStateException(message);
+         } else {
+            throw new IllegalStateException();
+         }
+      }
+   }
+
+}//END OF Validation

@@ -21,11 +21,10 @@
 
 package com.gengoai.string;
 
+import com.gengoai.Validation;
 import com.gengoai.collection.Streams;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVReader;
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
@@ -46,14 +45,6 @@ public final class StringUtils {
     * Empty String
     */
    public static final String EMPTY = "";
-
-
-   /**
-    * CharMatcher combining INVISIBLE, BREAKING_WHITESPACE, and WHITESPACE
-    */
-   public static final CharMatcher WHITESPACE = CharMatcher.invisible()
-                                                   .and(CharMatcher.breakingWhitespace())
-                                                   .and(CharMatcher.whitespace());
    /**
     * The constant SINGLE_UNICODE_WHITESPACE.
     */
@@ -166,7 +157,7 @@ public final class StringUtils {
     * @return True if the string has at least one digit
     */
    public static boolean hasDigit(CharSequence string) {
-      return StringPredicates.HAS_DIGIT.test(string);
+      return StringMatcher.HasDigit.test(string);
    }
 
    /**
@@ -176,7 +167,7 @@ public final class StringUtils {
     * @return True if the string has at least one letter
     */
    public static boolean hasLetter(CharSequence string) {
-      return StringPredicates.HAS_LETTER.test(string);
+      return StringMatcher.HasLetter.test(string);
    }
 
    /**
@@ -186,7 +177,7 @@ public final class StringUtils {
     * @return True if the string has one or more punctuation characters
     */
    public static boolean hasPunctuation(CharSequence string) {
-      return StringPredicates.HAS_PUNCTUATION.test(string);
+      return StringMatcher.HasPunctuation.test(string);
    }
 
    /**
@@ -196,7 +187,7 @@ public final class StringUtils {
     * @return True if the string is only made up of letter or digits
     */
    public static boolean isAlphaNumeric(CharSequence string) {
-      return StringPredicates.IS_LETTER_OR_DIGIT.test(string);
+      return StringMatcher.LetterOrDigit.test(string);
    }
 
    /**
@@ -206,7 +197,7 @@ public final class StringUtils {
     * @return True if the string is only made up of numbers.
     */
    public static boolean isDigit(CharSequence string) {
-      return StringPredicates.IS_DIGIT.test(string);
+      return StringMatcher.Digit.test(string);
    }
 
    /**
@@ -216,7 +207,7 @@ public final class StringUtils {
     * @return True if the string is only made up of letters.
     */
    public static boolean isLetter(CharSequence string) {
-      return StringPredicates.IS_LETTER.test(string);
+      return StringMatcher.Letter.test(string);
    }
 
    /**
@@ -236,7 +227,7 @@ public final class StringUtils {
     * @return True if the string is lower case, False if not
     */
    public static boolean isLowerCase(CharSequence input) {
-      return StringPredicates.IS_LOWER_CASE.test(input);
+      return StringMatcher.LowerCase.test(input);
    }
 
    /**
@@ -246,7 +237,7 @@ public final class StringUtils {
     * @return True if the string is only made up of non letters and digits
     */
    public static boolean isNonAlphaNumeric(CharSequence string) {
-      return !StringPredicates.IS_LETTER_OR_DIGIT.test(string);
+      return !StringMatcher.LetterOrDigit.test(string);
    }
 
    /**
@@ -256,7 +247,7 @@ public final class StringUtils {
     * @return True when the input string is not null and the trimmed version of the string is not empty.
     */
    public static boolean isNotNullOrBlank(CharSequence input) {
-      return StringPredicates.IS_NOT_NULL_OR_BLANK.test(input);
+      return StringMatcher.NotNullOrBlank.test(input);
    }
 
    /**
@@ -266,7 +257,7 @@ public final class StringUtils {
     * @return True when the input string is null or the trimmed version of the string is empty.
     */
    public static boolean isNullOrBlank(CharSequence input) {
-      return StringPredicates.IS_NULL_OR_BLANK.test(input);
+      return StringMatcher.NullOrBlank.test(input);
    }
 
    /**
@@ -276,7 +267,7 @@ public final class StringUtils {
     * @return True if the string is all punctuation
     */
    public static boolean isPunctuation(CharSequence string) {
-      return StringPredicates.IS_PUNCTUATION.test(string);
+      return StringMatcher.Punctuation.test(string);
    }
 
    /**
@@ -307,7 +298,7 @@ public final class StringUtils {
     * @return True if the string is upper case, False if not
     */
    public static boolean isUpperCase(CharSequence input) {
-      return StringPredicates.IS_UPPER_CASE.test(input);
+      return StringMatcher.UpperCase.test(input);
    }
 
    public static String join(Iterable<?> iterable, CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
@@ -376,7 +367,7 @@ public final class StringUtils {
     * @return A string of random characters
     */
    public static String randomString(int length, int min, int max) {
-      return randomString(length, min, max, CharMatcher.any());
+      return randomString(length, min, max, CharMatcher.Any);
    }
 
    /**
@@ -412,7 +403,7 @@ public final class StringUtils {
             c = (char) (random.nextInt(maxRandom) + min);
          } while (Character.isLowSurrogate(c) ||
                      Character.isHighSurrogate(c) ||
-                     !validChar.matches(c));
+                     !validChar.test(c));
          array[i] = c;
       }
       return new String(array);
@@ -508,7 +499,7 @@ public final class StringUtils {
       if (input == null) {
          return new ArrayList<>();
       }
-      Preconditions.checkArgument(separator != '"', "Separator cannot be a quote");
+      Validation.checkArgument(separator != '"', "Separator cannot be a quote");
       try (CSVReader reader = CSV.builder().delimiter(separator).reader(new StringReader(input.toString()))) {
          List<String> all = new ArrayList<>();
          List<String> row;

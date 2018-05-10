@@ -21,7 +21,8 @@
 
 package com.gengoai.stream.accumulator;
 
-import com.google.common.collect.Sets;
+
+import com.gengoai.collection.Sets;
 
 import java.util.Set;
 

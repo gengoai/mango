@@ -24,6 +24,7 @@ package com.gengoai.io.resource;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 
@@ -57,4 +58,16 @@ public class ReaderResource extends BaseResource implements ReadOnlyResource, No
       return true;
    }
 
+   @Override
+   public byte[] readBytes() throws IOException {
+      try (BufferedReader bufferedReader = new BufferedReader(reader)) {
+         StringBuilder builder = new StringBuilder();
+         char[] buffer = new char[1024];
+         int read;
+         while ((read = bufferedReader.read(buffer, 0, buffer.length)) > 0) {
+            builder.append(buffer, 0, read);
+         }
+         return builder.toString().getBytes();
+      }
+   }
 }//END OF ReaderResource

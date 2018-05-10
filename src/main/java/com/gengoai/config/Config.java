@@ -40,7 +40,7 @@ import com.gengoai.parsing.ParseException;
 import com.gengoai.reflection.BeanUtils;
 import com.gengoai.scripting.ScriptEnvironment;
 import com.gengoai.scripting.ScriptEnvironmentManager;
-import com.gengoai.string.StringPredicates;
+import com.gengoai.string.StringMatcher;
 import com.gengoai.string.StringUtils;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -176,7 +176,7 @@ public final class Config implements Serializable {
     */
    public static <K, V> Map<K, V> getMap(String mapName, Class<K> keyClass, Class<V> valueClass) {
       Map<K, V> map = new HashMap<>();
-      getPropertiesMatching(StringPredicates.STARTS_WITH(mapName, true)).forEach(property -> {
+      getPropertiesMatching(StringMatcher.startsWith(mapName)).forEach(property -> {
          if (property.length() > mapName.length()) {
             String k = property.substring(mapName.length() + 1);
             map.put(Convert.convert(k, keyClass), get(property).as(valueClass));

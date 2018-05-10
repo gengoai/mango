@@ -21,7 +21,7 @@
 
 package com.gengoai.collection.index;
 
-import com.google.common.collect.Iterators;
+import com.gengoai.collection.Iterators;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.apache.mahout.math.map.OpenObjectIntHashMap;

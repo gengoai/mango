@@ -21,8 +21,8 @@
 
 package com.gengoai.concurrent;
 
+import com.gengoai.Validation;
 import com.gengoai.logging.Loggable;
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -240,7 +240,7 @@ public class Broker<V> implements Serializable, Loggable {
        * @return the builder
        */
       public Builder<V> bufferSize(int size) {
-         Preconditions.checkArgument(size > 0);
+         Validation.checkArgument(size > 0);
          queue = new ArrayBlockingQueue<>(size);
          return this;
       }
@@ -252,8 +252,8 @@ public class Broker<V> implements Serializable, Loggable {
        * @return the producer consumer
        */
       public Broker<V> build() {
-         Preconditions.checkArgument(producers.size() > 0);
-         Preconditions.checkArgument(consumers.size() > 0);
+         Validation.checkArgument(producers.size() > 0);
+         Validation.checkArgument(consumers.size() > 0);
          if (queue == null) {
             queue = new ArrayBlockingQueue<>(2 * (producers.size() + consumers.size()));
          }

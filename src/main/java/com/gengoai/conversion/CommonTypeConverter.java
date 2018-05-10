@@ -21,6 +21,7 @@
 
 package com.gengoai.conversion;
 
+import com.gengoai.Primitives;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVWriter;
 import com.gengoai.io.resource.Resource;
@@ -29,8 +30,6 @@ import com.gengoai.logging.Logger;
 import com.gengoai.reflection.ReflectionUtils;
 import com.gengoai.string.CSVFormatter;
 import com.gengoai.string.StringUtils;
-import com.google.common.primitives.Bytes;
-import com.google.common.primitives.Chars;
 
 import java.io.File;
 import java.io.InputStream;
@@ -92,9 +91,9 @@ public class CommonTypeConverter {
       } else if (input instanceof byte[]) {
          return new String(Cast.<byte[]>as(input));
       } else if (input instanceof Character[]) {
-         return new String(Chars.toArray(Arrays.asList(Cast.as(input))));
+         return new String(Primitives.toCharArray(Arrays.asList(Cast.as(input))));
       } else if (input instanceof Byte[]) {
-         return new String(Bytes.toArray(Arrays.asList(Cast.as(input))));
+         return new String(Primitives.toByteArray(Arrays.asList(Cast.as(input))));
       } else if (input instanceof File || input instanceof Path || input instanceof URI || input instanceof URL || input instanceof InputStream || input instanceof Blob || input instanceof Reader) {
          byte[] bytes = PrimitiveArrayConverter.BYTE.apply(input);
          if (bytes != null) {

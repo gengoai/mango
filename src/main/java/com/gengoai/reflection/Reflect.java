@@ -21,11 +21,11 @@
 
 package com.gengoai.reflection;
 
+import com.gengoai.Defaults;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Convert;
 import com.gengoai.conversion.Val;
 import com.gengoai.string.StringUtils;
-import com.google.common.base.Defaults;
 import lombok.NonNull;
 
 import java.lang.reflect.Constructor;

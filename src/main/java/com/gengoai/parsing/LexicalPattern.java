@@ -1,8 +1,8 @@
 package com.gengoai.parsing;
 
 import com.gengoai.Regex;
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Preconditions;
+import com.gengoai.Validation;
+import com.gengoai.string.CharMatcher;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -115,7 +115,7 @@ public abstract class LexicalPattern implements Serializable {
 
       @Override
       public int match(@NonNull CharSequence sequence, int start) {
-         Preconditions.checkPositionIndex(start, sequence.length());
+         Validation.checkElementIndex(start, sequence.length());
          if (literal.length() > (sequence.length() - start)) {
             return NO_MATCH;
          }
@@ -135,8 +135,8 @@ public abstract class LexicalPattern implements Serializable {
 
       @Override
       public int match(@NonNull CharSequence sequence, int start) {
-         Preconditions.checkPositionIndex(start, sequence.length());
-         return predicate.matches(sequence.charAt(start)) ? 1 : NO_MATCH;
+         Validation.checkElementIndex(start, sequence.length());
+         return predicate.test(sequence.charAt(start)) ? 1 : NO_MATCH;
       }
    }
 
@@ -151,9 +151,9 @@ public abstract class LexicalPattern implements Serializable {
 
       @Override
       public int match(@NonNull CharSequence sequence, int start) {
-         Preconditions.checkPositionIndex(start, sequence.length());
+         Validation.checkElementIndex(start, sequence.length());
          int length = start;
-         while (length < sequence.length() && pattern.matches(sequence.charAt(length))) {
+         while (length < sequence.length() && pattern.test(sequence.charAt(length))) {
             length++;
          }
          return length == start ? NO_MATCH : (length - start);
@@ -167,7 +167,7 @@ public abstract class LexicalPattern implements Serializable {
 
       @Override
       public int match(@NonNull CharSequence sequence, int start) {
-         Preconditions.checkPositionIndex(start, sequence.length());
+         Validation.checkElementIndex(start, sequence.length());
          Matcher m = pattern.matcher(sequence);
          if (m.find(start) && m.start() == start) {
             return m.group().length();

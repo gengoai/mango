@@ -21,16 +21,13 @@
 
 package com.gengoai;
 
+import com.gengoai.cache.Cache;
 import com.gengoai.conversion.Cast;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 
 /**
  * <p>Acts a global repository for dynamically generated {@link EnumValue}s. Each EnumValue acts like a Java
@@ -43,25 +40,14 @@ public final class DynamicEnum implements Serializable {
    private static final long serialVersionUID = 1L;
 
    private static final Map<String, EnumValue> GLOBAL_REPOSITORY = new ConcurrentHashMap<>();
-   private static LoadingCache<Class<?>, String> nameCache = CacheBuilder.newBuilder()
-                                                                         .build(new CacheLoader<Class<?>, String>() {
-                                                                            @Override
-                                                                            public String load(Class<?> key) throws Exception {
-                                                                               return key.getCanonicalName();
-                                                                            }
-                                                                         });
+   private static Cache<Class<?>, String> nameCache = Cache.create(10_000, Class::getCanonicalName);
 
    private DynamicEnum() {
       throw new IllegalAccessError();
    }
 
    private static String toKey(@NonNull Class<? extends EnumValue> enumClass, String name) {
-      String canonicalName;
-      try {
-         canonicalName = nameCache.get(enumClass);
-      } catch (ExecutionException e) {
-         throw new RuntimeException(e);
-      }
+      String canonicalName = nameCache.get(enumClass);
       if (name.startsWith(canonicalName)) {
          return name;
       }

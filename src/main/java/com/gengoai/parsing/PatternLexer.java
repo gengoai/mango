@@ -22,7 +22,7 @@
 package com.gengoai.parsing;
 
 import com.gengoai.io.resource.Resource;
-import com.google.common.base.CharMatcher;
+import com.gengoai.string.CharMatcher;
 import lombok.NonNull;
 import lombok.Value;
 

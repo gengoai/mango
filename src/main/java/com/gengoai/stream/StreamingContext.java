@@ -21,7 +21,7 @@
 
 package com.gengoai.stream;
 
-import com.gengoai.collection.Collect;
+import com.gengoai.collection.Iterables;
 import com.gengoai.config.Config;
 import com.gengoai.conversion.Cast;
 import com.gengoai.io.resource.Resource;
@@ -386,7 +386,7 @@ public interface StreamingContext extends AutoCloseable {
       if (iterator == null) {
          return empty();
       }
-      return stream(Cast.<Iterable<T>>as(Collect.asIterable(iterator)));
+      return stream(Cast.<Iterable<T>>as(Iterables.asIterable(iterator)));
    }
 
    /**

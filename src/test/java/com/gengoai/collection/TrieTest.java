@@ -22,7 +22,7 @@
 package com.gengoai.collection;
 
 import com.gengoai.collection.map.Maps;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.CharMatcher;
 import com.gengoai.tuple.Tuples;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,7 +55,7 @@ public class TrieTest {
    @Test
    public void findAll() throws Exception {
       String content = "I ran the rand program and wasn't happy";
-      List<TrieMatch<String>> matches = trie.find(content, StringUtils.WHITESPACE);
+      List<TrieMatch<String>> matches = trie.find(content, CharMatcher.WhiteSpace);
       assertEquals(3, matches.size());
 
       assertEquals("run", matches.get(0).getValue());

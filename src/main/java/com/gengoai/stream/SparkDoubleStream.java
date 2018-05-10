@@ -22,6 +22,7 @@
 package com.gengoai.stream;
 
 import com.gengoai.EnhancedDoubleStatistics;
+import com.gengoai.Validation;
 import com.gengoai.collection.list.PrimitiveArrayList;
 import com.gengoai.config.Config;
 import com.gengoai.config.Configurator;
@@ -29,7 +30,6 @@ import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Convert;
 import com.gengoai.function.*;
 import com.gengoai.stream.accumulator.MStatisticsAccumulator;
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import org.apache.spark.api.java.JavaDoubleRDD;
 import org.apache.spark.broadcast.Broadcast;
@@ -182,7 +182,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
 
    @Override
    public MDoubleStream limit(int n) {
-      Preconditions.checkArgument(n >= 0, "Limit number must be non-negative.");
+      Validation.checkArgument(n >= 0, "Limit number must be non-negative.");
       return new SparkDoubleStream(doubleStream.zipWithIndex().filter(p -> p._2() < n).mapToDouble(Tuple2::_1));
    }
 

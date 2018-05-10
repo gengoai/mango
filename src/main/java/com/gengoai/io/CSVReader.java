@@ -24,8 +24,8 @@ package com.gengoai.io;
 import com.gengoai.collection.Streams;
 import com.gengoai.function.SerializableFunction;
 import com.gengoai.function.Unchecked;
+import com.gengoai.string.CharMatcher;
 import com.gengoai.string.StringUtils;
-import com.google.common.base.CharMatcher;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
@@ -170,7 +170,7 @@ public class CSVReader implements Closeable, AutoCloseable, Iterable<List<String
    }
 
    private void gobbleWhiteSpace() throws IOException {
-      while (bufferPeek() != -1 && Character.isWhitespace(bufferPeek()) && !CharMatcher.breakingWhitespace().matches(
+      while (bufferPeek() != -1 && Character.isWhitespace(bufferPeek()) && !CharMatcher.BreakingWhiteSpace.test(
          (char) bufferPeek())) {
          read();
       }

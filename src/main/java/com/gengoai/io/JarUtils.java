@@ -22,10 +22,10 @@
 package com.gengoai.io;
 
 import com.gengoai.SystemInfo;
+import com.gengoai.Validation;
 import com.gengoai.io.resource.ClasspathResource;
 import com.gengoai.io.resource.FileResource;
 import com.gengoai.io.resource.Resource;
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
@@ -71,7 +71,7 @@ public class JarUtils {
    }
 
    private static List<Resource> getResourcesFromDirectory(Resource resource, Predicate<? super String> stringMatcher) {
-      Preconditions.checkArgument(resource.isDirectory());
+      Validation.checkArgument(resource.isDirectory());
       List<Resource> children = new ArrayList<>();
       for (Resource child : resource.getChildren()) {
          children.add(child);

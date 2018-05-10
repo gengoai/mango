@@ -86,7 +86,7 @@ public enum StringFunctions implements SerializableFunction<String, String> {
    TRIM {
       @Override
       public String apply(String input) {
-         return input == null ? null : StringUtils.WHITESPACE.trimFrom(input);
+         return input == null ? null : CharMatcher.WhiteSpace.trimFrom(input);
       }
    },
    /**
@@ -105,11 +105,9 @@ public enum StringFunctions implements SerializableFunction<String, String> {
       @Override
       public String apply(String input) {
          return input == null ? null :
-                Normalizer.normalize(
-                   Normalizer.normalize(input, Normalizer.Form.NFD)
-                             .replaceAll("\\p{InCombiningDiacriticalMarks}+", ""),
-                   Normalizer.Form.NFC
-                                    );
+                Normalizer.normalize(Normalizer.normalize(input, Normalizer.Form.NFD)
+                                               .replaceAll("\\p{InCombiningDiacriticalMarks}+", ""),
+                                     Normalizer.Form.NFC);
       }
    },
    LEFT_TRIM {
@@ -118,7 +116,7 @@ public enum StringFunctions implements SerializableFunction<String, String> {
          if (input == null) {
             return null;
          }
-         return StringUtils.WHITESPACE.trimLeadingFrom(input);
+         return CharMatcher.WhiteSpace.trimLeadingFrom(input);
       }
    },
    RIGHT_TRIM {
@@ -127,7 +125,7 @@ public enum StringFunctions implements SerializableFunction<String, String> {
          if (input == null) {
             return null;
          }
-         return StringUtils.WHITESPACE.trimTrailingFrom(input);
+         return CharMatcher.WhiteSpace.trimTrailingFrom(input);
       }
    },
    NULL_TO_EMPTY {

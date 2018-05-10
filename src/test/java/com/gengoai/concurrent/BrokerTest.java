@@ -21,8 +21,8 @@
 
 package com.gengoai.concurrent;
 
+import com.gengoai.string.CharMatcher;
 import com.gengoai.string.StringUtils;
-import com.google.common.base.CharMatcher;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -52,7 +52,7 @@ public class BrokerTest {
       public void produce() {
          start();
          for (int i = 0; i < 100; i++) {
-            String s = StringUtils.randomString(3, CharMatcher.javaLetterOrDigit());
+            String s = StringUtils.randomString(3, CharMatcher.LetterOrDigit);
             yield(s);
          }
          stop();

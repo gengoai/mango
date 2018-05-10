@@ -23,8 +23,6 @@ package com.gengoai;
 
 import com.gengoai.config.Preloader;
 import com.gengoai.conversion.Cast;
-import com.gengoai.string.StringUtils;
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.ObjectStreamException;
@@ -73,16 +71,16 @@ public abstract class EnumValue implements Tag, Serializable, Cloneable {
     * @param name the name of the enum value
     */
    protected EnumValue(String name) {
-      Preconditions.checkArgument(StringUtils.isNotNullOrBlank(name), "[" + name + " ] is invalid.");
+      Validation.notNullOrBlank(name, "[" + name + " ] is invalid.");
       this.name = normalize(name);
-      Preconditions.checkArgument(!name.contains(".") && name.length() > 0, name + " is invalid.");
+      Validation.checkArgument(!name.contains(".") && name.length() > 0, name + " is invalid.");
       this.fullName = getClass().getCanonicalName() + "." + this.name;
    }
 
    protected EnumValue(String cannonicalName, String name) {
-      Preconditions.checkArgument(StringUtils.isNotNullOrBlank(name), "[" + name + " ] is invalid.");
+      Validation.notNullOrBlank(name, "[" + name + " ] is invalid.");
       this.name = normalize(name);
-      Preconditions.checkArgument(!name.contains(".") && name.length() > 0, name + " is invalid.");
+      Validation.checkArgument(!name.contains(".") && name.length() > 0, name + " is invalid.");
       this.fullName = cannonicalName + "." + this.name;
    }
 
@@ -107,7 +105,7 @@ public abstract class EnumValue implements Tag, Serializable, Cloneable {
             toReturn.append(Character.toUpperCase(c));
          }
       }
-      return toReturn.toString();//name.toUpperCase().replaceAll("\\s+", "_");
+      return toReturn.toString();
    }
 
 

@@ -21,9 +21,9 @@
 
 package com.gengoai.conversion;
 
+import com.gengoai.Defaults;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.logging.Logger;
-import com.google.common.base.Defaults;
 import lombok.NonNull;
 
 import java.io.*;

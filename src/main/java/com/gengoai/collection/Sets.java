@@ -26,6 +26,7 @@ import com.gengoai.function.SerializablePredicate;
 import lombok.NonNull;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -38,6 +39,9 @@ import java.util.stream.Stream;
  */
 public interface Sets {
 
+   static <T> Set<T> newConcurrentHashSet() {
+      return Collections.newSetFromMap(new ConcurrentHashMap<>());
+   }
 
    /**
     * Creates a concurrent hash set of the supplied elements
@@ -47,7 +51,7 @@ public interface Sets {
     * @return the new concurrent hash set containing the given elements
     */
    static <T> Set<T> asConcurrentHashSet(Iterator<? extends T> iterator) {
-      return createSet(com.google.common.collect.Sets::newConcurrentHashSet, Streams.asStream(iterator));
+      return createSet(Sets::newConcurrentHashSet, Streams.asStream(iterator));
    }
 
    /**
@@ -58,7 +62,7 @@ public interface Sets {
     * @return the new concurrent hash set containing the given elements
     */
    static <T> Set<T> asConcurrentHashSet(Iterable<? extends T> iterable) {
-      return createSet(com.google.common.collect.Sets::newConcurrentHashSet, Streams.asStream(iterable));
+      return createSet(Sets::newConcurrentHashSet, Streams.asStream(iterable));
    }
 
    /**
@@ -69,7 +73,7 @@ public interface Sets {
     * @return the new concurrent hash set containing the given elements
     */
    static <T> Set<T> asConcurrentHashSet(Stream<? extends T> stream) {
-      return createSet(com.google.common.collect.Sets::newConcurrentHashSet, stream);
+      return createSet(Sets::newConcurrentHashSet, stream);
    }
 
    /**
@@ -181,7 +185,7 @@ public interface Sets {
    @SafeVarargs
    @SuppressWarnings("varargs")
    static <T> Set<T> concurrentSet(T... elements) {
-      return createSet(com.google.common.collect.Sets::newConcurrentHashSet, elements);
+      return createSet(Sets::newConcurrentHashSet, elements);
    }
 
    /**

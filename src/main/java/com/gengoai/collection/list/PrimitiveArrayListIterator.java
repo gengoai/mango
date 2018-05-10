@@ -21,8 +21,8 @@
 
 package com.gengoai.collection.list;
 
+import com.gengoai.Validation;
 import com.gengoai.conversion.Cast;
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -66,10 +66,10 @@ public final class PrimitiveArrayListIterator<E> implements ListIterator<E>, Ser
     * @param index the index
     */
    public PrimitiveArrayListIterator(@NonNull Object array, int index) {
-      Preconditions.checkArgument(array.getClass().isArray(), "Object must be an array.");
-      Preconditions.checkArgument(array.getClass().getComponentType().isPrimitive(),
-                                  "Object must be a primitive array.");
-      Preconditions.checkArgument(index >= 0, "The starting index should be non-negative.");
+      Validation.checkArgument(array.getClass().isArray(), "Object must be an array.");
+      Validation.checkArgument(array.getClass().getComponentType().isPrimitive(),
+                               "Object must be a primitive array.");
+      Validation.checkArgument(index >= 0, "The starting index should be non-negative.");
       this.array = array;
       this.index = index;
       this.length = Array.getLength(array);
@@ -92,7 +92,7 @@ public final class PrimitiveArrayListIterator<E> implements ListIterator<E>, Ser
 
    @Override
    public E next() {
-      Preconditions.checkElementIndex(index, length);
+      Validation.checkElementIndex(index, length);
       E next = Cast.as(Array.get(array, index));
       index++;
       return next;
@@ -105,7 +105,7 @@ public final class PrimitiveArrayListIterator<E> implements ListIterator<E>, Ser
 
    @Override
    public E previous() {
-      Preconditions.checkElementIndex(index - 1, length);
+      Validation.checkElementIndex(index - 1, length);
       index--;
       return Cast.as(Array.get(array, index));
    }

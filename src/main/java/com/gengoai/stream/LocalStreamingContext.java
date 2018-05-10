@@ -21,13 +21,13 @@
 
 package com.gengoai.stream;
 
+import com.gengoai.collection.list.Lists;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.Unchecked;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.stream.accumulator.*;
 import com.gengoai.string.StringUtils;
-import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
 
 import java.util.*;
@@ -160,7 +160,7 @@ public enum LocalStreamingContext implements StreamingContext {
       } else if (iterable instanceof Collection) {
          return new ReusableLocalStream<>(Cast.<Collection<T>>as(iterable));
       }
-      return new ReusableLocalStream<>(Lists.newArrayList(iterable));
+      return new ReusableLocalStream<>(Lists.asArrayList(iterable));
    }
 
 

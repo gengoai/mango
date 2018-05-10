@@ -1,8 +1,8 @@
 package com.gengoai.io;
 
+import com.gengoai.Validation;
 import com.gengoai.io.resource.Resource;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
+import com.gengoai.string.StringUtils;
 import lombok.NonNull;
 
 import java.io.IOException;
@@ -31,14 +31,14 @@ public class MultiFileWriter extends Writer implements Serializable, AutoCloseab
     * @throws IOException Something went wrong initializing the files
     */
    public MultiFileWriter(@NonNull Resource baseDirectory, @NonNull String filePrefix, int numberOfFiles) throws IOException {
-      Preconditions.checkArgument(!baseDirectory.exists() || baseDirectory.isDirectory(),
+      Validation.checkArgument(!baseDirectory.exists() || baseDirectory.isDirectory(),
                                   "Resource base must not exist or be a directory");
-      Preconditions.checkArgument(numberOfFiles > 0, "Must specify at least one file");
+      Validation.checkArgument(numberOfFiles > 0, "Must specify at least one file");
       baseDirectory.mkdirs();
       this.writers = new Writer[numberOfFiles];
       this.numberOfFiles = numberOfFiles;
       for (int i = 0; i < numberOfFiles; i++) {
-         String name = filePrefix + Strings.padStart(Integer.toString(i), 5, '0');
+         String name = filePrefix + StringUtils.padStart(Integer.toString(i), 5, '0');
          this.writers[i] = new AsyncWriter(baseDirectory.getChild(name).writer());
       }
    }

@@ -24,7 +24,7 @@ package com.gengoai.config;
 import com.gengoai.Language;
 import com.gengoai.io.Resources;
 import com.gengoai.scripting.ScriptEnvironmentManager;
-import com.gengoai.string.StringPredicates;
+import com.gengoai.string.StringMatcher;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -77,7 +77,7 @@ public class ConfigTest {
 
   @Test
   public void testGetPropertiesMatching() throws Exception {
-    List<String> names = Config.getPropertiesMatching(StringPredicates.STARTS_WITH("name", true));
+    List<String> names = Config.getPropertiesMatching(StringMatcher.startsWith("name", true));
     assertTrue(names.contains("name"));
     assertTrue(names.contains("named"));
     assertEquals(names.size(), 2);

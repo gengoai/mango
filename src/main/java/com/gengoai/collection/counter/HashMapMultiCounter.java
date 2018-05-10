@@ -21,11 +21,11 @@
 
 package com.gengoai.collection.counter;
 
+import com.gengoai.collection.Iterators;
 import com.gengoai.collection.Streams;
 import com.gengoai.conversion.Cast;
 import com.gengoai.tuple.Tuple2;
 import com.gengoai.tuple.Tuple3;
-import com.google.common.collect.Iterators;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 

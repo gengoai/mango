@@ -21,7 +21,7 @@
 
 package com.gengoai.io;
 
-import com.google.common.base.Preconditions;
+import com.gengoai.Validation;
 import lombok.NonNull;
 
 import java.io.ByteArrayInputStream;
@@ -44,8 +44,8 @@ public class CharsetDetector {
     * @return The detected charset or null
     */
    public static Charset detect(@NonNull byte[] buffer, int offset, int length) {
-      Preconditions.checkArgument(length > 0);
-      Preconditions.checkArgument(offset >= 0);
+      Validation.checkArgument(length > 0);
+      Validation.checkArgument(offset >= 0);
 
       final com.ibm.icu.text.CharsetDetector detector = new com.ibm.icu.text.CharsetDetector();
       try {

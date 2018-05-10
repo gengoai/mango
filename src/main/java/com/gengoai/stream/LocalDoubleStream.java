@@ -22,9 +22,9 @@
 package com.gengoai.stream;
 
 import com.gengoai.EnhancedDoubleStatistics;
+import com.gengoai.Validation;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.*;
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -124,7 +124,7 @@ class LocalDoubleStream implements MDoubleStream, Serializable {
 
    @Override
    public MDoubleStream limit(int n) {
-      Preconditions.checkArgument(n >= 0, "Limit number must be non-negative.");
+      Validation.checkArgument(n >= 0, "Limit number must be non-negative.");
       return new LocalDoubleStream(stream.limit(n));
    }
 

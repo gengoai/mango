@@ -1,6 +1,6 @@
 package com.gengoai;
 
-import com.google.common.collect.Sets;
+import com.gengoai.collection.Sets;
 import lombok.NonNull;
 
 import java.util.Collection;

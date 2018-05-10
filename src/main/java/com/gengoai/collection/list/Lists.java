@@ -21,6 +21,7 @@
 
 package com.gengoai.collection.list;
 
+import com.gengoai.Validation;
 import com.gengoai.collection.Streams;
 import com.gengoai.function.SerializableFunction;
 import com.gengoai.function.SerializablePredicate;
@@ -299,6 +300,16 @@ public interface Lists {
          return supplier.get();
       }
       return stream.collect(Collectors.toCollection(supplier));
+   }
+
+
+   static <T> List<List<T>> partition(@NonNull List<T> list, int partitionSize) {
+      Validation.checkArgument(partitionSize > 0, "Partition size must be >= 0");
+      List<List<T>> partitions = new ArrayList<>();
+      for (int i = 0; i < list.size(); i += partitionSize) {
+         partitions.add(list.subList(i, Math.min(list.size(), i + partitionSize)));
+      }
+      return partitions;
    }
 
 

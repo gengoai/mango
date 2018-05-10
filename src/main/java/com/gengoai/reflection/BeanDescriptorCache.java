@@ -21,10 +21,7 @@
 
 package com.gengoai.reflection;
 
-import com.gengoai.config.Config;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import com.gengoai.cache.Cache;
 import lombok.SneakyThrows;
 
 /**
@@ -38,7 +35,7 @@ public class BeanDescriptorCache {
 
    private static volatile BeanDescriptorCache INSTANCE = null;
 
-   private final LoadingCache<Class<?>, BeanDescriptor> cache;
+   private final Cache<Class<?>, BeanDescriptor> cache;
 
    /**
     * @return An instance of the {@link BeanDescriptorCache}.
@@ -55,13 +52,7 @@ public class BeanDescriptorCache {
    }
 
    protected BeanDescriptorCache() {
-      String spec = Config.get(BeanDescriptorCache.class, "spec").asString(
-         "maximumSize=100,expireAfterWrite=10m");
-      cache = CacheBuilder.from(spec).build(new CacheLoader<Class<?>, BeanDescriptor>() {
-         public BeanDescriptor load(Class<?> key) {
-            return new BeanDescriptor(key);
-         }
-      });
+      cache = Cache.create(100, BeanDescriptor::new);
    }
 
    /**

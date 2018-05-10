@@ -21,10 +21,9 @@
 package com.gengoai.cache;
 
 
+import com.gengoai.function.SerializableFunction;
 import com.gengoai.function.SerializableSupplier;
 import lombok.NonNull;
-
-import java.util.concurrent.ExecutionException;
 
 /**
  * <p>A generic cache interface that allows multiple implementations, definition through specification, management, and
@@ -35,6 +34,14 @@ import java.util.concurrent.ExecutionException;
  * @author David B. Bracewell
  */
 public interface Cache<K, V> {
+
+   static <K, V> Cache<K, V> create(int maxSize) {
+      return new LRUCache<>(maxSize);
+   }
+
+   static <K, V> Cache<K, V> create(int maxSize, SerializableFunction<K, V> valueCalculator) {
+      return new AutoCalculatingLRUCache<>(maxSize, valueCalculator);
+   }
 
    /**
     * Determines if a key is in the cache or not
@@ -51,13 +58,6 @@ public interface Cache<K, V> {
     * @return The value associated with the key or null
     */
    V get(K key);
-
-   /**
-    * Gets name.
-    *
-    * @return The name of the cache
-    */
-   String getName();
 
    /**
     * Removes a single key
@@ -95,7 +95,7 @@ public interface Cache<K, V> {
     * @param supplier The supplier to use to generate the value
     * @return The old value if put, null if not
     */
-   V get(K key, SerializableSupplier<? extends V> supplier) throws ExecutionException;
+   V get(K key, SerializableSupplier<? extends V> supplier);
 
    /**
     * The number of items cached.

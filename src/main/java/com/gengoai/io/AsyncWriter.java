@@ -21,9 +21,9 @@
 
 package com.gengoai.io;
 
+import com.gengoai.Validation;
 import com.gengoai.concurrent.Threads;
 import com.gengoai.logging.Logger;
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
@@ -61,7 +61,7 @@ public class AsyncWriter extends Writer implements Runnable {
 
    @Override
    public void write(char[] cbuf, int off, int len) throws IOException {
-      Preconditions.checkArgument(!isStopped.get(), "Cannot write to a closed writer.");
+      Validation.checkArgument(!isStopped.get(), "Cannot write to a closed writer.");
       try {
          queue.put(new String(cbuf, off, len));
       } catch (InterruptedException e) {

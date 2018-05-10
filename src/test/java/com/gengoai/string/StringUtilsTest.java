@@ -84,13 +84,13 @@ public class StringUtilsTest {
     assertTrue(StringUtils.isLowerCase("lower"));
     assertFalse(StringUtils.isLowerCase("あえおいう"));
     assertFalse(StringUtils.isLowerCase("UPPER"));
-    assertFalse(StringUtils.isLowerCase(""));
+    assertTrue(StringUtils.isLowerCase(""));
     assertFalse(StringUtils.isLowerCase(null));
 
     assertFalse(StringUtils.isUpperCase("lower"));
     assertFalse(StringUtils.isUpperCase("あえおいう"));
     assertTrue(StringUtils.isUpperCase("UPPER"));
-    assertFalse(StringUtils.isUpperCase(""));
+    assertTrue(StringUtils.isUpperCase(""));
     assertFalse(StringUtils.isUpperCase(null));
 
     assertTrue(StringUtils.isAlphaNumeric("lower"));
@@ -99,7 +99,7 @@ public class StringUtilsTest {
     assertTrue(StringUtils.isAlphaNumeric("UP589PER"));
     assertTrue(StringUtils.isAlphaNumeric("lower123"));
     assertTrue(StringUtils.isAlphaNumeric("あえおいう１２３"));
-    assertFalse(StringUtils.isAlphaNumeric(""));
+    assertTrue(StringUtils.isAlphaNumeric(""));
     assertFalse(StringUtils.isAlphaNumeric(null));
 
     assertFalse(StringUtils.isNonAlphaNumeric("lower"));
@@ -108,23 +108,23 @@ public class StringUtilsTest {
     assertFalse(StringUtils.isNonAlphaNumeric("UP589PER"));
     assertFalse(StringUtils.isNonAlphaNumeric("lower123"));
     assertFalse(StringUtils.isNonAlphaNumeric("あえおいう１２３"));
-    assertTrue(StringUtils.isNonAlphaNumeric(""));
+    assertFalse(StringUtils.isNonAlphaNumeric(""));
     assertTrue(StringUtils.isNonAlphaNumeric(null));
 
     assertTrue(StringUtils.isLetter("lower"));
     assertFalse(StringUtils.isLetter("lower123"));
-    assertFalse(StringUtils.isLetter(""));
+    assertTrue(StringUtils.isLetter(""));
     assertFalse(StringUtils.isLetter(null));
 
     assertFalse(StringUtils.isDigit("lower123"));
-    assertFalse(StringUtils.isDigit(""));
+    assertTrue(StringUtils.isDigit(""));
     assertFalse(StringUtils.isDigit(null));
     assertTrue(StringUtils.isDigit("１２３"));
 
     assertTrue(StringUtils.isPunctuation("、"));
     assertTrue(StringUtils.isPunctuation(","));
     assertFalse(StringUtils.isPunctuation("abc"));
-    assertFalse(StringUtils.isPunctuation(""));
+    assertTrue(StringUtils.isPunctuation(""));
     assertFalse(StringUtils.isPunctuation(null));
   }
 

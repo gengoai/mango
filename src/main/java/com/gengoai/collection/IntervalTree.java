@@ -1,7 +1,7 @@
 package com.gengoai.collection;
 
+import com.gengoai.collection.list.Lists;
 import com.gengoai.conversion.Cast;
-import com.google.common.collect.Lists;
 
 import java.io.Serializable;
 import java.util.*;
@@ -11,9 +11,9 @@ import java.util.*;
  */
 public class IntervalTree<T extends Span> implements Serializable, Collection<T> {
 
-   protected static final Node NULL = new Node(null, null, null, new Span(0, Integer.MAX_VALUE));
+   protected static final Node<?> NULL = new Node<>(null, null, null, new Span(0, Integer.MAX_VALUE));
    private static final long serialVersionUID = 1L;
-   protected Node root = Cast.as(NULL);
+   protected Node<T> root = Cast.as(NULL);
    protected int size = 0;
 
    private boolean isRed(Node node) {
@@ -26,7 +26,7 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
          return false;
       }
 
-      Node z = new Node(T);
+      Node<T> z = new Node<>(T);
 
       //Empty tree, add this and return
       if (isNull(root)) {
@@ -287,7 +287,7 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
    @Override
    public boolean retainAll(Collection<?> c) {
       if (c != null) {
-         Collection<T> toRemove = com.gengoai.collection.list.Lists.difference(toList(), Cast.cast(c));
+         Collection<T> toRemove = Lists.difference(toList(), Cast.cast(c));
          toRemove.forEach(this::remove);
          return containsAll(c);
       }
@@ -355,7 +355,7 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
    }
 
    private List<T> toList() {
-      return Lists.newArrayList(Collect.asIterable(this.iterator()));
+      return Lists.asArrayList(Iterables.asIterable(this.iterator()));
    }
 
    private void update(Node node) {
@@ -425,9 +425,9 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
        * @param T the T
        */
       public Node(T T) {
-         this.left = NULL;
-         this.right = NULL;
-         this.parent = NULL;
+         this.left = Cast.as(NULL);
+         this.right = Cast.as(NULL);
+         this.parent = Cast.as(NULL);
          this.min = T.start();
          this.max = T.end();
          this.span = T;
@@ -441,7 +441,7 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
        * @return the grandparent
        */
       public Node<T> getGrandparent() {
-         return parent == null ? NULL : parent.parent == null ? NULL : parent.parent;
+         return parent == null ? Cast.as(NULL) : parent.parent == null ? Cast.as(NULL) : parent.parent;
       }
 
       /**
@@ -450,7 +450,7 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
        * @return the parent
        */
       public Node<T> getParent() {
-         return parent == null ? NULL : parent;
+         return parent == null ? Cast.as(NULL) : parent;
       }
 
       /**

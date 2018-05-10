@@ -24,7 +24,7 @@ elif options.file is None:
 
 flat = """package {{PACKAGE_NAME}}
 
-import com.google.common.collect.Sets;
+import com.gengoai.collection.Sets;
 import com.davidbracewell.DynamicEnum;
 import com.davidbracewell.EnumValue;
 import lombok.NonNull;
@@ -86,7 +86,7 @@ hierarchical = """package {{PACKAGE_NAME}};
 
 import com.davidbracewell.DynamicEnum;
 import com.davidbracewell.HierarchicalEnumValue;
-import com.google.common.collect.Sets;
+import com.gengoai.collection.Sets;
 import lombok.NonNull;
 import java.util.*;
 import java.util.stream.Collectors;

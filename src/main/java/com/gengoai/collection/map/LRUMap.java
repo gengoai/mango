@@ -21,7 +21,7 @@
 
 package com.gengoai.collection.map;
 
-import com.google.common.base.Preconditions;
+import com.gengoai.Validation;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -35,7 +35,7 @@ import java.util.Map;
  * @param <V> Value type
  * @author David B. Bracewell
  */
-public class LRUMap<K, V> extends LinkedHashMap<K, V> {
+public final class LRUMap<K, V> extends LinkedHashMap<K, V> {
    private static final long serialVersionUID = 1L;
    private final int maxSize;
 
@@ -47,7 +47,7 @@ public class LRUMap<K, V> extends LinkedHashMap<K, V> {
     * @return the map
     */
    public static <K, V> LRUMap<K, V> create(int maxSize) {
-      Preconditions.checkArgument(maxSize > 0, "Max size must be greater than zero.");
+      Validation.checkArgument(maxSize > 0, "Max size must be greater than zero.");
       return new LRUMap<>(maxSize);
    }
 

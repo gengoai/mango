@@ -25,7 +25,7 @@ import com.gengoai.collection.map.Maps;
 import com.gengoai.conversion.Convert;
 import com.gengoai.conversion.Val;
 import com.gengoai.tuple.Tuple2;
-import com.google.common.collect.BiMap;
+import org.apache.commons.collections4.BidiMap;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -39,7 +39,7 @@ public class MapConverterTest {
 
    @Test
    public void testMapConvert() throws Exception {
-      assertNull(Convert.convert(null, BiMap.class, String.class, String.class));
+      assertNull(Convert.convert(null, BidiMap.class, String.class, String.class));
 
       //Map Conversion
       Map<String, Integer> gold = Maps.map("A", 1);

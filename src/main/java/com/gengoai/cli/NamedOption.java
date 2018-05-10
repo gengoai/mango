@@ -21,10 +21,12 @@
 
 package com.gengoai.cli;
 
+import com.gengoai.Validation;
 import com.gengoai.config.Config;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Convert;
 import com.gengoai.io.resource.Resource;
+import com.gengoai.string.CharMatcher;
 import com.gengoai.string.StringUtils;
 import lombok.Builder;
 import lombok.Data;
@@ -36,8 +38,6 @@ import java.lang.reflect.ParameterizedType;
 import java.util.Collection;
 import java.util.Map;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * <p>
@@ -81,18 +81,17 @@ public final class NamedOption {
     * @param field the field which contains an {@link Option} annotation
     */
    public NamedOption(@NonNull Field field) {
-      Option option = checkNotNull(field.getAnnotationsByType(Option.class))[0];
+      Option option = Validation.notNull(field.getAnnotationsByType(Option.class))[0];
       this.field = field;
 
       this.name = StringUtils.isNullOrBlank(option.name()) ? field.getName() : option.name();
 
-      checkArgument(!StringUtils.isNullOrBlank(this.name) && !StringUtils.WHITESPACE.matchesAnyOf(this.name),
-                    "Option name must have at least one character and must not have a space");
+      Validation.checkArgument(!StringUtils.isNullOrBlank(this.name) && !CharMatcher.WhiteSpace.matchesAnyOf(this.name),
+                               "Option name must have at least one character and must not have a space");
 
       this.type = field.getType();
 
-      checkArgument(!StringUtils.isNullOrBlank(option.description()),
-                    "Description must not be blank");
+      Validation.notNullOrBlank(option.description(), "Description must not be blank");
 
       this.description = option.description();
 
@@ -118,9 +117,9 @@ public final class NamedOption {
     */
    @Builder
    protected NamedOption(@NonNull String name, @NonNull Class<?> type, @NonNull String description, Object defaultValue, @Singular Collection<String> aliases, boolean required) {
-      checkArgument(!StringUtils.isNullOrBlank(name) && !StringUtils.WHITESPACE.matchesAnyOf(name),
-                    "Option name must have at least one character and must not have a space");
-      checkArgument(!StringUtils.isNullOrBlank(description), "Description must not be blank");
+      Validation.checkArgument(!StringUtils.isNullOrBlank(name) && !CharMatcher.WhiteSpace.matchesAnyOf(name),
+                               "Option name must have at least one character and must not have a space");
+      Validation.notNullOrBlank(description, "Description must not be blank");
 
       this.name = name;
       this.type = type;

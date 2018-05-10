@@ -21,7 +21,8 @@
 
 package com.gengoai.stream;
 
-import com.gengoai.collection.Collect;
+import com.gengoai.Validation;
+import com.gengoai.collection.Iterators;
 import com.gengoai.collection.Sorting;
 import com.gengoai.collection.Streams;
 import com.gengoai.conversion.Cast;
@@ -29,8 +30,6 @@ import com.gengoai.conversion.Convert;
 import com.gengoai.function.*;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.tuple.Tuples;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Iterators;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
@@ -174,7 +173,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
 
    @Override
    public MStream<T> limit(long number) {
-      Preconditions.checkArgument(number >= 0, "Limit number must be non-negative.");
+      Validation.checkArgument(number >= 0, "Limit number must be non-negative.");
       if (number == 0) {
          return StreamingContext.local().empty();
       }
@@ -232,7 +231,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
 
    @Override
    public MStream<T> sample(boolean withReplacement, int number) {
-      Preconditions.checkArgument(number >= 0, "Sample size must be non-negative.");
+      Validation.checkArgument(number >= 0, "Sample size must be non-negative.");
       if (number == 0) {
          return StreamingContext.local().empty();
       }
@@ -303,7 +302,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
 
    @Override
    public List<T> take(int n) {
-      Preconditions.checkArgument(n >= 0, "N must be non-negative.");
+      Validation.checkArgument(n >= 0, "N must be non-negative.");
       if (n == 0) {
          return Collections.emptyList();
       }
@@ -316,7 +315,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
       if (other.isDistributed()) {
          return other.intersection(this);
       }
-      Collector<T, ?, Set<T>> collector= Collectors.toSet();
+      Collector<T, ?, Set<T>> collector = Collectors.toSet();
       Set<T> set = other.collect(collector);
       return filter(set::contains);
    }
@@ -331,7 +330,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
 
    @Override
    public <U> MPairStream<T, U> zip(@NonNull MStream<U> other) {
-      return new LocalPairStream<>(Collect.zip(iterator(), other.iterator()));
+      return new LocalPairStream<>(Iterators.zip(iterator(), other.iterator()));
    }
 
    @Override

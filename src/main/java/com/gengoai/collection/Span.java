@@ -1,7 +1,7 @@
 package com.gengoai.collection;
 
+import com.gengoai.Validation;
 import com.gengoai.conversion.Cast;
-import com.google.common.base.Preconditions;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -22,7 +22,7 @@ public class Span implements Serializable, Comparable<Span> {
     * @param end   the end
     */
    public Span(int start, int end) {
-      Preconditions.checkArgument(end >= start, "Ending offset must be >= Starting offset");
+      Validation.checkArgument(end >= start, "Ending offset must be >= Starting offset");
       this.end = end;
       this.start = start;
    }

@@ -21,12 +21,12 @@
 
 package com.gengoai.reflection;
 
+import com.gengoai.Primitives;
 import com.gengoai.conversion.Val;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.logging.Loggable;
 import com.gengoai.logging.Logger;
 import com.gengoai.string.StringUtils;
-import com.google.common.primitives.Primitives;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 

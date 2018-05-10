@@ -22,11 +22,11 @@
 package com.gengoai.tuple;
 
 import com.gengoai.Copyable;
+import com.gengoai.Validation;
 import com.gengoai.collection.Sorting;
 import com.gengoai.collection.Streams;
 import com.gengoai.conversion.Cast;
 import com.gengoai.string.StringUtils;
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -158,8 +158,8 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
     * @return A new tuple of degree (end - start) with the elements of this tuple from start to end
     */
    public Tuple slice(int start, int end) {
-      Preconditions.checkArgument(start >= 0, "Start index must be >= 0");
-      Preconditions.checkArgument(start < end, "Start index must be < end index");
+      Validation.checkArgument(start >= 0, "Start index must be >= 0");
+      Validation.checkArgument(start < end, "Start index must be < end index");
       if (start >= degree()) {
          return Tuple0.INSTANCE;
       }

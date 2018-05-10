@@ -22,6 +22,7 @@
 package com.gengoai.conversion;
 
 import com.gengoai.collection.Collect;
+import com.gengoai.collection.Iterables;
 import com.gengoai.function.SerializableFunction;
 import com.gengoai.logging.Loggable;
 import com.gengoai.string.StringUtils;
@@ -47,11 +48,11 @@ public final class CollectionConverter {
       } else if (object instanceof Iterable<?>) {
          return Cast.as(object);
       } else if (object instanceof Iterator<?>) {
-         return Collect.asIterable(Cast.<Iterator<?>>as(object));
+         return Iterables.asIterable(Cast.<Iterator<?>>as(object));
       } else if (object instanceof Map) {
          return Cast.as(Cast.<Map>as(object).entrySet());
       } else if (object.getClass().isArray()) {
-         return Cast.as(Collect.asIterable(object, Object.class));
+         return Cast.as(Iterables.asIterable(object, Object.class));
       } else if (object instanceof CharSequence) {
          return StringUtils.split(object.toString()
                                         .replaceAll("^\\[", "")

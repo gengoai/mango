@@ -2,9 +2,8 @@ package com.gengoai.collection;
 
 import com.gengoai.collection.map.Maps;
 import com.gengoai.conversion.Cast;
+import com.gengoai.string.CharMatcher;
 import com.gengoai.string.StringUtils;
-import com.google.common.base.CharMatcher;
-import com.google.common.collect.Iterators;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -106,7 +105,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
          return Collections.emptyList();
       }
       if (delimiter == null) {
-         delimiter = CharMatcher.any();
+         delimiter = CharMatcher.Any;
       }
 
       int len = text.length();
@@ -131,7 +130,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
 
             lastMatch = -1;
             //check if we accept
-            if (nextI >= len || delimiter.matches(text.charAt(nextI))) {
+            if (nextI >= len || delimiter.test(text.charAt(nextI))) {
                V value = get(key.toString());
                results.add(new TrieMatch<>(start, nextI, value));
                start = nextI;
@@ -143,7 +142,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
             if (lastMatch != -1) {
                //We have a good match, so lets use it
                int nextI = lastMatch;
-               if (nextI >= 1 && delimiter.matches(text.charAt(nextI))) {
+               if (nextI >= 1 && delimiter.test(text.charAt(nextI))) {
                   key = new StringBuilder(text.substring(start, nextI));
                   V value = get(key.toString());
                   results.add(new TrieMatch<>(start, nextI, value));
