@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * The type Stopwatch.
+ *
  * @author David B. Bracewell
  */
 public class Stopwatch implements Serializable {
@@ -23,18 +25,27 @@ public class Stopwatch implements Serializable {
       return TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
    }
 
+   /**
+    * Start.
+    */
    public void start() {
       Validation.checkState(!isRunning, "Cannot start an already started Stopwatch");
       this.isRunning = true;
       this.start = getSystemNano();
    }
 
+   /**
+    * Stop.
+    */
    public void stop() {
       Validation.checkState(isRunning, "Cannot stop an already stopped Stopwatch");
       this.isRunning = false;
       elapsedTime += (getSystemNano() - this.start);
    }
 
+   /**
+    * Reset.
+    */
    public void reset() {
       Validation.checkState(isRunning, "Cannot stop an already stopped Stopwatch");
       this.isRunning = false;
@@ -42,6 +53,11 @@ public class Stopwatch implements Serializable {
       this.elapsedTime = 0L;
    }
 
+   /**
+    * Gets elapsed time.
+    *
+    * @return the elapsed time
+    */
    public long getElapsedTime() {
       return isRunning
              ? elapsedTime + (TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis()) - this.start)
@@ -97,10 +113,20 @@ public class Stopwatch implements Serializable {
    }
 
 
+   /**
+    * Create started stopwatch.
+    *
+    * @return the stopwatch
+    */
    public static Stopwatch createStarted() {
       return new Stopwatch(true);
    }
 
+   /**
+    * Create stopped stopwatch.
+    *
+    * @return the stopwatch
+    */
    public static Stopwatch createStopped() {
       return new Stopwatch(false);
    }

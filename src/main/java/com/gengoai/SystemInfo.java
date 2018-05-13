@@ -55,8 +55,7 @@ public interface SystemInfo {
     */
    String FILE_ENCODING = System.getProperty("file.encoding");
    /**
-    * The package that contains the converters that handle converting between local encodings and
-    * Unicode
+    * The package that contains the converters that handle converting between local encodings and Unicode
     */
    String FILE_ENCODING_PKG = System.getProperty("file.encoding.pkg");
    /**
@@ -72,8 +71,8 @@ public interface SystemInfo {
     */
    String JAVA_CLASS_VERSION = System.getProperty("java.class.version");
    /**
-    * The just-in-time compiler to use, if any. The java interpreter provided with the JDK
-    * initializes this property from the environment variable JAVA_COMPILER.
+    * The just-in-time compiler to use, if any. The java interpreter provided with the JDK initializes this property
+    * from the environment variable JAVA_COMPILER.
     */
    String JAVA_COMPILER = System.getProperty("java.compiler");
    /**

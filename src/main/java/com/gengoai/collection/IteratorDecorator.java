@@ -3,10 +3,18 @@ package com.gengoai.collection;
 import java.util.Iterator;
 
 /**
+ * The type Iterator decorator.
+ *
+ * @param <E> the type parameter
  * @author David B. Bracewell
  */
 public abstract class IteratorDecorator<E> implements Iterator<E> {
 
+   /**
+    * Backing iterator iterator.
+    *
+    * @return the iterator
+    */
    protected abstract Iterator<E> backingIterator();
 
    private E lastValue;
@@ -27,6 +35,11 @@ public abstract class IteratorDecorator<E> implements Iterator<E> {
       return lastValue;
    }
 
+   /**
+    * Gets last value.
+    *
+    * @return the last value
+    */
    protected E getLastValue() {
       return lastValue;
    }

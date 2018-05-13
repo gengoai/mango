@@ -41,31 +41,43 @@ public final class Iterators {
 
    public static <T> Iterator<T> concat(@NonNull Iterator<? extends T> iterator1, @NonNull Iterator<? extends T> iterator2) {
       return new Iterator<T>() {
+         boolean i1HasNext = true;
+         boolean i2HasNext = true;
+
+         private boolean advance() {
+            i1HasNext = iterator1.hasNext();
+            i2HasNext = iterator2.hasNext();
+            return i1HasNext || i2HasNext;
+         }
+
          @Override
          public boolean hasNext() {
-            return iterator1.hasNext() || iterator2.hasNext();
+            return advance();
          }
 
          @Override
          public T next() {
-            if (iterator1.hasNext()) {
-               return iterator1.next();
+            advance();
+            return i1HasNext ? iterator1.next() : iterator2.next();
+         }
+
+         @Override
+         public void remove() {
+            if (i1HasNext) {
+               iterator1.remove();
+            } else {
+               iterator2.remove();
             }
-            return iterator2.next();
+
          }
       };
    }
 
    public static <T> Iterator<T> unmodifiableIterator(@NonNull final Iterator<T> iterator) {
-      return new Iterator<T>() {
+      return new SimpleIteratorDecorator<T>(iterator) {
          @Override
-         public boolean hasNext() {
-            return iterator.hasNext();
-         }
-
-         @Override
-         public T next() {
-            return iterator.next();
+         public void remove() {
+            throw new UnsupportedOperationException();
          }
       };
    }

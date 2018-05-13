@@ -21,6 +21,8 @@
 
 package com.gengoai;
 
+import java.util.Arrays;
+
 /**
  * <p>An interface that defines a tag name and a methodology to determine if one tag is an instance of another.
  * Individual implementations may define the <code>isInstance</code> method to take into account a hierarchy or other
@@ -30,36 +32,29 @@ package com.gengoai;
  */
 public interface Tag {
 
-  /**
-   * Determines if this tag is an instance of a given tag.
-   *
-   * @param tag The given tag
-   * @return True if this tag is an instance of the given tag
-   */
-  boolean isInstance(Tag tag);
+   /**
+    * Determines if this tag is an instance of a given tag.
+    *
+    * @param tag The given tag
+    * @return True if this tag is an instance of the given tag
+    */
+   boolean isInstance(Tag tag);
 
-  /**
-   * Determines if this tag is an instance of any of the given tags.
-   *
-   * @param tags the tags to check against
-   * @return True if this tag is an instance of any one of the given tags
-   */
-  default boolean isInstance(Tag... tags) {
-    if (tags != null) {
-      for (Tag other : tags) {
-        if (isInstance(other)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
+   /**
+    * Determines if this tag is an instance of any of the given tags.
+    *
+    * @param tags the tags to check against
+    * @return True if this tag is an instance of any one of the given tags
+    */
+   default boolean isInstance(Tag... tags) {
+      return Arrays.stream(Validation.notNull(tags)).anyMatch(this::isInstance);
+   }
 
-  /**
-   * The name of the enum value
-   *
-   * @return The name of the enum value
-   */
-  String name();
+   /**
+    * The name of the enum value
+    *
+    * @return The name of the enum value
+    */
+   String name();
 
 }//END OF Tag

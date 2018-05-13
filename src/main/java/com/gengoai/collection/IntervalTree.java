@@ -7,13 +7,25 @@ import java.io.Serializable;
 import java.util.*;
 
 /**
+ * The type Interval tree.
+ *
+ * @param <T> the type parameter
  * @author David B. Bracewell
  */
 public class IntervalTree<T extends Span> implements Serializable, Collection<T> {
 
+   /**
+    * The constant NULL.
+    */
    protected static final Node<?> NULL = new Node<>(null, null, null, new Span(0, Integer.MAX_VALUE));
    private static final long serialVersionUID = 1L;
+   /**
+    * The Root.
+    */
    protected Node<T> root = Cast.as(NULL);
+   /**
+    * The Size.
+    */
    protected int size = 0;
 
    private boolean isRed(Node node) {
@@ -366,6 +378,11 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
       }
    }
 
+   /**
+    * The type Node.
+    *
+    * @param <T> the type parameter
+    */
    protected static class Node<T extends Span> implements Serializable {
       private static final long serialVersionUID = 1L;
       /**
@@ -485,6 +502,8 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
 
    /**
     * The type Node iterator.
+    *
+    * @param <T> the type parameter
     */
    static class NodeIterator<T extends Span> implements Iterator<T> {
       private Deque<Node> stack = new LinkedList<>();

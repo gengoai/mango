@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * The type Primitives.
+ *
  * @author David B. Bracewell
  */
 public class Primitives {
@@ -32,6 +34,12 @@ public class Primitives {
       wrapToPrimitive.put(wrap, primitive);
    }
 
+   /**
+    * To byte array byte [ ].
+    *
+    * @param numbers the numbers
+    * @return the byte [ ]
+    */
    public static byte[] toByteArray(@NonNull Collection<? extends Number> numbers) {
       byte[] rval = new byte[numbers.size()];
       int index = 0;
@@ -42,6 +50,12 @@ public class Primitives {
       return rval;
    }
 
+   /**
+    * To int array int [ ].
+    *
+    * @param numbers the numbers
+    * @return the int [ ]
+    */
    public static int[] toIntArray(@NonNull Collection<? extends Number> numbers) {
       int[] rval = new int[numbers.size()];
       int index = 0;
@@ -52,6 +66,12 @@ public class Primitives {
       return rval;
    }
 
+   /**
+    * To float array float [ ].
+    *
+    * @param numbers the numbers
+    * @return the float [ ]
+    */
    public static float[] toFloatArray(@NonNull Collection<? extends Number> numbers) {
       float[] rval = new float[numbers.size()];
       int index = 0;
@@ -62,6 +82,12 @@ public class Primitives {
       return rval;
    }
 
+   /**
+    * To double array double [ ].
+    *
+    * @param numbers the numbers
+    * @return the double [ ]
+    */
    public static double[] toDoubleArray(@NonNull Collection<? extends Number> numbers) {
       double[] rval = new double[numbers.size()];
       int index = 0;
@@ -72,6 +98,12 @@ public class Primitives {
       return rval;
    }
 
+   /**
+    * To long array long [ ].
+    *
+    * @param numbers the numbers
+    * @return the long [ ]
+    */
    public static long[] toLongArray(@NonNull Collection<? extends Number> numbers) {
       long[] rval = new long[numbers.size()];
       int index = 0;
@@ -82,6 +114,12 @@ public class Primitives {
       return rval;
    }
 
+   /**
+    * To short array short [ ].
+    *
+    * @param numbers the numbers
+    * @return the short [ ]
+    */
    public static short[] toShortArray(@NonNull Collection<? extends Number> numbers) {
       short[] rval = new short[numbers.size()];
       int index = 0;
@@ -92,6 +130,12 @@ public class Primitives {
       return rval;
    }
 
+   /**
+    * To char array char [ ].
+    *
+    * @param characters the characters
+    * @return the char [ ]
+    */
    public static char[] toCharArray(@NonNull Collection<Character> characters) {
       char[] rval = new char[characters.size()];
       int index = 0;
@@ -102,10 +146,24 @@ public class Primitives {
       return rval;
    }
 
+   /**
+    * Wrap class.
+    *
+    * @param <T>  the type parameter
+    * @param type the type
+    * @return the class
+    */
    public static <T> Class<T> wrap(@NonNull Class<T> type) {
       return Cast.as(primitiveToWrap.getOrDefault(type, type));
    }
 
+   /**
+    * Unwrap class.
+    *
+    * @param <T>  the type parameter
+    * @param type the type
+    * @return the class
+    */
    public static <T> Class<T> unwrap(@NonNull Class<T> type) {
       return Cast.as(wrapToPrimitive.getOrDefault(type, type));
    }
