@@ -24,7 +24,6 @@ package com.gengoai.tuple;
 import com.gengoai.Copyable;
 import com.gengoai.Validation;
 import com.gengoai.collection.Sorting;
-import com.gengoai.collection.Streams;
 import com.gengoai.conversion.Cast;
 import com.gengoai.string.StringUtils;
 import lombok.NonNull;
@@ -69,7 +68,7 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
     * @return A Stream of the objects in the tuple
     */
    public Stream<Object> stream() {
-      return Streams.asStream(iterator());
+      return Arrays.stream(array());
    }
 
    /**

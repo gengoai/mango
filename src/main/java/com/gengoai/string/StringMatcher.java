@@ -13,15 +13,10 @@ import java.util.regex.Pattern;
  */
 @FunctionalInterface
 public interface StringMatcher extends SerializablePredicate<CharSequence> {
-
    /**
     * The constant NotNull.
     */
    StringMatcher NotNull = Objects::nonNull;
-   /**
-    * The constant LowerCase.
-    */
-   StringMatcher LowerCase = NotNull.and(CharMatcher.LowerCase::matchesAllOf);
    /**
     * The constant HasPunctuation.
     */
@@ -51,18 +46,6 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
     */
    StringMatcher LetterOrWhitespace = NotNull.and(CharMatcher.Letter.or(CharMatcher.WhiteSpace)::matchesAllOf);
    /**
-    * The constant Letter.
-    */
-   StringMatcher Letter = NotNull.and(CharMatcher.Letter::matchesAllOf);
-   /**
-    * The constant LetterOrDigit.
-    */
-   StringMatcher LetterOrDigit = NotNull.and(CharMatcher.LetterOrDigit::matchesAllOf);
-   /**
-    * The constant Digit.
-    */
-   StringMatcher Digit = NotNull.and(CharMatcher.Digit::matchesAllOf);
-   /**
     * The constant Null.
     */
    StringMatcher Null = Objects::isNull;
@@ -75,11 +58,29 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
     */
    StringMatcher NotNullOrBlank = NullOrBlank.negate();
    /**
+    * The constant LowerCase.
+    */
+   StringMatcher LowerCase = NotNullOrBlank.and(CharMatcher.LowerCase::matchesAllOf);
+   /**
+    * The constant Letter.
+    */
+   StringMatcher Letter = NotNullOrBlank.and(CharMatcher.Letter::matchesAllOf);
+   /**
+    * The constant LetterOrDigit.
+    */
+   StringMatcher LetterOrDigit = NotNullOrBlank.and(CharMatcher.LetterOrDigit::matchesAllOf);
+   /**
+    * The constant Digit.
+    */
+   StringMatcher Digit = NotNullOrBlank.and(CharMatcher.Digit::matchesAllOf);
+   /**
+    * The constant Punctuation.
+    */
+   StringMatcher Punctuation = NotNullOrBlank.and(CharMatcher.Punctuation::matchesAllOf);
+   /**
     * The constant UpperCase.
     */
-   StringMatcher UpperCase = NotNull.and(CharMatcher.UpperCase::matchesAllOf);
-
-   StringMatcher Punctuation = NotNull.and(CharMatcher.Punctuation::matchesAllOf);
+   StringMatcher UpperCase = NotNullOrBlank.and(CharMatcher.UpperCase::matchesAllOf);
 
    /**
     * Contains string matcher.
