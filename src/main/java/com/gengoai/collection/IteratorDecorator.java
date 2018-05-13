@@ -9,6 +9,8 @@ public abstract class IteratorDecorator<E> implements Iterator<E> {
 
    protected abstract Iterator<E> backingIterator();
 
+   private E lastValue;
+
    @Override
    public void remove() {
       backingIterator().remove();
@@ -21,6 +23,12 @@ public abstract class IteratorDecorator<E> implements Iterator<E> {
 
    @Override
    public E next() {
-      return backingIterator().next();
+      lastValue = backingIterator().next();
+      return lastValue;
    }
+
+   protected E getLastValue() {
+      return lastValue;
+   }
+
 }//END OF IteratorDecorator

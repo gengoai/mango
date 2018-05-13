@@ -31,7 +31,6 @@ public class IteratorSet<E> extends AbstractSet<E> {
 
    private class RemovableIterator<E> extends IteratorDecorator<E> {
       private final Iterator<E> backingIterator;
-      private E next;
 
       private RemovableIterator(Iterator<E> backingIterator) {
          this.backingIterator = backingIterator;
@@ -44,13 +43,7 @@ public class IteratorSet<E> extends AbstractSet<E> {
 
       @Override
       public void remove() {
-         IteratorSet.this.remove(next);
-      }
-
-      @Override
-      public E next() {
-         next = super.next();
-         return next;
+         IteratorSet.this.remove(getLastValue());
       }
    }
 
