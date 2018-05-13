@@ -39,6 +39,23 @@ public final class Iterators {
       };
    }
 
+   public static <T> Iterator<T> concat(@NonNull Iterator<? extends T> iterator1, @NonNull Iterator<? extends T> iterator2) {
+      return new Iterator<T>() {
+         @Override
+         public boolean hasNext() {
+            return iterator1.hasNext() || iterator2.hasNext();
+         }
+
+         @Override
+         public T next() {
+            if (iterator1.hasNext()) {
+               return iterator1.next();
+            }
+            return iterator2.next();
+         }
+      };
+   }
+
    public static <T> Iterator<T> unmodifiableIterator(@NonNull final Iterator<T> iterator) {
       return new Iterator<T>() {
          @Override
@@ -110,4 +127,6 @@ public final class Iterators {
          }
       });
    }
+
+
 }//END OF Iterators

@@ -38,7 +38,53 @@ import java.util.stream.LongStream;
  */
 public interface Math2 {
 
+   /**
+    * The constant LOG_2.
+    */
    double LOG_2 = FastMath.log(2);
+
+
+   /**
+    * Try parse double double.
+    *
+    * @param string the string
+    * @return the double
+    */
+   static Double tryParseDouble(String string) {
+      try {
+         return Double.parseDouble(string);
+      } catch (Error t) {
+         return null;
+      }
+   }
+
+   /**
+    * Try parse integer integer.
+    *
+    * @param string the string
+    * @return the integer
+    */
+   static Integer tryParseInteger(String string) {
+      try {
+         return Integer.parseInt(string);
+      } catch (Error t) {
+         return null;
+      }
+   }
+
+   /**
+    * Try parse float float.
+    *
+    * @param string the string
+    * @return the float
+    */
+   static Float tryParseFloat(String string) {
+      try {
+         return Float.parseFloat(string);
+      } catch (Error t) {
+         return null;
+      }
+   }
 
    /**
     * Adds two doubles (useful as a method reference)
@@ -119,6 +165,12 @@ public interface Math2 {
       return ((value - originalMin) / (originalMax - originalMin)) * (newMax - newMin) + newMin;
    }
 
+   /**
+    * Safe log double.
+    *
+    * @param d the d
+    * @return the double
+    */
    static double safeLog(double d) {
       if (Double.isFinite(d)) {
          return d <= 0d ? -10 : FastMath.log(d);

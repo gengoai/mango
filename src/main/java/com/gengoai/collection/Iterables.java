@@ -23,6 +23,26 @@ public final class Iterables {
       throw new IllegalAccessError();
    }
 
+   public static <T> T getOnlyElement(@NonNull Iterable<T> iterable) {
+      return Streams.asStream(iterable).findFirst().orElseThrow(NoSuchElementException::new);
+   }
+
+   public static <T> T get(@NonNull Iterable<T> iterable, int index) {
+      Validation.checkArgument(index >= 0, "index must be >= 0");
+      if (iterable instanceof List) {
+         List<T> list = Cast.as(iterable);
+         return list.get(index);
+      }
+      int i = 0;
+      for (T t : iterable) {
+         if (i == index) {
+            return t;
+         }
+         i++;
+      }
+      throw new IndexOutOfBoundsException();
+   }
+
    /**
     * Wraps an <code>array</code> as an <code>Iterable</code>
     *
@@ -117,6 +137,14 @@ public final class Iterables {
     */
    public static <T> Optional<T> getFirst(@NonNull Iterable<? extends T> iterable) {
       return Cast.as(Streams.asStream(iterable).findFirst());
+   }
+
+   public static <T> Iterable<T> concat(@NonNull Iterable<? extends T> iterable1, @NonNull Iterable<? extends T> iterable2) {
+      return Iterables.asIterable(Iterators.concat(iterable1.iterator(), iterable2.iterator()));
+   }
+
+   public static <T> T getFirst(@NonNull Iterable<T> iterable, T defaultValue) {
+      return Streams.asStream(iterable).findFirst().orElse(defaultValue);
    }
 
    public static <T> T getFirstOrNull(@NonNull Iterable<? extends T> iterable) {
