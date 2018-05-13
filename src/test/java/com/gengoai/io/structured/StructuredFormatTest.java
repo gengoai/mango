@@ -21,7 +21,7 @@
 
 package com.gengoai.io.structured;
 
-import com.gengoai.collection.list.Lists;
+import com.gengoai.collection.Lists;
 import com.gengoai.collection.map.Maps;
 import com.gengoai.conversion.Val;
 import com.gengoai.io.Resources;

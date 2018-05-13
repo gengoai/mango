@@ -19,12 +19,8 @@
  * under the License.
  */
 
-package com.gengoai.collection.list;
+package com.gengoai.collection;
 
-import com.gengoai.Validation;
-import com.gengoai.collection.Streams;
-import com.gengoai.function.SerializableFunction;
-import com.gengoai.function.SerializablePredicate;
 import lombok.NonNull;
 
 import java.util.*;
@@ -32,6 +28,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.gengoai.Validation.checkArgument;
+import static com.gengoai.Validation.notNull;
 
 /**
  * <p>Convenience methods for creating lists and manipulating collections resulting in lists.</p>
@@ -41,29 +40,41 @@ import java.util.stream.Stream;
 public interface Lists {
 
    /**
-    * <p>Transforms a given collection using a supplied transform function returning the results as a list. </p>
+    * Of primitive list.
     *
-    * @param <I>        the component type of the collection being transformed
-    * @param <O>        the component type of the resulting collection after transformation
-    * @param collection the collection to be transformed
-    * @param transform  the function used to transform elements of type E to R
-    * @return A list containing the transformed items of the supplied collection
+    * @param <E>      the type parameter
+    * @param array    the array
+    * @param outclass the outclass
+    * @return the list
     */
-   static <I, O> List<O> transform(@NonNull final Collection<? extends I> collection, @NonNull final SerializableFunction<? super I, ? extends O> transform) {
-      return collection.stream().map(transform).collect(Collectors.toList());
+   static <E> List<E> ofPrimitive(Object array, Class<E> outclass) {
+      return new PrimitiveArrayList<>(array, outclass);
    }
 
-   /**
-    * <p>Filters a given collection using a supplied predicate returning the results as a list. </p>
-    *
-    * @param <E>        the component type of the collection being filtered
-    * @param collection the collection to be filtered
-    * @param filter     the predicate to use for filtering (only items that result in true will be keep)
-    * @return A list containing the filtered items of the supplied collection
-    */
-   static <E> List<E> filter(@NonNull final Collection<? extends E> collection, @NonNull final SerializablePredicate<? super E> filter) {
-      return collection.stream().filter(filter).collect(Collectors.toList());
-   }
+//   /**
+//    * <p>Transforms a given collection using a supplied transform function returning the results as a list. </p>
+//    *
+//    * @param <I>        the component type of the collection being transformed
+//    * @param <O>        the component type of the resulting collection after transformation
+//    * @param collection the collection to be transformed
+//    * @param transform  the function used to transform elements of type E to R
+//    * @return A list containing the transformed items of the supplied collection
+//    */
+//   static <I, O> List<O> transform(@NonNull final Collection<? extends I> collection, @NonNull final SerializableFunction<? super I, ? extends O> transform) {
+//      return collection.stream().map(transform).collect(Collectors.toList());
+//   }
+//
+//   /**
+//    * <p>Filters a given collection using a supplied predicate returning the results as a list. </p>
+//    *
+//    * @param <E>        the component type of the collection being filtered
+//    * @param collection the collection to be filtered
+//    * @param filter     the predicate to use for filtering (only items that result in true will be keep)
+//    * @return A list containing the filtered items of the supplied collection
+//    */
+//   static <E> List<E> filter(@NonNull final Collection<? extends E> collection, @NonNull final SerializablePredicate<? super E> filter) {
+//      return collection.stream().filter(filter).collect(Collectors.toList());
+//   }
 
    /**
     * <p>Ensures that the size of the given list is at least the supplied desired size. If the list size is smaller, it
@@ -89,8 +100,9 @@ public interface Lists {
     * @param iterable the iterable to flatten
     * @return the flattened iterable as a list
     */
-   static <T> List<T> flatten(@NonNull Iterable<? extends Iterable<? extends T>> iterable) {
-      return Streams.asStream(iterable).flatMap(Streams::asStream).collect(Collectors.toList());
+   static <T> List<T> flatten(Iterable<? extends Iterable<? extends T>> iterable) {
+      return Streams.flatten(iterable)
+                    .collect(Collectors.toList());
    }
 
    /**
@@ -101,8 +113,8 @@ public interface Lists {
     * @param collection2 the second collection of items
     * @return A list of the collection1 + collection2
     */
-   static <E> List<E> union(@NonNull Collection<? extends E> collection1, @NonNull Collection<? extends E> collection2) {
-      return Stream.concat(collection1.stream(), collection2.stream()).collect(Collectors.toList());
+   static <E> List<E> union(Collection<? extends E> collection1, Collection<? extends E> collection2) {
+      return Streams.union(collection1, collection2).collect(Collectors.toList());
    }
 
    /**
@@ -113,8 +125,8 @@ public interface Lists {
     * @param collection2 the second collection of items
     * @return A list containing the intersection of collection1 and collection2
     */
-   static <E> List<E> intersection(@NonNull Collection<? extends E> collection1, @NonNull Collection<? extends E> collection2) {
-      return collection1.stream().filter(collection2::contains).collect(Collectors.toList());
+   static <E> List<E> intersection(Collection<? extends E> collection1, Collection<? extends E> collection2) {
+      return Streams.intersection(collection1, collection2).collect(Collectors.toList());
    }
 
    /**
@@ -125,8 +137,8 @@ public interface Lists {
     * @param collection2 the second collection of items
     * @return A list of the collection1 - collection2
     */
-   static <E> List<E> difference(@NonNull Collection<? extends E> collection1, @NonNull Collection<? extends E> collection2) {
-      return collection1.stream().filter(v -> !collection2.contains(v)).collect(Collectors.toList());
+   static <E> List<E> difference(Collection<? extends E> collection1, Collection<? extends E> collection2) {
+      return Streams.difference(collection1, collection2).collect(Collectors.toList());
    }
 
 
@@ -295,7 +307,8 @@ public interface Lists {
     * @param stream   the elements to add to the  set
     * @return the new list containing the given elements
     */
-   static <T> List<T> createList(@NonNull Supplier<List<T>> supplier, Stream<? extends T> stream) {
+   static <T> List<T> createList(Supplier<List<T>> supplier, Stream<? extends T> stream) {
+      notNull(supplier);
       if (stream == null) {
          return supplier.get();
       }
@@ -303,8 +316,18 @@ public interface Lists {
    }
 
 
-   static <T> List<List<T>> partition(@NonNull List<T> list, int partitionSize) {
-      Validation.checkArgument(partitionSize > 0, "Partition size must be >= 0");
+   /**
+    * Partitions a list into multiple lists of partition size (last list may have a size less than partition size). This
+    * method uses <code>subList</code> which means that each partition is a view into the underlying list.
+    *
+    * @param <T>           the list component type
+    * @param list          the list to partition
+    * @param partitionSize the partition size
+    * @return A list of partitioned lists
+    */
+   static <T> List<List<T>> partition(List<T> list, int partitionSize) {
+      notNull(list);
+      checkArgument(partitionSize > 0, "Partition size must be >= 0");
       List<List<T>> partitions = new ArrayList<>();
       for (int i = 0; i < list.size(); i += partitionSize) {
          partitions.add(list.subList(i, Math.min(list.size(), i + partitionSize)));

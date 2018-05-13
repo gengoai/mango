@@ -1,6 +1,5 @@
 package com.gengoai.collection;
 
-import com.gengoai.collection.list.Lists;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.io.resource.StringResource;
 import org.junit.Assert;

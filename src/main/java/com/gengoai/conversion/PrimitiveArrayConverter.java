@@ -22,8 +22,8 @@
 package com.gengoai.conversion;
 
 import com.gengoai.Primitives;
-import com.gengoai.collection.list.Lists;
-import com.gengoai.collection.list.PrimitiveArrayList;
+import com.gengoai.collection.Lists;
+import com.gengoai.collection.PrimitiveArrayList;
 import com.gengoai.io.Resources;
 import com.gengoai.logging.Logger;
 

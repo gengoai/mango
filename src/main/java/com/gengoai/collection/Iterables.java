@@ -1,7 +1,6 @@
 package com.gengoai.collection;
 
 import com.gengoai.Validation;
-import com.gengoai.collection.list.PrimitiveArrayList;
 import com.gengoai.conversion.Cast;
 import com.gengoai.tuple.Tuple2;
 import com.gengoai.tuple.Tuples;
@@ -54,7 +53,7 @@ public final class Iterables {
    public static <T> Iterable<T> asIterable(@NonNull final Object array, @NonNull final Class<T> itemClass) {
       Validation.checkArgument(array.getClass().isArray());
       if (array.getClass().getComponentType().isPrimitive()) {
-         return new PrimitiveArrayList<>(array, itemClass);
+         return new PrimitiveArrayList<>(array,itemClass);
       }
       return () -> new Iterator<T>() {
          int pos = 0;
@@ -125,6 +124,9 @@ public final class Iterables {
    }
 
    public static int size(@NonNull Iterable<?> iterable) {
+      if (iterable instanceof Collection) {
+         return ((Collection) iterable).size();
+      }
       return (int) Streams.asStream(iterable).count();
    }
 

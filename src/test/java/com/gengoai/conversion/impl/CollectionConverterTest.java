@@ -22,7 +22,7 @@
 package com.gengoai.conversion.impl;
 
 import com.gengoai.collection.Sets;
-import com.gengoai.collection.list.Lists;
+import com.gengoai.collection.Lists;
 import com.gengoai.conversion.CollectionConverter;
 import com.gengoai.conversion.Convert;
 import com.gengoai.conversion.Val;

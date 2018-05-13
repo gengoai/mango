@@ -21,7 +21,7 @@
 
 package com.gengoai;
 
-import com.gengoai.collection.list.Lists;
+import com.gengoai.collection.Lists;
 import org.junit.Test;
 
 import static junit.framework.TestCase.assertEquals;

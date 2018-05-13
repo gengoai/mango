@@ -21,7 +21,7 @@
 
 package com.gengoai.stream;
 
-import com.gengoai.collection.list.Lists;
+import com.gengoai.collection.Lists;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.Unchecked;
 import com.gengoai.io.Resources;

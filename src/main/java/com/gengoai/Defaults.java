@@ -3,7 +3,7 @@ package com.gengoai;
 import com.gengoai.conversion.Cast;
 
 /**
- * The type Defaults.
+ * <p>Get default values for different objects.</p>
  *
  * @author David B. Bracewell
  */
@@ -23,11 +23,11 @@ public final class Defaults {
    }
 
    /**
-    * Default value t.
+    * Get the default value (value given if not initialized).
     *
-    * @param <T>   the type parameter
-    * @param clazz the clazz
-    * @return the t
+    * @param <T>   the type of the object
+    * @param clazz the class to get the default value for.
+    * @return the default value
     */
    public static <T> T defaultValue(Class<T> clazz) {
       Validation.notNull(clazz);

@@ -1,6 +1,5 @@
 package com.gengoai.collection;
 
-import com.gengoai.collection.list.Lists;
 import com.gengoai.conversion.Cast;
 
 import java.io.Serializable;

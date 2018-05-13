@@ -21,7 +21,7 @@
 
 package com.gengoai.parsing;
 
-import com.gengoai.collection.list.Lists;
+import com.gengoai.collection.Lists;
 import com.gengoai.parsing.expressions.BinaryOperatorExpression;
 import com.gengoai.parsing.expressions.PostfixOperatorExpression;
 import com.gengoai.parsing.expressions.ValueExpression;

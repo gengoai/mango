@@ -21,7 +21,7 @@
 
 package com.gengoai;
 
-import com.gengoai.collection.list.Lists;
+import com.gengoai.collection.Lists;
 import com.gengoai.config.Config;
 import org.junit.Before;
 import org.junit.Test;

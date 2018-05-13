@@ -30,13 +30,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Spliterator;
-import java.util.Spliterators;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import static com.gengoai.Validation.notNull;
 
 /**
  * The interface Streams.
@@ -200,4 +201,33 @@ public interface Streams {
       final AtomicInteger integer = new AtomicInteger();
       return stream.map(t -> new Tuple2<>(t, integer.getAndIncrement()));
    }
+
+
+   static <T> Stream<T> flatten(Iterable<? extends Iterable<? extends T>> iterables) {
+      return asStream(notNull(iterables)).flatMap(Streams::asStream);
+   }
+
+   static <T> Stream<T> union(Collection<? extends T> c1, Collection<? extends T> c2) {
+      return Stream.concat(notNull(c1).stream(), notNull(c2).stream());
+   }
+
+   static <T> Stream<T> intersection(Collection<? extends T> c1, Collection<? extends T> c2) {
+      notNull(c2);
+      return Cast.as(notNull(c1).stream().filter(c2::contains));
+   }
+
+   static <T> Stream<T> difference(Collection<? extends T> c1, Collection<? extends T> c2) {
+      notNull(c2);
+      return Cast.as(notNull(c1).stream().filter(v -> !c2.contains(v)));
+   }
+
+   static <IN, OUT> Stream<OUT> transform(Iterable<? extends IN> iterable, Function<? super IN, ? extends OUT> transform) {
+      return Cast.as(asStream(iterable).map(notNull(transform)));
+   }
+
+   static <T> Stream<T> filter(Iterable<? extends T> iterable, Predicate<? super T> filter) {
+      return Cast.as(asStream(iterable).filter(notNull(filter)));
+   }
+
+
 }//END OF Streams

@@ -1,6 +1,6 @@
 package com.gengoai.stream;
 
-import com.gengoai.collection.list.Lists;
+import com.gengoai.collection.Lists;
 import com.gengoai.collection.map.Maps;
 import com.gengoai.config.Config;
 import com.gengoai.stream.accumulator.*;

@@ -1,14 +1,17 @@
 package com.gengoai;
 
+import com.gengoai.collection.Iterables;
 import com.gengoai.conversion.Cast;
+import com.gengoai.conversion.Convert;
 import lombok.NonNull;
 
-import java.util.Collection;
+import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The type Primitives.
+ * <p>Methods for working with primitive values including wrapping, unwrapping to object types and converting
+ * collections.</p>
  *
  * @author David B. Bracewell
  */
@@ -34,110 +37,85 @@ public class Primitives {
       wrapToPrimitive.put(wrap, primitive);
    }
 
-   /**
-    * To byte array byte [ ].
-    *
-    * @param numbers the numbers
-    * @return the byte [ ]
-    */
-   public static byte[] toByteArray(@NonNull Collection<? extends Number> numbers) {
-      byte[] rval = new byte[numbers.size()];
+
+   private static Object toArray(Iterable<? extends Number> numbers, Class<?> targetClass) {
+      Object array = Array.newInstance(targetClass, Iterables.size(numbers));
       int index = 0;
       for (Number number : numbers) {
-         rval[index] = number.byteValue();
+         Array.set(array, index, Convert.convert(number, targetClass));
          index++;
       }
-      return rval;
+      return array;
    }
 
    /**
-    * To int array int [ ].
+    * Converts and iterable of numbers to an array of byte
     *
-    * @param numbers the numbers
-    * @return the int [ ]
+    * @param numbers the numbers to convert
+    * @return the byte array
     */
-   public static int[] toIntArray(@NonNull Collection<? extends Number> numbers) {
-      int[] rval = new int[numbers.size()];
-      int index = 0;
-      for (Number number : numbers) {
-         rval[index] = number.intValue();
-         index++;
-      }
-      return rval;
+   public static byte[] toByteArray(@NonNull Iterable<? extends Number> numbers) {
+      return Cast.as(toArray(numbers, byte.class), byte[].class);
    }
 
    /**
-    * To float array float [ ].
+    * Converts and iterable of numbers to an array of int
     *
-    * @param numbers the numbers
-    * @return the float [ ]
+    * @param numbers the numbers to convert
+    * @return the int array
     */
-   public static float[] toFloatArray(@NonNull Collection<? extends Number> numbers) {
-      float[] rval = new float[numbers.size()];
-      int index = 0;
-      for (Number number : numbers) {
-         rval[index] = number.floatValue();
-         index++;
-      }
-      return rval;
+   public static int[] toIntArray(@NonNull Iterable<? extends Number> numbers) {
+      return Cast.as(toArray(numbers, int.class), int[].class);
    }
 
    /**
-    * To double array double [ ].
+    * Converts and iterable of numbers to an array of float
     *
-    * @param numbers the numbers
-    * @return the double [ ]
+    * @param numbers the numbers to convert
+    * @return the float array
     */
-   public static double[] toDoubleArray(@NonNull Collection<? extends Number> numbers) {
-      double[] rval = new double[numbers.size()];
-      int index = 0;
-      for (Number number : numbers) {
-         rval[index] = number.doubleValue();
-         index++;
-      }
-      return rval;
+   public static float[] toFloatArray(@NonNull Iterable<? extends Number> numbers) {
+      return Cast.as(toArray(numbers, float.class), float[].class);
    }
 
    /**
-    * To long array long [ ].
+    * Converts and iterable of numbers to an array of double
     *
-    * @param numbers the numbers
-    * @return the long [ ]
+    * @param numbers the numbers to convert
+    * @return the double array
     */
-   public static long[] toLongArray(@NonNull Collection<? extends Number> numbers) {
-      long[] rval = new long[numbers.size()];
-      int index = 0;
-      for (Number number : numbers) {
-         rval[index] = number.longValue();
-         index++;
-      }
-      return rval;
+   public static double[] toDoubleArray(@NonNull Iterable<? extends Number> numbers) {
+      return Cast.as(toArray(numbers, double.class), double[].class);
    }
 
    /**
-    * To short array short [ ].
+    * Converts and iterable of numbers to an array of long
     *
-    * @param numbers the numbers
-    * @return the short [ ]
+    * @param numbers the numbers to convert
+    * @return the long array
     */
-   public static short[] toShortArray(@NonNull Collection<? extends Number> numbers) {
-      short[] rval = new short[numbers.size()];
-      int index = 0;
-      for (Number number : numbers) {
-         rval[index] = number.shortValue();
-         index++;
-      }
-      return rval;
+   public static long[] toLongArray(@NonNull Iterable<? extends Number> numbers) {
+      return Cast.as(toArray(numbers, long.class), long[].class);
    }
 
    /**
-    * To char array char [ ].
+    * Converts and iterable of numbers to an array of short
     *
-    * @param characters the characters
-    * @return the char [ ]
+    * @param numbers the numbers to convert
+    * @return the short array
     */
-   public static char[] toCharArray(@NonNull Collection<Character> characters) {
-      char[] rval = new char[characters.size()];
+   public static short[] toShortArray(@NonNull Iterable<? extends Number> numbers) {
+      return Cast.as(toArray(numbers, short.class), short[].class);
+   }
+
+   /**
+    * Converts and iterable of Character to an array of char
+    *
+    * @param characters the characters to convert
+    * @return the char array
+    */
+   public static char[] toCharArray(@NonNull Iterable<Character> characters) {
+      char[] rval = new char[Iterables.size(characters)];
       int index = 0;
       for (Character character : characters) {
          rval[index] = character;
@@ -147,22 +125,22 @@ public class Primitives {
    }
 
    /**
-    * Wrap class.
+    * Gets the object type class corresponding to a primitive class.
     *
     * @param <T>  the type parameter
-    * @param type the type
-    * @return the class
+    * @param type the primitive type
+    * @return the wrapped type class
     */
    public static <T> Class<T> wrap(@NonNull Class<T> type) {
       return Cast.as(primitiveToWrap.getOrDefault(type, type));
    }
 
    /**
-    * Unwrap class.
+    * Gets the primitive type class corresponding to an boxed type.
     *
     * @param <T>  the type parameter
-    * @param type the type
-    * @return the class
+    * @param type the boxed type
+    * @return the primitive class
     */
    public static <T> Class<T> unwrap(@NonNull Class<T> type) {
       return Cast.as(wrapToPrimitive.getOrDefault(type, type));

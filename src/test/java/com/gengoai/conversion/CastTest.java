@@ -22,7 +22,7 @@
 package com.gengoai.conversion;
 
 import com.gengoai.collection.Sets;
-import com.gengoai.collection.list.Lists;
+import com.gengoai.collection.Lists;
 import org.junit.Assert;
 import org.junit.Test;
 

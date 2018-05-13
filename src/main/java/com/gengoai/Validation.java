@@ -2,6 +2,10 @@ package com.gengoai;
 
 import com.gengoai.string.StringUtils;
 
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+
 /**
  * The type Validation.
  *
@@ -11,6 +15,40 @@ public final class Validation {
 
    private Validation() {
       throw new IllegalAccessError();
+   }
+
+
+   public static <T> T validate(boolean evaluation, Supplier<RuntimeException> exceptionSupplier, T returnValue) {
+      if (evaluation) {
+         return returnValue;
+      }
+      throw exceptionSupplier == null ? new RuntimeException() : exceptionSupplier.get();
+   }
+
+   public static <T> T validate(T value, Predicate<T> predicate, Supplier<RuntimeException> exceptionSupplier, boolean nullable) {
+      if ((value == null && nullable) || predicate.test(value)) {
+         return value;
+      } else if (value == null) {
+         throw new NullPointerException();
+      }
+      throw exceptionSupplier == null ? new RuntimeException() : exceptionSupplier.get();
+   }
+
+   public static <T> T validate(T value, Predicate<T> predicate, String message, Function<String, RuntimeException> exceptionSupplier, boolean nullable) {
+      if ((value == null && nullable) || predicate.test(value)) {
+         return value;
+      } else if (value == null) {
+         throw new NullPointerException();
+      }
+      throw exceptionSupplier.apply(message);
+   }
+
+   public static <T> T validateArg(T value, Predicate<T> predicate, String message, boolean nullable) {
+      return validate(value, predicate, message, IllegalArgumentException::new, nullable);
+   }
+
+   public static <T> T validateArg(T value, Predicate<T> predicate, boolean nullable) {
+      return validate(value, predicate, IllegalArgumentException::new, nullable);
    }
 
    /**

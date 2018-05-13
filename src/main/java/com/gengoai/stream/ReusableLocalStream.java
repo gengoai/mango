@@ -1,7 +1,7 @@
 package com.gengoai.stream;
 
 import com.gengoai.Validation;
-import com.gengoai.collection.list.Lists;
+import com.gengoai.collection.Lists;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.*;
 import com.gengoai.io.resource.Resource;
