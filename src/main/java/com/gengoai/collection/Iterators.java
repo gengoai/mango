@@ -6,6 +6,7 @@ import lombok.NonNull;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static com.gengoai.collection.Streams.asStream;
@@ -17,6 +18,20 @@ public final class Iterators {
    private Iterators() {
       throw new IllegalAccessError();
    }
+
+   public static int size(Iterator<?> iterator) {
+      Validation.notNull(iterator);
+      int size;
+      for (size = 0; iterator.hasNext(); size++) {
+         iterator.next();
+      }
+      return size;
+   }
+
+   public static <E> Iterator<E> filter(Iterator<E> iterator, Predicate<? super E> predicate) {
+      return Streams.asStream(Validation.notNull(iterator)).filter(Validation.notNull(predicate)).iterator();
+   }
+
 
    public static <IN, OUT> Iterator<OUT> transform(@NonNull final Iterator<IN> iterator,
                                                    @NonNull final Function<? super IN, ? extends OUT> function

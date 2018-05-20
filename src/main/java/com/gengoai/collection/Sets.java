@@ -37,9 +37,13 @@ import java.util.stream.Stream;
  *
  * @author David B. Bracewell
  */
-public interface Sets {
+public final class Sets {
 
-   static <T> Set<T> newConcurrentHashSet() {
+   private Sets() {
+      throw new IllegalAccessError();
+   }
+
+   public static <T> Set<T> newConcurrentHashSet() {
       return Collections.newSetFromMap(new ConcurrentHashMap<>());
    }
 
@@ -50,7 +54,7 @@ public interface Sets {
     * @param iterator the elements to add to the  set
     * @return the new concurrent hash set containing the given elements
     */
-   static <T> Set<T> asConcurrentHashSet(Iterator<? extends T> iterator) {
+   public static <T> Set<T> asConcurrentHashSet(Iterator<? extends T> iterator) {
       return createSet(Sets::newConcurrentHashSet, Streams.asStream(iterator));
    }
 
@@ -61,7 +65,7 @@ public interface Sets {
     * @param iterable the elements to add to the  set
     * @return the new concurrent hash set containing the given elements
     */
-   static <T> Set<T> asConcurrentHashSet(Iterable<? extends T> iterable) {
+   public static <T> Set<T> asConcurrentHashSet(Iterable<? extends T> iterable) {
       return createSet(Sets::newConcurrentHashSet, Streams.asStream(iterable));
    }
 
@@ -72,7 +76,7 @@ public interface Sets {
     * @param stream the elements to add to the  set
     * @return the new concurrent hash set containing the given elements
     */
-   static <T> Set<T> asConcurrentHashSet(Stream<? extends T> stream) {
+   public static <T> Set<T> asConcurrentHashSet(Stream<? extends T> stream) {
       return createSet(Sets::newConcurrentHashSet, stream);
    }
 
@@ -83,7 +87,7 @@ public interface Sets {
     * @param iterator the elements to add to the  set
     * @return the new linked hash set containing the given elements
     */
-   static <T> Set<T> asLinkedHashSet(Iterator<? extends T> iterator) {
+   public static <T> Set<T> asLinkedHashSet(Iterator<? extends T> iterator) {
       return createSet(LinkedHashSet::new, Streams.asStream(iterator));
    }
 
@@ -94,7 +98,7 @@ public interface Sets {
     * @param iterable the elements to add to the  set
     * @return the new linked hash set containing the given elements
     */
-   static <T> Set<T> asLinkedHashSet(Iterable<? extends T> iterable) {
+   public static <T> Set<T> asLinkedHashSet(Iterable<? extends T> iterable) {
       return createSet(LinkedHashSet::new, Streams.asStream(iterable));
    }
 
@@ -105,7 +109,7 @@ public interface Sets {
     * @param stream the elements to add to the  set
     * @return the new linked hash set containing the given elements
     */
-   static <T> Set<T> asLinkedHashSet(Stream<? extends T> stream) {
+   public static <T> Set<T> asLinkedHashSet(Stream<? extends T> stream) {
       return createSet(LinkedHashSet::new, stream);
    }
 
@@ -116,7 +120,7 @@ public interface Sets {
     * @param iterator the elements to add to the set
     * @return the new hash set containing the given elements
     */
-   static <T> Set<T> asSet(Iterator<? extends T> iterator) {
+   public static <T> Set<T> asSet(Iterator<? extends T> iterator) {
       return createSet(HashSet::new, Streams.asStream(iterator));
    }
 
@@ -127,7 +131,7 @@ public interface Sets {
     * @param iterable the elements to add to the set
     * @return the new hash set containing the given elements
     */
-   static <T> Set<T> asSet(Iterable<? extends T> iterable) {
+   public static <T> Set<T> asSet(Iterable<? extends T> iterable) {
       return createSet(HashSet::new, Streams.asStream(iterable));
    }
 
@@ -138,7 +142,7 @@ public interface Sets {
     * @param stream the elements to add to the set
     * @return the new hash set containing the given elements
     */
-   static <T> Set<T> asSet(Stream<? extends T> stream) {
+   public static <T> Set<T> asSet(Stream<? extends T> stream) {
       return createSet(HashSet::new, stream);
    }
 
@@ -149,7 +153,7 @@ public interface Sets {
     * @param iterator the elements to add to the  set
     * @return the new tree set containing the given elements
     */
-   static <T> Set<T> asTreeSet(Iterator<? extends T> iterator) {
+   public static <T> Set<T> asTreeSet(Iterator<? extends T> iterator) {
       return createSet(TreeSet::new, Streams.asStream(iterator));
    }
 
@@ -160,7 +164,7 @@ public interface Sets {
     * @param iterable the elements to add to the  set
     * @return the new tree hash set containing the given elements
     */
-   static <T> Set<T> asTreeSet(Iterable<? extends T> iterable) {
+   public static <T> Set<T> asTreeSet(Iterable<? extends T> iterable) {
       return createSet(TreeSet::new, Streams.asStream(iterable));
    }
 
@@ -171,7 +175,7 @@ public interface Sets {
     * @param stream the elements to add to the  set
     * @return the new tree hash set containing the given elements
     */
-   static <T> Set<T> asTreeSet(Stream<? extends T> stream) {
+   public static <T> Set<T> asTreeSet(Stream<? extends T> stream) {
       return createSet(TreeSet::new, stream);
    }
 
@@ -184,7 +188,7 @@ public interface Sets {
     */
    @SafeVarargs
    @SuppressWarnings("varargs")
-   static <T> Set<T> concurrentSet(T... elements) {
+   public static <T> Set<T> concurrentSet(T... elements) {
       return createSet(Sets::newConcurrentHashSet, elements);
    }
 
@@ -198,7 +202,7 @@ public interface Sets {
     */
    @SafeVarargs
    @SuppressWarnings("varargs")
-   static <T> Set<T> createSet(@NonNull Supplier<Set<T>> supplier, T... elements) {
+   public static <T> Set<T> createSet(@NonNull Supplier<Set<T>> supplier, T... elements) {
       if (elements == null) {
          return supplier.get();
       }
@@ -213,7 +217,7 @@ public interface Sets {
     * @param stream   the elements to add to the  set
     * @return the new set containing the given elements
     */
-   static <T> Set<T> createSet(@NonNull Supplier<Set<T>> supplier, Stream<? extends T> stream) {
+   public static <T> Set<T> createSet(@NonNull Supplier<Set<T>> supplier, Stream<? extends T> stream) {
       if (stream == null) {
          return supplier.get();
       }
@@ -228,7 +232,7 @@ public interface Sets {
     * @param collection2 the second collection of items
     * @return A set of the collection1 - collection2
     */
-   static <E> Set<E> difference(@NonNull Collection<? extends E> collection1, @NonNull Collection<? extends E> collection2) {
+   public static <E> Set<E> difference(@NonNull Collection<? extends E> collection1, @NonNull Collection<? extends E> collection2) {
       return collection1.stream().filter(v -> !collection2.contains(v)).collect(Collectors.toSet());
    }
 
@@ -240,8 +244,8 @@ public interface Sets {
     * @param filter     the predicate to use for filtering (only items that result in true will be keep)
     * @return A set containing the filtered items of the supplied collection
     */
-   static <E> Set<E> filter(@NonNull final Collection<? extends E> collection, @NonNull final SerializablePredicate<? super E> filter) {
-      return collection.stream().filter(filter).collect(Collectors.toSet());
+   public static <E> Set<E> filter(@NonNull final Set<E> collection, @NonNull final SerializablePredicate<? super E> filter) {
+      return new FilteredSet<>(collection, filter);
    }
 
    /**
@@ -252,7 +256,7 @@ public interface Sets {
     * @param collection2 the second collection of items
     * @return A set containing the intersection of collection1 and collection2
     */
-   static <E> Set<E> intersection(@NonNull Collection<? extends E> collection1, @NonNull Collection<? extends E> collection2) {
+   public static <E> Set<E> intersection(@NonNull Collection<? extends E> collection1, @NonNull Collection<? extends E> collection2) {
       return collection1.stream().filter(collection2::contains).collect(Collectors.toSet());
    }
 
@@ -265,7 +269,7 @@ public interface Sets {
     */
    @SafeVarargs
    @SuppressWarnings("varargs")
-   static <T> Set<T> linkedHashSet(T... elements) {
+   public static <T> Set<T> linkedHashSet(T... elements) {
       return createSet(LinkedHashSet::new, elements);
    }
 
@@ -278,7 +282,7 @@ public interface Sets {
     */
    @SafeVarargs
    @SuppressWarnings("varargs")
-   static <T> Set<T> set(T... elements) {
+   public static <T> Set<T> set(T... elements) {
       return createSet(HashSet::new, elements);
    }
 
@@ -291,8 +295,8 @@ public interface Sets {
     * @param transform  the function used to transform elements of type E to R
     * @return A set containing the transformed items of the supplied collection
     */
-   static <E, R> Set<R> transform(@NonNull final Collection<? extends E> collection, @NonNull final SerializableFunction<? super E, R> transform) {
-      return collection.stream().map(transform).collect(Collectors.toSet());
+   public static <E, R> Set<R> transform(@NonNull final Set<? extends E> collection, @NonNull final SerializableFunction<? super E, R> transform) {
+      return new TransformedSet<>(collection, transform);
    }
 
    /**
@@ -304,7 +308,7 @@ public interface Sets {
     */
    @SafeVarargs
    @SuppressWarnings("varargs")
-   static <T> Set<T> treeSet(T... elements) {
+   public static <T> Set<T> treeSet(T... elements) {
       return createSet(TreeSet::new, elements);
    }
 
@@ -316,8 +320,48 @@ public interface Sets {
     * @param collection2 the second collection of items
     * @return A set of the collection1 + collection2
     */
-   static <E> Set<E> union(@NonNull Collection<? extends E> collection1, @NonNull Collection<? extends E> collection2) {
+   public static <E> Set<E> union(@NonNull Collection<? extends E> collection1, @NonNull Collection<? extends E> collection2) {
       return Stream.concat(collection1.stream(), collection2.stream()).collect(Collectors.toSet());
+   }
+
+   private static class TransformedSet<IN, OUT> extends AbstractSet<OUT> {
+      private final Set<IN> backingSet;
+      private final SerializableFunction<? super IN, ? extends OUT> transform;
+
+      private TransformedSet(Set<IN> backingSet, SerializableFunction<? super IN, ? extends OUT> transform) {
+         this.backingSet = backingSet;
+         this.transform = transform;
+      }
+
+      @Override
+      public Iterator<OUT> iterator() {
+         return Iterators.transform(backingSet.iterator(), transform);
+      }
+
+      @Override
+      public int size() {
+         return backingSet.size();
+      }
+   }
+
+   private static class FilteredSet<E> extends AbstractSet<E> {
+      private final Set<E> backingSet;
+      private final SerializablePredicate<? super E> filter;
+
+      private FilteredSet(Set<E> backingSet, SerializablePredicate<? super E> filter) {
+         this.backingSet = backingSet;
+         this.filter = filter;
+      }
+
+      @Override
+      public Iterator<E> iterator() {
+         return Iterators.filter(backingSet.iterator(), filter);
+      }
+
+      @Override
+      public int size() {
+         return Iterators.size(iterator());
+      }
    }
 
 }//END OF Sets
