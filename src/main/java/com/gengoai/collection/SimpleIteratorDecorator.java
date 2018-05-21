@@ -1,20 +1,22 @@
 package com.gengoai.collection;
 
+import com.gengoai.conversion.Cast;
+
 import java.util.Iterator;
 
 /**
  * @author David B. Bracewell
  */
 public class SimpleIteratorDecorator<E> extends IteratorDecorator<E> {
-   private final Iterator<E> iterator;
+   private final Iterator<? extends E> iterator;
 
-   public SimpleIteratorDecorator(Iterator<E> iterator) {
+   public SimpleIteratorDecorator(Iterator<? extends E> iterator) {
       this.iterator = iterator;
    }
 
    @Override
    protected Iterator<E> backingIterator() {
-      return iterator;
+      return Cast.as(iterator);
    }
 
 }//END OF SimpleIteratorDecorator
