@@ -167,6 +167,22 @@ public final class Validation {
       return index;
    }
 
+   public static void checkElementIndexAndRange(int relativeStart, int relativeEnd, int length) {
+      checkElementIndexAndRange(relativeStart, relativeEnd, length, StringUtils.EMPTY);
+   }
+
+   public static void checkElementIndexAndRange(int relativeStart, int relativeEnd, int length, String message) {
+      if (relativeStart < 0 || relativeStart >= length) {
+         throw new IndexOutOfBoundsException(createIndexErrorMessage(relativeStart, length, message));
+      }
+      if (relativeEnd < 0 || relativeEnd >= length) {
+         throw new IndexOutOfBoundsException(createIndexErrorMessage(relativeEnd, length, message));
+      }
+      if (relativeStart > relativeEnd) {
+         throw new IllegalArgumentException("starting index must be less than ending index");
+      }
+   }
+
 
    /**
     * Throws a <code>IllegalStateException</code> if the given boolean evaluates to false.

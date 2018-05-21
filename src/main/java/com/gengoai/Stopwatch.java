@@ -53,6 +53,10 @@ public class Stopwatch implements Serializable {
       this.elapsedTime = 0L;
    }
 
+   public long elapsed(TimeUnit timeUnit) {
+      return Validation.notNull(timeUnit).convert(getElapsedTime(), TimeUnit.NANOSECONDS);
+   }
+
    /**
     * Gets elapsed time.
     *

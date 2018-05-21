@@ -8,6 +8,7 @@ import lombok.NonNull;
 
 import java.lang.reflect.Array;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -20,6 +21,11 @@ public final class Iterables {
 
    private Iterables() {
       throw new IllegalAccessError();
+   }
+
+
+   public static <IN, OUT> Iterable<OUT> transform(Iterable<IN> iterable, Function<? super IN, ? extends OUT> function) {
+      return asIterable(Iterators.transform(Validation.notNull(iterable).iterator(), Validation.notNull(function)));
    }
 
    public static <T> T getOnlyElement(@NonNull Iterable<T> iterable) {
@@ -53,7 +59,7 @@ public final class Iterables {
    public static <T> Iterable<T> asIterable(@NonNull final Object array, @NonNull final Class<T> itemClass) {
       Validation.checkArgument(array.getClass().isArray());
       if (array.getClass().getComponentType().isPrimitive()) {
-         return new PrimitiveArrayList<>(array,itemClass);
+         return new PrimitiveArrayList<>(array, itemClass);
       }
       return () -> new Iterator<T>() {
          int pos = 0;

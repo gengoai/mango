@@ -21,6 +21,7 @@
 
 package com.gengoai.collection.map;
 
+import com.gengoai.Validation;
 import com.gengoai.collection.Streams;
 import com.gengoai.conversion.Convert;
 import com.gengoai.io.CSV;
@@ -60,6 +61,13 @@ public interface Maps {
    @SuppressWarnings("varargs")
    static <K, V> Map<K, V> asMap(Map.Entry<K, V>... entries) {
       return createMap(HashMap::new, entries);
+   }
+
+   static <K, V> Map<K, V> asMap(Iterable<? extends K> keys, Function<? super K, ? extends V> valueMapper) {
+      Validation.notNull(valueMapper);
+      Map<K, V> map = new HashMap<>();
+      Validation.notNull(keys).forEach(key -> map.put(key, valueMapper.apply(key)));
+      return map;
    }
 
    /**
@@ -192,8 +200,9 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4) {
-      return createMap(LinkedHashMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3), Tuples
-                                                                                                                      .$(key4, value4));
+      return createMap(LinkedHashMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3),
+                       Tuples
+                          .$(key4, value4));
    }
 
    /**
@@ -478,7 +487,8 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4) {
-      return createMap(HashMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3), Tuples.$(key4, value4));
+      return createMap(HashMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3),
+                       Tuples.$(key4, value4));
    }
 
    /**
@@ -499,7 +509,8 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5) {
-      return createMap(HashMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3), Tuples.$(key4, value4),
+      return createMap(HashMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3),
+                       Tuples.$(key4, value4),
                        Tuples.$(key5, value5));
    }
 
@@ -872,7 +883,8 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4) {
-      return createMap(TreeMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3), Tuples.$(key4, value4));
+      return createMap(TreeMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3),
+                       Tuples.$(key4, value4));
    }
 
    /**
@@ -893,7 +905,8 @@ public interface Maps {
     * @return the map
     */
    static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5) {
-      return createMap(TreeMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3), Tuples.$(key4, value4),
+      return createMap(TreeMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3),
+                       Tuples.$(key4, value4),
                        Tuples.$(key5, value5));
    }
 

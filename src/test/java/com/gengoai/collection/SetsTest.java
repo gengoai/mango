@@ -38,17 +38,17 @@ public class SetsTest {
    @Test
    public void transform() throws Exception {
       assertEquals(Sets.set("A", "B", "C"),
-                   Sets.transform(Arrays.asList("a", "b", "c"), String::toUpperCase)
+                   Sets.transform(Sets.set("a", "b", "c"), String::toUpperCase)
                   );
-      assertTrue(Sets.transform(Collections.<String>emptyList(), String::toUpperCase).isEmpty());
+      assertTrue(Sets.transform(Collections.<String>emptySet(), String::toUpperCase).isEmpty());
    }
 
    @Test
    public void filter() throws Exception {
       assertEquals(Sets.set(2, 4, 6),
-                   Sets.filter(Arrays.asList(1, 2, 3, 4, 5, 6), i -> i % 2 == 0)
+                   Sets.filter(Sets.set(1, 2, 3, 4, 5, 6), i -> i % 2 == 0)
                   );
-      assertTrue(Sets.filter(Collections.<String>emptyList(), Objects::nonNull).isEmpty());
+      assertTrue(Sets.filter(Collections.<String>emptySet(), Objects::nonNull).isEmpty());
    }
 
    @Test

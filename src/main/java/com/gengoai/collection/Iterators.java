@@ -6,6 +6,9 @@ import com.gengoai.function.SerializablePredicate;
 import lombok.NonNull;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import static com.gengoai.Validation.notNull;
 import static com.gengoai.Validation.validate;
