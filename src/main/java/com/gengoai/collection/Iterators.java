@@ -1,14 +1,12 @@
 package com.gengoai.collection;
 
 import com.gengoai.Validation;
+import com.gengoai.conversion.Cast;
 import com.gengoai.function.SerializableFunction;
 import com.gengoai.function.SerializablePredicate;
 import lombok.NonNull;
 
 import java.util.*;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import static com.gengoai.Validation.notNull;
 import static com.gengoai.Validation.validate;
@@ -89,7 +87,9 @@ public final class Iterators {
     * @param partitionSize the partition size
     * @return the iterator
     */
-   public static <T> Iterator<List<T>> partition(@NonNull final Iterator<T> iterator, int partitionSize) {
+   public static <T> Iterator<List<T>> partition(@NonNull final Iterator<T> iterator,
+                                                 int partitionSize
+                                                ) {
       return partition(iterator, partitionSize, false);
    }
 
@@ -102,7 +102,10 @@ public final class Iterators {
     * @param pad           the pad
     * @return the iterator
     */
-   public static <T> Iterator<List<T>> partition(final Iterator<? extends T> iterator, int partitionSize, boolean pad) {
+   public static <T> Iterator<List<T>> partition(final Iterator<? extends T> iterator,
+                                                 int partitionSize,
+                                                 boolean pad
+                                                ) {
       Validation.checkArgument(partitionSize > 0, "Partition size must be greater than zero.");
       return new PartitionedIterator<>(notNull(iterator), partitionSize, pad);
    }
@@ -136,6 +139,37 @@ public final class Iterators {
       return (int) Streams.asStream(notNull(iterator)).count();
    }
 
+   public static <T> Optional<T> get(Iterator<? extends T> iterator, int index) {
+      int i = iterateTo(notNull(iterator), index);
+      if (i == index && iterator.hasNext()) {
+         return Optional.of(iterator.next());
+      }
+      return Optional.empty();
+   }
+
+   public static <T> T get(Iterator<? extends T> iterator, int index, T defaultValue) {
+      return get(iterator, index).orElse(Cast.as(defaultValue));
+   }
+
+   private static int iterateTo(Iterator<?> iterator, int index) {
+      int i = 0;
+      while (i < index && iterator.hasNext()) {
+         i++;
+         iterator.next();
+      }
+      return i;
+   }
+
+   public static <T> Optional<T> getFirst(Iterator<? extends T> iterator) {
+      if (notNull(iterator).hasNext()) {
+         return Optional.of(iterator.next());
+      }
+      return Optional.empty();
+   }
+
+   public static <T> T getFirst(Iterator<? extends T> iterator, T defaultValue) {
+      return getFirst(iterator).orElse(Cast.as(defaultValue));
+   }
 
    private static class PartitionedIterator<E> implements Iterator<List<E>> {
       private final Iterator<? extends E> backing;

@@ -12,6 +12,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.gengoai.Validation.notNull;
 import static com.gengoai.collection.Streams.asStream;
 
 /**
@@ -24,8 +25,9 @@ public final class Iterables {
    }
 
 
-   public static <IN, OUT> Iterable<OUT> transform(Iterable<IN> iterable, Function<? super IN, ? extends OUT> function) {
-      return asIterable(Iterators.transform(Validation.notNull(iterable).iterator(), Validation.notNull(function)));
+   public static <I, O> Iterable<O> transform(final Iterable<? extends I> iterable,
+                                              final Function<? super I, ? extends O> function) {
+      return asIterable(Iterators.transform(notNull(iterable).iterator(), notNull(function)));
    }
 
    public static <T> T getOnlyElement(@NonNull Iterable<T> iterable) {
