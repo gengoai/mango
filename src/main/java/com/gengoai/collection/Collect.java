@@ -22,8 +22,12 @@
 package com.gengoai.collection;
 
 import com.gengoai.conversion.Cast;
+import com.gengoai.function.SerializableFunction;
+import com.gengoai.function.SerializablePredicate;
 
 import java.util.*;
+
+import static com.gengoai.Validation.notNull;
 
 /**
  * Static methods for working with collections and iterables.
@@ -61,6 +65,68 @@ public interface Collect {
          return collectionClass.newInstance();
       } catch (InstantiationException | IllegalAccessException e) {
          throw new RuntimeException(e);
+      }
+   }
+
+   static <I, O> Collection<O> transform(final Collection<? extends I> collection,
+                                         final SerializableFunction<? super I, ? extends O> transform
+                                        ) {
+      return new TransformedCollection<>(notNull(collection), notNull(transform));
+   }
+
+   static <T> Collection<T> filter(final Collection<? extends T> collection,
+                                   final SerializablePredicate<? super T> filter
+                                  ) {
+      return new FilteredCollection<>(notNull(collection), notNull(filter));
+   }
+
+   static <T> Optional<T> getFirst(final Collection<? extends T> collection) {
+      return Iterators.getFirst(notNull(collection).iterator());
+   }
+
+   static <T> T getFirst(final Collection<? extends T> collection, T defaultValue) {
+      return Iterators.getFirst(notNull(collection).iterator(), defaultValue);
+   }
+
+   static class TransformedCollection<I, O> extends AbstractCollection<O> {
+      final Collection<? extends I> collection;
+      final SerializableFunction<? super I, ? extends O> transform;
+
+      public TransformedCollection(Collection<? extends I> collection, SerializableFunction<? super I, ? extends O> transform) {
+         this.collection = collection;
+         this.transform = transform;
+      }
+
+      @Override
+      public Iterator<O> iterator() {
+         return Iterators.transform(collection.iterator(), transform);
+      }
+
+      @Override
+      public int size() {
+         return collection.size();
+      }
+   }
+
+
+   static class FilteredCollection<T> extends AbstractCollection<T> {
+      final Collection<? extends T> collection;
+      final SerializablePredicate<? super T> filter;
+
+      public FilteredCollection(Collection<? extends T> collection, SerializablePredicate<? super T> filter) {
+         this.collection = collection;
+         this.filter = filter;
+      }
+
+
+      @Override
+      public Iterator<T> iterator() {
+         return Iterators.filter(collection.iterator(), filter);
+      }
+
+      @Override
+      public int size() {
+         return Iterators.size(iterator());
       }
    }
 
