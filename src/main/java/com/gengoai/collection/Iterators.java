@@ -4,7 +4,6 @@ import com.gengoai.Validation;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.SerializableFunction;
 import com.gengoai.function.SerializablePredicate;
-import lombok.NonNull;
 
 import java.util.*;
 
@@ -13,7 +12,7 @@ import static com.gengoai.Validation.validate;
 import static com.gengoai.tuple.Tuples.$;
 
 /**
- * The type Iterators.
+ * Methods for manipulating iterators
  *
  * @author David B. Bracewell
  */
@@ -23,13 +22,13 @@ public final class Iterators {
    }
 
    /**
-    * Transform iterator.
+    * Creates an iterator that transforms the elements of the iterator
     *
-    * @param <I>      the type parameter
-    * @param <O>      the type parameter
-    * @param iterator the iterator
-    * @param function the function
-    * @return the iterator
+    * @param <I>      the type parameter of the item in given iterator
+    * @param <O>      the type parameter of the output of the transform function
+    * @param iterator the iterator to transform
+    * @param function the transform function
+    * @return the transformed iterator
     */
    public static <I, O> Iterator<O> transform(final Iterator<? extends I> iterator,
                                               final SerializableFunction<? super I, ? extends O> function
@@ -38,12 +37,12 @@ public final class Iterators {
    }
 
    /**
-    * Filter iterator.
+    * Filters elements from the given iterator when the given filter predicate evaluates to false
     *
-    * @param <E>      the type parameter
-    * @param iterator the iterator
-    * @param filter   the filter
-    * @return the iterator
+    * @param <E>      the iterator element parameter
+    * @param iterator the iterator to filter
+    * @param filter   the filter to apply items evaluating to false will be removed from the iterator
+    * @return the filtered iterator
     */
    public static <E> Iterator<E> filter(final Iterator<? extends E> iterator,
                                         final SerializablePredicate<? super E> filter
@@ -52,11 +51,11 @@ public final class Iterators {
    }
 
    /**
-    * Concat iterator.
+    * Concatenates iterators together
     *
-    * @param <T>       the type parameter
-    * @param iterators the iterators
-    * @return the iterator
+    * @param <T>       the iterator element type parameter
+    * @param iterators the iterators to concatenate
+    * @return the concatenated iterator
     */
    @SafeVarargs
    public static <T> Iterator<T> concat(Iterator<? extends T>... iterators) {
@@ -64,50 +63,58 @@ public final class Iterators {
    }
 
    /**
-    * Unmodifiable iterator iterator.
+    * Wraps an iterator allowing items to not be removed
     *
-    * @param <T>      the type parameter
-    * @param iterator the iterator
-    * @return the iterator
+    * @param <T>      the iterator element type parameter
+    * @param iterator the iterator to make unmodifiable
+    * @return the unmodifiable iterator
     */
    public static <T> Iterator<T> unmodifiableIterator(final Iterator<? extends T> iterator) {
-      return new SimpleIteratorDecorator<T>(notNull(iterator)) {
-         @Override
-         public void remove() {
-            throw new UnsupportedOperationException();
-         }
-      };
+      return new UnmodifiableIterator<>(notNull(iterator));
    }
 
    /**
-    * Partition iterator.
+    * Partitions the elements in the iterator into a number of lists equal to partition size except for the last
+    * partition, which may have less elements.
     *
-    * @param <T>           the type parameter
-    * @param iterator      the iterator
+    * @param <T>           the iterator element type parameter
+    * @param iterator      the iterator to partition
     * @param partitionSize the partition size
-    * @return the iterator
+    * @return the partitioned iterator
     */
-   public static <T> Iterator<List<T>> partition(@NonNull final Iterator<T> iterator,
+   public static <T> Iterator<List<T>> partition(final Iterator<T> iterator,
                                                  int partitionSize
                                                 ) {
-      return partition(iterator, partitionSize, false);
+      return new PartitionedIterator<>(notNull(iterator),
+                                       validate(partitionSize,
+                                                size -> size > 0,
+                                                "Partition size must be greater than zero.",
+                                                IllegalArgumentException::new,
+                                                false),
+                                       false);
    }
 
    /**
-    * Partition iterator.
+    * Partitions the elements in the iterator into a number of lists equal to partition size except for the last
+    * partition, which may have less elements if pad is false but will be filled with nulls if true.
     *
-    * @param <T>           the type parameter
-    * @param iterator      the iterator
+    * @param <T>           the iterator element type parameter
+    * @param iterator      the iterator to partition
     * @param partitionSize the partition size
-    * @param pad           the pad
-    * @return the iterator
+    * @param pad           true add nulls to ensure list size is equal to partition size
+    * @return the partitioned iterator
     */
    public static <T> Iterator<List<T>> partition(final Iterator<? extends T> iterator,
                                                  int partitionSize,
                                                  boolean pad
                                                 ) {
-      Validation.checkArgument(partitionSize > 0, "Partition size must be greater than zero.");
-      return new PartitionedIterator<>(notNull(iterator), partitionSize, pad);
+      return new PartitionedIterator<>(notNull(iterator),
+                                       validate(partitionSize,
+                                                size -> size > 0,
+                                                "Partition size must be greater than zero.",
+                                                IllegalArgumentException::new,
+                                                false),
+                                       pad);
    }
 
 
@@ -130,10 +137,10 @@ public final class Iterators {
 
 
    /**
-    * Size int.
+    * Gets the number of items in the iterator
     *
     * @param iterator the iterator
-    * @return the int
+    * @return the size or number of items in the iterator
     */
    public static int size(Iterator<?> iterator) {
       return (int) Streams.asStream(notNull(iterator)).count();
@@ -333,5 +340,29 @@ public final class Iterators {
          current.remove();
       }
    }
+
+   private static class UnmodifiableIterator<E> implements Iterator<E> {
+      final Iterator<? extends E> backingIterator;
+
+      private UnmodifiableIterator(Iterator<? extends E> backingIterator) {
+         this.backingIterator = backingIterator;
+      }
+
+      @Override
+      public boolean hasNext() {
+         return backingIterator.hasNext();
+      }
+
+      @Override
+      public E next() {
+         return backingIterator.next();
+      }
+
+      @Override
+      public void remove() {
+         throw new UnsupportedOperationException();
+      }
+   }
+
 
 }//END OF Iterators
