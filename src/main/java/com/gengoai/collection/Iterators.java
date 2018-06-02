@@ -22,18 +22,15 @@ public final class Iterators {
    }
 
    /**
-    * Creates an iterator that transforms the elements of the iterator
+    * Concatenates iterators together
     *
-    * @param <I>      the type parameter of the item in given iterator
-    * @param <O>      the type parameter of the output of the transform function
-    * @param iterator the iterator to transform
-    * @param function the transform function
-    * @return the transformed iterator
+    * @param <T>       the iterator element type parameter
+    * @param iterators the iterators to concatenate
+    * @return the concatenated iterator
     */
-   public static <I, O> Iterator<O> transform(final Iterator<? extends I> iterator,
-                                              final SerializableFunction<? super I, ? extends O> function
-                                             ) {
-      return new TransformedIterator<>(notNull(iterator), notNull(function));
+   @SafeVarargs
+   public static <T> Iterator<T> concat(final Iterator<? extends T>... iterators) {
+      return new ConcatIterator<T>(Arrays.asList(notNull(iterators)).iterator());
    }
 
    /**
@@ -51,26 +48,69 @@ public final class Iterators {
    }
 
    /**
-    * Concatenates iterators together
+    * Gets the element of the iterator after iterator <code>index</code> times if it exists
     *
-    * @param <T>       the iterator element type parameter
-    * @param iterators the iterators to concatenate
-    * @return the concatenated iterator
+    * @param <T>      the iterator element type parameter
+    * @param iterator the iterator
+    * @param n        how many times to iterate
+    * @return Optional of the element of the iterator after iterating n times if it exists
     */
-   @SafeVarargs
-   public static <T> Iterator<T> concat(Iterator<? extends T>... iterators) {
-      return new ConcatIterator<T>(Arrays.asList(notNull(iterators)).iterator());
+   public static <T> Optional<T> get(Iterator<? extends T> iterator, int n) {
+      int i = iterateTo(notNull(iterator), n);
+      if (i == n && iterator.hasNext()) {
+         return Optional.ofNullable(iterator.next());
+      }
+      return Optional.empty();
    }
 
    /**
-    * Wraps an iterator allowing items to not be removed
+    * Gets the element of the iterator after iterator <code>index</code> times if it exists and if it does not exist,
+    * returns the default value
+    *
+    * @param <T>          the iterator element type parameter
+    * @param iterator     the iterator
+    * @param n            how many times to iterate
+    * @param defaultValue the default value to return if nothing is at the given index
+    * @return the element of the iterator after iterating n times or default value if cannot iterator n times
+    */
+   public static <T> T get(Iterator<? extends T> iterator, int n, T defaultValue) {
+      return get(iterator, n).orElse(Cast.as(defaultValue));
+   }
+
+   private static int iterateTo(Iterator<?> iterator, int index) {
+      int i = 0;
+      while (i < index && iterator.hasNext()) {
+         i++;
+         iterator.next();
+      }
+      return i;
+   }
+
+   /**
+    * Gets the next element of the iterator that would be returned by calling <code>next</code> if it exists.
     *
     * @param <T>      the iterator element type parameter
-    * @param iterator the iterator to make unmodifiable
-    * @return the unmodifiable iterator
+    * @param iterator the iterator
+    * @return the next element in the iterator
     */
-   public static <T> Iterator<T> unmodifiableIterator(final Iterator<? extends T> iterator) {
-      return new UnmodifiableIterator<>(notNull(iterator));
+   public static <T> Optional<T> next(Iterator<? extends T> iterator) {
+      if (notNull(iterator).hasNext()) {
+         return Optional.ofNullable(iterator.next());
+      }
+      return Optional.empty();
+   }
+
+   /**
+    * Gets the next element of the iterator that would be returned by calling <code>next</code> if it exists or the
+    * default value.
+    *
+    * @param <T>          the iterator element type parameter
+    * @param iterator     the iterator
+    * @param defaultValue the default value
+    * @return the next element in the iterator or the default value
+    */
+   public static <T> T next(Iterator<? extends T> iterator, T defaultValue) {
+      return next(iterator).orElse(Cast.as(defaultValue));
    }
 
    /**
@@ -83,7 +123,7 @@ public final class Iterators {
     * @return the partitioned iterator
     */
    public static <T> Iterator<List<T>> partition(final Iterator<T> iterator,
-                                                 int partitionSize
+                                                 final int partitionSize
                                                 ) {
       return new PartitionedIterator<>(notNull(iterator),
                                        validate(partitionSize,
@@ -117,6 +157,41 @@ public final class Iterators {
                                        pad);
    }
 
+   /**
+    * Gets the number of items in the iterator
+    *
+    * @param iterator the iterator
+    * @return the size or number of items in the iterator
+    */
+   public static int size(final Iterator<?> iterator) {
+      return (int) Streams.asStream(notNull(iterator)).count();
+   }
+
+   /**
+    * Creates an iterator that transforms the elements of the iterator
+    *
+    * @param <I>      the type parameter of the item in given iterator
+    * @param <O>      the type parameter of the output of the transform function
+    * @param iterator the iterator to transform
+    * @param function the transform function
+    * @return the transformed iterator
+    */
+   public static <I, O> Iterator<O> transform(final Iterator<? extends I> iterator,
+                                              final SerializableFunction<? super I, ? extends O> function
+                                             ) {
+      return new TransformedIterator<>(notNull(iterator), notNull(function));
+   }
+
+   /**
+    * Wraps an iterator allowing items to not be removed
+    *
+    * @param <T>      the iterator element type parameter
+    * @param iterator the iterator to make unmodifiable
+    * @return the unmodifiable iterator
+    */
+   public static <T> Iterator<T> unmodifiableIterator(final Iterator<? extends T> iterator) {
+      return new UnmodifiableIterator<>(notNull(iterator));
+   }
 
    /**
     * <p>Zips (combines) two iterators together. For example, if iterator 1 contained [1,2,3] and iterator 2 contained
@@ -133,49 +208,6 @@ public final class Iterators {
                                                       final Iterator<? extends U> iterator2
                                                      ) {
       return new ZippedIterator<>(notNull(iterator1), notNull(iterator2));
-   }
-
-
-   /**
-    * Gets the number of items in the iterator
-    *
-    * @param iterator the iterator
-    * @return the size or number of items in the iterator
-    */
-   public static int size(Iterator<?> iterator) {
-      return (int) Streams.asStream(notNull(iterator)).count();
-   }
-
-   public static <T> Optional<T> get(Iterator<? extends T> iterator, int index) {
-      int i = iterateTo(notNull(iterator), index);
-      if (i == index && iterator.hasNext()) {
-         return Optional.of(iterator.next());
-      }
-      return Optional.empty();
-   }
-
-   public static <T> T get(Iterator<? extends T> iterator, int index, T defaultValue) {
-      return get(iterator, index).orElse(Cast.as(defaultValue));
-   }
-
-   private static int iterateTo(Iterator<?> iterator, int index) {
-      int i = 0;
-      while (i < index && iterator.hasNext()) {
-         i++;
-         iterator.next();
-      }
-      return i;
-   }
-
-   public static <T> Optional<T> getFirst(Iterator<? extends T> iterator) {
-      if (notNull(iterator).hasNext()) {
-         return Optional.of(iterator.next());
-      }
-      return Optional.empty();
-   }
-
-   public static <T> T getFirst(Iterator<? extends T> iterator, T defaultValue) {
-      return getFirst(iterator).orElse(Cast.as(defaultValue));
    }
 
    private static class PartitionedIterator<E> implements Iterator<List<E>> {
@@ -342,6 +374,9 @@ public final class Iterators {
    }
 
    private static class UnmodifiableIterator<E> implements Iterator<E> {
+      /**
+       * The Backing iterator.
+       */
       final Iterator<? extends E> backingIterator;
 
       private UnmodifiableIterator(Iterator<? extends E> backingIterator) {

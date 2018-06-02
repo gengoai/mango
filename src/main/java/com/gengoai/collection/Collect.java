@@ -81,11 +81,11 @@ public interface Collect {
    }
 
    static <T> Optional<T> getFirst(final Collection<? extends T> collection) {
-      return Iterators.getFirst(notNull(collection).iterator());
+      return Iterators.next(notNull(collection).iterator());
    }
 
    static <T> T getFirst(final Collection<? extends T> collection, T defaultValue) {
-      return Iterators.getFirst(notNull(collection).iterator(), defaultValue);
+      return Iterators.next(notNull(collection).iterator(), defaultValue);
    }
 
    static class TransformedCollection<I, O> extends AbstractCollection<O> {
