@@ -40,7 +40,7 @@ import java.util.List;
  */
 @EqualsAndHashCode(exclude = "map", callSuper = false)
 public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
-   private static final long serialVersionUID = -288128807385573349L;
+   private static final long serialVersionUID = 1L;
    private final OpenObjectIntHashMap<TYPE> map = new OpenObjectIntHashMap<>();
    private final List<TYPE> list = new ArrayList<>();
 
@@ -146,4 +146,4 @@ public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
    public String toString() {
       return list.toString();
    }
-}//END OF AbstractMapListIndex
+}//END OF HashMapIndex

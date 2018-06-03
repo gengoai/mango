@@ -21,7 +21,7 @@
 
 package com.gengoai.io;
 
-import com.gengoai.collection.map.Maps;
+import com.gengoai.collection.Maps;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.io.resource.StringResource;
 import org.junit.Test;

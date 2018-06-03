@@ -23,6 +23,17 @@ public final class Iterators {
    }
 
    /**
+    * Flattens an iterator of iterators.
+    *
+    * @param <T>      the iterator element type parameter
+    * @param iterator the iterator
+    * @return the flattened iterator
+    */
+   public static <T> Iterator<T> flatten(final Iterator<Iterator<? extends T>> iterator) {
+      return new ConcatIterator<>(iterator);
+   }
+
+   /**
     * Concatenates iterators together
     *
     * @param <T>       the iterator element type parameter
@@ -32,6 +43,18 @@ public final class Iterators {
    @SafeVarargs
    public static <T> Iterator<T> concat(final Iterator<? extends T>... iterators) {
       return new ConcatIterator<T>(Arrays.asList(notNull(iterators)).iterator());
+   }
+
+   /**
+    * Concatenates iterators together
+    *
+    * @param <T>       the iterator element type parameter
+    * @param iterables the iterables to concatenate
+    * @return the concatenated iterator
+    */
+   @SafeVarargs
+   public static <T> Iterator<T> concat(final Iterable<? extends T>... iterables) {
+      return new ConcatIterableIterator<>(Arrays.asList(iterables).iterator());
    }
 
    /**
@@ -379,6 +402,44 @@ public final class Iterators {
       }
    }
 
+   private static class ConcatIterableIterator<E> implements Iterator<E> {
+      private final Iterator<Iterable<? extends E>> iterables;
+      private Iterator<? extends E> current = null;
+
+      private ConcatIterableIterator(Iterator<Iterable<? extends E>> iterables) {
+         this.iterables = iterables;
+      }
+
+      private boolean advance() {
+         if (current != null && current.hasNext()) {
+            return true;
+         }
+         while (iterables.hasNext()) {
+            current = iterables.next().iterator();
+            if (current.hasNext()) {
+               return true;
+            }
+         }
+         return false;
+      }
+
+      @Override
+      public boolean hasNext() {
+         return advance();
+      }
+
+      @Override
+      public E next() {
+         validate(advance(), NoSuchElementException::new, null);
+         return current.next();
+      }
+
+      @Override
+      public void remove() {
+         current.remove();
+      }
+   }
+
    private static class ConcatIterator<E> implements Iterator<E> {
       private final Iterator<Iterator<? extends E>> iterators;
       private Iterator<? extends E> current = null;
@@ -443,5 +504,22 @@ public final class Iterators {
       }
    }
 
+   private static class FlattenedIterator<E> implements Iterator<E> {
+      private final Iterator<Collection<? extends E>> itr;
+
+      private FlattenedIterator(Iterator<Collection<? extends E>> itr) {
+         this.itr = itr;
+      }
+
+      @Override
+      public boolean hasNext() {
+         return false;
+      }
+
+      @Override
+      public E next() {
+         return null;
+      }
+   }
 
 }//END OF Iterators

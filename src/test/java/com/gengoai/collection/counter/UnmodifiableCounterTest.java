@@ -21,7 +21,7 @@
 
 package com.gengoai.collection.counter;
 
-import com.gengoai.collection.map.Maps;
+import com.gengoai.collection.Maps;
 import org.junit.Test;
 
 import java.util.Collections;

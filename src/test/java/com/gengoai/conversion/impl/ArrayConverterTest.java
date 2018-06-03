@@ -21,7 +21,7 @@
 
 package com.gengoai.conversion.impl;
 
-import com.gengoai.collection.map.Maps;
+import com.gengoai.collection.Maps;
 import com.gengoai.conversion.ArrayConverter;
 import com.gengoai.conversion.Val;
 import org.junit.Assert;

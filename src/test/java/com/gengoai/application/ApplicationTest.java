@@ -41,7 +41,7 @@ package com.gengoai.application;/*
  */
 
 import com.gengoai.cli.Option;
-import com.gengoai.collection.map.Maps;
+import com.gengoai.collection.Maps;
 import com.gengoai.config.Config;
 import org.junit.Assert;
 import org.junit.Test;

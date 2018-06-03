@@ -22,7 +22,7 @@
 package com.gengoai.conversion;
 
 import com.gengoai.collection.Iterables;
-import com.gengoai.collection.map.Maps;
+import com.gengoai.collection.Maps;
 import com.gengoai.function.SerializableSupplier;
 import com.gengoai.logging.Logger;
 import lombok.NonNull;

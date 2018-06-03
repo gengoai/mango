@@ -22,12 +22,9 @@
 package com.gengoai.collection;
 
 import com.gengoai.conversion.Cast;
-import com.gengoai.function.SerializableFunction;
-import com.gengoai.function.SerializablePredicate;
 
+import java.io.Serializable;
 import java.util.*;
-
-import static com.gengoai.Validation.notNull;
 
 /**
  * Static methods for working with collections and iterables.
@@ -74,89 +71,31 @@ public final class Collect {
       }
    }
 
-   /**
-    * Transform collection.
-    *
-    * @param <I>        the type parameter
-    * @param <O>        the type parameter
-    * @param collection the collection
-    * @param transform  the transform
-    * @return the collection
-    */
-   static <I, O> Collection<O> transform(final Collection<? extends I> collection,
-                                         final SerializableFunction<? super I, ? extends O> transform
-                                        ) {
-      return new TransformedCollection<>(notNull(collection), notNull(transform));
+   public static <T> Collection<T> asCollection(Iterable<? extends T> iterable) {
+      return new IterableCollection<>(iterable);
    }
 
-   /**
-    * Filter collection.
-    *
-    * @param <T>        the type parameter
-    * @param collection the collection
-    * @param filter     the filter
-    * @return the collection
-    */
-   static <T> Collection<T> filter(final Collection<? extends T> collection,
-                                   final SerializablePredicate<? super T> filter
-                                  ) {
-      return new FilteredCollection<>(notNull(collection), notNull(filter));
+   public static <T> Collection<T> asCollection(Iterator<? extends T> iterator) {
+      return asCollection(Iterables.asIterable(iterator));
    }
 
+   private static class IterableCollection<E> extends AbstractCollection<E> implements Serializable {
+      private static final long serialVersionUID = 1L;
+      private final Iterable<? extends E> iterable;
 
-   private static class TransformedCollection<I, O> extends AbstractCollection<O> {
-      /**
-       * The Collection.
-       */
-      final Collection<? extends I> collection;
-      /**
-       * The Transform.
-       */
-      final SerializableFunction<? super I, ? extends O> transform;
-
-      private TransformedCollection(Collection<? extends I> collection, SerializableFunction<? super I, ? extends O> transform) {
-         this.collection = collection;
-         this.transform = transform;
+      private IterableCollection(Iterable<? extends E> iterable) {
+         this.iterable = iterable;
       }
 
       @Override
-      public Iterator<O> iterator() {
-         return Iterators.transform(collection.iterator(), transform);
+      public Iterator<E> iterator() {
+         return Cast.cast(iterable.iterator());
       }
 
       @Override
       public int size() {
-         return collection.size();
+         return Iterables.size(iterable);
       }
    }
-
-
-   private static class FilteredCollection<T> extends AbstractCollection<T> {
-      /**
-       * The Collection.
-       */
-      final Collection<? extends T> collection;
-      /**
-       * The Filter.
-       */
-      final SerializablePredicate<? super T> filter;
-
-      private FilteredCollection(Collection<? extends T> collection, SerializablePredicate<? super T> filter) {
-         this.collection = collection;
-         this.filter = filter;
-      }
-
-
-      @Override
-      public Iterator<T> iterator() {
-         return Iterators.filter(collection.iterator(), filter);
-      }
-
-      @Override
-      public int size() {
-         return Iterators.size(iterator());
-      }
-   }
-
 
 }// END OF CollectionUtils

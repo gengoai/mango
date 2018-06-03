@@ -1,6 +1,5 @@
 package com.gengoai.collection;
 
-import com.gengoai.collection.map.Maps;
 import com.gengoai.conversion.Cast;
 import com.gengoai.string.CharMatcher;
 import com.gengoai.string.StringUtils;

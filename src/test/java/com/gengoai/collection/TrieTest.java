@@ -21,7 +21,6 @@
 
 package com.gengoai.collection;
 
-import com.gengoai.collection.map.Maps;
 import com.gengoai.string.CharMatcher;
 import com.gengoai.tuple.Tuples;
 import org.junit.Before;

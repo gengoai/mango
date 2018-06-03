@@ -1,7 +1,7 @@
 package com.gengoai.cache;
 
 import com.gengoai.Validation;
-import com.gengoai.collection.map.LRUMap;
+import com.gengoai.collection.LRUMap;
 import com.gengoai.function.SerializableSupplier;
 import lombok.NonNull;
 

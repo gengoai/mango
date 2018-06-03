@@ -39,9 +39,6 @@ public class CollectTest {
       Iterable<CharSequence> ibl1 = Iterables.asIterable(Lists.list("A", "B", "C").iterator());
       assertEquals(3, Iterables.size(ibl1));
 
-      Iterable<CharSequence> ibl2 = Iterables.asIterable(null);
-      assertEquals(0, Iterables.size(ibl2));
-
       Iterable<CharSequence> ibl3 = Iterables.asIterable(Collections.emptyIterator());
       assertEquals(0, Iterables.size(ibl3));
    }

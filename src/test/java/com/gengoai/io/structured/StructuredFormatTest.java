@@ -22,7 +22,7 @@
 package com.gengoai.io.structured;
 
 import com.gengoai.collection.Lists;
-import com.gengoai.collection.map.Maps;
+import com.gengoai.collection.Maps;
 import com.gengoai.conversion.Val;
 import com.gengoai.io.Resources;
 import com.gengoai.json.Json;

@@ -1,6 +1,6 @@
 package com.gengoai.stream;
 
-import com.gengoai.collection.map.Maps;
+import com.gengoai.collection.Maps;
 import com.gengoai.config.Config;
 import com.gengoai.tuple.Tuple2;
 import com.gengoai.tuple.Tuples;

@@ -19,7 +19,7 @@
  * under the License.
  */
 
-package com.gengoai.collection.map;
+package com.gengoai.collection;
 
 import com.gengoai.tuple.Tuple2;
 import lombok.EqualsAndHashCode;

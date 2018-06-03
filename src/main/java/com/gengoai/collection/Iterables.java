@@ -3,10 +3,10 @@ package com.gengoai.collection;
 import com.gengoai.Validation;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.SerializableFunction;
+import com.gengoai.function.SerializableSupplier;
 
 import java.lang.reflect.Array;
 import java.util.*;
-import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -15,7 +15,7 @@ import static com.gengoai.Validation.notNull;
 import static com.gengoai.collection.Streams.asStream;
 
 /**
- * The type Iterables.
+ * Methods for manipulating iterables
  *
  * @author David B. Bracewell
  */
@@ -24,6 +24,13 @@ public final class Iterables {
    private Iterables() {
       throw new IllegalAccessError();
    }
+
+   public static <T> Iterable<T> flatten(Iterable<? extends Iterable<? extends T>> iterable){
+     final SerializableSupplier<Iterator<T>> supplier = () ->  Iterators.flatten(Iterators.transform(iterable.iterator(),
+                                                                                                     Iterable::iterator));
+     return new IteratorIterable<T>(Cast.as(supplier));
+   }
+
 
    /**
     * Wraps an <code>array</code> as an <code>Iterable</code>
@@ -77,10 +84,10 @@ public final class Iterables {
     */
    @SafeVarargs
    public static <T> Iterable<T> concat(Iterable<? extends T>... iterables) {
-      final Iterator<? extends T>[] iterators = Streams.asStream(notNull(iterables))
-                                                       .toArray((IntFunction<Iterator<? extends T>[]>) Iterator[]::new);
-      return new IteratorIterable<>(() -> Iterators.concat(iterators));
+      return new IteratorIterable<>(() -> Iterators.concat(iterables));
    }
+
+
 
    /**
     * Get optional.

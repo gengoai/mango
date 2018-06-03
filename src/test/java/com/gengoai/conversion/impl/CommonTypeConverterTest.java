@@ -22,7 +22,7 @@
 package com.gengoai.conversion.impl;
 
 import com.gengoai.Defaults;
-import com.gengoai.collection.map.Maps;
+import com.gengoai.collection.Maps;
 import com.gengoai.conversion.Convert;
 import com.gengoai.conversion.Val;
 import org.junit.Assert;
