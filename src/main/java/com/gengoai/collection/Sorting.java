@@ -81,7 +81,7 @@ public final class Sorting {
     * @return A Comparator
     */
    public static <T> SerializableComparator<T> comparator(T item) {
-      if ((item != null && item instanceof Comparable)) {
+      if (item instanceof Comparable) {
          return Sorting::compare;
       }
       return Sorting.hashCodeComparator();
@@ -116,7 +116,7 @@ public final class Sorting {
     * @return A <code>List</code> of <code>Entry</code> containing the map entries in sorted order.
     */
    public static <K, V extends Comparable<V>> List<Entry<K, V>> sortMapEntriesByValue(@NonNull final Map<K, V> map,
-                                                                                     final boolean ascending
+                                                                                      final boolean ascending
                                                                                      ) {
       return sortMapEntries(map, new MapEntryComparator<>(false, ascending));
    }

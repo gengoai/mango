@@ -11,6 +11,7 @@ import java.util.*;
  * @param <T> the type parameter
  * @author David B. Bracewell
  */
+@SuppressWarnings("unchecked")
 public class IntervalTree<T extends Span> implements Serializable, Collection<T> {
 
    /**

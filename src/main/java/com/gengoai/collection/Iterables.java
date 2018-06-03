@@ -3,9 +3,6 @@ package com.gengoai.collection;
 import com.gengoai.Validation;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.SerializableFunction;
-import com.gengoai.tuple.Tuple2;
-import com.gengoai.tuple.Tuples;
-import lombok.NonNull;
 
 import java.lang.reflect.Array;
 import java.util.*;
@@ -170,84 +167,84 @@ public final class Iterables {
       return getLast(notNull(iterable)).orElse(Cast.as(defaultValue));
    }
 
+//
+//   /**
+//    * Max index and value tuple 2.
+//    *
+//    * @param <E>      the type parameter
+//    * @param iterable the iterable
+//    * @return the tuple 2
+//    */
+//   public static <E extends Comparable<? super E>> Tuple2<Integer, E> maxIndexAndValue(Iterable<? extends E> iterable) {
+//      return maxIndexAndValue(notNull(iterable), Sorting.natural());
+//   }
+//
+//   /**
+//    * Max index and value tuple 2.
+//    *
+//    * @param <E>        the type parameter
+//    * @param iterable   the iterable
+//    * @param comparator the comparator
+//    * @return the tuple 2
+//    */
+//   public static <E extends Comparable<? super E>> Tuple2<Integer, E> maxIndexAndValue(Iterable<? extends E> iterable,
+//                                                                                       Comparator<? super E> comparator
+//                                                                                      ) {
+//      notNull(iterable);
+//      notNull(comparator);
+//      int index = -1;
+//      E max = null;
+//      int i = 0;
+//      for (E e : iterable) {
+//         if (max == null || comparator.compare(e, max) > 0) {
+//            max = e;
+//            index = i;
+//         }
+//         i++;
+//      }
+//
+//      return Tuples.$(index, max);
+//   }
+//
+//   /**
+//    * Min index and value tuple 2.
+//    *
+//    * @param <E>      the type parameter
+//    * @param iterable the iterable
+//    * @return the tuple 2
+//    */
+//   public static <E extends Comparable<? super E>> Tuple2<Integer, E> minIndexAndValue(@NonNull Iterable<? extends E> iterable) {
+//      return minIndexAndValue(iterable, Sorting.natural());
+//   }
+//
+//   /**
+//    * Min index and value tuple 2.
+//    *
+//    * @param <E>        the type parameter
+//    * @param iterable   the iterable
+//    * @param comparator the comparator
+//    * @return the tuple 2
+//    */
+//   public static <E extends Comparable<? super E>> Tuple2<Integer, E> minIndexAndValue(@NonNull Iterable<? extends E> iterable, @NonNull Comparator<? super E> comparator) {
+//      int index = -1;
+//      E min = null;
+//      int i = 0;
+//      for (E e : iterable) {
+//         if (min == null || comparator.compare(e, min) < 0) {
+//            min = e;
+//            index = i;
+//         }
+//         i++;
+//      }
+//
+//      return Tuples.$(index, min);
+//   }
 
    /**
-    * Max index and value tuple 2.
+    * Gets the size of the iterable
     *
-    * @param <E>      the type parameter
     * @param iterable the iterable
-    * @return the tuple 2
-    */
-   public static <E extends Comparable<? super E>> Tuple2<Integer, E> maxIndexAndValue(Iterable<? extends E> iterable) {
-      return maxIndexAndValue(notNull(iterable), Sorting.natural());
-   }
-
-   /**
-    * Max index and value tuple 2.
-    *
-    * @param <E>        the type parameter
-    * @param iterable   the iterable
-    * @param comparator the comparator
-    * @return the tuple 2
-    */
-   public static <E extends Comparable<? super E>> Tuple2<Integer, E> maxIndexAndValue(Iterable<? extends E> iterable,
-                                                                                       Comparator<? super E> comparator
-                                                                                      ) {
-      notNull(iterable);
-      notNull(comparator);
-      int index = -1;
-      E max = null;
-      int i = 0;
-      for (E e : iterable) {
-         if (max == null || comparator.compare(e, max) > 0) {
-            max = e;
-            index = i;
-         }
-         i++;
-      }
-
-      return Tuples.$(index, max);
-   }
-
-   /**
-    * Min index and value tuple 2.
-    *
-    * @param <E>      the type parameter
-    * @param iterable the iterable
-    * @return the tuple 2
-    */
-   public static <E extends Comparable<? super E>> Tuple2<Integer, E> minIndexAndValue(@NonNull Iterable<? extends E> iterable) {
-      return minIndexAndValue(iterable, Sorting.natural());
-   }
-
-   /**
-    * Min index and value tuple 2.
-    *
-    * @param <E>        the type parameter
-    * @param iterable   the iterable
-    * @param comparator the comparator
-    * @return the tuple 2
-    */
-   public static <E extends Comparable<? super E>> Tuple2<Integer, E> minIndexAndValue(@NonNull Iterable<? extends E> iterable, @NonNull Comparator<? super E> comparator) {
-      int index = -1;
-      E min = null;
-      int i = 0;
-      for (E e : iterable) {
-         if (min == null || comparator.compare(e, min) < 0) {
-            min = e;
-            index = i;
-         }
-         i++;
-      }
-
-      return Tuples.$(index, min);
-   }
-
-   /**
-    * Size int.
-    *
-    * @param iterable the iterable
-    * @return the int
+    * @return the number of items in the iterable
     */
    public static int size(Iterable<?> iterable) {
       notNull(iterable);

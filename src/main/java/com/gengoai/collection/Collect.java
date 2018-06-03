@@ -34,17 +34,23 @@ import static com.gengoai.Validation.notNull;
  *
  * @author David B. Bracewell
  */
-public interface Collect {
+public final class Collect {
+
+
+   private Collect() {
+      throw new IllegalAccessError();
+   }
 
    /**
     * <p>Creates a default instance of a collection type. If the passed in class is an implementation then that
     * implementation is created using the no-arg constructor. Interfaces (e.g. Set and List) have default
     * implementations assigned and returned. </p>
     *
+    * @param <T>             the type parameter
     * @param collectionClass the collection class
-    * @return t
+    * @return t t
     */
-   static <T extends Collection> T create(Class<T> collectionClass) {
+   public static <T extends Collection> T create(Class<T> collectionClass) {
       if (collectionClass == null) {
          return null;
       }
@@ -68,31 +74,47 @@ public interface Collect {
       }
    }
 
+   /**
+    * Transform collection.
+    *
+    * @param <I>        the type parameter
+    * @param <O>        the type parameter
+    * @param collection the collection
+    * @param transform  the transform
+    * @return the collection
+    */
    static <I, O> Collection<O> transform(final Collection<? extends I> collection,
                                          final SerializableFunction<? super I, ? extends O> transform
                                         ) {
       return new TransformedCollection<>(notNull(collection), notNull(transform));
    }
 
+   /**
+    * Filter collection.
+    *
+    * @param <T>        the type parameter
+    * @param collection the collection
+    * @param filter     the filter
+    * @return the collection
+    */
    static <T> Collection<T> filter(final Collection<? extends T> collection,
                                    final SerializablePredicate<? super T> filter
                                   ) {
       return new FilteredCollection<>(notNull(collection), notNull(filter));
    }
 
-   static <T> Optional<T> getFirst(final Collection<? extends T> collection) {
-      return Iterators.next(notNull(collection).iterator());
-   }
 
-   static <T> T getFirst(final Collection<? extends T> collection, T defaultValue) {
-      return Iterators.next(notNull(collection).iterator(), defaultValue);
-   }
-
-   static class TransformedCollection<I, O> extends AbstractCollection<O> {
+   private static class TransformedCollection<I, O> extends AbstractCollection<O> {
+      /**
+       * The Collection.
+       */
       final Collection<? extends I> collection;
+      /**
+       * The Transform.
+       */
       final SerializableFunction<? super I, ? extends O> transform;
 
-      public TransformedCollection(Collection<? extends I> collection, SerializableFunction<? super I, ? extends O> transform) {
+      private TransformedCollection(Collection<? extends I> collection, SerializableFunction<? super I, ? extends O> transform) {
          this.collection = collection;
          this.transform = transform;
       }
@@ -109,11 +131,17 @@ public interface Collect {
    }
 
 
-   static class FilteredCollection<T> extends AbstractCollection<T> {
+   private static class FilteredCollection<T> extends AbstractCollection<T> {
+      /**
+       * The Collection.
+       */
       final Collection<? extends T> collection;
+      /**
+       * The Filter.
+       */
       final SerializablePredicate<? super T> filter;
 
-      public FilteredCollection(Collection<? extends T> collection, SerializablePredicate<? super T> filter) {
+      private FilteredCollection(Collection<? extends T> collection, SerializablePredicate<? super T> filter) {
          this.collection = collection;
          this.filter = filter;
       }

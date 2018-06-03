@@ -25,11 +25,14 @@ import com.gengoai.function.SerializableFunction;
 import com.gengoai.function.SerializablePredicate;
 import lombok.NonNull;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.gengoai.Validation.notNull;
 
 
 /**
@@ -43,6 +46,12 @@ public final class Sets {
       throw new IllegalAccessError();
    }
 
+   /**
+    * New concurrent hash set set.
+    *
+    * @param <T> the type parameter
+    * @return the set
+    */
    public static <T> Set<T> newConcurrentHashSet() {
       return Collections.newSetFromMap(new ConcurrentHashMap<>());
    }
@@ -232,8 +241,8 @@ public final class Sets {
     * @param collection2 the second collection of items
     * @return A set of the collection1 - collection2
     */
-   public static <E> Set<E> difference(@NonNull Collection<? extends E> collection1, @NonNull Collection<? extends E> collection2) {
-      return collection1.stream().filter(v -> !collection2.contains(v)).collect(Collectors.toSet());
+   public static <E> Set<E> difference(Collection<? extends E> collection1, Collection<? extends E> collection2) {
+      return new DifferenceSet<>(notNull(collection1), notNull(collection2));
    }
 
    /**
@@ -256,8 +265,8 @@ public final class Sets {
     * @param collection2 the second collection of items
     * @return A set containing the intersection of collection1 and collection2
     */
-   public static <E> Set<E> intersection(@NonNull Collection<? extends E> collection1, @NonNull Collection<? extends E> collection2) {
-      return collection1.stream().filter(collection2::contains).collect(Collectors.toSet());
+   public static <E> Set<E> intersection(Collection<? extends E> collection1, Collection<? extends E> collection2) {
+      return new IntersectionSet<>(notNull(collection1), notNull(collection2));
    }
 
    /**
@@ -295,7 +304,9 @@ public final class Sets {
     * @param transform  the function used to transform elements of type E to R
     * @return A set containing the transformed items of the supplied collection
     */
-   public static <E, R> Set<R> transform(@NonNull final Set<? extends E> collection, @NonNull final SerializableFunction<? super E, R> transform) {
+   public static <E, R> Set<R> transform(@NonNull final Set<? extends E> collection,
+                                         @NonNull final SerializableFunction<? super E, R> transform
+                                        ) {
       return new TransformedSet<>(collection, transform);
    }
 
@@ -320,11 +331,12 @@ public final class Sets {
     * @param collection2 the second collection of items
     * @return A set of the collection1 + collection2
     */
-   public static <E> Set<E> union(@NonNull Collection<? extends E> collection1, @NonNull Collection<? extends E> collection2) {
-      return Stream.concat(collection1.stream(), collection2.stream()).collect(Collectors.toSet());
+   public static <E> Set<E> union(Collection<? extends E> collection1, Collection<? extends E> collection2) {
+      return new UnionSet<>(notNull(collection1), notNull(collection2));
    }
 
-   private static class TransformedSet<IN, OUT> extends AbstractSet<OUT> {
+   private static class TransformedSet<IN, OUT> extends AbstractSet<OUT> implements Serializable {
+      private static final long serialVersionUID = 1L;
       private final Set<IN> backingSet;
       private final SerializableFunction<? super IN, ? extends OUT> transform;
 
@@ -344,7 +356,8 @@ public final class Sets {
       }
    }
 
-   private static class FilteredSet<E> extends AbstractSet<E> {
+   private static class FilteredSet<E> extends AbstractSet<E> implements Serializable {
+      private static final long serialVersionUID = 1L;
       private final Set<E> backingSet;
       private final SerializablePredicate<? super E> filter;
 
@@ -363,5 +376,106 @@ public final class Sets {
          return Iterators.size(iterator());
       }
    }
+
+   private static class IntersectionSet<E> extends AbstractSet<E> implements Serializable {
+      private static final long serialVersionUID = 1L;
+      private final Collection<? extends E> set1;
+      private final Collection<? extends E> set2;
+
+      private IntersectionSet(Collection<? extends E> set1, Collection<? extends E> set2) {
+         this.set1 = set1;
+         this.set2 = set2;
+      }
+
+      @Override
+      public boolean contains(Object o) {
+         return set1.contains(o) && set2.contains(o);
+      }
+
+      @Override
+      public boolean containsAll(Collection<?> c) {
+         return set1.containsAll(c) && set2.containsAll(c);
+      }
+
+      @Override
+      public Iterator<E> iterator() {
+         return Iterators.filter(set1.iterator(), set2::contains);
+      }
+
+      @Override
+      public int size() {
+         return Iterators.size(iterator());
+      }
+   }
+
+   private static class DifferenceSet<E> extends AbstractSet<E> implements Serializable {
+      private static final long serialVersionUID = 1L;
+      private final Collection<? extends E> set1;
+      private final Collection<? extends E> set2;
+
+      private DifferenceSet(Collection<? extends E> set1, Collection<? extends E> set2) {
+         this.set1 = set1;
+         this.set2 = set2;
+      }
+
+      @Override
+      public boolean contains(Object o) {
+         return set1.contains(o) && !set2.contains(o);
+      }
+
+      @Override
+      public boolean containsAll(Collection<?> c) {
+         return set1.containsAll(c) && !set2.containsAll(c);
+      }
+
+      @Override
+      public Iterator<E> iterator() {
+         return Iterators.filter(set1.iterator(), x -> !set2.contains(x));
+      }
+
+      @Override
+      public int size() {
+         return Iterators.size(iterator());
+      }
+   }
+
+   private static class UnionSet<E> extends AbstractSet<E> implements Serializable {
+      private static final long serialVersionUID = 1L;
+      private final Collection<? extends E> set1;
+      private final Collection<? extends E> set2;
+
+      private UnionSet(Collection<? extends E> set1, Collection<? extends E> set2) {
+         this.set1 = set1;
+         this.set2 = set2;
+      }
+
+      @Override
+      public boolean contains(Object o) {
+         return set1.contains(o) || set2.contains(o);
+      }
+
+      @Override
+      public boolean containsAll(Collection<?> c) {
+         notNull(c);
+         for (Object i : c) {
+            if (!contains(i)) {
+               return false;
+            }
+         }
+         return true;
+      }
+
+      @Override
+      public Iterator<E> iterator() {
+         return Iterators.concat(set1.iterator(),
+                                 new DifferenceSet<>(set2, set1).iterator());
+      }
+
+      @Override
+      public int size() {
+         return Iterators.size(iterator());
+      }
+   }
+
 
 }//END OF Sets
