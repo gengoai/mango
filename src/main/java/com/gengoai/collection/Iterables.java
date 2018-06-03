@@ -2,52 +2,30 @@ package com.gengoai.collection;
 
 import com.gengoai.Validation;
 import com.gengoai.conversion.Cast;
+import com.gengoai.function.SerializableFunction;
 import com.gengoai.tuple.Tuple2;
 import com.gengoai.tuple.Tuples;
 import lombok.NonNull;
 
 import java.lang.reflect.Array;
 import java.util.*;
-import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
+import static com.gengoai.Validation.checkArgument;
 import static com.gengoai.Validation.notNull;
 import static com.gengoai.collection.Streams.asStream;
 
 /**
+ * The type Iterables.
+ *
  * @author David B. Bracewell
  */
 public final class Iterables {
 
    private Iterables() {
       throw new IllegalAccessError();
-   }
-
-
-   public static <I, O> Iterable<O> transform(final Iterable<? extends I> iterable,
-                                              final Function<? super I, ? extends O> function) {
-      return asIterable(Iterators.transform(notNull(iterable).iterator(), notNull(function)));
-   }
-
-   public static <T> T getOnlyElement(@NonNull Iterable<T> iterable) {
-      return Streams.asStream(iterable).findFirst().orElseThrow(NoSuchElementException::new);
-   }
-
-   public static <T> T get(@NonNull Iterable<T> iterable, int index) {
-      Validation.checkArgument(index >= 0, "index must be >= 0");
-      if (iterable instanceof List) {
-         List<T> list = Cast.as(iterable);
-         return list.get(index);
-      }
-      int i = 0;
-      for (T t : iterable) {
-         if (i == index) {
-            return t;
-         }
-         i++;
-      }
-      throw new IndexOutOfBoundsException();
    }
 
    /**
@@ -58,8 +36,10 @@ public final class Iterables {
     * @param itemClass the component type of the array
     * @return An Iterable wrapping the iterator.
     */
-   public static <T> Iterable<T> asIterable(@NonNull final Object array, @NonNull final Class<T> itemClass) {
-      Validation.checkArgument(array.getClass().isArray());
+   public static <T> Iterable<T> asIterable(final Object array, final Class<T> itemClass) {
+      notNull(array);
+      notNull(itemClass);
+      checkArgument(array.getClass().isArray());
       if (array.getClass().getComponentType().isPrimitive()) {
          return new PrimitiveArrayList<>(array, itemClass);
       }
@@ -87,17 +67,134 @@ public final class Iterables {
     * @return An Iterable wrapping the iterator.
     */
    public static <T> Iterable<T> asIterable(final Iterator<? extends T> iterator) {
-      if (iterator == null) {
-         return () -> Cast.as(Collections.emptyIterator());
-      }
+      notNull(iterator);
       return () -> Cast.as(iterator);
    }
 
-   public static <E extends Comparable<? super E>> Tuple2<Integer, E> maxIndexAndValue(@NonNull Iterable<? extends E> iterable) {
-      return maxIndexAndValue(iterable, Sorting.natural());
+   /**
+    * Concat iterable.
+    *
+    * @param <T>       the type parameter
+    * @param iterables the iterables
+    * @return the iterable
+    */
+   @SafeVarargs
+   public static <T> Iterable<T> concat(Iterable<? extends T>... iterables) {
+      final Iterator<? extends T>[] iterators = Streams.asStream(notNull(iterables))
+                                                       .toArray((IntFunction<Iterator<? extends T>[]>) Iterator[]::new);
+      return new IteratorIterable<>(() -> Iterators.concat(iterators));
    }
 
-   public static <E extends Comparable<? super E>> Tuple2<Integer, E> maxIndexAndValue(@NonNull Iterable<? extends E> iterable, @NonNull Comparator<? super E> comparator) {
+   /**
+    * Get optional.
+    *
+    * @param <T>      the type parameter
+    * @param iterable the iterable
+    * @param index    the index
+    * @return the optional
+    */
+   public static <T> Optional<T> get(Iterable<? extends T> iterable, int index) {
+      notNull(iterable);
+      checkArgument(index >= 0, "index must be >= 0");
+      if (iterable instanceof List) {
+         List<T> list = Cast.as(iterable);
+         if (index < list.size()) {
+            return Optional.ofNullable(list.get(index));
+         }
+         return Optional.empty();
+      }
+      return Iterators.get(iterable.iterator(), index);
+   }
+
+   /**
+    * Get t.
+    *
+    * @param <T>          the type parameter
+    * @param iterable     the iterable
+    * @param index        the index
+    * @param defaultValue the default value
+    * @return the t
+    */
+   public static <T> T get(Iterable<? extends T> iterable, int index, T defaultValue) {
+      return get(iterable, index).orElse(Cast.as(defaultValue));
+   }
+
+   /**
+    * <p>Returns the first item in an iterable. </p>
+    *
+    * @param <T>      the type of element in the iterable
+    * @param iterable the iterable
+    * @return An optional containing the first element in the iterable or null if none
+    */
+   public static <T> Optional<T> getFirst(Iterable<? extends T> iterable) {
+      return Iterators.next(notNull(iterable).iterator());
+   }
+
+   /**
+    * Gets first.
+    *
+    * @param <T>          the type parameter
+    * @param iterable     the iterable
+    * @param defaultValue the default value
+    * @return the first
+    */
+   public static <T> T getFirst(Iterable<T> iterable, T defaultValue) {
+      return Iterators.next(notNull(iterable).iterator(), defaultValue);
+   }
+
+   /**
+    * <p>Returns the last item in an iterable. </p>
+    *
+    * @param <T>      the type of element in the iterable
+    * @param iterable the iterable
+    * @return An optional containing the last element in the iterable or null if none
+    */
+   public static <T> Optional<T> getLast(Iterable<? extends T> iterable) {
+      notNull(iterable);
+      if (iterable instanceof List) {
+         List<T> list = Cast.as(iterable);
+         return Optional.ofNullable(list.get(list.size() - 1));
+      }
+      return Iterators.last(iterable.iterator());
+   }
+
+   /**
+    * <p>Returns the last item in an iterable. </p>
+    *
+    * @param <T>          the type of element in the iterable
+    * @param iterable     the iterable
+    * @param defaultValue default value if the list is empty
+    * @return An optional containing the last element in the iterable or null if none
+    */
+   public static <T> T getLast(Iterable<? extends T> iterable, T defaultValue) {
+      return getLast(notNull(iterable)).orElse(Cast.as(defaultValue));
+   }
+
+
+   /**
+    * Max index and value tuple 2.
+    *
+    * @param <E>      the type parameter
+    * @param iterable the iterable
+    * @return the tuple 2
+    */
+   public static <E extends Comparable<? super E>> Tuple2<Integer, E> maxIndexAndValue(Iterable<? extends E> iterable) {
+      return maxIndexAndValue(notNull(iterable), Sorting.natural());
+   }
+
+   /**
+    * Max index and value tuple 2.
+    *
+    * @param <E>        the type parameter
+    * @param iterable   the iterable
+    * @param comparator the comparator
+    * @return the tuple 2
+    */
+   public static <E extends Comparable<? super E>> Tuple2<Integer, E> maxIndexAndValue(Iterable<? extends E> iterable,
+                                                                                       Comparator<? super E> comparator
+                                                                                      ) {
+      notNull(iterable);
+      notNull(comparator);
       int index = -1;
       E max = null;
       int i = 0;
@@ -112,10 +209,25 @@ public final class Iterables {
       return Tuples.$(index, max);
    }
 
+   /**
+    * Min index and value tuple 2.
+    *
+    * @param <E>      the type parameter
+    * @param iterable the iterable
+    * @return the tuple 2
+    */
    public static <E extends Comparable<? super E>> Tuple2<Integer, E> minIndexAndValue(@NonNull Iterable<? extends E> iterable) {
       return minIndexAndValue(iterable, Sorting.natural());
    }
 
+   /**
+    * Min index and value tuple 2.
+    *
+    * @param <E>        the type parameter
+    * @param iterable   the iterable
+    * @param comparator the comparator
+    * @return the tuple 2
+    */
    public static <E extends Comparable<? super E>> Tuple2<Integer, E> minIndexAndValue(@NonNull Iterable<? extends E> iterable, @NonNull Comparator<? super E> comparator) {
       int index = -1;
       E min = null;
@@ -131,78 +243,57 @@ public final class Iterables {
       return Tuples.$(index, min);
    }
 
-   public static int size(@NonNull Iterable<?> iterable) {
+   /**
+    * Size int.
+    *
+    * @param iterable the iterable
+    * @return the int
+    */
+   public static int size(Iterable<?> iterable) {
+      notNull(iterable);
       if (iterable instanceof Collection) {
          return ((Collection) iterable).size();
       }
-      return (int) Streams.asStream(iterable).count();
-   }
-
-   /**
-    * <p>Returns the first item in an iterable. </p>
-    *
-    * @param <T>      the type of element in the iterable
-    * @param iterable the iterable
-    * @return An optional containing the first element in the iterable or null if none
-    */
-   public static <T> Optional<T> getFirst(@NonNull Iterable<? extends T> iterable) {
-      return Cast.as(Streams.asStream(iterable).findFirst());
-   }
-
-   public static <T> Iterable<T> concat(@NonNull Iterable<? extends T> iterable1, @NonNull Iterable<? extends T> iterable2) {
-      return Iterables.asIterable(Iterators.concat(iterable1.iterator(), iterable2.iterator()));
-   }
-
-   public static <T> T getFirst(@NonNull Iterable<T> iterable, T defaultValue) {
-      return Streams.asStream(iterable).findFirst().orElse(defaultValue);
-   }
-
-   public static <T> T getFirstOrNull(@NonNull Iterable<? extends T> iterable) {
-      return Streams.asStream(iterable).findFirst().orElse(null);
-   }
-
-   /**
-    * <p>Returns the last item in an iterable. </p>
-    *
-    * @param <T>      the type of element in the iterable
-    * @param iterable the iterable
-    * @return An optional containing the last element in the iterable or null if none
-    */
-   public static <T> Optional<T> getLast(@NonNull Iterable<? extends T> iterable) {
-      T o = null;
-      for (T t : iterable) {
-         o = t;
-      }
-      return Optional.ofNullable(o);
-   }
-
-   public static <T> T getLastOrNull(@NonNull Iterable<? extends T> iterable) {
-      return getLast(iterable).orElse(null);
+      return Iterators.size(iterable.iterator());
    }
 
    /**
     * <p>Sorts the items of an iterable returning an array of the sorted items.</p>
     *
-    * @param iterable The iterable instance to sort
     * @param <E>      The component type of the iterable which implements the <code>Comparable</code> interface.
+    * @param iterable The iterable instance to sort
     * @return A list of the items in the given iterable sorted using the items natural comparator.
     */
-   public static <E extends Comparable<? super E>> List<E> sort(@NonNull Iterable<E> iterable) {
-      return asStream(iterable).sorted().collect(Collectors.toList());
+   public static <E extends Comparable<? super E>> List<E> sort(Iterable<? extends E> iterable) {
+      return asStream(notNull(iterable)).sorted().collect(Collectors.toList());
    }
 
    /**
     * <p>Sorts the items of an iterable returning an array of the sorted items.</p>
     *
+    * @param <E>        The component type of the iterable.
     * @param iterable   The iterable instance to sort
     * @param comparator The comparator to use for sorting
-    * @param <E>        The component type of the iterable.
     * @return A list of the items in the given iterable sorted using the given comparator.
     */
-   public static <E> List<E> sort(@NonNull Iterable<E> iterable, @NonNull Comparator<? super E> comparator) {
-      return asStream(iterable).sorted(comparator).collect(Collectors.toList());
+   public static <E> List<E> sort(Iterable<? extends E> iterable, Comparator<? super E> comparator) {
+      return asStream(notNull(iterable)).sorted(notNull(comparator)).collect(Collectors.toList());
    }
 
+   /**
+    * Transform iterable.
+    *
+    * @param <I>      the type parameter
+    * @param <O>      the type parameter
+    * @param iterable the iterable
+    * @param function the function
+    * @return the iterable
+    */
+   public static <I, O> Iterable<O> transform(final Iterable<? extends I> iterable,
+                                              final SerializableFunction<? super I, ? extends O> function
+                                             ) {
+      return new IteratorIterable<>(() -> Iterators.transform(notNull(iterable).iterator(), notNull(function)));
+   }
 
    /**
     * <p>Zips (combines) two iterators together. For example, if iterable 1 contained [1,2,3] and iterable 2 contained
@@ -215,8 +306,34 @@ public final class Iterables {
     * @param iterable2 the iterator making up the value in the resulting entries
     * @return A stream of entries whose keys are taken from iterable1 and values are taken from iterable2
     */
-   public static <T, U> Stream<Map.Entry<T, U>> zip(@NonNull final Iterable<? extends T> iterable1, @NonNull final Iterable<? extends U> iterable2) {
-      return Iterators.zip(iterable1.iterator(), iterable2.iterator());
+   public static <T, U> Iterable<Map.Entry<T, U>> zip(final Iterable<? extends T> iterable1,
+                                                      final Iterable<? extends U> iterable2
+                                                     ) {
+      return new IteratorIterable<>(() -> Iterators.zip(notNull(iterable1).iterator(), notNull(iterable2).iterator()));
+   }
+
+   /**
+    * Creates pairs of entries from the given iterable and its index in the iterable (0 based)
+    *
+    * @param <T>      the iterator type parameter
+    * @param iterable the iterator
+    * @return the iterable with index values
+    */
+   public static <T> Iterable<Map.Entry<T, Integer>> zipWithIndex(final Iterable<? extends T> iterable) {
+      return new IteratorIterable<>(() -> Iterators.zipWithIndex(notNull(iterable).iterator()));
+   }
+
+   private static class IteratorIterable<T> implements Iterable<T> {
+      private final Supplier<Iterator<? extends T>> supplier;
+
+      private IteratorIterable(Supplier<Iterator<? extends T>> supplier) {
+         this.supplier = supplier;
+      }
+
+      @Override
+      public Iterator<T> iterator() {
+         return Cast.cast(supplier.get());
+      }
    }
 
 }//END OF Iterables

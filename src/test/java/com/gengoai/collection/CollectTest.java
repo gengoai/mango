@@ -26,7 +26,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -109,11 +108,10 @@ public class CollectTest {
                                      new AbstractMap.SimpleEntry<>("B", 2),
                                      new AbstractMap.SimpleEntry<>("C", 3)
                                     ),
-                          Iterables.zip(Arrays.asList("A", "B", "C"), Arrays.asList(1, 2, 3, 4))
-                                   .collect(Collectors.toList())
+                          Lists.asArrayList(Iterables.zip(Arrays.asList("A", "B", "C"), Arrays.asList(1, 2, 3, 4)))
                          );
 
-      assertEquals(0L, Iterables.zip(Collections.emptySet(), Arrays.asList(1, 2, 3, 4)).count());
+      assertEquals(0L, Iterables.size(Iterables.zip(Collections.emptySet(), Arrays.asList(1, 2, 3, 4))));
    }
 
 

@@ -6,6 +6,7 @@ import com.gengoai.function.SerializableFunction;
 import com.gengoai.function.SerializablePredicate;
 
 import java.util.*;
+import java.util.stream.IntStream;
 
 import static com.gengoai.Validation.notNull;
 import static com.gengoai.Validation.validate;
@@ -98,6 +99,36 @@ public final class Iterators {
          return Optional.ofNullable(iterator.next());
       }
       return Optional.empty();
+   }
+
+   /**
+    * Gets the last element of the iterator that would be returned by calling <code>next</code> until
+    * <code>hasNext</code> returns false if it exists  or the default value.
+    *
+    * @param <T>          the iterator element type parameter
+    * @param iterator     the iterator
+    * @param defaultValue the default value
+    * @return the last element in the iterator or the default value
+    */
+   public static <T> T last(Iterator<? extends T> iterator, T defaultValue) {
+      return last(iterator).orElse(Cast.as(defaultValue));
+   }
+
+   /**
+    * Gets the last element of the iterator that would be returned by calling <code>next</code> until
+    * <code>hasNext</code> returns false if it exists.
+    *
+    * @param <T>      the iterator element type parameter
+    * @param iterator the iterator
+    * @return the last element in the iterator
+    */
+   public static <T> Optional<T> last(Iterator<? extends T> iterator) {
+      notNull(iterator);
+      T value = null;
+      while (iterator.hasNext()) {
+         value = iterator.next();
+      }
+      return Optional.ofNullable(value);
    }
 
    /**
@@ -208,6 +239,19 @@ public final class Iterators {
                                                       final Iterator<? extends U> iterator2
                                                      ) {
       return new ZippedIterator<>(notNull(iterator1), notNull(iterator2));
+   }
+
+
+   /**
+    * Creates pairs of entries from the given iterator and its index in the iterator (0 based)
+    *
+    * @param <T>      the iterator type parameter
+    * @param iterator the iterator
+    * @return the iterator with index values
+    */
+   public static <T> Iterator<Map.Entry<T, Integer>> zipWithIndex(final Iterator<? extends T> iterator) {
+      return new ZippedIterator<>(notNull(iterator),
+                                  IntStream.iterate(0, i -> i + 1).boxed().iterator());
    }
 
    private static class PartitionedIterator<E> implements Iterator<List<E>> {

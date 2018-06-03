@@ -330,7 +330,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
 
    @Override
    public <U> MPairStream<T, U> zip(@NonNull MStream<U> other) {
-      return new LocalPairStream<>(Iterators.zip(iterator(), other.iterator()));
+      return new LocalPairStream<>(Streams.asStream(Iterators.zip(iterator(), other.iterator())));
    }
 
    @Override
