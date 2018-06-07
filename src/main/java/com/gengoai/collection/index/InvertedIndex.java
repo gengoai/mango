@@ -22,10 +22,10 @@
 package com.gengoai.collection.index;
 
 import com.gengoai.Validation;
+import com.gengoai.collection.HashSetMultimap;
+import com.gengoai.collection.Multimap;
 import com.gengoai.collection.Streams;
 import lombok.NonNull;
-import org.apache.commons.collections4.MultiValuedMap;
-import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 
 import java.io.Serializable;
 import java.util.*;
@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
  */
 public class InvertedIndex<DOCUMENT, KEY> implements Serializable {
    private static final long serialVersionUID = 1L;
-   private final MultiValuedMap<KEY, Integer> index;
+   private final Multimap<KEY, Integer> index;
    private final List<DOCUMENT> documents;
    private final Function<? super DOCUMENT, Collection<KEY>> documentMapper;
 
@@ -52,7 +52,7 @@ public class InvertedIndex<DOCUMENT, KEY> implements Serializable {
     * @param documentMapper the document mapper
     */
    public InvertedIndex(@NonNull Function<? super DOCUMENT, Collection<KEY>> documentMapper) {
-      this.index = new HashSetValuedHashMap<>();
+      this.index = new HashSetMultimap<>();
       this.documents = new ArrayList<>();
       this.documentMapper = Validation.notNull(documentMapper);
    }

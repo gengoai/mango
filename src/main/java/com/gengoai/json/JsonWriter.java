@@ -23,13 +23,13 @@ package com.gengoai.json;
 import com.gengoai.EnumValue;
 import com.gengoai.Validation;
 import com.gengoai.collection.Iterables;
+import com.gengoai.collection.Multimap;
 import com.gengoai.collection.counter.Counter;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Convert;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.string.StringUtils;
 import lombok.NonNull;
-import org.apache.commons.collections4.MultiValuedMap;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -142,7 +142,8 @@ public final class JsonWriter implements AutoCloseable, Closeable {
 
    private void checkAndPop(JsonTokenType required) throws IOException {
       if (writeStack.peek() != required) {
-         throw new IOException("Ill-formed JSON: " + required + " is required, but have the following unclosed: " + writeStack);
+         throw new IOException(
+            "Ill-formed JSON: " + required + " is required, but have the following unclosed: " + writeStack);
       }
       writeStack.pop();
    }
@@ -227,7 +228,7 @@ public final class JsonWriter implements AutoCloseable, Closeable {
     */
    public JsonWriter nullValue() throws IOException {
       Validation.checkArgument(inArray() || writeStack.peek() == JsonTokenType.NAME,
-                                  "Expecting an array or a name, but found " + writeStack.peek());
+                               "Expecting an array or a name, but found " + writeStack.peek());
       popIf(JsonTokenType.NAME);
       writer.nullValue();
       return this;
@@ -354,7 +355,7 @@ public final class JsonWriter implements AutoCloseable, Closeable {
     */
    public JsonWriter value(boolean value) throws IOException {
       Validation.checkArgument(inArray() || writeStack.peek() == JsonTokenType.NAME,
-                                  "Expecting an array or a name, but found " + writeStack.peek());
+                               "Expecting an array or a name, but found " + writeStack.peek());
       popIf(JsonTokenType.NAME);
       writer.value(value);
       return this;
@@ -369,7 +370,7 @@ public final class JsonWriter implements AutoCloseable, Closeable {
     */
    public JsonWriter value(@NonNull Iterable<?> value) throws IOException {
       Validation.checkArgument(inArray() || writeStack.peek() == JsonTokenType.NAME,
-                                  "Expecting an array or a name, but found " + writeStack.peek());
+                               "Expecting an array or a name, but found " + writeStack.peek());
       popIf(JsonTokenType.NAME);
       beginArray();
       for (Object o : value) {
@@ -388,7 +389,7 @@ public final class JsonWriter implements AutoCloseable, Closeable {
     */
    public JsonWriter value(@NonNull Iterator<?> value) throws IOException {
       Validation.checkArgument(inArray() || writeStack.peek() == JsonTokenType.NAME,
-                                  "Expecting an array or a name, but found " + writeStack.peek());
+                               "Expecting an array or a name, but found " + writeStack.peek());
       popIf(JsonTokenType.NAME);
       return value(Iterables.asIterable(value));
    }
@@ -424,7 +425,7 @@ public final class JsonWriter implements AutoCloseable, Closeable {
     */
    public JsonWriter value(Number number) throws IOException {
       Validation.checkArgument(inArray() || writeStack.peek() == JsonTokenType.NAME,
-                                  "Expecting an array or a name, but found " + writeStack.peek());
+                               "Expecting an array or a name, but found " + writeStack.peek());
       popIf(JsonTokenType.NAME);
       writer.value(number);
       return this;
@@ -451,7 +452,7 @@ public final class JsonWriter implements AutoCloseable, Closeable {
     */
    public JsonWriter value(Object value) throws IOException {
       Validation.checkArgument(inArray() || writeStack.peek() == JsonTokenType.NAME,
-                                  "Expecting an array or a name, but found " + writeStack.peek());
+                               "Expecting an array or a name, but found " + writeStack.peek());
       writeObject(value);
       popIf(JsonTokenType.NAME);
       return this;
@@ -502,8 +503,8 @@ public final class JsonWriter implements AutoCloseable, Closeable {
          value(Cast.<Map<String, ?>>as(object));
       } else if (object.getClass().isArray()) {
          value(Cast.<Object[]>as(object));
-      } else if (object instanceof MultiValuedMap) {
-         value(Cast.<MultiValuedMap<String, ?>>as(object).asMap());
+      } else if (object instanceof Multimap) {
+         value(Cast.<Multimap<String, ?>>as(object).asMap());
       } else if (object instanceof Counter) {
          value(Cast.<Counter<String>>as(object).asMap());
       } else if (object instanceof Iterable) {
