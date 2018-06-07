@@ -25,10 +25,18 @@ public final class Iterables {
       throw new IllegalAccessError();
    }
 
-   public static <T> Iterable<T> flatten(Iterable<? extends Iterable<? extends T>> iterable){
-     final SerializableSupplier<Iterator<T>> supplier = () ->  Iterators.flatten(Iterators.transform(iterable.iterator(),
-                                                                                                     Iterable::iterator));
-     return new IteratorIterable<T>(Cast.as(supplier));
+   /**
+    * Flattens an iterable of iterables into a single iterable view.
+    *
+    * @param <T>      the iterable element type parameter
+    * @param iterable the iterable to flatten
+    * @return the flattened iterable
+    */
+   public static <T> Iterable<T> flatten(Iterable<? extends Iterable<? extends T>> iterable) {
+      final SerializableSupplier<Iterator<T>> supplier = () -> Iterators.flatten(
+         Iterators.transform(iterable.iterator(),
+                             Iterable::iterator));
+      return new IteratorIterable<T>(Cast.as(supplier));
    }
 
 
@@ -76,11 +84,11 @@ public final class Iterables {
    }
 
    /**
-    * Concat iterable.
+    * Concatenates iterables together
     *
-    * @param <T>       the type parameter
-    * @param iterables the iterables
-    * @return the iterable
+    * @param <T>       the iterables element type parameter
+    * @param iterables the iterables to concatenate
+    * @return the concatenated iterable
     */
    @SafeVarargs
    public static <T> Iterable<T> concat(Iterable<? extends T>... iterables) {
@@ -88,14 +96,14 @@ public final class Iterables {
    }
 
 
-
    /**
-    * Get optional.
+    * Gets the element of the iterable at the given index using either <code>get</code> if the iterable is a list or by
+    * iterating <code>index</code> times.
     *
-    * @param <T>      the type parameter
+    * @param <T>      the iterable element type parameter
     * @param iterable the iterable
-    * @param index    the index
-    * @return the optional
+    * @param index    the index of the element to retrieve
+    * @return Optional of the element or empty when the index is out of bounds
     */
    public static <T> Optional<T> get(Iterable<? extends T> iterable, int index) {
       notNull(iterable);
@@ -111,36 +119,37 @@ public final class Iterables {
    }
 
    /**
-    * Get t.
+    * Gets the element of the iterable at the given index using either <code>get</code> if the iterable is a list or by
+    * iterating <code>index</code> times.
     *
-    * @param <T>          the type parameter
+    * @param <T>          the iterable element type parameter
     * @param iterable     the iterable
-    * @param index        the index
-    * @param defaultValue the default value
-    * @return the t
+    * @param index        the index of the element to retrieve
+    * @param defaultValue value to return when the element is null or index is out of bounds
+    * @return element value or default value
     */
    public static <T> T get(Iterable<? extends T> iterable, int index, T defaultValue) {
       return get(iterable, index).orElse(Cast.as(defaultValue));
    }
 
    /**
-    * <p>Returns the first item in an iterable. </p>
+    * <p>Returns the first item in an iterable.</p>
     *
     * @param <T>      the type of element in the iterable
     * @param iterable the iterable
-    * @return An optional containing the first element in the iterable or null if none
+    * @return An optional containing the first element in the iterable if available
     */
    public static <T> Optional<T> getFirst(Iterable<? extends T> iterable) {
       return Iterators.next(notNull(iterable).iterator());
    }
 
    /**
-    * Gets first.
+    * Gets the first element of the iterable.
     *
-    * @param <T>          the type parameter
+    * @param <T>          the iterable element type parameter
     * @param iterable     the iterable
     * @param defaultValue the default value
-    * @return the first
+    * @return the first element of the iterable or the default value
     */
    public static <T> T getFirst(Iterable<T> iterable, T defaultValue) {
       return Iterators.next(notNull(iterable).iterator(), defaultValue);
@@ -285,13 +294,13 @@ public final class Iterables {
    }
 
    /**
-    * Transform iterable.
+    * Transforms the elements in the iterable
     *
-    * @param <I>      the type parameter
-    * @param <O>      the type parameter
-    * @param iterable the iterable
-    * @param function the function
-    * @return the iterable
+    * @param <I>      the iterable element type parameter
+    * @param <O>      the transformed element type parameter
+    * @param iterable the iterable to transform
+    * @param function the function to perform transform
+    * @return the transformed iterable
     */
    public static <I, O> Iterable<O> transform(final Iterable<? extends I> iterable,
                                               final SerializableFunction<? super I, ? extends O> function

@@ -46,9 +46,9 @@ public final class Iterators {
    }
 
    /**
-    * Concatenates iterators together
+    * Concatenates iterables together
     *
-    * @param <T>       the iterator element type parameter
+    * @param <T>       the iterables element type parameter
     * @param iterables the iterables to concatenate
     * @return the concatenated iterator
     */
