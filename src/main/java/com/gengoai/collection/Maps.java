@@ -102,10 +102,12 @@ public final class Maps {
       return map;
    }
 
+   @SafeVarargs
    public static <K, V> Map<K, V> hashMapOf(Map.Entry<? extends K, ? extends V>... objects) {
       return mapOf(HashMap::new, objects);
    }
 
+   @SafeVarargs
    public static <K, V> Map<K, V> sortedMapOf(Map.Entry<? extends K, ? extends V>... objects) {
       return mapOf(TreeMap::new, objects);
    }
