@@ -21,7 +21,9 @@
 
 package com.gengoai;
 
+import com.gengoai.collection.Streams;
 import com.gengoai.logging.Logger;
+import com.gengoai.string.StringUtils;
 
 import java.text.Collator;
 import java.text.DateFormat;
@@ -30,6 +32,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 /**
  * <p>Enumeration of world languages with helpful information on whether or not the language is Whitespace delimited
@@ -61,7 +64,6 @@ public enum Language {
       public Locale asLocale() {
          return Locale.JAPAN;
       }
-
    },
    /**
     * Chinese.
@@ -762,6 +764,21 @@ public enum Language {
          }
       }
       return locales;
+   }
+
+   public String join(String[] words) {
+      return Streams.asStream(words)
+                    .collect(Collectors.joining((usesWhitespace() ? " " : StringUtils.EMPTY)));
+   }
+
+   public String join(CharSequence[] words) {
+      return Streams.asStream(words)
+                    .collect(Collectors.joining((usesWhitespace() ? " " : StringUtils.EMPTY)));
+   }
+
+   public String join(Iterable<? extends CharSequence> words) {
+      return Streams.asStream(words)
+                    .collect(Collectors.joining((usesWhitespace() ? " " : StringUtils.EMPTY)));
    }
 
    /**

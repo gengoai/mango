@@ -191,7 +191,7 @@ public class TableFormatter implements Serializable {
 
       if (!StringUtils.isNullOrBlank(title)) {
          stream.println(
-               StringUtils.center(title, (longestCell * longestRow) + longestRow + 1)
+            StringUtils.center(title, (longestCell * longestRow) + longestRow + 1)
                        );
       }
 
@@ -214,7 +214,7 @@ public class TableFormatter implements Serializable {
       }
 
       if (!footer.isEmpty()) {
-         stream.println(bar(StringUtils.repeat("═",longestCell), "╞", "╡", "╪", header.size()));
+         stream.println(bar(StringUtils.repeat("═", longestCell), "╞", "╡", "╪", header.size()));
          for (int r = 0; r < footer.size(); r++) {
             printRow(stream, footer.get(r), longestCell, longestRow);
             if (r + 1 < footer.size()) {

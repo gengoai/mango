@@ -22,7 +22,6 @@
 package com.gengoai;
 
 import com.gengoai.collection.Streams;
-import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -37,10 +36,29 @@ import java.util.stream.Collectors;
  * @param <E> the type parameter
  * @author David B. Bracewell
  */
-@EqualsAndHashCode
 public final class Interner<E> implements Serializable {
    private static final long serialVersionUID = 1L;
    private volatile WeakHashMap<E, E> map = new WeakHashMap<>();
+
+   @Override
+   public boolean equals(Object o) {
+      if (o == this) return true;
+      if (!(o instanceof Interner)) return false;
+      final Interner other = (Interner) o;
+      final Object this$map = this.map;
+      final Object other$map = other.map;
+      if (this$map == null ? other$map != null : !this$map.equals(other$map)) return false;
+      return true;
+   }
+
+   @Override
+   public int hashCode() {
+      final int PRIME = 59;
+      int result = 1;
+      final Object $map = this.map;
+      result = result * PRIME + ($map == null ? 43 : $map.hashCode());
+      return result;
+   }
 
    /**
     * <p>Adds or gets the canonical version of the incoming object.</p>
@@ -64,11 +82,6 @@ public final class Interner<E> implements Serializable {
       return Streams.asStream(iterable).map(this::intern).collect(Collectors.toList());
    }
 
-   @Override
-   public String toString() {
-      return "Interner{size=" + size() + "}";
-   }
-
    /**
     * <p>The number of items that have been interned.</p>
     *
@@ -76,6 +89,11 @@ public final class Interner<E> implements Serializable {
     */
    public int size() {
       return map.size();
+   }
+
+   @Override
+   public String toString() {
+      return "Interner{size=" + size() + "}";
    }
 
 }//END OF Interner

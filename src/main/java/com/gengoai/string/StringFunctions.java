@@ -137,8 +137,7 @@ public enum StringFunctions implements SerializableFunction<String, String> {
 
 
    /**
-    * Creates a function that performs a regular expression replacement on a
-    * string
+    * Creates a function that performs a regular expression replacement on a string
     *
     * @param pattern     The regex pattern
     * @param replacement The replacement text
@@ -149,8 +148,7 @@ public enum StringFunctions implements SerializableFunction<String, String> {
    }
 
    /**
-    * Creates a function that performs a regular expression replacement on a
-    * string
+    * Creates a function that performs a regular expression replacement on a string
     *
     * @param pattern     The regex pattern
     * @param replacement The replacement text
