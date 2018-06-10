@@ -9,6 +9,8 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.gengoai.tuple.Tuples.$;
+
 /**
  * <p>A basic <a href="https://en.wikipedia.org/wiki/Trie">Trie</a> implementation that uses hashmaps to store its child
  * nodes. The {@link #find(String, CharMatcher)} method provides functionality to find all elements of the trie in the
@@ -337,7 +339,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
       if (StringUtils.isNullOrBlank(string)) {
          return Collections.emptyMap();
       } else if (containsKey(string)) {
-         return Maps.map(string, 0);
+         return Maps.hashMapOf($(string, 0));
       }
       Map<String, Integer> results = new HashMap<>();
       int[] current = new int[string.length() + 1];

@@ -32,6 +32,7 @@ import java.io.StringReader;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import static com.gengoai.tuple.Tuples.$;
 import static org.junit.Assert.*;
 
 public class CommonTypeConverterTest {
@@ -89,7 +90,7 @@ public class CommonTypeConverterTest {
       assertEquals("STRING", Convert.convert(new StringReader("STRING"), String.class));
 
       //Other
-      assertEquals("{1=3}", Convert.convert(Maps.map(1, 3), String.class));
+      assertEquals("{1=3}", Convert.convert(Maps.hashMapOf($(1, 3)), String.class));
 
       assertEquals("[S, TRING]", Convert.convert(new String[]{"S", "TRING"}, String.class));
 
@@ -108,7 +109,7 @@ public class CommonTypeConverterTest {
       assertEquals("STRING", Convert.convert("STRING", StringBuilder.class).toString());
 
       //Other
-      assertEquals("{1=3}", Convert.convert(Maps.map(1, 3), StringBuilder.class).toString());
+      assertEquals("{1=3}", Convert.convert(Maps.hashMapOf($(1, 3)), StringBuilder.class).toString());
 
       //Test val version
       assertEquals("STRING", Val.of(new char[]{'S', 'T', 'R', 'I', 'N', 'G'}).as(StringBuilder.class).toString());

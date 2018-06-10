@@ -93,7 +93,7 @@ public class MapConverter<K, V, T extends Map<K, V>> implements Function<Object,
       }
 
       try {
-         return Cast.as(Maps.fillMap(map, Convert.convert(obj, Iterable.class), keyConverter, valueConverter));
+//         return Cast.as(Maps.fillMap(map, Convert.convert(obj, Iterable.class), keyConverter, valueConverter));
       } catch (Exception e) {
          //ignore
       }

@@ -22,17 +22,17 @@
 package com.gengoai.collection.counter;
 
 import com.gengoai.Math2;
-import com.gengoai.collection.Sets;
 import com.gengoai.collection.Lists;
-import com.gengoai.collection.Maps;
+import com.gengoai.collection.Sets;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.io.resource.StringResource;
-import com.gengoai.tuple.Tuples;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.*;
 
+import static com.gengoai.collection.Maps.hashMapOf;
+import static com.gengoai.tuple.Tuples.$;
 import static org.junit.Assert.*;
 
 /**
@@ -45,7 +45,7 @@ public abstract class BaseCounterTest {
    }
 
    Counter<String> getCounter2() {
-      return Counters.newCounter(Maps.map("A", 4.0, "B", 5.0, "C", 1.0));
+      return Counters.newCounter(hashMapOf($("A", 4.0), $("B", 5.0), $("C", 1.0)));
    }
 
    Counter<String> getCounter3() {
@@ -339,16 +339,16 @@ public abstract class BaseCounterTest {
       counter.entries().removeIf(e -> e.getValue() >= 5);
       assertEquals(5, counter.sum(), 0);
 
-      counter.entries().removeAll(Collections.singleton(Tuples.$("A", 4.0)));
+      counter.entries().removeAll(Collections.singleton($("A", 4.0)));
 
       assertEquals(1, counter.sum(), 0);
 
-      counter.entries().remove(Tuples.$("C", 1.0));
+      counter.entries().remove($("C", 1.0));
       assertEquals(0, counter.sum(), 0);
 
 
       counter = getCounter2();
-      counter.entries().retainAll(Collections.singleton(Tuples.$("A", 4.0)));
+      counter.entries().retainAll(Collections.singleton($("A", 4.0)));
       assertEquals(4, counter.sum(), 0);
 
       Iterator<Map.Entry<String, Double>> it = counter.entries().iterator();

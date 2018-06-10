@@ -8,7 +8,9 @@ import org.junit.Test;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
+import static com.gengoai.collection.Maps.hashMapOf;
 import static org.junit.Assert.*;
 
 /**
@@ -19,7 +21,8 @@ public abstract class BaseMPairStreamTest {
 
    @Test
    public void filter() throws Exception {
-      Map.Entry<String, String> g = sc.pairStream(Maps.map("C", "D", "A", "B"))
+      Map.Entry<String, String> g = sc.pairStream(hashMapOf($("C", "D"),
+                                                            $("A", "B")))
                                       .filter((k, v) -> k.equals("A"))
                                       .collectAsList().get(0);
       assertEquals("A", g.getKey());
@@ -32,9 +35,13 @@ public abstract class BaseMPairStreamTest {
       assertEquals("D", g.getValue());
    }
 
+   private <V, K> Supplier<? extends Map<K, V>> $(String c, String d) {
+   }
+
    @Test
    public void filterByKey() throws Exception {
-      Map.Entry<String, String> g = sc.pairStream(Maps.map("C", "D", "A", "B"))
+      Map.Entry<String, String> g = sc.pairStream(hashMapOf($("C", "D"),
+                                                            $("A", "B")))
                                       .filterByKey(s -> s.equals("A"))
                                       .collectAsList().get(0);
       assertEquals("A", g.getKey());
@@ -43,7 +50,8 @@ public abstract class BaseMPairStreamTest {
 
    @Test
    public void filterByValue() throws Exception {
-      Map.Entry<String, String> g = sc.pairStream(Maps.map("C", "D", "A", "B"))
+      Map.Entry<String, String> g = sc.pairStream(hashMapOf($("C", "D"),
+                                                            $("A", "B")))
                                       .filterByValue(s -> s.equals("B"))
                                       .collectAsList().get(0);
       assertEquals("A", g.getKey());
@@ -53,8 +61,8 @@ public abstract class BaseMPairStreamTest {
 
    @Test
    public void join() throws Exception {
-      MPairStream<String, Integer> s1 = sc.pairStream(Maps.map("A", 1, "B", 2, "C", 3));
-      MPairStream<String, Integer> s2 = sc.pairStream(Maps.map("A", 4, "B", 1));
+      MPairStream<String, Integer> s1 = sc.pairStream(hashMapOf($("A", 1), $("B", 2), $("C", 3)));
+      MPairStream<String, Integer> s2 = sc.pairStream(hashMapOf($("A", 4), $("B", 1)));
       Map<String, Map.Entry<Integer, Integer>> joined = s1.join(s2).collectAsMap();
       assertEquals(1, joined.get("A").getKey().intValue());
       assertEquals(4, joined.get("A").getValue().intValue());

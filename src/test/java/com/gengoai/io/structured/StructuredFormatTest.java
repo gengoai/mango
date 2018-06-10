@@ -22,7 +22,6 @@
 package com.gengoai.io.structured;
 
 import com.gengoai.collection.Lists;
-import com.gengoai.collection.Maps;
 import com.gengoai.conversion.Val;
 import com.gengoai.io.Resources;
 import com.gengoai.json.Json;
@@ -30,6 +29,8 @@ import org.junit.Test;
 
 import java.util.Map;
 
+import static com.gengoai.collection.Maps.hashMapOf;
+import static com.gengoai.tuple.Tuples.$;
 import static org.junit.Assert.*;
 
 /**
@@ -39,11 +40,11 @@ public class StructuredFormatTest {
 
    @Test
    public void loadAndDump() throws Exception {
-      Map<String, Object> map = Maps.map("A", 1.0,
-                                         "B", 2.0,
-                                         "C", 3.0,
-                                         "D", Lists.list(1.0, 2.0, 3.0),
-                                         "E", Maps.map("A", "B"));
+      Map<String, Object> map = hashMapOf($("A", 1.0),
+                                          $("B", 2.0),
+                                          $("C", 3.0),
+                                          $("D", Lists.list(1.0, 2.0, 3.0)),
+                                          $("E", hashMapOf($("A", "B"))));
 
       String json = Json.dumps(map);
       Map<String, Val> jsonMap = Json.loads(Resources.fromString(json));

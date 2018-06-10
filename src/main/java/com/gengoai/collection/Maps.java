@@ -21,15 +21,14 @@
 
 package com.gengoai.collection;
 
-import com.gengoai.Validation;
 import com.gengoai.conversion.Convert;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVReader;
 import com.gengoai.io.CSVWriter;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.reflection.Reflect;
+import com.gengoai.reflection.ReflectionException;
 import com.gengoai.string.StringUtils;
-import com.gengoai.tuple.Tuples;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
@@ -40,6 +39,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import static com.gengoai.tuple.Tuples.$;
 
 /**
  * <p>Convenience methods for creating, reading, and manipulating maps.</p>
@@ -52,69 +53,66 @@ public final class Maps {
       throw new IllegalAccessError();
    }
 
+   public static void main(String[] args) throws Exception {
+      Map<String, String> m = mapOf(HashMap::new,
+                                    $("A", "B"),
+                                    $("C", "D"),
+                                    $("E", "F")
+                                   );
+      System.out.println(m);
+      System.out.println(Maps.maxEntry(m));
+
+   }
 
    public static <K, V> Builder<K, V> builder() {
-      return new Builder<>(HashMap::new);
+      return new Builder<>();
    }
 
    public static class Builder<K, V> {
-      private final Map<K, V> map;
-
-      public Builder(Supplier<? extends Map<K, V>> mapSupplier) {
-         this.map = mapSupplier.get();
-      }
+      private final List<Map.Entry<K, V>> entries = new ArrayList<>();
 
       public Builder<K, V> put(K key, V value) {
-         this.map.put(key, value);
+         entries.add($(key, value));
          return this;
       }
 
       public Builder<K, V> putAll(Map<? extends K, ? extends V> other) {
-         this.map.putAll(other);
+         other.forEach(this::put);
          return this;
       }
 
       public Map<K, V> build() {
+         return build(HashMap::new);
+      }
+
+      public Map<K, V> build(Supplier<? extends Map<K, V>> mapSupplier) {
+         Map<K, V> map = mapSupplier.get();
+         entries.forEach(entry -> map.put(entry.getKey(), entry.getValue()));
          return map;
       }
+
    }
 
-   @SuppressWarnings("unchecked")
-   public static <K, V> Map<K, V> mapOf(Supplier<? extends Map<K, V>> supplier, Object... objects) {
-      Validation.checkArgument(objects.length % 2 == 0, "Must have a value for each key");
+   @SafeVarargs
+   public static <K, V> Map<K, V> mapOf(Supplier<? extends Map<K, V>> supplier, Map.Entry<? extends K, ? extends V>... objects) {
       Map<K, V> map = supplier.get();
-      for (int i = 0; i < objects.length; i += 2) {
-         map.put((K) objects[i], (V) objects[i + 1]);
+      for (Map.Entry<? extends K, ? extends V> entry : objects) {
+         map.put(entry.getKey(), entry.getValue());
       }
       return map;
    }
 
-   public static <K, V> Map<K, V> mapOf(Object... objects) {
+   public static <K, V> Map<K, V> hashMapOf(Map.Entry<? extends K, ? extends V>... objects) {
       return mapOf(HashMap::new, objects);
    }
 
-   public static <K, V> Map<K, V> sortedMapOf(Object... objects) {
+   public static <K, V> Map<K, V> sortedMapOf(Map.Entry<? extends K, ? extends V>... objects) {
       return mapOf(TreeMap::new, objects);
    }
 
-   /**
-    * Creates a new HashMap containing the given entries.
-    *
-    * @param <K>     the key type
-    * @param <V>     the value type
-    * @param entries the entries to initialize the map with
-    * @return the map
-    */
-   @SafeVarargs
-   @SuppressWarnings("varargs")
-   public static <K, V> Map<K, V> asMap(Map.Entry<K, V>... entries) {
-      return createMap(HashMap::new, entries);
-   }
-
    public static <K, V> Map<K, V> asMap(Iterable<? extends K> keys, Function<? super K, ? extends V> valueMapper) {
-      Validation.notNull(valueMapper);
       Map<K, V> map = new HashMap<>();
-      Validation.notNull(keys).forEach(key -> map.put(key, valueMapper.apply(key)));
+      keys.forEach(key -> map.put(key, valueMapper.apply(key)));
       return map;
    }
 
@@ -126,8 +124,7 @@ public final class Maps {
     * @param clazz the map class
     * @return An instance of the specified map class
     */
-   @SneakyThrows
-   public static <K, V> Map<K, V> create(@NonNull Class<? extends Map> clazz) {
+   public static <K, V> Map<K, V> create(Class<? extends Map> clazz) {
       if (clazz == Map.class || clazz == HashMap.class) {
          return new HashMap<>();
       } else if (clazz == LinkedHashMap.class) {
@@ -137,627 +134,40 @@ public final class Maps {
       } else if (clazz == ConcurrentMap.class || clazz == ConcurrentHashMap.class) {
          return new ConcurrentHashMap<>();
       }
-      return Reflect.onClass(clazz).create().get();
-   }
-
-   /**
-    * Creates a new map with the given keys and values
-    *
-    * @param <K>         the key type
-    * @param <V>         the value type
-    * @param mapSupplier the map supplier
-    * @param entries     the entries
-    * @return the map
-    */
-   @SafeVarargs
-   @SuppressWarnings("varargs")
-   public static <K, V> Map<K, V> createMap(@NonNull Supplier<Map<K, V>> mapSupplier, Map.Entry<K, V>... entries) {
-      if (entries == null) {
-         return Collections.emptyMap();
+      try {
+         return Reflect.onClass(clazz).create().get();
+      } catch (ReflectionException e) {
+         throw new RuntimeException(e);
       }
-      final Map<K, V> map = mapSupplier.get();
-      Streams.asStream(entries).forEach(e -> map.put(e.getKey(), e.getValue()));
-      return map;
    }
 
-   /**
-    * <p>Fills a map with an iterable converting the even elements of the iterable to the keys and the odd elements to
-    * the values using the given key and value converters. A null or empty iterable results in an empty map. </p>
-    *
-    * @param <K>            The key type
-    * @param <V>            The value type
-    * @param map            The map to fill
-    * @param iterable       The iterable to convert into a map
-    * @param keyConverter   The converter to use for the keys (even elements)
-    * @param valueConverter The converter to use for the values (odd elements)
-    * @return The map.
-    */
-   public static <K, V> Map<K, V> fillMap(@NonNull Map<K, V> map, Iterable<?> iterable, @NonNull Function<Object, K> keyConverter, @NonNull Function<Object, V> valueConverter) {
-      if (iterable == null) {
-         return map;
-      }
-      for (Iterator<?> iterator = iterable.iterator(); iterator.hasNext(); ) {
-         Object key = iterator.next();
-         if (!iterator.hasNext()) {
-            throw new IllegalArgumentException("Size of iterable must be divisible by 2");
-         }
-         Object value = iterator.next();
-         map.put(keyConverter.apply(key), valueConverter.apply(value));
-      }
-      return map;
-   }
 
-   /**
-    * Creates a new LinkedHashMap using the given entries
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @return the map
-    */
-   public static <K, V> Map<K, V> linkedHashMap(K key1, V value1) {
-      return createMap(LinkedHashMap::new, Tuples.$(key1, value1));
-   }
-
-   /**
-    * Creates a new LinkedHashMap using the given entries
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @param key2   the key 2
-    * @param value2 the value 2
-    * @return the map
-    */
-   public static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2) {
-      return createMap(LinkedHashMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2));
-   }
-
-   /**
-    * Creates a new LinkedHashMap using the given entries
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @param key2   the key 2
-    * @param value2 the value 2
-    * @param key3   the key 3
-    * @param value3 the value 3
-    * @return the map
-    */
-   public static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3) {
-      return createMap(LinkedHashMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3));
-   }
-
-   /**
-    * Creates a new LinkedHashMap using the given entries
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @param key2   the key 2
-    * @param value2 the value 2
-    * @param key3   the key 3
-    * @param value3 the value 3
-    * @param key4   the key 4
-    * @param value4 the value 4
-    * @return the map
-    */
-   public static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4) {
-      return createMap(LinkedHashMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3),
-                       Tuples
-                          .$(key4, value4));
-   }
-
-   /**
-    * Creates a new LinkedHashMap using the given entries
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @param key2   the key 2
-    * @param value2 the value 2
-    * @param key3   the key 3
-    * @param value3 the value 3
-    * @param key4   the key 4
-    * @param value4 the value 4
-    * @param key5   the key 5
-    * @param value5 the value 5
-    * @return the map
-    */
-   public static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5) {
-      return createMap(LinkedHashMap::new,
-                       Tuples.$(key1, value1),
-                       Tuples.$(key2, value2),
-                       Tuples.$(key3, value3),
-                       Tuples.$(key4, value4),
-                       Tuples.$(key5, value5)
-                      );
-   }
-
-   /**
-    * Creates a new LinkedHashMap using the given entries
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @param key2   the key 2
-    * @param value2 the value 2
-    * @param key3   the key 3
-    * @param value3 the value 3
-    * @param key4   the key 4
-    * @param value4 the value 4
-    * @param key5   the key 5
-    * @param value5 the value 5
-    * @param key6   the key 6
-    * @param value6 the value 6
-    * @return the map
-    */
-   public static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6) {
-      return createMap(LinkedHashMap::new,
-                       Tuples.$(key1, value1),
-                       Tuples.$(key2, value2),
-                       Tuples.$(key3, value3),
-                       Tuples.$(key4, value4),
-                       Tuples.$(key5, value5),
-                       Tuples.$(key6, value6)
-                      );
-   }
-
-   /**
-    * Creates a new LinkedHashMap using the given entries
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @param key2   the key 2
-    * @param value2 the value 2
-    * @param key3   the key 3
-    * @param value3 the value 3
-    * @param key4   the key 4
-    * @param value4 the value 4
-    * @param key5   the key 5
-    * @param value5 the value 5
-    * @param key6   the key 6
-    * @param value6 the value 6
-    * @param key7   the key 7
-    * @param value7 the value 7
-    * @return the map
-    */
-   public static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7) {
-      return createMap(LinkedHashMap::new,
-                       Tuples.$(key1, value1),
-                       Tuples.$(key2, value2),
-                       Tuples.$(key3, value3),
-                       Tuples.$(key4, value4),
-                       Tuples.$(key5, value5),
-                       Tuples.$(key6, value6),
-                       Tuples.$(key7, value7)
-                      );
-   }
-
-   /**
-    * Creates a new LinkedHashMap using the given entries
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @param key2   the key 2
-    * @param value2 the value 2
-    * @param key3   the key 3
-    * @param value3 the value 3
-    * @param key4   the key 4
-    * @param value4 the value 4
-    * @param key5   the key 5
-    * @param value5 the value 5
-    * @param key6   the key 6
-    * @param value6 the value 6
-    * @param key7   the key 7
-    * @param value7 the value 7
-    * @param key8   the key 8
-    * @param value8 the value 8
-    * @return the map
-    */
-   public static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8) {
-      return createMap(LinkedHashMap::new,
-                       Tuples.$(key1, value1),
-                       Tuples.$(key2, value2),
-                       Tuples.$(key3, value3),
-                       Tuples.$(key4, value4),
-                       Tuples.$(key5, value5),
-                       Tuples.$(key6, value6),
-                       Tuples.$(key7, value7),
-                       Tuples.$(key8, value8)
-                      );
-   }
-
-   /**
-    * Creates a new LinkedHashMap using the given entries
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @param key2   the key 2
-    * @param value2 the value 2
-    * @param key3   the key 3
-    * @param value3 the value 3
-    * @param key4   the key 4
-    * @param value4 the value 4
-    * @param key5   the key 5
-    * @param value5 the value 5
-    * @param key6   the key 6
-    * @param value6 the value 6
-    * @param key7   the key 7
-    * @param value7 the value 7
-    * @param key8   the key 8
-    * @param value8 the value 8
-    * @param key9   the key 9
-    * @param value9 the value 9
-    * @return the map
-    */
-   public static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8, K key9, V value9) {
-      return createMap(LinkedHashMap::new,
-                       Tuples.$(key1, value1),
-                       Tuples.$(key2, value2),
-                       Tuples.$(key3, value3),
-                       Tuples.$(key4, value4),
-                       Tuples.$(key5, value5),
-                       Tuples.$(key6, value6),
-                       Tuples.$(key7, value7),
-                       Tuples.$(key8, value8),
-                       Tuples.$(key9, value9)
-                      );
-   }
-
-   /**
-    * Creates a new LinkedHashMap using the given entries
-    *
-    * @param <K>     the key type
-    * @param <V>     the value type
-    * @param key1    the key 1
-    * @param value1  the value 1
-    * @param key2    the key 2
-    * @param value2  the value 2
-    * @param key3    the key 3
-    * @param value3  the value 3
-    * @param key4    the key 4
-    * @param value4  the value 4
-    * @param key5    the key 5
-    * @param value5  the value 5
-    * @param key6    the key 6
-    * @param value6  the value 6
-    * @param key7    the key 7
-    * @param value7  the value 7
-    * @param key8    the key 8
-    * @param value8  the value 8
-    * @param key9    the key 9
-    * @param value9  the value 9
-    * @param key10   the key 10
-    * @param value10 the value 10
-    * @return the map
-    */
-   public static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8, K key9, V value9, K key10, V value10) {
-      return createMap(LinkedHashMap::new,
-                       Tuples.$(key1, value1),
-                       Tuples.$(key2, value2),
-                       Tuples.$(key3, value3),
-                       Tuples.$(key4, value4),
-                       Tuples.$(key5, value5),
-                       Tuples.$(key6, value6),
-                       Tuples.$(key7, value7),
-                       Tuples.$(key8, value8),
-                       Tuples.$(key9, value9),
-                       Tuples.$(key10, value10)
-                      );
-   }
-
-   /**
-    * Creates a new LinkedHashMap using the given entries
-    *
-    * @param <K>     the key type
-    * @param <V>     the value type
-    * @param entries the entries
-    * @return the map
-    */
-   @SafeVarargs
-   @SuppressWarnings("varargs")
-   public static <K, V> Map<K, V> linkedHashMap(Map.Entry<K, V>... entries) {
-      return createMap(LinkedHashMap::new, entries);
-   }
-
-   /**
-    * Creates a new map with the given keys and values
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @return the map
-    */
-   public static <K, V> Map<K, V> map(K key1, V value1) {
-      return createMap(HashMap::new, Tuples.$(key1, value1));
-   }
-
-   /**
-    * Creates a new map with the given keys and values
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @param key2   the key 2
-    * @param value2 the value 2
-    * @return the map
-    */
-   public static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2) {
-      return createMap(HashMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2));
-   }
-
-   /**
-    * Creates a new map with the given keys and values
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @param key2   the key 2
-    * @param value2 the value 2
-    * @param key3   the key 3
-    * @param value3 the value 3
-    * @return the map
-    */
-   public static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3) {
-      return createMap(HashMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3));
-   }
-
-   /**
-    * Creates a new map with the given keys and values
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @param key2   the key 2
-    * @param value2 the value 2
-    * @param key3   the key 3
-    * @param value3 the value 3
-    * @param key4   the key 4
-    * @param value4 the value 4
-    * @return the map
-    */
-   public static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4) {
-      return createMap(HashMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3),
-                       Tuples.$(key4, value4));
-   }
-
-   /**
-    * Creates a new map with the given keys and values
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @param key2   the key 2
-    * @param value2 the value 2
-    * @param key3   the key 3
-    * @param value3 the value 3
-    * @param key4   the key 4
-    * @param value4 the value 4
-    * @param key5   the key 5
-    * @param value5 the value 5
-    * @return the map
-    */
-   public static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5) {
-      return createMap(HashMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3),
-                       Tuples.$(key4, value4),
-                       Tuples.$(key5, value5));
-   }
-
-   /**
-    * Creates a new map with the given keys and values
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @param key2   the key 2
-    * @param value2 the value 2
-    * @param key3   the key 3
-    * @param value3 the value 3
-    * @param key4   the key 4
-    * @param value4 the value 4
-    * @param key5   the key 5
-    * @param value5 the value 5
-    * @param key6   the key 6
-    * @param value6 the value 6
-    * @return the map
-    */
-   public static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6) {
-      return createMap(HashMap::new,
-                       Tuples.$(key1, value1),
-                       Tuples.$(key2, value2),
-                       Tuples.$(key3, value3),
-                       Tuples.$(key4, value4),
-                       Tuples.$(key5, value5),
-                       Tuples.$(key6, value6)
-                      );
-   }
-
-   /**
-    * Creates a new map with the given keys and values
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @param key2   the key 2
-    * @param value2 the value 2
-    * @param key3   the key 3
-    * @param value3 the value 3
-    * @param key4   the key 4
-    * @param value4 the value 4
-    * @param key5   the key 5
-    * @param value5 the value 5
-    * @param key6   the key 6
-    * @param value6 the value 6
-    * @param key7   the key 7
-    * @param value7 the value 7
-    * @return the map
-    */
-   public static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7) {
-      return createMap(HashMap::new,
-                       Tuples.$(key1, value1),
-                       Tuples.$(key2, value2),
-                       Tuples.$(key3, value3),
-                       Tuples.$(key4, value4),
-                       Tuples.$(key5, value5),
-                       Tuples.$(key6, value6),
-                       Tuples.$(key7, value7)
-                      );
-   }
-
-   /**
-    * Creates a new map with the given keys and values
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @param key2   the key 2
-    * @param value2 the value 2
-    * @param key3   the key 3
-    * @param value3 the value 3
-    * @param key4   the key 4
-    * @param value4 the value 4
-    * @param key5   the key 5
-    * @param value5 the value 5
-    * @param key6   the key 6
-    * @param value6 the value 6
-    * @param key7   the key 7
-    * @param value7 the value 7
-    * @param key8   the key 8
-    * @param value8 the value 8
-    * @return the map
-    */
-   public static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8) {
-      return createMap(HashMap::new,
-                       Tuples.$(key1, value1),
-                       Tuples.$(key2, value2),
-                       Tuples.$(key3, value3),
-                       Tuples.$(key4, value4),
-                       Tuples.$(key5, value5),
-                       Tuples.$(key6, value6),
-                       Tuples.$(key7, value7),
-                       Tuples.$(key8, value8)
-                      );
-   }
-
-   /**
-    * Creates a new map with the given keys and values
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @param key2   the key 2
-    * @param value2 the value 2
-    * @param key3   the key 3
-    * @param value3 the value 3
-    * @param key4   the key 4
-    * @param value4 the value 4
-    * @param key5   the key 5
-    * @param value5 the value 5
-    * @param key6   the key 6
-    * @param value6 the value 6
-    * @param key7   the key 7
-    * @param value7 the value 7
-    * @param key8   the key 8
-    * @param value8 the value 8
-    * @param key9   the key 9
-    * @param value9 the value 9
-    * @return the map
-    */
-   public static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8, K key9, V value9) {
-      return createMap(HashMap::new,
-                       Tuples.$(key1, value1),
-                       Tuples.$(key2, value2),
-                       Tuples.$(key3, value3),
-                       Tuples.$(key4, value4),
-                       Tuples.$(key5, value5),
-                       Tuples.$(key6, value6),
-                       Tuples.$(key7, value7),
-                       Tuples.$(key8, value8),
-                       Tuples.$(key9, value9)
-                      );
-   }
-
-   /**
-    * Creates a new map with the given keys and values
-    *
-    * @param <K>     the type parameter
-    * @param <V>     the type parameter
-    * @param key1    the key 1
-    * @param value1  the value 1
-    * @param key2    the key 2
-    * @param value2  the value 2
-    * @param key3    the key 3
-    * @param value3  the value 3
-    * @param key4    the key 4
-    * @param value4  the value 4
-    * @param key5    the key 5
-    * @param value5  the value 5
-    * @param key6    the key 6
-    * @param value6  the value 6
-    * @param key7    the key 7
-    * @param value7  the value 7
-    * @param key8    the key 8
-    * @param value8  the value 8
-    * @param key9    the key 9
-    * @param value9  the value 9
-    * @param key10   the key 10
-    * @param value10 the value 10
-    * @return the map
-    */
-   public static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8, K key9, V value9, K key10, V value10) {
-      return createMap(HashMap::new,
-                       Tuples.$(key1, value1),
-                       Tuples.$(key2, value2),
-                       Tuples.$(key3, value3),
-                       Tuples.$(key4, value4),
-                       Tuples.$(key5, value5),
-                       Tuples.$(key6, value6),
-                       Tuples.$(key7, value7),
-                       Tuples.$(key8, value8),
-                       Tuples.$(key9, value9),
-                       Tuples.$(key10, value10)
-                      );
-   }
-
-   public static <K, V extends Comparable<? super V>> K maxKeyByValue(@NonNull Map<K, V> map) {
+   public static <K, V> Optional<Map.Entry<K, V>> maxEntry(Map<K, V> map, Comparator<? super V> comparator) {
       return map.entrySet()
-                .stream()
-                .sorted(Map.Entry.<K, V>comparingByValue().reversed())
-                .findFirst()
-                .map(Map.Entry::getKey)
-                .orElse(null);
+                .parallelStream()
+                .max((e1, e2) -> comparator.compare(e1.getValue(), e2.getValue()));
+   }
+
+   public static <K, V extends Comparable> Optional<Map.Entry<K, V>> maxEntry(Map<K, V> map) {
+      return maxEntry(map, Sorting.natural());
+   }
+
+   public static <K, V> Optional<Map.Entry<K, V>> minEntry(Map<K, V> map, Comparator<? super V> comparator) {
+      return map.entrySet()
+                .parallelStream()
+                .min((e1, e2) -> comparator.compare(e1.getValue(), e2.getValue()));
+   }
+
+   public static <K, V extends Comparable> Optional<Map.Entry<K, V>> minEntry(Map<K, V> map) {
+      return minEntry(map, Sorting.natural());
+   }
+
+   public static <K, V extends Comparable> K maxKeyByValue(Map<K, V> map) {
+      return maxEntry(map).map(Map.Entry::getKey).orElse(null);
    }
 
    public static <K, V extends Comparable<? super V>> K minKeyByValue(@NonNull Map<K, V> map) {
-      return map.entrySet()
-                .stream()
-                .sorted(Map.Entry.comparingByValue())
-                .findFirst()
-                .map(Map.Entry::getKey)
-                .orElse(null);
+      return minEntry(map).map(Map.Entry::getKey).orElse(null);
    }
 
 
@@ -815,16 +225,8 @@ public final class Maps {
       return map;
    }
 
-   /**
-    * Put.
-    *
-    * @param <K>   the type parameter
-    * @param <V>   the type parameter
-    * @param map   the map
-    * @param entry the entry
-    */
-   public static <K, V> void put(@NonNull Map<K, V> map, Map.Entry<K, V> entry) {
-      if (entry != null) {
+   public static <K, V> void putAll(Map<K, V> map, Map.Entry<? extends K, ? extends V>... entries) {
+      for (Map.Entry<? extends K, ? extends V> entry : entries) {
          map.put(entry.getKey(), entry.getValue());
       }
    }
@@ -853,288 +255,6 @@ public final class Maps {
                        );
       }
       return map;
-   }
-
-   /**
-    * Creates a new TreeMap using the given entries
-    *
-    * @param <K>     the type parameter
-    * @param <V>     the type parameter
-    * @param entries the entries
-    * @return the map
-    */
-   @SafeVarargs
-   @SuppressWarnings("varargs")
-   public static <K, V> Map<K, V> treeMap(Map.Entry<K, V>... entries) {
-      return createMap(TreeMap::new, entries);
-   }
-
-   /**
-    * Creates a new TreeMap using the given entries
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @return the map
-    */
-   public static <K, V> Map<K, V> treeMap(K key1, V value1) {
-      return createMap(TreeMap::new, Tuples.$(key1, value1));
-   }
-
-   /**
-    * Creates a new TreeMap using the given entries
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @param key2   the key 2
-    * @param value2 the value 2
-    * @return the map
-    */
-   public static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2) {
-      return createMap(TreeMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2));
-   }
-
-   /**
-    * Creates a new TreeMap using the given entries
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @param key2   the key 2
-    * @param value2 the value 2
-    * @param key3   the key 3
-    * @param value3 the value 3
-    * @return the map
-    */
-   public static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3) {
-      return createMap(TreeMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3));
-   }
-
-   /**
-    * Creates a new TreeMap using the given entries
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @param key2   the key 2
-    * @param value2 the value 2
-    * @param key3   the key 3
-    * @param value3 the value 3
-    * @param key4   the key 4
-    * @param value4 the value 4
-    * @return the map
-    */
-   public static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4) {
-      return createMap(TreeMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3),
-                       Tuples.$(key4, value4));
-   }
-
-   /**
-    * Creates a new TreeMap using the given entries
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @param key2   the key 2
-    * @param value2 the value 2
-    * @param key3   the key 3
-    * @param value3 the value 3
-    * @param key4   the key 4
-    * @param value4 the value 4
-    * @param key5   the key 5
-    * @param value5 the value 5
-    * @return the map
-    */
-   public static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5) {
-      return createMap(TreeMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3),
-                       Tuples.$(key4, value4),
-                       Tuples.$(key5, value5));
-   }
-
-   /**
-    * Creates a new TreeMap using the given entries
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @param key2   the key 2
-    * @param value2 the value 2
-    * @param key3   the key 3
-    * @param value3 the value 3
-    * @param key4   the key 4
-    * @param value4 the value 4
-    * @param key5   the key 5
-    * @param value5 the value 5
-    * @param key6   the key 6
-    * @param value6 the value 6
-    * @return the map
-    */
-   public static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6) {
-      return createMap(TreeMap::new,
-                       Tuples.$(key1, value1),
-                       Tuples.$(key2, value2),
-                       Tuples.$(key3, value3),
-                       Tuples.$(key4, value4),
-                       Tuples.$(key5, value5),
-                       Tuples.$(key6, value6)
-                      );
-   }
-
-   /**
-    * Creates a new TreeMap using the given entries
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @param key2   the key 2
-    * @param value2 the value 2
-    * @param key3   the key 3
-    * @param value3 the value 3
-    * @param key4   the key 4
-    * @param value4 the value 4
-    * @param key5   the key 5
-    * @param value5 the value 5
-    * @param key6   the key 6
-    * @param value6 the value 6
-    * @param key7   the key 7
-    * @param value7 the value 7
-    * @return the map
-    */
-   public static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7) {
-      return createMap(TreeMap::new,
-                       Tuples.$(key1, value1),
-                       Tuples.$(key2, value2),
-                       Tuples.$(key3, value3),
-                       Tuples.$(key4, value4),
-                       Tuples.$(key5, value5),
-                       Tuples.$(key6, value6),
-                       Tuples.$(key7, value7)
-                      );
-   }
-
-   /**
-    * Creates a new TreeMap using the given entries
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @param key2   the key 2
-    * @param value2 the value 2
-    * @param key3   the key 3
-    * @param value3 the value 3
-    * @param key4   the key 4
-    * @param value4 the value 4
-    * @param key5   the key 5
-    * @param value5 the value 5
-    * @param key6   the key 6
-    * @param value6 the value 6
-    * @param key7   the key 7
-    * @param value7 the value 7
-    * @param key8   the key 8
-    * @param value8 the value 8
-    * @return the map
-    */
-   public static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8) {
-      return createMap(TreeMap::new,
-                       Tuples.$(key1, value1),
-                       Tuples.$(key2, value2),
-                       Tuples.$(key3, value3),
-                       Tuples.$(key4, value4),
-                       Tuples.$(key5, value5),
-                       Tuples.$(key6, value6),
-                       Tuples.$(key7, value7),
-                       Tuples.$(key8, value8)
-                      );
-   }
-
-   /**
-    * Creates a new TreeMap using the given entries
-    *
-    * @param <K>    the key type
-    * @param <V>    the value type
-    * @param key1   the key 1
-    * @param value1 the value 1
-    * @param key2   the key 2
-    * @param value2 the value 2
-    * @param key3   the key 3
-    * @param value3 the value 3
-    * @param key4   the key 4
-    * @param value4 the value 4
-    * @param key5   the key 5
-    * @param value5 the value 5
-    * @param key6   the key 6
-    * @param value6 the value 6
-    * @param key7   the key 7
-    * @param value7 the value 7
-    * @param key8   the key 8
-    * @param value8 the value 8
-    * @param key9   the key 9
-    * @param value9 the value 9
-    * @return the map
-    */
-   public static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8, K key9, V value9) {
-      return createMap(TreeMap::new,
-                       Tuples.$(key1, value1),
-                       Tuples.$(key2, value2),
-                       Tuples.$(key3, value3),
-                       Tuples.$(key4, value4),
-                       Tuples.$(key5, value5),
-                       Tuples.$(key6, value6),
-                       Tuples.$(key7, value7),
-                       Tuples.$(key8, value8),
-                       Tuples.$(key9, value9)
-                      );
-   }
-
-   /**
-    * Creates a new TreeMap using the given entries
-    *
-    * @param <K>     the type parameter
-    * @param <V>     the type parameter
-    * @param key1    the key 1
-    * @param value1  the value 1
-    * @param key2    the key 2
-    * @param value2  the value 2
-    * @param key3    the key 3
-    * @param value3  the value 3
-    * @param key4    the key 4
-    * @param value4  the value 4
-    * @param key5    the key 5
-    * @param value5  the value 5
-    * @param key6    the key 6
-    * @param value6  the value 6
-    * @param key7    the key 7
-    * @param value7  the value 7
-    * @param key8    the key 8
-    * @param value8  the value 8
-    * @param key9    the key 9
-    * @param value9  the value 9
-    * @param key10   the key 10
-    * @param value10 the value 10
-    * @return the map
-    */
-   public static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8, K key9, V value9, K key10, V value10) {
-      return createMap(TreeMap::new,
-                       Tuples.$(key1, value1),
-                       Tuples.$(key2, value2),
-                       Tuples.$(key3, value3),
-                       Tuples.$(key4, value4),
-                       Tuples.$(key5, value5),
-                       Tuples.$(key6, value6),
-                       Tuples.$(key7, value7),
-                       Tuples.$(key8, value8),
-                       Tuples.$(key9, value9),
-                       Tuples.$(key10, value10)
-                      );
    }
 
    /**
