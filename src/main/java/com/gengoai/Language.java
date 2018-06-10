@@ -683,8 +683,6 @@ public enum Language {
     * Zulu language.
     */
    ZULU("ZU"),
-
-
    /**
     * Unknown.
     */
@@ -734,7 +732,7 @@ public enum Language {
     * From locale language.
     *
     * @param locale locale
-    * @return language
+    * @return language language
     */
    public static Language fromLocale(Locale locale) {
       if (locale == null) {
@@ -766,23 +764,41 @@ public enum Language {
       return locales;
    }
 
+   /**
+    * Joins the words in the array separating them with a space if the language uses whitespace
+    *
+    * @param words the words to join
+    * @return the joined words
+    */
    public String join(String[] words) {
       return Streams.asStream(words)
-                    .collect(Collectors.joining((usesWhitespace() ? " " : StringUtils.EMPTY)));
-   }
-
-   public String join(CharSequence[] words) {
-      return Streams.asStream(words)
-                    .collect(Collectors.joining((usesWhitespace() ? " " : StringUtils.EMPTY)));
-   }
-
-   public String join(Iterable<? extends CharSequence> words) {
-      return Streams.asStream(words)
-                    .collect(Collectors.joining((usesWhitespace() ? " " : StringUtils.EMPTY)));
+                    .collect(Collectors.joining((usesWhitespace() ? StringUtils.BLANK : StringUtils.EMPTY)));
    }
 
    /**
-    * Uses whitespace boolean.
+    * Joins the words in the array separating them with a space if the language uses whitespace
+    *
+    * @param words the words to join
+    * @return the joined words
+    */
+   public String join(CharSequence[] words) {
+      return Streams.asStream(words)
+                    .collect(Collectors.joining((usesWhitespace() ? StringUtils.BLANK : StringUtils.EMPTY)));
+   }
+
+   /**
+    * Joins the words in the array separating them with a space if the language uses whitespace
+    *
+    * @param words the words to join
+    * @return the joined words
+    */
+   public String join(Iterable<? extends CharSequence> words) {
+      return Streams.asStream(words)
+                    .collect(Collectors.joining((usesWhitespace() ? StringUtils.BLANK : StringUtils.EMPTY)));
+   }
+
+   /**
+    * Does the language use whitespace to separate words
     *
     * @return True if language uses white space to separate words, false if not
     */
@@ -791,7 +807,7 @@ public enum Language {
    }
 
    /**
-    * Is right to left boolean.
+    * Is the language written right to left
     *
     * @return True if language is written  right to left
     */
@@ -846,7 +862,7 @@ public enum Language {
    }
 
    /**
-    * Gets code.
+    * Gets language code.
     *
     * @return ISO2 Language code
     */
@@ -859,7 +875,7 @@ public enum Language {
     *
     * @param strength      strength of {@link Collator}
     * @param decomposition decomposition of {@link Collator}
-    * @return collator
+    * @return collator collator
     */
    public final Collator getCollator(int strength, int decomposition) {
       Collator collator = Collator.getInstance(asLocale());
@@ -872,7 +888,7 @@ public enum Language {
     * Convenience method for constructing a collator using <code>FULL_DECOMPOSITION</code>
     *
     * @param strength strength of {@link Collator}
-    * @return collator
+    * @return collator collator
     */
    public final Collator getCollator(int strength) {
       return getCollator(strength, Collator.FULL_DECOMPOSITION);
@@ -882,7 +898,7 @@ public enum Language {
     * Convenience method for constructing a collator using a strength of <code>TERTIARY</code> and decomposition of
     * <code>FULL_DECOMPOSITION</code>
     *
-    * @return collator
+    * @return collator collator
     */
    public final Collator getCollator() {
       return getCollator(Collator.TERTIARY, Collator.FULL_DECOMPOSITION);

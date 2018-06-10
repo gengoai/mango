@@ -9,11 +9,20 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
+ * The type Lru cache.
+ *
+ * @param <K> the type parameter
+ * @param <V> the type parameter
  * @author David B. Bracewell
  */
 public class LRUCache<K, V> implements Cache<K, V> {
-   private transient final Map<K, V> cache;
+   protected transient final Map<K, V> cache;
 
+   /**
+    * Instantiates a new Lru cache.
+    *
+    * @param maxSize the max size
+    */
    public LRUCache(int maxSize) {
       Validation.checkArgument(maxSize > 0, "Cache must have size of greater than zero.");
       this.cache = Collections.synchronizedMap(new LRUMap<>(maxSize));
@@ -51,10 +60,7 @@ public class LRUCache<K, V> implements Cache<K, V> {
 
    @Override
    public V get(K key, @NonNull SerializableSupplier<? extends V> supplier) {
-      if (!containsKey(key)) {
-         cache.put(key, supplier.get());
-      }
-      return cache.get(key);
+      return cache.computeIfAbsent(key, k -> supplier.get());
    }
 
    @Override

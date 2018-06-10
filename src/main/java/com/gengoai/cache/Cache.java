@@ -35,10 +35,27 @@ import lombok.NonNull;
  */
 public interface Cache<K, V> {
 
+   /**
+    * Create cache.
+    *
+    * @param <K>     the type parameter
+    * @param <V>     the type parameter
+    * @param maxSize the max size
+    * @return the cache
+    */
    static <K, V> Cache<K, V> create(int maxSize) {
       return new LRUCache<>(maxSize);
    }
 
+   /**
+    * Create cache.
+    *
+    * @param <K>             the type parameter
+    * @param <V>             the type parameter
+    * @param maxSize         the max size
+    * @param valueCalculator the value calculator
+    * @return the cache
+    */
    static <K, V> Cache<K, V> create(int maxSize, SerializableFunction<K, V> valueCalculator) {
       return new AutoCalculatingLRUCache<>(maxSize, valueCalculator);
    }

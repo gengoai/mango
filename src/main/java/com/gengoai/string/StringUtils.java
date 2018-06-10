@@ -45,6 +45,8 @@ public final class StringUtils {
     * Empty String
     */
    public static final String EMPTY = "";
+
+   public static final String BLANK = " ";
    /**
     * The constant SINGLE_UNICODE_WHITESPACE.
     */

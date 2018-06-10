@@ -15,7 +15,11 @@ import java.util.Map;
  *
  * @author David B. Bracewell
  */
-public class Primitives {
+public final class Primitives {
+
+   private Primitives() {
+      throw new IllegalAccessError();
+   }
 
    private static final Map<Class<?>, Class<?>> primitiveToWrap = new HashMap<>(20);
    private static final Map<Class<?>, Class<?>> wrapToPrimitive = new HashMap<>(20);

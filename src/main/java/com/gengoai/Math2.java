@@ -36,12 +36,16 @@ import java.util.stream.LongStream;
  *
  * @author David B. Bracewell
  */
-public interface Math2 {
+public final class Math2 {
+
+   private Math2() {
+      throw new IllegalAccessError();
+   }
 
    /**
     * The constant LOG_2.
     */
-   double LOG_2 = FastMath.log(2);
+   public static final double LOG_2 = FastMath.log(2);
 
 
    /**
@@ -50,7 +54,7 @@ public interface Math2 {
     * @param string the string
     * @return the double
     */
-   static Double tryParseDouble(String string) {
+   public static Double tryParseDouble(String string) {
       try {
          return Double.parseDouble(string);
       } catch (Error t) {
@@ -64,7 +68,7 @@ public interface Math2 {
     * @param string the string
     * @return the integer
     */
-   static Integer tryParseInteger(String string) {
+   public static Integer tryParseInteger(String string) {
       try {
          return Integer.parseInt(string);
       } catch (Error t) {
@@ -78,7 +82,7 @@ public interface Math2 {
     * @param string the string
     * @return the float
     */
-   static Float tryParseFloat(String string) {
+   public static Float tryParseFloat(String string) {
       try {
          return Float.parseFloat(string);
       } catch (Error t) {
@@ -93,7 +97,7 @@ public interface Math2 {
     * @param v2 value 2
     * @return the sum of value 1 and value 2
     */
-   static double add(double v1, double v2) {
+   public static double add(double v1, double v2) {
       return v1 + v2;
    }
 
@@ -105,7 +109,7 @@ public interface Math2 {
     * @param max   the upper bound of the range
     * @return the clipped value
     */
-   static double clip(double value, double min, double max) {
+   public static double clip(double value, double min, double max) {
       Validation.checkArgument(max > min, "upper bound must be > lower bound");
       if (value < min) {
          return min;
@@ -122,7 +126,7 @@ public interface Math2 {
     * @param v2 value 2
     * @return the result of value 1 divided by value 2
     */
-   static double divide(double v1, double v2) {
+   public static double divide(double v1, double v2) {
       return v1 / v2;
    }
 
@@ -132,7 +136,7 @@ public interface Math2 {
     * @param number the number to calculate the base 2 log of
     * @return the base 2 log of the given number
     */
-   static double log2(double number) {
+   public static double log2(double number) {
       return FastMath.log(number) / LOG_2;
    }
 
@@ -143,7 +147,7 @@ public interface Math2 {
     * @param v2 value 2
     * @return the result of value 1 * value 2
     */
-   static double multiply(double v1, double v2) {
+   public static double multiply(double v1, double v2) {
       return v1 * v2;
    }
 
@@ -159,7 +163,7 @@ public interface Math2 {
     * @return the given value rescaled to fall between newMin and new Max
     * @throws IllegalArgumentException if originalMax <= originalMin or newMax <= newMin
     */
-   static double rescale(double value, double originalMin, double originalMax, double newMin, double newMax) {
+   public static double rescale(double value, double originalMin, double originalMax, double newMin, double newMax) {
       Validation.checkArgument(originalMax > originalMin, "original upper bound must be > original lower bound");
       Validation.checkArgument(newMax > newMin, "new upper bound must be > new lower bound");
       return ((value - originalMin) / (originalMax - originalMin)) * (newMax - newMin) + newMin;
@@ -171,7 +175,7 @@ public interface Math2 {
     * @param d the d
     * @return the double
     */
-   static double safeLog(double d) {
+   public static double safeLog(double d) {
       if (Double.isFinite(d)) {
          return d <= 0d ? -10 : FastMath.log(d);
       }
@@ -185,7 +189,7 @@ public interface Math2 {
     * @param v2 value 2
     * @return the result of value 1 minus value 2
     */
-   static double subtract(double v1, double v2) {
+   public static double subtract(double v1, double v2) {
       return v1 - v2;
    }
 
@@ -196,7 +200,7 @@ public interface Math2 {
     * @return the sum of the iterable
     * @throws NullPointerException if the values are null
     */
-   static double sum(@NonNull Iterable<? extends Number> values) {
+   public static double sum(@NonNull Iterable<? extends Number> values) {
       return summaryStatistics(values).getSum();
    }
 
@@ -208,7 +212,7 @@ public interface Math2 {
     * @return the sum of the values
     * @throws NullPointerException if the values are null
     */
-   static double sum(@NonNull double... values) {
+   public static double sum(@NonNull double... values) {
       return DoubleStream.of(values).sum();
    }
 
@@ -219,7 +223,7 @@ public interface Math2 {
     * @return the sum of the values
     * @throws NullPointerException if the values are null
     */
-   static int sum(@NonNull int... values) {
+   public static int sum(@NonNull int... values) {
       return IntStream.of(values).sum();
    }
 
@@ -230,7 +234,7 @@ public interface Math2 {
     * @return the sum of the values
     * @throws NullPointerException if the values are null
     */
-   static long sum(@NonNull long... values) {
+   public static long sum(@NonNull long... values) {
       return LongStream.of(values).sum();
    }
 
@@ -242,7 +246,7 @@ public interface Math2 {
     * @return the summary statistics of the given array
     * @throws NullPointerException if the values are null
     */
-   static EnhancedDoubleStatistics summaryStatistics(@NonNull double... values) {
+   public static EnhancedDoubleStatistics summaryStatistics(@NonNull double... values) {
       return DoubleStream.of(values).parallel().collect(EnhancedDoubleStatistics::new,
                                                         EnhancedDoubleStatistics::accept,
                                                         EnhancedDoubleStatistics::combine);
@@ -256,7 +260,7 @@ public interface Math2 {
     * @return the summary statistics of the given array
     * @throws NullPointerException if the values are null
     */
-   static EnhancedDoubleStatistics summaryStatistics(@NonNull int... values) {
+   public static EnhancedDoubleStatistics summaryStatistics(@NonNull int... values) {
       return IntStream.of(values).parallel().mapToDouble(i -> i).collect(EnhancedDoubleStatistics::new,
                                                                          EnhancedDoubleStatistics::accept,
                                                                          EnhancedDoubleStatistics::combine);
@@ -269,7 +273,7 @@ public interface Math2 {
     * @return the summary statistics of the given array
     * @throws NullPointerException if the values are null
     */
-   static EnhancedDoubleStatistics summaryStatistics(@NonNull long... values) {
+   public static EnhancedDoubleStatistics summaryStatistics(@NonNull long... values) {
       return LongStream.of(values).parallel().mapToDouble(i -> i).collect(EnhancedDoubleStatistics::new,
                                                                           EnhancedDoubleStatistics::accept,
                                                                           EnhancedDoubleStatistics::combine);
@@ -282,7 +286,7 @@ public interface Math2 {
     * @return the summary statistics of the given iterable
     * @throws NullPointerException if the iterable is null
     */
-   static EnhancedDoubleStatistics summaryStatistics(@NonNull Iterable<? extends Number> values) {
+   public static EnhancedDoubleStatistics summaryStatistics(@NonNull Iterable<? extends Number> values) {
       return Streams.asStream(values)
                     .parallel()
                     .mapToDouble(Number::doubleValue)
@@ -298,7 +302,7 @@ public interface Math2 {
     * @param precision the number of decimal places
     * @return the double
     */
-   static double truncate(double value, int precision) {
+   public static double truncate(double value, int precision) {
       return BigDecimal.valueOf(value).setScale(precision, BigDecimal.ROUND_HALF_UP).doubleValue();
    }
 
