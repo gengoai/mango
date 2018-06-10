@@ -9,20 +9,34 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * List backed multimaps
+ *
+ * @param <K> the key type parameter
+ * @param <V> the value type parameter
  * @author David B. Bracewell
  */
 public abstract class AbstractListMultimap<K, V> implements Multimap<K, V>, Serializable {
    private static final long serialVersionUID = 1L;
    private final Map<K, List<V>> map;
 
-   public AbstractListMultimap() {
+   protected AbstractListMultimap() {
       this.map = createMap();
    }
 
+   /**
+    * Creates a new map to store the entries.
+    *
+    * @return the map
+    */
    protected Map<K, List<V>> createMap() {
       return new HashMap<>();
    }
 
+   /**
+    * Creates a new list for a key.
+    *
+    * @return the list
+    */
    protected abstract List<V> createList();
 
    @Override

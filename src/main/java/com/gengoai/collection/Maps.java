@@ -22,7 +22,6 @@
 package com.gengoai.collection;
 
 import com.gengoai.Validation;
-import com.gengoai.collection.Streams;
 import com.gengoai.conversion.Convert;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVReader;
@@ -47,7 +46,56 @@ import java.util.function.Supplier;
  *
  * @author David B. Bracewell
  */
-public interface Maps {
+public final class Maps {
+
+   private Maps() {
+      throw new IllegalAccessError();
+   }
+
+
+   public static <K, V> Builder<K, V> builder() {
+      return new Builder<>(HashMap::new);
+   }
+
+   public static class Builder<K, V> {
+      private final Map<K, V> map;
+
+      public Builder(Supplier<? extends Map<K, V>> mapSupplier) {
+         this.map = mapSupplier.get();
+      }
+
+      public Builder<K, V> put(K key, V value) {
+         this.map.put(key, value);
+         return this;
+      }
+
+      public Builder<K, V> putAll(Map<? extends K, ? extends V> other) {
+         this.map.putAll(other);
+         return this;
+      }
+
+      public Map<K, V> build() {
+         return map;
+      }
+   }
+
+   @SuppressWarnings("unchecked")
+   public static <K, V> Map<K, V> mapOf(Supplier<? extends Map<K, V>> supplier, Object... objects) {
+      Validation.checkArgument(objects.length % 2 == 0, "Must have a value for each key");
+      Map<K, V> map = supplier.get();
+      for (int i = 0; i < objects.length; i += 2) {
+         map.put((K) objects[i], (V) objects[i + 1]);
+      }
+      return map;
+   }
+
+   public static <K, V> Map<K, V> mapOf(Object... objects) {
+      return mapOf(HashMap::new, objects);
+   }
+
+   public static <K, V> Map<K, V> sortedMapOf(Object... objects) {
+      return mapOf(TreeMap::new, objects);
+   }
 
    /**
     * Creates a new HashMap containing the given entries.
@@ -59,11 +107,11 @@ public interface Maps {
     */
    @SafeVarargs
    @SuppressWarnings("varargs")
-   static <K, V> Map<K, V> asMap(Map.Entry<K, V>... entries) {
+   public static <K, V> Map<K, V> asMap(Map.Entry<K, V>... entries) {
       return createMap(HashMap::new, entries);
    }
 
-   static <K, V> Map<K, V> asMap(Iterable<? extends K> keys, Function<? super K, ? extends V> valueMapper) {
+   public static <K, V> Map<K, V> asMap(Iterable<? extends K> keys, Function<? super K, ? extends V> valueMapper) {
       Validation.notNull(valueMapper);
       Map<K, V> map = new HashMap<>();
       Validation.notNull(keys).forEach(key -> map.put(key, valueMapper.apply(key)));
@@ -79,7 +127,7 @@ public interface Maps {
     * @return An instance of the specified map class
     */
    @SneakyThrows
-   static <K, V> Map<K, V> create(@NonNull Class<? extends Map> clazz) {
+   public static <K, V> Map<K, V> create(@NonNull Class<? extends Map> clazz) {
       if (clazz == Map.class || clazz == HashMap.class) {
          return new HashMap<>();
       } else if (clazz == LinkedHashMap.class) {
@@ -103,7 +151,7 @@ public interface Maps {
     */
    @SafeVarargs
    @SuppressWarnings("varargs")
-   static <K, V> Map<K, V> createMap(@NonNull Supplier<Map<K, V>> mapSupplier, Map.Entry<K, V>... entries) {
+   public static <K, V> Map<K, V> createMap(@NonNull Supplier<Map<K, V>> mapSupplier, Map.Entry<K, V>... entries) {
       if (entries == null) {
          return Collections.emptyMap();
       }
@@ -124,7 +172,7 @@ public interface Maps {
     * @param valueConverter The converter to use for the values (odd elements)
     * @return The map.
     */
-   static <K, V> Map<K, V> fillMap(@NonNull Map<K, V> map, Iterable<?> iterable, @NonNull Function<Object, K> keyConverter, @NonNull Function<Object, V> valueConverter) {
+   public static <K, V> Map<K, V> fillMap(@NonNull Map<K, V> map, Iterable<?> iterable, @NonNull Function<Object, K> keyConverter, @NonNull Function<Object, V> valueConverter) {
       if (iterable == null) {
          return map;
       }
@@ -148,7 +196,7 @@ public interface Maps {
     * @param value1 the value 1
     * @return the map
     */
-   static <K, V> Map<K, V> linkedHashMap(K key1, V value1) {
+   public static <K, V> Map<K, V> linkedHashMap(K key1, V value1) {
       return createMap(LinkedHashMap::new, Tuples.$(key1, value1));
    }
 
@@ -163,7 +211,7 @@ public interface Maps {
     * @param value2 the value 2
     * @return the map
     */
-   static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2) {
+   public static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2) {
       return createMap(LinkedHashMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2));
    }
 
@@ -180,7 +228,7 @@ public interface Maps {
     * @param value3 the value 3
     * @return the map
     */
-   static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3) {
+   public static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3) {
       return createMap(LinkedHashMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3));
    }
 
@@ -199,7 +247,7 @@ public interface Maps {
     * @param value4 the value 4
     * @return the map
     */
-   static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4) {
+   public static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4) {
       return createMap(LinkedHashMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3),
                        Tuples
                           .$(key4, value4));
@@ -222,7 +270,7 @@ public interface Maps {
     * @param value5 the value 5
     * @return the map
     */
-   static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5) {
+   public static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5) {
       return createMap(LinkedHashMap::new,
                        Tuples.$(key1, value1),
                        Tuples.$(key2, value2),
@@ -251,7 +299,7 @@ public interface Maps {
     * @param value6 the value 6
     * @return the map
     */
-   static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6) {
+   public static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6) {
       return createMap(LinkedHashMap::new,
                        Tuples.$(key1, value1),
                        Tuples.$(key2, value2),
@@ -283,7 +331,7 @@ public interface Maps {
     * @param value7 the value 7
     * @return the map
     */
-   static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7) {
+   public static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7) {
       return createMap(LinkedHashMap::new,
                        Tuples.$(key1, value1),
                        Tuples.$(key2, value2),
@@ -318,7 +366,7 @@ public interface Maps {
     * @param value8 the value 8
     * @return the map
     */
-   static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8) {
+   public static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8) {
       return createMap(LinkedHashMap::new,
                        Tuples.$(key1, value1),
                        Tuples.$(key2, value2),
@@ -356,7 +404,7 @@ public interface Maps {
     * @param value9 the value 9
     * @return the map
     */
-   static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8, K key9, V value9) {
+   public static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8, K key9, V value9) {
       return createMap(LinkedHashMap::new,
                        Tuples.$(key1, value1),
                        Tuples.$(key2, value2),
@@ -397,7 +445,7 @@ public interface Maps {
     * @param value10 the value 10
     * @return the map
     */
-   static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8, K key9, V value9, K key10, V value10) {
+   public static <K, V> Map<K, V> linkedHashMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8, K key9, V value9, K key10, V value10) {
       return createMap(LinkedHashMap::new,
                        Tuples.$(key1, value1),
                        Tuples.$(key2, value2),
@@ -422,7 +470,7 @@ public interface Maps {
     */
    @SafeVarargs
    @SuppressWarnings("varargs")
-   static <K, V> Map<K, V> linkedHashMap(Map.Entry<K, V>... entries) {
+   public static <K, V> Map<K, V> linkedHashMap(Map.Entry<K, V>... entries) {
       return createMap(LinkedHashMap::new, entries);
    }
 
@@ -435,7 +483,7 @@ public interface Maps {
     * @param value1 the value 1
     * @return the map
     */
-   static <K, V> Map<K, V> map(K key1, V value1) {
+   public static <K, V> Map<K, V> map(K key1, V value1) {
       return createMap(HashMap::new, Tuples.$(key1, value1));
    }
 
@@ -450,7 +498,7 @@ public interface Maps {
     * @param value2 the value 2
     * @return the map
     */
-   static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2) {
+   public static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2) {
       return createMap(HashMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2));
    }
 
@@ -467,7 +515,7 @@ public interface Maps {
     * @param value3 the value 3
     * @return the map
     */
-   static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3) {
+   public static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3) {
       return createMap(HashMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3));
    }
 
@@ -486,7 +534,7 @@ public interface Maps {
     * @param value4 the value 4
     * @return the map
     */
-   static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4) {
+   public static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4) {
       return createMap(HashMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3),
                        Tuples.$(key4, value4));
    }
@@ -508,7 +556,7 @@ public interface Maps {
     * @param value5 the value 5
     * @return the map
     */
-   static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5) {
+   public static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5) {
       return createMap(HashMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3),
                        Tuples.$(key4, value4),
                        Tuples.$(key5, value5));
@@ -533,7 +581,7 @@ public interface Maps {
     * @param value6 the value 6
     * @return the map
     */
-   static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6) {
+   public static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6) {
       return createMap(HashMap::new,
                        Tuples.$(key1, value1),
                        Tuples.$(key2, value2),
@@ -565,7 +613,7 @@ public interface Maps {
     * @param value7 the value 7
     * @return the map
     */
-   static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7) {
+   public static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7) {
       return createMap(HashMap::new,
                        Tuples.$(key1, value1),
                        Tuples.$(key2, value2),
@@ -600,7 +648,7 @@ public interface Maps {
     * @param value8 the value 8
     * @return the map
     */
-   static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8) {
+   public static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8) {
       return createMap(HashMap::new,
                        Tuples.$(key1, value1),
                        Tuples.$(key2, value2),
@@ -638,7 +686,7 @@ public interface Maps {
     * @param value9 the value 9
     * @return the map
     */
-   static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8, K key9, V value9) {
+   public static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8, K key9, V value9) {
       return createMap(HashMap::new,
                        Tuples.$(key1, value1),
                        Tuples.$(key2, value2),
@@ -679,7 +727,7 @@ public interface Maps {
     * @param value10 the value 10
     * @return the map
     */
-   static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8, K key9, V value9, K key10, V value10) {
+   public static <K, V> Map<K, V> map(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8, K key9, V value9, K key10, V value10) {
       return createMap(HashMap::new,
                        Tuples.$(key1, value1),
                        Tuples.$(key2, value2),
@@ -694,7 +742,7 @@ public interface Maps {
                       );
    }
 
-   static <K, V extends Comparable<? super V>> K maxKeyByValue(@NonNull Map<K, V> map) {
+   public static <K, V extends Comparable<? super V>> K maxKeyByValue(@NonNull Map<K, V> map) {
       return map.entrySet()
                 .stream()
                 .sorted(Map.Entry.<K, V>comparingByValue().reversed())
@@ -703,7 +751,7 @@ public interface Maps {
                 .orElse(null);
    }
 
-   static <K, V extends Comparable<? super V>> K minKeyByValue(@NonNull Map<K, V> map) {
+   public static <K, V extends Comparable<? super V>> K minKeyByValue(@NonNull Map<K, V> map) {
       return map.entrySet()
                 .stream()
                 .sorted(Map.Entry.comparingByValue())
@@ -714,11 +762,10 @@ public interface Maps {
 
 
    /**
-    * <p>Creates a HashMap from a string converting the keys and values using {@link Convert#getConverter(Class)}. Empty
-    * or null  strings result in an empty Map. The string format should be in csv where the commas separate the
-    * key-value
-    * pairs. Keys and values are the separated using either <code>:</code> or <code>=</code> depending on which one is
-    * present and appears first. </p>
+    * <p>Creates a HashMap from a string converting the keys and values using {@link Convert#getConverter(Class)}.
+    * Empty or null  strings result in an empty Map. The string format should be in csv where the commas separate the
+    * key-value pairs. Keys and values are the separated using either <code>:</code> or <code>=</code> depending on
+    * which one is present and appears first. </p>
     *
     * @param <K>        The key type
     * @param <V>        The value type
@@ -727,7 +774,7 @@ public interface Maps {
     * @param valueClass The value class
     * @return The resulting map
     */
-   static <K, V> Map<K, V> parseString(String input, @NonNull Class<K> keyClass, @NonNull Class<V> valueClass) {
+   public static <K, V> Map<K, V> parseString(String input, @NonNull Class<K> keyClass, @NonNull Class<V> valueClass) {
       return parseString(input, Convert.getConverter(keyClass), Convert.getConverter(valueClass));
    }
 
@@ -745,7 +792,7 @@ public interface Maps {
     * @return The resulting map
     */
    @SneakyThrows
-   static <K, V> Map<K, V> parseString(String input, @NonNull Function<Object, K> keyConverter, @NonNull Function<Object, V> valueConverter) {
+   public static <K, V> Map<K, V> parseString(String input, @NonNull Function<Object, K> keyConverter, @NonNull Function<Object, V> valueConverter) {
       if (StringUtils.isNullOrBlank(input)) {
          return Collections.emptyMap();
       }
@@ -776,7 +823,7 @@ public interface Maps {
     * @param map   the map
     * @param entry the entry
     */
-   static <K, V> void put(@NonNull Map<K, V> map, Map.Entry<K, V> entry) {
+   public static <K, V> void put(@NonNull Map<K, V> map, Map.Entry<K, V> entry) {
       if (entry != null) {
          map.put(entry.getKey(), entry.getValue());
       }
@@ -793,7 +840,7 @@ public interface Maps {
     * @return The map containing entries stored in the csv file
     * @throws IOException Something went wrong reading in the file
     */
-   static <K, V> Map<K, V> readCsv(@NonNull Resource input, @NonNull Function<Object, K> keyConverter, @NonNull Function<Object, V> valueConverter) throws IOException {
+   public static <K, V> Map<K, V> readCsv(@NonNull Resource input, @NonNull Function<Object, K> keyConverter, @NonNull Function<Object, V> valueConverter) throws IOException {
       Map<K, V> map = new HashMap<>();
       try (CSVReader reader = CSV.builder().reader(input)) {
          reader.forEach(row ->
@@ -818,7 +865,7 @@ public interface Maps {
     */
    @SafeVarargs
    @SuppressWarnings("varargs")
-   static <K, V> Map<K, V> treeMap(Map.Entry<K, V>... entries) {
+   public static <K, V> Map<K, V> treeMap(Map.Entry<K, V>... entries) {
       return createMap(TreeMap::new, entries);
    }
 
@@ -831,7 +878,7 @@ public interface Maps {
     * @param value1 the value 1
     * @return the map
     */
-   static <K, V> Map<K, V> treeMap(K key1, V value1) {
+   public static <K, V> Map<K, V> treeMap(K key1, V value1) {
       return createMap(TreeMap::new, Tuples.$(key1, value1));
    }
 
@@ -846,7 +893,7 @@ public interface Maps {
     * @param value2 the value 2
     * @return the map
     */
-   static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2) {
+   public static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2) {
       return createMap(TreeMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2));
    }
 
@@ -863,7 +910,7 @@ public interface Maps {
     * @param value3 the value 3
     * @return the map
     */
-   static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3) {
+   public static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3) {
       return createMap(TreeMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3));
    }
 
@@ -882,7 +929,7 @@ public interface Maps {
     * @param value4 the value 4
     * @return the map
     */
-   static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4) {
+   public static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4) {
       return createMap(TreeMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3),
                        Tuples.$(key4, value4));
    }
@@ -904,7 +951,7 @@ public interface Maps {
     * @param value5 the value 5
     * @return the map
     */
-   static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5) {
+   public static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5) {
       return createMap(TreeMap::new, Tuples.$(key1, value1), Tuples.$(key2, value2), Tuples.$(key3, value3),
                        Tuples.$(key4, value4),
                        Tuples.$(key5, value5));
@@ -929,7 +976,7 @@ public interface Maps {
     * @param value6 the value 6
     * @return the map
     */
-   static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6) {
+   public static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6) {
       return createMap(TreeMap::new,
                        Tuples.$(key1, value1),
                        Tuples.$(key2, value2),
@@ -961,7 +1008,7 @@ public interface Maps {
     * @param value7 the value 7
     * @return the map
     */
-   static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7) {
+   public static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7) {
       return createMap(TreeMap::new,
                        Tuples.$(key1, value1),
                        Tuples.$(key2, value2),
@@ -996,7 +1043,7 @@ public interface Maps {
     * @param value8 the value 8
     * @return the map
     */
-   static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8) {
+   public static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8) {
       return createMap(TreeMap::new,
                        Tuples.$(key1, value1),
                        Tuples.$(key2, value2),
@@ -1034,7 +1081,7 @@ public interface Maps {
     * @param value9 the value 9
     * @return the map
     */
-   static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8, K key9, V value9) {
+   public static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8, K key9, V value9) {
       return createMap(TreeMap::new,
                        Tuples.$(key1, value1),
                        Tuples.$(key2, value2),
@@ -1075,7 +1122,7 @@ public interface Maps {
     * @param value10 the value 10
     * @return the map
     */
-   static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8, K key9, V value9, K key10, V value10) {
+   public static <K, V> Map<K, V> treeMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7, K key8, V value8, K key9, V value9, K key10, V value10) {
       return createMap(TreeMap::new,
                        Tuples.$(key1, value1),
                        Tuples.$(key2, value2),
@@ -1099,7 +1146,7 @@ public interface Maps {
     * @param output the resource to write to
     * @throws IOException Something went wrong writing to the resource
     */
-   static <K, V> void writeCsv(@NonNull Map<K, V> map, @NonNull Resource output) throws IOException {
+   public static <K, V> void writeCsv(@NonNull Map<K, V> map, @NonNull Resource output) throws IOException {
       try (CSVWriter writer = CSV.builder().writer(output)) {
          for (Map.Entry<K, V> kvEntry : map.entrySet()) {
             writer.write(Convert.convert(kvEntry.getKey(), String.class),
