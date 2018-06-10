@@ -21,14 +21,16 @@
 
 package com.gengoai.io;
 
-import com.gengoai.collection.Maps;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.io.resource.StringResource;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static com.gengoai.collection.Maps.mapOf;
+import static com.gengoai.tuple.Tuples.$;
 import static org.junit.Assert.*;
 
 /**
@@ -41,7 +43,9 @@ public class CSVWriterTest {
    public void testReadWrite() throws Exception {
 
 
-      Map<String, String> map = Maps.linkedHashMap("A", "1", "B", "2");
+      Map<String, String> map = mapOf(LinkedHashMap::new,
+                                      $("A", "1"),
+                                      $("B", "2"));
 
       Resource r = new StringResource();
       try (CSVWriter writer = CSV.builder().delimiter('\t').writer(r)) {

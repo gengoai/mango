@@ -21,11 +21,13 @@
 
 package com.gengoai.collection.counter;
 
-import com.gengoai.collection.Maps;
 import org.junit.Test;
 
 import java.util.Collections;
 import java.util.Objects;
+
+import static com.gengoai.collection.Maps.hashMapOf;
+import static com.gengoai.tuple.Tuples.$;
 
 /**
  * @author David B. Bracewell
@@ -33,7 +35,7 @@ import java.util.Objects;
 public class UnmodifiableCounterTest {
 
    final Counter<String> counter = Counters.unmodifiableCounter(
-      Counters.newCounter(Maps.map("A", 1.0, "B", 2.0)));
+      Counters.newCounter(hashMapOf($("A", 1.0), $("B", 2.0))));
 
    @Test(expected = UnsupportedOperationException.class)
    public void asMap() throws Exception {
@@ -97,7 +99,7 @@ public class UnmodifiableCounterTest {
 
    @Test(expected = UnsupportedOperationException.class)
    public void mergeMap() throws Exception {
-      counter.merge(Maps.map("A", 1.0));
+      counter.merge(hashMapOf($("A", 1.0)));
    }
 
    @Test(expected = UnsupportedOperationException.class)

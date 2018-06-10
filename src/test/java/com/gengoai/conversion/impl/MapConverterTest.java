@@ -21,7 +21,6 @@
 
 package com.gengoai.conversion.impl;
 
-import com.gengoai.collection.Maps;
 import com.gengoai.collection.Multimap;
 import com.gengoai.conversion.Convert;
 import com.gengoai.conversion.Val;
@@ -33,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.gengoai.collection.Maps.hashMapOf;
+import static com.gengoai.tuple.Tuples.$;
 import static org.junit.Assert.*;
 
 public class MapConverterTest {
@@ -42,8 +43,8 @@ public class MapConverterTest {
       assertNull(Convert.convert(null, Multimap.class, String.class, String.class));
 
       //Map Conversion
-      Map<String, Integer> gold = Maps.map("A", 1);
-      Assert.assertEquals(gold, Val.of(Maps.map("A", "1")).asMap(String.class, Integer.class));
+      Map<String, Integer> gold = hashMapOf($("A", 1));
+      Assert.assertEquals(gold, Val.of(hashMapOf($("A", 1))).asMap(String.class, Integer.class));
 
       //String conversion
       assertEquals(gold, Val.of("{A=1}").asMap(String.class, Integer.class));

@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
+import static com.gengoai.tuple.Tuples.$;
 import static org.junit.Assert.*;
 
 /**
@@ -137,16 +138,14 @@ public abstract class BaseMStreamTest {
 
    @Test
    public void groupBy() throws Exception {
-      Map<Character, Iterable<String>> target = new TreeMap<>(Maps.map(
-         'A', Arrays.asList("Abb", "Abc"),
-         'B', Arrays.asList("Bbb", "Bbc"),
-         'C', Arrays.asList("Cbb", "Cbb")
-                                                                      ));
+      Map<Character, Iterable<String>> target = Maps.sortedMapOf($('A', Arrays.asList("Abb", "Abc")),
+                                                                 $('B', Arrays.asList("Bbb", "Bbc")),
+                                                                 $('C', Arrays.asList("Cbb", "Cbb")));
 
       Map<Character, Iterable<String>> calc = new TreeMap<>(
-                                                              sc.stream("Abb", "Abc", "Bbb", "Bbc", "Cbb", "Cbb")
-                                                                .groupBy(s -> s.charAt(0))
-                                                                .collectAsMap()
+         sc.stream("Abb", "Abc", "Bbb", "Bbc", "Cbb", "Cbb")
+           .groupBy(s -> s.charAt(0))
+           .collectAsMap()
       );
 
       assertEquals(target.keySet(), calc.keySet());
@@ -157,11 +156,9 @@ public abstract class BaseMStreamTest {
 
    @Test
    public void groupByError() throws Exception {
-      Map<Character, List<String>> gold = Maps.treeMap(
-         'A', Lists.list("Abb", "Abc"),
-         'B', Lists.list("Bbb", "Bbc"),
-         'C', Lists.list("Cbb", "Cbb")
-                                                      );
+      Map<Character, List<String>> gold = Maps.sortedMapOf($('A', Arrays.asList("Abb", "Abc")),
+                                                           $('B', Arrays.asList("Bbb", "Bbc")),
+                                                           $('C', Arrays.asList("Cbb", "Cbb")));
       Map<Character, Iterable<String>> streamed = sc.stream("Abb", "Abc", "Bbb", "Bbc", "Cbb", "Cbb", null)
                                                     .filter(Objects::nonNull)
                                                     .groupBy(s -> s.charAt(0))
@@ -173,14 +170,12 @@ public abstract class BaseMStreamTest {
 
    @Test
    public void countByValue() throws Exception {
-      assertEquals(
-         Maps.map(
-            "A", 3L,
-            "B", 1L,
-            "C", 2L
-                 ),
-         sc.stream(Arrays.asList("A", "A", "A", "B", "C", "C"))
-           .countByValue()
+      assertEquals(Maps.hashMapOf($("A", 3L),
+                                  $("B", 1L),
+                                  $("C", 2L)
+                                 ),
+                   sc.stream(Arrays.asList("A", "A", "A", "B", "C", "C"))
+                     .countByValue()
                   );
    }
 

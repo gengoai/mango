@@ -21,6 +21,7 @@
 
 package com.gengoai.collection;
 
+import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Convert;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVReader;
@@ -29,8 +30,6 @@ import com.gengoai.io.resource.Resource;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
 import com.gengoai.string.StringUtils;
-import lombok.NonNull;
-import lombok.SneakyThrows;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -40,6 +39,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static com.gengoai.Validation.checkArgument;
 import static com.gengoai.tuple.Tuples.$;
 
 /**
@@ -53,69 +53,14 @@ public final class Maps {
       throw new IllegalAccessError();
    }
 
-   public static void main(String[] args) throws Exception {
-      Map<String, String> m = mapOf(HashMap::new,
-                                    $("A", "B"),
-                                    $("C", "D"),
-                                    $("E", "F")
-                                   );
-      System.out.println(m);
-      System.out.println(Maps.maxEntry(m));
-
-   }
-
-   public static <K, V> Builder<K, V> builder() {
-      return new Builder<>();
-   }
-
-   public static class Builder<K, V> {
-      private final List<Map.Entry<K, V>> entries = new ArrayList<>();
-
-      public Builder<K, V> put(K key, V value) {
-         entries.add($(key, value));
-         return this;
-      }
-
-      public Builder<K, V> putAll(Map<? extends K, ? extends V> other) {
-         other.forEach(this::put);
-         return this;
-      }
-
-      public Map<K, V> build() {
-         return build(HashMap::new);
-      }
-
-      public Map<K, V> build(Supplier<? extends Map<K, V>> mapSupplier) {
-         Map<K, V> map = mapSupplier.get();
-         entries.forEach(entry -> map.put(entry.getKey(), entry.getValue()));
-         return map;
-      }
-
-   }
-
-   @SafeVarargs
-   public static <K, V> Map<K, V> mapOf(Supplier<? extends Map<K, V>> supplier, Map.Entry<? extends K, ? extends V>... objects) {
-      Map<K, V> map = supplier.get();
-      for (Map.Entry<? extends K, ? extends V> entry : objects) {
-         map.put(entry.getKey(), entry.getValue());
-      }
-      return map;
-   }
-
-   @SafeVarargs
-   public static <K, V> Map<K, V> hashMapOf(Map.Entry<? extends K, ? extends V>... objects) {
-      return mapOf(HashMap::new, objects);
-   }
-
-   @SafeVarargs
-   public static <K, V> Map<K, V> sortedMapOf(Map.Entry<? extends K, ? extends V>... objects) {
-      return mapOf(TreeMap::new, objects);
-   }
-
    public static <K, V> Map<K, V> asMap(Iterable<? extends K> keys, Function<? super K, ? extends V> valueMapper) {
       Map<K, V> map = new HashMap<>();
       keys.forEach(key -> map.put(key, valueMapper.apply(key)));
       return map;
+   }
+
+   public static <K, V> Builder<K, V> builder() {
+      return new Builder<>();
    }
 
    /**
@@ -143,6 +88,45 @@ public final class Maps {
       }
    }
 
+   @SafeVarargs
+   public static <K, V> Map<K, V> hashMapOf(Map.Entry<? extends K, ? extends V>... objects) {
+      return mapOf(HashMap::new, objects);
+   }
+
+   public static <K, V> Map<K, V> hashMapOf(Object... objects) {
+      return mapOf(HashMap::new, objects);
+   }
+
+   public static void main(String[] args) throws Exception {
+      Map<String, String> m = mapOf(HashMap::new,
+                                    $("A", "B"),
+                                    $("C", "D"),
+                                    $("E", "F")
+                                   );
+      System.out.println(m);
+      putAll(m, "A", "E", "Z", "H", "LL", "<<");
+      System.out.println(m);
+      System.out.println(Maps.maxEntry(m));
+
+   }
+
+   @SafeVarargs
+   public static <K, V> Map<K, V> mapOf(Supplier<? extends Map<K, V>> supplier, Map.Entry<? extends K, ? extends V>... objects) {
+      Map<K, V> map = supplier.get();
+      for (Map.Entry<? extends K, ? extends V> entry : objects) {
+         map.put(entry.getKey(), entry.getValue());
+      }
+      return map;
+   }
+
+   public static <K, V> Map<K, V> mapOf(Supplier<? extends Map<K, V>> supplier, Object... objects) {
+      checkArgument(objects.length % 2 == 0, "Must have an equal number of values and keys");
+      Map<K, V> map = supplier.get();
+      for (int i = 0; i < objects.length; i += 2) {
+         map.put(Cast.as(objects[i]), Cast.as(objects[i + 1]));
+      }
+      return map;
+   }
 
    public static <K, V> Optional<Map.Entry<K, V>> maxEntry(Map<K, V> map, Comparator<? super V> comparator) {
       return map.entrySet()
@@ -152,6 +136,10 @@ public final class Maps {
 
    public static <K, V extends Comparable> Optional<Map.Entry<K, V>> maxEntry(Map<K, V> map) {
       return maxEntry(map, Sorting.natural());
+   }
+
+   public static <K, V extends Comparable> K maxKeyByValue(Map<K, V> map) {
+      return maxEntry(map).map(Map.Entry::getKey).orElse(null);
    }
 
    public static <K, V> Optional<Map.Entry<K, V>> minEntry(Map<K, V> map, Comparator<? super V> comparator) {
@@ -164,14 +152,9 @@ public final class Maps {
       return minEntry(map, Sorting.natural());
    }
 
-   public static <K, V extends Comparable> K maxKeyByValue(Map<K, V> map) {
-      return maxEntry(map).map(Map.Entry::getKey).orElse(null);
-   }
-
-   public static <K, V extends Comparable<? super V>> K minKeyByValue(@NonNull Map<K, V> map) {
+   public static <K, V extends Comparable<? super V>> K minKeyByValue(Map<K, V> map) {
       return minEntry(map).map(Map.Entry::getKey).orElse(null);
    }
-
 
    /**
     * <p>Creates a HashMap from a string converting the keys and values using {@link Convert#getConverter(Class)}.
@@ -186,7 +169,7 @@ public final class Maps {
     * @param valueClass The value class
     * @return The resulting map
     */
-   public static <K, V> Map<K, V> parseString(String input, @NonNull Class<K> keyClass, @NonNull Class<V> valueClass) {
+   public static <K, V> Map<K, V> parseString(String input, Class<K> keyClass, Class<V> valueClass) {
       return parseString(input, Convert.getConverter(keyClass), Convert.getConverter(valueClass));
    }
 
@@ -203,8 +186,7 @@ public final class Maps {
     * @param valueConverter The function to convert an object to the value type
     * @return The resulting map
     */
-   @SneakyThrows
-   public static <K, V> Map<K, V> parseString(String input, @NonNull Function<Object, K> keyConverter, @NonNull Function<Object, V> valueConverter) {
+   public static <K, V> Map<K, V> parseString(String input, Function<Object, K> keyConverter, Function<Object, V> valueConverter) {
       if (StringUtils.isNullOrBlank(input)) {
          return Collections.emptyMap();
       }
@@ -223,6 +205,8 @@ public final class Maps {
                               map.put(keyConverter.apply(key), valueConverter.apply(value));
                            })
                        );
+      } catch (Exception e) {
+         throw new RuntimeException(e);
       }
       return map;
    }
@@ -230,6 +214,13 @@ public final class Maps {
    public static <K, V> void putAll(Map<K, V> map, Map.Entry<? extends K, ? extends V>... entries) {
       for (Map.Entry<? extends K, ? extends V> entry : entries) {
          map.put(entry.getKey(), entry.getValue());
+      }
+   }
+
+   public static <K, V> void putAll(Map<K, V> map, Object... objects) {
+      checkArgument(objects.length % 2 == 0, "Must have an equal number of values and keys");
+      for (int i = 0; i < objects.length; i += 2) {
+         map.put(Cast.as(objects[i]), Cast.as(objects[i + 1]));
       }
    }
 
@@ -244,19 +235,26 @@ public final class Maps {
     * @return The map containing entries stored in the csv file
     * @throws IOException Something went wrong reading in the file
     */
-   public static <K, V> Map<K, V> readCsv(@NonNull Resource input, @NonNull Function<Object, K> keyConverter, @NonNull Function<Object, V> valueConverter) throws IOException {
+   public static <K, V> Map<K, V> readCsv(Resource input, Function<Object, K> keyConverter, Function<Object, V> valueConverter) throws IOException {
       Map<K, V> map = new HashMap<>();
       try (CSVReader reader = CSV.builder().reader(input)) {
-         reader.forEach(row ->
-                           row.forEach(cell -> {
-                                          if (row.size() >= 2) {
-                                             map.put(keyConverter.apply(row.get(0)), valueConverter.apply(row.get(1)));
-                                          }
-                                       }
-                                      )
-                       );
+         reader.forEach(row -> row.forEach(cell -> {
+                                              if (row.size() >= 2) {
+                                                 map.put(keyConverter.apply(row.get(0)), valueConverter.apply(row.get(1)));
+                                              }
+                                           }
+                                          ));
       }
       return map;
+   }
+
+   @SafeVarargs
+   public static <K, V> Map<K, V> sortedMapOf(Map.Entry<? extends K, ? extends V>... objects) {
+      return mapOf(TreeMap::new, objects);
+   }
+
+   public static <K, V> Map<K, V> sortedMapOf(Object... objects) {
+      return mapOf(TreeMap::new, objects);
    }
 
    /**
@@ -268,14 +266,38 @@ public final class Maps {
     * @param output the resource to write to
     * @throws IOException Something went wrong writing to the resource
     */
-   public static <K, V> void writeCsv(@NonNull Map<K, V> map, @NonNull Resource output) throws IOException {
+   public static <K, V> void writeCsv(Map<K, V> map, Resource output) throws IOException {
       try (CSVWriter writer = CSV.builder().writer(output)) {
          for (Map.Entry<K, V> kvEntry : map.entrySet()) {
             writer.write(Convert.convert(kvEntry.getKey(), String.class),
-                         Convert.convert(kvEntry.getValue(), String.class)
-                        );
+                         Convert.convert(kvEntry.getValue(), String.class));
          }
       }
+   }
+
+   public static class Builder<K, V> {
+      private final List<Map.Entry<K, V>> entries = new ArrayList<>();
+
+      public Map<K, V> build() {
+         return build(HashMap::new);
+      }
+
+      public Map<K, V> build(Supplier<? extends Map<K, V>> mapSupplier) {
+         Map<K, V> map = mapSupplier.get();
+         entries.forEach(entry -> map.put(entry.getKey(), entry.getValue()));
+         return map;
+      }
+
+      public Builder<K, V> put(K key, V value) {
+         entries.add($(key, value));
+         return this;
+      }
+
+      public Builder<K, V> putAll(Map<? extends K, ? extends V> other) {
+         other.forEach(this::put);
+         return this;
+      }
+
    }
 
 }//END OF Maps

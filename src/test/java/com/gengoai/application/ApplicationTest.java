@@ -41,13 +41,14 @@ package com.gengoai.application;/*
  */
 
 import com.gengoai.cli.Option;
-import com.gengoai.collection.Maps;
 import com.gengoai.config.Config;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Map;
 
+import static com.gengoai.collection.Maps.hashMapOf;
+import static com.gengoai.tuple.Tuples.$;
 import static org.junit.Assert.*;
 
 /**
@@ -91,7 +92,7 @@ public class ApplicationTest {
          assertEquals("John", name);
          assertEquals(35, age);
          assertEquals("UNKNOWN", phone);
-         Assert.assertEquals(Maps.map("ALPHA", 23d), map);
+         Assert.assertEquals(hashMapOf($("ALPHA", 23d)), map);
          assertTrue(a);
          assertTrue(b);
          assertTrue(c);
@@ -101,7 +102,7 @@ public class ApplicationTest {
          assertEquals("John", Config.get("name").asString());
          assertEquals("UNKNOWN", Config.get("phone").asString());
          assertEquals(35, Config.get("age").asIntegerValue());
-         assertEquals(Maps.map("ALPHA", 23d), Config.get("map").asMap(String.class, Double.class));
+         assertEquals(hashMapOf($("ALPHA", 23d)), Config.get("map").asMap(String.class, Double.class));
          //Test CLI can override config parameter
          assertEquals("update", Config.get("action").asString());
 

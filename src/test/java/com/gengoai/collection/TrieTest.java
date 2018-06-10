@@ -22,7 +22,6 @@
 package com.gengoai.collection;
 
 import com.gengoai.string.CharMatcher;
-import com.gengoai.tuple.Tuples;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.gengoai.collection.Maps.hashMapOf;
+import static com.gengoai.tuple.Tuples.$;
 import static org.junit.Assert.*;
 
 /**
@@ -127,11 +128,11 @@ public class TrieTest {
    public void entrySet() throws Exception {
       Set<Map.Entry<String, String>> entries = trie.entrySet();
       assertEquals(5, entries.size());
-      assertTrue(entries.contains(Tuples.$("ran", "run")));
-      assertTrue(entries.contains(Tuples.$("rand", "rand")));
-      assertTrue(entries.contains(Tuples.$("was", "is")));
-      assertTrue(entries.contains(Tuples.$("wasn't", "is")));
-      assertTrue(entries.contains(Tuples.$("isn't", "is")));
+      assertTrue(entries.contains($("ran", "run")));
+      assertTrue(entries.contains($("rand", "rand")));
+      assertTrue(entries.contains($("was", "is")));
+      assertTrue(entries.contains($("wasn't", "is")));
+      assertTrue(entries.contains($("isn't", "is")));
 
       Map.Entry<String, String> first = entries.iterator().next();
       String key = first.getKey();
@@ -159,7 +160,7 @@ public class TrieTest {
 
    @Test
    public void putAll() throws Exception {
-      trie.putAll(Maps.map("goes", "go", "went", "go"));
+      trie.putAll(hashMapOf($("goes", "go"), $("went", "go")));
       assertEquals(7, trie.size());
       assertEquals("go", trie.get("goes"));
       assertEquals("go", trie.get("went"));

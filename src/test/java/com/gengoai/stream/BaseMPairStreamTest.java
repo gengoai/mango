@@ -1,16 +1,18 @@
 package com.gengoai.stream;
 
-import com.gengoai.collection.Maps;
 import com.gengoai.config.Config;
 import com.gengoai.tuple.Tuple2;
-import com.gengoai.tuple.Tuples;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
 
 import static com.gengoai.collection.Maps.hashMapOf;
+import static com.gengoai.collection.Maps.sortedMapOf;
+import static com.gengoai.tuple.Tuples.$;
 import static org.junit.Assert.*;
 
 /**
@@ -21,21 +23,18 @@ public abstract class BaseMPairStreamTest {
 
    @Test
    public void filter() throws Exception {
-      Map.Entry<String, String> g = sc.pairStream(hashMapOf($("C", "D"),
-                                                            $("A", "B")))
+      Map.Entry<String, String> g = sc.pairStream(Arrays.asList($("C", "D"),
+                                                                $("A", "B")))
                                       .filter((k, v) -> k.equals("A"))
                                       .collectAsList().get(0);
       assertEquals("A", g.getKey());
       assertEquals("B", g.getValue());
 
-      g = sc.pairStream(Maps.map("C", "D", "A", null))
+      g = sc.pairStream(hashMapOf($("C", "D"), $("A", null)))
             .filter((k, v) -> k != null && v != null)
             .collectAsList().get(0);
       assertEquals("C", g.getKey());
       assertEquals("D", g.getValue());
-   }
-
-   private <V, K> Supplier<? extends Map<K, V>> $(String c, String d) {
    }
 
    @Test
@@ -73,8 +72,8 @@ public abstract class BaseMPairStreamTest {
 
    @Test
    public void leftOuterJoin() throws Exception {
-      MPairStream<String, Integer> s1 = sc.pairStream(Maps.map("A", 1, "B", 2, "C", 3));
-      MPairStream<String, Integer> s2 = sc.pairStream(Maps.map("A", 4, "B", 1));
+      MPairStream<String, Integer> s1 = sc.pairStream(hashMapOf($("A", 1), $("B", 2), $("C", 3)));
+      MPairStream<String, Integer> s2 = sc.pairStream(hashMapOf($("A", 4), $("B", 1)));
       Map<String, Map.Entry<Integer, Integer>> joined = s1.leftOuterJoin(s2).collectAsMap();
 
       assertEquals(1, joined.get("A").getKey().intValue());
@@ -87,8 +86,12 @@ public abstract class BaseMPairStreamTest {
 
    @Test
    public void rightOuterJoin() throws Exception {
-      MPairStream<String, Integer> s1 = sc.pairStream(Maps.map("A", 1, "B", 2, "C", 3));
-      MPairStream<String, Integer> s2 = sc.pairStream(Maps.map("A", 4, "B", 1, "D", 4));
+      MPairStream<String, Integer> s1 = sc.pairStream(hashMapOf($("A", 1),
+                                                                $("B", 2),
+                                                                $("C", 3)));
+      MPairStream<String, Integer> s2 = sc.pairStream(hashMapOf($("A", 4),
+                                                                $("B", 1),
+                                                                $("D", 4)));
       Map<String, Map.Entry<Integer, Integer>> joined = s1.rightOuterJoin(s2).collectAsMap();
 
       assertEquals(1, joined.get("A").getKey().intValue());
@@ -125,7 +128,9 @@ public abstract class BaseMPairStreamTest {
 
    @Test
    public void streamOps() throws Exception {
-      MPairStream<String, Integer> stream = sc.pairStream(Maps.map("A", 1, "B", 2, "C", 3));
+      MPairStream<String, Integer> stream = sc.pairStream(hashMapOf($("A", 1),
+                                                                    $("B", 2),
+                                                                    $("C", 3)));
 
       assertEquals(sc, stream.getContext());
 
@@ -142,7 +147,9 @@ public abstract class BaseMPairStreamTest {
 
    @Test
    public void shuffle() throws Exception {
-      Map<String, Integer> orig = new TreeMap<>(Maps.map("A", 1, "B", 2, "C", 3));
+      Map<String, Integer> orig = sortedMapOf($("A", 1),
+                                              $("B", 2),
+                                              $("C", 3));
       List<Map.Entry<String, Integer>> origS = sc.pairStream(orig).collectAsList();
       boolean diff = false;
       for (int i = 0; !diff && i < 10; i++) {
@@ -156,19 +163,25 @@ public abstract class BaseMPairStreamTest {
 
    @Test
    public void count() throws Exception {
-      assertEquals(3, sc.pairStream(Maps.map("A", 1, "B", 2, "C", 3)).count());
+      assertEquals(3, sc.pairStream(hashMapOf($("A", 1),
+                                              $("B", 2),
+                                              $("C", 3))).count());
       assertEquals(0, sc.emptyPair().count());
    }
 
    @Test
    public void keyTests() throws Exception {
-      MPairStream<String, Integer> s = sc.pairStream(Maps.map("A", 1, "B", 2, "C", 3));
+      MPairStream<String, Integer> s = sc.pairStream(hashMapOf($("A", 1),
+                                                               $("B", 2),
+                                                               $("C", 3)));
       assertEquals(
          Arrays.asList("A", "B", "C"),
          s.keys().sorted(true).collect()
                   );
 
-      List<Map.Entry<String, Integer>> l = sc.pairStream(Maps.map("A", 1, "B", 2, "C", 3))
+      List<Map.Entry<String, Integer>> l = sc.pairStream(hashMapOf($("A", 1),
+                                                                   $("B", 2),
+                                                                   $("C", 3)))
                                              .sortByKey(true)
                                              .collectAsList();
       assertEquals("A", l.get(0).getKey());
@@ -176,7 +189,10 @@ public abstract class BaseMPairStreamTest {
       assertEquals("C", l.get(2).getKey());
 
 
-      l = sc.pairStream(Maps.map("A", 1, "B", 2, "C", 3)).sortByKey((s1, s2) -> -s1.compareTo(s2)).collectAsList();
+      l = sc.pairStream(hashMapOf($("A", 1),
+                                  $("B", 2),
+                                  $("C", 3)))
+            .sortByKey((s1, s2) -> -s1.compareTo(s2)).collectAsList();
       assertEquals("A", l.get(2).getKey());
       assertEquals("B", l.get(1).getKey());
       assertEquals("C", l.get(0).getKey());
@@ -185,8 +201,12 @@ public abstract class BaseMPairStreamTest {
 
    @Test
    public void union() throws Exception {
-      MPairStream<String, Integer> s1 = sc.pairStream(Maps.map("A", 1, "B", 2, "C", 3));
-      MPairStream<String, Integer> s2 = sc.pairStream(Maps.map("A", 3, "B", 1, "D", 3));
+      MPairStream<String, Integer> s1 = sc.pairStream(hashMapOf($("A", 1),
+                                                                $("B", 2),
+                                                                $("C", 3)));
+      MPairStream<String, Integer> s2 = sc.pairStream(hashMapOf($("A", 3),
+                                                                $("B", 1),
+                                                                $("D", 3)));
 
       Map<String, Integer> r = s1.union(s2).reduceByKey((v1, v2) -> v1 + v2).collectAsMap();
       assertEquals(4, r.get("A").intValue());
@@ -194,7 +214,9 @@ public abstract class BaseMPairStreamTest {
       assertEquals(3, r.get("C").intValue());
       assertEquals(3, r.get("D").intValue());
 
-      s1 = sc.pairStream(Maps.map("A", 1, "B", 2, "C", 3));
+      s1 = sc.pairStream(hashMapOf($("A", 1),
+                                   $("B", 2),
+                                   $("C", 3)));
       StreamingContext other;
       if (sc instanceof LocalStreamingContext) {
          Config.setProperty("spark.master", "local[*]");
@@ -202,7 +224,9 @@ public abstract class BaseMPairStreamTest {
       } else {
          other = StreamingContext.local();
       }
-      s2 = other.pairStream(Maps.map("A", 3, "B", 1, "D", 3));
+      s2 = other.pairStream(hashMapOf($("A", 3),
+                                      $("B", 1),
+                                      $("D", 3)));
       r = s1.union(s2).reduceByKey((v1, v2) -> v1 + v2).collectAsMap();
       assertEquals(4, r.get("A").intValue());
       assertEquals(3, r.get("B").intValue());
@@ -243,9 +267,9 @@ public abstract class BaseMPairStreamTest {
    @Test
    public void map() throws Exception {
       List<String> r = sc.pairStream(
-         Tuples.$("A", "A"),
-         Tuples.$("A", "B"),
-         Tuples.$("A", "C")
+         $("A", "A"),
+         $("A", "B"),
+         $("A", "C")
                                     )
                          .map((k, v) -> k + "," + v)
                          .collect();

@@ -21,7 +21,6 @@
 
 package com.gengoai.collection.map;
 
-import com.gengoai.collection.Maps;
 import com.gengoai.collection.NormalizedStringMap;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,6 +28,8 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.Set;
 
+import static com.gengoai.collection.Maps.hashMapOf;
+import static com.gengoai.tuple.Tuples.$;
 import static org.junit.Assert.*;
 
 /**
@@ -76,7 +77,7 @@ public class NormalizedStringMapTest {
       assertEquals(4, map.keySet().size());
       Set<String> keySet = map.keySet();
       assertTrue(keySet.containsAll(Arrays.asList(
-            "new", "ARG", "old", "jose"
+         "new", "ARG", "old", "jose"
                                                  )));
    }
 
@@ -101,7 +102,8 @@ public class NormalizedStringMapTest {
    public void testPut() throws Exception {
       assertNull(map.put("void", 1.0));
       assertEquals((Double) 1.0, map.put("voId", 2.0));
-      map.putAll(Maps.map("ARG", 4.0, "lasting", 2.0));
+      map.putAll(hashMapOf($("ARG", 4.0),
+                           $("lasting", 2.0)));
       assertEquals((Double) 4.0, map.get("arg"));
       assertEquals((Double) 2.0, map.get("lasting"));
    }

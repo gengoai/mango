@@ -21,7 +21,6 @@
 
 package com.gengoai.conversion.impl;
 
-import com.gengoai.collection.Maps;
 import com.gengoai.conversion.ArrayConverter;
 import com.gengoai.conversion.Val;
 import org.junit.Assert;
@@ -29,6 +28,8 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 
+import static com.gengoai.collection.Maps.hashMapOf;
+import static com.gengoai.tuple.Tuples.$;
 import static org.junit.Assert.*;
 
 public class ArrayConverterTest {
@@ -36,7 +37,8 @@ public class ArrayConverterTest {
 
    @Test
    public void applyTest() throws Exception {
-      Assert.assertArrayEquals(new Integer[]{1, 3, 4}, new ArrayConverter<>(Integer.class).apply(new Object[]{"1", 3.0, 4}));
+      Assert.assertArrayEquals(new Integer[]{1, 3, 4},
+                               new ArrayConverter<>(Integer.class).apply(new Object[]{"1", 3.0, 4}));
 
       //Test null output
       assertNull(new ArrayConverter<>(Double.class).apply(null));
@@ -57,8 +59,8 @@ public class ArrayConverterTest {
       assertArrayEquals(new Long[]{23L, null}, Val.of(new Object[]{"23.4", new ArrayList<>()}).asLongArray());
       assertArrayEquals(new Boolean[]{true, false, true}, Val.of(new Object[]{1.0, "blah", true}).asBooleanArray());
       assertArrayEquals(new String[]{"{1=3}", "12.3"}, Val.of(new Object[]{
-            Maps.map(1, 3),
-            12.3
+         hashMapOf($(1, 3)),
+         12.3
       }).asStringArray());
    }
 
