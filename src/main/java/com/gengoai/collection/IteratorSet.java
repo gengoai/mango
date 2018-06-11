@@ -29,21 +29,29 @@ public class IteratorSet<E> extends AbstractSet<E> {
       return new RemovableIterator<>(Streams.asStream(iteratorSupplier.get()).distinct().iterator());
    }
 
-   private class RemovableIterator<E> extends IteratorDecorator<E> {
+   private class RemovableIterator<E> implements Iterator<E> {
       private final Iterator<E> backingIterator;
+      private E lastValue;
 
       private RemovableIterator(Iterator<E> backingIterator) {
          this.backingIterator = backingIterator;
       }
 
+
       @Override
-      protected Iterator<E> backingIterator() {
-         return backingIterator;
+      public boolean hasNext() {
+         return backingIterator.hasNext();
+      }
+
+      @Override
+      public E next() {
+         lastValue = backingIterator.next();
+         return lastValue;
       }
 
       @Override
       public void remove() {
-         IteratorSet.this.remove(getLastValue());
+         IteratorSet.this.remove(lastValue);
       }
    }
 

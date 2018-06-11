@@ -30,8 +30,6 @@ public final class Defaults {
     * @return the default value
     */
    public static <T> T defaultValue(Class<T> clazz) {
-      Validation.notNull(clazz);
-
       if (clazz == boolean.class || clazz == Boolean.class) {
          return Cast.as(DEFAULT_BOOLEAN);
       } else if (clazz == byte.class || clazz == Byte.class) {
@@ -49,7 +47,6 @@ public final class Defaults {
       } else if (clazz == double.class || clazz == Double.class) {
          return Cast.as(DEFAULT_DOUBLE);
       }
-
       return null;
    }
 

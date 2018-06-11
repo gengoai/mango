@@ -4,7 +4,7 @@ import com.gengoai.function.SerializableFunction;
 import lombok.NonNull;
 
 /**
- * The type Auto calculating lru cache.
+ * Auto calculating LRU cache that calculates values for keys when retrieved.
  *
  * @param <K> the type parameter
  * @param <V> the type parameter

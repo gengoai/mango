@@ -22,13 +22,14 @@
 package com.gengoai;
 
 import com.gengoai.collection.Streams;
-import lombok.NonNull;
 import org.apache.commons.math3.util.FastMath;
 
 import java.math.BigDecimal;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
+
+import static com.gengoai.Validation.checkArgument;
 
 
 /**
@@ -49,10 +50,10 @@ public final class Math2 {
 
 
    /**
-    * Try parse double double.
+    * Try to parse a string into a double returning null if a parse error occurs
     *
-    * @param string the string
-    * @return the double
+    * @param string the string to parse
+    * @return the parsed Double value or null if not parsable
     */
    public static Double tryParseDouble(String string) {
       try {
@@ -63,10 +64,10 @@ public final class Math2 {
    }
 
    /**
-    * Try parse integer integer.
+    * Try to parse a string into a integer returning null if a parse error occurs
     *
-    * @param string the string
-    * @return the integer
+    * @param string the string to parse
+    * @return the parsed Integer value or null if not parsable
     */
    public static Integer tryParseInteger(String string) {
       try {
@@ -77,10 +78,10 @@ public final class Math2 {
    }
 
    /**
-    * Try parse float float.
+    * Try to parse a string into a float returning null if a parse error occurs
     *
-    * @param string the string
-    * @return the float
+    * @param string the string to parse
+    * @return the parsed Float value or null if not parsable
     */
    public static Float tryParseFloat(String string) {
       try {
@@ -110,7 +111,7 @@ public final class Math2 {
     * @return the clipped value
     */
    public static double clip(double value, double min, double max) {
-      Validation.checkArgument(max > min, "upper bound must be > lower bound");
+      checkArgument(max > min, "upper bound must be > lower bound");
       if (value < min) {
          return min;
       } else if (value > max) {
@@ -164,8 +165,8 @@ public final class Math2 {
     * @throws IllegalArgumentException if originalMax <= originalMin or newMax <= newMin
     */
    public static double rescale(double value, double originalMin, double originalMax, double newMin, double newMax) {
-      Validation.checkArgument(originalMax > originalMin, "original upper bound must be > original lower bound");
-      Validation.checkArgument(newMax > newMin, "new upper bound must be > new lower bound");
+      checkArgument(originalMax > originalMin, "original upper bound must be > original lower bound");
+      checkArgument(newMax > newMin, "new upper bound must be > new lower bound");
       return ((value - originalMin) / (originalMax - originalMin)) * (newMax - newMin) + newMin;
    }
 
@@ -200,7 +201,7 @@ public final class Math2 {
     * @return the sum of the iterable
     * @throws NullPointerException if the values are null
     */
-   public static double sum(@NonNull Iterable<? extends Number> values) {
+   public static double sum(Iterable<? extends Number> values) {
       return summaryStatistics(values).getSum();
    }
 
@@ -212,7 +213,7 @@ public final class Math2 {
     * @return the sum of the values
     * @throws NullPointerException if the values are null
     */
-   public static double sum(@NonNull double... values) {
+   public static double sum(double... values) {
       return DoubleStream.of(values).sum();
    }
 
@@ -223,7 +224,7 @@ public final class Math2 {
     * @return the sum of the values
     * @throws NullPointerException if the values are null
     */
-   public static int sum(@NonNull int... values) {
+   public static int sum(int... values) {
       return IntStream.of(values).sum();
    }
 
@@ -234,7 +235,7 @@ public final class Math2 {
     * @return the sum of the values
     * @throws NullPointerException if the values are null
     */
-   public static long sum(@NonNull long... values) {
+   public static long sum(long... values) {
       return LongStream.of(values).sum();
    }
 
@@ -246,7 +247,7 @@ public final class Math2 {
     * @return the summary statistics of the given array
     * @throws NullPointerException if the values are null
     */
-   public static EnhancedDoubleStatistics summaryStatistics(@NonNull double... values) {
+   public static EnhancedDoubleStatistics summaryStatistics(double... values) {
       return DoubleStream.of(values).parallel().collect(EnhancedDoubleStatistics::new,
                                                         EnhancedDoubleStatistics::accept,
                                                         EnhancedDoubleStatistics::combine);
@@ -260,7 +261,7 @@ public final class Math2 {
     * @return the summary statistics of the given array
     * @throws NullPointerException if the values are null
     */
-   public static EnhancedDoubleStatistics summaryStatistics(@NonNull int... values) {
+   public static EnhancedDoubleStatistics summaryStatistics(int... values) {
       return IntStream.of(values).parallel().mapToDouble(i -> i).collect(EnhancedDoubleStatistics::new,
                                                                          EnhancedDoubleStatistics::accept,
                                                                          EnhancedDoubleStatistics::combine);
@@ -273,7 +274,7 @@ public final class Math2 {
     * @return the summary statistics of the given array
     * @throws NullPointerException if the values are null
     */
-   public static EnhancedDoubleStatistics summaryStatistics(@NonNull long... values) {
+   public static EnhancedDoubleStatistics summaryStatistics(long... values) {
       return LongStream.of(values).parallel().mapToDouble(i -> i).collect(EnhancedDoubleStatistics::new,
                                                                           EnhancedDoubleStatistics::accept,
                                                                           EnhancedDoubleStatistics::combine);
@@ -286,7 +287,7 @@ public final class Math2 {
     * @return the summary statistics of the given iterable
     * @throws NullPointerException if the iterable is null
     */
-   public static EnhancedDoubleStatistics summaryStatistics(@NonNull Iterable<? extends Number> values) {
+   public static EnhancedDoubleStatistics summaryStatistics(Iterable<? extends Number> values) {
       return Streams.asStream(values)
                     .parallel()
                     .mapToDouble(Number::doubleValue)

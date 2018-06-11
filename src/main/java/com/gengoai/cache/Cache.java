@@ -36,11 +36,11 @@ import lombok.NonNull;
 public interface Cache<K, V> {
 
    /**
-    * Create cache.
+    * Creates an LRU cache.
     *
-    * @param <K>     the type parameter
-    * @param <V>     the type parameter
-    * @param maxSize the max size
+    * @param <K>     the key type parameter
+    * @param <V>     the value type parameter
+    * @param maxSize the max size of the cache
     * @return the cache
     */
    static <K, V> Cache<K, V> create(int maxSize) {
@@ -48,12 +48,12 @@ public interface Cache<K, V> {
    }
 
    /**
-    * Create cache.
+    * Creates an Auto Calculating LRU cache.
     *
-    * @param <K>             the type parameter
-    * @param <V>             the type parameter
-    * @param maxSize         the max size
-    * @param valueCalculator the value calculator
+    * @param <K>             the key type parameter
+    * @param <V>             the value type parameter
+    * @param maxSize         the max size of the cache
+    * @param valueCalculator the value calculator to use when getting the value for a key
     * @return the cache
     */
    static <K, V> Cache<K, V> create(int maxSize, SerializableFunction<K, V> valueCalculator) {
@@ -89,7 +89,6 @@ public interface Cache<K, V> {
     * @param keys The keys to remove
     */
    void invalidateAll(@NonNull Iterable<? extends K> keys);
-
 
    /**
     * Clears the cache

@@ -9,10 +9,10 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- * The type Lru cache.
+ * LRU Cache
  *
- * @param <K> the type parameter
- * @param <V> the type parameter
+ * @param <K> the key type parameter
+ * @param <V> the value type parameter
  * @author David B. Bracewell
  */
 public class LRUCache<K, V> implements Cache<K, V> {
