@@ -23,7 +23,6 @@ package com.gengoai.parsing;
 
 import com.gengoai.io.resource.Resource;
 import com.gengoai.string.CharMatcher;
-import lombok.NonNull;
 import lombok.Value;
 
 import java.io.IOException;
@@ -47,7 +46,7 @@ public class PatternLexer implements Lexer, Serializable {
    }
 
    @Override
-   public ParserTokenStream lex(@NonNull Resource input) throws IOException {
+   public ParserTokenStream lex(Resource input) throws IOException {
       return new ParserTokenStream(new TokenIterator(input.readToString()));
    }
 
@@ -125,6 +124,12 @@ public class PatternLexer implements Lexer, Serializable {
    public static class Builder {
       private final List<LexicalEntry> patterns = new ArrayList<>();
 
+
+      public <T extends ParserTokenType & HasLexicalPattern> Builder add(T pattern) {
+         patterns.add(new LexicalEntry(LexicalPattern.regex(pattern.lexicalPattern()), pattern));
+         return this;
+      }
+
       /**
        * Adds a new lexical pattern
        *
@@ -132,7 +137,7 @@ public class PatternLexer implements Lexer, Serializable {
        * @param pattern   the pattern to add
        * @return the builder
        */
-      public Builder add(@NonNull ParserTokenType tokenType, @NonNull LexicalPattern pattern) {
+      public Builder add(ParserTokenType tokenType, LexicalPattern pattern) {
          patterns.add(new LexicalEntry(pattern, tokenType));
          return this;
       }
@@ -144,7 +149,7 @@ public class PatternLexer implements Lexer, Serializable {
        * @param character the character associated with the token type
        * @return the builder
        */
-      public Builder add(@NonNull ParserTokenType tokenType, char character) {
+      public Builder add(ParserTokenType tokenType, char character) {
          patterns.add(new LexicalEntry(LexicalPattern.charLiteral(character), tokenType));
          return this;
       }
@@ -157,7 +162,7 @@ public class PatternLexer implements Lexer, Serializable {
        * @param predicate the predicate associated with the pattern
        * @return the builder
        */
-      public Builder add(@NonNull ParserTokenType tokenType, @NonNull CharMatcher predicate) {
+      public Builder add(ParserTokenType tokenType, CharMatcher predicate) {
          patterns.add(new LexicalEntry(LexicalPattern.charPredicate(predicate), tokenType));
          return this;
       }

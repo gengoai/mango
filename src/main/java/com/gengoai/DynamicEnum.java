@@ -23,11 +23,13 @@ package com.gengoai;
 
 import com.gengoai.cache.Cache;
 import com.gengoai.conversion.Cast;
-import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.gengoai.Validation.notNull;
+import static com.gengoai.Validation.notNullOrBlank;
 
 /**
  * <p>Acts a global repository for dynamically generated {@link EnumValue}s. Each EnumValue acts like a Java
@@ -46,7 +48,7 @@ public final class DynamicEnum implements Serializable {
       throw new IllegalAccessError();
    }
 
-   private static String toKey(@NonNull Class<? extends EnumValue> enumClass, String name) {
+   private static String toKey(Class<? extends EnumValue> enumClass, String name) {
       String canonicalName = nameCache.get(enumClass);
       if (name.startsWith(canonicalName)) {
          return name;
@@ -62,8 +64,8 @@ public final class DynamicEnum implements Serializable {
     * @return True if the specified value has been defined for the given EnumValue class
     * @throws NullPointerException if either the enumClass or name are null
     */
-   public static boolean isDefined(@NonNull Class<? extends EnumValue> enumClass, @NonNull String name) {
-      return GLOBAL_REPOSITORY.containsKey(toKey(enumClass, name));
+   public static boolean isDefined(Class<? extends EnumValue> enumClass, String name) {
+      return GLOBAL_REPOSITORY.containsKey(toKey(notNull(enumClass), notNullOrBlank(name)));
    }
 
    /**
@@ -77,8 +79,8 @@ public final class DynamicEnum implements Serializable {
     * @throws IllegalArgumentException if the specified name is not a member of enumClass.
     * @throws NullPointerException     if either the enumClass or name are null
     */
-   public static <T extends EnumValue> T valueOf(@NonNull Class<T> enumClass, @NonNull String name) {
-      String key = toKey(enumClass, name);
+   public static <T extends EnumValue> T valueOf(Class<T> enumClass, String name) {
+      String key = toKey(notNull(enumClass), notNullOrBlank(name));
       T toReturn = Cast.as(GLOBAL_REPOSITORY.get(key));
       if (toReturn == null) {
          throw new IllegalArgumentException("No enum constant " + key);
@@ -95,7 +97,7 @@ public final class DynamicEnum implements Serializable {
     * @return the previously defined EnumValue with specified name and type or the one passed into register
     * @throws NullPointerException if enumValue is null
     */
-   public static <T extends EnumValue> T register(@NonNull T enumValue) {
+   public static <T extends EnumValue> T register(T enumValue) {
       return Cast.as(GLOBAL_REPOSITORY.computeIfAbsent(enumValue.canonicalName(), s -> enumValue));
    }
 

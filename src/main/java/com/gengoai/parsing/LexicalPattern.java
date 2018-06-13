@@ -3,12 +3,13 @@ package com.gengoai.parsing;
 import com.gengoai.Regex;
 import com.gengoai.Validation;
 import com.gengoai.string.CharMatcher;
-import lombok.NonNull;
 import lombok.Value;
 
 import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.gengoai.Validation.notNull;
 
 /**
  * <p>Methodology to find matches for patterns in CharSequences</p>
@@ -39,8 +40,8 @@ public abstract class LexicalPattern implements Serializable {
     * @param literal the literal pattern
     * @return the lexical pattern
     */
-   public static LexicalPattern charLiteral(@NonNull CharMatcher literal) {
-      return new CharLiteralPattern(literal);
+   public static LexicalPattern charLiteral(CharMatcher literal) {
+      return new CharLiteralPattern(notNull(literal));
    }
 
    /**
@@ -50,8 +51,8 @@ public abstract class LexicalPattern implements Serializable {
     * @param predicate the predicate to match
     * @return the lexical pattern
     */
-   public static LexicalPattern charPredicate(@NonNull CharMatcher predicate) {
-      return new CharPredicatePattern(predicate);
+   public static LexicalPattern charPredicate(CharMatcher predicate) {
+      return new CharPredicatePattern(notNull(predicate));
    }
 
    /**
@@ -60,8 +61,8 @@ public abstract class LexicalPattern implements Serializable {
     * @param pattern the regular expression pattern
     * @return the lexical pattern
     */
-   public static LexicalPattern regex(@NonNull Pattern pattern) {
-      return new RegexPattern(pattern);
+   public static LexicalPattern regex(Pattern pattern) {
+      return new RegexPattern(notNull(pattern));
    }
 
    /**
@@ -70,7 +71,7 @@ public abstract class LexicalPattern implements Serializable {
     * @param pattern the regular expression pattern
     * @return the lexical pattern
     */
-   public static LexicalPattern regex(@NonNull String pattern) {
+   public static LexicalPattern regex(String pattern) {
       return new RegexPattern(Pattern.compile(pattern));
    }
 
@@ -80,8 +81,8 @@ public abstract class LexicalPattern implements Serializable {
     * @param pattern the regular expression pattern
     * @return the lexical pattern
     */
-   public static LexicalPattern regex(@NonNull Regex pattern) {
-      return new RegexPattern(pattern.toPattern());
+   public static LexicalPattern regex(Regex pattern) {
+      return new RegexPattern(notNull(pattern).toPattern());
    }
 
    /**
@@ -90,8 +91,8 @@ public abstract class LexicalPattern implements Serializable {
     * @param literal the literal pattern
     * @return the lexical pattern
     */
-   public static LexicalPattern stringLiteral(@NonNull String literal) {
-      return new LiteralPattern(literal);
+   public static LexicalPattern stringLiteral(String literal) {
+      return new LiteralPattern(notNull(literal));
    }
 
    /**
@@ -114,7 +115,7 @@ public abstract class LexicalPattern implements Serializable {
       }
 
       @Override
-      public int match(@NonNull CharSequence sequence, int start) {
+      public int match(CharSequence sequence, int start) {
          Validation.checkElementIndex(start, sequence.length());
          if (literal.length() > (sequence.length() - start)) {
             return NO_MATCH;
@@ -128,15 +129,49 @@ public abstract class LexicalPattern implements Serializable {
       }
    }
 
-   @Value
    private static class CharLiteralPattern extends LexicalPattern {
       private static final long serialVersionUID = 1L;
       private final CharMatcher predicate;
 
+      public CharLiteralPattern(CharMatcher predicate) {
+         this.predicate = predicate;
+      }
+
+      protected boolean canEqual(Object other) {
+         return other instanceof CharLiteralPattern;
+      }
+
+      public boolean equals(Object o) {
+         if (o == this) return true;
+         if (!(o instanceof CharLiteralPattern)) return false;
+         final CharLiteralPattern other = (CharLiteralPattern) o;
+         if (!other.canEqual((Object) this)) return false;
+         final Object this$predicate = this.getPredicate();
+         final Object other$predicate = other.getPredicate();
+         if (this$predicate == null ? other$predicate != null : !this$predicate.equals(other$predicate)) return false;
+         return true;
+      }
+
+      public CharMatcher getPredicate() {
+         return this.predicate;
+      }
+
+      public int hashCode() {
+         final int PRIME = 59;
+         int result = 1;
+         final Object $predicate = this.getPredicate();
+         result = result * PRIME + ($predicate == null ? 43 : $predicate.hashCode());
+         return result;
+      }
+
       @Override
-      public int match(@NonNull CharSequence sequence, int start) {
+      public int match(CharSequence sequence, int start) {
          Validation.checkElementIndex(start, sequence.length());
          return predicate.test(sequence.charAt(start)) ? 1 : NO_MATCH;
+      }
+
+      public String toString() {
+         return "LexicalPattern.CharLiteralPattern(predicate=" + this.getPredicate() + ")";
       }
    }
 
@@ -150,7 +185,7 @@ public abstract class LexicalPattern implements Serializable {
       }
 
       @Override
-      public int match(@NonNull CharSequence sequence, int start) {
+      public int match(CharSequence sequence, int start) {
          Validation.checkElementIndex(start, sequence.length());
          int length = start;
          while (length < sequence.length() && pattern.test(sequence.charAt(length))) {
@@ -166,7 +201,7 @@ public abstract class LexicalPattern implements Serializable {
       private final Pattern pattern;
 
       @Override
-      public int match(@NonNull CharSequence sequence, int start) {
+      public int match(CharSequence sequence, int start) {
          Validation.checkElementIndex(start, sequence.length());
          Matcher m = pattern.matcher(sequence);
          if (m.find(start) && m.start() == start) {

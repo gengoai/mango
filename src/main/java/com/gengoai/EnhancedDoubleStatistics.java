@@ -23,7 +23,8 @@ package com.gengoai;
 
 import com.gengoai.function.SerializableDoubleConsumer;
 import lombok.NonNull;
-import lombok.ToString;
+
+import java.util.Objects;
 
 /**
  * <p>Enhanced version of {@link java.util.DoubleSummaryStatistics} that provides average, variance, and standard
@@ -31,7 +32,6 @@ import lombok.ToString;
  *
  * @author David B. Bracewell
  */
-@ToString(exclude = "sumOfSq")
 public final class EnhancedDoubleStatistics implements SerializableDoubleConsumer {
    private static final long serialVersionUID = 1L;
    private double min = Double.POSITIVE_INFINITY;
@@ -213,5 +213,33 @@ public final class EnhancedDoubleStatistics implements SerializableDoubleConsume
       return Math.abs(getSumOfSquares() - getAverage() * getSum()) / getCount();
    }
 
+   @Override
+   public int hashCode() {
+      return Objects.hash(min, max, sum, sumOfSq, count, median, median_step);
+   }
 
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {return true;}
+      if (obj == null || getClass() != obj.getClass()) {return false;}
+      final EnhancedDoubleStatistics other = (EnhancedDoubleStatistics) obj;
+      return Objects.equals(this.min, other.min)
+                && Objects.equals(this.max, other.max)
+                && Objects.equals(this.sum, other.sum)
+                && Objects.equals(this.sumOfSq, other.sumOfSq)
+                && Objects.equals(this.count, other.count)
+                && Objects.equals(this.median, other.median)
+                && Objects.equals(this.median_step, other.median_step);
+   }
+
+   @Override
+   public String toString() {
+      return "EnhancedDoubleStatistics{" +
+                "min=" + min +
+                ", max=" + max +
+                ", sum=" + sum +
+                ", count=" + count +
+                ", median=" + median +
+                '}';
+   }
 }//END OF EnhancedDoubleStatistics

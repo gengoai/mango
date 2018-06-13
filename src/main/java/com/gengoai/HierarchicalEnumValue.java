@@ -35,7 +35,8 @@ import java.util.regex.Pattern;
 /**
  * <p>A enum like object that can have elements created at runtime as needed and which have a parent associated with
  * them. As with EnumValues, elements are singleton objects and can have their equality safely checked using the
- * <code>==</code> operator. Their implementation of {@link Tag#isInstance(Tag)} returns true if the element is equal to
+ * <code>==</code> operator. Their implementation of {@link Tag#isInstance(Tag)} returns true if the element is equal
+ * to
  * or a descendant of the tag being compared against. Elements can have their parents assigned at later time as long up
  * until a non-null parent has been set.</p>
  *
@@ -104,7 +105,8 @@ public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> ext
          return true;
       }
       if (oldParent != newParent) {
-         throw new IllegalArgumentException("Attempting to reassign " + name() + "'s parent from " + oldParent + " to " + newParent);
+         throw new IllegalArgumentException(
+            "Attempting to reassign " + name() + "'s parent from " + oldParent + " to " + newParent);
       }
       return false;
    }
@@ -124,7 +126,7 @@ public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> ext
    }
 
    protected HierarchicalEnumValue(String canonicalName, String name, T parent) {
-      super(canonicalName,name);
+      super(canonicalName, name);
       this.parent = parent;
    }
 
@@ -154,7 +156,8 @@ public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> ext
    }
 
    /**
-    * <p>Gets the parent of this element. It first checks if a parent has been explicitly set and if not will attempt to
+    * <p>Gets the parent of this element. It first checks if a parent has been explicitly set and if not will attempt
+    * to
     * determine the parent using the configuration property <code>canonical.name.parent</code> where the canonical name
     * is determined using {@link #canonicalName()}.</p>
     *

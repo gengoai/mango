@@ -22,15 +22,15 @@
 package com.gengoai;
 
 import lombok.NonNull;
-import lombok.SneakyThrows;
 
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
+import javax.crypto.*;
 import javax.crypto.spec.DESKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.Arrays;
 import java.util.Base64;
@@ -59,14 +59,20 @@ public enum EncryptionMethod {
     * @see <a href="https://en.wikipedia.org/wiki/Data_Encryption_Standard">Wikipedia's entry on DES</a>
     */
    DES("DES", 16) {
-      @SneakyThrows
       protected Cipher constructCipher(byte[] key, int mode) {
-         SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(name);
-         KeySpec keySpec = new DESKeySpec(ensureKeyLength(key));
-         SecretKey secretkey = keyFactory.generateSecret(keySpec);
-         Cipher cipher = Cipher.getInstance(name);
-         cipher.init(mode, secretkey);
-         return cipher;
+         try {
+            SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(name);
+            KeySpec keySpec = new DESKeySpec(ensureKeyLength(key));
+            SecretKey secretkey = keyFactory.generateSecret(keySpec);
+            Cipher cipher = Cipher.getInstance(name);
+            cipher.init(mode, secretkey);
+            return cipher;
+         } catch (InvalidKeyException
+                     | NoSuchAlgorithmException
+                     | NoSuchPaddingException
+                     | InvalidKeySpecException e) {
+            throw new RuntimeException(e);
+         }
       }
    },
    /**
@@ -117,18 +123,21 @@ public enum EncryptionMethod {
     * @param key The key
     * @return A key of the need length
     */
-   @SneakyThrows
    protected final byte[] ensureKeyLength(byte[] key) {
-      if (key.length == keyLength) {
-         return key;
+      try {
+         if (key.length == keyLength) {
+            return key;
+         }
+         MessageDigest digest;
+         digest = MessageDigest.getInstance("MD5");
+         byte[] keyBytes = Arrays.copyOf(digest.digest(key), keyLength);
+         for (int j = 0, k = 16; j < (keyLength - 16); ) {
+            keyBytes[k++] = keyBytes[j++];
+         }
+         return keyBytes;
+      } catch (NoSuchAlgorithmException e) {
+         throw new RuntimeException(e);
       }
-      MessageDigest digest;
-      digest = MessageDigest.getInstance("MD5");
-      byte[] keyBytes = Arrays.copyOf(digest.digest(key), keyLength);
-      for (int j = 0, k = 16; j < (keyLength - 16); ) {
-         keyBytes[k++] = keyBytes[j++];
-      }
-      return keyBytes;
    }
 
    /**
@@ -138,12 +147,17 @@ public enum EncryptionMethod {
     * @param mode The mode
     * @return The Cipher
     */
-   @SneakyThrows
    protected Cipher constructCipher(byte[] key, int mode) {
-      SecretKeySpec keySpec = new SecretKeySpec(ensureKeyLength(key), name);
-      Cipher cipher = Cipher.getInstance(name);
-      cipher.init(mode, keySpec);
-      return cipher;
+      try {
+         SecretKeySpec keySpec = new SecretKeySpec(ensureKeyLength(key), name);
+         Cipher cipher = Cipher.getInstance(name);
+         cipher.init(mode, keySpec);
+         return cipher;
+      } catch (InvalidKeyException
+                  | NoSuchAlgorithmException
+                  | NoSuchPaddingException e) {
+         throw new RuntimeException(e);
+      }
    }
 
    /**
@@ -164,11 +178,15 @@ public enum EncryptionMethod {
     * @param key     The password
     * @return A Base64 encoded version of the encrypted content
     */
-   @SneakyThrows
    public String encrypt(byte[] content, byte[] key) {
-      Cipher cipher = constructCipher(key, Cipher.ENCRYPT_MODE);
-      byte[] encryptedText = cipher.doFinal(content);
-      return new String(Base64.getEncoder().withoutPadding().encode(encryptedText));
+      try {
+         Cipher cipher = constructCipher(key, Cipher.ENCRYPT_MODE);
+         byte[] encryptedText = cipher.doFinal(content);
+         return new String(Base64.getEncoder().withoutPadding().encode(encryptedText));
+      } catch (IllegalBlockSizeException
+                  | BadPaddingException e) {
+         throw new RuntimeException(e);
+      }
    }
 
    /**
@@ -200,10 +218,13 @@ public enum EncryptionMethod {
     * @param key     The password
     * @return An unencrypted version of the content
     */
-   @SneakyThrows
    public byte[] decrypt(String content, byte[] key) {
-      Cipher cipher = constructCipher(key, Cipher.DECRYPT_MODE);
-      return cipher.doFinal(Base64.getDecoder().decode(content.trim()));
+      try {
+         Cipher cipher = constructCipher(key, Cipher.DECRYPT_MODE);
+         return cipher.doFinal(Base64.getDecoder().decode(content.trim()));
+      } catch (IllegalBlockSizeException | BadPaddingException e) {
+         throw new RuntimeException(e);
+      }
    }
 
 

@@ -28,6 +28,9 @@ import lombok.NonNull;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 
+import static com.gengoai.Validation.checkArgument;
+import static com.gengoai.Validation.notNullOrBlank;
+
 /**
  * <p>A enum like object that can have elements created at runtime as needed. Elements are singleton objects and can
  * have their equality safely checked using the <code>==</code> operator. A python script in the mango tools directory
@@ -71,16 +74,16 @@ public abstract class EnumValue implements Tag, Serializable, Cloneable {
     * @param name the name of the enum value
     */
    protected EnumValue(String name) {
-      Validation.notNullOrBlank(name, "[" + name + " ] is invalid.");
+      notNullOrBlank(name, "[" + name + " ] is invalid.");
       this.name = normalize(name);
-      Validation.checkArgument(!name.contains(".") && name.length() > 0, name + " is invalid.");
+      checkArgument(!name.contains(".") && name.length() > 0, name + " is invalid.");
       this.fullName = getClass().getCanonicalName() + "." + this.name;
    }
 
    protected EnumValue(String cannonicalName, String name) {
-      Validation.notNullOrBlank(name, "[" + name + " ] is invalid.");
+      notNullOrBlank(name, "[" + name + " ] is invalid.");
       this.name = normalize(name);
-      Validation.checkArgument(!name.contains(".") && name.length() > 0, name + " is invalid.");
+      checkArgument(!name.contains(".") && name.length() > 0, name + " is invalid.");
       this.fullName = cannonicalName + "." + this.name;
    }
 
@@ -94,9 +97,9 @@ public abstract class EnumValue implements Tag, Serializable, Cloneable {
    static String normalize(@NonNull String name) {
       StringBuilder toReturn = new StringBuilder();
       boolean previousSpace = false;
-      for( char c : name.toCharArray()){
-         if( Character.isWhitespace(c) ){
-            if( !previousSpace ){
+      for (char c : name.toCharArray()) {
+         if (Character.isWhitespace(c)) {
+            if (!previousSpace) {
                toReturn.append('_');
             }
             previousSpace = true;
@@ -115,8 +118,8 @@ public abstract class EnumValue implements Tag, Serializable, Cloneable {
    }
 
    /**
-    * <p>Retrieves the canonical name of the enum value, which is the canonical name of the enum class and the specified
-    * name of the enum value.</p>
+    * <p>Retrieves the canonical name of the enum value, which is the canonical name of the enum class and the
+    * specified name of the enum value.</p>
     *
     * @return the canonical name of the enum value
     */
@@ -152,7 +155,7 @@ public abstract class EnumValue implements Tag, Serializable, Cloneable {
 
    @Override
    public final boolean equals(Object obj) {
-      return obj != null && obj instanceof EnumValue && canonicalName().equals(Cast.<EnumValue>as(obj).canonicalName());
+      return obj instanceof EnumValue && canonicalName().equals(Cast.<EnumValue>as(obj).canonicalName());
    }
 
    @Override
