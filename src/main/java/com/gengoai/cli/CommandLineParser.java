@@ -21,6 +21,7 @@
 
 package com.gengoai.cli;
 
+import com.gengoai.collection.Iterables;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Convert;
 import com.gengoai.function.Unchecked;
@@ -44,10 +45,10 @@ import java.util.stream.Stream;
  * arguments can be specified at one time (e.g. -xzf would set the x, z, and f options to true). Short arguments may
  * have values (e.g. -f FILENAME).</p>
  *
-    *
- * <p>Values for options will be specified on the corresponding {@link NamedOption} instance. The value can be retrieved
- * either directly from the NamedOption or by using the {@link #get(String)} method. Argument names need not specify the
- * "--" or "-" prefix.</p>
+ *
+ * <p>Values for options will be specified on the corresponding {@link NamedOption} instance. The value can be
+ * retrieved either directly from the NamedOption or by using the {@link #get(String)} method. Argument names need not
+ * specify the "--" or "-" prefix.</p>
  *
  * @author David B. Bracewell
  */
@@ -93,13 +94,6 @@ public final class CommandLineParser {
       addOption(NamedOption.CONFIG_EXPLAIN);
    }
 
-   private static String peek(List<String> list, int index) {
-      if (index < 0 || index >= list.size()) {
-         return StringUtils.EMPTY;
-      }
-      return list.get(index);
-   }
-
    private static boolean isOptionName(String string) {
       return string.startsWith(LONG) || string.startsWith(SHORT);
    }
@@ -117,6 +111,26 @@ public final class CommandLineParser {
             options.put(alias, namedOption);
          }
       }
+   }
+
+   private int processKeyValue(List<String> cleanedArgs, int i, String current, List<String> filtered) {
+      String value = "true";
+      String next = Iterables.get(cleanedArgs, i + 1, StringUtils.EMPTY);
+      if (next.equalsIgnoreCase(KEY_VALUE_SEPARATOR)) {
+         //If are peeked at value is our key value separator then lets set the value to what comes after.
+         value = Iterables.get(cleanedArgs, i + 2, StringUtils.EMPTY);
+         if (isOptionName(value)) {
+            //If the value is an option name, we have an error
+            throw new CommandLineParserException(current, null);
+         }
+         i += 2;
+      } else if (!isOptionName(next)) {
+         //If are peeked at value isn't our key value separator and isn't another option name, lets set the value to what comes after.
+         i++;
+         value = next;
+      }
+      setValue(current, value, filtered);
+      return i;
    }
 
    /**
@@ -149,6 +163,7 @@ public final class CommandLineParser {
          }
       }
 
+
       for (int i = 0; i < cleanedArgs.size(); i++) {
          String current = cleanedArgs.get(i);
 
@@ -158,23 +173,8 @@ public final class CommandLineParser {
          }
 
          if (current.startsWith(LONG)) {
-            //We have a long form argument.
-            String value = "true";
-            String next = peek(cleanedArgs, i + 1);
-            if (next.equalsIgnoreCase(KEY_VALUE_SEPARATOR)) {
-               //If are peeked at value is our key value separator then lets set the value to what comes after.
-               value = peek(cleanedArgs, i + 2);
-               if (isOptionName(value)) {
-                  //If the value is an option name, we have an error
-                  throw new CommandLineParserException(current, null);
-               }
-               i += 2;
-            } else if (!isOptionName(next)) {
-               //If are peeked at value isn't our key value separator and isn't another option name, lets set the value to what comes after.
-               i++;
-               value = next;
-            }
-            setValue(current, value, filtered);
+            //Process Long form Argument
+            i = processKeyValue(cleanedArgs, i, current, filtered);
          } else if (current.startsWith(SHORT)) {
             //We have a short form argument.
             //Are we setting multiple "boolean" values?
@@ -185,24 +185,8 @@ public final class CommandLineParser {
                   setValue("-" + c, "true", filtered);
                }
             } else {
-               String value = "true";
-               String next = peek(cleanedArgs, i + 1);
-               if (next.equalsIgnoreCase(KEY_VALUE_SEPARATOR)) {
-                  //If are peeked at value is our key value separator then lets set the value to what comes after.
-                  value = peek(cleanedArgs, i + 2);
-                  if (isOptionName(value)) {
-                     //If the value is an option name, we have an error
-                     throw new CommandLineParserException(current, null);
-                  }
-                  i += 2;
-               } else if (!isOptionName(next)) {
-                  //If are peeked at value isn't our key value separator and isn't another option name, lets set the value to what comes after.
-                  i++;
-                  value = next;
-               }
-               setValue(current, value, filtered);
+               i = processKeyValue(cleanedArgs, i, current, filtered);
             }
-
          } else {
             filtered.add(current);
          }

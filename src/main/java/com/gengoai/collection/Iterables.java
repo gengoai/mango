@@ -110,7 +110,7 @@ public final class Iterables {
       checkArgument(index >= 0, "index must be >= 0");
       if (iterable instanceof List) {
          List<T> list = Cast.as(iterable);
-         if (index < list.size()) {
+         if (index > 0 && index < list.size()) {
             return Optional.ofNullable(list.get(index));
          }
          return Optional.empty();
