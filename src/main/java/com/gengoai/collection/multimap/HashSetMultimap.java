@@ -1,4 +1,4 @@
-package com.gengoai.collection;
+package com.gengoai.collection.multimap;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -7,7 +7,7 @@ import java.util.Set;
 /**
  * @author David B. Bracewell
  */
-public class HashSetMultimap<K, V> extends AbstractSetMultimap<K, V> implements Serializable {
+public class HashSetMultimap<K, V> extends SetMultimap<K, V> implements Serializable {
    private static final long serialVersionUID = 1L;
 
    @Override

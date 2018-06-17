@@ -1,6 +1,9 @@
-package com.gengoai.collection;
+package com.gengoai.collection.multimap;
 
 import com.gengoai.Validation;
+import com.gengoai.collection.Collect;
+import com.gengoai.collection.Iterables;
+import com.gengoai.collection.IteratorSet;
 import com.gengoai.conversion.Cast;
 
 import java.util.*;

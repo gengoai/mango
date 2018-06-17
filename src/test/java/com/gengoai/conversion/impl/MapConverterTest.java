@@ -21,7 +21,7 @@
 
 package com.gengoai.conversion.impl;
 
-import com.gengoai.collection.Multimap;
+import com.gengoai.collection.multimap.Multimap;
 import com.gengoai.conversion.Convert;
 import com.gengoai.conversion.Val;
 import com.gengoai.tuple.Tuple2;

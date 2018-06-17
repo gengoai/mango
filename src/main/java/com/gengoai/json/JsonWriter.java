@@ -23,7 +23,7 @@ package com.gengoai.json;
 import com.gengoai.EnumValue;
 import com.gengoai.Validation;
 import com.gengoai.collection.Iterables;
-import com.gengoai.collection.Multimap;
+import com.gengoai.collection.multimap.Multimap;
 import com.gengoai.collection.counter.Counter;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Convert;

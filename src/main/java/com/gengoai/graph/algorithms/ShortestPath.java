@@ -19,38 +19,43 @@
  * under the License.
  */
 
-package com.gengoai.collection.index;
+package com.gengoai.graph.algorithms;
 
-import com.gengoai.io.resource.Resource;
-import com.gengoai.io.resource.StringResource;
-import org.junit.Test;
 
-import static org.junit.Assert.*;
+import com.gengoai.graph.Edge;
+
+import java.util.List;
 
 /**
+ * The interface Shortest path.
+ *
+ * @param <V> the type parameter
  * @author David B. Bracewell
  */
-public class IndexesTest {
+public interface ShortestPath<V> {
 
-   @Test
-   public void csv() throws Exception {
-      Index<String> i1 = Indexes.newIndex("A", "B", "C", "D", "E");
-      Resource str = new StringResource();
+  /**
+   * Distance double.
+   *
+   * @param from the from
+   * @param to   the to
+   * @return the double
+   */
+  default double distance(V from, V to) {
+    List<Edge<V>> path = path(from, to);
+    if (path == null || path.isEmpty()) {
+      return Double.POSITIVE_INFINITY;
+    }
+    return path.size() - 1;
+  }
 
-      i1.writeCSV(str);
-      Index<String> i2 = Indexes.readCsv(str, String.class);
-      assertEquals(i1, i2);
-   }
+  /**
+   * Path list.
+   *
+   * @param from the from
+   * @param to   the to
+   * @return the list
+   */
+  List<Edge<V>> path(V from, V to);
 
-   @Test
-   public void json() throws Exception {
-      Index<String> i1 = Indexes.newIndex("A", "B", "C", "D", "E");
-      Resource str = new StringResource();
-
-      i1.writeJson(str);
-      Index<String> i2 = Indexes.readJson(str, String.class);
-      assertEquals(i1, i2);
-   }
-
-
-}//END OF IndexesTest
+}//END OF ShortestPath

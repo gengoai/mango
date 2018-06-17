@@ -3,8 +3,11 @@ package com.gengoai;
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 
+import static com.gengoai.Validation.checkState;
+import static com.gengoai.Validation.notNull;
+
 /**
- * The type Stopwatch.
+ * <p>Tracks start and ending times to determine total time taken.</p>
  *
  * @author David B. Bracewell
  */
@@ -26,41 +29,47 @@ public class Stopwatch implements Serializable {
    }
 
    /**
-    * Start.
+    * Start the stopwatch.
     */
    public void start() {
-      Validation.checkState(!isRunning, "Cannot start an already started Stopwatch");
+      checkState(!isRunning, "Cannot start an already started Stopwatch");
       this.isRunning = true;
       this.start = getSystemNano();
    }
 
    /**
-    * Stop.
+    * Stop the stopwatch.
     */
    public void stop() {
-      Validation.checkState(isRunning, "Cannot stop an already stopped Stopwatch");
+      checkState(isRunning, "Cannot stop an already stopped Stopwatch");
       this.isRunning = false;
       elapsedTime += (getSystemNano() - this.start);
    }
 
    /**
-    * Reset.
+    * Reset the stopwatch.
     */
    public void reset() {
-      Validation.checkState(isRunning, "Cannot stop an already stopped Stopwatch");
+      checkState(isRunning, "Cannot stop an already stopped Stopwatch");
       this.isRunning = false;
       this.start = -1;
       this.elapsedTime = 0L;
    }
 
+   /**
+    * Gets the elapsed time in given time units
+    *
+    * @param timeUnit the time unit
+    * @return the elapsed time in the given time unit
+    */
    public long elapsed(TimeUnit timeUnit) {
-      return Validation.notNull(timeUnit).convert(getElapsedTime(), TimeUnit.NANOSECONDS);
+      return notNull(timeUnit).convert(getElapsedTime(), TimeUnit.NANOSECONDS);
    }
 
    /**
-    * Gets elapsed time.
+    * Gets elapsed time in nano seconds
     *
-    * @return the elapsed time
+    * @return the elapsed time in nano seconds
     */
    public long getElapsedTime() {
       return isRunning
@@ -118,7 +127,7 @@ public class Stopwatch implements Serializable {
 
 
    /**
-    * Create started stopwatch.
+    * Create a stopwatch that is started.
     *
     * @return the stopwatch
     */
@@ -127,7 +136,7 @@ public class Stopwatch implements Serializable {
    }
 
    /**
-    * Create stopped stopwatch.
+    * Create a stopwatch that is stopped.
     *
     * @return the stopwatch
     */

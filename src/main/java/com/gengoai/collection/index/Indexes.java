@@ -22,35 +22,19 @@
 package com.gengoai.collection.index;
 
 
-import com.gengoai.conversion.Convert;
-import com.gengoai.io.CSV;
-import com.gengoai.io.CSVReader;
-import com.gengoai.io.resource.Resource;
-import com.gengoai.json.Json;
-import com.gengoai.json.JsonReader;
-import com.gengoai.json.JsonTokenType;
-import lombok.NonNull;
-
-import java.io.IOException;
 import java.util.Arrays;
+
+import static com.gengoai.Validation.notNull;
 
 /**
  * Common methods for reading counters from structured files, creating synchronized and unmodifiable wrappers.
  *
  * @author David B. Bracewell
  */
-public interface Indexes {
+public final class Indexes {
 
-   /**
-    * Creates a new index using the given set of elements
-    *
-    * @param <TYPE>   the component type of the index
-    * @param elements the elements to initialize the index with
-    * @return A new index containing the given elements
-    */
-   @SafeVarargs
-   static <TYPE> Index<TYPE> newIndex(TYPE... elements) {
-      return elements == null ? new HashMapIndex<>() : newIndex(Arrays.asList(elements));
+   private Indexes() {
+      throw new IllegalAccessError();
    }
 
    /**
@@ -60,7 +44,19 @@ public interface Indexes {
     * @param elements the elements to initialize the index with
     * @return A new index containing the given elements
     */
-   static <TYPE> Index<TYPE> newIndex(@NonNull Iterable<TYPE> elements) {
+   @SafeVarargs
+   public static <TYPE> Index<TYPE> indexOf(TYPE... elements) {
+      return elements == null ? new HashMapIndex<>() : indexOf(Arrays.asList(elements));
+   }
+
+   /**
+    * Creates a new index using the given set of elements
+    *
+    * @param <TYPE>   the component type of the index
+    * @param elements the elements to initialize the index with
+    * @return A new index containing the given elements
+    */
+   public static <TYPE> Index<TYPE> indexOf(Iterable<TYPE> elements) {
       Index<TYPE> index = new HashMapIndex<>();
       index.addAll(elements);
       return index;
@@ -73,8 +69,8 @@ public interface Indexes {
     * @param index  The index to wrap
     * @return the synchronized index
     */
-   static <TYPE> Index<TYPE> synchronizedIndex(@NonNull Index<TYPE> index) {
-      return new SynchronizedIndex<>(index);
+   public static <TYPE> Index<TYPE> synchronizedIndex(Index<TYPE> index) {
+      return new SynchronizedIndex<>(notNull(index));
    }
 
    /**
@@ -83,7 +79,7 @@ public interface Indexes {
     * @param <TYPE> the type parameter of the item being indexed.
     * @return the synchronized index
     */
-   static <TYPE> Index<TYPE> synchronizedIndex() {
+   public static <TYPE> Index<TYPE> synchronizedIndex() {
       return new SynchronizedIndex<>(new HashMapIndex<>());
    }
 
@@ -95,50 +91,8 @@ public interface Indexes {
     * @param index  The index to wrap
     * @return the unmodifiable index
     */
-   static <TYPE> Index<TYPE> unmodifiableIndex(@NonNull final Index<TYPE> index) {
-      return new UnmodifiableIndex<>(index);
-   }
-
-   /**
-    * <p>Reads an Index from a CSV file.</p>
-    *
-    * @param <TYPE>   the component type of the Index
-    * @param resource the resource containing the Index specification
-    * @param keyClass the class of the index component type
-    * @return An index containing the elements of the CSV file.
-    * @throws IOException Something went wrong reading in the file
-    */
-   static <TYPE> Index<TYPE> readCsv(@NonNull Resource resource, @NonNull Class<TYPE> keyClass) throws IOException {
-      Index<TYPE> index = newIndex();
-      try (CSVReader reader = CSV.builder().reader(resource)) {
-         reader.forEach(row -> {
-            if (row.size() >= 1) {
-               index.add(Convert.convert(row.get(0), keyClass));
-            }
-         });
-      }
-      return index;
-   }
-
-   /**
-    * <p>Reads an Index from a Json file.</p>
-    *
-    * @param <TYPE>   the component type of the Index
-    * @param resource the resource containing the Index specification
-    * @param keyClass the class of the index component type
-    * @return An index containing the elements of the Json file.
-    * @throws IOException Something went wrong reading in the file
-    */
-   static <TYPE> Index<TYPE> readJson(@NonNull Resource resource, @NonNull Class<TYPE> keyClass) throws IOException {
-      Index<TYPE> index = newIndex();
-      try (JsonReader reader = Json.createReader(resource)) {
-         reader.beginDocument();
-         while (reader.peek() != JsonTokenType.END_DOCUMENT) {
-            index.add(reader.nextValue().as(keyClass));
-         }
-         reader.endDocument();
-      }
-      return index;
+   public static <TYPE> Index<TYPE> unmodifiableIndex(final Index<TYPE> index) {
+      return new UnmodifiableIndex<>(notNull(index));
    }
 
 

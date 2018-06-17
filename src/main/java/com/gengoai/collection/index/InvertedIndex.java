@@ -22,8 +22,8 @@
 package com.gengoai.collection.index;
 
 import com.gengoai.Validation;
-import com.gengoai.collection.HashSetMultimap;
-import com.gengoai.collection.Multimap;
+import com.gengoai.collection.multimap.HashSetMultimap;
+import com.gengoai.collection.multimap.Multimap;
 import com.gengoai.collection.Streams;
 import lombok.NonNull;
 

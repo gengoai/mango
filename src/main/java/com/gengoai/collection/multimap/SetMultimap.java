@@ -1,4 +1,4 @@
-package com.gengoai.collection;
+package com.gengoai.collection.multimap;
 
 import com.gengoai.conversion.Cast;
 
@@ -8,7 +8,7 @@ import java.util.*;
 /**
  * @author David B. Bracewell
  */
-public abstract class AbstractSetMultimap<K, V> implements Multimap<K, V>, Serializable {
+public abstract class SetMultimap<K, V> implements Multimap<K, V>, Serializable {
    private final Map<K, Set<V>> map;
 
    @Override
@@ -19,8 +19,8 @@ public abstract class AbstractSetMultimap<K, V> implements Multimap<K, V>, Seria
    @Override
    public boolean equals(Object o) {
       if (this == o) return true;
-      if (!(o instanceof AbstractSetMultimap)) return false;
-      AbstractSetMultimap<?, ?> that = (AbstractSetMultimap<?, ?>) o;
+      if (!(o instanceof SetMultimap)) return false;
+      SetMultimap<?, ?> that = (SetMultimap<?, ?>) o;
       return Objects.equals(map, that.map);
    }
 
@@ -29,7 +29,7 @@ public abstract class AbstractSetMultimap<K, V> implements Multimap<K, V>, Seria
       return Objects.hash(map);
    }
 
-   public AbstractSetMultimap() {
+   public SetMultimap() {
       this.map = createMap();
    }
 
@@ -63,4 +63,4 @@ public abstract class AbstractSetMultimap<K, V> implements Multimap<K, V>, Seria
    }
 
 
-}//END OF AbstractSetMultimap
+}//END OF SetMultimap

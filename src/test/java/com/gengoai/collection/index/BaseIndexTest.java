@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
 public abstract class BaseIndexTest {
 
    public Index<String> getIndex() {
-      return Indexes.newIndex("A", "B", "C", "D", "E");
+      return Indexes.indexOf("A", "B", "C", "D", "E");
    }
 
 

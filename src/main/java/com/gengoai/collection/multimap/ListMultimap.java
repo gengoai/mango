@@ -1,4 +1,4 @@
-package com.gengoai.collection;
+package com.gengoai.collection.multimap;
 
 import com.gengoai.conversion.Cast;
 
@@ -15,11 +15,11 @@ import java.util.Map;
  * @param <V> the value type parameter
  * @author David B. Bracewell
  */
-public abstract class AbstractListMultimap<K, V> implements Multimap<K, V>, Serializable {
+public abstract class ListMultimap<K, V> implements Multimap<K, V>, Serializable {
    private static final long serialVersionUID = 1L;
    private final Map<K, List<V>> map;
 
-   protected AbstractListMultimap() {
+   protected ListMultimap() {
       this.map = createMap();
    }
 
@@ -61,4 +61,4 @@ public abstract class AbstractListMultimap<K, V> implements Multimap<K, V>, Seri
    public Map<K, Collection<V>> asMap() {
       return Cast.as(map);
    }
-}//END OF AbstractListMultimap
+}//END OF ListMultimap
