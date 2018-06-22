@@ -39,9 +39,9 @@
     </properties>
 
     <scm>
-        <connection>scm:git:git@github.com:dbracewell/mango.git</connection>
-        <developerConnection>scm:git:git@github.com:dbracewell/mango.git</developerConnection>
-        <url>git@github.com:dbracewell/mango.git</url>
+        <connection>scm:git:git@github.com:gengoai/mango.git</connection>
+        <developerConnection>scm:git:git@github.com:gengoai/mango.git</developerConnection>
+        <url>git@github.com:gengoai/mango.git</url>
     </scm>
 
     <developers>
