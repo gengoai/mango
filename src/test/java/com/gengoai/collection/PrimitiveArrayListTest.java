@@ -21,6 +21,7 @@
 
 package com.gengoai.collection;
 
+import com.gengoai.collection.list.PrimitiveArrayList;
 import org.junit.Before;
 import org.junit.Test;
 

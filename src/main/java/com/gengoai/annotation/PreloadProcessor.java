@@ -36,6 +36,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
+ * Java Annotation processor that creates a preload.classes Manifest to add classes to preload.
+ *
  * @author David B. Bracewell
  */
 @SupportedAnnotationTypes("com.davidbracewell.annotation.Preload")
@@ -45,6 +47,9 @@ public class PreloadProcessor extends AbstractProcessor {
 
    private Set<String> classNames = new HashSet<>();
 
+   /**
+    * Instantiates a new Preload processor.
+    */
    public PreloadProcessor() {
       super();
    }

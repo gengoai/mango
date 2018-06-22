@@ -1,6 +1,9 @@
 package com.gengoai;
 
+import com.gengoai.concurrent.Threads;
+
 import java.io.Serializable;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import static com.gengoai.Validation.checkState;
@@ -50,7 +53,6 @@ public class Stopwatch implements Serializable {
     * Reset the stopwatch.
     */
    public void reset() {
-      checkState(isRunning, "Cannot stop an already stopped Stopwatch");
       this.isRunning = false;
       this.start = -1;
       this.elapsedTime = 0L;
@@ -77,52 +79,18 @@ public class Stopwatch implements Serializable {
              : elapsedTime;
    }
 
+   public static void main(String[] args) throws Exception {
+      Stopwatch sw = Stopwatch.createStarted();
+      Threads.sleep(10000);
+      System.out.println(sw);
+   }
+
    @Override
    public String toString() {
-      long elapsed = getElapsedTime();
-
-      TimeUnit timeUnit = chooseLargestUnit(elapsed);
-      double value = (double) elapsed / TimeUnit.NANOSECONDS.convert(1, timeUnit);
-
-      return String.format("%.4g %s", value, getAbbreviation(timeUnit));
-   }
-
-   private static String getAbbreviation(TimeUnit timeUnit) {
-      switch (timeUnit) {
-         case DAYS:
-            return "d";
-         case HOURS:
-            return "h";
-         case MINUTES:
-            return "m";
-         case SECONDS:
-            return "s";
-         case MILLISECONDS:
-            return "ms";
-         case MICROSECONDS:
-            return "\u03bcs";
-         default:
-            return "ns";
-      }
-   }
-
-   private static TimeUnit chooseLargestUnit(long nano) {
-      if (TimeUnit.DAYS.convert(nano, TimeUnit.NANOSECONDS) > 0) {
-         return TimeUnit.DAYS;
-      }
-      if (TimeUnit.HOURS.convert(nano, TimeUnit.NANOSECONDS) > 0) {
-         return TimeUnit.HOURS;
-      }
-      if (TimeUnit.MINUTES.convert(nano, TimeUnit.NANOSECONDS) > 0) {
-         return TimeUnit.MINUTES;
-      }
-      if (TimeUnit.SECONDS.convert(nano, TimeUnit.NANOSECONDS) > 0) {
-         return TimeUnit.SECONDS;
-      }
-      if (TimeUnit.MILLISECONDS.convert(nano, TimeUnit.NANOSECONDS) > 0) {
-         return TimeUnit.MICROSECONDS;
-      }
-      return TimeUnit.NANOSECONDS;
+      return Duration.ofNanos(getElapsedTime()).toString()
+                     .substring(2)
+                     .replaceAll("(\\d[HMS])(?!$)", "$1 ")
+                     .toLowerCase();
    }
 
 

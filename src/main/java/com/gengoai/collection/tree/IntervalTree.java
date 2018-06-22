@@ -1,5 +1,8 @@
-package com.gengoai.collection;
+package com.gengoai.collection.tree;
 
+import com.gengoai.collection.Iterables;
+import com.gengoai.collection.Lists;
+import com.gengoai.collection.Streams;
 import com.gengoai.conversion.Cast;
 
 import java.io.Serializable;

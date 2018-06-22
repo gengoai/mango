@@ -19,7 +19,7 @@
  * under the License.
  */
 
-package com.gengoai.collection;
+package com.gengoai.collection.tree;
 
 import lombok.NonNull;
 import lombok.Value;

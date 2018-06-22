@@ -1,4 +1,4 @@
-package com.gengoai.collection;
+package com.gengoai.collection.list;
 
 import com.gengoai.conversion.Convert;
 

@@ -21,6 +21,8 @@
 
 package com.gengoai.collection;
 
+import com.gengoai.collection.tree.Trie;
+import com.gengoai.collection.tree.TrieMatch;
 import com.gengoai.string.CharMatcher;
 import org.junit.Before;
 import org.junit.Test;

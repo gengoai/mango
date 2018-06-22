@@ -27,7 +27,6 @@ import com.gengoai.io.QuietIO;
 import com.gengoai.tuple.Tuple2;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.*;
@@ -52,13 +51,9 @@ public interface Streams {
     *
     * @param stream the stream
     * @return the stream
-    * @throws IOException the io exception
     */
-   static Stream<String> asStream(InputStream stream) throws IOException {
-      if (stream == null) {
-         return Stream.empty();
-      }
-      return asStream(new CharsetDetectingReader(stream));
+   static Stream<String> asStream(InputStream stream) {
+      return asStream(new CharsetDetectingReader(notNull(stream)));
    }
 
    /**
@@ -66,18 +61,13 @@ public interface Streams {
     *
     * @param reader the reader
     * @return the stream
-    * @throws IOException the io exception
     */
-   static Stream<String> asStream(Reader reader) throws IOException {
-      if (reader == null) {
-         return Stream.empty();
-      }
-      Stream<String> result = ((reader instanceof BufferedReader) ?
-                               Cast.<BufferedReader>as(reader) :
-                               new BufferedReader(reader)
-      ).lines();
-      result.onClose(() -> QuietIO.closeQuietly(reader));
-      return result;
+   static Stream<String> asStream(Reader reader) {
+      notNull(reader);
+      return ((reader instanceof BufferedReader) ? Cast.<BufferedReader>as(reader)
+                                                 : new BufferedReader(reader))
+                .lines()
+                .onClose(() -> QuietIO.closeQuietly(reader));
    }
 
 
@@ -111,7 +101,6 @@ public interface Streams {
     * @return the stream
     */
    @SafeVarargs
-   @SuppressWarnings("varargs")
    static <T> Stream<T> asStream(T... values) {
       if (values == null) {
          return Stream.empty();
@@ -139,10 +128,8 @@ public interface Streams {
     * @return the stream
     */
    static <T> Stream<T> asStream(Iterator<? extends T> iterator, boolean parallel) {
-      if (iterator == null) {
-         return Stream.empty();
-      }
-      return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), parallel);
+      return StreamSupport.stream(Spliterators.spliteratorUnknownSize(notNull(iterator), Spliterator.ORDERED),
+                                  parallel);
    }
 
    /**
@@ -153,7 +140,7 @@ public interface Streams {
     * @return the stream
     */
    static <T> Stream<T> asStream(Iterable<? extends T> iterable) {
-      return asStream(iterable, false);
+      return asStream(notNull(iterable), false);
    }
 
    /**
@@ -165,10 +152,7 @@ public interface Streams {
     * @return the stream
     */
    static <T> Stream<T> asStream(Iterable<? extends T> iterable, boolean parallel) {
-      if (iterable == null) {
-         return Stream.empty();
-      }
-      return StreamSupport.stream(Cast.as(iterable.spliterator()), parallel);
+      return StreamSupport.stream(Cast.as(notNull(iterable).spliterator()), parallel);
    }
 
    /**
@@ -181,10 +165,7 @@ public interface Streams {
     * @return the stream
     */
    static <T, U> Stream<Map.Entry<T, U>> zip(final Stream<? extends T> stream1, final Stream<? extends U> stream2) {
-      if (stream1 == null || stream2 == null) {
-         return Stream.empty();
-      }
-      return asStream(Iterators.zip(stream1.iterator(), stream2.iterator()));
+      return asStream(Iterators.zip(notNull(stream1).iterator(), notNull(stream2).iterator()));
    }
 
    /**
@@ -195,36 +176,80 @@ public interface Streams {
     * @return the stream
     */
    static <T> Stream<Map.Entry<T, Integer>> zipWithIndex(Stream<T> stream) {
-      if (stream == null) {
-         return Stream.empty();
-      }
       final AtomicInteger integer = new AtomicInteger();
-      return stream.map(t -> new Tuple2<>(t, integer.getAndIncrement()));
+      return notNull(stream).map(t -> new Tuple2<>(t, integer.getAndIncrement()));
    }
 
-
+   /**
+    * Flatten stream.
+    *
+    * @param <T>       the type parameter
+    * @param iterables the iterables
+    * @return the stream
+    */
    static <T> Stream<T> flatten(Iterable<? extends Iterable<? extends T>> iterables) {
       return asStream(notNull(iterables)).flatMap(Streams::asStream);
    }
 
+   /**
+    * Union stream.
+    *
+    * @param <T> the type parameter
+    * @param c1  the c 1
+    * @param c2  the c 2
+    * @return the stream
+    */
    static <T> Stream<T> union(Collection<? extends T> c1, Collection<? extends T> c2) {
       return Stream.concat(notNull(c1).stream(), notNull(c2).stream());
    }
 
+   /**
+    * Intersection stream.
+    *
+    * @param <T> the type parameter
+    * @param c1  the c 1
+    * @param c2  the c 2
+    * @return the stream
+    */
    static <T> Stream<T> intersection(Collection<? extends T> c1, Collection<? extends T> c2) {
       notNull(c2);
       return Cast.as(notNull(c1).stream().filter(c2::contains));
    }
 
+   /**
+    * Difference stream.
+    *
+    * @param <T> the type parameter
+    * @param c1  the c 1
+    * @param c2  the c 2
+    * @return the stream
+    */
    static <T> Stream<T> difference(Collection<? extends T> c1, Collection<? extends T> c2) {
       notNull(c2);
       return Cast.as(notNull(c1).stream().filter(v -> !c2.contains(v)));
    }
 
+   /**
+    * Transform stream.
+    *
+    * @param <IN>      the type parameter
+    * @param <OUT>     the type parameter
+    * @param iterable  the iterable
+    * @param transform the transform
+    * @return the stream
+    */
    static <IN, OUT> Stream<OUT> transform(Iterable<? extends IN> iterable, Function<? super IN, ? extends OUT> transform) {
       return Cast.as(asStream(iterable).map(notNull(transform)));
    }
 
+   /**
+    * Filter stream.
+    *
+    * @param <T>      the type parameter
+    * @param iterable the iterable
+    * @param filter   the filter
+    * @return the stream
+    */
    static <T> Stream<T> filter(Iterable<? extends T> iterable, Predicate<? super T> filter) {
       return Cast.as(asStream(iterable).filter(notNull(filter)));
    }

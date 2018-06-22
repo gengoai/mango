@@ -1,5 +1,7 @@
-package com.gengoai.collection;
+package com.gengoai.collection.table;
 
+import com.gengoai.collection.set.IteratorSet;
+import com.gengoai.collection.Sets;
 import com.gengoai.conversion.Cast;
 import lombok.NonNull;
 

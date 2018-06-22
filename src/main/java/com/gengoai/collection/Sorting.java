@@ -23,7 +23,6 @@ package com.gengoai.collection;
 
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.SerializableComparator;
-import lombok.NonNull;
 
 import java.util.Comparator;
 import java.util.List;
@@ -53,11 +52,12 @@ public final class Sorting {
    }
 
    /**
-    * Compare int.
+    * Generic method for comparing to objects that is null safe. Assumes that the objects are <code>Comparable</code>.
     *
-    * @param o1 the o 1
-    * @param o2 the o 2
-    * @return the int
+    * @param o1 the first object
+    * @param o2 the second object
+    * @return the comparison result
+    * @throws IllegalArgumentException if the objects are non-null and not comparable
     */
    @SuppressWarnings("unchecked")
    public static int compare(Object o1, Object o2) {
@@ -68,7 +68,10 @@ public final class Sorting {
       } else if (o2 == null) {
          return -1;
       }
-      return Cast.<Comparable>as(o1).compareTo(o2);
+      if (o1 instanceof Comparable && o2 instanceof Comparable) {
+         return Cast.<Comparable>as(o1).compareTo(o2);
+      }
+      throw new IllegalArgumentException("objects must implement the Comparable interface");
    }
 
    /**
@@ -106,6 +109,7 @@ public final class Sorting {
       };
    }
 
+
    /**
     * Sorts a <code>Map</code> by value.
     *
@@ -115,10 +119,10 @@ public final class Sorting {
     * @param ascending True if in ascending (natural) order, False if in descending order
     * @return A <code>List</code> of <code>Entry</code> containing the map entries in sorted order.
     */
-   public static <K, V extends Comparable<V>> List<Entry<K, V>> sortMapEntriesByValue(@NonNull final Map<K, V> map,
+   public static <K, V extends Comparable<V>> List<Entry<K, V>> sortMapEntriesByValue(final Map<K, V> map,
                                                                                       final boolean ascending
                                                                                      ) {
-      return sortMapEntries(map, new MapEntryComparator<>(false, ascending));
+      return sortMapEntries(map, mapEntryComparator(false, ascending));
    }
 
    /**
@@ -130,8 +134,8 @@ public final class Sorting {
     * @param comparator The compartor to use for sorting the map entries
     * @return A <code>List</code> of <code>Entry</code> containing the map entries in sorted order.
     */
-   public static <K, V> List<Entry<K, V>> sortMapEntries(@NonNull final Map<K, V> map,
-                                                         @NonNull final Comparator<Entry<K, V>> comparator
+   public static <K, V> List<Entry<K, V>> sortMapEntries(final Map<K, V> map,
+                                                         final Comparator<Map.Entry<K, V>> comparator
                                                         ) {
       return map.entrySet().stream().sorted(comparator).collect(Collectors.toList());
    }
@@ -146,37 +150,16 @@ public final class Sorting {
     * @param ascending True sort in ascending order, False in descending order
     * @return A comparator for sorting map entries.
     */
-   public static <K extends Comparable<? super K>, V> Comparator<Entry<K, V>> mapEntryComparator(boolean sortByKey,
-                                                                                                 boolean ascending
-                                                                                                ) {
-      return new MapEntryComparator<>(sortByKey, ascending);
+   public static <K, V> Comparator<Entry<K, V>> mapEntryComparator(boolean sortByKey,
+                                                                   boolean ascending
+                                                                  ) {
+      if (sortByKey) {
+         return ascending ? Cast.as(Map.Entry.comparingByKey())
+                          : Cast.as(Map.Entry.comparingByValue().reversed());
+      }
+      return ascending ? Cast.as(Map.Entry.comparingByValue())
+                       : Cast.as(Map.Entry.comparingByValue().reversed());
    }
 
-
-   /**
-    * The type Map entry comparator.
-    *
-    * @param <K> the type parameter
-    * @param <V> the type parameter
-    */
-   static class MapEntryComparator<K, V> implements Comparator<Entry<K, V>> {
-
-      private final boolean ascending;
-      private final boolean sortByKey;
-
-      private MapEntryComparator(boolean sortByKey, boolean ascending) {
-         this.sortByKey = sortByKey;
-         this.ascending = ascending;
-      }
-
-      @Override
-      public int compare(Entry<K, V> o1, Entry<K, V> o2) {
-         if (sortByKey) {
-            return (ascending ? 1 : -1) * Cast.<Comparable<K>>as(o1.getKey()).compareTo(o2.getKey());
-         } else {
-            return (ascending ? 1 : -1) * Cast.<Comparable<V>>as(o1.getValue()).compareTo(o2.getValue());
-         }
-      }
-   }//END OF MapEntryComparator
 
 }// END OF Sorting

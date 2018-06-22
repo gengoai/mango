@@ -7,7 +7,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
- * The type Validation.
+ * <p>Convenience methods for validating method arguments.</p>
  *
  * @author David B. Bracewell
  */
@@ -18,6 +18,16 @@ public final class Validation {
    }
 
 
+   /**
+    * Checks that the evaluation is true. If evaluation is true, the given return value is returned, otherwise the
+    * exception supplier is used to generate a RuntimeException to throw.
+    *
+    * @param <T>               the return type parameter
+    * @param evaluation        the evaluation test
+    * @param exceptionSupplier the supplier to use to generate exceptions (null will cause a default RuntimeException to be thrown)
+    * @param returnValue       the return value to return if the evaluation is true
+    * @return the return value
+    */
    public static <T> T validate(boolean evaluation, Supplier<RuntimeException> exceptionSupplier, T returnValue) {
       if (evaluation) {
          return returnValue;
@@ -25,8 +35,19 @@ public final class Validation {
       throw exceptionSupplier == null ? new RuntimeException() : exceptionSupplier.get();
    }
 
-   public static <T> T validate(T value, Predicate<T> predicate, Supplier<RuntimeException> exceptionSupplier, boolean nullable) {
-      if ((value == null && nullable) || predicate.test(value)) {
+   /**
+    * Checks that the evaluation is true. If evaluation is true, the given value is returned, otherwise the
+    * exception supplier is used to generate a RuntimeException to throw.
+    *
+    * @param <T>               the return type parameter
+    * @param value             the value to test
+    * @param evaluator         the predicate to use to test the value
+    * @param exceptionSupplier the supplier to use to generate exceptions
+    * @param nullable          True the value is able to be null, False it cannot be null
+    * @return the given value
+    */
+   public static <T> T validate(T value, Predicate<T> evaluator, Supplier<RuntimeException> exceptionSupplier, boolean nullable) {
+      if ((value == null && nullable) || evaluator.test(value)) {
          return value;
       } else if (value == null) {
          throw new NullPointerException();
@@ -34,19 +55,44 @@ public final class Validation {
       throw exceptionSupplier == null ? new RuntimeException() : exceptionSupplier.get();
    }
 
+   /**
+    * Checks that the evaluation is true. If evaluation is true, the given value is returned, otherwise the
+    * exception supplier is used to generate a RuntimeException to throw.
+    *
+    * @param <T>               the return type parameter
+    * @param value             the value to test
+    * @param message           the message to use when creating the runtime exception
+    * @param exceptionSupplier the supplier to use to generate exceptions
+    * @param nullable          True the value is able to be null, False it cannot be null
+    * @return the given value
+    */
    public static <T> T validate(T value, Predicate<T> predicate, String message, Function<String, RuntimeException> exceptionSupplier, boolean nullable) {
-      if ((value == null && nullable) || predicate.test(value)) {
-         return value;
-      } else if (value == null) {
-         throw new NullPointerException();
-      }
-      throw exceptionSupplier.apply(message);
+      return validate(value, predicate, () -> exceptionSupplier.apply(message), nullable);
    }
 
+   /**
+    * Checks that the evaluation is true. If evaluation is true, the given value is returned, otherwise the
+    * exception supplier is used to generate an IllegalArgumentException to throw.
+    *
+    * @param <T>      the return type parameter
+    * @param value    the value to test
+    * @param message  the message to use when creating the runtime exception
+    * @param nullable True the value is able to be null, False it cannot be null
+    * @return the given value
+    */
    public static <T> T validateArg(T value, Predicate<T> predicate, String message, boolean nullable) {
       return validate(value, predicate, message, IllegalArgumentException::new, nullable);
    }
 
+   /**
+    * Checks that the evaluation is true. If evaluation is true, the given value is returned, otherwise the
+    * exception supplier is used to generate an IllegalArgumentException to throw.
+    *
+    * @param <T>      the return type parameter
+    * @param value    the value to test
+    * @param nullable True the value is able to be null, False it cannot be null
+    * @return the given value
+    */
    public static <T> T validateArg(T value, Predicate<T> predicate, boolean nullable) {
       return validate(value, predicate, IllegalArgumentException::new, nullable);
    }
@@ -153,6 +199,13 @@ public final class Validation {
       }
    }
 
+   /**
+    * Check element index int.
+    *
+    * @param index the index
+    * @param size  the size
+    * @return the int
+    */
    public static int checkElementIndex(int index, int size) {
       if (index < 0 || index >= size) {
          throw new IndexOutOfBoundsException(createIndexErrorMessage(index, size, StringUtils.EMPTY));
@@ -160,6 +213,14 @@ public final class Validation {
       return index;
    }
 
+   /**
+    * Check element index int.
+    *
+    * @param index   the index
+    * @param size    the size
+    * @param message the message
+    * @return the int
+    */
    public static int checkElementIndex(int index, int size, String message) {
       if (index < 0 || index >= size) {
          throw new IndexOutOfBoundsException(createIndexErrorMessage(index, size, message));
@@ -167,15 +228,30 @@ public final class Validation {
       return index;
    }
 
+   /**
+    * Check element index and range.
+    *
+    * @param relativeStart the relative start
+    * @param relativeEnd   the relative end
+    * @param length        the length
+    */
    public static void checkElementIndexAndRange(int relativeStart, int relativeEnd, int length) {
       checkElementIndexAndRange(relativeStart, relativeEnd, length, StringUtils.EMPTY);
    }
 
+   /**
+    * Check element index and range.
+    *
+    * @param relativeStart the relative start
+    * @param relativeEnd   the relative end
+    * @param length        the length
+    * @param message       the message
+    */
    public static void checkElementIndexAndRange(int relativeStart, int relativeEnd, int length, String message) {
       if (relativeStart < 0 || relativeStart >= length) {
          throw new IndexOutOfBoundsException(createIndexErrorMessage(relativeStart, length, message));
       }
-      if (relativeEnd < 0 || relativeEnd >= length) {
+      if (relativeEnd < 0 || relativeEnd > length) {
          throw new IndexOutOfBoundsException(createIndexErrorMessage(relativeEnd, length, message));
       }
       if (relativeStart > relativeEnd) {

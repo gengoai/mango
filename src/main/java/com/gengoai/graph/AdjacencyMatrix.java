@@ -23,10 +23,10 @@ package com.gengoai.graph;
 
 
 import com.gengoai.Validation;
-import com.gengoai.collection.HashBasedTable;
+import com.gengoai.collection.table.HashBasedTable;
 import com.gengoai.collection.Iterators;
 import com.gengoai.collection.Sets;
-import com.gengoai.collection.Table;
+import com.gengoai.collection.table.Table;
 import com.gengoai.conversion.Cast;
 
 import java.io.Serializable;

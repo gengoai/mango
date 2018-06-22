@@ -1,6 +1,7 @@
 package com.gengoai.collection;
 
 import com.gengoai.Validation;
+import com.gengoai.collection.list.PrimitiveArrayList;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.SerializableFunction;
 import com.gengoai.function.SerializableSupplier;

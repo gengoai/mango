@@ -24,7 +24,7 @@ package com.gengoai.graph.algorithms;
 import com.gengoai.Validation;
 import com.gengoai.graph.Edge;
 import com.gengoai.graph.Graph;
-import com.gengoai.collection.LRUMap;
+import com.gengoai.collection.map.LRUMap;
 import com.gengoai.collection.Sorting;
 import com.gengoai.collection.counter.Counter;
 import com.gengoai.collection.counter.Counters;

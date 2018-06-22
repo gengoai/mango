@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.util.AbstractMap;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -51,8 +50,6 @@ public class StreamsTest {
 
    @Test
    public void iterator() throws Exception {
-      Iterator<String> it = null;
-      assertEquals(0, Streams.asStream(it).count());
       assertEquals("A, B, C",
                    Streams.asStream(Arrays.asList("A", "B", "C").iterator()).collect(Collectors.joining(", "))
                   );
@@ -64,8 +61,6 @@ public class StreamsTest {
 
    @Test
    public void iterable() throws Exception {
-      Iterable<String> it = null;
-      assertEquals(0, Streams.asStream(it).count());
       assertEquals("A, B, C",
                    Streams.asStream(Arrays.asList("A", "B", "C")).collect(Collectors.joining(", "))
                   );
@@ -77,7 +72,6 @@ public class StreamsTest {
 
    @Test
    public void zip() throws Exception {
-      assertEquals(0L, Streams.zip(null, null).count());
       Assert.assertEquals(Lists.list(new AbstractMap.SimpleEntry<>("A", 1),
                                      new AbstractMap.SimpleEntry<>("B", 2),
                                      new AbstractMap.SimpleEntry<>("C", 3)
@@ -89,7 +83,6 @@ public class StreamsTest {
 
    @Test
    public void zipWithIndex() throws Exception {
-      assertEquals(0L, Streams.zipWithIndex(null).count());
       Assert.assertEquals(Lists.list(new AbstractMap.SimpleEntry<>("A", 0),
                                      new AbstractMap.SimpleEntry<>("B", 1),
                                      new AbstractMap.SimpleEntry<>("C", 2)

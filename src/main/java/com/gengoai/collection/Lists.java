@@ -21,6 +21,7 @@
 
 package com.gengoai.collection;
 
+import com.gengoai.collection.list.PrimitiveArrayList;
 import lombok.NonNull;
 
 import java.util.*;

@@ -23,7 +23,7 @@ package com.gengoai.stream;
 
 import com.gengoai.EnhancedDoubleStatistics;
 import com.gengoai.Validation;
-import com.gengoai.collection.PrimitiveArrayList;
+import com.gengoai.collection.list.PrimitiveArrayList;
 import com.gengoai.config.Config;
 import com.gengoai.config.Configurator;
 import com.gengoai.conversion.Cast;

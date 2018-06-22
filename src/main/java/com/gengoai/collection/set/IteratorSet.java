@@ -1,4 +1,6 @@
-package com.gengoai.collection;
+package com.gengoai.collection.set;
+
+import com.gengoai.collection.Streams;
 
 import java.util.AbstractSet;
 import java.util.Collection;

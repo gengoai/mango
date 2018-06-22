@@ -1,4 +1,4 @@
-package com.gengoai.collection;
+package com.gengoai.collection.tree;
 
 import com.gengoai.Validation;
 import com.gengoai.conversion.Cast;

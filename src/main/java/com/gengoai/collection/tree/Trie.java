@@ -1,5 +1,7 @@
-package com.gengoai.collection;
+package com.gengoai.collection.tree;
 
+import com.gengoai.collection.Iterators;
+import com.gengoai.collection.Maps;
 import com.gengoai.conversion.Cast;
 import com.gengoai.string.CharMatcher;
 import com.gengoai.string.StringUtils;
