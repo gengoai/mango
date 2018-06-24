@@ -22,7 +22,6 @@
 package com.gengoai;
 
 import com.gengoai.function.SerializableDoubleConsumer;
-import lombok.NonNull;
 
 import java.util.Objects;
 
@@ -83,7 +82,7 @@ public final class EnhancedDoubleStatistics implements SerializableDoubleConsume
     * @param other the other EnhancedDoubleStatistics to combine
     * @throws NullPointerException if the other EnhancedDoubleStatistics is null
     */
-   public void combine(@NonNull EnhancedDoubleStatistics other) {
+   public void combine(EnhancedDoubleStatistics other) {
       count += other.count;
       sum += other.sum;
       sumOfSq += other.sumOfSq;

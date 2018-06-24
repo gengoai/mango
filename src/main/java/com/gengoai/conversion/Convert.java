@@ -24,7 +24,6 @@ package com.gengoai.conversion;
 import com.gengoai.Defaults;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.logging.Logger;
-import lombok.NonNull;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -173,7 +172,7 @@ public final class Convert {
     * @return the t
     */
    @SuppressWarnings("unchecked")
-   public static <T> T convert(Object object, @NonNull Class<T> desiredType) {
+   public static <T> T convert(Object object, Class<T> desiredType) {
       if (object == null) {
          if (desiredType != null && desiredType.isPrimitive()) {
             return Defaults.defaultValue(desiredType);

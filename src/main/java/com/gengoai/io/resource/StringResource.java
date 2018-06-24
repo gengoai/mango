@@ -23,7 +23,6 @@ package com.gengoai.io.resource;
 
 import com.gengoai.stream.MStream;
 import com.gengoai.stream.StreamingContext;
-import lombok.EqualsAndHashCode;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -35,7 +34,6 @@ import java.util.List;
  *
  * @author David B. Bracewell
  */
-@EqualsAndHashCode(callSuper = true)
 public class StringResource extends BaseResource implements NonTraversableResource {
 
    private static final long serialVersionUID = 8750046186020559958L;
@@ -46,6 +44,31 @@ public class StringResource extends BaseResource implements NonTraversableResour
     */
    public StringResource() {
       this(null);
+   }
+
+   protected boolean canEqual(Object other) {
+      return other instanceof StringResource;
+   }
+
+   public boolean equals(Object o) {
+      if (o == this) return true;
+      if (!(o instanceof StringResource)) return false;
+      final StringResource other = (StringResource) o;
+      if (!other.canEqual((Object) this)) return false;
+      if (!super.equals(o)) return false;
+      final Object this$resource = this.resource;
+      final Object other$resource = other.resource;
+      if (this$resource == null ? other$resource != null : !this$resource.equals(other$resource)) return false;
+      return true;
+   }
+
+   public int hashCode() {
+      final int PRIME = 59;
+      int result = 1;
+      result = result * PRIME + super.hashCode();
+      final Object $resource = this.resource;
+      result = result * PRIME + ($resource == null ? 43 : $resource.hashCode());
+      return result;
    }
 
    @Override

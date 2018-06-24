@@ -21,8 +21,6 @@
 
 package com.gengoai.io.resource;
 
-import lombok.NonNull;
-
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -41,7 +39,7 @@ public class OutputStreamResource extends BaseResource implements WriteOnlyResou
     *
     * @param stream the output stream to wrap
     */
-   public OutputStreamResource(@NonNull OutputStream stream) {
+   public OutputStreamResource(OutputStream stream) {
       this.outputStream = stream;
    }
 

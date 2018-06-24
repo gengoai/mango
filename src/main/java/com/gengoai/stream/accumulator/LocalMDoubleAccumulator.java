@@ -21,8 +21,6 @@
 
 package com.gengoai.stream.accumulator;
 
-import lombok.NonNull;
-
 import java.util.concurrent.atomic.DoubleAdder;
 
 /**
@@ -62,7 +60,7 @@ public class LocalMDoubleAccumulator extends LocalMAccumulator<Double, Double> i
    }
 
    @Override
-   public void merge(@NonNull MAccumulator<Double, Double> other) {
+   public void merge(MAccumulator<Double, Double> other) {
       if (other instanceof LocalMAccumulator) {
          add(other.value());
       } else {

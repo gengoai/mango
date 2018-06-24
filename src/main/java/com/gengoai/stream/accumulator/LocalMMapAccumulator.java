@@ -22,7 +22,6 @@
 package com.gengoai.stream.accumulator;
 
 import com.gengoai.tuple.Tuple2;
-import lombok.NonNull;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,7 +48,7 @@ public class LocalMMapAccumulator<K, V> extends LocalMAccumulator<Tuple2<K, V>, 
    }
 
    @Override
-   public void add(@NonNull Tuple2<K, V> objects) {
+   public void add(Tuple2<K, V> objects) {
       map.put(objects.v1, objects.v2);
    }
 
@@ -71,7 +70,7 @@ public class LocalMMapAccumulator<K, V> extends LocalMAccumulator<Tuple2<K, V>, 
    }
 
    @Override
-   public void merge(@NonNull MAccumulator<Tuple2<K, V>, Map<K, V>> other) {
+   public void merge(MAccumulator<Tuple2<K, V>, Map<K, V>> other) {
       if (other instanceof LocalMAccumulator) {
          map.putAll(other.value());
       } else {

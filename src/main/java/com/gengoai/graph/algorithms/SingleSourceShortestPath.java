@@ -21,9 +21,9 @@
 
 package com.gengoai.graph.algorithms;
 
-import com.gengoai.graph.Edge;
 import com.gengoai.collection.counter.Counter;
 import com.gengoai.collection.multimap.ListMultimap;
+import com.gengoai.graph.Edge;
 
 /**
  * The interface Single source shortest path.

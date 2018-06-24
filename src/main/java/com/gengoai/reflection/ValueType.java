@@ -24,7 +24,6 @@ package com.gengoai.reflection;
 import com.gengoai.config.Config;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Convert;
-import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -181,7 +180,7 @@ public abstract class ValueType implements Serializable {
     * @param clazz the class information for the value type
     * @return the value type
     */
-   public static ValueType of(@NonNull Class<?> clazz) {
+   public static ValueType of(Class<?> clazz) {
       return new SimpleValueType(clazz);
    }
 

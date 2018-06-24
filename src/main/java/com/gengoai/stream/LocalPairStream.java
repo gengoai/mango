@@ -26,7 +26,6 @@ import com.gengoai.conversion.Cast;
 import com.gengoai.function.*;
 import com.gengoai.tuple.Tuple2;
 import com.gengoai.tuple.Tuples;
-import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.*;
@@ -90,22 +89,22 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public MPairStream<T, U> filter(@NonNull SerializableBiPredicate<? super T, ? super U> predicate) {
+   public MPairStream<T, U> filter(SerializableBiPredicate<? super T, ? super U> predicate) {
       return new LocalPairStream<>(stream.filter(e -> predicate.test(e.getKey(), e.getValue())));
    }
 
    @Override
-   public MPairStream<T, U> filterByKey(@NonNull SerializablePredicate<T> predicate) {
+   public MPairStream<T, U> filterByKey(SerializablePredicate<T> predicate) {
       return new LocalPairStream<>(stream.filter(e -> predicate.test(e.getKey())));
    }
 
    @Override
-   public MPairStream<T, U> filterByValue(@NonNull SerializablePredicate<U> predicate) {
+   public MPairStream<T, U> filterByValue(SerializablePredicate<U> predicate) {
       return new LocalPairStream<>(stream.filter(e -> predicate.test(e.getValue())));
    }
 
    @Override
-   public void forEach(@NonNull SerializableBiConsumer<? super T, ? super U> consumer) {
+   public void forEach(SerializableBiConsumer<? super T, ? super U> consumer) {
       stream.forEach(e -> {
          if (e == null) {
             consumer.accept(null, null);
@@ -116,7 +115,7 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public void forEachLocal(@NonNull SerializableBiConsumer<? super T, ? super U> consumer) {
+   public void forEachLocal(SerializableBiConsumer<? super T, ? super U> consumer) {
       stream.sequential().forEach(e -> {
          if (e == null) {
             consumer.accept(null, null);
@@ -153,7 +152,7 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public <V> MPairStream<T, Entry<U, V>> join(@NonNull MPairStream<? extends T, ? extends V> other) {
+   public <V> MPairStream<T, Entry<U, V>> join(MPairStream<? extends T, ? extends V> other) {
       Map<T, Iterable<V>> rhs = Cast.as(other.groupByKey().collectAsMap());
       return flatMapToPair((k, v) -> {
          if (rhs.containsKey(k)) {
@@ -169,7 +168,7 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public <V> MPairStream<T, Entry<U, V>> leftOuterJoin(@NonNull MPairStream<? extends T, ? extends V> other) {
+   public <V> MPairStream<T, Entry<U, V>> leftOuterJoin(MPairStream<? extends T, ? extends V> other) {
       Map<T, Iterable<V>> rhs = Cast.as(other.groupByKey().collectAsMap());
       return flatMapToPair((k, v) -> {
          if (rhs.containsKey(k)) {
@@ -181,27 +180,27 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public <R> MStream<R> map(@NonNull SerializableBiFunction<? super T, ? super U, ? extends R> function) {
+   public <R> MStream<R> map(SerializableBiFunction<? super T, ? super U, ? extends R> function) {
       return new LocalStream<>(stream.map(e -> function.apply(e.getKey(), e.getValue())));
    }
 
    @Override
-   public MDoubleStream mapToDouble(@NonNull SerializableToDoubleBiFunction<? super T, ? super U> function) {
+   public MDoubleStream mapToDouble(SerializableToDoubleBiFunction<? super T, ? super U> function) {
       return new LocalDoubleStream(stream.mapToDouble(e -> function.applyAsDouble(e.getKey(), e.getValue())));
    }
 
    @Override
-   public <R, V> MPairStream<R, V> mapToPair(@NonNull SerializableBiFunction<? super T, ? super U, ? extends Entry<? extends R, ? extends V>> function) {
+   public <R, V> MPairStream<R, V> mapToPair(SerializableBiFunction<? super T, ? super U, ? extends Entry<? extends R, ? extends V>> function) {
       return new LocalPairStream<>(stream.map(entry -> Cast.as(function.apply(entry.getKey(), entry.getValue()))));
    }
 
    @Override
-   public Optional<Entry<T, U>> max(@NonNull SerializableComparator<Entry<T, U>> comparator) {
+   public Optional<Entry<T, U>> max(SerializableComparator<Entry<T, U>> comparator) {
       return stream.max(comparator);
    }
 
    @Override
-   public Optional<Entry<T, U>> min(@NonNull SerializableComparator<Entry<T, U>> comparator) {
+   public Optional<Entry<T, U>> min(SerializableComparator<Entry<T, U>> comparator) {
       return stream.min(comparator);
    }
 
@@ -217,7 +216,7 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public MPairStream<T, U> reduceByKey(@NonNull SerializableBinaryOperator<U> operator) {
+   public MPairStream<T, U> reduceByKey(SerializableBinaryOperator<U> operator) {
       return groupByKey().mapToPair((t, u) -> Tuple2.of(t, Streams.asStream(u).reduce(operator).orElse(null)));
    }
 
@@ -227,12 +226,12 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public <R, V> MPairStream<R, V> flatMapToPair(@NonNull SerializableBiFunction<? super T, ? super U, Stream<Entry<? extends R, ? extends V>>> function) {
+   public <R, V> MPairStream<R, V> flatMapToPair(SerializableBiFunction<? super T, ? super U, Stream<Entry<? extends R, ? extends V>>> function) {
       return new LocalPairStream<>(stream.flatMap(e -> function.apply(e.getKey(), e.getValue())));
    }
 
    @Override
-   public <V> MPairStream<T, Entry<U, V>> rightOuterJoin(@NonNull MPairStream<? extends T, ? extends V> other) {
+   public <V> MPairStream<T, Entry<U, V>> rightOuterJoin(MPairStream<? extends T, ? extends V> other) {
       Map<T, Iterable<U>> lhs = Cast.as(groupByKey().collectAsMap());
       return other.flatMapToPair((k, v) -> {
          if (lhs.containsKey(k)) {
@@ -244,17 +243,17 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public MPairStream<T, U> shuffle(@NonNull Random random) {
+   public MPairStream<T, U> shuffle(Random random) {
       return new LocalPairStream<>(stream.sorted(new RandomComparator<>(random)));
    }
 
    @Override
-   public MPairStream<T, U> sortByKey(@NonNull SerializableComparator<T> comparator) {
+   public MPairStream<T, U> sortByKey(SerializableComparator<T> comparator) {
       return new LocalPairStream<>(stream.sorted((o1, o2) -> comparator.compare(o1.getKey(), o2.getKey())));
    }
 
    @Override
-   public MPairStream<T, U> union(@NonNull MPairStream<? extends T, ? extends U> other) {
+   public MPairStream<T, U> union(MPairStream<? extends T, ? extends U> other) {
       if (other.isReusable() && other.isEmpty()) {
          return this;
       }

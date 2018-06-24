@@ -28,7 +28,6 @@ import com.gengoai.io.Resources;
 import com.gengoai.io.resource.spi.ClasspathResourceProvider;
 import com.gengoai.logging.Logger;
 import com.gengoai.string.StringUtils;
-import lombok.NonNull;
 
 import java.io.*;
 import java.net.URI;
@@ -70,7 +69,7 @@ public class ClasspathResource extends BaseResource {
     * @param resource    The path to the resource.
     * @param classLoader The class loader to use.
     */
-   public ClasspathResource(@NonNull String resource, @NonNull ClassLoader classLoader) {
+   public ClasspathResource(String resource, ClassLoader classLoader) {
       this.resource = FileUtils.toUnix(resource);
       this.classLoader = classLoader;
    }

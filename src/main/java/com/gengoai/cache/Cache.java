@@ -23,7 +23,6 @@ package com.gengoai.cache;
 
 import com.gengoai.function.SerializableFunction;
 import com.gengoai.function.SerializableSupplier;
-import lombok.NonNull;
 
 /**
  * <p>A generic cache interface that allows multiple implementations, definition through specification, management, and
@@ -88,7 +87,7 @@ public interface Cache<K, V> {
     *
     * @param keys The keys to remove
     */
-   void invalidateAll(@NonNull Iterable<? extends K> keys);
+   void invalidateAll( Iterable<? extends K> keys);
 
    /**
     * Clears the cache

@@ -26,7 +26,6 @@ import com.gengoai.config.Preloader;
 import com.gengoai.conversion.Cast;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
-import lombok.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -178,7 +177,7 @@ public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> ext
    }
 
    @Override
-   public final boolean isInstance(@NonNull Tag value) {
+   public final boolean isInstance(Tag value) {
       HierarchicalEnumValue<T> hev = this;
       while (hev != null && hev != getSingleRoot()) {
          if (hev.equals(value)) {

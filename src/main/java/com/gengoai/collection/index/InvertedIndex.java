@@ -22,10 +22,9 @@
 package com.gengoai.collection.index;
 
 import com.gengoai.Validation;
+import com.gengoai.collection.Streams;
 import com.gengoai.collection.multimap.HashSetMultimap;
 import com.gengoai.collection.multimap.Multimap;
-import com.gengoai.collection.Streams;
-import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.*;
@@ -51,7 +50,7 @@ public class InvertedIndex<DOCUMENT, KEY> implements Serializable {
     *
     * @param documentMapper the document mapper
     */
-   public InvertedIndex(@NonNull Function<? super DOCUMENT, Collection<KEY>> documentMapper) {
+   public InvertedIndex(Function<? super DOCUMENT, Collection<KEY>> documentMapper) {
       this.index = new HashSetMultimap<>();
       this.documents = new ArrayList<>();
       this.documentMapper = Validation.notNull(documentMapper);
@@ -92,7 +91,7 @@ public class InvertedIndex<DOCUMENT, KEY> implements Serializable {
     * @param filter   the filter
     * @return the list
     */
-   public Set<DOCUMENT> query(@NonNull DOCUMENT document, @NonNull Predicate<? super DOCUMENT> filter) {
+   public Set<DOCUMENT> query(DOCUMENT document, Predicate<? super DOCUMENT> filter) {
       return query(documentMapper.apply(document), filter);
    }
 
@@ -113,7 +112,7 @@ public class InvertedIndex<DOCUMENT, KEY> implements Serializable {
     * @param filter the filter
     * @return the list
     */
-   public Set<DOCUMENT> query(@NonNull Iterable<KEY> keys, @NonNull Predicate<? super DOCUMENT> filter) {
+   public Set<DOCUMENT> query(Iterable<KEY> keys, Predicate<? super DOCUMENT> filter) {
       return Streams.asParallelStream(keys)
                     .flatMap(key -> index.get(key).stream())
                     .map(documents::get)
@@ -143,12 +142,12 @@ public class InvertedIndex<DOCUMENT, KEY> implements Serializable {
 
 
    @SafeVarargs
-   public final Set<DOCUMENT> query(@NonNull KEY... keys) {
+   public final Set<DOCUMENT> query(KEY... keys) {
       return query(Arrays.asList(keys), d -> true);
    }
 
    @SafeVarargs
-   public final Set<DOCUMENT> query(@NonNull Predicate<? super DOCUMENT> filter, @NonNull KEY... keys) {
+   public final Set<DOCUMENT> query(Predicate<? super DOCUMENT> filter, KEY... keys) {
       return query(Arrays.asList(keys), filter);
    }
 

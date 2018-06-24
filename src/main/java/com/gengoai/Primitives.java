@@ -3,11 +3,12 @@ package com.gengoai;
 import com.gengoai.collection.Iterables;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Convert;
-import lombok.NonNull;
 
 import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.gengoai.Validation.notNull;
 
 /**
  * <p>Methods for working with primitive values including wrapping, unwrapping to object types and converting
@@ -58,8 +59,8 @@ public final class Primitives {
     * @param numbers the numbers to convert
     * @return the byte array
     */
-   public static byte[] toByteArray(@NonNull Iterable<? extends Number> numbers) {
-      return Cast.as(toArray(numbers, byte.class), byte[].class);
+   public static byte[] toByteArray(Iterable<? extends Number> numbers) {
+      return Cast.as(toArray(notNull(numbers), byte.class), byte[].class);
    }
 
    /**
@@ -68,8 +69,8 @@ public final class Primitives {
     * @param numbers the numbers to convert
     * @return the int array
     */
-   public static int[] toIntArray(@NonNull Iterable<? extends Number> numbers) {
-      return Cast.as(toArray(numbers, int.class), int[].class);
+   public static int[] toIntArray(Iterable<? extends Number> numbers) {
+      return Cast.as(toArray(notNull(numbers), int.class), int[].class);
    }
 
    /**
@@ -78,8 +79,8 @@ public final class Primitives {
     * @param numbers the numbers to convert
     * @return the float array
     */
-   public static float[] toFloatArray(@NonNull Iterable<? extends Number> numbers) {
-      return Cast.as(toArray(numbers, float.class), float[].class);
+   public static float[] toFloatArray(Iterable<? extends Number> numbers) {
+      return Cast.as(toArray(notNull(numbers), float.class), float[].class);
    }
 
    /**
@@ -88,8 +89,8 @@ public final class Primitives {
     * @param numbers the numbers to convert
     * @return the double array
     */
-   public static double[] toDoubleArray(@NonNull Iterable<? extends Number> numbers) {
-      return Cast.as(toArray(numbers, double.class), double[].class);
+   public static double[] toDoubleArray(Iterable<? extends Number> numbers) {
+      return Cast.as(toArray(notNull(numbers), double.class), double[].class);
    }
 
    /**
@@ -98,8 +99,8 @@ public final class Primitives {
     * @param numbers the numbers to convert
     * @return the long array
     */
-   public static long[] toLongArray(@NonNull Iterable<? extends Number> numbers) {
-      return Cast.as(toArray(numbers, long.class), long[].class);
+   public static long[] toLongArray(Iterable<? extends Number> numbers) {
+      return Cast.as(toArray(notNull(numbers), long.class), long[].class);
    }
 
    /**
@@ -108,8 +109,8 @@ public final class Primitives {
     * @param numbers the numbers to convert
     * @return the short array
     */
-   public static short[] toShortArray(@NonNull Iterable<? extends Number> numbers) {
-      return Cast.as(toArray(numbers, short.class), short[].class);
+   public static short[] toShortArray(Iterable<? extends Number> numbers) {
+      return Cast.as(toArray(notNull(numbers), short.class), short[].class);
    }
 
    /**
@@ -118,8 +119,8 @@ public final class Primitives {
     * @param characters the characters to convert
     * @return the char array
     */
-   public static char[] toCharArray(@NonNull Iterable<Character> characters) {
-      char[] rval = new char[Iterables.size(characters)];
+   public static char[] toCharArray(Iterable<Character> characters) {
+      char[] rval = new char[Iterables.size(notNull(characters))];
       int index = 0;
       for (Character character : characters) {
          rval[index] = character;
@@ -135,7 +136,8 @@ public final class Primitives {
     * @param type the primitive type
     * @return the wrapped type class
     */
-   public static <T> Class<T> wrap(@NonNull Class<T> type) {
+   public static <T> Class<T> wrap(Class<T> type) {
+      notNull(type);
       return Cast.as(primitiveToWrap.getOrDefault(type, type));
    }
 
@@ -146,7 +148,8 @@ public final class Primitives {
     * @param type the boxed type
     * @return the primitive class
     */
-   public static <T> Class<T> unwrap(@NonNull Class<T> type) {
+   public static <T> Class<T> unwrap(Class<T> type) {
+      notNull(type);
       return Cast.as(wrapToPrimitive.getOrDefault(type, type));
    }
 

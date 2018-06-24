@@ -23,7 +23,6 @@ package com.gengoai.conversion;
 
 import com.gengoai.collection.Collect;
 import com.gengoai.io.resource.Resource;
-import lombok.NonNull;
 
 import java.io.Serializable;
 import java.lang.reflect.Array;
@@ -80,7 +79,7 @@ public class Val implements Serializable {
     * @param clazz the clazz
     * @return the object
     */
-   public Object asObject(@NonNull Class<?> clazz) {
+   public Object asObject(Class<?> clazz) {
       if (Map.class.isAssignableFrom(clazz)) {
          return asMap(clazz, String.class, String.class);
       } else if (Collection.class.isAssignableFrom(clazz)) {
@@ -107,7 +106,7 @@ public class Val implements Serializable {
     * @param genericClass    The class of the item in the collection
     * @return The object as a collection
     */
-   public <E, T extends Collection<E>> T asCollection(@NonNull Class<?> collectionClass, @NonNull Class<E> genericClass) {
+   public <E, T extends Collection<E>> T asCollection(Class<?> collectionClass, Class<E> genericClass) {
       T rval = Convert.convert(toConvert, collectionClass, genericClass);
       if (rval == null) {
          return Collect.create(Cast.as(collectionClass));
@@ -125,7 +124,7 @@ public class Val implements Serializable {
     * @param valueClass The value class
     * @return the object as a map
     */
-   public <K, V> Map<K, V> asMap(@NonNull Class<?> mapClass, @NonNull Class<K> keyClass, @NonNull Class<V> valueClass) {
+   public <K, V> Map<K, V> asMap(Class<?> mapClass, Class<K> keyClass, Class<V> valueClass) {
       return Convert.convert(toConvert, mapClass, keyClass, valueClass);
    }
 
@@ -237,7 +236,7 @@ public class Val implements Serializable {
     * @param supplier The supplier to use to generate a default value
     * @return This object as the given type or null if the wrapped object is null
     */
-   public <T> T asOrElse(Class<T> clazz, @NonNull Supplier<T> supplier) {
+   public <T> T asOrElse(Class<T> clazz, Supplier<T> supplier) {
       if (isNull()) {
          return supplier.get();
       }

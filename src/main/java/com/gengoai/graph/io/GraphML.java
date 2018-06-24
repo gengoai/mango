@@ -31,8 +31,6 @@ import com.gengoai.graph.Graph;
 import com.gengoai.graph.Vertex;
 import com.gengoai.io.resource.Resource;
 import com.graphdrawing.graphml.xmlns.*;
-import lombok.Builder;
-import lombok.NonNull;
 
 import javax.xml.bind.JAXB;
 import java.io.IOException;
@@ -72,7 +70,6 @@ public class GraphML<V> implements GraphReader<V>, GraphWriter<V> {
     * @param edgeEncoder   the edge encoder
     * @param edgeDecoder   the edge decoder
     */
-   @Builder
    public GraphML(VertexEncoder<V> vertexEncoder,
                   VertexDecoder<V> vertexDecoder,
                   EdgeEncoder<V> edgeEncoder,
@@ -84,8 +81,12 @@ public class GraphML<V> implements GraphReader<V>, GraphWriter<V> {
       setEdgeDecoder(edgeDecoder);
    }
 
+   public static <V> GraphMLBuilder<V> builder() {
+      return new GraphMLBuilder<V>();
+   }
+
    @Override
-   public Graph<V> read(@NonNull Resource location) throws IOException {
+   public Graph<V> read(Resource location) throws IOException {
       GraphmlType gml;
       try (Reader reader = location.reader()) {
          gml = JAXB.unmarshal(reader, GraphmlType.class);
@@ -189,7 +190,7 @@ public class GraphML<V> implements GraphReader<V>, GraphWriter<V> {
    }
 
    @Override
-   public void write(@NonNull Graph<V> graph, @NonNull Resource location, @NonNull ListMultimap<String, String> parameters) throws IOException {
+   public void write(Graph<V> graph, Resource location, ListMultimap<String, String> parameters) throws IOException {
       GraphType graphType = new GraphType();
       graphType.setEdgedefault(graph.isDirected() ? DIRECTED : GraphEdgedefaultType.UNDIRECTED);
       graphType.setId("G");
@@ -246,4 +247,41 @@ public class GraphML<V> implements GraphReader<V>, GraphWriter<V> {
       }
    }
 
+   public static class GraphMLBuilder<V> {
+      private VertexEncoder<V> vertexEncoder;
+      private VertexDecoder<V> vertexDecoder;
+      private EdgeEncoder<V> edgeEncoder;
+      private EdgeDecoder<V> edgeDecoder;
+
+      GraphMLBuilder() {
+      }
+
+      public GraphML<V> build() {
+         return new GraphML<V>(vertexEncoder, vertexDecoder, edgeEncoder, edgeDecoder);
+      }
+
+      public GraphMLBuilder<V> edgeDecoder(EdgeDecoder<V> edgeDecoder) {
+         this.edgeDecoder = edgeDecoder;
+         return this;
+      }
+
+      public GraphMLBuilder<V> edgeEncoder(EdgeEncoder<V> edgeEncoder) {
+         this.edgeEncoder = edgeEncoder;
+         return this;
+      }
+
+      public String toString() {
+         return "GraphML.GraphMLBuilder(vertexEncoder=" + this.vertexEncoder + ", vertexDecoder=" + this.vertexDecoder + ", edgeEncoder=" + this.edgeEncoder + ", edgeDecoder=" + this.edgeDecoder + ")";
+      }
+
+      public GraphMLBuilder<V> vertexDecoder(VertexDecoder<V> vertexDecoder) {
+         this.vertexDecoder = vertexDecoder;
+         return this;
+      }
+
+      public GraphMLBuilder<V> vertexEncoder(VertexEncoder<V> vertexEncoder) {
+         this.vertexEncoder = vertexEncoder;
+         return this;
+      }
+   }
 }//END OF GraphML

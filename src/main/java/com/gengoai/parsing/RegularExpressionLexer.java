@@ -27,7 +27,6 @@ import com.gengoai.conversion.Cast;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.string.StringUtils;
 import com.gengoai.tuple.Tuple2;
-import lombok.NonNull;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -52,7 +51,7 @@ public class RegularExpressionLexer implements Lexer, Serializable {
     *
     * @param lexicalPatterns The lexical patterns to capture
     */
-   public RegularExpressionLexer(@NonNull Collection<Tuple2<ParserTokenType, String>> lexicalPatterns) {
+   public RegularExpressionLexer(Collection<Tuple2<ParserTokenType, String>> lexicalPatterns) {
       Validation.checkArgument(!lexicalPatterns.isEmpty());
       types = new HashSet<>();
       StringBuilder pattern = new StringBuilder();

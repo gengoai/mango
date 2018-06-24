@@ -1,7 +1,6 @@
 package com.gengoai.cache;
 
 import com.gengoai.function.SerializableFunction;
-import lombok.NonNull;
 
 /**
  * Auto calculating LRU cache that calculates values for keys when retrieved.
@@ -19,7 +18,7 @@ public class AutoCalculatingLRUCache<K, V> extends LRUCache<K, V> {
     * @param maxSize         the max size
     * @param valueCalculator the value calculator
     */
-   public AutoCalculatingLRUCache(int maxSize, @NonNull SerializableFunction<K, V> valueCalculator) {
+   public AutoCalculatingLRUCache(int maxSize, SerializableFunction<K, V> valueCalculator) {
       super(maxSize);
       this.valueCalculator = valueCalculator;
    }

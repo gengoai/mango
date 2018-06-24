@@ -5,7 +5,6 @@ import com.gengoai.collection.Maps;
 import com.gengoai.conversion.Cast;
 import com.gengoai.string.CharMatcher;
 import com.gengoai.string.StringUtils;
-import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.*;
@@ -41,7 +40,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
     *
     * @param map A map of string to value used to populate the trie.
     */
-   public Trie(@NonNull Map<String, V> map) {
+   public Trie(Map<String, V> map) {
       this();
       putAll(map);
    }
@@ -220,7 +219,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
     * @param prefix the prefix to match
     * @return A unmodifiable map view of the trie whose elements have the given prefix
     */
-   public Map<String, V> prefix(@NonNull String prefix) {
+   public Map<String, V> prefix(String prefix) {
       final TrieNode<V> match = root.find(prefix);
       if (match == null) {
          return Collections.emptyMap();
@@ -244,7 +243,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
    }
 
    @Override
-   public V put(@NonNull String key, V value) {
+   public V put(String key, V value) {
       return root.extend(key.toCharArray(), 0, value);
    }
 

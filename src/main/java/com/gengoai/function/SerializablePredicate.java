@@ -21,8 +21,6 @@
 
 package com.gengoai.function;
 
-import lombok.NonNull;
-
 import java.io.Serializable;
 import java.util.function.Predicate;
 
@@ -40,20 +38,20 @@ public interface SerializablePredicate<T> extends Predicate<T>, Serializable {
    }
 
    @Override
-   default SerializablePredicate<T> or(@NonNull Predicate<? super T> other) {
+   default SerializablePredicate<T> or( Predicate<? super T> other) {
       return t -> this.test(t) || other.test(t);
    }
 
    @Override
-   default SerializablePredicate<T> and(@NonNull Predicate<? super T> other) {
+   default SerializablePredicate<T> and( Predicate<? super T> other) {
       return t -> this.test(t) && other.test(t);
    }
 
-   default SerializablePredicate<T> or(@NonNull SerializablePredicate<? super T> other) {
+   default SerializablePredicate<T> or( SerializablePredicate<? super T> other) {
       return t -> this.test(t) || other.test(t);
    }
 
-   default SerializablePredicate<T> and(@NonNull SerializablePredicate<? super T> other) {
+   default SerializablePredicate<T> and( SerializablePredicate<? super T> other) {
       return t -> this.test(t) && other.test(t);
    }
 

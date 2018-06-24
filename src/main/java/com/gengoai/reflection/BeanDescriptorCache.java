@@ -22,12 +22,11 @@
 package com.gengoai.reflection;
 
 import com.gengoai.cache.Cache;
-import lombok.SneakyThrows;
 
 /**
  * <p>A cache of {@link BeanDescriptor} to speed up performance of using {@link BeanMap}s. The cache parameters can be
- * specified using the cache spec with property <code>com.gengoai.reflection.BeanDescriptorCache.spec</code> by
- * default it will have a maximum size of 100 and entries will expire after 10 minutes of write</p>
+ * specified using the cache spec with property <code>com.gengoai.reflection.BeanDescriptorCache.spec</code> by default
+ * it will have a maximum size of 100 and entries will expire after 10 minutes of write</p>
  *
  * @author David B. Bracewell
  */
@@ -61,7 +60,6 @@ public class BeanDescriptorCache {
     * @param clazz The class for which a {@link BeanDescriptor} is to be created.
     * @return A {@link BeanDescriptor} for the given class
     */
-   @SneakyThrows
    public synchronized BeanDescriptor get(Class<?> clazz) {
       return cache.get(clazz);
    }

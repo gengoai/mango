@@ -38,13 +38,13 @@ import com.gengoai.logging.LogManager;
 import com.gengoai.logging.Logger;
 import com.gengoai.parsing.ParseException;
 import com.gengoai.reflection.BeanUtils;
+import com.gengoai.reflection.ReflectionException;
 import com.gengoai.scripting.ScriptEnvironment;
 import com.gengoai.scripting.ScriptEnvironmentManager;
 import com.gengoai.string.StringMatcher;
 import com.gengoai.string.StringUtils;
-import lombok.NonNull;
-import lombok.SneakyThrows;
 
+import javax.script.ScriptException;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -116,18 +116,21 @@ public final class Config implements Serializable {
     * @param configResource the config resource to check.
     * @return True if the config has been loaded, False if not
     */
-   public static boolean isConfigLoaded(@NonNull Resource configResource) {
+   public static boolean isConfigLoaded(Resource configResource) {
       return getInstance().loaded.contains(configResource.path());
    }
 
-   @SneakyThrows
    private static Val getBean(String value) {
       List<String> parts = StringUtils.split(value, ',');
       List<Object> beans = new ArrayList<>();
       for (String beanName : parts) {
          Matcher m = BEAN_SUBSTITUTION.matcher(beanName);
          if (m.find()) {
-            beans.add(BeanUtils.getNamedBean(m.group(1), Object.class));
+            try {
+               beans.add(BeanUtils.getNamedBean(m.group(1), Object.class));
+            } catch (ReflectionException e) {
+               throw new RuntimeException(e);
+            }
          } else {
             beans.add(beanName);
          }
@@ -136,7 +139,7 @@ public final class Config implements Serializable {
    }
 
    public static boolean isBean(String property) {
-      if( StringUtils.isNullOrBlank(Config.getRaw(property))){
+      if (StringUtils.isNullOrBlank(Config.getRaw(property))) {
          return false;
       }
       Matcher m = BEAN_SUBSTITUTION.matcher(Config.getRaw(property));
@@ -415,7 +418,7 @@ public final class Config implements Serializable {
     *
     * @param packageName the package name
     */
-   public static void loadPackageConfig(@NonNull String packageName) {
+   public static void loadPackageConfig(String packageName) {
       loadConfig(Resources.fromClasspath(packageName.replace('.', '/') + "/default.conf"));
    }
 
@@ -424,7 +427,6 @@ public final class Config implements Serializable {
     *
     * @param resource The config file
     */
-   @SneakyThrows
    public static void loadConfig(Resource resource) {
       if (resource == null || !resource.exists()) {
          return;
@@ -432,7 +434,11 @@ public final class Config implements Serializable {
       if (resource.path() != null && getInstance().loaded.contains(resource.path())) {
          return; //Only load once!
       }
-      new ConfigParser(resource).parse();
+      try {
+         new ConfigParser(resource).parse();
+      } catch (ParseException | IOException e) {
+         throw new RuntimeException(e);
+      }
       if (resource.path() != null) {
          getInstance().loaded.add(resource.path());
       }
@@ -494,7 +500,6 @@ public final class Config implements Serializable {
     * @param otherPackages Other packages whose configs we should load
     * @return Non config/option parameters from command line
     */
-   @SneakyThrows
    public static String[] initialize(String programName, String[] args, CommandLineParser parser, String... otherPackages) {
       Preloader.preload();
       String rval[];
@@ -522,7 +527,11 @@ public final class Config implements Serializable {
       String className = getCallingClass();
 
       if (className != null) {
-         loadDefaultConf(className);
+         try {
+            loadDefaultConf(className);
+         } catch (ParseException e) {
+            throw new RuntimeException(e);
+         }
       }
 
 
@@ -653,7 +662,6 @@ public final class Config implements Serializable {
       return initialize(programName, args, new CommandLineParser(), otherPackages);
    }
 
-   @SneakyThrows
    private static Object processScript(String scriptStatement) {
       int idx = scriptStatement.indexOf(']');
 
@@ -681,7 +689,11 @@ public final class Config implements Serializable {
       }
 
       String script = scriptStatement.substring(idx + 1).trim();
-      return env.eval(script);
+      try {
+         return env.eval(script);
+      } catch (ScriptException e) {
+         throw new RuntimeException(e);
+      }
    }
 
    /**
@@ -715,7 +727,6 @@ public final class Config implements Serializable {
     * @param name  the name of the property
     * @param value the value of the property
     */
-   @SneakyThrows
    public static void setProperty(String name, String value) {
       getInstance().properties.put(name, value);
       if (name.toLowerCase().endsWith(".level")) {
@@ -723,7 +734,11 @@ public final class Config implements Serializable {
          LogManager.getLogManager().setLevel(className, Level.parse(value.trim().toUpperCase()));
       }
       if (name.equals("com.gengoai.logging.logfile")) {
-         LogManager.addFileHandler(value);
+         try {
+            LogManager.addFileHandler(value);
+         } catch (IOException e) {
+            throw new RuntimeException(e);
+         }
       }
       if (name.toLowerCase().startsWith(SYSTEM_PROPERTY)) {
          String systemSetting = name.substring(SYSTEM_PROPERTY.length());
@@ -758,7 +773,7 @@ public final class Config implements Serializable {
     *
     * @param newDefaultClassLoader The new ClassLoader
     */
-   public static void setDefaultClassLoader(@NonNull ClassLoader newDefaultClassLoader) {
+   public static void setDefaultClassLoader(ClassLoader newDefaultClassLoader) {
       defaultClassLoader = newDefaultClassLoader;
    }
 
@@ -769,7 +784,7 @@ public final class Config implements Serializable {
     * @return the resource writen to
     * @throws IOException Something went wrong writing the config file
     */
-   public static Resource toPythonConfigParser(@NonNull Resource output) throws IOException {
+   public static Resource toPythonConfigParser(Resource output) throws IOException {
       return toPythonConfigParser("default", output);
    }
 
@@ -781,7 +796,7 @@ public final class Config implements Serializable {
     * @return the resource writen to
     * @throws IOException Something went wrong writing the config file
     */
-   public static Resource toPythonConfigParser(@NonNull String sectionName, @NonNull Resource output) throws IOException {
+   public static Resource toPythonConfigParser(String sectionName, Resource output) throws IOException {
       try (BufferedWriter writer = new BufferedWriter(output.writer())) {
          writer.write("[");
          writer.write(sectionName);

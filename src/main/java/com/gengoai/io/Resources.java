@@ -26,8 +26,6 @@ import com.gengoai.conversion.Val;
 import com.gengoai.io.resource.*;
 import com.gengoai.io.resource.spi.ResourceProvider;
 import com.gengoai.string.StringUtils;
-import lombok.NonNull;
-import lombok.SneakyThrows;
 
 import java.io.*;
 import java.net.URI;
@@ -208,7 +206,7 @@ public final class Resources {
     * @param inputStream The input stream to wrap
     * @return Resource that can read from given input stream
     */
-   public static Resource fromInputStream(@NonNull InputStream inputStream) {
+   public static Resource fromInputStream(InputStream inputStream) {
       return new InputStreamResource(inputStream);
    }
 
@@ -218,7 +216,7 @@ public final class Resources {
     * @param reader The reader to wrap
     * @return Resource that can read from given reader
     */
-   public static Resource fromReader(@NonNull Reader reader) {
+   public static Resource fromReader(Reader reader) {
       return new ReaderResource(reader);
    }
 
@@ -228,7 +226,7 @@ public final class Resources {
     * @param writer the writer wrap
     * @return the resource
     */
-   public static Resource fromWriter(@NonNull Writer writer) {
+   public static Resource fromWriter(Writer writer) {
       return new WriterResource(writer);
    }
 
@@ -254,9 +252,12 @@ public final class Resources {
     *
     * @return A resource which is a temporary file on disk
     */
-   @SneakyThrows
    public static Resource temporaryFile() {
-      return temporaryFile(UUID.randomUUID().toString(), "tmp");
+      try {
+         return temporaryFile(UUID.randomUUID().toString(), "tmp");
+      } catch (IOException e) {
+         throw new RuntimeException(e);
+      }
    }
 
    /**

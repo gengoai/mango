@@ -21,8 +21,6 @@
 
 package com.gengoai.io.resource;
 
-import lombok.NonNull;
-
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
@@ -47,7 +45,7 @@ public class ResourceChildIterator implements Iterator<Resource> {
     * @param filePattern   the file pattern
     * @param recursive     the recursive
     */
-   public ResourceChildIterator(@NonNull Resource startingPoint, @NonNull Pattern filePattern, boolean recursive) {
+   public ResourceChildIterator(Resource startingPoint, Pattern filePattern, boolean recursive) {
       this.filePattern = filePattern;
       queue.addAll(startingPoint.getChildren(filePattern, false));
       this.recursive = recursive;

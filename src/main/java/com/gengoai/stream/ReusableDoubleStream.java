@@ -25,7 +25,6 @@ import com.gengoai.EnhancedDoubleStatistics;
 import com.gengoai.Math2;
 import com.gengoai.Validation;
 import com.gengoai.function.*;
-import lombok.NonNull;
 
 import java.util.Arrays;
 import java.util.OptionalDouble;
@@ -47,17 +46,17 @@ class ReusableDoubleStream implements MDoubleStream {
     *
     * @param array the array to wrap
     */
-   ReusableDoubleStream(@NonNull double[] array) {
+   ReusableDoubleStream(double[] array) {
       this.array = array;
    }
 
    @Override
-   public boolean allMatch(@NonNull SerializableDoublePredicate predicate) {
+   public boolean allMatch(SerializableDoublePredicate predicate) {
       return getStream().allMatch(predicate);
    }
 
    @Override
-   public boolean anyMatch(@NonNull SerializableDoublePredicate predicate) {
+   public boolean anyMatch(SerializableDoublePredicate predicate) {
       return getStream().anyMatch(predicate);
    }
 
@@ -84,7 +83,7 @@ class ReusableDoubleStream implements MDoubleStream {
    }
 
    @Override
-   public MDoubleStream filter(@NonNull SerializableDoublePredicate predicate) {
+   public MDoubleStream filter(SerializableDoublePredicate predicate) {
       return getStream().filter(predicate);
    }
 
@@ -94,12 +93,12 @@ class ReusableDoubleStream implements MDoubleStream {
    }
 
    @Override
-   public MDoubleStream flatMap(@NonNull SerializableDoubleFunction<double[]> mapper) {
+   public MDoubleStream flatMap(SerializableDoubleFunction<double[]> mapper) {
       return getStream().flatMap(mapper);
    }
 
    @Override
-   public void forEach(@NonNull SerializableDoubleConsumer consumer) {
+   public void forEach(SerializableDoubleConsumer consumer) {
       for (double v : array) {
          consumer.accept(v);
       }
@@ -145,12 +144,12 @@ class ReusableDoubleStream implements MDoubleStream {
    }
 
    @Override
-   public MDoubleStream map(@NonNull SerializableDoubleUnaryOperator mapper) {
+   public MDoubleStream map(SerializableDoubleUnaryOperator mapper) {
       return getStream().map(mapper);
    }
 
    @Override
-   public <T> MStream<T> mapToObj(@NonNull SerializableDoubleFunction<? extends T> function) {
+   public <T> MStream<T> mapToObj(SerializableDoubleFunction<? extends T> function) {
       return getStream().mapToObj(function);
    }
 
@@ -170,7 +169,7 @@ class ReusableDoubleStream implements MDoubleStream {
    }
 
    @Override
-   public boolean noneMatch(@NonNull SerializableDoublePredicate predicate) {
+   public boolean noneMatch(SerializableDoublePredicate predicate) {
       return getStream().noneMatch(predicate);
    }
 
@@ -186,12 +185,12 @@ class ReusableDoubleStream implements MDoubleStream {
    }
 
    @Override
-   public OptionalDouble reduce(@NonNull SerializableDoubleBinaryOperator operator) {
+   public OptionalDouble reduce(SerializableDoubleBinaryOperator operator) {
       return getStream().reduce(operator);
    }
 
    @Override
-   public double reduce(double zeroValue, @NonNull SerializableDoubleBinaryOperator operator) {
+   public double reduce(double zeroValue, SerializableDoubleBinaryOperator operator) {
       return getStream().reduce(zeroValue, operator);
    }
 
@@ -231,7 +230,7 @@ class ReusableDoubleStream implements MDoubleStream {
    }
 
    @Override
-   public MDoubleStream union(@NonNull MDoubleStream other) {
+   public MDoubleStream union(MDoubleStream other) {
       return getStream().union(other);
    }
 

@@ -2,7 +2,6 @@ package com.gengoai.application;
 
 import com.gengoai.logging.Loggable;
 import com.gengoai.string.StringUtils;
-import lombok.NonNull;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
@@ -12,7 +11,8 @@ import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
 
 /**
- * <p> Abstract base class for a swing based applications. Child classes should define their UI via the {@link #setup()}
+ * <p> Abstract base class for a swing based applications. Child classes should define their UI via the {@link
+ * #setup()}
  * method and should define a <code>main</code> method that calls {@link #run(String[])}. An example application is
  * listed below.</p>
  * <pre>
@@ -76,7 +76,7 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
     * @param consumer the consumer
     * @return the mouse adapter
     */
-   public static MouseAdapter mouseClicked(@NonNull Consumer<MouseEvent> consumer) {
+   public static MouseAdapter mouseClicked(Consumer<MouseEvent> consumer) {
       return new MouseAdapter() {
          @Override
          public void mouseClicked(MouseEvent e) {
@@ -92,7 +92,7 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
     * @param consumer the consumer
     * @return the mouse adapter
     */
-   public static MouseAdapter mousePressed(@NonNull Consumer<MouseEvent> consumer) {
+   public static MouseAdapter mousePressed( Consumer<MouseEvent> consumer) {
       return new MouseAdapter() {
          @Override
          public void mousePressed(MouseEvent e) {
@@ -108,7 +108,7 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
     * @param consumer the consumer
     * @return the mouse adapter
     */
-   public static MouseAdapter mouseReleased(@NonNull Consumer<MouseEvent> consumer) {
+   public static MouseAdapter mouseReleased( Consumer<MouseEvent> consumer) {
       return new MouseAdapter() {
          @Override
          public void mouseReleased(MouseEvent e) {
@@ -124,7 +124,7 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
     * @param consumer the consumer
     * @return the popup menu listener
     */
-   public static PopupMenuListener popupMenuWillBecomeInvisible(@NonNull Consumer<PopupMenuEvent> consumer) {
+   public static PopupMenuListener popupMenuWillBecomeInvisible( Consumer<PopupMenuEvent> consumer) {
       return new PopupMenuListener() {
          @Override
          public void popupMenuCanceled(PopupMenuEvent e) {
@@ -149,7 +149,7 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
     * @param consumer the consumer
     * @return the popup menu listener
     */
-   public static PopupMenuListener popupMenuWillBecomeVisible(@NonNull Consumer<PopupMenuEvent> consumer) {
+   public static PopupMenuListener popupMenuWillBecomeVisible( Consumer<PopupMenuEvent> consumer) {
       return new PopupMenuListener() {
          @Override
          public void popupMenuCanceled(PopupMenuEvent e) {

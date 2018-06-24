@@ -22,7 +22,6 @@
 package com.gengoai.io;
 
 import com.gengoai.Validation;
-import lombok.NonNull;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
@@ -43,7 +42,7 @@ public class CharsetDetector {
     * @param length the length to read
     * @return The detected charset or null
     */
-   public static Charset detect(@NonNull byte[] buffer, int offset, int length) {
+   public static Charset detect(byte[] buffer, int offset, int length) {
       Validation.checkArgument(length > 0);
       Validation.checkArgument(offset >= 0);
 

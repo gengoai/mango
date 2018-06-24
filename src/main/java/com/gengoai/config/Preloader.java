@@ -3,7 +3,6 @@ package com.gengoai.config;
 import com.gengoai.io.resource.ClasspathResource;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.reflection.ReflectionUtils;
-import lombok.NonNull;
 
 import java.io.IOException;
 
@@ -27,7 +26,7 @@ public final class Preloader {
     *
     * @param classLoader the class loader to scan for the preload.classes file
     */
-   public static void preload(@NonNull ClassLoader classLoader) {
+   public static void preload(ClassLoader classLoader) {
       Resource r = new ClasspathResource("META-INF/preload.classes", classLoader);
       if (r.exists()) {
          try {

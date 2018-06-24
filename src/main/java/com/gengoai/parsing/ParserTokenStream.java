@@ -21,8 +21,6 @@
 
 package com.gengoai.parsing;
 
-import lombok.NonNull;
-
 import java.util.*;
 
 /**
@@ -63,7 +61,7 @@ public class ParserTokenStream {
     * @return The next token
     * @throws ParseException The next token is not of the expected type
     */
-   public ParserToken consume(@NonNull ParserTokenType expectedType) throws ParseException {
+   public ParserToken consume(ParserTokenType expectedType) throws ParseException {
       ParserToken next = consume();
       if (next == null || !expectedType.isInstance(next.type)) {
          throw new ParseException("Expected the next token to be of type " + expectedType + ", but found " + (next == null

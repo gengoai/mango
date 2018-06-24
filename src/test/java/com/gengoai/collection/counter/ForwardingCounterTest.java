@@ -23,7 +23,6 @@ package com.gengoai.collection.counter;
 
 import com.gengoai.io.resource.Resource;
 import com.gengoai.io.resource.StringResource;
-import lombok.EqualsAndHashCode;
 
 import static org.junit.Assert.*;
 
@@ -52,16 +51,38 @@ public class ForwardingCounterTest extends BaseCounterTest {
       return new FC<>(super.getEmptyCounter());
    }
 
-   @EqualsAndHashCode(callSuper = false)
    static class FC<T> extends ForwardingCounter<T> {
       private static final long serialVersionUID = 1L;
       final Counter<T> delegate;
 
       FC(Counter<T> delegate) {this.delegate = delegate;}
 
+      protected boolean canEqual(Object other) {
+         return other instanceof FC;
+      }
+
       @Override
       protected Counter<T> delegate() {
          return delegate;
+      }
+
+      public boolean equals(Object o) {
+         if (o == this) return true;
+         if (!(o instanceof FC)) return false;
+         final FC other = (FC) o;
+         if (!other.canEqual((Object) this)) return false;
+         final Object this$delegate = this.delegate;
+         final Object other$delegate = other.delegate;
+         if (this$delegate == null ? other$delegate != null : !this$delegate.equals(other$delegate)) return false;
+         return true;
+      }
+
+      public int hashCode() {
+         final int PRIME = 59;
+         int result = 1;
+         final Object $delegate = this.delegate;
+         result = result * PRIME + ($delegate == null ? 43 : $delegate.hashCode());
+         return result;
       }
    }
 

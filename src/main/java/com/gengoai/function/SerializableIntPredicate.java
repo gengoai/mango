@@ -21,8 +21,6 @@
 
 package com.gengoai.function;
 
-import lombok.NonNull;
-
 import java.io.Serializable;
 import java.util.function.IntPredicate;
 
@@ -38,20 +36,20 @@ public interface SerializableIntPredicate extends IntPredicate, Serializable {
    }
 
    @Override
-   default SerializableIntPredicate and(@NonNull IntPredicate other) {
+   default SerializableIntPredicate and(IntPredicate other) {
       return i -> this.test(i) && other.test(i);
    }
 
    @Override
-   default SerializableIntPredicate or(@NonNull IntPredicate other) {
+   default SerializableIntPredicate or(IntPredicate other) {
       return i -> this.test(i) || other.test(i);
    }
 
-   default SerializableIntPredicate and(@NonNull SerializableIntPredicate other) {
+   default SerializableIntPredicate and(SerializableIntPredicate other) {
       return i -> this.test(i) && other.test(i);
    }
 
-   default SerializableIntPredicate or(@NonNull SerializableIntPredicate other) {
+   default SerializableIntPredicate or(SerializableIntPredicate other) {
       return i -> this.test(i) || other.test(i);
    }
 

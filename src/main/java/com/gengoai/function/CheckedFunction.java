@@ -21,8 +21,6 @@
 
 package com.gengoai.function;
 
-import lombok.NonNull;
-
 import java.io.Serializable;
 
 /**
@@ -37,11 +35,11 @@ public interface CheckedFunction<T, R> extends Serializable {
    R apply(T t) throws Throwable;
 
 
-   default <V> CheckedFunction<V, R> compose(@NonNull CheckedFunction<? super V, ? extends T> before) {
+   default <V> CheckedFunction<V, R> compose(CheckedFunction<? super V, ? extends T> before) {
       return v -> apply(before.apply(v));
    }
 
-   default <V> CheckedFunction<T, V> andThen(@NonNull CheckedFunction<? super R, ? extends V> after) {
+   default <V> CheckedFunction<T, V> andThen(CheckedFunction<? super R, ? extends V> after) {
       return t -> after.apply(apply(t));
    }
 

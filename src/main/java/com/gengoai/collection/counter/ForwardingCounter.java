@@ -21,8 +21,6 @@
 
 package com.gengoai.collection.counter;
 
-import lombok.NonNull;
-
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.DoublePredicate;
@@ -56,7 +54,7 @@ public abstract class ForwardingCounter<TYPE> implements Counter<TYPE>, Serializ
    }
 
    @Override
-   public Counter<TYPE> adjustValuesSelf(@NonNull DoubleUnaryOperator function) {
+   public Counter<TYPE> adjustValuesSelf(DoubleUnaryOperator function) {
       if (delegate() == null) {
          return this;
       }
@@ -320,7 +318,7 @@ public abstract class ForwardingCounter<TYPE> implements Counter<TYPE>, Serializ
    }
 
    @Override
-   public Counter<TYPE> filterByKey(@NonNull Predicate<? super TYPE> predicate) {
+   public Counter<TYPE> filterByKey(Predicate<? super TYPE> predicate) {
       if (delegate() == null) {
          return this;
       }
@@ -328,7 +326,7 @@ public abstract class ForwardingCounter<TYPE> implements Counter<TYPE>, Serializ
    }
 
    @Override
-   public Counter<TYPE> filterByValue(@NonNull DoublePredicate doublePredicate) {
+   public Counter<TYPE> filterByValue(DoublePredicate doublePredicate) {
       if (delegate() == null) {
          return this;
       }

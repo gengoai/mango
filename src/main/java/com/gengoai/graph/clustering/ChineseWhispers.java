@@ -22,12 +22,12 @@
 package com.gengoai.graph.clustering;
 
 import com.gengoai.Validation;
-import com.gengoai.graph.Edge;
-import com.gengoai.graph.Graph;
+import com.gengoai.collection.Lists;
 import com.gengoai.collection.Sets;
 import com.gengoai.collection.counter.Counter;
 import com.gengoai.collection.counter.Counters;
-import com.gengoai.collection.Lists;
+import com.gengoai.graph.Edge;
+import com.gengoai.graph.Graph;
 
 import java.util.*;
 

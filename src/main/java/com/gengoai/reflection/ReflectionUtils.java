@@ -27,8 +27,6 @@ import com.gengoai.io.resource.Resource;
 import com.gengoai.logging.Loggable;
 import com.gengoai.logging.Logger;
 import com.gengoai.string.StringUtils;
-import lombok.NonNull;
-import lombok.SneakyThrows;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -136,8 +134,7 @@ public final class ReflectionUtils implements Loggable {
    }
 
    /**
-    * Gets all classes associated with (superclasses and interfaces) the given object that pass the given
-    * predicate.
+    * Gets all classes associated with (superclasses and interfaces) the given object that pass the given predicate.
     *
     * @param o         The object
     * @param predicate The predicate that ancestors must pass.
@@ -278,7 +275,7 @@ public final class ReflectionUtils implements Loggable {
     * @param recursive the recursive
     * @return the declared fields
     */
-   public static List<Field> getDeclaredFields(@NonNull Class<?> clazz, boolean recursive) {
+   public static List<Field> getDeclaredFields(Class<?> clazz, boolean recursive) {
       List<Field> fields = new ArrayList<>();
       do {
          fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
@@ -295,13 +292,16 @@ public final class ReflectionUtils implements Loggable {
     * @param cz  The class
     * @return The singleton instance or null if the class is not a singleton.
     */
-   @SneakyThrows
    public static <T> T getSingletonFor(Class<?> cz) {
       if (cz == null) {
          return null;
       }
       Method method = getSingletonMethod(cz);
-      return method == null ? null : Reflect.on(method, null, true).get();
+      try {
+         return method == null ? null : Reflect.on(method, null, true).get();
+      } catch (ReflectionException e) {
+         throw new RuntimeException(e);
+      }
    }
 
    private static Method getSingletonMethod(Class<?> clazz) {

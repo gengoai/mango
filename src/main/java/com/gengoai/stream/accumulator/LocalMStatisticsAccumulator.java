@@ -22,8 +22,6 @@
 package com.gengoai.stream.accumulator;
 
 import com.gengoai.EnhancedDoubleStatistics;
-import lombok.NonNull;
-import lombok.Synchronized;
 
 /**
  * <p>An implementation of a {@link MStatisticsAccumulator} for local streams</p>
@@ -45,15 +43,17 @@ public class LocalMStatisticsAccumulator extends LocalMAccumulator<Double, Enhan
    }
 
    @Override
-   @Synchronized
    public void add(double value) {
-      eds.accept(value);
+      synchronized (eds) {
+         eds.accept(value);
+      }
    }
 
    @Override
-   @Synchronized
-   public void add(@NonNull Double aDouble) {
-      eds.accept(aDouble);
+   public void add(Double aDouble) {
+      synchronized (eds) {
+         eds.accept(aDouble);
+      }
    }
 
    @Override
@@ -74,24 +74,28 @@ public class LocalMStatisticsAccumulator extends LocalMAccumulator<Double, Enhan
    }
 
    @Override
-   @Synchronized
-   public void merge(@NonNull MAccumulator<Double, EnhancedDoubleStatistics> other) {
-      if (other instanceof LocalMAccumulator) {
-         eds.combine(other.value());
-      } else {
-         throw new IllegalArgumentException(getClass().getName() + " cannot merge with " + other.getClass().getName());
+   public void merge(MAccumulator<Double, EnhancedDoubleStatistics> other) {
+      synchronized (eds) {
+         if (other instanceof LocalMAccumulator) {
+            eds.combine(other.value());
+         } else {
+            throw new IllegalArgumentException(
+               getClass().getName() + " cannot merge with " + other.getClass().getName());
+         }
       }
    }
 
    @Override
-   @Synchronized
    public void reset() {
-      eds.clear();
+      synchronized (eds) {
+         eds.clear();
+      }
    }
 
    @Override
-   @Synchronized
-   public void combine(@NonNull EnhancedDoubleStatistics statistics) {
-      this.eds.combine(statistics);
+   public void combine(EnhancedDoubleStatistics statistics) {
+      synchronized (eds) {
+         this.eds.combine(statistics);
+      }
    }
 }//END OF LocalStatisticsAccumulator

@@ -230,7 +230,7 @@ public final class Iterables {
 //    * @param iterable the iterable
 //    * @return the tuple 2
 //    */
-//   public static <E extends Comparable<? super E>> Tuple2<Integer, E> minIndexAndValue(@NonNull Iterable<? extends E> iterable) {
+//   public static <E extends Comparable<? super E>> Tuple2<Integer, E> minIndexAndValue(Iterable<? extends E> iterable) {
 //      return minIndexAndValue(iterable, Sorting.natural());
 //   }
 //
@@ -242,7 +242,7 @@ public final class Iterables {
 //    * @param comparator the comparator
 //    * @return the tuple 2
 //    */
-//   public static <E extends Comparable<? super E>> Tuple2<Integer, E> minIndexAndValue(@NonNull Iterable<? extends E> iterable, @NonNull Comparator<? super E> comparator) {
+//   public static <E extends Comparable<? super E>> Tuple2<Integer, E> minIndexAndValue(Iterable<? extends E> iterable, Comparator<? super E> comparator) {
 //      int index = -1;
 //      E min = null;
 //      int i = 0;

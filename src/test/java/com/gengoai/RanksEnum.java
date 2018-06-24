@@ -1,7 +1,6 @@
 package com.gengoai;
 
 import com.gengoai.collection.Sets;
-import lombok.NonNull;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -33,7 +32,7 @@ public final class RanksEnum extends HierarchicalEnumValue<RanksEnum> implements
     * @param name the specified name of the RanksEnum
     * @return The instance of RanksEnum corresponding th the give name.
     */
-   public static RanksEnum create(@NonNull String name) {
+   public static RanksEnum create(String name) {
       return create(name, null);
    }
 
@@ -44,7 +43,7 @@ public final class RanksEnum extends HierarchicalEnumValue<RanksEnum> implements
     * @param parent the parent element of the enum;
     * @return The instance of RanksEnum corresponding th the give name.
     */
-   public static RanksEnum create(@NonNull String name, RanksEnum parent) {
+   public static RanksEnum create(String name, RanksEnum parent) {
       RanksEnum toReturn = DynamicEnum.register(new RanksEnum(name, parent));
       toReturn.setParentIfAbsent(parent);
       values.add(toReturn);
@@ -67,7 +66,7 @@ public final class RanksEnum extends HierarchicalEnumValue<RanksEnum> implements
     * @return The constant of RanksEnum with the specified name
     * @throws IllegalArgumentException if the specified name is not a member of RanksEnum.
     */
-   public static RanksEnum valueOf(@NonNull String name) {
+   public static RanksEnum valueOf(String name) {
       return DynamicEnum.valueOf(RanksEnum.class, name);
    }
 
@@ -77,7 +76,7 @@ public final class RanksEnum extends HierarchicalEnumValue<RanksEnum> implements
    }
 
    @Override
-   public int compareTo(@NonNull RanksEnum o) {
+   public int compareTo(RanksEnum o) {
       return canonicalName().compareTo(o.canonicalName());
    }
 

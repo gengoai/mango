@@ -28,7 +28,6 @@ import com.gengoai.reflection.BeanUtils;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
 import com.gengoai.reflection.ReflectionUtils;
-import lombok.NonNull;
 
 import java.util.Collection;
 import java.util.Map;
@@ -52,7 +51,7 @@ public class NewObjectConverter<T> implements Function<Object, T> {
 
    private final Class<T> convertToClass;
 
-   public NewObjectConverter(@NonNull Class<T> convertToClass) {
+   public NewObjectConverter(Class<T> convertToClass) {
       this.convertToClass = convertToClass;
    }
 

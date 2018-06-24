@@ -21,8 +21,6 @@
 
 package com.gengoai.concurrent;
 
-import lombok.NonNull;
-
 import java.util.stream.Stream;
 
 /**
@@ -39,7 +37,7 @@ public class StreamProducer<V> extends Broker.Producer<V> {
     *
     * @param stream the stream
     */
-   public StreamProducer(@NonNull Stream<V> stream) {
+   public StreamProducer(Stream<V> stream) {
       this.stream = stream;
    }
 

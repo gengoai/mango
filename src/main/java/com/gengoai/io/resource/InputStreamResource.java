@@ -21,8 +21,6 @@
 
 package com.gengoai.io.resource;
 
-import lombok.NonNull;
-
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -41,7 +39,7 @@ public class InputStreamResource extends BaseResource implements ReadOnlyResourc
     *
     * @param stream the input stream to wrap
     */
-   public InputStreamResource(@NonNull InputStream stream) {
+   public InputStreamResource(InputStream stream) {
       this.inputStream = stream;
    }
 

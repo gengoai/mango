@@ -22,8 +22,6 @@
 package com.gengoai.collection.index;
 
 import com.gengoai.collection.Iterators;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
 import org.apache.mahout.math.map.OpenObjectIntHashMap;
 
 import java.io.Serializable;
@@ -38,14 +36,13 @@ import java.util.List;
  * @param <TYPE> the type being indexed.
  * @author David B. Bracewell
  */
-@EqualsAndHashCode(exclude = "map", callSuper = false)
 public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
    private static final long serialVersionUID = 1L;
    private final OpenObjectIntHashMap<TYPE> map = new OpenObjectIntHashMap<>();
    private final List<TYPE> list = new ArrayList<>();
 
    @Override
-   public int add(@NonNull TYPE item) {
+   public int add(TYPE item) {
       if (!map.containsKey(item)) {
          synchronized (map) {
             if (!map.containsKey(item)) {
@@ -71,6 +68,10 @@ public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
       return Collections.unmodifiableList(list);
    }
 
+   protected boolean canEqual(Object other) {
+      return other instanceof HashMapIndex;
+   }
+
    @Override
    public void clear() {
       map.clear();
@@ -90,6 +91,17 @@ public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
       return copy;
    }
 
+   public boolean equals(Object o) {
+      if (o == this) return true;
+      if (!(o instanceof HashMapIndex)) return false;
+      final HashMapIndex other = (HashMapIndex) o;
+      if (!other.canEqual((Object) this)) return false;
+      final Object this$list = this.list;
+      final Object other$list = other.list;
+      if (this$list == null ? other$list != null : !this$list.equals(other$list)) return false;
+      return true;
+   }
+
    @Override
    public TYPE get(int id) {
       if (id < 0 || id >= list.size()) {
@@ -104,6 +116,14 @@ public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
          return map.get(item);
       }
       return -1;
+   }
+
+   public int hashCode() {
+      final int PRIME = 59;
+      int result = 1;
+      final Object $list = this.list;
+      result = result * PRIME + ($list == null ? 43 : $list.hashCode());
+      return result;
    }
 
    @Override

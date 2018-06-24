@@ -22,17 +22,16 @@
 package com.gengoai.graph.algorithms;
 
 import com.gengoai.Validation;
-import com.gengoai.graph.Edge;
-import com.gengoai.graph.Graph;
-import com.gengoai.collection.map.LRUMap;
 import com.gengoai.collection.Sorting;
 import com.gengoai.collection.counter.Counter;
 import com.gengoai.collection.counter.Counters;
+import com.gengoai.collection.map.LRUMap;
 import com.gengoai.collection.multimap.ArrayListMultimap;
 import com.gengoai.collection.multimap.ListMultimap;
 import com.gengoai.conversion.Cast;
+import com.gengoai.graph.Edge;
+import com.gengoai.graph.Graph;
 import com.gengoai.tuple.Tuple2;
-import lombok.NonNull;
 
 import java.util.*;
 
@@ -63,14 +62,14 @@ public class DijkstraShortestPath<V> implements SingleSourceShortestPath<V>, Sho
     * @param graph           the graph
     * @param treatUndirected the treat undirected
     */
-   public DijkstraShortestPath(@NonNull Graph<V> graph, boolean treatUndirected) {
+   public DijkstraShortestPath(Graph<V> graph, boolean treatUndirected) {
       this.graph = graph;
       this.treatUndirected = treatUndirected;
    }
 
 
    @Override
-   public Counter<V> singleSourceShortestDistance(@NonNull V source) {
+   public Counter<V> singleSourceShortestDistance(V source) {
       Validation.checkArgument(graph.containsVertex(source), "Vertex must be in the graph.");
 
       Counter<V> distances = Counters.newCounter();
@@ -98,7 +97,7 @@ public class DijkstraShortestPath<V> implements SingleSourceShortestPath<V>, Sho
    }
 
    @Override
-   public ListMultimap<V, Edge<V>> singleSourceShortestPath(@NonNull V source) {
+   public ListMultimap<V, Edge<V>> singleSourceShortestPath(V source) {
       Validation.checkArgument(graph.containsVertex(source), "Vertex must be in the graph.");
 
       if (pathMap.containsKey(source)) {
@@ -168,14 +167,14 @@ public class DijkstraShortestPath<V> implements SingleSourceShortestPath<V>, Sho
    }
 
    @Override
-   public double distance(@NonNull V from, @NonNull V to) {
+   public double distance(V from, V to) {
       Validation.checkArgument(graph.containsVertex(from), "Vertex must be in the graph.");
       Validation.checkArgument(graph.containsVertex(to), "Vertex must be in the graph.");
       return singleSourceShortestDistance(from).get(to);
    }
 
    @Override
-   public List<Edge<V>> path(@NonNull V from, @NonNull V to) {
+   public List<Edge<V>> path(V from, V to) {
       Validation.checkArgument(graph.containsVertex(from), "Vertex must be in the graph.");
       Validation.checkArgument(graph.containsVertex(to), "Vertex must be in the graph.");
       return Collections.unmodifiableList(singleSourceShortestPath(from).get(to));

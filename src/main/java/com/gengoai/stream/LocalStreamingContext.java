@@ -28,8 +28,8 @@ import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.stream.accumulator.*;
 import com.gengoai.string.StringUtils;
-import lombok.SneakyThrows;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
@@ -77,7 +77,6 @@ public enum LocalStreamingContext implements StreamingContext {
       }
       return new ReusableDoubleStream(values);
    }
-
 
 
    @Override
@@ -174,7 +173,6 @@ public enum LocalStreamingContext implements StreamingContext {
    }
 
    @Override
-   @SneakyThrows
    public MStream<String> textFile(Resource resource) {
       if (resource == null) {
          return empty();
@@ -184,7 +182,11 @@ public enum LocalStreamingContext implements StreamingContext {
                                           .filter(r -> !r.isDirectory())
                                           .flatMap(Unchecked.function(r -> r.lines().javaStream())));
       }
-      return resource.lines();
+      try {
+         return resource.lines();
+      } catch (IOException e) {
+         throw new RuntimeException(e);
+      }
    }
 
 

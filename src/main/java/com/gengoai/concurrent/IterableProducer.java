@@ -21,8 +21,6 @@
 
 package com.gengoai.concurrent;
 
-import lombok.NonNull;
-
 /**
  * <p>A producer implementation that produces items from an iterable.</p>
  *
@@ -37,7 +35,7 @@ public class IterableProducer<V> extends Broker.Producer<V> {
     *
     * @param iterable the iterable
     */
-   public IterableProducer(@NonNull Iterable<V> iterable) {
+   public IterableProducer(Iterable<V> iterable) {
       this.iterable = iterable;
    }
 

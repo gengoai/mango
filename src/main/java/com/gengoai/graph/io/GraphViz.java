@@ -22,19 +22,17 @@
 package com.gengoai.graph.io;
 
 import com.gengoai.SystemInfo;
-import com.gengoai.graph.Edge;
-import com.gengoai.graph.Graph;
-import com.gengoai.graph.Vertex;
 import com.gengoai.collection.index.Index;
 import com.gengoai.collection.index.Indexes;
 import com.gengoai.collection.multimap.ListMultimap;
 import com.gengoai.config.Config;
+import com.gengoai.graph.Edge;
+import com.gengoai.graph.Graph;
+import com.gengoai.graph.Vertex;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.logging.Logger;
 import com.gengoai.string.StringUtils;
-import lombok.Builder;
-import lombok.NonNull;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -47,6 +45,10 @@ import java.util.Map;
  * @param <V> the vertex type
  */
 public class GraphViz<V> implements GraphWriter<V>, GraphRenderer<V> {
+
+   public static <V> GraphVizBuilder<V> builder() {
+      return new GraphVizBuilder<V>();
+   }
 
    public enum Format {
       JPG("jpg"),
@@ -113,7 +115,6 @@ public class GraphViz<V> implements GraphWriter<V>, GraphRenderer<V> {
     * @param edgeEncoder   the edge encoder
     * @param format        the format
     */
-   @Builder
    public GraphViz(VertexEncoder<V> vertexEncoder, EdgeEncoder<V> edgeEncoder, Format format) {
       setEdgeEncoder(edgeEncoder);
       setVertexEncoder(vertexEncoder);
@@ -127,7 +128,7 @@ public class GraphViz<V> implements GraphWriter<V>, GraphRenderer<V> {
    }
 
    @Override
-   public void render(@NonNull Graph<V> graph, @NonNull Resource location, @NonNull ListMultimap<String, String> parameters) throws IOException {
+   public void render(Graph<V> graph, Resource location, ListMultimap<String, String> parameters) throws IOException {
       Resource tempLoc = Resources.temporaryFile();
       tempLoc.deleteOnExit();
       write(graph, tempLoc, parameters);
@@ -178,7 +179,7 @@ public class GraphViz<V> implements GraphWriter<V>, GraphRenderer<V> {
    }
 
    @Override
-   public void write(@NonNull Graph<V> graph, @NonNull Resource location, @NonNull ListMultimap<String, String> parameters) throws IOException {
+   public void write(Graph<V> graph, Resource location, ListMultimap<String, String> parameters) throws IOException {
       location.setCharset(StandardCharsets.UTF_8);
       try (BufferedWriter writer = new BufferedWriter(location.writer())) {
 
@@ -251,4 +252,35 @@ public class GraphViz<V> implements GraphWriter<V>, GraphRenderer<V> {
    }
 
 
+   public static class GraphVizBuilder<V> {
+      private VertexEncoder<V> vertexEncoder;
+      private EdgeEncoder<V> edgeEncoder;
+      private Format format;
+
+      GraphVizBuilder() {
+      }
+
+      public GraphViz<V> build() {
+         return new GraphViz<V>(vertexEncoder, edgeEncoder, format);
+      }
+
+      public GraphVizBuilder<V> edgeEncoder(EdgeEncoder<V> edgeEncoder) {
+         this.edgeEncoder = edgeEncoder;
+         return this;
+      }
+
+      public GraphVizBuilder<V> format(Format format) {
+         this.format = format;
+         return this;
+      }
+
+      public String toString() {
+         return "GraphViz.GraphVizBuilder(vertexEncoder=" + this.vertexEncoder + ", edgeEncoder=" + this.edgeEncoder + ", format=" + this.format + ")";
+      }
+
+      public GraphVizBuilder<V> vertexEncoder(VertexEncoder<V> vertexEncoder) {
+         this.vertexEncoder = vertexEncoder;
+         return this;
+      }
+   }
 }//END OF GraphViz

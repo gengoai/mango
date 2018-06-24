@@ -26,8 +26,6 @@ import com.gengoai.function.SerializableFunction;
 import com.gengoai.function.Unchecked;
 import com.gengoai.string.CharMatcher;
 import com.gengoai.string.StringUtils;
-import lombok.NonNull;
-import lombok.SneakyThrows;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
@@ -71,7 +69,7 @@ public class CSVReader implements Closeable, AutoCloseable, Iterable<List<String
     * @param reader  the reader to read from
     * @throws IOException Something went wrong initializing the CSVReader
     */
-   public CSVReader(@NonNull CSV builder, @NonNull Reader reader) throws IOException {
+   public CSVReader(CSV builder, Reader reader) throws IOException {
       this.delimiter = builder.getDelimiter();
       this.escape = builder.getEscape();
       this.quote = builder.getQuote();
@@ -274,7 +272,7 @@ public class CSVReader implements Closeable, AutoCloseable, Iterable<List<String
       throw new IOException("Illegal character [" + (char) c + "] outside of the end quote of a cell.");
    }
 
-   public <R> List<R> processRows(@NonNull SerializableFunction<List<String>, Optional<R>> converter) throws IOException {
+   public <R> List<R> processRows(SerializableFunction<List<String>, Optional<R>> converter) throws IOException {
       List<String> row;
       List<R> rval = new ArrayList<>();
       try {
@@ -330,10 +328,13 @@ public class CSVReader implements Closeable, AutoCloseable, Iterable<List<String
    private class RowIterator implements Iterator<List<String>> {
       private List<String> row = null;
 
-      @SneakyThrows
       private boolean advance() {
          if (row == null) {
-            row = nextRow();
+            try {
+               row = nextRow();
+            } catch (IOException e) {
+               throw new RuntimeException(e);
+            }
          }
          return row != null;
       }

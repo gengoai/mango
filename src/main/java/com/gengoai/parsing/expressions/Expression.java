@@ -22,7 +22,6 @@
 package com.gengoai.parsing.expressions;
 
 import com.gengoai.parsing.ParserTokenType;
-import lombok.NonNull;
 
 /**
  * <p>Represents a single expression from a parse.</p>
@@ -59,7 +58,7 @@ public abstract class Expression {
    * @param clazz Class information for the implementation to convert to
    * @return The expression as the given implementation or null if could not convert.
    */
-  public final <T extends Expression> T as(@NonNull Class<T> clazz) {
+  public final <T extends Expression> T as(Class<T> clazz) {
     return isInstance(clazz) ? clazz.cast(this) : null;
   }
 
@@ -70,7 +69,7 @@ public abstract class Expression {
    * @param clazz the clazz
    * @return the boolean
    */
-  public final <T extends Expression> boolean isInstance(@NonNull Class<T> clazz) {
+  public final <T extends Expression> boolean isInstance(Class<T> clazz) {
     return clazz.isInstance(this);
   }
 
@@ -83,7 +82,7 @@ public abstract class Expression {
     return type;
   }
 
-  public final <T extends Expression> boolean match(@NonNull Class<T> clazz, @NonNull ParserTokenType type) {
+  public final <T extends Expression> boolean match(Class<T> clazz, ParserTokenType type) {
     return isInstance(clazz) && match(type);
   }
 

@@ -21,31 +21,59 @@
 
 package com.gengoai.parsing;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Value;
-
 /**
  * A parse token from a Lexer to be used in a Parser
  *
  * @author David B. Bracewell
  */
-@Getter
-@Value
 public final class ParserToken {
 
-  public final String text;
-  public final ParserTokenType type;
+   public final String text;
+   public final ParserTokenType type;
 
-  /**
-   * Static method for constructing tokens
-   *
-   * @param text The text of the token
-   * @param type The type of the token
-   */
-  public ParserToken(@NonNull String text, @NonNull ParserTokenType type) {
-    this.text = text;
-    this.type = type;
-  }
+   /**
+    * Static method for constructing tokens
+    *
+    * @param text The text of the token
+    * @param type The type of the token
+    */
+   public ParserToken(String text, ParserTokenType type) {
+      this.text = text;
+      this.type = type;
+   }
 
+   public boolean equals(Object o) {
+      if (o == this) return true;
+      if (!(o instanceof ParserToken)) return false;
+      final ParserToken other = (ParserToken) o;
+      final Object this$text = this.getText();
+      final Object other$text = other.getText();
+      if (this$text == null ? other$text != null : !this$text.equals(other$text)) return false;
+      final Object this$type = this.getType();
+      final Object other$type = other.getType();
+      if (this$type == null ? other$type != null : !this$type.equals(other$type)) return false;
+      return true;
+   }
+
+   public String getText() {
+      return this.text;
+   }
+
+   public ParserTokenType getType() {
+      return this.type;
+   }
+
+   public int hashCode() {
+      final int PRIME = 59;
+      int result = 1;
+      final Object $text = this.getText();
+      result = result * PRIME + ($text == null ? 43 : $text.hashCode());
+      final Object $type = this.getType();
+      result = result * PRIME + ($type == null ? 43 : $type.hashCode());
+      return result;
+   }
+
+   public String toString() {
+      return "ParserToken(text=" + this.getText() + ", type=" + this.getType() + ")";
+   }
 }//END OF ParseToken

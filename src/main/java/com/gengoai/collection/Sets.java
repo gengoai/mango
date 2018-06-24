@@ -23,7 +23,6 @@ package com.gengoai.collection;
 
 import com.gengoai.function.SerializableFunction;
 import com.gengoai.function.SerializablePredicate;
-import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.*;
@@ -211,7 +210,7 @@ public final class Sets {
     */
    @SafeVarargs
    @SuppressWarnings("varargs")
-   public static <T> Set<T> createSet(@NonNull Supplier<Set<T>> supplier, T... elements) {
+   public static <T> Set<T> createSet(Supplier<Set<T>> supplier, T... elements) {
       if (elements == null) {
          return supplier.get();
       }
@@ -226,7 +225,7 @@ public final class Sets {
     * @param stream   the elements to add to the  set
     * @return the new set containing the given elements
     */
-   public static <T> Set<T> createSet(@NonNull Supplier<Set<T>> supplier, Stream<? extends T> stream) {
+   public static <T> Set<T> createSet(Supplier<Set<T>> supplier, Stream<? extends T> stream) {
       if (stream == null) {
          return supplier.get();
       }
@@ -253,7 +252,7 @@ public final class Sets {
     * @param filter     the predicate to use for filtering (only items that result in true will be keep)
     * @return A set containing the filtered items of the supplied collection
     */
-   public static <E> Set<E> filter(@NonNull final Set<E> collection, @NonNull final SerializablePredicate<? super E> filter) {
+   public static <E> Set<E> filter(final Set<E> collection, final SerializablePredicate<? super E> filter) {
       return new FilteredSet<>(collection, filter);
    }
 
@@ -304,8 +303,8 @@ public final class Sets {
     * @param transform  the function used to transform elements of type E to R
     * @return A set containing the transformed items of the supplied collection
     */
-   public static <E, R> Set<R> transform(@NonNull final Set<? extends E> collection,
-                                         @NonNull final SerializableFunction<? super E, R> transform
+   public static <E, R> Set<R> transform(final Set<? extends E> collection,
+                                         final SerializableFunction<? super E, R> transform
                                         ) {
       return new TransformedSet<>(collection, transform);
    }

@@ -31,7 +31,6 @@ import com.gengoai.io.Commitable;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.json.Json;
 import com.gengoai.json.JsonWriter;
-import lombok.NonNull;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -53,7 +52,7 @@ public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable, Commita
     * @param function The function to use to adjust the counts
     * @return The new counter with adjusted counts.
     */
-   default Counter<T> adjustValues(@NonNull DoubleUnaryOperator function) {
+   default Counter<T> adjustValues( DoubleUnaryOperator function) {
       return copy().adjustValuesSelf(function);
    }
 
@@ -385,7 +384,7 @@ public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable, Commita
     * @param rnd The random number generator
     * @return the sampled item
     */
-   default T sample(@NonNull Random rnd) {
+   default T sample( Random rnd) {
       double target = rnd.nextDouble() * sum();
       double runningSum = 0;
       T lastEntry = null;
@@ -454,7 +453,7 @@ public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable, Commita
     * @param output the resource to write to
     * @throws IOException Something went wrong writing
     */
-   default void writeCsv(@NonNull Resource output) throws IOException {
+   default void writeCsv( Resource output) throws IOException {
       DecimalFormat decimalFormat = new DecimalFormat("#.#####");
       try (CSVWriter writer = CSV.builder().writer(output)) {
          for (Map.Entry<T, Double> entry : entries()) {
@@ -471,7 +470,7 @@ public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable, Commita
     * @param output the resource to write to
     * @throws IOException Something went wrong writing
     */
-   default void writeJson(@NonNull Resource output) throws IOException {
+   default void writeJson( Resource output) throws IOException {
       try (JsonWriter writer = Json.createWriter(output)) {
          writer.beginDocument();
          for (Map.Entry<T, Double> entry : entries()) {
@@ -486,7 +485,7 @@ public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable, Commita
     *
     * @param consumer the consumer to use for processing the key value pairs
     */
-   default void forEach(@NonNull BiConsumer<? super T, ? super Double> consumer) {
+   default void forEach( BiConsumer<? super T, ? super Double> consumer) {
       entries().forEach(e -> consumer.accept(e.getKey(), e.getValue()));
    }
 

@@ -22,8 +22,6 @@
 package com.gengoai.tuple;
 
 import com.gengoai.conversion.Cast;
-import lombok.Getter;
-import lombok.NonNull;
 
 /**
  * A tuple of degree one.
@@ -36,7 +34,6 @@ public class Tuple1<V1> extends Tuple {
   /**
    * The V 1.
    */
-  @Getter
   public final V1 v1;
 
   /**
@@ -53,7 +50,7 @@ public class Tuple1<V1> extends Tuple {
    *
    * @param other the other
    */
-  public Tuple1(@NonNull Tuple1<? extends V1> other) {
+  public Tuple1( Tuple1<? extends V1> other) {
     this.v1 = other.v1;
   }
 
@@ -81,6 +78,10 @@ public class Tuple1<V1> extends Tuple {
   @Override
   public Object[] array() {
     return new Object[]{v1};
+  }
+
+  public V1 getV1() {
+    return this.v1;
   }
 
   @Override

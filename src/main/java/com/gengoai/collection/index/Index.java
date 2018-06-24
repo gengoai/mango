@@ -28,7 +28,6 @@ import com.gengoai.io.CSVWriter;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.json.Json;
 import com.gengoai.json.JsonWriter;
-import lombok.NonNull;
 
 import java.io.IOException;
 import java.util.List;
@@ -104,8 +103,7 @@ public interface Index<E> extends Iterable<E>, Copyable<Index<E>> {
    E remove(int id);
 
    /**
-    * Removes the item from the index. Note that his operation is expensive and can cause other ids to
-    * change.
+    * Removes the item from the index. Note that his operation is expensive and can cause other ids to change.
     *
     * @param item The item to remove
     * @return A mapping of old to new ids
@@ -151,7 +149,7 @@ public interface Index<E> extends Iterable<E>, Copyable<Index<E>> {
     * @param output the resource to write to
     * @throws IOException Something went wrong writing to the output
     */
-   default void writeCSV(@NonNull Resource output) throws IOException {
+   default void writeCSV(Resource output) throws IOException {
       try (CSVWriter writer = CSV.builder().writer(output)) {
          for (E item : this) {
             writer.write(Convert.convert(item, String.class));
@@ -165,7 +163,7 @@ public interface Index<E> extends Iterable<E>, Copyable<Index<E>> {
     * @param output the resource to write to
     * @throws IOException Something went wrong writing to the output
     */
-   default void writeJson(@NonNull Resource output) throws IOException {
+   default void writeJson(Resource output) throws IOException {
       try (JsonWriter writer = Json.createWriter(output)) {
          writer.beginDocument(true);
          for (E item : this) {

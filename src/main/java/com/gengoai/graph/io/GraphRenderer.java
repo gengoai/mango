@@ -22,9 +22,9 @@
 package com.gengoai.graph.io;
 
 
-import com.gengoai.graph.Graph;
 import com.gengoai.collection.multimap.ArrayListMultimap;
 import com.gengoai.collection.multimap.ListMultimap;
+import com.gengoai.graph.Graph;
 import com.gengoai.io.resource.Resource;
 
 import java.io.IOException;

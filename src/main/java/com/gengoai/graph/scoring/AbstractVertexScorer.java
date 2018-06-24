@@ -22,8 +22,8 @@
 package com.gengoai.graph.scoring;
 
 import com.gengoai.Validation;
-import com.gengoai.graph.Graph;
 import com.gengoai.collection.Sorting;
+import com.gengoai.graph.Graph;
 
 import java.io.Serializable;
 import java.util.List;

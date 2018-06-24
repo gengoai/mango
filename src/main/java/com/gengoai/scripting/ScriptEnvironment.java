@@ -23,7 +23,6 @@ package com.gengoai.scripting;
 
 import com.gengoai.io.resource.Resource;
 import com.gengoai.string.StringUtils;
-import lombok.NonNull;
 
 import javax.script.Invocable;
 import javax.script.ScriptContext;
@@ -57,7 +56,7 @@ public class ScriptEnvironment {
    * @throws javax.script.ScriptException Something went wrong
    * @throws java.io.IOException     Something went wrong reading the file
    */
-  public Object eval(@NonNull Resource script) throws ScriptException, IOException {
+  public Object eval(Resource script) throws ScriptException, IOException {
     String fileText = script.readToString();
     return eval(fileText, null);
   }
@@ -71,7 +70,7 @@ public class ScriptEnvironment {
    * @throws javax.script.ScriptException Something went wrong
    * @throws java.io.IOException     Something went wrong reading the file
    */
-  public Object eval(@NonNull Resource script, ScriptContext context) throws ScriptException, IOException {
+  public Object eval(Resource script, ScriptContext context) throws ScriptException, IOException {
     String fileText = script.readToString();
     if (context != null) {
       return eval(fileText, context);

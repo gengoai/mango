@@ -21,8 +21,6 @@
 
 package com.gengoai.tuple;
 
-import lombok.NonNull;
-
 import java.io.ObjectStreamException;
 import java.util.function.Function;
 
@@ -32,48 +30,48 @@ import java.util.function.Function;
  * @author David B. Bracewell
  */
 public final class Tuple0 extends Tuple {
-  private static final long serialVersionUID = 1L;
+   private static final long serialVersionUID = 1L;
 
-  /**
-   * The constant INSTANCE.
-   */
-  public static Tuple0 INSTANCE = new Tuple0();
+   /**
+    * The constant INSTANCE.
+    */
+   public static Tuple0 INSTANCE = new Tuple0();
 
-  private Tuple0() {
-  }
+   private Tuple0() {
+   }
 
-  @Override
-  public Tuple0 copy() {
-    return new Tuple0();
-  }
+   @Override
+   public Tuple0 copy() {
+      return new Tuple0();
+   }
 
-  @Override
-  public int degree() {
-    return 0;
-  }
+   @Override
+   public int degree() {
+      return 0;
+   }
 
-  @Override
-  public Object[] array() {
-    return new Object[0];
-  }
+   @Override
+   public Object[] array() {
+      return new Object[0];
+   }
 
-  @Override
-  public Tuple mapValues(@NonNull Function<Object, ? extends Object> function) {
-    return this;
-  }
+   @Override
+   public Tuple mapValues(Function<Object, ? extends Object> function) {
+      return this;
+   }
 
-  @Override
-  public int hashCode() {
-    return 1;
-  }
+   @Override
+   public int hashCode() {
+      return 1;
+   }
 
-  @Override
-  public String toString() {
-    return "()";
-  }
+   @Override
+   public String toString() {
+      return "()";
+   }
 
-  protected Object readResolve() throws ObjectStreamException {
-    return INSTANCE;
-  }
+   protected Object readResolve() throws ObjectStreamException {
+      return INSTANCE;
+   }
 
 }//END OF Tuple0

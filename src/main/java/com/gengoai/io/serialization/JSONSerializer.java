@@ -24,7 +24,6 @@ package com.gengoai.io.serialization;
 import com.gengoai.io.resource.Resource;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import lombok.NonNull;
 
 /**
  * <p>JSON Serializer implementation</p>
@@ -34,12 +33,12 @@ import lombok.NonNull;
 public class JSONSerializer implements Serializer {
 
     @Override
-   public void serialize(@NonNull Object o, @NonNull Resource resource) throws Exception {
+   public void serialize(Object o, Resource resource) throws Exception {
       resource.write(new GsonBuilder().create().toJson(o).trim());
    }
 
    @Override
-   public <T> T deserialize(@NonNull Resource resource, @NonNull Class<T> clazz) throws Exception {
+   public <T> T deserialize(Resource resource, Class<T> clazz) throws Exception {
       return new Gson().fromJson(resource.readToString(), clazz);
    }
 

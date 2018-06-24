@@ -25,7 +25,6 @@ import com.gengoai.Validation;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Convert;
 import com.gengoai.io.CSV;
-import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -55,7 +54,7 @@ public class CSVFormatter implements Serializable {
     *
     * @param csvFormat the csv format
     */
-   public CSVFormatter(@NonNull CSV csvFormat) {
+   public CSVFormatter(CSV csvFormat) {
       this.delimiter = Character.toString(csvFormat.getDelimiter());
       this.escape = Character.toString(csvFormat.getEscape());
       this.quote = Character.toString(csvFormat.getQuote());

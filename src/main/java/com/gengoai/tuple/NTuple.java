@@ -2,7 +2,6 @@ package com.gengoai.tuple;
 
 import com.gengoai.conversion.Cast;
 import com.gengoai.string.StringUtils;
-import lombok.NonNull;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -23,7 +22,7 @@ public class NTuple extends Tuple {
     *
     * @param other the other
     */
-   public NTuple(@NonNull Object[] other) {
+   public NTuple(Object[] other) {
       array = new Object[other.length];
       System.arraycopy(other, 0, array, 0, other.length);
    }
@@ -36,7 +35,7 @@ public class NTuple extends Tuple {
     * @return the n tuple
     */
    @SafeVarargs
-   public static <T> NTuple of(@NonNull T... items) {
+   public static <T> NTuple of(T... items) {
       return new NTuple(items);
    }
 
@@ -47,7 +46,7 @@ public class NTuple extends Tuple {
     * @param items the items
     * @return the n tuple
     */
-   public static <T> NTuple of(@NonNull List<T> items) {
+   public static <T> NTuple of(List<T> items) {
       return new NTuple(items.toArray());
    }
 

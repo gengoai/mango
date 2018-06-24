@@ -21,9 +21,6 @@
 
 package com.gengoai.collection.counter;
 
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-
 import java.util.Map;
 import java.util.function.DoubleUnaryOperator;
 
@@ -34,7 +31,6 @@ import java.util.function.DoubleUnaryOperator;
  * @param <V> the second key type
  * @author David B. Bracewell
  */
-@EqualsAndHashCode(callSuper = false)
 final class UnmodifiableMultiCounter<K, V> extends ForwardingMultiCounter<K, V> {
    private static final long serialVersionUID = 292069831932346092L;
    private final MultiCounter<K, V> backing;
@@ -44,8 +40,12 @@ final class UnmodifiableMultiCounter<K, V> extends ForwardingMultiCounter<K, V> 
     *
     * @param backing the backing
     */
-   public UnmodifiableMultiCounter(@NonNull MultiCounter<K, V> backing) {
+   public UnmodifiableMultiCounter(MultiCounter<K, V> backing) {
       this.backing = backing;
+   }
+
+   protected boolean canEqual(Object other) {
+      return other instanceof UnmodifiableMultiCounter;
    }
 
    @Override
@@ -54,8 +54,19 @@ final class UnmodifiableMultiCounter<K, V> extends ForwardingMultiCounter<K, V> 
    }
 
    @Override
-   public MultiCounter<K, V> adjustValuesSelf(@NonNull DoubleUnaryOperator function) {
+   public MultiCounter<K, V> adjustValuesSelf(DoubleUnaryOperator function) {
       throw new UnsupportedOperationException();
+   }
+
+   public boolean equals(Object o) {
+      if (o == this) return true;
+      if (!(o instanceof UnmodifiableMultiCounter)) return false;
+      final UnmodifiableMultiCounter other = (UnmodifiableMultiCounter) o;
+      if (!other.canEqual((Object) this)) return false;
+      final Object this$backing = this.backing;
+      final Object other$backing = other.backing;
+      if (this$backing == null ? other$backing != null : !this$backing.equals(other$backing)) return false;
+      return true;
    }
 
    @Override
@@ -68,13 +79,21 @@ final class UnmodifiableMultiCounter<K, V> extends ForwardingMultiCounter<K, V> 
       throw new UnsupportedOperationException();
    }
 
+   public int hashCode() {
+      final int PRIME = 59;
+      int result = 1;
+      final Object $backing = this.backing;
+      result = result * PRIME + ($backing == null ? 43 : $backing.hashCode());
+      return result;
+   }
+
    @Override
    public MultiCounter<K, V> set(K item1, V item2, double amount) {
       throw new UnsupportedOperationException();
    }
 
    @Override
-   public MultiCounter<K, V> set(K item, @NonNull Counter<V> counter) {
+   public MultiCounter<K, V> set(K item, Counter<V> counter) {
       throw new UnsupportedOperationException();
    }
 

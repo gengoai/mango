@@ -22,7 +22,6 @@
 package com.gengoai.parsing.expressions;
 
 import com.gengoai.parsing.ParserToken;
-import lombok.NonNull;
 
 /**
  * An <code>Expression</code> representing an prefix expression
@@ -46,7 +45,7 @@ public class PrefixOperatorExpression extends Expression {
     * @param operator The prefix operator
     * @param right    The expression on the right
     */
-   public PrefixOperatorExpression(@NonNull ParserToken operator, @NonNull Expression right) {
+   public PrefixOperatorExpression(ParserToken operator, Expression right) {
       super(operator.type);
       this.operator = operator;
       this.right = right;

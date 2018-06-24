@@ -30,7 +30,6 @@ import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Convert;
 import com.gengoai.function.*;
 import com.gengoai.stream.accumulator.MStatisticsAccumulator;
-import lombok.NonNull;
 import org.apache.spark.api.java.JavaDoubleRDD;
 import org.apache.spark.broadcast.Broadcast;
 import scala.Tuple2;
@@ -63,7 +62,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
-   public boolean allMatch(@NonNull SerializableDoublePredicate predicate) {
+   public boolean allMatch(SerializableDoublePredicate predicate) {
       return doubleStream.filter(d -> {
          Configurator.INSTANCE.configure(configBroadcast.value());
          return predicate.test(d);
@@ -71,7 +70,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
-   public boolean anyMatch(@NonNull SerializableDoublePredicate predicate) {
+   public boolean anyMatch(SerializableDoublePredicate predicate) {
       return doubleStream.filter(d -> {
          Configurator.INSTANCE.configure(configBroadcast.value());
          return predicate.test(d);
@@ -102,7 +101,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
-   public MDoubleStream filter(@NonNull SerializableDoublePredicate predicate) {
+   public MDoubleStream filter(SerializableDoublePredicate predicate) {
       return new SparkDoubleStream(doubleStream.filter(d -> {
          Configurator.INSTANCE.configure(configBroadcast.value());
          return predicate.test(d);
@@ -118,7 +117,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
-   public MDoubleStream flatMap(@NonNull SerializableDoubleFunction<double[]> mapper) {
+   public MDoubleStream flatMap(SerializableDoubleFunction<double[]> mapper) {
       return new SparkDoubleStream(doubleStream.flatMapToDouble(d -> {
          Configurator.INSTANCE.configure(configBroadcast.value());
          return new PrimitiveArrayList<>(mapper.apply(d), Double.class).iterator();
@@ -126,7 +125,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
-   public void forEach(@NonNull SerializableDoubleConsumer consumer) {
+   public void forEach(SerializableDoubleConsumer consumer) {
       doubleStream.foreach(d -> {
          Configurator.INSTANCE.configure(configBroadcast.value());
          consumer.accept(d);
@@ -187,7 +186,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
-   public MDoubleStream map(@NonNull SerializableDoubleUnaryOperator mapper) {
+   public MDoubleStream map(SerializableDoubleUnaryOperator mapper) {
       return new SparkDoubleStream(doubleStream.mapToDouble(d -> {
          Configurator.INSTANCE.configure(configBroadcast.value());
          return mapper.applyAsDouble(d);
@@ -195,7 +194,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
-   public <T> MStream<T> mapToObj(@NonNull SerializableDoubleFunction<? extends T> function) {
+   public <T> MStream<T> mapToObj(SerializableDoubleFunction<? extends T> function) {
       return new SparkStream<>(doubleStream.map(d -> {
          Configurator.INSTANCE.configure(configBroadcast.value());
          return function.apply(d);
@@ -224,7 +223,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
-   public boolean noneMatch(@NonNull SerializableDoublePredicate predicate) {
+   public boolean noneMatch(SerializableDoublePredicate predicate) {
       return doubleStream.filter(d -> {
          Configurator.INSTANCE.configure(configBroadcast.value());
          return predicate.test(d);
@@ -242,7 +241,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
-   public OptionalDouble reduce(@NonNull SerializableDoubleBinaryOperator operator) {
+   public OptionalDouble reduce(SerializableDoubleBinaryOperator operator) {
       if (doubleStream.isEmpty()) {
          return OptionalDouble.empty();
       }
@@ -253,7 +252,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
-   public double reduce(double zeroValue, @NonNull SerializableDoubleBinaryOperator operator) {
+   public double reduce(double zeroValue, SerializableDoubleBinaryOperator operator) {
       if (doubleStream.isEmpty()) {
          return zeroValue;
       }

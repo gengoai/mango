@@ -21,8 +21,6 @@
 
 package com.gengoai.collection.index;
 
-import lombok.NonNull;
-
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
@@ -37,7 +35,7 @@ final class SynchronizedIndex<TYPE> implements Index<TYPE>, Serializable {
    private static final long serialVersionUID = 1L;
    private final Index<TYPE> delegate;
 
-   SynchronizedIndex(@NonNull Index<TYPE> delegate) {
+   SynchronizedIndex(Index<TYPE> delegate) {
       this.delegate = delegate;
    }
 

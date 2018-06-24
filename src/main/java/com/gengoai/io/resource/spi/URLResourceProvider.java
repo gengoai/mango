@@ -25,9 +25,9 @@ import com.gengoai.conversion.Cast;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.io.resource.URLResource;
 import com.gengoai.reflection.BeanMap;
-import lombok.SneakyThrows;
 import org.kohsuke.MetaInfServices;
 
+import java.net.MalformedURLException;
 import java.util.Map;
 
 /**
@@ -44,9 +44,13 @@ public class URLResourceProvider implements ResourceProvider {
    }
 
    @Override
-   @SneakyThrows
    public Resource createResource(String specification, Map<String, String> properties) {
-      BeanMap beanMap = new BeanMap(new URLResource(specification));
+      BeanMap beanMap = null;
+      try {
+         beanMap = new BeanMap(new URLResource(specification));
+      } catch (MalformedURLException e) {
+         throw new RuntimeException(e);
+      }
       beanMap.putAll(properties);
       return Cast.as(beanMap.getBean());
    }

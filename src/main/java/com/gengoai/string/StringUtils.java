@@ -25,8 +25,6 @@ import com.gengoai.Validation;
 import com.gengoai.collection.Streams;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVReader;
-import lombok.NonNull;
-import lombok.SneakyThrows;
 
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -104,7 +102,7 @@ public final class StringUtils {
     * @return The compacted string
     * @throws NullPointerException when the sequence is null
     */
-   public static String compactRepeatedChars(@NonNull CharSequence sequence) {
+   public static String compactRepeatedChars(CharSequence sequence) {
       StringBuilder builder = new StringBuilder();
       for (int i = 0; i < sequence.length(); i++) {
          char c = sequence.charAt(i);
@@ -379,7 +377,7 @@ public final class StringUtils {
     * @param validChar CharPredicate that must match for a character to be returned in the string
     * @return A string of random characters
     */
-   public static String randomString(int length, @NonNull CharMatcher validChar) {
+   public static String randomString(int length, CharMatcher validChar) {
       return randomString(length, 0, Integer.MAX_VALUE, validChar);
    }
 
@@ -392,7 +390,7 @@ public final class StringUtils {
     * @param validChar CharPredicate that must match for a character to be returned in the string
     * @return A string of random characters
     */
-   public static String randomString(int length, int min, int max, @NonNull CharMatcher validChar) {
+   public static String randomString(int length, int min, int max, CharMatcher validChar) {
       if (length <= 0) {
          return EMPTY;
       }
@@ -496,7 +494,6 @@ public final class StringUtils {
     * @param separator The separator
     * @return A list of all the cells in the input
     */
-   @SneakyThrows
    public static List<String> split(CharSequence input, char separator) {
       if (input == null) {
          return new ArrayList<>();
@@ -509,6 +506,8 @@ public final class StringUtils {
             all.addAll(row);
          }
          return all;
+      } catch (Exception e) {
+         throw new RuntimeException(e);
       }
    }
 
@@ -519,7 +518,7 @@ public final class StringUtils {
     * @param string The string to escape
     * @return The escaped string
     */
-   public static String javaStringEscape(@NonNull String string) {
+   public static String javaStringEscape(String string) {
       StringBuilder b = new StringBuilder();
       for (char c : string.toCharArray()) {
          if (c >= 128) {

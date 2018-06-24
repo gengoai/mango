@@ -22,7 +22,6 @@
 package com.gengoai.parsing;
 
 import com.gengoai.parsing.expressions.Expression;
-import lombok.NonNull;
 
 /**
  * Provides a way to iterate over expressions resulting from parsing a token stream.
@@ -39,7 +38,7 @@ public final class ExpressionIterator {
     * @param grammar     the grammar
     * @param tokenStream the token stream
     */
-   public ExpressionIterator(@NonNull Grammar grammar, @NonNull ParserTokenStream tokenStream) {
+   public ExpressionIterator(Grammar grammar, ParserTokenStream tokenStream) {
       this.grammar = grammar;
       this.tokenStream = tokenStream;
    }

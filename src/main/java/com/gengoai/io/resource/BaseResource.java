@@ -24,7 +24,6 @@ package com.gengoai.io.resource;
 import com.gengoai.Validation;
 import com.gengoai.io.FileUtils;
 import com.gengoai.string.StringUtils;
-import lombok.NonNull;
 
 import java.io.*;
 import java.net.URI;
@@ -65,7 +64,7 @@ public abstract class BaseResource implements Resource, Serializable {
    }
 
    @Override
-   public final Resource setCharset(@NonNull Charset charset) {
+   public final Resource setCharset(Charset charset) {
       this.charset = charset;
       return this;
    }

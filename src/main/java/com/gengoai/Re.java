@@ -1,7 +1,6 @@
 package com.gengoai;
 
 import com.gengoai.string.StringUtils;
-import lombok.NonNull;
 
 /**
  * <p>DSL for building regular expressions.</p>
@@ -112,7 +111,7 @@ public interface Re {
     * @param regex the regex
     * @return the regex
     */
-   static Regex posLookahead(@NonNull Regex regex) {
+   static Regex posLookahead(Regex regex) {
       return re("(?=" + regex.toString() + ")");
    }
 
@@ -122,7 +121,7 @@ public interface Re {
     * @param regex the regex
     * @return the regex
     */
-   static Regex negLookahead(@NonNull Regex regex) {
+   static Regex negLookahead(Regex regex) {
       return re("(?!" + regex.toString() + ")");
    }
 
@@ -132,7 +131,7 @@ public interface Re {
     * @param regex the regex
     * @return the regex
     */
-   static Regex posLookbehind(@NonNull Regex regex) {
+   static Regex posLookbehind(Regex regex) {
       return re("(?<=" + regex.toString() + ")");
    }
 
@@ -142,7 +141,7 @@ public interface Re {
     * @param regex the regex
     * @return the regex
     */
-   static Regex negLookbehind(@NonNull Regex regex) {
+   static Regex negLookbehind(Regex regex) {
       return re("(?<!" + regex.toString() + ")");
    }
 
@@ -154,7 +153,7 @@ public interface Re {
     * @param others the other regex making up the character class
     * @return the character class regex
     */
-   static Regex chars(@NonNull Regex first, Regex... others) {
+   static Regex chars(Regex first, Regex... others) {
       StringBuilder p = new StringBuilder(Regex.toChars(first.toString()));
       if (others != null) {
          for (Regex other : others) {
@@ -173,7 +172,7 @@ public interface Re {
     * @param chars the string of characters making up the character class
     * @return the character class regex
     */
-   static Regex chars(@NonNull String chars) {
+   static Regex chars(String chars) {
       return chars(chars, false);
    }
 
@@ -184,7 +183,7 @@ public interface Re {
     * @param negate true if the character class should be negated, false if not negated
     * @return the character class regex
     */
-   static Regex chars(@NonNull String chars, boolean negate) {
+   static Regex chars(String chars, boolean negate) {
       if (chars != null) {
          return new Regex("[" + (negate ? "^" : "") + chars + "]", false);
       }
@@ -197,7 +196,7 @@ public interface Re {
     * @param pattern the regular expression pattern
     * @return the regex
     */
-   static Regex re(@NonNull String pattern) {
+   static Regex re(String pattern) {
       return new Regex(pattern, false);
    }
 
@@ -208,7 +207,7 @@ public interface Re {
     * @param regex the regex to match starting at the beginning of the line
     * @return the regex
     */
-   static Regex beginLine(@NonNull Regex regex) {
+   static Regex beginLine(Regex regex) {
       return re("^" + regex.toString());
    }
 
@@ -219,7 +218,7 @@ public interface Re {
     * @param pattern the regular expression pattern
     * @return the regex with the supplied pattern quoted
     */
-   static Regex quote(@NonNull String pattern) {
+   static Regex quote(String pattern) {
       return new Regex(pattern, true);
    }
 
@@ -230,7 +229,7 @@ public interface Re {
     * @param others the other regex making up the or group
     * @return the non-matching group of regex that are ored together
     */
-   static Regex or(@NonNull Regex first, Regex... others) {
+   static Regex or(Regex first, Regex... others) {
       StringBuilder pattern = new StringBuilder(first.toString());
       if (others != null) {
          for (Regex rp : others) {
@@ -249,7 +248,7 @@ public interface Re {
     * @param others the other regex making up the or group
     * @return the regular expression anded together
     */
-   static Regex and(@NonNull Regex first, Regex... others) {
+   static Regex and(Regex first, Regex... others) {
       StringBuilder pattern = new StringBuilder(first.toString());
       if (others != null) {
          for (Regex rp : others) {
@@ -268,7 +267,7 @@ public interface Re {
     * @param others the other regex making up the or group
     * @return the regex
     */
-   static Regex group(@NonNull Regex first, Regex... others) {
+   static Regex group(Regex first, Regex... others) {
       return group(null, first, others);
    }
 
@@ -279,7 +278,7 @@ public interface Re {
     * @param others the other regex making up the or group
     * @return the regex
     */
-   static Regex nmGroup(@NonNull Regex first, Regex... others) {
+   static Regex nmGroup(Regex first, Regex... others) {
       String pattern = first.toString();
       if (others != null) {
          for (Regex rp : others) {
@@ -300,7 +299,7 @@ public interface Re {
     * @param others the other regex making up the or group
     * @return the regex
     */
-   static Regex group(String name, @NonNull Regex first, Regex... others) {
+   static Regex group(String name, Regex first, Regex... others) {
       String pattern = first.toString();
       if (others != null) {
          for (Regex rp : others) {
@@ -319,7 +318,7 @@ public interface Re {
     * @param others the other regex making up the or sequence
     * @return the regex
     */
-   static Regex seq(@NonNull Regex first, Regex... others) {
+   static Regex seq(Regex first, Regex... others) {
       StringBuilder pattern = new StringBuilder(first.toString());
       if (others != null) {
          for (Regex rp : others) {
@@ -337,7 +336,7 @@ public interface Re {
     * @param regex the regular expression
     * @return the negated regex
     */
-   static Regex not(@NonNull Regex regex) {
+   static Regex not(Regex regex) {
       return regex.not();
    }
 

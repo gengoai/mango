@@ -23,7 +23,6 @@ package com.gengoai.stream.accumulator;
 
 import com.gengoai.Copyable;
 import com.gengoai.function.SerializablePredicate;
-import lombok.NonNull;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -59,7 +58,7 @@ public abstract class LocalMAccumulator<IN, OUT> implements MAccumulator<IN, OUT
    }
 
    @Override
-   public void report(@NonNull SerializablePredicate<? super OUT> when, @NonNull Consumer<OUT> message) {
+   public void report(SerializablePredicate<? super OUT> when, Consumer<OUT> message) {
       if (when.test(value())) {
          message.accept(value());
       }

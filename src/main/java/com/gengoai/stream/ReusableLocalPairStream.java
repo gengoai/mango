@@ -25,7 +25,6 @@ import com.gengoai.collection.Streams;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.*;
 import com.gengoai.tuple.Tuple2;
-import lombok.NonNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -48,7 +47,7 @@ class ReusableLocalPairStream<K, V> implements MPairStream<K, V> {
     *
     * @param backingMap the backing map
     */
-   public ReusableLocalPairStream(@NonNull Map<? extends K, ? extends V> backingMap) {
+   public ReusableLocalPairStream(Map<? extends K, ? extends V> backingMap) {
       this.backingMap = Cast.as(backingMap);
    }
 
@@ -80,27 +79,27 @@ class ReusableLocalPairStream<K, V> implements MPairStream<K, V> {
    }
 
    @Override
-   public MPairStream<K, V> filter(@NonNull SerializableBiPredicate<? super K, ? super V> predicate) {
+   public MPairStream<K, V> filter(SerializableBiPredicate<? super K, ? super V> predicate) {
       return toStream().filter(predicate);
    }
 
    @Override
-   public MPairStream<K, V> filterByKey(@NonNull SerializablePredicate<K> predicate) {
+   public MPairStream<K, V> filterByKey(SerializablePredicate<K> predicate) {
       return toStream().filterByKey(predicate);
    }
 
    @Override
-   public MPairStream<K, V> filterByValue(@NonNull SerializablePredicate<V> predicate) {
+   public MPairStream<K, V> filterByValue(SerializablePredicate<V> predicate) {
       return toStream().filterByValue(predicate);
    }
 
    @Override
-   public <R, V1> MPairStream<R, V1> flatMapToPair(@NonNull SerializableBiFunction<? super K, ? super V, Stream<Map.Entry<? extends R, ? extends V1>>> function) {
+   public <R, V1> MPairStream<R, V1> flatMapToPair(SerializableBiFunction<? super K, ? super V, Stream<Map.Entry<? extends R, ? extends V1>>> function) {
       return toStream().flatMapToPair(function);
    }
 
    @Override
-   public void forEach(@NonNull SerializableBiConsumer<? super K, ? super V> consumer) {
+   public void forEach(SerializableBiConsumer<? super K, ? super V> consumer) {
       backingMap.forEach(consumer);
    }
 
@@ -154,29 +153,29 @@ class ReusableLocalPairStream<K, V> implements MPairStream<K, V> {
    }
 
    @Override
-   public <R> MStream<R> map(@NonNull SerializableBiFunction<? super K, ? super V, ? extends R> function) {
+   public <R> MStream<R> map(SerializableBiFunction<? super K, ? super V, ? extends R> function) {
       return toStream().map(function);
    }
 
    @Override
-   public MDoubleStream mapToDouble(@NonNull SerializableToDoubleBiFunction<? super K, ? super V> function) {
+   public MDoubleStream mapToDouble(SerializableToDoubleBiFunction<? super K, ? super V> function) {
       return new LocalDoubleStream(backingMap.entrySet()
                                              .stream()
                                              .mapToDouble(e -> function.applyAsDouble(e.getKey(), e.getValue())));
    }
 
    @Override
-   public <R, V1> MPairStream<R, V1> mapToPair(@NonNull SerializableBiFunction<? super K, ? super V, ? extends Map.Entry<? extends R, ? extends V1>> function) {
+   public <R, V1> MPairStream<R, V1> mapToPair(SerializableBiFunction<? super K, ? super V, ? extends Map.Entry<? extends R, ? extends V1>> function) {
       return toStream().mapToPair(function);
    }
 
    @Override
-   public Optional<Map.Entry<K, V>> max(@NonNull SerializableComparator<Map.Entry<K, V>> comparator) {
+   public Optional<Map.Entry<K, V>> max(SerializableComparator<Map.Entry<K, V>> comparator) {
       return toStream().max(comparator);
    }
 
    @Override
-   public Optional<Map.Entry<K, V>> min(@NonNull SerializableComparator<Map.Entry<K, V>> comparator) {
+   public Optional<Map.Entry<K, V>> min(SerializableComparator<Map.Entry<K, V>> comparator) {
       return toStream().min(comparator);
    }
 
@@ -192,7 +191,7 @@ class ReusableLocalPairStream<K, V> implements MPairStream<K, V> {
    }
 
    @Override
-   public MPairStream<K, V> reduceByKey(@NonNull SerializableBinaryOperator<V> operator) {
+   public MPairStream<K, V> reduceByKey(SerializableBinaryOperator<V> operator) {
       return groupByKey().mapToPair((t, u) -> Tuple2.of(t, Streams.asStream(u).reduce(operator).orElse(null)));
    }
 
@@ -212,7 +211,7 @@ class ReusableLocalPairStream<K, V> implements MPairStream<K, V> {
    }
 
    @Override
-   public MPairStream<K, V> sortByKey(@NonNull SerializableComparator<K> comparator) {
+   public MPairStream<K, V> sortByKey(SerializableComparator<K> comparator) {
       return toStream().sortByKey(comparator);
    }
 

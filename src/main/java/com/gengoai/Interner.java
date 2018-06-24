@@ -22,12 +22,13 @@
 package com.gengoai;
 
 import com.gengoai.collection.Streams;
-import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.WeakHashMap;
 import java.util.stream.Collectors;
+
+import static com.gengoai.Validation.notNull;
 
 /**
  * <p>Mimics {@link String#intern()} with any object using heap memory. Uses weak references so that objects no longer
@@ -67,8 +68,8 @@ public final class Interner<E> implements Serializable {
     * @return The interned value
     * @throws NullPointerException if the object is null
     */
-   public synchronized E intern(@NonNull final E object) {
-      return map.computeIfAbsent(object, o -> object);
+   public synchronized E intern(final E object) {
+      return map.computeIfAbsent(notNull(object), o -> object);
    }
 
    /**
@@ -78,8 +79,10 @@ public final class Interner<E> implements Serializable {
     * @return the interned elements.
     * @throws NullPointerException if the collection is null
     */
-   public Collection<E> internAll(@NonNull Iterable<? extends E> iterable) {
-      return Streams.asStream(iterable).map(this::intern).collect(Collectors.toList());
+   public Collection<E> internAll(Iterable<? extends E> iterable) {
+      return Streams.asStream(notNull(iterable))
+                    .map(this::intern)
+                    .collect(Collectors.toList());
    }
 
    /**

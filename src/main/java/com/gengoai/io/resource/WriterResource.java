@@ -21,8 +21,6 @@
 
 package com.gengoai.io.resource;
 
-import lombok.NonNull;
-
 import java.io.IOException;
 import java.io.Writer;
 
@@ -41,7 +39,7 @@ public class WriterResource extends BaseResource implements WriteOnlyResource, N
     *
     * @param writer the writer
     */
-   public WriterResource(@NonNull Writer writer) {
+   public WriterResource(Writer writer) {
       this.writer = writer;
    }
 

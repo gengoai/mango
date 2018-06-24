@@ -21,15 +21,11 @@
 
 package com.gengoai.collection.tree;
 
-import lombok.NonNull;
-import lombok.Value;
-
 import java.io.Serializable;
 
 /**
  * @author David B. Bracewell
  */
-@Value
 public class TrieMatch<V> implements Serializable {
    private static final long serialVersionUID = 1L;
    public final int start;
@@ -42,8 +38,45 @@ public class TrieMatch<V> implements Serializable {
       this.value = value;
    }
 
-   public String getMatch(@NonNull String content) {
+   public boolean equals(Object o) {
+      if (o == this) return true;
+      if (!(o instanceof TrieMatch)) return false;
+      final TrieMatch other = (TrieMatch) o;
+      if (this.getStart() != other.getStart()) return false;
+      if (this.getEnd() != other.getEnd()) return false;
+      final Object this$value = this.getValue();
+      final Object other$value = other.getValue();
+      if (this$value == null ? other$value != null : !this$value.equals(other$value)) return false;
+      return true;
+   }
+
+   public int getEnd() {
+      return this.end;
+   }
+
+   public String getMatch(String content) {
       return content.substring(start, end);
    }
 
+   public int getStart() {
+      return this.start;
+   }
+
+   public V getValue() {
+      return this.value;
+   }
+
+   public int hashCode() {
+      final int PRIME = 59;
+      int result = 1;
+      result = result * PRIME + this.getStart();
+      result = result * PRIME + this.getEnd();
+      final Object $value = this.getValue();
+      result = result * PRIME + ($value == null ? 43 : $value.hashCode());
+      return result;
+   }
+
+   public String toString() {
+      return "TrieMatch(start=" + this.getStart() + ", end=" + this.getEnd() + ", value=" + this.getValue() + ")";
+   }
 }//END OF TrieMatch

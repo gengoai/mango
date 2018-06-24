@@ -27,7 +27,6 @@ import com.gengoai.conversion.Cast;
 import com.gengoai.function.*;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
-import lombok.NonNull;
 
 import java.util.*;
 import java.util.stream.Collector;
@@ -330,7 +329,7 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
     *
     * @param location the location to write the stream to
     */
-   default void saveAsTextFile(@NonNull String location) {
+   default void saveAsTextFile( String location) {
       saveAsTextFile(Resources.from(location));
    }
 

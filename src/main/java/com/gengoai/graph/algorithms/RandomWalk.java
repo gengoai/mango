@@ -22,9 +22,9 @@
 package com.gengoai.graph.algorithms;
 
 import com.gengoai.Validation;
-import com.gengoai.graph.Graph;
 import com.gengoai.collection.Iterables;
 import com.gengoai.collection.counter.Counter;
+import com.gengoai.graph.Graph;
 
 import java.io.Serializable;
 import java.util.Iterator;

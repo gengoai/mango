@@ -21,8 +21,6 @@
 
 package com.gengoai.function;
 
-import lombok.NonNull;
-
 import java.io.Serializable;
 import java.util.function.DoublePredicate;
 
@@ -33,20 +31,20 @@ import java.util.function.DoublePredicate;
 public interface SerializableDoublePredicate extends DoublePredicate, Serializable {
 
    @Override
-   default SerializableDoublePredicate and(@NonNull DoublePredicate other) {
+   default SerializableDoublePredicate and( DoublePredicate other) {
       return i -> this.test(i) && other.test(i);
    }
 
    @Override
-   default SerializableDoublePredicate or(@NonNull DoublePredicate other) {
+   default SerializableDoublePredicate or( DoublePredicate other) {
       return i -> this.test(i) || other.test(i);
    }
 
-   default SerializableDoublePredicate and(@NonNull SerializableDoublePredicate other) {
+   default SerializableDoublePredicate and( SerializableDoublePredicate other) {
       return i -> this.test(i) && other.test(i);
    }
 
-   default SerializableDoublePredicate or(@NonNull SerializableDoublePredicate other) {
+   default SerializableDoublePredicate or( SerializableDoublePredicate other) {
       return i -> this.test(i) || other.test(i);
    }
 

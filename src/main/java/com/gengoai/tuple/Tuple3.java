@@ -22,8 +22,6 @@
 package com.gengoai.tuple;
 
 import com.gengoai.conversion.Cast;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * The type Tuple 3.
@@ -34,8 +32,6 @@ import lombok.Setter;
  * @author David B. Bracewell
  */
 
-@Getter
-@Setter
 public class Tuple3<A, B, C> extends Tuple {
   private static final long serialVersionUID = 1L;
   /**
@@ -103,6 +99,18 @@ public class Tuple3<A, B, C> extends Tuple {
   @Override
   public <T> Tuple4<A, B, C, T> appendLeft(T object) {
     return Tuple4.of(v1, v2, v3, object);
+  }
+
+  public A getV1() {
+    return this.v1;
+  }
+
+  public B getV2() {
+    return this.v2;
+  }
+
+  public C getV3() {
+    return this.v3;
   }
 
   @Override

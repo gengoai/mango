@@ -21,8 +21,6 @@
 
 package com.gengoai.function;
 
-import lombok.NonNull;
-
 import java.io.Serializable;
 import java.util.function.LongPredicate;
 
@@ -33,20 +31,20 @@ import java.util.function.LongPredicate;
 public interface SerializableLongPredicate extends LongPredicate, Serializable {
 
    @Override
-   default SerializableLongPredicate and(@NonNull LongPredicate other) {
+   default SerializableLongPredicate and(LongPredicate other) {
       return i -> this.test(i) && other.test(i);
    }
 
    @Override
-   default SerializableLongPredicate or(@NonNull LongPredicate other) {
+   default SerializableLongPredicate or(LongPredicate other) {
       return i -> this.test(i) || other.test(i);
    }
 
-   default SerializableLongPredicate and(@NonNull SerializableLongPredicate other) {
+   default SerializableLongPredicate and(SerializableLongPredicate other) {
       return i -> this.test(i) && other.test(i);
    }
 
-   default SerializableLongPredicate or(@NonNull SerializableLongPredicate other) {
+   default SerializableLongPredicate or(SerializableLongPredicate other) {
       return i -> this.test(i) || other.test(i);
    }
 

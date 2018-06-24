@@ -30,8 +30,6 @@ import com.gengoai.conversion.Convert;
 import com.gengoai.function.*;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.tuple.Tuples;
-import lombok.NonNull;
-import lombok.SneakyThrows;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -61,7 +59,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
     *
     * @param stream the Java stream to wrap
     */
-   public LocalStream(@NonNull final Stream<T> stream) {
+   public LocalStream(final Stream<T> stream) {
       this.stream = stream;
    }
 
@@ -80,7 +78,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public <R> R collect(@NonNull Collector<? super T, ?, R> collector) {
+   public <R> R collect(Collector<? super T, ?, R> collector) {
       return stream.collect(collector);
    }
 
@@ -107,7 +105,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public MStream<T> filter(@NonNull SerializablePredicate<? super T> predicate) {
+   public MStream<T> filter(SerializablePredicate<? super T> predicate) {
       return new LocalStream<>(stream.filter(predicate));
    }
 
@@ -117,27 +115,27 @@ public class LocalStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public <R> MStream<R> flatMap(@NonNull SerializableFunction<? super T, Stream<? extends R>> mapper) {
+   public <R> MStream<R> flatMap(SerializableFunction<? super T, Stream<? extends R>> mapper) {
       return new LocalStream<>(stream.flatMap(mapper::apply));
    }
 
    @Override
-   public <R, U> MPairStream<R, U> flatMapToPair(@NonNull SerializableFunction<? super T, Stream<? extends Map.Entry<? extends R, ? extends U>>> function) {
+   public <R, U> MPairStream<R, U> flatMapToPair(SerializableFunction<? super T, Stream<? extends Map.Entry<? extends R, ? extends U>>> function) {
       return new LocalPairStream<>(stream.flatMap(function));
    }
 
    @Override
-   public T fold(@NonNull T zeroValue, @NonNull SerializableBinaryOperator<T> operator) {
+   public T fold(T zeroValue, SerializableBinaryOperator<T> operator) {
       return stream.reduce(zeroValue, operator);
    }
 
    @Override
-   public void forEach(@NonNull SerializableConsumer<? super T> consumer) {
+   public void forEach(SerializableConsumer<? super T> consumer) {
       stream.forEach(consumer);
    }
 
    @Override
-   public void forEachLocal(@NonNull SerializableConsumer<? super T> consumer) {
+   public void forEachLocal(SerializableConsumer<? super T> consumer) {
       stream.forEachOrdered(consumer);
    }
 
@@ -152,7 +150,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public <U> MPairStream<U, Iterable<T>> groupBy(@NonNull SerializableFunction<? super T, ? extends U> function) {
+   public <U> MPairStream<U, Iterable<T>> groupBy(SerializableFunction<? super T, ? extends U> function) {
       return new ReusableLocalPairStream<>(stream.collect(Collectors.groupingBy(function)));
    }
 
@@ -181,32 +179,32 @@ public class LocalStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public <R> MStream<R> map(@NonNull SerializableFunction<? super T, ? extends R> function) {
+   public <R> MStream<R> map(SerializableFunction<? super T, ? extends R> function) {
       return new LocalStream<>(stream.map(function));
    }
 
    @Override
-   public MDoubleStream mapToDouble(@NonNull SerializableToDoubleFunction<? super T> function) {
+   public MDoubleStream mapToDouble(SerializableToDoubleFunction<? super T> function) {
       return new LocalDoubleStream(stream.mapToDouble(function));
    }
 
    @Override
-   public <R, U> MPairStream<R, U> mapToPair(@NonNull SerializableFunction<? super T, ? extends Map.Entry<? extends R, ? extends U>> function) {
+   public <R, U> MPairStream<R, U> mapToPair(SerializableFunction<? super T, ? extends Map.Entry<? extends R, ? extends U>> function) {
       return new LocalPairStream<>(stream.map(f -> Cast.<Map.Entry<R, U>>as(function.apply(f))));
    }
 
    @Override
-   public Optional<T> max(@NonNull SerializableComparator<? super T> comparator) {
+   public Optional<T> max(SerializableComparator<? super T> comparator) {
       return stream.max(comparator);
    }
 
    @Override
-   public Optional<T> min(@NonNull SerializableComparator<? super T> comparator) {
+   public Optional<T> min(SerializableComparator<? super T> comparator) {
       return stream.min(comparator);
    }
 
    @Override
-   public void onClose(@NonNull SerializableRunnable closeHandler) {
+   public void onClose(SerializableRunnable closeHandler) {
       this.onClose = closeHandler;
       stream.onClose(closeHandler);
    }
@@ -220,7 +218,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public Optional<T> reduce(@NonNull SerializableBinaryOperator<T> accumulator) {
+   public Optional<T> reduce(SerializableBinaryOperator<T> accumulator) {
       return stream.reduce(accumulator);
    }
 
@@ -261,19 +259,20 @@ public class LocalStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   @SneakyThrows
-   public void saveAsTextFile(@NonNull Resource location) {
+   public void saveAsTextFile(Resource location) {
       try (BufferedWriter writer = new BufferedWriter(location.writer())) {
          stream.forEach(Unchecked.consumer(o -> {
                                               writer.write(Convert.convert(o, String.class));
                                               writer.newLine();
                                            }
                                           ));
+      } catch (Exception e) {
+         throw new RuntimeException(e);
       }
    }
 
    @Override
-   public MStream<T> shuffle(@NonNull Random random) {
+   public MStream<T> shuffle(Random random) {
       return new LocalStream<>(stream.map(t -> Tuples.$(random.nextInt(), t))
                                      .sorted(Comparator.comparing(e -> e.v1))
                                      .map(Map.Entry::getValue));
@@ -291,7 +290,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public <R extends Comparable<R>> MStream<T> sorted(boolean ascending, @NonNull SerializableFunction<? super T, ? extends R> keyFunction) {
+   public <R extends Comparable<R>> MStream<T> sorted(boolean ascending, SerializableFunction<? super T, ? extends R> keyFunction) {
       return new LocalStream<>(stream.sorted((t1, t2) -> keyFunction.apply(t1).compareTo(keyFunction.apply(t2))));
    }
 
@@ -311,7 +310,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
 
    @Override
    @SuppressWarnings("unchecked")
-   public MStream<T> intersection(@NonNull MStream<T> other) {
+   public MStream<T> intersection(MStream<T> other) {
       if (other.isDistributed()) {
          return other.intersection(this);
       }
@@ -321,7 +320,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public MStream<T> union(@NonNull MStream<T> other) {
+   public MStream<T> union(MStream<T> other) {
       if (other.isReusable() && other.isEmpty()) {
          return this;
       }
@@ -329,7 +328,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public <U> MPairStream<T, U> zip(@NonNull MStream<U> other) {
+   public <U> MPairStream<T, U> zip(MStream<U> other) {
       return new LocalPairStream<>(Streams.asStream(Iterators.zip(iterator(), other.iterator())));
    }
 

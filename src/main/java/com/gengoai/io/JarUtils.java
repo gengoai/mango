@@ -26,10 +26,9 @@ import com.gengoai.Validation;
 import com.gengoai.io.resource.ClasspathResource;
 import com.gengoai.io.resource.FileResource;
 import com.gengoai.io.resource.Resource;
-import lombok.NonNull;
-import lombok.SneakyThrows;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,7 +54,7 @@ public class JarUtils {
     * @param clazz The class whose associated jar file is descried.
     * @return The Resource (jar file) for the class
     */
-   public static Resource getJar(@NonNull Class<?> clazz) {
+   public static Resource getJar(Class<?> clazz) {
       URL fileURL = clazz.getProtectionDomain().getCodeSource().getLocation();
       return new FileResource(fileURL.getFile());
    }
@@ -66,7 +65,7 @@ public class JarUtils {
     * @param resource The jar file to traverse
     * @return A Set of package names
     */
-   public static List<Resource> getJarContents(@NonNull Resource resource) {
+   public static List<Resource> getJarContents(Resource resource) {
       return getResourcesFromJar(resource, v -> true);
    }
 
@@ -80,12 +79,15 @@ public class JarUtils {
       return children;
    }
 
-   @SneakyThrows
    private static List<Resource> getResourcesFromJar(Resource resource, Predicate<? super String> stringMatcher) {
       JarFile jf = null;
       List<Resource> resources = new ArrayList<>();
       try {
-         jf = new JarFile(resource.asFile().get());
+         try {
+            jf = new JarFile(resource.asFile().get());
+         } catch (IOException e) {
+            throw new RuntimeException(e);
+         }
          Enumeration<JarEntry> e = jf.entries();
          while (e.hasMoreElements()) {
             String name = e.nextElement().getName();

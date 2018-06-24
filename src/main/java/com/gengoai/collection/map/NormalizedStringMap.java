@@ -22,8 +22,6 @@
 package com.gengoai.collection.map;
 
 import com.gengoai.tuple.Tuple2;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
 
 import java.io.Serializable;
 import java.text.CollationKey;
@@ -39,7 +37,6 @@ import java.util.function.Supplier;
  * @param <V> The value type
  * @author David B. Bracewell
  */
-@EqualsAndHashCode
 public class NormalizedStringMap<V> implements Map<String, V>, Serializable {
 
    private static final long serialVersionUID = 1930175668438751641L;
@@ -80,11 +77,15 @@ public class NormalizedStringMap<V> implements Map<String, V>, Serializable {
     * @param locale   the locale
     * @param strength the strength
     */
-   public NormalizedStringMap(@NonNull Supplier<Map<CollationKey, V>> supplier, Locale locale, int strength) {
+   public NormalizedStringMap(Supplier<Map<CollationKey, V>> supplier, Locale locale, int strength) {
       this.map = supplier.get();
       this.collator = locale == null ? Collator.getInstance() : Collator.getInstance(locale);
       this.collator.setStrength(strength);
       this.collator.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
+   }
+
+   protected boolean canEqual(Object other) {
+      return other instanceof NormalizedStringMap;
    }
 
    @Override
@@ -127,9 +128,33 @@ public class NormalizedStringMap<V> implements Map<String, V>, Serializable {
       };
    }
 
+   public boolean equals(Object o) {
+      if (o == this) return true;
+      if (!(o instanceof NormalizedStringMap)) return false;
+      final NormalizedStringMap other = (NormalizedStringMap) o;
+      if (!other.canEqual((Object) this)) return false;
+      final Object this$collator = this.collator;
+      final Object other$collator = other.collator;
+      if (this$collator == null ? other$collator != null : !this$collator.equals(other$collator)) return false;
+      final Object this$map = this.map;
+      final Object other$map = other.map;
+      if (this$map == null ? other$map != null : !this$map.equals(other$map)) return false;
+      return true;
+   }
+
    @Override
    public V get(Object arg0) {
       return map.get(collate(arg0));
+   }
+
+   public int hashCode() {
+      final int PRIME = 59;
+      int result = 1;
+      final Object $collator = this.collator;
+      result = result * PRIME + ($collator == null ? 43 : $collator.hashCode());
+      final Object $map = this.map;
+      result = result * PRIME + ($map == null ? 43 : $map.hashCode());
+      return result;
    }
 
    @Override
@@ -153,12 +178,12 @@ public class NormalizedStringMap<V> implements Map<String, V>, Serializable {
    }
 
    @Override
-   public V put(@NonNull String arg0, V arg1) {
+   public V put(String arg0, V arg1) {
       return map.put(collator.getCollationKey(arg0), arg1);
    }
 
    @Override
-   public void putAll(@NonNull Map<? extends String, ? extends V> m) {
+   public void putAll(Map<? extends String, ? extends V> m) {
       m.entrySet().forEach(entry -> put(entry.getKey(), entry.getValue()));
    }
 

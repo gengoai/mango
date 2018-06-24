@@ -22,8 +22,6 @@
 package com.gengoai.collection.counter;
 
 import com.gengoai.tuple.Tuple3;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -41,24 +39,41 @@ import java.util.function.Predicate;
  * @param <V> the second key type
  * @author David B. Bracewell
  */
-@EqualsAndHashCode
 final class SynchronizedMultiCounter<K, V> implements MultiCounter<K, V>, Serializable {
    private static final long serialVersionUID = 1L;
 
    private final MultiCounter<K, V> delegate;
 
-   public SynchronizedMultiCounter(@NonNull MultiCounter<K, V> delegate) {
+   public SynchronizedMultiCounter(MultiCounter<K, V> delegate) {
       this.delegate = delegate;
    }
 
    @Override
-   public synchronized MultiCounter<K, V> adjustValues(@NonNull DoubleUnaryOperator function) {
+   public synchronized MultiCounter<K, V> adjustValues(DoubleUnaryOperator function) {
       return delegate.adjustValues(function);
    }
 
    @Override
-   public synchronized MultiCounter<K, V> adjustValuesSelf(@NonNull DoubleUnaryOperator function) {
+   public synchronized MultiCounter<K, V> adjustValuesSelf(DoubleUnaryOperator function) {
       return delegate.adjustValuesSelf(function);
+   }
+
+   public boolean equals(Object o) {
+      if (o == this) return true;
+      if (!(o instanceof SynchronizedMultiCounter)) return false;
+      final SynchronizedMultiCounter other = (SynchronizedMultiCounter) o;
+      final Object this$delegate = this.delegate;
+      final Object other$delegate = other.delegate;
+      if (this$delegate == null ? other$delegate != null : !this$delegate.equals(other$delegate)) return false;
+      return true;
+   }
+
+   public int hashCode() {
+      final int PRIME = 59;
+      int result = 1;
+      final Object $delegate = this.delegate;
+      result = result * PRIME + ($delegate == null ? 43 : $delegate.hashCode());
+      return result;
    }
 
    @Override
@@ -102,17 +117,17 @@ final class SynchronizedMultiCounter<K, V> implements MultiCounter<K, V>, Serial
    }
 
    @Override
-   public synchronized MultiCounter<K, V> filterByValue(@NonNull DoublePredicate predicate) {
+   public synchronized MultiCounter<K, V> filterByValue(DoublePredicate predicate) {
       return delegate.filterByValue(predicate);
    }
 
    @Override
-   public synchronized MultiCounter<K, V> filterByFirstKey(@NonNull Predicate<K> predicate) {
+   public synchronized MultiCounter<K, V> filterByFirstKey(Predicate<K> predicate) {
       return delegate.filterByFirstKey(predicate);
    }
 
    @Override
-   public synchronized MultiCounter<K, V> filterBySecondKey(@NonNull Predicate<V> predicate) {
+   public synchronized MultiCounter<K, V> filterBySecondKey(Predicate<V> predicate) {
       return delegate.filterBySecondKey(predicate);
    }
 
@@ -142,7 +157,7 @@ final class SynchronizedMultiCounter<K, V> implements MultiCounter<K, V>, Serial
    }
 
    @Override
-   public synchronized MultiCounter<K, V> set(K item, @NonNull Counter<V> counter) {
+   public synchronized MultiCounter<K, V> set(K item, Counter<V> counter) {
       return delegate.set(item, counter);
    }
 

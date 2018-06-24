@@ -23,7 +23,6 @@ package com.gengoai.stream.accumulator;
 
 import com.gengoai.conversion.Cast;
 import com.gengoai.tuple.Tuple2;
-import lombok.NonNull;
 
 import java.util.Map;
 
@@ -56,7 +55,7 @@ public class SparkMMapAccumulator<K, V> extends SparkMAccumulator<Tuple2<K, V>, 
    }
 
    @Override
-   public void putAll(@NonNull Map<? extends K, ? extends V> other) {
+   public void putAll(Map<? extends K, ? extends V> other) {
       getAccumulator().putAll(other);
    }
 

@@ -25,7 +25,6 @@ import com.gengoai.parsing.expressions.Expression;
 import com.gengoai.parsing.handlers.InfixHandler;
 import com.gengoai.parsing.handlers.PrefixHandler;
 import com.gengoai.parsing.handlers.PrefixSkipHandler;
-import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -74,7 +73,7 @@ public class Grammar implements Serializable {
     * @param handler The prefix handler
     * @return This grammar (for fluent pattern)
     */
-   public Grammar register(@NonNull ParserTokenType type, @NonNull PrefixHandler handler) {
+   public Grammar register(ParserTokenType type, PrefixHandler handler) {
       prefixHandlers.put(type, handler);
       return this;
    }
@@ -85,7 +84,7 @@ public class Grammar implements Serializable {
     * @param type the token type to ignore
     * @return This grammar (for fluent pattern)
     */
-   public Grammar registerSkip(@NonNull ParserTokenType type) {
+   public Grammar registerSkip(ParserTokenType type) {
       return register(type, new PrefixSkipHandler());
    }
 
@@ -96,7 +95,7 @@ public class Grammar implements Serializable {
     * @param handler The infix handler
     * @return This grammar (for fluent pattern)
     */
-   public Grammar register(@NonNull ParserTokenType type, @NonNull InfixHandler handler) {
+   public Grammar register(ParserTokenType type, InfixHandler handler) {
       infixHandlers.put(type, handler);
       return this;
    }
@@ -129,7 +128,7 @@ public class Grammar implements Serializable {
     * @return A parsed expression
     * @throws ParseException Something went wrong parsing.
     */
-   public Expression parse(ExpressionIterator expressionIterator, @NonNull ParserToken token) throws ParseException {
+   public Expression parse(ExpressionIterator expressionIterator, ParserToken token) throws ParseException {
       PrefixHandler handler = prefixHandlers.containsKey(token.type)
                               ? prefixHandlers.get(token.type)
                               : prefixSkipHandler;
@@ -148,7 +147,7 @@ public class Grammar implements Serializable {
     * @return A parsed expression
     * @throws ParseException Something went wrong parsing.
     */
-   public Expression parse(ExpressionIterator expressionIterator, Expression left, @NonNull ParserToken token) throws ParseException {
+   public Expression parse(ExpressionIterator expressionIterator, Expression left, ParserToken token) throws ParseException {
       if (isInfix(token)) {
          return infixHandlers.get(token.type).parse(expressionIterator, left, token);
       }

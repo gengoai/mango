@@ -4,7 +4,6 @@ import com.gengoai.Switch;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.CheckedFunction;
 import com.gengoai.parsing.expressions.Expression;
-import lombok.NonNull;
 
 /**
  * <p>An evaluator provides a switch-like interface for evaluating expressions. Custom evaluators can be created as
@@ -43,7 +42,7 @@ public abstract class Evaluator<O> extends Switch<Expression, O> {
     * @return the result of evaluation
     * @throws Exception Something went wrong during evaluation
     */
-   public final O eval(@NonNull Expression expression) throws Exception {
+   public final O eval(Expression expression) throws Exception {
       return switchOn(expression);
    }
 
@@ -57,7 +56,7 @@ public abstract class Evaluator<O> extends Switch<Expression, O> {
     * @param type            the token type
     * @param function        the function to apply when the condition is met.
     */
-   protected final <E extends Expression> void $(@NonNull Class<E> expressionClass, @NonNull ParserTokenType type, @NonNull CheckedFunction<E, ? extends O> function) {
+   protected final <E extends Expression> void $(Class<E> expressionClass, ParserTokenType type, CheckedFunction<E, ? extends O> function) {
       $case(e -> e.match(expressionClass, type),
             e -> Cast.as(e, expressionClass),
             function);
@@ -71,7 +70,7 @@ public abstract class Evaluator<O> extends Switch<Expression, O> {
     * @param expressionClass the expression class
     * @param function        the function to apply when the condition is met.
     */
-   protected final <E extends Expression> void $(@NonNull Class<E> expressionClass, @NonNull CheckedFunction<E, ? extends O> function) {
+   protected final <E extends Expression> void $(Class<E> expressionClass, CheckedFunction<E, ? extends O> function) {
       $case(e -> e.isInstance(expressionClass),
             e -> Cast.as(e, expressionClass),
             function);

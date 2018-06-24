@@ -22,24 +22,18 @@
 package com.gengoai.reflection;
 
 import com.gengoai.collection.Sets;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Contains basic information about the methods, fields and constructors for a class.
  *
  * @author David B. Bracewell
  */
-@EqualsAndHashCode(callSuper = false)
 public final class ClassDescriptor implements Serializable {
    private static final long serialVersionUID = 1L;
    private final Set<Method> methods = new HashSet<>();
@@ -55,7 +49,7 @@ public final class ClassDescriptor implements Serializable {
     *
     * @param clazz the clazz
     */
-   public ClassDescriptor(@NonNull Class<?> clazz) {
+   public ClassDescriptor(Class<?> clazz) {
       this.clazz = clazz;
       this.methods.addAll(Arrays.asList(clazz.getMethods()));
       this.declaredMethods.addAll(Arrays.asList(clazz.getDeclaredMethods()));
@@ -65,6 +59,19 @@ public final class ClassDescriptor implements Serializable {
       this.declaredFields.addAll(ReflectionUtils.getDeclaredFields(clazz, true));
    }
 
+   @Override
+   public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof ClassDescriptor)) return false;
+      ClassDescriptor that = (ClassDescriptor) o;
+      return Objects.equals(methods, that.methods) &&
+                Objects.equals(declaredMethods, that.declaredMethods) &&
+                Objects.equals(fields, that.fields) &&
+                Objects.equals(declaredFields, that.declaredFields) &&
+                Objects.equals(constructors, that.constructors) &&
+                Objects.equals(declaredConstructors, that.declaredConstructors) &&
+                Objects.equals(clazz, that.clazz);
+   }
 
    /**
     * Gets methods.
@@ -126,4 +133,8 @@ public final class ClassDescriptor implements Serializable {
       return ClassDescriptorCache.getInstance().getClassDescriptor(this.clazz.getSuperclass());
    }
 
+   @Override
+   public int hashCode() {
+      return Objects.hash(methods, declaredMethods, fields, declaredFields, constructors, declaredConstructors, clazz);
+   }
 }//END OF ClassDescriptor

@@ -30,7 +30,6 @@ import com.gengoai.json.Json;
 import com.gengoai.json.JsonReader;
 import com.gengoai.json.JsonTokenType;
 import com.gengoai.tuple.Tuple2;
-import lombok.NonNull;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -65,7 +64,7 @@ public interface Counters {
     * @param iterable the items to add to the counter
     * @return the counter
     */
-   static <T> Counter<T> newCounter(@NonNull Iterable<? extends T> iterable) {
+   static <T> Counter<T> newCounter(Iterable<? extends T> iterable) {
       Counter<T> counter = new HashMapCounter<>();
       counter.incrementAll(iterable);
       return counter;
@@ -78,7 +77,7 @@ public interface Counters {
     * @param stream the items to add to the counter
     * @return the counter
     */
-   static <T> Counter<T> newCounter(@NonNull Stream<? extends T> stream) {
+   static <T> Counter<T> newCounter(Stream<? extends T> stream) {
       Counter<T> counter = new HashMapCounter<>();
       stream.forEach(counter::increment);
       return counter;
@@ -91,7 +90,7 @@ public interface Counters {
     * @param map the items and counts to merge with counter
     * @return the counter
     */
-   static <T> Counter<T> newCounter(@NonNull Map<? extends T, ? extends Number> map) {
+   static <T> Counter<T> newCounter(Map<? extends T, ? extends Number> map) {
       Counter<T> counter = new HashMapCounter<>();
       counter.merge(map);
       return counter;
@@ -104,7 +103,7 @@ public interface Counters {
     * @param other the items and counts to merge with counter
     * @return the counter
     */
-   static <T> Counter<T> newCounter(@NonNull Counter<? extends T> other) {
+   static <T> Counter<T> newCounter(Counter<? extends T> other) {
       Counter<T> counter = new HashMapCounter<>();
       counter.merge(other);
       return counter;
@@ -119,7 +118,7 @@ public interface Counters {
     * @return the counter
     * @throws IOException Something went wrong reading in the counter.
     */
-   static <TYPE> Counter<TYPE> readCsv(@NonNull Resource resource, @NonNull Class<TYPE> keyClass) throws IOException {
+   static <TYPE> Counter<TYPE> readCsv(Resource resource, Class<TYPE> keyClass) throws IOException {
       Counter<TYPE> counter = Counters.newCounter();
       try (CSVReader reader = CSV.builder().reader(resource)) {
          reader.forEach(row -> {
@@ -140,7 +139,7 @@ public interface Counters {
     * @return the counter
     * @throws IOException Something went wrong reading in the counter.
     */
-   static <TYPE> Counter<TYPE> readJson(@NonNull Resource resource, @NonNull Class<TYPE> keyClass) throws IOException {
+   static <TYPE> Counter<TYPE> readJson(Resource resource, Class<TYPE> keyClass) throws IOException {
       Counter<TYPE> counter = Counters.newCounter();
       try (JsonReader reader = Json.createReader(resource)) {
          reader.beginDocument();
@@ -160,7 +159,7 @@ public interface Counters {
     * @param counter the counter to wrap
     * @return the wrapped counter
     */
-   static <TYPE> Counter<TYPE> synchronizedCounter(@NonNull Counter<TYPE> counter) {
+   static <TYPE> Counter<TYPE> synchronizedCounter(Counter<TYPE> counter) {
       return new SynchronizedCounter<>(counter);
    }
 
@@ -181,7 +180,7 @@ public interface Counters {
     * @param counter the counter to wrap
     * @return the wrapped counter
     */
-   static <TYPE> Counter<TYPE> unmodifiableCounter(@NonNull final Counter<TYPE> counter) {
+   static <TYPE> Counter<TYPE> unmodifiableCounter(final Counter<TYPE> counter) {
       return new UnmodifiableCounter<>(counter);
    }
 

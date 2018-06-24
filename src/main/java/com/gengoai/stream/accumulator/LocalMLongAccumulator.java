@@ -21,8 +21,6 @@
 
 package com.gengoai.stream.accumulator;
 
-import lombok.NonNull;
-
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -68,7 +66,7 @@ public class LocalMLongAccumulator extends LocalMAccumulator<Long, Long> impleme
    }
 
    @Override
-   public void merge(@NonNull MAccumulator<Long, Long> other) {
+   public void merge(MAccumulator<Long, Long> other) {
       if (other instanceof LocalMAccumulator) {
          longValue.addAndGet(other.value());
       } else {

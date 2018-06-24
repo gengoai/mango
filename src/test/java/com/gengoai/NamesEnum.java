@@ -1,7 +1,6 @@
 package com.gengoai;
 
 import com.gengoai.collection.Sets;
-import lombok.NonNull;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -26,7 +25,7 @@ public final class NamesEnum extends EnumValue implements Comparable<NamesEnum> 
     *
     * @return The instance of NamesEnum corresponding th the give name.
     */
-   public static NamesEnum create(@NonNull String name) {
+   public static NamesEnum create(String name) {
       NamesEnum toReturn = DynamicEnum.register(new NamesEnum(name));
       values.add(toReturn);
       return toReturn;
@@ -49,12 +48,12 @@ public final class NamesEnum extends EnumValue implements Comparable<NamesEnum> 
     * @return The constant of NamesEnum with the specified name
     * @throws IllegalArgumentException if the specified name is not a member of NamesEnum.
     */
-   public static NamesEnum valueOf(@NonNull String name) {
+   public static NamesEnum valueOf(String name) {
       return DynamicEnum.valueOf(NamesEnum.class, name);
    }
 
    @Override
-   public int compareTo(@NonNull NamesEnum o) {
+   public int compareTo(NamesEnum o) {
       return this.canonicalName().compareTo(o.canonicalName());
    }
 

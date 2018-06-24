@@ -22,8 +22,6 @@
 package com.gengoai.collection.counter;
 
 import com.gengoai.Math2;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.*;
@@ -39,7 +37,6 @@ import java.util.stream.Collectors;
  * @param <T> the component type of the counter
  * @author David B. Bracewell
  */
-@EqualsAndHashCode()
 public class HashMapCounter<T> implements Counter<T>, Serializable {
    private static final long serialVersionUID = 1L;
    private final Map<T, Double> map = new HashMap<>();
@@ -52,9 +49,32 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
 
    }
 
+   protected boolean canEqual(Object other) {
+      return other instanceof HashMapCounter;
+   }
+
+   public boolean equals(Object o) {
+      if (o == this) return true;
+      if (!(o instanceof HashMapCounter)) return false;
+      final HashMapCounter other = (HashMapCounter) o;
+      if (!other.canEqual((Object) this)) return false;
+      final Object this$map = this.map;
+      final Object other$map = other.map;
+      if (this$map == null ? other$map != null : !this$map.equals(other$map)) return false;
+      return true;
+   }
+
    @Override
    public double get(T item) {
       return map.getOrDefault(item, 0d);
+   }
+
+   public int hashCode() {
+      final int PRIME = 59;
+      int result = 1;
+      final Object $map = this.map;
+      result = result * PRIME + ($map == null ? 43 : $map.hashCode());
+      return result;
    }
 
    @Override
@@ -179,14 +199,14 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
    }
 
    @Override
-   public Counter<T> adjustValues(@NonNull DoubleUnaryOperator function) {
+   public Counter<T> adjustValues(DoubleUnaryOperator function) {
       Counter<T> newCounter = newInstance();
       map.forEach((key, value) -> newCounter.increment(key, function.applyAsDouble(value)));
       return newCounter;
    }
 
    @Override
-   public Counter<T> adjustValuesSelf(@NonNull DoubleUnaryOperator function) {
+   public Counter<T> adjustValuesSelf(DoubleUnaryOperator function) {
       map.replaceAll((key, value) -> function.applyAsDouble(value));
       return this;
    }
@@ -229,7 +249,7 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
    }
 
    @Override
-   public Counter<T> filterByValue(@NonNull DoublePredicate doublePredicate) {
+   public Counter<T> filterByValue(DoublePredicate doublePredicate) {
       Counter<T> counter = newInstance();
       map.entrySet()
          .stream()
@@ -239,7 +259,7 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
    }
 
    @Override
-   public Counter<T> filterByKey(@NonNull Predicate<? super T> predicate) {
+   public Counter<T> filterByKey(Predicate<? super T> predicate) {
       Counter<T> counter = newInstance();
       map.entrySet()
          .stream()
@@ -255,7 +275,7 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
 
 
    @Override
-   public <R> Counter<R> mapKeys(@NonNull Function<? super T, ? extends R> function) {
+   public <R> Counter<R> mapKeys(Function<? super T, ? extends R> function) {
       Counter<R> result = newInstance();
       map.entrySet().forEach(e -> result.increment(function.apply(e.getKey()), e.getValue()));
       return result;

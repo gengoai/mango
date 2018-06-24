@@ -21,9 +21,6 @@
 
 package com.gengoai.collection.counter;
 
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
@@ -40,7 +37,6 @@ import java.util.function.Predicate;
  * @param <TYPE> the type parameter
  * @author David B. Bracewell
  */
-@EqualsAndHashCode
 final class SynchronizedCounter<TYPE> implements Counter<TYPE>, Serializable {
    private static final long serialVersionUID = 1L;
    private final Counter<TYPE> delegate;
@@ -54,6 +50,24 @@ final class SynchronizedCounter<TYPE> implements Counter<TYPE>, Serializable {
       this.delegate = delegate;
    }
 
+   public boolean equals(Object o) {
+      if (o == this) return true;
+      if (!(o instanceof SynchronizedCounter)) return false;
+      final SynchronizedCounter other = (SynchronizedCounter) o;
+      final Object this$delegate = this.delegate;
+      final Object other$delegate = other.delegate;
+      if (this$delegate == null ? other$delegate != null : !this$delegate.equals(other$delegate)) return false;
+      return true;
+   }
+
+   public int hashCode() {
+      final int PRIME = 59;
+      int result = 1;
+      final Object $delegate = this.delegate;
+      result = result * PRIME + ($delegate == null ? 43 : $delegate.hashCode());
+      return result;
+   }
+
    @Override
    public synchronized <R> Counter<R> mapKeys(Function<? super TYPE, ? extends R> function) {
       return delegate.mapKeys(function);
@@ -65,7 +79,7 @@ final class SynchronizedCounter<TYPE> implements Counter<TYPE>, Serializable {
    }
 
    @Override
-   public synchronized Counter<TYPE> adjustValuesSelf(@NonNull DoubleUnaryOperator function) {
+   public synchronized Counter<TYPE> adjustValuesSelf(DoubleUnaryOperator function) {
       return delegate.adjustValuesSelf(function);
    }
 
@@ -245,12 +259,12 @@ final class SynchronizedCounter<TYPE> implements Counter<TYPE>, Serializable {
    }
 
    @Override
-   public synchronized Counter<TYPE> filterByKey(@NonNull Predicate<? super TYPE> predicate) {
+   public synchronized Counter<TYPE> filterByKey(Predicate<? super TYPE> predicate) {
       return delegate.filterByKey(predicate);
    }
 
    @Override
-   public synchronized Counter<TYPE> filterByValue(@NonNull DoublePredicate doublePredicate) {
+   public synchronized Counter<TYPE> filterByValue(DoublePredicate doublePredicate) {
       return delegate.filterByValue(doublePredicate);
    }
 

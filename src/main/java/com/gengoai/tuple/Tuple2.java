@@ -22,8 +22,6 @@
 package com.gengoai.tuple;
 
 import com.gengoai.conversion.Cast;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Map;
 
@@ -34,8 +32,6 @@ import java.util.Map;
  * @param <V> the type parameter
  * @author David B. Bracewell
  */
-@Getter
-@Setter
 public class Tuple2<K, V> extends Tuple implements Map.Entry<K, V> {
 
   private static final long serialVersionUID = 1L;
@@ -78,6 +74,14 @@ public class Tuple2<K, V> extends Tuple implements Map.Entry<K, V> {
   @Override
   public K getKey() {
     return v1;
+  }
+
+  public K getV1() {
+    return this.v1;
+  }
+
+  public V getV2() {
+    return this.v2;
   }
 
   @Override

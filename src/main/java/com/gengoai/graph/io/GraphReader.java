@@ -21,8 +21,8 @@
 
 package com.gengoai.graph.io;
 
-import com.gengoai.io.resource.Resource;
 import com.gengoai.graph.Graph;
+import com.gengoai.io.resource.Resource;
 
 import java.io.IOException;
 

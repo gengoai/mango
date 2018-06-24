@@ -21,8 +21,6 @@
 
 package com.gengoai.function;
 
-import lombok.NonNull;
-
 import java.util.function.*;
 
 /**
@@ -48,7 +46,7 @@ public interface Serialized {
     * @param p2  the p 2
     * @return the serializable predicate
     */
-   static <T> SerializablePredicate<T> and(@NonNull SerializablePredicate<? super T> p1, @NonNull SerializablePredicate<? super T> p2) {
+   static <T> SerializablePredicate<T> and(SerializablePredicate<? super T> p1, SerializablePredicate<? super T> p2) {
       return t -> p1.test(t) && p2.test(t);
    }
 
@@ -60,7 +58,7 @@ public interface Serialized {
     * @param p2  the p 2
     * @return the serializable predicate
     */
-   static <T> SerializablePredicate<T> or(@NonNull SerializablePredicate<? super T> p1, @NonNull SerializablePredicate<? super T> p2) {
+   static <T> SerializablePredicate<T> or(SerializablePredicate<? super T> p1, SerializablePredicate<? super T> p2) {
       return t -> p1.test(t) || p2.test(t);
    }
 
@@ -71,7 +69,7 @@ public interface Serialized {
     * @param p1  the p 1
     * @return the serializable predicate
     */
-   static <T> SerializablePredicate<T> negate(@NonNull SerializablePredicate<? super T> p1) {
+   static <T> SerializablePredicate<T> negate(SerializablePredicate<? super T> p1) {
       return t -> !p1.test(t);
    }
 
@@ -85,7 +83,7 @@ public interface Serialized {
     * @param p2  the p 2
     * @return the serializable bi predicate
     */
-   static <T, U> SerializableBiPredicate<T, U> and(@NonNull SerializableBiPredicate<? super T, ? super U> p1, @NonNull SerializableBiPredicate<? super T, ? super U> p2) {
+   static <T, U> SerializableBiPredicate<T, U> and(SerializableBiPredicate<? super T, ? super U> p1, SerializableBiPredicate<? super T, ? super U> p2) {
       return (t, u) -> p1.test(t, u) && p2.test(t, u);
    }
 
@@ -98,7 +96,7 @@ public interface Serialized {
     * @param p2  the p 2
     * @return the serializable bi predicate
     */
-   static <T, U> SerializableBiPredicate<T, U> or(@NonNull SerializableBiPredicate<? super T, ? super U> p1, @NonNull SerializableBiPredicate<? super T, ? super U> p2) {
+   static <T, U> SerializableBiPredicate<T, U> or(SerializableBiPredicate<? super T, ? super U> p1, SerializableBiPredicate<? super T, ? super U> p2) {
       return (t, u) -> p1.test(t, u) || p2.test(t, u);
    }
 
@@ -110,7 +108,7 @@ public interface Serialized {
     * @param p1  the p 1
     * @return the serializable bi predicate
     */
-   static <T, U> SerializableBiPredicate<T, U> negate(@NonNull SerializableBiPredicate<? super T, ? super U> p1) {
+   static <T, U> SerializableBiPredicate<T, U> negate(SerializableBiPredicate<? super T, ? super U> p1) {
       return (t, u) -> !p1.test(t, u);
    }
 

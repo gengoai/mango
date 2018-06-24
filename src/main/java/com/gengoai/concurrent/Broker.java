@@ -23,7 +23,6 @@ package com.gengoai.concurrent;
 
 import com.gengoai.Validation;
 import com.gengoai.logging.Loggable;
-import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -169,7 +168,7 @@ public class Broker<V> implements Serializable, Loggable {
        * @param consumer the consumer
        * @return the builder
        */
-      public Builder<V> addConsumer(@NonNull java.util.function.Consumer<? super V> consumer) {
+      public Builder<V> addConsumer(java.util.function.Consumer<? super V> consumer) {
          return addConsumer(consumer, 1);
       }
 
@@ -180,7 +179,7 @@ public class Broker<V> implements Serializable, Loggable {
        * @param number   the number of threads to run the consumer on.
        * @return the builder
        */
-      public Builder<V> addConsumer(@NonNull java.util.function.Consumer<? super V> consumer, int number) {
+      public Builder<V> addConsumer(java.util.function.Consumer<? super V> consumer, int number) {
          for (int i = 0; i < number; i++) {
             this.consumers.add(consumer);
          }
@@ -193,7 +192,7 @@ public class Broker<V> implements Serializable, Loggable {
        * @param consumers the consumers
        * @return the builder
        */
-      public Builder<V> addConsumers(@NonNull Collection<java.util.function.Consumer<? super V>> consumers) {
+      public Builder<V> addConsumers(Collection<java.util.function.Consumer<? super V>> consumers) {
          this.consumers.addAll(consumers);
          return this;
       }
@@ -205,7 +204,7 @@ public class Broker<V> implements Serializable, Loggable {
        * @param number   the number of threads to run the producer on.
        * @return the builder
        */
-      public Builder<V> addProducer(@NonNull Producer<V> producer, int number) {
+      public Builder<V> addProducer(Producer<V> producer, int number) {
          for (int i = 0; i < number; i++) {
             this.producers.add(producer);
          }
@@ -218,7 +217,7 @@ public class Broker<V> implements Serializable, Loggable {
        * @param producer the producer
        * @return the builder
        */
-      public Builder<V> addProducer(@NonNull Producer<V> producer) {
+      public Builder<V> addProducer(Producer<V> producer) {
          return addProducer(producer, 1);
       }
 
@@ -228,7 +227,7 @@ public class Broker<V> implements Serializable, Loggable {
        * @param producers the producers
        * @return the builder
        */
-      public Builder<V> addProducers(@NonNull Collection<? extends Producer<V>> producers) {
+      public Builder<V> addProducers(Collection<? extends Producer<V>> producers) {
          this.producers.addAll(producers);
          return this;
       }

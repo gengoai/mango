@@ -23,7 +23,6 @@ package com.gengoai.parsing;
 
 import com.gengoai.io.resource.Resource;
 import com.gengoai.string.CharMatcher;
-import lombok.Value;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -102,10 +101,50 @@ public class PatternLexer implements Lexer, Serializable {
       }
    }
 
-   @Value
    private static class LexicalEntry {
       LexicalPattern pattern;
       ParserTokenType tokenType;
+
+      @java.beans.ConstructorProperties({"pattern", "tokenType"})
+      public LexicalEntry(LexicalPattern pattern, ParserTokenType tokenType) {
+         this.pattern = pattern;
+         this.tokenType = tokenType;
+      }
+
+      public boolean equals(Object o) {
+         if (o == this) return true;
+         if (!(o instanceof LexicalEntry)) return false;
+         final LexicalEntry other = (LexicalEntry) o;
+         final Object this$pattern = this.getPattern();
+         final Object other$pattern = other.getPattern();
+         if (this$pattern == null ? other$pattern != null : !this$pattern.equals(other$pattern)) return false;
+         final Object this$tokenType = this.getTokenType();
+         final Object other$tokenType = other.getTokenType();
+         if (this$tokenType == null ? other$tokenType != null : !this$tokenType.equals(other$tokenType)) return false;
+         return true;
+      }
+
+      public LexicalPattern getPattern() {
+         return this.pattern;
+      }
+
+      public ParserTokenType getTokenType() {
+         return this.tokenType;
+      }
+
+      public int hashCode() {
+         final int PRIME = 59;
+         int result = 1;
+         final Object $pattern = this.getPattern();
+         result = result * PRIME + ($pattern == null ? 43 : $pattern.hashCode());
+         final Object $tokenType = this.getTokenType();
+         result = result * PRIME + ($tokenType == null ? 43 : $tokenType.hashCode());
+         return result;
+      }
+
+      public String toString() {
+         return "PatternLexer.LexicalEntry(pattern=" + this.getPattern() + ", tokenType=" + this.getTokenType() + ")";
+      }
    }
 
 

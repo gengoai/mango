@@ -3,7 +3,6 @@ package com.gengoai.string;
 import com.gengoai.conversion.Cast;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.io.resource.StringResource;
-import lombok.NonNull;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -64,7 +63,7 @@ public class TableFormatter implements Serializable {
     *
     * @param decimalFormat the decimal format
     */
-   public void setNumberFormatter(@NonNull DecimalFormat decimalFormat) {
+   public void setNumberFormatter(DecimalFormat decimalFormat) {
       this.normalNumberFormatter = decimalFormat;
    }
 
@@ -184,7 +183,7 @@ public class TableFormatter implements Serializable {
     *
     * @param stream the print stream to write to
     */
-   public void print(@NonNull PrintStream stream) {
+   public void print(PrintStream stream) {
       String horizontalBar = StringUtils.repeat("─", longestCell);
       String hline = middleCMBar(horizontalBar, longestRow);
       longestRow = Math.max(longestRow, header.size());
@@ -240,7 +239,7 @@ public class TableFormatter implements Serializable {
     * @return the resource written to
     * @throws IOException Something went wrong writing to the resource
     */
-   public Resource write(@NonNull Resource resource) throws IOException {
+   public Resource write(Resource resource) throws IOException {
       Resource stringResource = new StringResource();
       try (PrintStream printStream = new PrintStream(stringResource.outputStream())) {
          print(printStream);

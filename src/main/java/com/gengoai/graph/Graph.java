@@ -27,7 +27,6 @@ import com.gengoai.collection.Streams;
 import com.gengoai.collection.counter.Counter;
 import com.gengoai.collection.counter.Counters;
 import com.gengoai.conversion.Cast;
-import lombok.NonNull;
 
 import java.util.Collection;
 import java.util.Set;
@@ -350,7 +349,7 @@ public interface Graph<V> extends Iterable<V> {
    * @param other         The graph to merge
    * @param mergeFunction The function to use to merge duplicate edges
    */
-  default void merge(Graph<V> other, @NonNull EdgeMergeFunction<V> mergeFunction) {
+  default void merge(Graph<V> other,  EdgeMergeFunction<V> mergeFunction) {
     if (other == null || other.isEmpty()) {
       return;
     }

@@ -22,7 +22,6 @@
 package com.gengoai.parsing.expressions;
 
 import com.gengoai.parsing.ParserToken;
-import lombok.NonNull;
 
 /**
  * An <code>Expression</code> representing a binary operation, eg. plus, minus, etc.
@@ -53,7 +52,7 @@ public class BinaryOperatorExpression extends Expression {
    * @param operator The operator
    * @param right    The expresison on the right of the operator
    */
-  public BinaryOperatorExpression(@NonNull Expression left, @NonNull ParserToken operator, @NonNull Expression right) {
+  public BinaryOperatorExpression(Expression left, ParserToken operator, Expression right) {
     super(operator.type);
     this.left = left;
     this.right = right;

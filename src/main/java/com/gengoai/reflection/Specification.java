@@ -27,7 +27,6 @@ import com.gengoai.function.Unchecked;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVReader;
 import com.gengoai.string.StringUtils;
-import lombok.SneakyThrows;
 
 import java.io.StringReader;
 import java.util.List;
@@ -35,7 +34,8 @@ import java.util.List;
 /**
  * <p>Defines a methodology for converting a string representation of specification into an object. This is done using
  * bean style setters where the string form is the name after <code>set</code> with the first letter lowercased, e.g.
- * <code>setParameter</code> becomes <code>parameter</code>. A colon (<code>:</code>) is used to separate parameters and
+ * <code>setParameter</code> becomes <code>parameter</code>. A colon (<code>:</code>) is used to separate parameters
+ * and
  * their values and commas are used to separate entries. As an example the following specification string:</p>
  *
  * <pre>{@code parameter:A, isRecursive:true}</pre>
@@ -53,58 +53,61 @@ import java.util.List;
 public interface Specification {
 
    /**
-    * Initializes the object via string specification. The string specification is in the
-    * form of <code>methodName=Value</code>.
+    * Initializes the object via string specification. The string specification is in the form of
+    * <code>methodName=Value</code>.
     *
     * @param spec The specification
     */
-   @SneakyThrows
    default Specification fromString(String spec) {
-      if (spec != null) {
-         Reflect rThis = Reflect.onObject(this);
-         try (CSVReader reader = CSV.builder().removeEmptyCells().reader(new StringReader(spec))) {
-            reader.forEach(Unchecked.consumer(row -> {
-               for (String prop : row) {
-                  List<String> parts = StringUtils.split(prop, ':');
+      try {
+         if (spec != null) {
+            Reflect rThis = Reflect.onObject(this);
+            try (CSVReader reader = CSV.builder().removeEmptyCells().reader(new StringReader(spec))) {
+               reader.forEach(Unchecked.consumer(row -> {
+                  for (String prop : row) {
+                     List<String> parts = StringUtils.split(prop, ':');
 
-                  String methodName = parts.get(0).trim();
-                  String capitalize = StringUtils.toTitleCase(methodName);
-                  if (!rThis.containsMethod(methodName)) {
-                     if (methodName.equals("put") && rThis.containsMethod("put")) {
-                        methodName = "put";
-                     } else if (methodName.equals("add") && rThis.containsMethod("add")) {
-                        methodName = "add";
-                     } else if (methodName.equals("set") && rThis.containsMethod("set")) {
-                        methodName = "set";
-                     } else if (rThis.containsMethod("put" + capitalize)) {
-                        methodName = "put" + capitalize;
-                     } else if (rThis.containsMethod("set" + capitalize)) {
-                        methodName = "set" + capitalize;
-                     } else if (rThis.containsMethod("add" + capitalize)) {
-                        methodName = "add" + capitalize;
-                     } else {
-                        throw new IllegalArgumentException(methodName + " is an invalid property");
+                     String methodName = parts.get(0).trim();
+                     String capitalize = StringUtils.toTitleCase(methodName);
+                     if (!rThis.containsMethod(methodName)) {
+                        if (methodName.equals("put") && rThis.containsMethod("put")) {
+                           methodName = "put";
+                        } else if (methodName.equals("add") && rThis.containsMethod("add")) {
+                           methodName = "add";
+                        } else if (methodName.equals("set") && rThis.containsMethod("set")) {
+                           methodName = "set";
+                        } else if (rThis.containsMethod("put" + capitalize)) {
+                           methodName = "put" + capitalize;
+                        } else if (rThis.containsMethod("set" + capitalize)) {
+                           methodName = "set" + capitalize;
+                        } else if (rThis.containsMethod("add" + capitalize)) {
+                           methodName = "add" + capitalize;
+                        } else {
+                           throw new IllegalArgumentException(methodName + " is an invalid property");
+                        }
+                     }
+
+                     switch (parts.size()) {
+                        case 1:
+                           rThis.invoke(methodName);
+                           break;
+                        case 2:
+                           rThis.invoke(methodName, Val.of(parts.get(1).trim()));
+                           break;
+                        case 3:
+                           rThis.invoke(methodName, Val.of(parts.get(1).trim()), Val.of(parts.get(2).trim()));
+                           break;
+                        default:
+                           throw new IllegalArgumentException(prop + " is not a valid specification");
                      }
                   }
-
-                  switch (parts.size()) {
-                     case 1:
-                        rThis.invoke(methodName);
-                        break;
-                     case 2:
-                        rThis.invoke(methodName, Val.of(parts.get(1).trim()));
-                        break;
-                     case 3:
-                        rThis.invoke(methodName, Val.of(parts.get(1).trim()), Val.of(parts.get(2).trim()));
-                        break;
-                     default:
-                        throw new IllegalArgumentException(prop + " is not a valid specification");
-                  }
-               }
-            }));
+               }));
+            }
          }
+         return Cast.as(this);
+      } catch (Exception e) {
+         throw new RuntimeException(e);
       }
-      return Cast.as(this);
    }
 
 

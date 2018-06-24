@@ -24,7 +24,6 @@ package com.gengoai.stream.accumulator;
 import com.gengoai.collection.counter.MultiCounter;
 import com.gengoai.conversion.Cast;
 import com.gengoai.tuple.Tuple2;
-import lombok.NonNull;
 
 /**
  * <p>An implementation of a {@link MMultiCounterAccumulator} for Spark streams</p>
@@ -51,7 +50,7 @@ public class SparkMMultiCounterAccumulator<K1, K2> extends SparkMAccumulator<Tup
 
 
    @Override
-   public void merge(@NonNull MultiCounter<K1, K2> other) {
+   public void merge(MultiCounter<K1, K2> other) {
       getAccumulator().merge(other);
    }
 

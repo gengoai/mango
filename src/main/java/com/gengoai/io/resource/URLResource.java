@@ -26,8 +26,6 @@ import com.gengoai.io.QuietIO;
 import com.gengoai.stream.MStream;
 import com.gengoai.stream.StreamingContext;
 import com.gengoai.string.StringUtils;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,7 +43,6 @@ import java.util.Optional;
  *
  * @author David B. Bracewell
  */
-@EqualsAndHashCode(callSuper = false)
 public class URLResource extends BaseResource {
 
    private static final long serialVersionUID = -5874490341557934277L;
@@ -59,12 +56,16 @@ public class URLResource extends BaseResource {
     * @param url the url
     * @throws java.net.MalformedURLException the malformed url exception
     */
-   public URLResource(@NonNull String url) throws MalformedURLException {
+   public URLResource(String url) throws MalformedURLException {
       this.url = new URL(url);
    }
 
-   public URLResource(@NonNull URL url) {
+   public URLResource(URL url) {
       this.url = url;
+   }
+
+   protected boolean canEqual(Object other) {
+      return other instanceof URLResource;
    }
 
    @Override
@@ -78,6 +79,32 @@ public class URLResource extends BaseResource {
          return Optional.of(new File(url.getFile()));
       }
       return super.asFile();
+   }
+
+   public boolean equals(Object o) {
+      if (o == this) return true;
+      if (!(o instanceof URLResource)) return false;
+      final URLResource other = (URLResource) o;
+      if (!other.canEqual((Object) this)) return false;
+      final Object this$url = this.url;
+      final Object other$url = other.url;
+      if (this$url == null ? other$url != null : !this$url.equals(other$url)) return false;
+      final Object this$userAgent = this.getUserAgent();
+      final Object other$userAgent = other.getUserAgent();
+      if (this$userAgent == null ? other$userAgent != null : !this$userAgent.equals(other$userAgent)) return false;
+      if (this.getConnectionTimeOut() != other.getConnectionTimeOut()) return false;
+      return true;
+   }
+
+   public int hashCode() {
+      final int PRIME = 59;
+      int result = 1;
+      final Object $url = this.url;
+      result = result * PRIME + ($url == null ? 43 : $url.hashCode());
+      final Object $userAgent = this.getUserAgent();
+      result = result * PRIME + ($userAgent == null ? 43 : $userAgent.hashCode());
+      result = result * PRIME + this.getConnectionTimeOut();
+      return result;
    }
 
    @Override

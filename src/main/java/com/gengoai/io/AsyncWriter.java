@@ -24,8 +24,6 @@ package com.gengoai.io;
 import com.gengoai.Validation;
 import com.gengoai.concurrent.Threads;
 import com.gengoai.logging.Logger;
-import lombok.NonNull;
-import lombok.SneakyThrows;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -53,7 +51,7 @@ public class AsyncWriter extends Writer implements Runnable {
     *
     * @param wrap The writer being wrapped
     */
-   public AsyncWriter(@NonNull Writer wrap) {
+   public AsyncWriter(Writer wrap) {
       this.wrap = wrap;
       thread = new Thread(this);
       thread.start();
@@ -93,7 +91,6 @@ public class AsyncWriter extends Writer implements Runnable {
    }
 
    @Override
-   @SneakyThrows
    public void run() {
       while (!Thread.currentThread().isInterrupted()) {
          try {
@@ -111,7 +108,11 @@ public class AsyncWriter extends Writer implements Runnable {
             break;
          }
       }
-      wrap.flush();
+      try {
+         wrap.flush();
+      } catch (IOException e) {
+         throw new RuntimeException(e);
+      }
       QuietIO.closeQuietly(wrap);
       isTerminated.set(true);
    }

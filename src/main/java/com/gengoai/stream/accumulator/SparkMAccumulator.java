@@ -23,7 +23,6 @@ package com.gengoai.stream.accumulator;
 
 import com.gengoai.conversion.Cast;
 import com.gengoai.stream.SparkStreamingContext;
-import lombok.NonNull;
 import org.apache.spark.util.AccumulatorV2;
 import scala.runtime.AbstractFunction0;
 
@@ -48,7 +47,7 @@ public class SparkMAccumulator<IN, OUT> implements MAccumulator<IN, OUT> {
     *
     * @param accumulatorV2 the accumulator v 2
     */
-   public SparkMAccumulator(@NonNull AccumulatorV2<IN, OUT> accumulatorV2) {
+   public SparkMAccumulator(AccumulatorV2<IN, OUT> accumulatorV2) {
       this.accumulatorV2 = accumulatorV2;
    }
 
@@ -57,7 +56,7 @@ public class SparkMAccumulator<IN, OUT> implements MAccumulator<IN, OUT> {
     *
     * @param localMAccumulator the local accumulator to wrap
     */
-   public SparkMAccumulator(@NonNull LocalMAccumulator<IN, OUT> localMAccumulator) {
+   public SparkMAccumulator(LocalMAccumulator<IN, OUT> localMAccumulator) {
       this.accumulatorV2 = new AccumulatorV2Wrapper<>(localMAccumulator);
    }
 
@@ -68,7 +67,7 @@ public class SparkMAccumulator<IN, OUT> implements MAccumulator<IN, OUT> {
 
 
    @Override
-   public void merge(@NonNull MAccumulator<IN, OUT> other) {
+   public void merge(MAccumulator<IN, OUT> other) {
       if (other instanceof SparkMAccumulator) {
          accumulatorV2.merge(Cast.<SparkMAccumulator<IN, OUT>>as(other).accumulatorV2);
       }

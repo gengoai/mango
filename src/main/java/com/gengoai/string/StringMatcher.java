@@ -1,7 +1,6 @@
 package com.gengoai.string;
 
 import com.gengoai.function.SerializablePredicate;
-import lombok.NonNull;
 
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -88,7 +87,7 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
     * @param match the match
     * @return the string matcher
     */
-   static StringMatcher contains(@NonNull String match) {
+   static StringMatcher contains(String match) {
       return contains(match, true);
    }
 
@@ -99,7 +98,7 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
     * @param caseSensitive the case sensitive
     * @return the string matcher
     */
-   static StringMatcher contains(@NonNull String match, boolean caseSensitive) {
+   static StringMatcher contains(String match, boolean caseSensitive) {
       final String prefix = caseSensitive ? match : match.toLowerCase();
       return sequence -> sequence != null && (caseSensitive ? sequence.toString().contains(prefix)
                                                             : sequence.toString().toLowerCase().contains(prefix));
@@ -111,7 +110,7 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
     * @param match the match
     * @return the string matcher
     */
-   static StringMatcher endsWith(@NonNull String match) {
+   static StringMatcher endsWith(String match) {
       return endsWith(match, true);
    }
 
@@ -122,7 +121,7 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
     * @param caseSensitive the case sensitive
     * @return the string matcher
     */
-   static StringMatcher endsWith(@NonNull String match, boolean caseSensitive) {
+   static StringMatcher endsWith(String match, boolean caseSensitive) {
       final String suffix = caseSensitive ? match : match.toLowerCase();
       return sequence -> sequence != null && (caseSensitive ? sequence.toString().endsWith(suffix)
                                                             : sequence.toString().toLowerCase().endsWith(suffix));
@@ -134,7 +133,7 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
     * @param match the match
     * @return the string matcher
     */
-   static StringMatcher matches(@NonNull String match) {
+   static StringMatcher matches(String match) {
       return matches(match, true);
    }
 
@@ -145,7 +144,7 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
     * @param caseSensitive the case sensitive
     * @return the string matcher
     */
-   static StringMatcher matches(@NonNull String match, boolean caseSensitive) {
+   static StringMatcher matches(String match, boolean caseSensitive) {
       return sequence -> sequence != null && (caseSensitive ? match.equals(sequence.toString())
                                                             : match.equalsIgnoreCase(sequence.toString()));
    }
@@ -156,7 +155,7 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
     * @param pattern the pattern
     * @return the string matcher
     */
-   static StringMatcher regex(@NonNull Pattern pattern) {
+   static StringMatcher regex(Pattern pattern) {
       return sequence -> sequence != null && pattern.matcher(sequence).find();
    }
 
@@ -166,7 +165,7 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
     * @param pattern the pattern
     * @return the string matcher
     */
-   static StringMatcher regex(@NonNull String pattern) {
+   static StringMatcher regex(String pattern) {
       return regex(Pattern.compile(pattern));
    }
 
@@ -176,7 +175,7 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
     * @param match the match
     * @return the string matcher
     */
-   static StringMatcher startsWith(@NonNull String match) {
+   static StringMatcher startsWith(String match) {
       return startsWith(match, true);
    }
 
@@ -187,14 +186,14 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
     * @param caseSensitive the case sensitive
     * @return the string matcher
     */
-   static StringMatcher startsWith(@NonNull String match, boolean caseSensitive) {
+   static StringMatcher startsWith(String match, boolean caseSensitive) {
       final String prefix = caseSensitive ? match : match.toLowerCase();
       return sequence -> sequence != null && (caseSensitive ? sequence.toString().startsWith(prefix)
                                                             : sequence.toString().toLowerCase().startsWith(prefix));
    }
 
    @Override
-   default StringMatcher and(@NonNull SerializablePredicate<? super CharSequence> other) {
+   default StringMatcher and(SerializablePredicate<? super CharSequence> other) {
       return sequence -> (test(sequence) && other.test(sequence));
    }
 
@@ -204,7 +203,7 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
    }
 
    @Override
-   default StringMatcher or(@NonNull SerializablePredicate<? super CharSequence> other) {
+   default StringMatcher or(SerializablePredicate<? super CharSequence> other) {
       return sequence -> (test(sequence) || other.test(sequence));
    }
 

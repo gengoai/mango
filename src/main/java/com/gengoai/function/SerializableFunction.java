@@ -21,8 +21,6 @@
 
 package com.gengoai.function;
 
-import lombok.NonNull;
-
 import java.io.Serializable;
 import java.util.function.Function;
 
@@ -36,11 +34,11 @@ import java.util.function.Function;
 public interface SerializableFunction<T, R> extends Function<T, R>, Serializable {
 
 
-   default <F> SerializableFunction<T, F> andThen(@NonNull SerializableFunction<? super R, ? extends F> function) {
+   default <F> SerializableFunction<T, F> andThen( SerializableFunction<? super R, ? extends F> function) {
       return t -> function.apply(this.apply(t));
    }
 
-   default <V> SerializableFunction<V, R> compose(@NonNull SerializableFunction<? super V, ? extends T> function) {
+   default <V> SerializableFunction<V, R> compose( SerializableFunction<? super V, ? extends T> function) {
       return v -> this.apply(function.apply(v));
    }
 

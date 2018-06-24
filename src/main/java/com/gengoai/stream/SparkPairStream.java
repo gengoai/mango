@@ -5,7 +5,6 @@ import com.gengoai.config.Configurator;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.*;
 import com.gengoai.tuple.Tuple2;
-import lombok.NonNull;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
@@ -100,7 +99,7 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public MPairStream<T, U> filter(@NonNull SerializableBiPredicate<? super T, ? super U> predicate) {
+   public MPairStream<T, U> filter(SerializableBiPredicate<? super T, ? super U> predicate) {
       return new SparkPairStream<>(rdd.filter(tuple -> {
          Configurator.INSTANCE.configure(configBroadcast.value());
          return predicate.test(tuple._1(), tuple._2());
@@ -108,7 +107,7 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public MPairStream<T, U> filterByKey(@NonNull SerializablePredicate<T> predicate) {
+   public MPairStream<T, U> filterByKey(SerializablePredicate<T> predicate) {
       return new SparkPairStream<>(rdd.filter(tuple -> {
          Configurator.INSTANCE.configure(configBroadcast.value());
          return predicate.test(tuple._1());
@@ -116,7 +115,7 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public MPairStream<T, U> filterByValue(@NonNull SerializablePredicate<U> predicate) {
+   public MPairStream<T, U> filterByValue(SerializablePredicate<U> predicate) {
       return new SparkPairStream<>(rdd.filter(tuple -> {
          Configurator.INSTANCE.configure(configBroadcast.value());
          return predicate.test(tuple._2());
@@ -124,7 +123,7 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public <R, V> SparkPairStream<R, V> flatMapToPair(@NonNull SerializableBiFunction<? super T, ? super U, Stream<Map.Entry<? extends R, ? extends V>>> function) {
+   public <R, V> SparkPairStream<R, V> flatMapToPair(SerializableBiFunction<? super T, ? super U, Stream<Map.Entry<? extends R, ? extends V>>> function) {
       return new SparkPairStream<>(rdd.flatMapToPair(t -> {
          Configurator.INSTANCE.configure(configBroadcast.value());
          return Cast.cast(function.apply(t._1(), t._2())
@@ -134,7 +133,7 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public void forEach(@NonNull SerializableBiConsumer<? super T, ? super U> consumer) {
+   public void forEach(SerializableBiConsumer<? super T, ? super U> consumer) {
       rdd.foreach(tuple -> {
          Configurator.INSTANCE.configure(configBroadcast.value());
          consumer.accept(tuple._1(), tuple._2());
@@ -142,7 +141,7 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public void forEachLocal(@NonNull SerializableBiConsumer<? super T, ? super U> consumer) {
+   public void forEachLocal(SerializableBiConsumer<? super T, ? super U> consumer) {
       rdd.toLocalIterator().forEachRemaining(e -> {
          Configurator.INSTANCE.configure(configBroadcast.value());
          consumer.accept(e._1(), e._2());
@@ -184,7 +183,7 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public <V> MPairStream<T, Map.Entry<U, V>> join(@NonNull MPairStream<? extends T, ? extends V> stream) {
+   public <V> MPairStream<T, Map.Entry<U, V>> join(MPairStream<? extends T, ? extends V> stream) {
       return new SparkPairStream<>(rdd.join(toPairRDD(stream))
                                       .mapToPair(
                                          t -> Cast.as(new scala.Tuple2<>(t._1(), toMapEntry(t._2()))))
@@ -197,14 +196,14 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public <V> MPairStream<T, Map.Entry<U, V>> leftOuterJoin(@NonNull MPairStream<? extends T, ? extends V> stream) {
+   public <V> MPairStream<T, Map.Entry<U, V>> leftOuterJoin(MPairStream<? extends T, ? extends V> stream) {
       return new SparkPairStream<>(rdd.leftOuterJoin(toPairRDD(stream))
                                       .mapToPair(t -> Cast.as(
                                          new scala.Tuple2<>(t._1(), Tuple2.of(t._2()._1(), t._2()._2().or(null))))));
    }
 
    @Override
-   public <R> MStream<R> map(@NonNull SerializableBiFunction<? super T, ? super U, ? extends R> function) {
+   public <R> MStream<R> map(SerializableBiFunction<? super T, ? super U, ? extends R> function) {
       return new SparkStream<>(rdd.map(e -> {
          Configurator.INSTANCE.configure(configBroadcast.value());
          return function.apply(e._1(), e._2());
@@ -212,7 +211,7 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public MDoubleStream mapToDouble(@NonNull SerializableToDoubleBiFunction<? super T, ? super U> function) {
+   public MDoubleStream mapToDouble(SerializableToDoubleBiFunction<? super T, ? super U> function) {
       return new SparkDoubleStream(rdd.mapToDouble(e -> {
          Configurator.INSTANCE.configure(configBroadcast.value());
          return function.applyAsDouble(e._1(), e._2());
@@ -220,7 +219,7 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public <R, V> MPairStream<R, V> mapToPair(@NonNull SerializableBiFunction<? super T, ? super U, ? extends Map.Entry<? extends R, ? extends V>> function) {
+   public <R, V> MPairStream<R, V> mapToPair(SerializableBiFunction<? super T, ? super U, ? extends Map.Entry<? extends R, ? extends V>> function) {
       return new SparkPairStream<>(rdd.mapToPair((t) -> {
          Configurator.INSTANCE.configure(
             configBroadcast.value());
@@ -230,7 +229,7 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public Optional<Map.Entry<T, U>> max(@NonNull SerializableComparator<Map.Entry<T, U>> comparator) {
+   public Optional<Map.Entry<T, U>> max(SerializableComparator<Map.Entry<T, U>> comparator) {
       if (isEmpty()) {
          return Optional.empty();
       }
@@ -241,7 +240,7 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public Optional<Map.Entry<T, U>> min(@NonNull SerializableComparator<Map.Entry<T, U>> comparator) {
+   public Optional<Map.Entry<T, U>> min(SerializableComparator<Map.Entry<T, U>> comparator) {
       if (isEmpty()) {
          return Optional.empty();
       }
@@ -262,7 +261,7 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public MPairStream<T, U> reduceByKey(@NonNull SerializableBinaryOperator<U> operator) {
+   public MPairStream<T, U> reduceByKey(SerializableBinaryOperator<U> operator) {
       return new SparkPairStream<>(rdd.reduceByKey((t, u) -> {
          Configurator.INSTANCE.configure(configBroadcast.value());
          return operator.apply(t, u);
@@ -275,20 +274,20 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public <V> MPairStream<T, Map.Entry<U, V>> rightOuterJoin(@NonNull MPairStream<? extends T, ? extends V> stream) {
+   public <V> MPairStream<T, Map.Entry<U, V>> rightOuterJoin(MPairStream<? extends T, ? extends V> stream) {
       return new SparkPairStream<>(rdd.rightOuterJoin(toPairRDD(stream))
                                       .mapToPair(t -> Cast.as(
                                          new scala.Tuple2<>(t._1(), Tuple2.of(t._2()._1().or(null), t._2()._2())))));
    }
 
    @Override
-   public MPairStream<T, U> shuffle(@NonNull Random random) {
+   public MPairStream<T, U> shuffle(Random random) {
       return new SparkPairStream<>(rdd.sortByKey(
          (SerializableComparator<T>) (t1, t2) -> random.nextDouble() >= 0.5 ? 1 : -1));
    }
 
    @Override
-   public MPairStream<T, U> sortByKey(@NonNull SerializableComparator<T> comparator) {
+   public MPairStream<T, U> sortByKey(SerializableComparator<T> comparator) {
       return new SparkPairStream<>(rdd.sortByKey(comparator));
    }
 
@@ -304,7 +303,7 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public MPairStream<T, U> union(@NonNull MPairStream<? extends T, ? extends U> other) {
+   public MPairStream<T, U> union(MPairStream<? extends T, ? extends U> other) {
       return new SparkPairStream<>(rdd.union(toPairRDD(other)));
    }
 

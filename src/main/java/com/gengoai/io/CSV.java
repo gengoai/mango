@@ -24,7 +24,6 @@ package com.gengoai.io;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.reflection.Specification;
 import com.gengoai.string.CSVFormatter;
-import lombok.NonNull;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -215,7 +214,7 @@ public class CSV implements Specification, Serializable {
     * @return The CSVReader
     * @throws IOException Something went wrong initializing the reader
     */
-   public CSVReader reader(@NonNull Reader reader) throws IOException {
+   public CSVReader reader(Reader reader) throws IOException {
       return new CSVReader(this, reader);
    }
 

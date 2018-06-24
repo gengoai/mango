@@ -25,7 +25,6 @@ import com.gengoai.collection.Iterables;
 import com.gengoai.collection.Maps;
 import com.gengoai.function.SerializableSupplier;
 import com.gengoai.logging.Logger;
-import lombok.NonNull;
 
 import java.util.Map;
 import java.util.function.Function;
@@ -48,7 +47,7 @@ public class MapConverter<K, V, T extends Map<K, V>> implements Function<Object,
    private final SerializableSupplier<T> mapSupplier;
    private final Function<Object, V> valueConverter;
 
-   public MapConverter(@NonNull Function<Object, K> keyConverter, @NonNull Function<Object, V> valueConverter, @NonNull final Class<? extends Map> mapClass) {
+   public MapConverter(Function<Object, K> keyConverter, Function<Object, V> valueConverter, final Class<? extends Map> mapClass) {
       this.keyConverter = keyConverter;
       this.valueConverter = valueConverter;
       this.mapSupplier = () -> Cast.as(Maps.create(Cast.as(mapClass)));

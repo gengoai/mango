@@ -26,8 +26,6 @@ import com.gengoai.collection.Streams;
 import com.gengoai.conversion.Cast;
 import com.gengoai.tuple.Tuple2;
 import com.gengoai.tuple.Tuple3;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.*;
@@ -43,23 +41,26 @@ import java.util.stream.Collectors;
  * @param <V> the second type
  * @author David B. Bracewell
  */
-@EqualsAndHashCode
 public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializable {
    private static final long serialVersionUID = 1L;
    private final Map<K, Counter<V>> map = new HashMap<>();
 
 
    @Override
-   public MultiCounter<K, V> adjustValues(@NonNull DoubleUnaryOperator function) {
+   public MultiCounter<K, V> adjustValues(DoubleUnaryOperator function) {
       MultiCounter<K, V> tmp = newInstance();
       firstKeys().forEach(key -> tmp.set(key, get(key).adjustValues(function)));
       return tmp;
    }
 
    @Override
-   public MultiCounter<K, V> adjustValuesSelf(@NonNull DoubleUnaryOperator function) {
+   public MultiCounter<K, V> adjustValuesSelf(DoubleUnaryOperator function) {
       firstKeys().forEach(key -> get(key).adjustValuesSelf(function));
       return this;
+   }
+
+   protected boolean canEqual(Object other) {
+      return other instanceof HashMapMultiCounter;
    }
 
    @Override
@@ -75,6 +76,25 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
    @Override
    public boolean contains(K item1, V item2) {
       return map.containsKey(item1) && map.get(item1).contains(item2);
+   }
+
+   public boolean equals(Object o) {
+      if (o == this) return true;
+      if (!(o instanceof HashMapMultiCounter)) return false;
+      final HashMapMultiCounter other = (HashMapMultiCounter) o;
+      if (!other.canEqual((Object) this)) return false;
+      final Object this$map = this.map;
+      final Object other$map = other.map;
+      if (this$map == null ? other$map != null : !this$map.equals(other$map)) return false;
+      return true;
+   }
+
+   public int hashCode() {
+      final int PRIME = 59;
+      int result = 1;
+      final Object $map = this.map;
+      result = result * PRIME + ($map == null ? 43 : $map.hashCode());
+      return result;
    }
 
    @Override
@@ -109,7 +129,7 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
    }
 
    @Override
-   public MultiCounter<K, V> filterByFirstKey(@NonNull Predicate<K> predicate) {
+   public MultiCounter<K, V> filterByFirstKey(Predicate<K> predicate) {
       MultiCounter<K, V> tmp = newInstance();
       Streams.asStream(new KeyKeyValueIterator())
              .filter(t -> predicate.test(t.getV1()))
@@ -118,7 +138,7 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
    }
 
    @Override
-   public MultiCounter<K, V> filterBySecondKey(@NonNull Predicate<V> predicate) {
+   public MultiCounter<K, V> filterBySecondKey(Predicate<V> predicate) {
       MultiCounter<K, V> tmp = newInstance();
       Streams.asStream(new KeyKeyValueIterator())
              .filter(t -> predicate.test(t.getV2()))
@@ -127,7 +147,7 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
    }
 
    @Override
-   public MultiCounter<K, V> filterByValue(@NonNull DoublePredicate predicate) {
+   public MultiCounter<K, V> filterByValue(DoublePredicate predicate) {
       MultiCounter<K, V> tmp = newInstance();
       Streams.asStream(new KeyKeyValueIterator())
              .filter(t -> predicate.test(t.getV3()))
@@ -198,7 +218,7 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
    }
 
    @Override
-   public MultiCounter<K, V> set(K item, @NonNull Counter<V> counter) {
+   public MultiCounter<K, V> set(K item, Counter<V> counter) {
       map.put(item, counter);
       return this;
    }

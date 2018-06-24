@@ -26,8 +26,6 @@ import com.gengoai.io.resource.spi.FileResourceProvider;
 import com.gengoai.stream.LocalStream;
 import com.gengoai.stream.MStream;
 import com.gengoai.string.StringUtils;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -43,7 +41,6 @@ import java.util.stream.Stream;
  *
  * @author David B. Bracewell
  */
-@EqualsAndHashCode(callSuper = false)
 public class FileResource extends BaseResource {
 
    private static final long serialVersionUID = 1L;
@@ -54,7 +51,7 @@ public class FileResource extends BaseResource {
     *
     * @param file The file to be wrapped.
     */
-   public FileResource(@NonNull File file) {
+   public FileResource(File file) {
       this.file = file.getAbsoluteFile();
    }
 
@@ -63,7 +60,7 @@ public class FileResource extends BaseResource {
     *
     * @param path The path of the file
     */
-   public FileResource(@NonNull String path) {
+   public FileResource(String path) {
       this(new File(path));
    }
 
@@ -89,10 +86,33 @@ public class FileResource extends BaseResource {
       }
    }
 
+   protected boolean canEqual(Object other) {
+      return other instanceof FileResource;
+   }
+
 
    @Override
    public String descriptor() {
       return FileResourceProvider.PROTOCOL + ":" + file.getAbsolutePath();
+   }
+
+   public boolean equals(Object o) {
+      if (o == this) return true;
+      if (!(o instanceof FileResource)) return false;
+      final FileResource other = (FileResource) o;
+      if (!other.canEqual((Object) this)) return false;
+      final Object this$file = this.file;
+      final Object other$file = other.file;
+      if (this$file == null ? other$file != null : !this$file.equals(other$file)) return false;
+      return true;
+   }
+
+   public int hashCode() {
+      final int PRIME = 59;
+      int result = 1;
+      final Object $file = this.file;
+      result = result * PRIME + ($file == null ? 43 : $file.hashCode());
+      return result;
    }
 
    @Override

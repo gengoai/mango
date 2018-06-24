@@ -21,8 +21,6 @@
 
 package com.gengoai;
 
-import lombok.NonNull;
-
 import javax.crypto.*;
 import javax.crypto.spec.DESKeySpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -108,7 +106,7 @@ public enum EncryptionMethod {
     * @param name The name;
     * @return An EncryptionMethod
     */
-   public static EncryptionMethod fromName(@NonNull String name) {
+   public static EncryptionMethod fromName(String name) {
       for (EncryptionMethod en : EncryptionMethod.values()) {
          if (en.name.equals(name)) {
             return en;

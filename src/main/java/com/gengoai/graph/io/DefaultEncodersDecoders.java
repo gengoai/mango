@@ -21,12 +21,11 @@
 
 package com.gengoai.graph.io;
 
-import com.gengoai.graph.Vertex;
 import com.gengoai.conversion.Convert;
+import com.gengoai.graph.Vertex;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.io.resource.StringResource;
 import com.gengoai.io.serialization.JSONSerializer;
-import lombok.NonNull;
 
 import java.util.Collections;
 
@@ -61,7 +60,7 @@ public interface DefaultEncodersDecoders {
     * @param vertexClass the vertex class
     * @return the vertex decoder
     */
-   static <V> VertexDecoder<V> defaultVertexDecoder(@NonNull final Class<V> vertexClass) {
+   static <V> VertexDecoder<V> defaultVertexDecoder(final Class<V> vertexClass) {
       return vertex -> Convert.convert(vertex.getLabel(), vertexClass);
    }
 
@@ -123,7 +122,7 @@ public interface DefaultEncodersDecoders {
     * @param vertexClass the vertex class
     * @return the vertex decoder
     */
-   static <V> VertexDecoder<V> jsonVertexDecoder(@NonNull final Class<V> vertexClass) {
+   static <V> VertexDecoder<V> jsonVertexDecoder(final Class<V> vertexClass) {
       return vertex -> {
          JSONSerializer serializer = new JSONSerializer();
          Resource stringResource = new StringResource(vertex.getLabel());

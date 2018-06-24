@@ -25,7 +25,6 @@ import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Convert;
 import com.gengoai.logging.Logger;
 import com.gengoai.tuple.Tuple2;
-import lombok.NonNull;
 
 import java.lang.reflect.Method;
 import java.util.AbstractMap;
@@ -51,7 +50,7 @@ public class BeanMap extends AbstractMap<String, Object> {
     *
     * @param bean The bean
     */
-   public BeanMap(@NonNull Object bean) {
+   public BeanMap(Object bean) {
       this.bean = bean;
       this.beanDescriptor = BeanDescriptorCache.getInstance().get(bean.getClass());
    }

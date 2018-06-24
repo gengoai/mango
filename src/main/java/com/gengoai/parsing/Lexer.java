@@ -23,8 +23,6 @@ package com.gengoai.parsing;
 
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
-import lombok.NonNull;
-import lombok.SneakyThrows;
 
 import java.io.IOException;
 
@@ -41,9 +39,12 @@ public interface Lexer {
     * @param input the input to tokenize
     * @return A token stream wrapping the tokenization results
     */
-   @SneakyThrows
-   default ParserTokenStream lex(@NonNull final String input) {
-      return lex(Resources.fromString(input));
+   default ParserTokenStream lex(final String input) {
+      try {
+         return lex(Resources.fromString(input));
+      } catch (IOException e) {
+         throw new RuntimeException(e);
+      }
    }
 
    /**

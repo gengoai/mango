@@ -23,7 +23,6 @@ package com.gengoai.io.serialization;
 
 import com.gengoai.conversion.Cast;
 import com.gengoai.io.resource.Resource;
-import lombok.NonNull;
 
 import java.io.*;
 
@@ -37,7 +36,7 @@ public class JavaSerializer implements Serializer, Serializable {
    private static final long serialVersionUID = 4353403790890512522L;
 
    @Override
-   public void serialize(@NonNull Object o, @NonNull Resource resource) throws Exception {
+   public void serialize(Object o, Resource resource) throws Exception {
       try (OutputStream os = resource.outputStream(); ObjectOutputStream oos = new ObjectOutputStream(os)) {
          oos.writeObject(o);
          oos.flush();
@@ -45,7 +44,7 @@ public class JavaSerializer implements Serializer, Serializable {
    }
 
    @Override
-   public <T> T deserialize(@NonNull Resource resource, Class<T> clazz) throws Exception {
+   public <T> T deserialize(Resource resource, Class<T> clazz) throws Exception {
       try (InputStream is = resource.inputStream(); ObjectInputStream ois = new ObjectInputStream(is);) {
          return Cast.as(ois.readObject(), clazz);
       }

@@ -26,7 +26,6 @@ import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Convert;
 import com.gengoai.conversion.Val;
 import com.gengoai.string.StringUtils;
-import lombok.NonNull;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -76,7 +75,7 @@ public final class Reflect {
     * @param clazz The class for reflection
     * @return The Reflect object
     */
-   public static Reflect onClass(@NonNull Class<?> clazz) {
+   public static Reflect onClass(Class<?> clazz) {
       return new Reflect(null, clazz);
    }
 
@@ -100,7 +99,7 @@ public final class Reflect {
     * @return A Reflect wrapper around the constructed object
     * @throws ReflectionException Something went wrong constructing the object
     */
-   public static Reflect on(@NonNull Constructor constructor, boolean allowPrivilegedAccess, Object... args) throws ReflectionException {
+   public static Reflect on(Constructor constructor, boolean allowPrivilegedAccess, Object... args) throws ReflectionException {
       boolean accessible = constructor.isAccessible();
       try {
          if (!accessible && allowPrivilegedAccess) {
@@ -133,7 +132,7 @@ public final class Reflect {
     * @return A Reflect wrapper around the constructed object
     * @throws ReflectionException Something went wrong invoking the method
     */
-   public static Reflect on(@NonNull Method method, Object owner, boolean allowPrivilegedAccess, Object... args) throws ReflectionException {
+   public static Reflect on(Method method, Object owner, boolean allowPrivilegedAccess, Object... args) throws ReflectionException {
       boolean accessible = method.isAccessible();
       try {
          if (!accessible && allowPrivilegedAccess) {
@@ -373,7 +372,7 @@ public final class Reflect {
     * @param fieldName the field name
     * @return the boolean
     */
-   public boolean hasField(@NonNull String fieldName) {
+   public boolean hasField(String fieldName) {
       return ClassDescriptorCache.getInstance()
                                  .getClassDescriptor(clazz)
                                  .getFields(accessAll)
@@ -429,7 +428,7 @@ public final class Reflect {
     * @return An instance of Reflect wrapping the result of the field value
     * @throws ReflectionException Something went wrong getting the value of field
     */
-   public Reflect get(@NonNull String fieldName) throws ReflectionException {
+   public Reflect get(String fieldName) throws ReflectionException {
       Field f = getField(fieldName);
 
       if (f == null) {

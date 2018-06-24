@@ -24,7 +24,6 @@ package com.gengoai.io;
 
 import com.gengoai.SystemInfo;
 import com.gengoai.string.StringUtils;
-import lombok.NonNull;
 
 import java.io.IOException;
 import java.io.PushbackInputStream;
@@ -152,7 +151,7 @@ public class FileUtils {
     * @return The file name if given a file, the directory name if given a directory, or null if given a null or empty
     * string.
     */
-   public static String baseName(String file, @NonNull String suffix) {
+   public static String baseName(String file, String suffix) {
       if (StringUtils.isNullOrBlank(file)) {
          return StringUtils.EMPTY;
       }

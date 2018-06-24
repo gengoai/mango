@@ -22,8 +22,6 @@
 package com.gengoai.reflection;
 
 import com.gengoai.cache.Cache;
-import lombok.NonNull;
-import lombok.SneakyThrows;
 
 import java.io.Serializable;
 
@@ -69,8 +67,7 @@ public class ClassDescriptorCache implements Serializable {
     * @param clazz the clazz
     * @return the class descriptor
     */
-   @SneakyThrows
-   public ClassDescriptor getClassDescriptor(@NonNull Class<?> clazz) {
+   public ClassDescriptor getClassDescriptor(Class<?> clazz) {
       return classDescriptorCache.get(clazz);
    }
 
@@ -81,7 +78,7 @@ public class ClassDescriptorCache implements Serializable {
     * @return the class for name
     * @throws Exception the exception
     */
-   public Class<?> getClassForName(@NonNull String string) throws Exception {
+   public Class<?> getClassForName(String string) throws Exception {
       return classNameCache.get(string);
    }
 

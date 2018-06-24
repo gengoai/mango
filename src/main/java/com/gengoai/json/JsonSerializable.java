@@ -4,7 +4,6 @@ import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.io.resource.StringResource;
 import com.gengoai.reflection.BeanMap;
-import lombok.NonNull;
 
 import java.io.IOException;
 
@@ -21,7 +20,7 @@ public interface JsonSerializable {
     * @param jsonWriter the json writer
     * @throws IOException the io exception
     */
-   default void toJson(@NonNull JsonWriter jsonWriter) throws IOException {
+   default void toJson(JsonWriter jsonWriter) throws IOException {
       jsonWriter.value(new BeanMap(this));
    }
 
@@ -31,7 +30,7 @@ public interface JsonSerializable {
     * @param jsonWriter the json writer
     * @throws IOException the io exception
     */
-   default void toJson(String name, @NonNull JsonWriter jsonWriter) throws IOException {
+   default void toJson(String name, JsonWriter jsonWriter) throws IOException {
       boolean isArray = this instanceof JsonArraySerializable;
       if (isArray) {
          jsonWriter.beginArray(name);
@@ -61,11 +60,11 @@ public interface JsonSerializable {
       return r.readToString().trim();
    }
 
-   default void fromJson(@NonNull JsonReader reader) throws IOException {
+   default void fromJson(JsonReader reader) throws IOException {
       new BeanMap(this).putAll(reader.nextMap());
    }
 
-   default void fromJson(String name, @NonNull JsonReader reader) throws IOException {
+   default void fromJson(String name, JsonReader reader) throws IOException {
       boolean isArray = this instanceof JsonArraySerializable;
       if (isArray) {
          reader.beginArray(name);
@@ -80,7 +79,7 @@ public interface JsonSerializable {
       }
    }
 
-   default void fromJson(@NonNull String json) throws IOException {
+   default void fromJson(String json) throws IOException {
       try (JsonReader reader = new JsonReader(Resources.fromString(json))) {
          new BeanMap(this).putAll(reader.nextMap());
       }

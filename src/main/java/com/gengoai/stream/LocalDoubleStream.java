@@ -25,7 +25,6 @@ import com.gengoai.EnhancedDoubleStatistics;
 import com.gengoai.Validation;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.*;
-import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.OptionalDouble;
@@ -48,17 +47,17 @@ class LocalDoubleStream implements MDoubleStream, Serializable {
     *
     * @param stream the double stream to wrap
     */
-   LocalDoubleStream(@NonNull DoubleStream stream) {
+   LocalDoubleStream(DoubleStream stream) {
       this.stream = stream;
    }
 
    @Override
-   public boolean allMatch(@NonNull SerializableDoublePredicate predicate) {
+   public boolean allMatch(SerializableDoublePredicate predicate) {
       return stream.allMatch(predicate);
    }
 
    @Override
-   public boolean anyMatch(@NonNull SerializableDoublePredicate predicate) {
+   public boolean anyMatch(SerializableDoublePredicate predicate) {
       return stream.anyMatch(predicate);
    }
 
@@ -83,7 +82,7 @@ class LocalDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
-   public MDoubleStream filter(@NonNull SerializableDoublePredicate predicate) {
+   public MDoubleStream filter(SerializableDoublePredicate predicate) {
       return new LocalDoubleStream(stream.filter(predicate));
    }
 
@@ -93,12 +92,12 @@ class LocalDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
-   public MDoubleStream flatMap(@NonNull SerializableDoubleFunction<double[]> mapper) {
+   public MDoubleStream flatMap(SerializableDoubleFunction<double[]> mapper) {
       return new LocalDoubleStream(stream.flatMap(d -> DoubleStream.of(mapper.apply(d))));
    }
 
    @Override
-   public void forEach(@NonNull SerializableDoubleConsumer consumer) {
+   public void forEach(SerializableDoubleConsumer consumer) {
       stream.forEach(consumer);
    }
 
@@ -129,12 +128,12 @@ class LocalDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
-   public MDoubleStream map(@NonNull SerializableDoubleUnaryOperator mapper) {
+   public MDoubleStream map(SerializableDoubleUnaryOperator mapper) {
       return new LocalDoubleStream(stream.map(mapper));
    }
 
    @Override
-   public <T> MStream<T> mapToObj(@NonNull SerializableDoubleFunction<? extends T> function) {
+   public <T> MStream<T> mapToObj(SerializableDoubleFunction<? extends T> function) {
       return new LocalStream<>(stream.mapToObj(function));
    }
 
@@ -154,12 +153,12 @@ class LocalDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
-   public boolean noneMatch(@NonNull SerializableDoublePredicate predicate) {
+   public boolean noneMatch(SerializableDoublePredicate predicate) {
       return stream.noneMatch(predicate);
    }
 
    @Override
-   public void onClose(@NonNull SerializableRunnable onCloseHandler) {
+   public void onClose(SerializableRunnable onCloseHandler) {
       this.onCloseHandler = onCloseHandler;
       stream.onClose(onCloseHandler);
    }
@@ -170,12 +169,12 @@ class LocalDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
-   public OptionalDouble reduce(@NonNull SerializableDoubleBinaryOperator operator) {
+   public OptionalDouble reduce(SerializableDoubleBinaryOperator operator) {
       return stream.reduce(operator);
    }
 
    @Override
-   public double reduce(double zeroValue, @NonNull SerializableDoubleBinaryOperator operator) {
+   public double reduce(double zeroValue, SerializableDoubleBinaryOperator operator) {
       return stream.reduce(zeroValue, operator);
    }
 
@@ -221,7 +220,7 @@ class LocalDoubleStream implements MDoubleStream, Serializable {
    }
 
    @Override
-   public MDoubleStream union(@NonNull MDoubleStream other) {
+   public MDoubleStream union(MDoubleStream other) {
       if (other.isReusable() && other.isEmpty()) {
          return this;
       } else if (other instanceof LocalDoubleStream) {

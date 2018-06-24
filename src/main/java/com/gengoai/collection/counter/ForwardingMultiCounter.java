@@ -22,7 +22,6 @@
 package com.gengoai.collection.counter;
 
 import com.gengoai.tuple.Tuple3;
-import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -46,12 +45,12 @@ public abstract class ForwardingMultiCounter<K, V> implements MultiCounter<K, V>
    protected abstract MultiCounter<K, V> delegate();
 
    @Override
-   public MultiCounter<K, V> adjustValues(@NonNull DoubleUnaryOperator function) {
+   public MultiCounter<K, V> adjustValues(DoubleUnaryOperator function) {
       return delegate().adjustValues(function);
    }
 
    @Override
-   public MultiCounter<K, V> adjustValuesSelf(@NonNull DoubleUnaryOperator function) {
+   public MultiCounter<K, V> adjustValuesSelf(DoubleUnaryOperator function) {
       return delegate().adjustValuesSelf(function);
    }
 
@@ -96,17 +95,17 @@ public abstract class ForwardingMultiCounter<K, V> implements MultiCounter<K, V>
    }
 
    @Override
-   public MultiCounter<K, V> filterByValue(@NonNull DoublePredicate predicate) {
+   public MultiCounter<K, V> filterByValue(DoublePredicate predicate) {
       return delegate().filterByValue(predicate);
    }
 
    @Override
-   public MultiCounter<K, V> filterByFirstKey(@NonNull Predicate<K> predicate) {
+   public MultiCounter<K, V> filterByFirstKey(Predicate<K> predicate) {
       return delegate().filterByFirstKey(predicate);
    }
 
    @Override
-   public MultiCounter<K, V> filterBySecondKey(@NonNull Predicate<V> predicate) {
+   public MultiCounter<K, V> filterBySecondKey(Predicate<V> predicate) {
       return delegate().filterBySecondKey(predicate);
    }
 
@@ -136,7 +135,7 @@ public abstract class ForwardingMultiCounter<K, V> implements MultiCounter<K, V>
    }
 
    @Override
-   public MultiCounter<K, V> set(K item, @NonNull Counter<V> counter) {
+   public MultiCounter<K, V> set(K item, Counter<V> counter) {
       return delegate().set(item, counter);
    }
 

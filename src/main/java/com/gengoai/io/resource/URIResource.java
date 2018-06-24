@@ -22,8 +22,6 @@
 package com.gengoai.io.resource;
 
 import com.gengoai.io.FileUtils;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +36,6 @@ import java.util.Optional;
  *
  * @author David B. Bracewell
  */
-@EqualsAndHashCode(callSuper = false)
 public class URIResource extends BaseResource {
    private static final long serialVersionUID = 1L;
    private final URI uri;
@@ -48,7 +45,7 @@ public class URIResource extends BaseResource {
     *
     * @param uri the uri
     */
-   public URIResource(@NonNull URI uri) {
+   public URIResource(URI uri) {
       this.uri = uri;
    }
 
@@ -63,6 +60,21 @@ public class URIResource extends BaseResource {
    @Override
    public Resource append(byte[] byteArray) throws IOException {
       throw new UnsupportedOperationException();
+   }
+
+   protected boolean canEqual(Object other) {
+      return other instanceof URIResource;
+   }
+
+   public boolean equals(Object o) {
+      if (o == this) return true;
+      if (!(o instanceof URIResource)) return false;
+      final URIResource other = (URIResource) o;
+      if (!other.canEqual((Object) this)) return false;
+      final Object this$uri = this.uri;
+      final Object other$uri = other.uri;
+      if (this$uri == null ? other$uri != null : !this$uri.equals(other$uri)) return false;
+      return true;
    }
 
    @Override
@@ -114,6 +126,14 @@ public class URIResource extends BaseResource {
    @Override
    public Optional<URI> asURI() {
       return Optional.of(uri);
+   }
+
+   public int hashCode() {
+      final int PRIME = 59;
+      int result = 1;
+      final Object $uri = this.uri;
+      result = result * PRIME + ($uri == null ? 43 : $uri.hashCode());
+      return result;
    }
 
    @Override

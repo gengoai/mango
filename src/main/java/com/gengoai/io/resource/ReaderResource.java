@@ -21,9 +21,6 @@
 
 package com.gengoai.io.resource;
 
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -33,7 +30,6 @@ import java.io.Reader;
  *
  * @author David B. Bracewell
  */
-@EqualsAndHashCode(callSuper = true)
 public class ReaderResource extends BaseResource implements ReadOnlyResource, NonTraversableResource {
 
    private static final long serialVersionUID = 6220239496470153511L;
@@ -44,8 +40,33 @@ public class ReaderResource extends BaseResource implements ReadOnlyResource, No
     *
     * @param reader the reader to wrap
     */
-   public ReaderResource(@NonNull Reader reader) {
+   public ReaderResource(Reader reader) {
       this.reader = reader;
+   }
+
+   protected boolean canEqual(Object other) {
+      return other instanceof ReaderResource;
+   }
+
+   public boolean equals(Object o) {
+      if (o == this) return true;
+      if (!(o instanceof ReaderResource)) return false;
+      final ReaderResource other = (ReaderResource) o;
+      if (!other.canEqual((Object) this)) return false;
+      if (!super.equals(o)) return false;
+      final Object this$reader = this.reader;
+      final Object other$reader = other.reader;
+      if (this$reader == null ? other$reader != null : !this$reader.equals(other$reader)) return false;
+      return true;
+   }
+
+   public int hashCode() {
+      final int PRIME = 59;
+      int result = 1;
+      result = result * PRIME + super.hashCode();
+      final Object $reader = this.reader;
+      result = result * PRIME + ($reader == null ? 43 : $reader.hashCode());
+      return result;
    }
 
    @Override

@@ -30,7 +30,6 @@ import com.gengoai.io.FileUtils;
 import com.gengoai.io.serialization.JavaSerializer;
 import com.gengoai.stream.LocalStream;
 import com.gengoai.stream.MStream;
-import lombok.NonNull;
 
 import java.io.*;
 import java.net.URI;
@@ -64,7 +63,7 @@ public interface Resource {
     * @param copyTo The resource to copy to
     * @throws IOException Something went wrong copying.
     */
-   default void copy(@NonNull Resource copyTo) throws IOException {
+   default void copy( Resource copyTo) throws IOException {
       Validation.checkState(copyTo.canWrite(), "The resource being copied to cannot be written to.");
       if (isDirectory()) {
          copyTo.mkdirs();
@@ -351,7 +350,7 @@ public interface Resource {
     * @param consumer the consumer
     * @throws IOException the io exception
     */
-   default void forEach(@NonNull SerializableConsumer<String> consumer) throws IOException {
+   default void forEach( SerializableConsumer<String> consumer) throws IOException {
       Validation.checkState(canRead(), "This is resource cannot be read from.");
       try (MStream<String> stream = lines()) {
          stream.forEach(consumer);

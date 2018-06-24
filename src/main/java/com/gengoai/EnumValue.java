@@ -23,7 +23,6 @@ package com.gengoai;
 
 import com.gengoai.config.Preloader;
 import com.gengoai.conversion.Cast;
-import lombok.NonNull;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
@@ -94,7 +93,8 @@ public abstract class EnumValue implements Tag, Serializable, Cloneable {
     * @return the normalized version of the name
     * @throws NullPointerException if the name is null
     */
-   static String normalize(@NonNull String name) {
+   static String normalize(String name) {
+      notNullOrBlank(name, "Name cannot be null or blank");
       StringBuilder toReturn = new StringBuilder();
       boolean previousSpace = false;
       for (char c : name.toCharArray()) {

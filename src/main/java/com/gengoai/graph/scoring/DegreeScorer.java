@@ -22,9 +22,9 @@
 package com.gengoai.graph.scoring;
 
 import com.gengoai.Validation;
-import com.gengoai.graph.Graph;
 import com.gengoai.collection.counter.Counter;
 import com.gengoai.collection.counter.Counters;
+import com.gengoai.graph.Graph;
 
 /**
  * @author David B. Bracewell

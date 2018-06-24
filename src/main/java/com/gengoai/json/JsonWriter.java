@@ -23,13 +23,12 @@ package com.gengoai.json;
 import com.gengoai.EnumValue;
 import com.gengoai.Validation;
 import com.gengoai.collection.Iterables;
-import com.gengoai.collection.multimap.Multimap;
 import com.gengoai.collection.counter.Counter;
+import com.gengoai.collection.multimap.Multimap;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Convert;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.string.StringUtils;
-import lombok.NonNull;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -54,7 +53,7 @@ public final class JsonWriter implements AutoCloseable, Closeable {
     * @param resource the resource
     * @throws IOException the structured iO exception
     */
-   public JsonWriter(@NonNull Resource resource) throws IOException {
+   public JsonWriter(Resource resource) throws IOException {
       this.writer = new com.google.gson.stream.JsonWriter(resource.writer());
 //      this.writer.setHtmlSafe(true);
 //      this.writer.setLenient(true);
@@ -342,7 +341,7 @@ public final class JsonWriter implements AutoCloseable, Closeable {
     * @return This structured writer
     * @throws IOException Something went wrong writing
     */
-   protected JsonWriter value(@NonNull Object[] array) throws IOException {
+   protected JsonWriter value(Object[] array) throws IOException {
       return value(Arrays.asList(array));
    }
 
@@ -368,7 +367,7 @@ public final class JsonWriter implements AutoCloseable, Closeable {
     * @return This structured writer
     * @throws IOException Something went wrong writing
     */
-   public JsonWriter value(@NonNull Iterable<?> value) throws IOException {
+   public JsonWriter value(Iterable<?> value) throws IOException {
       Validation.checkArgument(inArray() || writeStack.peek() == JsonTokenType.NAME,
                                "Expecting an array or a name, but found " + writeStack.peek());
       popIf(JsonTokenType.NAME);
@@ -387,7 +386,7 @@ public final class JsonWriter implements AutoCloseable, Closeable {
     * @return This structured writer
     * @throws IOException Something went wrong writing
     */
-   public JsonWriter value(@NonNull Iterator<?> value) throws IOException {
+   public JsonWriter value(Iterator<?> value) throws IOException {
       Validation.checkArgument(inArray() || writeStack.peek() == JsonTokenType.NAME,
                                "Expecting an array or a name, but found " + writeStack.peek());
       popIf(JsonTokenType.NAME);

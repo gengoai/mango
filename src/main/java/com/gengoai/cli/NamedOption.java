@@ -28,13 +28,10 @@ import com.gengoai.conversion.Convert;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.string.CharMatcher;
 import com.gengoai.string.StringUtils;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.Singular;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
@@ -63,7 +60,6 @@ import java.util.Map;
  *
  * @author David B. Bracewell
  */
-@Data
 public final class NamedOption {
 
 
@@ -80,7 +76,7 @@ public final class NamedOption {
     *
     * @param field the field which contains an {@link Option} annotation
     */
-   public NamedOption(@NonNull Field field) {
+   public NamedOption(Field field) {
       Option option = Validation.notNull(field.getAnnotationsByType(Option.class))[0];
       this.field = field;
 
@@ -115,8 +111,7 @@ public final class NamedOption {
     * @param aliases      the aliases
     * @param required     the required
     */
-   @Builder
-   protected NamedOption(@NonNull String name, @NonNull Class<?> type, @NonNull String description, Object defaultValue, @Singular Collection<String> aliases, boolean required) {
+   protected NamedOption(String name, Class<?> type, String description, Object defaultValue, Collection<String> aliases, boolean required) {
       Validation.checkArgument(!StringUtils.isNullOrBlank(name) && !CharMatcher.WhiteSpace.matchesAnyOf(name),
                                "Option name must have at least one character and must not have a space");
       Validation.notNullOrBlank(description, "Description must not be blank");
@@ -124,7 +119,7 @@ public final class NamedOption {
       this.name = name;
       this.type = type;
       this.description = description;
-      this.aliases = aliases == null ? new String[0] : aliases.toArray(new String[aliases.size()]);
+      this.aliases = aliases == null ? new String[0] : aliases.toArray(new String[0]);
       if (defaultValue != null) {
          Config.setProperty(this.name, Convert.convert(defaultValue, String.class));
          this.value = Convert.convert(defaultValue, type);
@@ -133,6 +128,35 @@ public final class NamedOption {
       }
       this.required = required;
       this.field = null;
+   }
+
+   public static NamedOptionBuilder builder() {
+      return new NamedOptionBuilder();
+   }
+
+   public boolean equals(Object o) {
+      if (o == this) return true;
+      if (!(o instanceof NamedOption)) return false;
+      final NamedOption other = (NamedOption) o;
+      final Object this$name = this.getName();
+      final Object other$name = other.getName();
+      if (this$name == null ? other$name != null : !this$name.equals(other$name)) return false;
+      final Object this$type = this.getType();
+      final Object other$type = other.getType();
+      if (this$type == null ? other$type != null : !this$type.equals(other$type)) return false;
+      final Object this$description = this.getDescription();
+      final Object other$description = other.getDescription();
+      if (this$description == null ? other$description != null : !this$description.equals(other$description))
+         return false;
+      if (!java.util.Arrays.deepEquals(this.getAliases(), other.getAliases())) return false;
+      if (this.isRequired() != other.isRequired()) return false;
+      final Object this$field = this.getField();
+      final Object other$field = other.getField();
+      if (this$field == null ? other$field != null : !this$field.equals(other$field)) return false;
+      final Object this$value = this.getValue();
+      final Object other$value = other.getValue();
+      if (this$value == null ? other$value != null : !this$value.equals(other$value)) return false;
+      return true;
    }
 
 
@@ -150,6 +174,48 @@ public final class NamedOption {
          a[i] = toSpecificationForm(aliases[i]);
       }
       return a;
+   }
+
+   public String[] getAliases() {
+      return this.aliases;
+   }
+
+   public String getDescription() {
+      return this.description;
+   }
+
+   public Field getField() {
+      return this.field;
+   }
+
+   public String getName() {
+      return this.name;
+   }
+
+   public Class<?> getType() {
+      return this.type;
+   }
+
+   public int hashCode() {
+      final int PRIME = 59;
+      int result = 1;
+      final Object $name = this.getName();
+      result = result * PRIME + ($name == null ? 43 : $name.hashCode());
+      final Object $type = this.getType();
+      result = result * PRIME + ($type == null ? 43 : $type.hashCode());
+      final Object $description = this.getDescription();
+      result = result * PRIME + ($description == null ? 43 : $description.hashCode());
+      result = result * PRIME + java.util.Arrays.deepHashCode(this.getAliases());
+      result = result * PRIME + (this.isRequired() ? 79 : 97);
+      final Object $field = this.getField();
+      result = result * PRIME + ($field == null ? 43 : $field.hashCode());
+      final Object $value = this.getValue();
+      result = result * PRIME + ($value == null ? 43 : $value.hashCode());
+      return result;
+   }
+
+   public boolean isRequired() {
+      return this.required;
    }
 
 
@@ -249,8 +315,8 @@ public final class NamedOption {
                                                        .build();
 
    /**
-    * Shows how the current configuration was created with the lineage of each
-    * property when <code>--config-explain</code> is given.
+    * Shows how the current configuration was created with the lineage of each property when
+    * <code>--config-explain</code> is given.
     */
    public static final NamedOption CONFIG_EXPLAIN = NamedOption.builder()
                                                                .name("config-explain")
@@ -264,4 +330,89 @@ public final class NamedOption {
                                                                .alias("dump-config")
                                                                .build();
 
+   public String toString() {
+      return "NamedOption(name=" + this.getName() + ", type=" + this.getType() + ", description=" + this.getDescription() + ", aliases=" + java.util.Arrays
+                                                                                                                                              .deepToString(
+                                                                                                                                                 this
+                                                                                                                                                    .getAliases()) + ", required=" + this
+                                                                                                                                                                                        .isRequired() + ", field=" + this
+                                                                                                                                                                                                                        .getField() + ", value=" + this
+                                                                                                                                                                                                                                                      .getValue() + ")";
+   }
+
+   public static class NamedOptionBuilder {
+      private String name;
+      private Class<?> type;
+      private String description;
+      private Object defaultValue;
+      private ArrayList<String> aliases;
+      private boolean required;
+
+      NamedOptionBuilder() {
+      }
+
+      public NamedOption.NamedOptionBuilder alias(String alias) {
+         if (this.aliases == null) this.aliases = new ArrayList<String>();
+         this.aliases.add(alias);
+         return this;
+      }
+
+      public NamedOption.NamedOptionBuilder aliases(Collection<? extends String> aliases) {
+         if (this.aliases == null) this.aliases = new ArrayList<String>();
+         this.aliases.addAll(aliases);
+         return this;
+      }
+
+      public NamedOption build() {
+         Collection<String> aliases;
+         switch (this.aliases == null ? 0 : this.aliases.size()) {
+            case 0:
+               aliases = java.util.Collections.emptyList();
+               break;
+            case 1:
+               aliases = java.util.Collections.singletonList(this.aliases.get(0));
+               break;
+            default:
+               aliases = java.util.Collections.unmodifiableList(new ArrayList<String>(this.aliases));
+         }
+
+         return new NamedOption(name, type, description, defaultValue, aliases, required);
+      }
+
+      public NamedOption.NamedOptionBuilder clearAliases() {
+         if (this.aliases != null)
+            this.aliases.clear();
+
+         return this;
+      }
+
+      public NamedOption.NamedOptionBuilder defaultValue(Object defaultValue) {
+         this.defaultValue = defaultValue;
+         return this;
+      }
+
+      public NamedOption.NamedOptionBuilder description(String description) {
+         this.description = description;
+         return this;
+      }
+
+      public NamedOption.NamedOptionBuilder name(String name) {
+         this.name = name;
+         return this;
+      }
+
+      public NamedOption.NamedOptionBuilder required(boolean required) {
+         this.required = required;
+         return this;
+      }
+
+      public String toString() {
+         return "NamedOption.NamedOptionBuilder(name=" + this.name + ", type=" + this.type + ", description=" + this.description + ", defaultValue=" + this.defaultValue + ", aliases=" + this.aliases + ", required=" + this.required + ")";
+      }
+
+      public NamedOption.NamedOptionBuilder type(Class<?> type) {
+         this.type = type;
+         return this;
+      }
+   }
 }//END OF NamedOption

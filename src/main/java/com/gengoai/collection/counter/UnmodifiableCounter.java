@@ -21,8 +21,6 @@
 
 package com.gengoai.collection.counter;
 
-import lombok.EqualsAndHashCode;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -33,7 +31,6 @@ import java.util.Set;
  * @param <TYPE> the component type of the counter
  * @author David B. Bracewell
  */
-@EqualsAndHashCode(callSuper = false)
 final class UnmodifiableCounter<TYPE> extends ForwardingCounter<TYPE> {
    private static final long serialVersionUID = 1L;
    private final Counter<TYPE> backing;
@@ -50,6 +47,10 @@ final class UnmodifiableCounter<TYPE> extends ForwardingCounter<TYPE> {
    @Override
    public Map<TYPE, Double> asMap() {
       return Collections.unmodifiableMap(super.asMap());
+   }
+
+   protected boolean canEqual(Object other) {
+      return other instanceof UnmodifiableCounter;
    }
 
    @Override
@@ -80,6 +81,25 @@ final class UnmodifiableCounter<TYPE> extends ForwardingCounter<TYPE> {
    @Override
    public Counter<TYPE> divideBySum() {
       throw new UnsupportedOperationException();
+   }
+
+   public boolean equals(Object o) {
+      if (o == this) return true;
+      if (!(o instanceof UnmodifiableCounter)) return false;
+      final UnmodifiableCounter other = (UnmodifiableCounter) o;
+      if (!other.canEqual((Object) this)) return false;
+      final Object this$backing = this.backing;
+      final Object other$backing = other.backing;
+      if (this$backing == null ? other$backing != null : !this$backing.equals(other$backing)) return false;
+      return true;
+   }
+
+   public int hashCode() {
+      final int PRIME = 59;
+      int result = 1;
+      final Object $backing = this.backing;
+      result = result * PRIME + ($backing == null ? 43 : $backing.hashCode());
+      return result;
    }
 
    @Override

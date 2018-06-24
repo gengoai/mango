@@ -30,7 +30,6 @@ import com.gengoai.reflection.ReflectionException;
 import com.gengoai.string.StringUtils;
 import com.gengoai.tuple.Tuple2;
 import com.google.gson.stream.JsonToken;
-import lombok.NonNull;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -343,7 +342,7 @@ public final class JsonReader implements AutoCloseable, Closeable {
     * @return the array
     * @throws IOException Something went wrong reading the array
     */
-   public <T> T[] nextArray(@NonNull Class<T> elementType) throws IOException {
+   public <T> T[] nextArray(Class<T> elementType) throws IOException {
       return nextArray(StringUtils.EMPTY, elementType);
    }
 
@@ -373,7 +372,7 @@ public final class JsonReader implements AutoCloseable, Closeable {
     * @return the array
     * @throws IOException Something went wrong reading the array
     */
-   public <T> T[] nextArray(String expectedName, @NonNull Class<T> elementType) throws IOException {
+   public <T> T[] nextArray(String expectedName, Class<T> elementType) throws IOException {
       beginArray(expectedName);
       List<T> array = new ArrayList<>();
       while (peek() != JsonTokenType.END_ARRAY) {
@@ -391,7 +390,7 @@ public final class JsonReader implements AutoCloseable, Closeable {
     * @return the collection containing the items in the next array
     * @throws IOException Something went wrong reading
     */
-   public <T extends Collection<Val>> T nextCollection(@NonNull Supplier<T> supplier) throws IOException {
+   public <T extends Collection<Val>> T nextCollection(Supplier<T> supplier) throws IOException {
       return nextCollection(supplier, StringUtils.EMPTY);
    }
 
@@ -406,7 +405,7 @@ public final class JsonReader implements AutoCloseable, Closeable {
     * @return the collection containing the items in the next array
     * @throws IOException Something went wrong reading
     */
-   public <T extends Collection<R>, R> T nextCollection(@NonNull Supplier<T> supplier, @NonNull Class<R> elementType) throws IOException {
+   public <T extends Collection<R>, R> T nextCollection(Supplier<T> supplier, Class<R> elementType) throws IOException {
       return nextCollection(supplier, null, elementType);
    }
 
@@ -418,7 +417,7 @@ public final class JsonReader implements AutoCloseable, Closeable {
     * @return the collection containing the items in the next array
     * @throws IOException Something went wrong reading
     */
-   public <T extends Collection<Val>> T nextCollection(@NonNull Supplier<T> supplier, String expectedName) throws IOException {
+   public <T extends Collection<Val>> T nextCollection(Supplier<T> supplier, String expectedName) throws IOException {
       beginArray(expectedName);
       T collection = supplier.get();
       while (peek() != JsonTokenType.END_ARRAY) {
@@ -439,7 +438,7 @@ public final class JsonReader implements AutoCloseable, Closeable {
     * @return the collection containing the items in the next array
     * @throws IOException Something went wrong reading
     */
-   public <T extends Collection<R>, R> T nextCollection(@NonNull Supplier<T> supplier, String expectedName, @NonNull Class<R> elementType) throws IOException {
+   public <T extends Collection<R>, R> T nextCollection(Supplier<T> supplier, String expectedName, Class<R> elementType) throws IOException {
       beginArray(expectedName);
       T collection = supplier.get();
       while (peek() != JsonTokenType.END_ARRAY) {
@@ -533,7 +532,7 @@ public final class JsonReader implements AutoCloseable, Closeable {
     * @return the map
     * @throws IOException Something went wrong reading
     */
-   public <T> Map<String, T> nextMap(@NonNull Class<T> valueType) throws IOException {
+   public <T> Map<String, T> nextMap(Class<T> valueType) throws IOException {
       return nextMap(null, valueType);
    }
 
@@ -546,7 +545,7 @@ public final class JsonReader implements AutoCloseable, Closeable {
     * @return the map
     * @throws IOException Something went wrong reading
     */
-   public <T> Map<String, T> nextMap(String expectedName, @NonNull Class<T> valueType) throws IOException {
+   public <T> Map<String, T> nextMap(String expectedName, Class<T> valueType) throws IOException {
       boolean ignoreObject = peek() != JsonTokenType.BEGIN_OBJECT && expectedName == null;
       if (!ignoreObject) beginObject(expectedName);
       Map<String, T> map = new HashMap<>();
@@ -606,7 +605,7 @@ public final class JsonReader implements AutoCloseable, Closeable {
     * @return The next value
     * @throws IOException Something went wrong reading
     */
-   public final <T> T nextValue(@NonNull Class<T> clazz) throws IOException {
+   public final <T> T nextValue(Class<T> clazz) throws IOException {
       if (JsonSerializable.class.isAssignableFrom(clazz)) {
          return readReadable(clazz);
       } else if (peek() == JsonTokenType.BEGIN_OBJECT) {

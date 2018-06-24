@@ -1,9 +1,10 @@
 package com.gengoai;
 
 import com.gengoai.function.SerializableSupplier;
-import lombok.NonNull;
 
 import java.io.Serializable;
+
+import static com.gengoai.Validation.notNull;
 
 /**
  * <p>Lazily create a value in a thread safe manner. Common usage is as follows:</p>
@@ -33,8 +34,8 @@ public final class Lazy<T> implements Serializable {
    *
    * @param supplier the supplier used to create the object
    */
-  public Lazy(@NonNull SerializableSupplier<? extends T> supplier) {
-    this.supplier = supplier;
+  public Lazy( SerializableSupplier<? extends T> supplier) {
+    this.supplier = notNull(supplier);
   }
 
   /**

@@ -29,7 +29,6 @@ import com.gengoai.io.resource.Resource;
 import com.gengoai.json.Json;
 import com.gengoai.json.JsonWriter;
 import com.gengoai.tuple.Tuple3;
-import lombok.NonNull;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -436,7 +435,7 @@ public interface MultiCounter<K, V> {
     * @param output the resource to write to
     * @throws IOException Something went wrong writing
     */
-   default void writeCsv(@NonNull Resource output) throws IOException {
+   default void writeCsv( Resource output) throws IOException {
       DecimalFormat decimalFormat = new DecimalFormat("#.#####");
       try (CSVWriter writer = CSV.builder().writer(output)) {
          for (Tuple3<K, V, Double> entry : entries()) {
@@ -454,7 +453,7 @@ public interface MultiCounter<K, V> {
     * @param output the resource to write to
     * @throws IOException Something went wrong writing
     */
-   default void writeJson(@NonNull Resource output) throws IOException {
+   default void writeJson( Resource output) throws IOException {
       try (JsonWriter writer = Json.createWriter(output)) {
          writer.beginDocument();
          for (Tuple3<K, V, Double> entry : entries()) {

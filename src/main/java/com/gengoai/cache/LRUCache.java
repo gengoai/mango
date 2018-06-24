@@ -3,7 +3,6 @@ package com.gengoai.cache;
 import com.gengoai.Validation;
 import com.gengoai.collection.map.LRUMap;
 import com.gengoai.function.SerializableSupplier;
-import lombok.NonNull;
 
 import java.util.Collections;
 import java.util.Map;
@@ -44,7 +43,7 @@ public class LRUCache<K, V> implements Cache<K, V> {
    }
 
    @Override
-   public void invalidateAll(@NonNull Iterable<? extends K> keys) {
+   public void invalidateAll(Iterable<? extends K> keys) {
       keys.forEach(cache::remove);
    }
 
@@ -59,7 +58,7 @@ public class LRUCache<K, V> implements Cache<K, V> {
    }
 
    @Override
-   public V get(K key, @NonNull SerializableSupplier<? extends V> supplier) {
+   public V get(K key, SerializableSupplier<? extends V> supplier) {
       return cache.computeIfAbsent(key, k -> supplier.get());
    }
 

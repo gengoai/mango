@@ -1,8 +1,6 @@
 package com.gengoai;
 
 import com.gengoai.string.StringUtils;
-import lombok.NonNull;
-import lombok.Value;
 
 import java.io.Serializable;
 import java.util.regex.Pattern;
@@ -12,7 +10,6 @@ import java.util.regex.Pattern;
  *
  * @author David B. Bracewell
  */
-@Value
 public final class Regex implements Serializable {
    private static final long serialVersionUID = 1L;
    private final String pattern;
@@ -49,6 +46,28 @@ public final class Regex implements Serializable {
       return p;
    }
 
+   public boolean equals(Object o) {
+      if (o == this) return true;
+      if (!(o instanceof Regex)) return false;
+      final Regex other = (Regex) o;
+      final Object this$pattern = this.getPattern();
+      final Object other$pattern = other.getPattern();
+      if (this$pattern == null ? other$pattern != null : !this$pattern.equals(other$pattern)) return false;
+      return true;
+   }
+
+   public String getPattern() {
+      return this.pattern;
+   }
+
+   public int hashCode() {
+      final int PRIME = 59;
+      int result = 1;
+      final Object $pattern = this.getPattern();
+      result = result * PRIME + ($pattern == null ? 43 : $pattern.hashCode());
+      return result;
+   }
+
    /**
     * Concatenates the given regex with this one.
     *
@@ -78,7 +97,7 @@ public final class Regex implements Serializable {
     * @param others the other regular expressions to be ored with this one
     * @return the regex
     */
-   public Regex or(@NonNull Regex... others) {
+   public Regex or( Regex... others) {
       if (others == null) {
          return this;
       }
@@ -91,7 +110,7 @@ public final class Regex implements Serializable {
     * @param other the other regular expression to be anded to this one
     * @return the regex
     */
-   public Regex and(@NonNull Regex other) {
+   public Regex and( Regex other) {
       if (other.pattern.length() > 0) {
          return Re.re(this.pattern + "&&" + other.pattern);
       }

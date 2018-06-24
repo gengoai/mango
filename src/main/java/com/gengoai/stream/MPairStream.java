@@ -24,7 +24,6 @@ package com.gengoai.stream;
 import com.gengoai.collection.Sorting;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.*;
-import lombok.NonNull;
 
 import java.util.List;
 import java.util.Map;
@@ -221,7 +220,7 @@ public interface MPairStream<T, U> extends AutoCloseable {
     * @param comparator the comparator to use to compare keys in the stream
     * @return the optional containing the entry with max key
     */
-   default Optional<Map.Entry<T, U>> maxByKey(@NonNull SerializableComparator<? super T> comparator) {
+   default Optional<Map.Entry<T, U>> maxByKey( SerializableComparator<? super T> comparator) {
       return min((t1, t2) -> comparator.compare(t1.getKey(), t2.getKey()));
    }
 
@@ -240,7 +239,7 @@ public interface MPairStream<T, U> extends AutoCloseable {
     * @param comparator the comparator to use to compare value in the stream
     * @return the optional containing the entry with max value
     */
-   default Optional<Map.Entry<T, U>> maxByValue(@NonNull SerializableComparator<? super U> comparator) {
+   default Optional<Map.Entry<T, U>> maxByValue( SerializableComparator<? super U> comparator) {
       return min((t1, t2) -> comparator.compare(t1.getValue(), t2.getValue()));
    }
 
@@ -266,7 +265,7 @@ public interface MPairStream<T, U> extends AutoCloseable {
     * @param comparator the comparator to use to compare keys in the stream
     * @return the optional containing the entry with min key
     */
-   default Optional<Map.Entry<T, U>> minByKey(@NonNull SerializableComparator<? super T> comparator) {
+   default Optional<Map.Entry<T, U>> minByKey( SerializableComparator<? super T> comparator) {
       return min((t1, t2) -> comparator.compare(t1.getKey(), t2.getKey()));
    }
 
@@ -285,7 +284,7 @@ public interface MPairStream<T, U> extends AutoCloseable {
     * @param comparator the comparator to use to compare value in the stream
     * @return the optional containing the entry with min value
     */
-   default Optional<Map.Entry<T, U>> minByValue(@NonNull SerializableComparator<? super U> comparator) {
+   default Optional<Map.Entry<T, U>> minByValue( SerializableComparator<? super U> comparator) {
       return min((t1, t2) -> comparator.compare(t1.getValue(), t2.getValue()));
    }
 

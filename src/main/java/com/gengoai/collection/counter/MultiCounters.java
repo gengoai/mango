@@ -29,7 +29,6 @@ import com.gengoai.io.resource.Resource;
 import com.gengoai.json.Json;
 import com.gengoai.json.JsonReader;
 import com.gengoai.json.JsonTokenType;
-import lombok.NonNull;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -49,7 +48,7 @@ public interface MultiCounters {
     * @param counter the counter to copy
     * @return A new MultiCounter that is a copy of the given MultiCounter
     */
-   static <K1, K2> MultiCounter<K1, K2> newMultiCounter(@NonNull MultiCounter<? extends K1, ? extends K2> counter) {
+   static <K1, K2> MultiCounter<K1, K2> newMultiCounter(MultiCounter<? extends K1, ? extends K2> counter) {
       MultiCounter<K1, K2> mc = new HashMapMultiCounter<>();
       counter.entries().forEach(triple -> mc.increment(triple.v1, triple.v2, triple.v3));
       return mc;
@@ -76,7 +75,7 @@ public interface MultiCounters {
     * @param entries the entries to increment in the counter.
     * @return A new MultiCounter with counts of the given entries
     */
-   static <K1, K2> MultiCounter<K1, K2> newMultiCounter(@NonNull Iterable<? extends Map.Entry<? extends K1, ? extends K2>> entries) {
+   static <K1, K2> MultiCounter<K1, K2> newMultiCounter(Iterable<? extends Map.Entry<? extends K1, ? extends K2>> entries) {
       MultiCounter<K1, K2> mc = new HashMapMultiCounter<>();
       entries.forEach(e -> mc.increment(e.getKey(), e.getValue()));
       return mc;
@@ -90,7 +89,7 @@ public interface MultiCounters {
     * @param map  A map whose keys are the entries of the counter and values are the counts.
     * @return A new MultiCounter with counts of the given entries
     */
-   static <K1, K2> MultiCounter<K1, K2> newMultiCounter(@NonNull Map<? extends Map.Entry<? extends K1, ? extends K2>, ? extends Number> map) {
+   static <K1, K2> MultiCounter<K1, K2> newMultiCounter(Map<? extends Map.Entry<? extends K1, ? extends K2>, ? extends Number> map) {
       MultiCounter<K1, K2> mc = new HashMapMultiCounter<>();
       map.entrySet().forEach(e -> mc.increment(e.getKey().getKey(), e.getKey().getValue(), e.getValue().doubleValue()));
       return mc;
@@ -104,7 +103,7 @@ public interface MultiCounters {
     * @param multiCounter the multi counter to wrap
     * @return the unmodifiable multi counter
     */
-   static <K1, K2> MultiCounter<K1, K2> unmodifiableMultiCounter(@NonNull MultiCounter<K1, K2> multiCounter) {
+   static <K1, K2> MultiCounter<K1, K2> unmodifiableMultiCounter(MultiCounter<K1, K2> multiCounter) {
       return new UnmodifiableMultiCounter<>(multiCounter);
    }
 
@@ -116,7 +115,7 @@ public interface MultiCounters {
     * @param multiCounter the multi counter to wrap
     * @return the synchronized multi-counter
     */
-   static <K1, K2> MultiCounter<K1, K2> synchronizedMultiCounter(@NonNull MultiCounter<K1, K2> multiCounter) {
+   static <K1, K2> MultiCounter<K1, K2> synchronizedMultiCounter(MultiCounter<K1, K2> multiCounter) {
       return new SynchronizedMultiCounter<>(multiCounter);
    }
 
@@ -142,7 +141,7 @@ public interface MultiCounters {
     * @return the new MultiCounter
     * @throws IOException Something went wrong reading in the counter.
     */
-   static <K1, K2> MultiCounter<K1, K2> readCsv(@NonNull Resource resource, @NonNull Class<K1> key1Class, @NonNull Class<K2> key2Class) throws IOException {
+   static <K1, K2> MultiCounter<K1, K2> readCsv(Resource resource, Class<K1> key1Class, Class<K2> key2Class) throws IOException {
       MultiCounter<K1, K2> counter = newMultiCounter();
       try (CSVReader reader = CSV.builder().reader(resource)) {
          reader.forEach(row -> {
@@ -166,7 +165,7 @@ public interface MultiCounters {
     * @return the new MultiCounter
     * @throws IOException Something went wrong reading in the counter.
     */
-   static <K1, K2> MultiCounter<K1, K2> readJson(@NonNull Resource resource, @NonNull Class<K1> key1Class, @NonNull Class<K2> key2Class) throws IOException {
+   static <K1, K2> MultiCounter<K1, K2> readJson(Resource resource, Class<K1> key1Class, Class<K2> key2Class) throws IOException {
       MultiCounter<K1, K2> counter = newMultiCounter();
       try (JsonReader reader = Json.createReader(resource)) {
          reader.beginDocument();

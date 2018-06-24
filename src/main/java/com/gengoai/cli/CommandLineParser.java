@@ -28,7 +28,6 @@ import com.gengoai.function.Unchecked;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.string.StringUtils;
 import com.gengoai.tuple.Tuple2;
-import lombok.NonNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -103,7 +102,7 @@ public final class CommandLineParser {
     *
     * @param namedOption the named option
     */
-   public void addOption(@NonNull NamedOption namedOption) {
+   public void addOption(NamedOption namedOption) {
       options.put(namedOption.getName(), namedOption);
       optionSet.add(namedOption);
       if (namedOption.getAliases() != null) {
@@ -139,7 +138,7 @@ public final class CommandLineParser {
     * @param args The command line arguments.
     * @return the non-config/option parameters
     */
-   public String[] parse(@NonNull String[] args) {
+   public String[] parse(String[] args) {
       List<String> filtered = new ArrayList<>();
       List<String> cleanedArgs = new ArrayList<>();
 
@@ -299,7 +298,7 @@ public final class CommandLineParser {
     * @param optionName the option name
     * @return True if it was set (boolean options must be true), False otherwise
     */
-   public boolean isSet(@NonNull String optionName) {
+   public boolean isSet(String optionName) {
       optionName = optionName.replaceAll("^-+", "");
       NamedOption option = options.get(optionName);
 
@@ -317,7 +316,7 @@ public final class CommandLineParser {
     * @param option the option to check
     * @return True if it was set (boolean options must be true), False otherwise
     */
-   public boolean isSet(@NonNull NamedOption option) {
+   public boolean isSet(NamedOption option) {
       if (option.isBoolean()) {
          return option.getValue() != null && option.<Boolean>getValue();
       }
@@ -332,7 +331,7 @@ public final class CommandLineParser {
     * @param optionName the name of the option whose value we want to retrieve
     * @return the value of the option or null if not set
     */
-   public <T> T get(@NonNull String optionName) {
+   public <T> T get(String optionName) {
       optionName = optionName.replaceAll("^-+", "");
       NamedOption option = options.get(optionName);
 

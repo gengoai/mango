@@ -23,7 +23,6 @@ package com.gengoai.stream.accumulator;
 
 import com.gengoai.collection.counter.Counter;
 import com.gengoai.conversion.Cast;
-import lombok.NonNull;
 
 /**
  * <p>Counter accumulator implementation for Spark streams</p>
@@ -53,7 +52,7 @@ public class SparkMCounterAccumulator<E> extends SparkMAccumulator<E, Counter<E>
    }
 
    @Override
-   public void merge(@NonNull Counter<? extends E> counter) {
+   public void merge(Counter<? extends E> counter) {
       getAccumulator().merge(counter);
    }
 

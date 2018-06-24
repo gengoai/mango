@@ -23,7 +23,6 @@ package com.gengoai.parsing.expressions;
 
 import com.gengoai.parsing.ParserToken;
 import com.gengoai.parsing.ParserTokenType;
-import lombok.NonNull;
 
 /**
  * An <code>Expression</code> for assignment operations.
@@ -52,7 +51,7 @@ public class AssignmentExpression extends Expression {
    * @param operator     The assignment operator
    * @param right        The expression which the variable should be assigned
    */
-  public AssignmentExpression(@NonNull String variableName, @NonNull ParserToken operator, @NonNull Expression right) {
+  public AssignmentExpression(String variableName, ParserToken operator, Expression right) {
     super(operator.type);
     this.variableName = variableName;
     this.operator = operator.text;
@@ -67,7 +66,7 @@ public class AssignmentExpression extends Expression {
    * @param right        The expression which the variable should be assigned
    * @param type         The tyoke type of the assignemt
    */
-  public AssignmentExpression(@NonNull String variableName, @NonNull String operator, @NonNull Expression right, @NonNull ParserTokenType type) {
+  public AssignmentExpression(String variableName, String operator, Expression right, ParserTokenType type) {
     super(type);
     this.variableName = variableName;
     this.operator = operator;

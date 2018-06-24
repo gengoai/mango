@@ -22,7 +22,6 @@
 package com.gengoai.collection;
 
 import com.gengoai.collection.list.PrimitiveArrayList;
-import lombok.NonNull;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -61,7 +60,7 @@ public interface Lists {
 //    * @param transform  the function used to transform elements of type E to R
 //    * @return A list containing the transformed items of the supplied collection
 //    */
-//   static <I, O> List<O> transform(@NonNull final Collection<? extends I> collection, @NonNull final SerializableFunction<? super I, ? extends O> transform) {
+//   static <I, O> List<O> transform(final Collection<? extends I> collection, final SerializableFunction<? super I, ? extends O> transform) {
 //      return collection.stream().map(transform).collect(Collectors.toList());
 //   }
 //
@@ -73,7 +72,7 @@ public interface Lists {
 //    * @param filter     the predicate to use for filtering (only items that result in true will be keep)
 //    * @return A list containing the filtered items of the supplied collection
 //    */
-//   static <E> List<E> filter(@NonNull final Collection<? extends E> collection, @NonNull final SerializablePredicate<? super E> filter) {
+//   static <E> List<E> filter(final Collection<? extends E> collection, final SerializablePredicate<? super E> filter) {
 //      return collection.stream().filter(filter).collect(Collectors.toList());
 //   }
 
@@ -87,7 +86,7 @@ public interface Lists {
     * @param defaultValue the default value to add to the list to reach the desired size
     * @return the list passed in with size greater than or equal to the desired size
     */
-   static <T> List<T> ensureSize(@NonNull List<T> list, int desiredSize, T defaultValue) {
+   static <T> List<T> ensureSize(List<T> list, int desiredSize, T defaultValue) {
       while (list.size() < desiredSize) {
          list.add(defaultValue);
       }
@@ -192,7 +191,7 @@ public interface Lists {
     */
    @SafeVarargs
    @SuppressWarnings("varargs")
-   static <T> List<T> createList(@NonNull Supplier<List<T>> supplier, T... elements) {
+   static <T> List<T> createList(Supplier<List<T>> supplier, T... elements) {
       if (elements == null || elements.length == 0) {
          return supplier.get();
       }

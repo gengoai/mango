@@ -1,7 +1,6 @@
 package com.gengoai.stream.accumulator;
 
 import com.gengoai.conversion.Cast;
-import lombok.NonNull;
 import org.apache.spark.util.AccumulatorV2;
 
 import java.io.Serializable;
@@ -26,7 +25,7 @@ public class AccumulatorV2Wrapper<IN, OUT> extends AccumulatorV2<IN, OUT> implem
     *
     * @param accumulator the accumulator to wrap
     */
-   public AccumulatorV2Wrapper(@NonNull LocalMAccumulator<IN, OUT> accumulator) {
+   public AccumulatorV2Wrapper(LocalMAccumulator<IN, OUT> accumulator) {
       this.accumulator = accumulator;
    }
 
@@ -53,7 +52,7 @@ public class AccumulatorV2Wrapper<IN, OUT> extends AccumulatorV2<IN, OUT> implem
    }
 
    @Override
-   public void merge(@NonNull AccumulatorV2<IN, OUT> other) {
+   public void merge(AccumulatorV2<IN, OUT> other) {
       if (other instanceof AccumulatorV2Wrapper) {
          accumulator.merge(Cast.<AccumulatorV2Wrapper<IN, OUT>>as(other).accumulator);
       } else {

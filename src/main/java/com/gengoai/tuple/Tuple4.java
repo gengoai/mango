@@ -22,8 +22,6 @@
 package com.gengoai.tuple;
 
 import com.gengoai.conversion.Cast;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * The type Tuple 4.
@@ -34,8 +32,6 @@ import lombok.Setter;
  * @param <D> the type parameter
  * @author David B. Bracewell
  */
-@Getter
-@Setter
 public class Tuple4<A, B, C, D> extends Tuple {
   private static final long serialVersionUID = 1L;
   /**
@@ -112,6 +108,22 @@ public class Tuple4<A, B, C, D> extends Tuple {
       default:
         throw new ArrayIndexOutOfBoundsException();
     }
+  }
+
+  public A getV1() {
+    return this.v1;
+  }
+
+  public B getV2() {
+    return this.v2;
+  }
+
+  public C getV3() {
+    return this.v3;
+  }
+
+  public D getV4() {
+    return this.v4;
   }
 
   @Override

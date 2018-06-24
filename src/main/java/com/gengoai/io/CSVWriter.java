@@ -27,7 +27,6 @@ import com.gengoai.collection.index.Index;
 import com.gengoai.conversion.Convert;
 import com.gengoai.string.CSVFormatter;
 import com.gengoai.string.StringUtils;
-import lombok.NonNull;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -56,7 +55,7 @@ public class CSVWriter implements AutoCloseable {
     * @param writer the writer
     * @throws IOException the io exception
     */
-   public CSVWriter(@NonNull CSV csv, @NonNull Writer writer) throws IOException {
+   public CSVWriter(CSV csv, Writer writer) throws IOException {
       this.formatter = csv.formatter();
       this.writer = new BufferedWriter(writer);
       if (csv.getHeader() != null && !csv.getHeader().isEmpty()) {

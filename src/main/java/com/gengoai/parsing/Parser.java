@@ -24,7 +24,6 @@ package com.gengoai.parsing;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.parsing.expressions.Expression;
-import lombok.NonNull;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -64,7 +63,7 @@ public class Parser implements Serializable {
     * @return the expression iterator that lazily parses the resource
     * @throws ParseException tSomething went wrong parsing
     */
-   public ExpressionIterator parse(@NonNull String string) throws ParseException {
+   public ExpressionIterator parse(String string) throws ParseException {
       return new ExpressionIterator(grammar, lexer.lex(string));
    }
 
@@ -76,7 +75,7 @@ public class Parser implements Serializable {
     * @return the expression iterator that lazily parses the resource
     * @throws ParseException tSomething went wrong parsing
     */
-   public ExpressionIterator parse(@NonNull Resource resource) throws ParseException {
+   public ExpressionIterator parse(Resource resource) throws ParseException {
       try {
          return new ExpressionIterator(grammar, lexer.lex(resource));
       } catch (IOException e) {
@@ -94,7 +93,7 @@ public class Parser implements Serializable {
     * @return the single return values from the evaluator
     * @throws ParseException Something went wrong parsing
     */
-   public <O> O evaluate(@NonNull String string, @NonNull Evaluator<? extends O> evaluator) throws ParseException {
+   public <O> O evaluate(String string, Evaluator<? extends O> evaluator) throws ParseException {
       return evaluate(Resources.fromString(string), evaluator);
    }
 
@@ -108,7 +107,7 @@ public class Parser implements Serializable {
     * @return the single return values from the evaluator
     * @throws ParseException Something went wrong parsing
     */
-   public <O> O evaluate(@NonNull Resource resource, @NonNull Evaluator<? extends O> evaluator) throws ParseException {
+   public <O> O evaluate(Resource resource, Evaluator<? extends O> evaluator) throws ParseException {
       ExpressionIterator iterator = parse(resource);
       Expression expression = iterator.next();
       if (iterator.hasNext()) {
@@ -130,7 +129,7 @@ public class Parser implements Serializable {
     * @return A list of objects relating to the transformation of expressions by the given evaluator.
     * @throws ParseException Something went wrong parsing
     */
-   public <O> List<O> evaluateAll(@NonNull String string, @NonNull Evaluator<? extends O> evaluator) throws ParseException {
+   public <O> List<O> evaluateAll(String string, Evaluator<? extends O> evaluator) throws ParseException {
       return evaluateAll(Resources.fromString(string), evaluator);
    }
 
@@ -143,7 +142,7 @@ public class Parser implements Serializable {
     * @return A list of objects relating to the transformation of expressions by the given evaluator.
     * @throws ParseException Something went wrong parsing
     */
-   public <O> List<O> evaluateAll(@NonNull Resource resource, @NonNull Evaluator<? extends O> evaluator) throws ParseException {
+   public <O> List<O> evaluateAll(Resource resource, Evaluator<? extends O> evaluator) throws ParseException {
       ExpressionIterator iterator = parse(resource);
       List<O> evaluationResults = new ArrayList<>();
       while (iterator.hasNext()) {

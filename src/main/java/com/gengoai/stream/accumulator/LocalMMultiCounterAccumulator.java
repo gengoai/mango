@@ -24,7 +24,6 @@ package com.gengoai.stream.accumulator;
 import com.gengoai.collection.counter.MultiCounter;
 import com.gengoai.collection.counter.MultiCounters;
 import com.gengoai.tuple.Tuple2;
-import lombok.NonNull;
 
 /**
  * <p>An implementation of a {@link MMultiCounterAccumulator} for local streams</p>
@@ -47,7 +46,7 @@ public class LocalMMultiCounterAccumulator<K1, K2> extends LocalMAccumulator<Tup
    }
 
    @Override
-   public void add(@NonNull Tuple2<K1, K2> objects) {
+   public void add(Tuple2<K1, K2> objects) {
       counter.increment(objects.v1, objects.v2);
    }
 
@@ -69,7 +68,7 @@ public class LocalMMultiCounterAccumulator<K1, K2> extends LocalMAccumulator<Tup
    }
 
    @Override
-   public void merge(@NonNull MAccumulator<Tuple2<K1, K2>, MultiCounter<K1, K2>> other) {
+   public void merge(MAccumulator<Tuple2<K1, K2>, MultiCounter<K1, K2>> other) {
       if (other instanceof LocalMAccumulator) {
          counter.merge(other.value());
       } else {
@@ -93,7 +92,7 @@ public class LocalMMultiCounterAccumulator<K1, K2> extends LocalMAccumulator<Tup
    }
 
    @Override
-   public void merge(@NonNull MultiCounter<K1, K2> other) {
+   public void merge(MultiCounter<K1, K2> other) {
       this.counter.merge(other);
    }
 

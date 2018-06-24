@@ -22,7 +22,6 @@
 package com.gengoai.parsing.expressions;
 
 import com.gengoai.parsing.ParserToken;
-import lombok.NonNull;
 
 /**
  * An <code>Expression</code> representing a postfix operator
@@ -47,7 +46,7 @@ public class PostfixOperatorExpression extends Expression {
    * @param operator The postfix operator
    * @param left     The expression on the right of the operator
    */
-  public PostfixOperatorExpression(@NonNull ParserToken operator, @NonNull Expression left) {
+  public PostfixOperatorExpression(ParserToken operator, Expression left) {
     super(operator.type);
     this.operator = operator;
     this.left = left;

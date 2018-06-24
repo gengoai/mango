@@ -33,8 +33,8 @@ import com.gengoai.parsing.handlers.ValueHandler;
 import com.gengoai.scripting.ScriptEnvironment;
 import com.gengoai.scripting.ScriptEnvironmentManager;
 import com.gengoai.string.StringUtils;
-import lombok.SneakyThrows;
 
+import javax.script.ScriptException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
@@ -60,34 +60,37 @@ class ConfigParser extends Parser {
       @Override
       public ParserTokenStream lex(final Resource input) throws IOException {
          return new ParserTokenStream(
-                                        new Iterator<ParserToken>() {
-                                           final ConfigTokenizer backing = new ConfigTokenizer(input.reader());
-                                           ParserToken next = null;
+            new Iterator<ParserToken>() {
+               final ConfigTokenizer backing = new ConfigTokenizer(input.reader());
+               ParserToken next = null;
 
-                                           @Override
-                                           @SneakyThrows
-                                           public boolean hasNext() {
-                                              if (next == null) {
-                                                 next = backing.next();
-                                              }
-                                              return next != null;
-                                           }
+               @Override
+               public boolean hasNext() {
+                  if (next == null) {
+                     try {
+                        next = backing.next();
+                     } catch (IOException | ParseException e) {
+                        throw new RuntimeException(e);
+                     }
+                  }
+                  return next != null;
+               }
 
-                                           @Override
-                                           public ParserToken next() {
-                                              if (!hasNext()) {
-                                                 throw new NoSuchElementException();
-                                              }
-                                              ParserToken returnToken = next;
-                                              next = null;
-                                              return returnToken;
-                                           }
+               @Override
+               public ParserToken next() {
+                  if (!hasNext()) {
+                     throw new NoSuchElementException();
+                  }
+                  ParserToken returnToken = next;
+                  next = null;
+                  return returnToken;
+               }
 
-                                           @Override
-                                           public void remove() {
-                                              throw new UnsupportedOperationException();
-                                           }
-                                        }
+               @Override
+               public void remove() {
+                  throw new UnsupportedOperationException();
+               }
+            }
          );
       }
    };
@@ -109,12 +112,15 @@ class ConfigParser extends Parser {
       this.resourceName = config.descriptor();
    }
 
-   @SneakyThrows
    private void importScript(String script) {
       Resource scriptResource = new ClasspathResource(script.trim(), Config.getDefaultClassLoader());
       String extension = script.substring(script.lastIndexOf('.') + 1);
       ScriptEnvironment env = ScriptEnvironmentManager.getInstance().getEnvironmentForExtension(extension);
-      env.eval(scriptResource);
+      try {
+         env.eval(scriptResource);
+      } catch (ScriptException | IOException e) {
+         throw new RuntimeException(e);
+      }
    }
 
    private void importConfig(String importStatement) throws ParseException {

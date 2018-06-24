@@ -2,7 +2,6 @@ package com.gengoai.stream.accumulator;
 
 import com.gengoai.collection.counter.Counter;
 import com.gengoai.collection.counter.Counters;
-import lombok.NonNull;
 
 /**
  * <p>An implementation of a {@link MCounterAccumulator} for local streams</p>
@@ -29,7 +28,7 @@ public class LocalMCounterAccumulator<IN> extends LocalMAccumulator<IN, Counter<
    }
 
    @Override
-   public void merge(@NonNull MAccumulator<IN, Counter<IN>> other) {
+   public void merge(MAccumulator<IN, Counter<IN>> other) {
       if (other instanceof LocalMAccumulator) {
          this.counter.merge(other.value());
       } else {
@@ -65,7 +64,7 @@ public class LocalMCounterAccumulator<IN> extends LocalMAccumulator<IN, Counter<
    }
 
    @Override
-   public void merge(@NonNull Counter<? extends IN> counter) {
+   public void merge(Counter<? extends IN> counter) {
       this.counter.merge(counter);
    }
 

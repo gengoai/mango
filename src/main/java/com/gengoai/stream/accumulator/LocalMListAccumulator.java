@@ -21,8 +21,6 @@
 
 package com.gengoai.stream.accumulator;
 
-import lombok.NonNull;
-
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -51,7 +49,7 @@ public class LocalMListAccumulator<E> extends LocalMAccumulator<E, List<E>> {
    }
 
    @Override
-   public void merge(@NonNull MAccumulator<E, List<E>> other) {
+   public void merge(MAccumulator<E, List<E>> other) {
       if (other instanceof LocalMAccumulator) {
          this.list.addAll(other.value());
       } else {

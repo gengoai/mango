@@ -23,8 +23,6 @@ package com.gengoai.io.resource;
 
 import com.gengoai.stream.MStream;
 import com.gengoai.stream.StreamingContext;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
 
 import java.io.*;
 
@@ -33,7 +31,6 @@ import java.io.*;
  *
  * @author David B. Bracewell
  */
-@EqualsAndHashCode(callSuper = true)
 public class ByteArrayResource extends BaseResource implements NonTraversableResource {
    private static final long serialVersionUID = 9152033221857665242L;
    private final ByteArrayOutputStream buffer;
@@ -51,7 +48,7 @@ public class ByteArrayResource extends BaseResource implements NonTraversableRes
     *
     * @param b an initial byte array
     */
-   public ByteArrayResource(@NonNull byte[] b) {
+   public ByteArrayResource(byte[] b) {
       this(b, 0, b.length);
    }
 
@@ -62,7 +59,7 @@ public class ByteArrayResource extends BaseResource implements NonTraversableRes
     * @param offset the offset into the byte array
     * @param len    the number of bytes to copy
     */
-   public ByteArrayResource(@NonNull byte[] b, int offset, int len) {
+   public ByteArrayResource(byte[] b, int offset, int len) {
       this.buffer = new ByteArrayOutputStream();
       this.buffer.write(b, offset, len);
    }
@@ -74,9 +71,34 @@ public class ByteArrayResource extends BaseResource implements NonTraversableRes
       return this;
    }
 
+   protected boolean canEqual(Object other) {
+      return other instanceof ByteArrayResource;
+   }
+
+   public boolean equals(Object o) {
+      if (o == this) return true;
+      if (!(o instanceof ByteArrayResource)) return false;
+      final ByteArrayResource other = (ByteArrayResource) o;
+      if (!other.canEqual((Object) this)) return false;
+      if (!super.equals(o)) return false;
+      final Object this$buffer = this.buffer;
+      final Object other$buffer = other.buffer;
+      if (this$buffer == null ? other$buffer != null : !this$buffer.equals(other$buffer)) return false;
+      return true;
+   }
+
    @Override
    public boolean exists() {
       return true;
+   }
+
+   public int hashCode() {
+      final int PRIME = 59;
+      int result = 1;
+      result = result * PRIME + super.hashCode();
+      final Object $buffer = this.buffer;
+      result = result * PRIME + ($buffer == null ? 43 : $buffer.hashCode());
+      return result;
    }
 
    @Override

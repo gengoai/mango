@@ -1,9 +1,8 @@
 package com.gengoai.collection.table;
 
-import com.gengoai.collection.set.IteratorSet;
 import com.gengoai.collection.Sets;
+import com.gengoai.collection.set.IteratorSet;
 import com.gengoai.conversion.Cast;
-import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.*;
@@ -68,7 +67,7 @@ public class HashBasedTable<R, C, V> implements Table<R, C, V>, Serializable {
    }
 
    @Override
-   public Map<C, V> row(@NonNull R row) {
+   public Map<C, V> row(R row) {
       return new RowView(row);
    }
 
