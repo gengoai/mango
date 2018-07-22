@@ -19,8 +19,9 @@
  * under the License.
  */
 
-package com.gengoai;
+package com.gengoai.math;
 
+import com.gengoai.EnhancedDoubleStatistics;
 import com.gengoai.collection.Streams;
 
 import java.math.BigDecimal;
@@ -91,17 +92,6 @@ public final class Math2 {
    }
 
    /**
-    * Adds two doubles (useful as a method reference)
-    *
-    * @param v1 value 1
-    * @param v2 value 2
-    * @return the sum of value 1 and value 2
-    */
-   public static double add(double v1, double v2) {
-      return v1 + v2;
-   }
-
-   /**
     * <p>Clips a value to ensure it falls between the lower or upper bound of range.</p>
     *
     * @param value the value to clip
@@ -120,17 +110,6 @@ public final class Math2 {
    }
 
    /**
-    * Divides two doubles (useful as a method reference)
-    *
-    * @param v1 value 1
-    * @param v2 value 2
-    * @return the result of value 1 divided by value 2
-    */
-   public static double divide(double v1, double v2) {
-      return v1 / v2;
-   }
-
-   /**
     * Calculates the base 2 log of a given number
     *
     * @param number the number to calculate the base 2 log of
@@ -138,17 +117,6 @@ public final class Math2 {
     */
    public static double log2(double number) {
       return Math.log(number) / LOG_2;
-   }
-
-   /**
-    * Multiplies two doubles (useful as a method reference)
-    *
-    * @param v1 value 1
-    * @param v2 value 2
-    * @return the result of value 1 * value 2
-    */
-   public static double multiply(double v1, double v2) {
-      return v1 * v2;
    }
 
    /**
@@ -180,17 +148,6 @@ public final class Math2 {
          return d <= 0d ? -10 : Math.log(d);
       }
       return 0d;
-   }
-
-   /**
-    * Subtracts two doubles (useful as a method reference)
-    *
-    * @param v1 value 1
-    * @param v2 value 2
-    * @return the result of value 1 minus value 2
-    */
-   public static double subtract(double v1, double v2) {
-      return v1 - v2;
    }
 
    /**

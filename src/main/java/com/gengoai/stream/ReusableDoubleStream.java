@@ -22,7 +22,7 @@
 package com.gengoai.stream;
 
 import com.gengoai.EnhancedDoubleStatistics;
-import com.gengoai.Math2;
+import com.gengoai.math.Math2;
 import com.gengoai.Validation;
 import com.gengoai.function.*;
 

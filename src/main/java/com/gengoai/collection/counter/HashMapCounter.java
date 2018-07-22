@@ -21,7 +21,8 @@
 
 package com.gengoai.collection.counter;
 
-import com.gengoai.Math2;
+import com.gengoai.math.Math2;
+import com.gengoai.math.Operator;
 
 import java.io.Serializable;
 import java.util.*;
@@ -82,7 +83,7 @@ public class HashMapCounter<T> implements Counter<T>, Serializable {
       if (amount == 0) {
          return this;
       }
-      map.merge(item, amount, Math2::add);
+      map.merge(item, amount, Operator::add);
       if (map.get(item) == 0) {
          map.remove(item);
       }

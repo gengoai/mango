@@ -21,7 +21,7 @@
 
 package com.gengoai.collection.counter;
 
-import com.gengoai.Math2;
+import com.gengoai.math.Math2;
 import com.gengoai.conversion.Convert;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVWriter;
