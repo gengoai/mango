@@ -22,7 +22,6 @@
 package com.gengoai;
 
 import com.gengoai.collection.Streams;
-import org.apache.commons.math3.util.FastMath;
 
 import java.math.BigDecimal;
 import java.util.stream.DoubleStream;
@@ -46,7 +45,7 @@ public final class Math2 {
    /**
     * The constant LOG_2.
     */
-   public static final double LOG_2 = FastMath.log(2);
+   public static final double LOG_2 = Math.log(2);
 
 
    /**
@@ -138,7 +137,7 @@ public final class Math2 {
     * @return the base 2 log of the given number
     */
    public static double log2(double number) {
-      return FastMath.log(number) / LOG_2;
+      return Math.log(number) / LOG_2;
    }
 
    /**
@@ -178,7 +177,7 @@ public final class Math2 {
     */
    public static double safeLog(double d) {
       if (Double.isFinite(d)) {
-         return d <= 0d ? -10 : FastMath.log(d);
+         return d <= 0d ? -10 : Math.log(d);
       }
       return 0d;
    }

@@ -25,35 +25,35 @@ import static com.gengoai.Validation.notNull;
  * @author David B. Bracewell
  */
 public final class Lazy<T> implements Serializable {
-  private static final long serialVersionUID = 1L;
-  private volatile T object;
-  private volatile SerializableSupplier<? extends T> supplier;
+   private static final long serialVersionUID = 1L;
+   private volatile T object;
+   private volatile SerializableSupplier<? extends T> supplier;
 
-  /**
-   * Instantiates a new Lazy created object.
-   *
-   * @param supplier the supplier used to create the object
-   */
-  public Lazy( SerializableSupplier<? extends T> supplier) {
-    this.supplier = notNull(supplier);
-  }
+   /**
+    * Instantiates a new Lazy created object.
+    *
+    * @param supplier the supplier used to create the object
+    */
+   public Lazy(SerializableSupplier<? extends T> supplier) {
+      this.supplier = notNull(supplier);
+   }
 
-  /**
-   * <p>Gets or creates the object as needed.</p>
-   *
-   * @return the object wrapped by Lazy
-   */
-  public T get() {
-    T value = object;
-    if (value == null) {
-      synchronized (this) {
-        value = object;
-        if (object == null) {
-          object = value = supplier.get();
-        }
+   /**
+    * <p>Gets or creates the object as needed.</p>
+    *
+    * @return the object wrapped by Lazy
+    */
+   public T get() {
+      T value = object;
+      if (value == null) {
+         synchronized (this) {
+            value = object;
+            if (object == null) {
+               object = value = supplier.get();
+            }
+         }
       }
-    }
-    return value;
-  }
+      return value;
+   }
 
 }// END OF Lazy

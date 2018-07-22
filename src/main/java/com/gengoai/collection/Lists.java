@@ -37,44 +37,24 @@ import static com.gengoai.Validation.notNull;
  *
  * @author David B. Bracewell
  */
-public interface Lists {
+public final class Lists {
+
+   private Lists() {
+      throw new IllegalAccessError();
+   }
 
    /**
-    * Of primitive list.
+    * Wraps a primitive array as  a list
     *
-    * @param <E>      the type parameter
-    * @param array    the array
-    * @param outclass the outclass
+    * @param <E>      the output type parameter
+    * @param array    the array to wrap as a list
+    * @param outclass the class type of the output element
     * @return the list
     */
-   static <E> List<E> ofPrimitive(Object array, Class<E> outclass) {
+   public static <E> List<E> ofPrimitive(Object array, Class<E> outclass) {
       return new PrimitiveArrayList<>(array, outclass);
    }
 
-//   /**
-//    * <p>Transforms a given collection using a supplied transform function returning the results as a list. </p>
-//    *
-//    * @param <I>        the component type of the collection being transformed
-//    * @param <O>        the component type of the resulting collection after transformation
-//    * @param collection the collection to be transformed
-//    * @param transform  the function used to transform elements of type E to R
-//    * @return A list containing the transformed items of the supplied collection
-//    */
-//   static <I, O> List<O> transform(final Collection<? extends I> collection, final SerializableFunction<? super I, ? extends O> transform) {
-//      return collection.stream().map(transform).collect(Collectors.toList());
-//   }
-//
-//   /**
-//    * <p>Filters a given collection using a supplied predicate returning the results as a list. </p>
-//    *
-//    * @param <E>        the component type of the collection being filtered
-//    * @param collection the collection to be filtered
-//    * @param filter     the predicate to use for filtering (only items that result in true will be keep)
-//    * @return A list containing the filtered items of the supplied collection
-//    */
-//   static <E> List<E> filter(final Collection<? extends E> collection, final SerializablePredicate<? super E> filter) {
-//      return collection.stream().filter(filter).collect(Collectors.toList());
-//   }
 
    /**
     * <p>Ensures that the size of the given list is at least the supplied desired size. If the list size is smaller, it
@@ -86,7 +66,7 @@ public interface Lists {
     * @param defaultValue the default value to add to the list to reach the desired size
     * @return the list passed in with size greater than or equal to the desired size
     */
-   static <T> List<T> ensureSize(List<T> list, int desiredSize, T defaultValue) {
+   public static <T> List<T> ensureSize(List<T> list, int desiredSize, T defaultValue) {
       while (list.size() < desiredSize) {
          list.add(defaultValue);
       }
@@ -100,7 +80,7 @@ public interface Lists {
     * @param iterable the iterable to flatten
     * @return the flattened iterable as a list
     */
-   static <T> List<T> flatten(Iterable<? extends Iterable<? extends T>> iterable) {
+   public static <T> List<T> flatten(Iterable<? extends Iterable<? extends T>> iterable) {
       return Streams.flatten(iterable)
                     .collect(Collectors.toList());
    }
@@ -113,7 +93,7 @@ public interface Lists {
     * @param collection2 the second collection of items
     * @return A list of the collection1 + collection2
     */
-   static <E> List<E> union(Collection<? extends E> collection1, Collection<? extends E> collection2) {
+   public static <E> List<E> union(Collection<? extends E> collection1, Collection<? extends E> collection2) {
       return Streams.union(collection1, collection2).collect(Collectors.toList());
    }
 
@@ -125,7 +105,7 @@ public interface Lists {
     * @param collection2 the second collection of items
     * @return A list containing the intersection of collection1 and collection2
     */
-   static <E> List<E> intersection(Collection<? extends E> collection1, Collection<? extends E> collection2) {
+   public static <E> List<E> intersection(Collection<? extends E> collection1, Collection<? extends E> collection2) {
       return Streams.intersection(collection1, collection2).collect(Collectors.toList());
    }
 
@@ -137,7 +117,7 @@ public interface Lists {
     * @param collection2 the second collection of items
     * @return A list of the collection1 - collection2
     */
-   static <E> List<E> difference(Collection<? extends E> collection1, Collection<? extends E> collection2) {
+   public static <E> List<E> difference(Collection<? extends E> collection1, Collection<? extends E> collection2) {
       return Streams.difference(collection1, collection2).collect(Collectors.toList());
    }
 
@@ -151,7 +131,7 @@ public interface Lists {
     */
    @SafeVarargs
    @SuppressWarnings("varargs")
-   static <T> List<T> list(T... elements) {
+   public static <T> List<T> list(T... elements) {
       return createList(ArrayList::new, elements);
    }
 
@@ -164,7 +144,7 @@ public interface Lists {
     */
    @SafeVarargs
    @SuppressWarnings("varargs")
-   static <T> List<T> linkedList(T... elements) {
+   public static <T> List<T> linkedList(T... elements) {
       return createList(LinkedList::new, elements);
    }
 
@@ -177,7 +157,7 @@ public interface Lists {
     */
    @SafeVarargs
    @SuppressWarnings("varargs")
-   static <T> List<T> concurrentList(T... elements) {
+   public static <T> List<T> concurrentList(T... elements) {
       return createList(CopyOnWriteArrayList::new, elements);
    }
 
@@ -191,7 +171,7 @@ public interface Lists {
     */
    @SafeVarargs
    @SuppressWarnings("varargs")
-   static <T> List<T> createList(Supplier<List<T>> supplier, T... elements) {
+   public static <T> List<T> createList(Supplier<List<T>> supplier, T... elements) {
       if (elements == null || elements.length == 0) {
          return supplier.get();
       }
@@ -205,7 +185,7 @@ public interface Lists {
     * @param stream the elements to add to the set
     * @return the new array list containing the given elements
     */
-   static <T> List<T> asArrayList(Stream<? extends T> stream) {
+   public static <T> List<T> asArrayList(Stream<? extends T> stream) {
       return createList(ArrayList::new, stream);
    }
 
@@ -216,7 +196,7 @@ public interface Lists {
     * @param stream the elements to add to the set
     * @return the new linked list containing the given elements
     */
-   static <T> List<T> asLinkedList(Stream<? extends T> stream) {
+   public static <T> List<T> asLinkedList(Stream<? extends T> stream) {
       return createList(LinkedList::new, stream);
    }
 
@@ -228,7 +208,7 @@ public interface Lists {
     * @param stream the elements to add to the set
     * @return the new  copy on write array list  containing the given elements
     */
-   static <T> List<T> asConcurrentList(Stream<? extends T> stream) {
+   public static <T> List<T> asConcurrentList(Stream<? extends T> stream) {
       return createList(CopyOnWriteArrayList::new, stream);
    }
 
@@ -239,7 +219,7 @@ public interface Lists {
     * @param iterator the elements to add to the set
     * @return the new array list containing the given elements
     */
-   static <T> List<T> asArrayList(Iterator<? extends T> iterator) {
+   public static <T> List<T> asArrayList(Iterator<? extends T> iterator) {
       return createList(ArrayList::new, Streams.asStream(iterator));
    }
 
@@ -250,7 +230,7 @@ public interface Lists {
     * @param iterator the elements to add to the set
     * @return the new linked list containing the given elements
     */
-   static <T> List<T> asLinkedList(Iterator<? extends T> iterator) {
+   public static <T> List<T> asLinkedList(Iterator<? extends T> iterator) {
       return createList(LinkedList::new, Streams.asStream(iterator));
    }
 
@@ -262,7 +242,7 @@ public interface Lists {
     * @param iterator the elements to add to the set
     * @return the new  copy on write array list  containing the given elements
     */
-   static <T> List<T> asConcurrentList(Iterator<? extends T> iterator) {
+   public static <T> List<T> asConcurrentList(Iterator<? extends T> iterator) {
       return createList(CopyOnWriteArrayList::new, Streams.asStream(iterator));
    }
 
@@ -273,7 +253,7 @@ public interface Lists {
     * @param iterable the elements to add to the set
     * @return the new array list containing the given elements
     */
-   static <T> List<T> asArrayList(Iterable<? extends T> iterable) {
+   public static <T> List<T> asArrayList(Iterable<? extends T> iterable) {
       return createList(ArrayList::new, Streams.asStream(iterable));
    }
 
@@ -284,7 +264,7 @@ public interface Lists {
     * @param iterable the elements to add to the set
     * @return the new linked list containing the given elements
     */
-   static <T> List<T> asLinkedList(Iterable<? extends T> iterable) {
+   public static <T> List<T> asLinkedList(Iterable<? extends T> iterable) {
       return createList(LinkedList::new, Streams.asStream(iterable));
    }
 
@@ -295,7 +275,7 @@ public interface Lists {
     * @param iterable the elements to add to the set
     * @return the new  copy on write array list  containing the given elements
     */
-   static <T> List<T> asConcurrentList(Iterable<? extends T> iterable) {
+   public static <T> List<T> asConcurrentList(Iterable<? extends T> iterable) {
       return createList(CopyOnWriteArrayList::new, Streams.asStream(iterable));
    }
 
@@ -307,7 +287,7 @@ public interface Lists {
     * @param stream   the elements to add to the  set
     * @return the new list containing the given elements
     */
-   static <T> List<T> createList(Supplier<List<T>> supplier, Stream<? extends T> stream) {
+   public static <T> List<T> createList(Supplier<List<T>> supplier, Stream<? extends T> stream) {
       notNull(supplier);
       if (stream == null) {
          return supplier.get();
@@ -325,7 +305,7 @@ public interface Lists {
     * @param partitionSize the partition size
     * @return A list of partitioned lists
     */
-   static <T> List<List<T>> partition(List<T> list, int partitionSize) {
+   public static <T> List<List<T>> partition(List<T> list, int partitionSize) {
       notNull(list);
       checkArgument(partitionSize > 0, "Partition size must be >= 0");
       List<List<T>> partitions = new ArrayList<>();

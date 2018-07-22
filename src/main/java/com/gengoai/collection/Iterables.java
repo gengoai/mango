@@ -4,6 +4,7 @@ import com.gengoai.Validation;
 import com.gengoai.collection.list.PrimitiveArrayList;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.SerializableFunction;
+import com.gengoai.function.SerializablePredicate;
 import com.gengoai.function.SerializableSupplier;
 
 import java.lang.reflect.Array;
@@ -25,21 +26,6 @@ public final class Iterables {
    private Iterables() {
       throw new IllegalAccessError();
    }
-
-   /**
-    * Flattens an iterable of iterables into a single iterable view.
-    *
-    * @param <T>      the iterable element type parameter
-    * @param iterable the iterable to flatten
-    * @return the flattened iterable
-    */
-   public static <T> Iterable<T> flatten(Iterable<? extends Iterable<? extends T>> iterable) {
-      final SerializableSupplier<Iterator<T>> supplier = () -> Iterators.flatten(
-         Iterators.transform(iterable.iterator(),
-                             Iterable::iterator));
-      return new IteratorIterable<T>(Cast.as(supplier));
-   }
-
 
    /**
     * Wraps an <code>array</code> as an <code>Iterable</code>
@@ -96,6 +82,33 @@ public final class Iterables {
       return new IteratorIterable<>(() -> Iterators.concat(iterables));
    }
 
+   /**
+    * Filters elements from the given iterable when the given filter predicate evaluates to false
+    *
+    * @param <E>       the iterable type parameter
+    * @param iterable  the iterable to filter
+    * @param predicate the filter to apply items evaluating to false will be removed from the iterator
+    * @return the filtered iterable
+    */
+   public static <E> Iterable<E> filter(final Iterable<? extends E> iterable,
+                                        final SerializablePredicate<? super E> predicate
+                                       ) {
+      return new IteratorIterable<>(() -> Iterators.filter(notNull(iterable).iterator(), notNull(predicate)));
+   }
+
+   /**
+    * Flattens an iterable of iterables into a single iterable view.
+    *
+    * @param <T>      the iterable element type parameter
+    * @param iterable the iterable to flatten
+    * @return the flattened iterable
+    */
+   public static <T> Iterable<T> flatten(Iterable<? extends Iterable<? extends T>> iterable) {
+      final SerializableSupplier<Iterator<T>> supplier = () -> Iterators.flatten(
+         Iterators.transform(iterable.iterator(),
+                             Iterable::iterator));
+      return new IteratorIterable<T>(Cast.as(supplier));
+   }
 
    /**
     * Gets the element of the iterable at the given index using either <code>get</code> if the iterable is a list or by
@@ -183,79 +196,6 @@ public final class Iterables {
    public static <T> T getLast(Iterable<? extends T> iterable, T defaultValue) {
       return getLast(notNull(iterable)).orElse(Cast.as(defaultValue));
    }
-
-//
-//   /**
-//    * Max index and value tuple 2.
-//    *
-//    * @param <E>      the type parameter
-//    * @param iterable the iterable
-//    * @return the tuple 2
-//    */
-//   public static <E extends Comparable<? super E>> Tuple2<Integer, E> maxIndexAndValue(Iterable<? extends E> iterable) {
-//      return maxIndexAndValue(notNull(iterable), Sorting.natural());
-//   }
-//
-//   /**
-//    * Max index and value tuple 2.
-//    *
-//    * @param <E>        the type parameter
-//    * @param iterable   the iterable
-//    * @param comparator the comparator
-//    * @return the tuple 2
-//    */
-//   public static <E extends Comparable<? super E>> Tuple2<Integer, E> maxIndexAndValue(Iterable<? extends E> iterable,
-//                                                                                       Comparator<? super E> comparator
-//                                                                                      ) {
-//      notNull(iterable);
-//      notNull(comparator);
-//      int index = -1;
-//      E max = null;
-//      int i = 0;
-//      for (E e : iterable) {
-//         if (max == null || comparator.compare(e, max) > 0) {
-//            max = e;
-//            index = i;
-//         }
-//         i++;
-//      }
-//
-//      return Tuples.$(index, max);
-//   }
-//
-//   /**
-//    * Min index and value tuple 2.
-//    *
-//    * @param <E>      the type parameter
-//    * @param iterable the iterable
-//    * @return the tuple 2
-//    */
-//   public static <E extends Comparable<? super E>> Tuple2<Integer, E> minIndexAndValue(Iterable<? extends E> iterable) {
-//      return minIndexAndValue(iterable, Sorting.natural());
-//   }
-//
-//   /**
-//    * Min index and value tuple 2.
-//    *
-//    * @param <E>        the type parameter
-//    * @param iterable   the iterable
-//    * @param comparator the comparator
-//    * @return the tuple 2
-//    */
-//   public static <E extends Comparable<? super E>> Tuple2<Integer, E> minIndexAndValue(Iterable<? extends E> iterable, Comparator<? super E> comparator) {
-//      int index = -1;
-//      E min = null;
-//      int i = 0;
-//      for (E e : iterable) {
-//         if (min == null || comparator.compare(e, min) < 0) {
-//            min = e;
-//            index = i;
-//         }
-//         i++;
-//      }
-//
-//      return Tuples.$(index, min);
-//   }
 
    /**
     * Gets the size of the iterable

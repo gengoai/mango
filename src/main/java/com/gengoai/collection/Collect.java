@@ -71,10 +71,24 @@ public final class Collect {
       }
    }
 
+   /**
+    * Wraps an iterable as a collection
+    *
+    * @param <T>      the element type parameter
+    * @param iterable the iterable to wrap
+    * @return the collection
+    */
    public static <T> Collection<T> asCollection(Iterable<? extends T> iterable) {
       return new IterableCollection<>(iterable);
    }
 
+   /**
+    * Wraps an iterator as a collection
+    *
+    * @param <T>      the element type parameter
+    * @param iterator the iterator to wrap
+    * @return the collection
+    */
    public static <T> Collection<T> asCollection(Iterator<? extends T> iterator) {
       return asCollection(Iterables.asIterable(iterator));
    }

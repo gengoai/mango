@@ -49,12 +49,12 @@ public final class Maps {
    }
 
    /**
-    * As map map.
+    * Creates a map from an iterable of keys and a function that returns a value given the key.
     *
-    * @param <K>         the type parameter
-    * @param <V>         the type parameter
+    * @param <K>         the key type parameter
+    * @param <V>         the value type parameter
     * @param keys        the keys
-    * @param valueMapper the value mapper
+    * @param valueMapper the function to use to generate values from keys
     * @return the map
     */
    public static <K, V> Map<K, V> asMap(Iterable<? extends K> keys, Function<? super K, ? extends V> valueMapper) {
@@ -64,10 +64,10 @@ public final class Maps {
    }
 
    /**
-    * Builder builder.
+    * Creates a Map builder
     *
-    * @param <K> the type parameter
-    * @param <V> the type parameter
+    * @param <K> the key type parameter
+    * @param <V> the value type parameter
     * @return the builder
     */
    public static <K, V> Builder<K, V> builder() {
@@ -100,11 +100,11 @@ public final class Maps {
    }
 
    /**
-    * Hash map of map.
+    * Creates a <code>HashMap</code> from entries
     *
-    * @param <K>     the type parameter
-    * @param <V>     the type parameter
-    * @param objects the objects
+    * @param <K>     the key type parameter
+    * @param <V>     the value type parameter
+    * @param objects the entries
     * @return the map
     */
    @SafeVarargs
@@ -113,12 +113,12 @@ public final class Maps {
    }
 
    /**
-    * Map of map.
+    * Creates a map of type returned via the givne supplier from the given entries
     *
-    * @param <K>      the type parameter
-    * @param <V>      the type parameter
-    * @param supplier the supplier
-    * @param objects  the objects
+    * @param <K>      the key type parameter
+    * @param <V>      the value type parameter
+    * @param supplier the new map supplier
+    * @param objects  the entries
     * @return the map
     */
    @SafeVarargs
@@ -132,13 +132,13 @@ public final class Maps {
 
 
    /**
-    * Max entry optional.
+    * Gets the max entry in the map.
     *
-    * @param <K>        the type parameter
-    * @param <V>        the type parameter
+    * @param <K>        the key type parameter
+    * @param <V>        the value type parameter
     * @param map        the map
-    * @param comparator the comparator
-    * @return the optional
+    * @param comparator the value comparator to use to compare items
+    * @return Optional max entry
     */
    public static <K, V> Optional<Map.Entry<K, V>> maxEntry(Map<K, V> map, Comparator<? super V> comparator) {
       return map.entrySet()
@@ -147,37 +147,37 @@ public final class Maps {
    }
 
    /**
-    * Max entry optional.
+    * Gets the max entry in the map.
     *
-    * @param <K> the type parameter
-    * @param <V> the type parameter
-    * @param map the map
-    * @return the optional
+    * @param <K>        the key type parameter
+    * @param <V>        the value type parameter
+    * @param map        the map
+    * @return Optional max entry
     */
    public static <K, V extends Comparable> Optional<Map.Entry<K, V>> maxEntry(Map<K, V> map) {
       return maxEntry(map, Sorting.natural());
    }
 
    /**
-    * Max key by value k.
+    * Returns the key of the entry with maximum value
     *
-    * @param <K> the type parameter
-    * @param <V> the type parameter
+    * @param <K> the key type parameter
+    * @param <V> the value type parameter
     * @param map the map
-    * @return the k
+    * @return the key with max value
     */
    public static <K, V extends Comparable> K maxKeyByValue(Map<K, V> map) {
       return maxEntry(map).map(Map.Entry::getKey).orElse(null);
    }
 
    /**
-    * Min entry optional.
+    * Gets the min entry in the map.
     *
-    * @param <K>        the type parameter
-    * @param <V>        the type parameter
+    * @param <K>        the key type parameter
+    * @param <V>        the value type parameter
     * @param map        the map
-    * @param comparator the comparator
-    * @return the optional
+    * @param comparator the value comparator to use to compare items
+    * @return Optional min entry
     */
    public static <K, V> Optional<Map.Entry<K, V>> minEntry(Map<K, V> map, Comparator<? super V> comparator) {
       return map.entrySet()
@@ -186,24 +186,24 @@ public final class Maps {
    }
 
    /**
-    * Min entry optional.
+    * Gets the min entry in the map.
     *
-    * @param <K> the type parameter
-    * @param <V> the type parameter
-    * @param map the map
-    * @return the optional
+    * @param <K>        the key type parameter
+    * @param <V>        the value type parameter
+    * @param map        the map
+    * @return Optional min entry
     */
    public static <K, V extends Comparable> Optional<Map.Entry<K, V>> minEntry(Map<K, V> map) {
       return minEntry(map, Sorting.natural());
    }
 
    /**
-    * Min key by value k.
+    * Returns the key of the entry with minimum value
     *
-    * @param <K> the type parameter
-    * @param <V> the type parameter
+    * @param <K> the key type parameter
+    * @param <V> the value type parameter
     * @param map the map
-    * @return the k
+    * @return the key with min value
     */
    public static <K, V extends Comparable<? super V>> K minKeyByValue(Map<K, V> map) {
       return minEntry(map).map(Map.Entry::getKey).orElse(null);
@@ -265,12 +265,12 @@ public final class Maps {
    }
 
    /**
-    * Put all.
+    * Puts all given entries into the given map
     *
-    * @param <K>     the type parameter
-    * @param <V>     the type parameter
-    * @param map     the map
-    * @param entries the entries
+    * @param <K>     the key type parameter
+    * @param <V>     the value type parameter
+    * @param map     the map to add the entries to
+    * @param entries the entries to add
     */
    @SafeVarargs
    public static <K, V> void putAll(Map<K, V> map, Map.Entry<? extends K, ? extends V>... entries) {
@@ -281,11 +281,11 @@ public final class Maps {
 
 
    /**
-    * Sorted map of map.
+    * Creates a <code>TreeMap</code> from entries
     *
-    * @param <K>     the type parameter
-    * @param <V>     the type parameter
-    * @param objects the objects
+    * @param <K>     the key type parameter
+    * @param <V>     the value type parameter
+    * @param objects the entries
     * @return the map
     */
    @SafeVarargs
@@ -294,16 +294,16 @@ public final class Maps {
    }
 
    /**
-    * The type Builder.
+    * Map  Builder.
     *
-    * @param <K> the type parameter
-    * @param <V> the type parameter
+    * @param <K> the key type parameter
+    * @param <V> the value type parameter
     */
    public static class Builder<K, V> {
       private final List<Map.Entry<K, V>> entries = new ArrayList<>();
 
       /**
-       * Build map.
+       * Builds a <code>HashMap</code> of added entries.
        *
        * @return the map
        */
@@ -312,7 +312,7 @@ public final class Maps {
       }
 
       /**
-       * Build map.
+       * Builds a map using the given supplier to generate a new map
        *
        * @param mapSupplier the map supplier
        * @return the map
@@ -324,7 +324,7 @@ public final class Maps {
       }
 
       /**
-       * Put builder.
+       * Puts the given key value in the map
        *
        * @param key   the key
        * @param value the value
@@ -336,7 +336,7 @@ public final class Maps {
       }
 
       /**
-       * Put all builder.
+       * Puts all entries of the given map in the map to be built
        *
        * @param other the other
        * @return the builder
