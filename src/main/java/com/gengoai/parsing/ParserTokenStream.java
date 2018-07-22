@@ -64,9 +64,10 @@ public class ParserTokenStream {
    public ParserToken consume(ParserTokenType expectedType) throws ParseException {
       ParserToken next = consume();
       if (next == null || !expectedType.isInstance(next.type)) {
-         throw new ParseException("Expected the next token to be of type " + expectedType + ", but found " + (next == null
-                                                                                                              ? null
-                                                                                                              : next.type));
+         throw new ParseException(
+            "Expected the next token to be of type " + expectedType + ", but found " + (next == null
+                                                                                        ? null
+                                                                                        : next.type));
       }
       return next;
    }
