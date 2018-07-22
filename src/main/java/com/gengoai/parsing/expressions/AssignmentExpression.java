@@ -31,52 +31,52 @@ import com.gengoai.parsing.ParserTokenType;
  */
 public class AssignmentExpression extends Expression {
 
-  /**
-   * The assignment operator
-   */
-  public final String operator;
-  /**
-   * The expression whose value is being assigned to the variable
-   */
-  public final Expression right;
-  /**
-   * The variable receiving the assignment
-   */
-  public final String variableName;
+   /**
+    * The assignment operator
+    */
+   public final String operator;
+   /**
+    * The expression whose value is being assigned to the variable
+    */
+   public final Expression right;
+   /**
+    * The variable receiving the assignment
+    */
+   public final String variableName;
 
-  /**
-   * Default Constructor
-   *
-   * @param variableName The name of the variable that is being assigned to
-   * @param operator     The assignment operator
-   * @param right        The expression which the variable should be assigned
-   */
-  public AssignmentExpression(String variableName, ParserToken operator, Expression right) {
-    super(operator.type);
-    this.variableName = variableName;
-    this.operator = operator.text;
-    this.right = right;
-  }
+   /**
+    * Default Constructor
+    *
+    * @param variableName The name of the variable that is being assigned to
+    * @param operator     The assignment operator
+    * @param right        The expression which the variable should be assigned
+    */
+   public AssignmentExpression(String variableName, ParserToken operator, Expression right) {
+      super(operator.type);
+      this.variableName = variableName;
+      this.operator = operator.text;
+      this.right = right;
+   }
 
-  /**
-   * Default Constructor
-   *
-   * @param variableName The name of the variable that is being assigned to
-   * @param operator     The assignment operator
-   * @param right        The expression which the variable should be assigned
-   * @param type         The tyoke type of the assignemt
-   */
-  public AssignmentExpression(String variableName, String operator, Expression right, ParserTokenType type) {
-    super(type);
-    this.variableName = variableName;
-    this.operator = operator;
-    this.right = right;
-  }
+   /**
+    * Default Constructor
+    *
+    * @param variableName The name of the variable that is being assigned to
+    * @param operator     The assignment operator
+    * @param right        The expression which the variable should be assigned
+    * @param type         The tyoke type of the assignemt
+    */
+   public AssignmentExpression(String variableName, String operator, Expression right, ParserTokenType type) {
+      super(type);
+      this.variableName = variableName;
+      this.operator = operator;
+      this.right = right;
+   }
 
-  @Override
-  public String toString() {
-    return "(" + variableName + " " + operator + " " + right.toString() + ")";
-  }
+   @Override
+   public String toString() {
+      return "(" + variableName + " " + operator + " " + right.toString() + ")";
+   }
 
 
 }//END OF AssignmentExpression

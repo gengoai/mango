@@ -32,8 +32,10 @@ import java.util.Map;
 
 /**
  * <p>A grammar representing the rules for parsing. Rules are defined using <code>ParserHandler</code>s, which are
- * associated with individual <code>ParserTokenType</code>s. There are two main types of handlers, prefix and infix. The
- * <code>PrefixHandler</code> takes care of prefix operators and the <code>InfixHandler</code> handles infix and postfix
+ * associated with individual <code>ParserTokenType</code>s. There are two main types of handlers, prefix and infix.
+ * The
+ * <code>PrefixHandler</code> takes care of prefix operators and the <code>InfixHandler</code> handles infix and
+ * postfix
  * operators.</p>
  *
  * <p>By default a grammar will throw a <code>ParseException</code> when it encounters a token type that it does not
@@ -129,9 +131,7 @@ public class Grammar implements Serializable {
     * @throws ParseException Something went wrong parsing.
     */
    public Expression parse(ExpressionIterator expressionIterator, ParserToken token) throws ParseException {
-      PrefixHandler handler = prefixHandlers.containsKey(token.type)
-                              ? prefixHandlers.get(token.type)
-                              : prefixSkipHandler;
+      PrefixHandler handler = prefixHandlers.getOrDefault(token.type, prefixSkipHandler);
       if (handler == null) {
          throw new ParseException("No PrefixHandler registered for token type " + token.type);
       }

@@ -30,61 +30,61 @@ import com.gengoai.parsing.ParserTokenType;
  */
 public abstract class Expression {
 
-  private final ParserTokenType type;
+   private final ParserTokenType type;
 
-  /**
-   * Default Constructor
-   *
-   * @param type The type of token that dominates the expression
-   */
-  public Expression(ParserTokenType type) {
-    this.type = type;
-  }
+   /**
+    * Default Constructor
+    *
+    * @param type The type of token that dominates the expression
+    */
+   public Expression(ParserTokenType type) {
+      this.type = type;
+   }
 
-  /**
-   * Determines if the type matches
-   *
-   * @param rhs The type to check
-   * @return true if a match, false otherwise
-   */
-  public final boolean match(ParserTokenType rhs) {
-    return type.equals(rhs);
-  }
+   /**
+    * Determines if the type matches
+    *
+    * @param rhs The type to check
+    * @return true if a match, false otherwise
+    */
+   public final boolean match(ParserTokenType rhs) {
+      return type.equals(rhs);
+   }
 
-  /**
-   * Tries to convert the expression into a specific implementation.
-   *
-   * @param <T>   The implementation to convert to
-   * @param clazz Class information for the implementation to convert to
-   * @return The expression as the given implementation or null if could not convert.
-   */
-  public final <T extends Expression> T as(Class<T> clazz) {
-    return isInstance(clazz) ? clazz.cast(this) : null;
-  }
+   /**
+    * Tries to convert the expression into a specific implementation.
+    *
+    * @param <T>   The implementation to convert to
+    * @param clazz Class information for the implementation to convert to
+    * @return The expression as the given implementation or null if could not convert.
+    */
+   public final <T extends Expression> T as(Class<T> clazz) {
+      return isInstance(clazz) ? clazz.cast(this) : null;
+   }
 
-  /**
-   * Is instance.
-   *
-   * @param <T>   the type parameter
-   * @param clazz the clazz
-   * @return the boolean
-   */
-  public final <T extends Expression> boolean isInstance(Class<T> clazz) {
-    return clazz.isInstance(this);
-  }
+   /**
+    * Is instance.
+    *
+    * @param <T>   the type parameter
+    * @param clazz the clazz
+    * @return the boolean
+    */
+   public final <T extends Expression> boolean isInstance(Class<T> clazz) {
+      return clazz.isInstance(this);
+   }
 
-  /**
-   * Gets token type.
-   *
-   * @return The dominate token type for the expression
-   */
-  public final ParserTokenType getTokenType() {
-    return type;
-  }
+   /**
+    * Gets token type.
+    *
+    * @return The dominate token type for the expression
+    */
+   public final ParserTokenType getTokenType() {
+      return type;
+   }
 
-  public final <T extends Expression> boolean match(Class<T> clazz, ParserTokenType type) {
-    return isInstance(clazz) && match(type);
-  }
+   public final <T extends Expression> boolean match(Class<T> clazz, ParserTokenType type) {
+      return isInstance(clazz) && match(type);
+   }
 
 
 }//END OF Expression

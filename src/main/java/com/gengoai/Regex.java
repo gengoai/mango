@@ -3,6 +3,7 @@ package com.gengoai;
 import com.gengoai.string.StringUtils;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
@@ -46,39 +47,26 @@ public final class Regex implements Serializable {
       return p;
    }
 
-   public boolean equals(Object o) {
-      if (o == this) return true;
-      if (!(o instanceof Regex)) return false;
-      final Regex other = (Regex) o;
-      final Object this$pattern = this.getPattern();
-      final Object other$pattern = other.getPattern();
-      if (this$pattern == null ? other$pattern != null : !this$pattern.equals(other$pattern)) return false;
-      return true;
-   }
-
-   public String getPattern() {
-      return this.pattern;
-   }
-
-   public int hashCode() {
-      final int PRIME = 59;
-      int result = 1;
-      final Object $pattern = this.getPattern();
-      result = result * PRIME + ($pattern == null ? 43 : $pattern.hashCode());
-      return result;
+   /**
+    * Ands together this regex with the supplied regular expression
+    *
+    * @param other the other regular expression to be anded to this one
+    * @return the regex
+    */
+   public Regex and(Regex other) {
+      if (other.pattern.length() > 0) {
+         return Re.re(this.pattern + "&&" + other.pattern);
+      }
+      return this;
    }
 
    /**
-    * Concatenates the given regex with this one.
+    * Converts this regex into a character class.
     *
-    * @param regex the regex to concatenate with this one
-    * @return the regex
+    * @return the character class regex
     */
-   public Regex then(Regex regex) {
-      if (regex == null) {
-         return this;
-      }
-      return Re.re(this.pattern + regex.pattern);
+   public Regex chars() {
+      return Re.chars(this);
    }
 
    /**
@@ -90,31 +78,16 @@ public final class Regex implements Serializable {
       return Re.re(this.pattern + "$");
    }
 
-
-   /**
-    * Ors together this regex with the supplied other regular expressions
-    *
-    * @param others the other regular expressions to be ored with this one
-    * @return the regex
-    */
-   public Regex or( Regex... others) {
-      if (others == null) {
-         return this;
-      }
-      return Re.or(this, others);
+   @Override
+   public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof Regex)) return false;
+      Regex regex = (Regex) o;
+      return Objects.equals(pattern, regex.pattern);
    }
 
-   /**
-    * Ands together this regex with the supplied regular expression
-    *
-    * @param other the other regular expression to be anded to this one
-    * @return the regex
-    */
-   public Regex and( Regex other) {
-      if (other.pattern.length() > 0) {
-         return Re.re(this.pattern + "&&" + other.pattern);
-      }
-      return this;
+   public String getPattern() {
+      return this.pattern;
    }
 
    /**
@@ -128,21 +101,46 @@ public final class Regex implements Serializable {
    }
 
    /**
-    * Converts the regex into a non-matching group
-    *
-    * @return the regex
-    */
-   public Regex nmGroup() {
-      return Re.re("(?:" + pattern + ")");
-   }
-
-   /**
     * Converts the regex into a group
     *
     * @return the regex
     */
    public Regex group() {
       return Re.re("(" + this.pattern + ")");
+   }
+
+   @Override
+   public int hashCode() {
+
+      return Objects.hash(pattern);
+   }
+
+   /**
+    * Converts this regex to match an entire line.
+    *
+    * @return the regex that matches entire lines.
+    */
+   public Regex matchLine() {
+      return Re.re("^" + this.pattern + "$");
+   }
+
+   /**
+    * Specifies the number of times for this regex to repeat.
+    *
+    * @param n the number of times the pattern should repeat
+    * @return the regex
+    */
+   public Regex nTimes(int n) {
+      return Re.re(this.pattern + "{" + Integer.toString(n) + "}");
+   }
+
+   /**
+    * Converts the regex into a non-matching group
+    *
+    * @return the regex
+    */
+   public Regex nmGroup() {
+      return Re.re("(?:" + pattern + ")");
    }
 
    /**
@@ -161,13 +159,34 @@ public final class Regex implements Serializable {
    }
 
    /**
-    * Specifies the number of times for this regex to repeat.
+    * Ors together this regex with the supplied other regular expressions
     *
-    * @param n the number of times the pattern should repeat
+    * @param others the other regular expressions to be ored with this one
     * @return the regex
     */
-   public Regex nTimes(int n) {
-      return Re.re(this.pattern + "{" + Integer.toString(n) + "}");
+   public Regex or(Regex... others) {
+      if (others == null) {
+         return this;
+      }
+      return Re.or(this, others);
+   }
+
+   /**
+    * Appends a plus sign to the end of the regex. Typically this is used to designate a match of one or more.
+    *
+    * @return the regex
+    */
+   public Regex plus() {
+      return Re.re(this.pattern + "+");
+   }
+
+   /**
+    * Appends a question mark to the end of the regex. Typically this is used to designate a match of zero or one.
+    *
+    * @return the regex
+    */
+   public Regex question() {
+      return Re.re(this.pattern + "?");
    }
 
    /**
@@ -182,15 +201,6 @@ public final class Regex implements Serializable {
    }
 
    /**
-    * Appends a plus sign to the end of the regex. Typically this is used to designate a match of one or more.
-    *
-    * @return the regex
-    */
-   public Regex plus() {
-      return Re.re(this.pattern + "+");
-   }
-
-   /**
     * Appends a asterisks to the end of the regex. Typically this is used to designate a match of zero or more.
     *
     * @return the regex
@@ -199,16 +209,18 @@ public final class Regex implements Serializable {
       return Re.re(this.pattern + "*");
    }
 
-
    /**
-    * Appends a question mark to the end of the regex. Typically this is used to designate a match of zero or one.
+    * Concatenates the given regex with this one.
     *
+    * @param regex the regex to concatenate with this one
     * @return the regex
     */
-   public Regex question() {
-      return Re.re(this.pattern + "?");
+   public Regex then(Regex regex) {
+      if (regex == null) {
+         return this;
+      }
+      return Re.re(this.pattern + regex.pattern);
    }
-
 
    /**
     * Converts the regex object to a Java pattern with the specified flags.
@@ -218,7 +230,6 @@ public final class Regex implements Serializable {
    public Pattern toPattern() {
       return Pattern.compile(pattern);
    }
-
 
    /**
     * Converts the regex object to a Java pattern with the specified flags.
@@ -234,25 +245,5 @@ public final class Regex implements Serializable {
    public String toString() {
       return pattern;
    }
-
-   /**
-    * Converts this regex to match an entire line.
-    *
-    * @return the regex that matches entire lines.
-    */
-   public Regex matchLine() {
-      return Re.re("^" + this.pattern + "$");
-   }
-
-   /**
-    * Converts this regex into a character class.
-    *
-    * @return the character class regex
-    */
-   public Regex chars() {
-      return Re.chars(this);
-   }
-
-
 }// END OF Regex
 
