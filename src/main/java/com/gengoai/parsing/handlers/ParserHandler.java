@@ -28,26 +28,13 @@ import java.io.Serializable;
  *
  * @author David B. Bracewell
  */
-public abstract class ParserHandler implements Serializable {
-   private static final long serialVersionUID = 1L;
-   private final int precedence;
-
-   /**
-    * Default constructor
-    *
-    * @param precedence The precedence of the handler
-    */
-   public ParserHandler(int precedence) {
-      this.precedence = precedence;
-   }
+public interface ParserHandler extends Serializable {
 
    /**
     * Retrieves the precedence of the handler. Note that all PrefixHandlers will have a precedence of 0
     *
     * @return The precedence of the handler
     */
-   public int precedence() {
-      return precedence;
-   }
+   int precedence();
 
 }//END OF ParserHandler

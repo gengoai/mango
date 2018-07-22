@@ -32,16 +32,22 @@ import com.gengoai.parsing.expressions.Expression;
  *
  * @author David B. Bracewell
  */
-public abstract class InfixHandler extends ParserHandler {
+public abstract class InfixHandler implements ParserHandler {
    private static final long serialVersionUID = 1L;
+   private final int precedence;
 
    /**
     * Default constructor
     *
     * @param precedence The precedence of the handler
     */
-   public InfixHandler(int precedence) {
-      super(precedence);
+   protected InfixHandler(int precedence) {
+      this.precedence = precedence;
+   }
+
+   @Override
+   public final int precedence() {
+      return precedence;
    }
 
    /**

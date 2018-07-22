@@ -31,15 +31,8 @@ import com.gengoai.parsing.expressions.Expression;
  *
  * @author David B. Bracewell
  */
-public abstract class PrefixHandler extends ParserHandler {
+public abstract class PrefixHandler implements ParserHandler {
    private static final long serialVersionUID = 1L;
-
-   /**
-    * Default constructor
-    */
-   public PrefixHandler() {
-      super(0);
-   }
 
    /**
     * Constructs an expression from the current token and the parser.
@@ -51,4 +44,8 @@ public abstract class PrefixHandler extends ParserHandler {
     */
    public abstract Expression parse(ExpressionIterator expressionIterator, ParserToken token) throws ParseException;
 
+   @Override
+   public int precedence() {
+      return 0;
+   }
 }//END OF PrefixHandler
