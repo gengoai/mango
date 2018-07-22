@@ -32,22 +32,22 @@ import java.util.List;
  * @author David B. Bracewell
  */
 public class MultivalueExpression extends Expression {
-  public final List<Expression> expressions;
+   public final List<Expression> expressions;
 
-  /**
-   * Default Constructor
-   *
-   * @param value The value
-   * @param type  The type of the value
-   */
-  public MultivalueExpression(Collection<Expression> value, ParserTokenType type) {
-    super(type);
-    this.expressions = new ArrayList<>(value);
-  }
+   /**
+    * Default Constructor
+    *
+    * @param value The value
+    * @param type  The type of the value
+    */
+   public MultivalueExpression(Collection<Expression> value, ParserTokenType type) {
+      super(type);
+      this.expressions = new ArrayList<>(value);
+   }
 
-  @Override
-  public String toString() {
-    return StringUtils.join(expressions, " ");
-  }
+   @Override
+   public String toString() {
+      return StringUtils.join(expressions, " ");
+   }
 
 }//END OF MultivalueExpression

@@ -59,7 +59,10 @@ public abstract class Expression {
     * @return The expression as the given implementation or null if could not convert.
     */
    public final <T extends Expression> T as(Class<T> clazz) {
-      return isInstance(clazz) ? clazz.cast(this) : null;
+      if (isInstance(clazz)) {
+         return clazz.cast(this);
+      }
+      throw new IllegalArgumentException("Cannot Cast as " + clazz.getName());
    }
 
    /**

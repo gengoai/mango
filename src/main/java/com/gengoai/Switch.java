@@ -22,6 +22,7 @@
 package com.gengoai;
 
 import com.gengoai.conversion.Cast;
+import com.gengoai.function.CheckedConsumer;
 import com.gengoai.function.CheckedFunction;
 import com.gengoai.function.SerializablePredicate;
 
@@ -29,6 +30,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 import static com.gengoai.Validation.notNull;
@@ -46,7 +48,7 @@ import static com.gengoai.Validation.notNull;
  *                    .caseStmt(c -> c.getNumWheels() == 8,  c -> 2.0 )
  *                    .caseStmt(c -> c.getNumWheels() > 8,  c -> 100.0 )
  *                    .build();
- * }
+ * }*
  * </pre>
  * <p>Switches can also be constructed using double brace notation as follows: Note the <code>$default</code> statement
  * sets the default case statement.</p>
@@ -59,7 +61,7 @@ import static com.gengoai.Validation.notNull;
  *        $case(c -> c.getNumWheels() > 8, c -> 100.0);
  *        $default(c -> 1000);
  *    }};
- * }
+ * }*
  * </pre>
  *
  * @param <T> the type parameter being switched on
@@ -71,7 +73,6 @@ public class Switch<T, R> implements Serializable, Function<T, R> {
 
    private final ArrayList<PredFunc<T, R>> statements = new ArrayList<>();
    private CheckedFunction<? super T, ? extends R> defaultStmt;
-
 
    protected Switch() {
 
@@ -100,7 +101,9 @@ public class Switch<T, R> implements Serializable, Function<T, R> {
     * @param predicate the predicate used to determine if the case statement is met.
     * @param function  the function ran when the case statement evaluates to true.
     */
-   protected void $case( SerializablePredicate<? super T> predicate,  CheckedFunction<? super T, ? extends R> function) {
+   protected void $case(SerializablePredicate<? super T> predicate,
+                        CheckedFunction<? super T, ? extends R> function
+                       ) {
       this.statements.add(new PredFunc<>(notNull(predicate), notNull(function)));
    }
 
@@ -109,7 +112,7 @@ public class Switch<T, R> implements Serializable, Function<T, R> {
     *
     * @param function the function to run when no case statements evaluate to true.
     */
-   protected void $default( CheckedFunction<? super T, ? extends R> function) {
+   protected void $default(CheckedFunction<? super T, ? extends R> function) {
       this.defaultStmt = notNull(function);
    }
 
@@ -118,11 +121,37 @@ public class Switch<T, R> implements Serializable, Function<T, R> {
     * value
     * <code>V</code>.</p>
     *
+    * @param <V>       the type parameter
     * @param predicate the predicate used to determine if the case statement is met.
+    * @param mapper    the mapper
     * @param function  the function ran when the case statement evaluates to true.
     */
-   protected <V> void $case( SerializablePredicate<? super T> predicate,  CheckedFunction<? super T, V> mapper,  CheckedFunction<? super V, ? extends R> function) {
+   protected <V> void $case(SerializablePredicate<? super T> predicate,
+                            CheckedFunction<? super T, V> mapper,
+                            CheckedFunction<? super V, ? extends R> function
+                           ) {
       this.statements.add(new PredFunc<>(notNull(predicate), notNull(mapper).andThen(notNull(function))));
+   }
+
+   /**
+    * <p>Adds a case statement using the provided predicate and function first mapping the value <code>T</code> to
+    * value
+    * <code>V</code>.</p>
+    *
+    * @param <V>       the type parameter
+    * @param predicate the predicate used to determine if the case statement is met.
+    * @param mapper    the mapper
+    * @param consumer  the consumer ran when the case statement evaluates to true.
+    */
+   protected <V> void $case(SerializablePredicate<? super T> predicate,
+                            CheckedFunction<? super T, V> mapper,
+                            CheckedConsumer<? super V> consumer
+                           ) {
+      CheckedFunction<? super V, ? extends R> function = v -> {
+         consumer.accept(v);
+         return null;
+      };
+      $case(predicate, mapper, function);
    }
 
    /**
@@ -199,7 +228,7 @@ public class Switch<T, R> implements Serializable, Function<T, R> {
        * @param function  the function ran when the case statement evaluates to true.
        * @return The builder
        */
-      public Builder<T, R> caseStmt( SerializablePredicate<? super T> predicate,  CheckedFunction<? super T, ? extends R> function) {
+      public Builder<T, R> caseStmt(SerializablePredicate<? super T> predicate, CheckedFunction<? super T, ? extends R> function) {
          this.caseStmts.add(new PredFunc<>(notNull(predicate), notNull(function)));
          return this;
       }
@@ -208,11 +237,13 @@ public class Switch<T, R> implements Serializable, Function<T, R> {
        * <p>Adds a case statement using the provided predicate and function first mapping the value <code>T</code> to
        * value <code>V</code>.</p>
        *
+       * @param <V>       the type parameter
        * @param predicate the predicate used to determine if the case statement is met.
+       * @param mapper    the mapper
        * @param function  the function ran when the case statement evaluates to true.
        * @return The builder
        */
-      public <V> Builder<T, R> caseStmt( SerializablePredicate<? super T> predicate,  CheckedFunction<? super T, V> mapper,  CheckedFunction<? super V, ? extends R> function) {
+      public <V> Builder<T, R> caseStmt(SerializablePredicate<? super T> predicate, CheckedFunction<? super T, V> mapper, CheckedFunction<? super V, ? extends R> function) {
          this.caseStmts.add(new PredFunc<>(notNull(predicate), notNull(mapper).andThen(notNull(function))));
          return this;
       }
@@ -230,48 +261,61 @@ public class Switch<T, R> implements Serializable, Function<T, R> {
 
    private static class PredFunc<T, R> implements Serializable {
       private static final long serialVersionUID = 1L;
+      /**
+       * The Predicate.
+       */
       SerializablePredicate<? super T> predicate;
+      /**
+       * The Function.
+       */
       CheckedFunction<? super T, ? extends R> function;
 
-      @java.beans.ConstructorProperties({"predicate", "function"})
+      /**
+       * Instantiates a new Pred func.
+       *
+       * @param predicate the predicate
+       * @param function  the function
+       */
       public PredFunc(SerializablePredicate<? super T> predicate, CheckedFunction<? super T, ? extends R> function) {
          this.predicate = predicate;
          this.function = function;
       }
 
-      public boolean equals(Object o) {
-         if (o == this) return true;
-         if (!(o instanceof Switch.PredFunc)) return false;
-         final PredFunc other = (PredFunc) o;
-         final Object this$predicate = this.getPredicate();
-         final Object other$predicate = other.getPredicate();
-         if (this$predicate == null ? other$predicate != null : !this$predicate.equals(other$predicate)) return false;
-         final Object this$function = this.getFunction();
-         final Object other$function = other.getFunction();
-         if (this$function == null ? other$function != null : !this$function.equals(other$function)) return false;
-         return true;
-      }
-
+      /**
+       * Gets function.
+       *
+       * @return the function
+       */
       public CheckedFunction<? super T, ? extends R> getFunction() {
          return this.function;
       }
 
+      /**
+       * Gets predicate.
+       *
+       * @return the predicate
+       */
       public SerializablePredicate<? super T> getPredicate() {
          return this.predicate;
       }
 
-      public int hashCode() {
-         final int PRIME = 59;
-         int result = 1;
-         final Object $predicate = this.getPredicate();
-         result = result * PRIME + ($predicate == null ? 43 : $predicate.hashCode());
-         final Object $function = this.getFunction();
-         result = result * PRIME + ($function == null ? 43 : $function.hashCode());
-         return result;
-      }
 
       public String toString() {
          return "Switch.PredFunc(predicate=" + this.getPredicate() + ", function=" + this.getFunction() + ")";
+      }
+
+      @Override
+      public int hashCode() {
+         return Objects.hash(predicate, function);
+      }
+
+      @Override
+      public boolean equals(Object obj) {
+         if (this == obj) {return true;}
+         if (obj == null || getClass() != obj.getClass()) {return false;}
+         final PredFunc other = (PredFunc) obj;
+         return Objects.equals(this.predicate, other.predicate)
+                   && Objects.equals(this.function, other.function);
       }
    }
 

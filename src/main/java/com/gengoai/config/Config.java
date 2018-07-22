@@ -436,7 +436,7 @@ public final class Config implements Serializable {
       }
       try {
          new ConfigParser(resource).parse();
-      } catch (ParseException | IOException e) {
+      } catch (ParseException e) {
          throw new RuntimeException(e);
       }
       if (resource.path() != null) {

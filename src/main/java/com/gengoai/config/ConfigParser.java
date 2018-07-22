@@ -36,10 +36,10 @@ import com.gengoai.string.StringUtils;
 
 import javax.script.ScriptException;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.NoSuchElementException;
+
+import static com.gengoai.Validation.notNull;
 
 /**
  * @author David B. Bracewell
@@ -56,45 +56,56 @@ class ConfigParser extends Parser {
       register(ConfigTokenizer.ConfigTokenType.SECTION_HEADER, new SectionHandler());
    }};
 
-   private static Lexer CONFIG_LEXER = new Lexer() {
-      @Override
-      public ParserTokenStream lex(final Resource input) throws IOException {
-         return new ParserTokenStream(
-            new Iterator<ParserToken>() {
-               final ConfigTokenizer backing = new ConfigTokenizer(input.reader());
-               ParserToken next = null;
+   private static Lexer CONFIG_LEXER = input -> new ParserTokenStream(
+      new Iterator<ParserToken>() {
+         final ConfigTokenizer backing = new ConfigTokenizer(input.reader());
+         ParserToken next = null;
 
-               @Override
-               public boolean hasNext() {
-                  if (next == null) {
-                     try {
-                        next = backing.next();
-                     } catch (IOException | ParseException e) {
-                        throw new RuntimeException(e);
-                     }
-                  }
-                  return next != null;
-               }
-
-               @Override
-               public ParserToken next() {
-                  if (!hasNext()) {
-                     throw new NoSuchElementException();
-                  }
-                  ParserToken returnToken = next;
-                  next = null;
-                  return returnToken;
-               }
-
-               @Override
-               public void remove() {
-                  throw new UnsupportedOperationException();
+         @Override
+         public boolean hasNext() {
+            if (next == null) {
+               try {
+                  next = backing.next();
+               } catch (IOException | ParseException e) {
+                  throw new RuntimeException(e);
                }
             }
-         );
-      }
-   };
+            return next != null;
+         }
 
+         @Override
+         public ParserToken next() {
+            if (!hasNext()) {
+               throw new NoSuchElementException();
+            }
+            ParserToken returnToken = next;
+            next = null;
+            return returnToken;
+         }
+      }
+   );
+
+   private final Evaluator<Expression> evaluator = new Evaluator<Expression>() {{
+      $void(PrefixOperatorExpression.class,
+            ConfigTokenizer.ConfigTokenType.IMPORT,
+            exp -> importConfig(exp.right.toString().trim()));
+
+      $void(PrefixOperatorExpression.class,
+            ConfigTokenizer.ConfigTokenType.SCRIPT,
+            exp -> importScript(exp.right.toString().trim()));
+
+      $void(PrefixOperatorExpression.class,
+            ConfigTokenizer.ConfigTokenType.APPEND_PROPERTY,
+            exp -> setProperty(exp, ""));
+
+      $void(PrefixOperatorExpression.class,
+            ConfigTokenizer.ConfigTokenType.PROPERTY,
+            exp -> setProperty(exp, ""));
+
+      $void(SectionExpression.class,
+            ConfigTokenizer.ConfigTokenType.SECTION_HEADER,
+            exp -> handleSection(StringUtils.EMPTY, exp));
+   }};
 
    private final Resource resource;
    private final String resourceName;
@@ -104,9 +115,8 @@ class ConfigParser extends Parser {
     * Instantiates a new Config parser.
     *
     * @param config the config
-    * @throws java.io.IOException the iO exception
     */
-   public ConfigParser(Resource config) throws IOException {
+   public ConfigParser(Resource config) {
       super(CONFIG_GRAMMAR, CONFIG_LEXER);
       this.resource = config;
       this.resourceName = config.descriptor();
@@ -178,39 +188,13 @@ class ConfigParser extends Parser {
       Config.getInstance().setterFunction.setProperty(key, value, resourceName);
    }
 
-   public List<Expression> parse() throws ParseException {
-      ExpressionIterator iterator = parse(resource);
-      Expression exp;
-      while ((exp = iterator.next()) != null) {
 
-         if (exp.match(ConfigTokenizer.ConfigTokenType.IMPORT)) {
-
-            importConfig(exp.as(PrefixOperatorExpression.class).right.toString().trim());
-
-         } else if (exp.match(ConfigTokenizer.ConfigTokenType.SCRIPT)) {
-
-            importScript(exp.as(PrefixOperatorExpression.class).right.toString().trim());
-
-         } else if (exp.match(ConfigTokenizer.ConfigTokenType.APPEND_PROPERTY)) {
-
-            setProperty(exp.as(PrefixOperatorExpression.class), "");
-
-         } else if (exp.match(ConfigTokenizer.ConfigTokenType.PROPERTY)) {
-
-            setProperty(exp.as(PrefixOperatorExpression.class), "");
-
-         } else if (exp.match(ConfigTokenizer.ConfigTokenType.SECTION_HEADER)) {
-
-            handleSection(StringUtils.EMPTY, exp.as(SectionExpression.class));
-
-         }
-      }
-
-      return Collections.emptyList();
+   public void parse() throws ParseException {
+      super.evaluateAll(resource, evaluator);
    }
 
    private void handleSection(String parent, SectionExpression exp) {
-      final SectionExpression section = exp.as(SectionExpression.class);
+      final SectionExpression section = notNull(exp.as(SectionExpression.class));
       final String prefix = StringUtils.isNullOrBlank(parent) ? exp.sectionPrefix : parent + "." + exp.sectionPrefix;
       for (Expression x : section.assignments) {
          if (x.isInstance(SectionExpression.class)) {
