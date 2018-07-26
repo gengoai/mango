@@ -38,26 +38,10 @@ public final class EnhancedDoubleStatistics implements SerializableDoubleConsume
    private double sum = 0;
    private double sumOfSq = 0;
    private int count = 0;
-   private double median = 0;
-   private double median_step = 1e-9;
 
 
    @Override
    public void accept(double value) {
-      if (count == 0) {
-         median = value;
-         median_step = Math.max(value / 2, 1e-9);
-      } else {
-         if (median > value) {
-            median -= median_step;
-         } else if (median < value) {
-            median += median_step;
-         }
-
-         if (Math.abs(value - median) < median_step) {
-            median_step /= 2.0;
-         }
-      }
       min = Math.min(min, value);
       max = Math.max(max, value);
       sum += value;
@@ -187,18 +171,6 @@ public final class EnhancedDoubleStatistics implements SerializableDoubleConsume
    }
 
    /**
-    * Gets the estimated median using the FAME algorithm
-    *
-    * @return The median
-    */
-   public double getMedian() {
-      if (getCount() == 0) {
-         return Double.NaN;
-      }
-      return median;
-   }
-
-   /**
     * Gets the population variance.
     *
     * @return the population variance
@@ -214,7 +186,7 @@ public final class EnhancedDoubleStatistics implements SerializableDoubleConsume
 
    @Override
    public int hashCode() {
-      return Objects.hash(min, max, sum, sumOfSq, count, median, median_step);
+      return Objects.hash(min, max, sum, sumOfSq, count);
    }
 
    @Override
@@ -226,9 +198,7 @@ public final class EnhancedDoubleStatistics implements SerializableDoubleConsume
                 && Objects.equals(this.max, other.max)
                 && Objects.equals(this.sum, other.sum)
                 && Objects.equals(this.sumOfSq, other.sumOfSq)
-                && Objects.equals(this.count, other.count)
-                && Objects.equals(this.median, other.median)
-                && Objects.equals(this.median_step, other.median_step);
+                && Objects.equals(this.count, other.count);
    }
 
    @Override
@@ -237,8 +207,6 @@ public final class EnhancedDoubleStatistics implements SerializableDoubleConsume
                 "min=" + min +
                 ", max=" + max +
                 ", sum=" + sum +
-                ", count=" + count +
-                ", median=" + median +
                 '}';
    }
 }//END OF EnhancedDoubleStatistics

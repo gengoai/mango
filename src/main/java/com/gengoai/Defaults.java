@@ -3,7 +3,7 @@ package com.gengoai;
 import com.gengoai.conversion.Cast;
 
 /**
- * <p>Get default values for different objects.</p>
+ * <p>Get default values for primitives and objects.</p>
  *
  * @author David B. Bracewell
  */

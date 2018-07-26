@@ -35,9 +35,8 @@ import java.util.regex.Pattern;
  * <p>A enum like object that can have elements created at runtime as needed and which have a parent associated with
  * them. As with EnumValues, elements are singleton objects and can have their equality safely checked using the
  * <code>==</code> operator. Their implementation of {@link Tag#isInstance(Tag)} returns true if the element is equal
- * to
- * or a descendant of the tag being compared against. Elements can have their parents assigned at later time as long up
- * until a non-null parent has been set.</p>
+ * to or a descendant of the tag being compared against. Elements can have their parents assigned at later time as long
+ * up until a non-null parent has been set.</p>
  *
  * <p>The python script in the mango tools directory (<code>tools/enumGen.py</code>) bootstraps the creation of basic
  * HierarchicalEnumValue. As with enum values the names associated with EnumValues are normalized to be uppercase and
@@ -156,9 +155,8 @@ public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> ext
 
    /**
     * <p>Gets the parent of this element. It first checks if a parent has been explicitly set and if not will attempt
-    * to
-    * determine the parent using the configuration property <code>canonical.name.parent</code> where the canonical name
-    * is determined using {@link #canonicalName()}.</p>
+    * to determine the parent using the configuration property <code>canonical.name.parent</code> where the canonical
+    * name is determined using {@link #canonicalName()}.</p>
     *
     * @return the parent of this element as an Optional
     */

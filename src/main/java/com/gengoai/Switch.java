@@ -24,6 +24,7 @@ package com.gengoai;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.CheckedConsumer;
 import com.gengoai.function.CheckedFunction;
+import com.gengoai.function.SerializableFunction;
 import com.gengoai.function.SerializablePredicate;
 
 import java.io.Serializable;
@@ -31,7 +32,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 
 import static com.gengoai.Validation.notNull;
 
@@ -68,7 +68,7 @@ import static com.gengoai.Validation.notNull;
  * @param <R> the type parameter returned from the switch operation
  * @author David B. Bracewell
  */
-public class Switch<T, R> implements Serializable, Function<T, R> {
+public class Switch<T, R> implements SerializableFunction<T, R> {
    private static final long serialVersionUID = 1L;
 
    private final ArrayList<PredFunc<T, R>> statements = new ArrayList<>();
@@ -108,6 +108,22 @@ public class Switch<T, R> implements Serializable, Function<T, R> {
    }
 
    /**
+    * <p>Adds a case statement using the provided predicate and function.</p>
+    *
+    * @param predicate the predicate used to determine if the case statement is met.
+    * @param consumer  the function ran when the case statement evaluates to true.
+    */
+   protected void $voidCase(SerializablePredicate<? super T> predicate,
+                            CheckedConsumer<? super T> consumer
+                           ) {
+      CheckedFunction<? super T, ? extends R> function = t -> {
+         consumer.accept(t);
+         return null;
+      };
+      this.statements.add(new PredFunc<>(notNull(predicate), function));
+   }
+
+   /**
     * <p>Adds a default statement to the switch.</p>
     *
     * @param function the function to run when no case statements evaluate to true.
@@ -143,10 +159,10 @@ public class Switch<T, R> implements Serializable, Function<T, R> {
     * @param mapper    the mapper
     * @param consumer  the consumer ran when the case statement evaluates to true.
     */
-   protected <V> void $case(SerializablePredicate<? super T> predicate,
-                            CheckedFunction<? super T, V> mapper,
-                            CheckedConsumer<? super V> consumer
-                           ) {
+   protected <V> void $voidCase(SerializablePredicate<? super T> predicate,
+                                CheckedFunction<? super T, V> mapper,
+                                CheckedConsumer<? super V> consumer
+                               ) {
       CheckedFunction<? super V, ? extends R> function = v -> {
          consumer.accept(v);
          return null;

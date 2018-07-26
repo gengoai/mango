@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python2.7
 
 import codecs
 import re
@@ -13,21 +13,20 @@ parser.add_option("--hierarchical", action="store_true", default=False, dest="hi
 (options,args) = parser.parse_args()
 
 if options.class_name is None:
-    print "No Class Name Given"
+    print("No Class Name Given")
     sys.exit(-1)
 elif options.package_name is None:
-    print "No Package Name Given"
+    print("No Package Name Given")
     sys.exit(-1)
 elif options.file is None:
-    print "No File Path Given"
+    print("No File Path Given")
     sys.exit(-1)
 
 flat = """package {{PACKAGE_NAME}}
 
 import com.gengoai.collection.Sets;
-import com.davidbracewell.DynamicEnum;
-import com.davidbracewell.EnumValue;
-import lombok.NonNull;
+import com.gengoai.DynamicEnum;
+import com.gengoai.EnumValue;
 
 /**
 * Auto generated using enumGen.py
@@ -47,7 +46,7 @@ public final class {{CLASS_NAME}} extends EnumValue implements Comparable<{{CLAS
     *
     * @return The instance of {{CLASS_NAME}} corresponding th the give name.
     */
-    public static {{CLASS_NAME}} create(@NonNull String name) {
+    public static {{CLASS_NAME}} create(String name) {
         {{CLASS_NAME}} toReturn = DynamicEnum.register(new {{CLASS_NAME}}(name));
         values.add(toReturn);
         return toReturn;
@@ -69,12 +68,12 @@ public final class {{CLASS_NAME}} extends EnumValue implements Comparable<{{CLAS
     * @return The constant of {{CLASS_NAME}} with the specified name
     * @throws IllegalArgumentException if the specified name is not a member of {{CLASS_NAME}}.
     */
-    public static {{CLASS_NAME}} valueOf(@NonNull String name) {
+    public static {{CLASS_NAME}} valueOf(String name) {
         return DynamicEnum.valueOf({{CLASS_NAME}}.class, name);
     }
 
     @Override
-    public int compareTo(@NonNull {{CLASS_NAME}} o) {
+    public int compareTo({{CLASS_NAME}} o) {
         return this.canonicalName().compareTo(o.canonicalName());
     }
 
@@ -84,10 +83,9 @@ public final class {{CLASS_NAME}} extends EnumValue implements Comparable<{{CLAS
 hierarchical = """package {{PACKAGE_NAME}};
 
 
-import com.davidbracewell.DynamicEnum;
-import com.davidbracewell.HierarchicalEnumValue;
+import com.gengoai.DynamicEnum;
+import com.gengoai.HierarchicalEnumValue;
 import com.gengoai.collection.Sets;
-import lombok.NonNull;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -117,7 +115,7 @@ public final class {{CLASS_NAME}} extends HierarchicalEnumValue<{{CLASS_NAME}}> 
    * @param name the specified name of the {{CLASS_NAME}}
    * @return The instance of {{CLASS_NAME}} corresponding th the give name.
    */
-  public static {{CLASS_NAME}} create(@NonNull String name) {
+  public static {{CLASS_NAME}} create(String name) {
     return create(name, null);
   }
 
@@ -128,7 +126,7 @@ public final class {{CLASS_NAME}} extends HierarchicalEnumValue<{{CLASS_NAME}}> 
    * @param parent the parent element of the enum;
    * @return The instance of {{CLASS_NAME}} corresponding th the give name.
    */
-  public static {{CLASS_NAME}} create(@NonNull String name, {{CLASS_NAME}} parent) {
+  public static {{CLASS_NAME}} create(String name, {{CLASS_NAME}} parent) {
     {{CLASS_NAME}} toReturn = DynamicEnum.register(new {{CLASS_NAME}}(name, parent));
     toReturn.setParentIfAbsent(parent);
     values.add(toReturn);
@@ -151,7 +149,7 @@ public final class {{CLASS_NAME}} extends HierarchicalEnumValue<{{CLASS_NAME}}> 
    * @return The constant of {{CLASS_NAME}} with the specified name
    * @throws IllegalArgumentException if the specified name is not a member of {{CLASS_NAME}}.
    */
-  public static {{CLASS_NAME}} valueOf(@NonNull String name) {
+  public static {{CLASS_NAME}} valueOf(String name) {
     return DynamicEnum.valueOf({{CLASS_NAME}}.class, name);
   }
 
@@ -161,7 +159,7 @@ public final class {{CLASS_NAME}} extends HierarchicalEnumValue<{{CLASS_NAME}}> 
    }
 
   @Override
-  public int compareTo(@NonNull {{CLASS_NAME}} o) {
+  public int compareTo({{CLASS_NAME}} o) {
     return canonicalName().compareTo(o.canonicalName());
   }
 

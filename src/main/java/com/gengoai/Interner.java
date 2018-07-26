@@ -25,6 +25,7 @@ import com.gengoai.collection.Streams;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 
@@ -42,23 +43,16 @@ public final class Interner<E> implements Serializable {
    private volatile WeakHashMap<E, E> map = new WeakHashMap<>();
 
    @Override
-   public boolean equals(Object o) {
-      if (o == this) return true;
-      if (!(o instanceof Interner)) return false;
-      final Interner other = (Interner) o;
-      final Object this$map = this.map;
-      final Object other$map = other.map;
-      if (this$map == null ? other$map != null : !this$map.equals(other$map)) return false;
-      return true;
+   public int hashCode() {
+      return Objects.hash(map);
    }
 
    @Override
-   public int hashCode() {
-      final int PRIME = 59;
-      int result = 1;
-      final Object $map = this.map;
-      result = result * PRIME + ($map == null ? 43 : $map.hashCode());
-      return result;
+   public boolean equals(Object obj) {
+      if (this == obj) {return true;}
+      if (obj == null || getClass() != obj.getClass()) {return false;}
+      final Interner other = (Interner) obj;
+      return Objects.equals(this.map, other.map);
    }
 
    /**
