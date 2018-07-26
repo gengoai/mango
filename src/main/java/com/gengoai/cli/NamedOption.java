@@ -31,10 +31,7 @@ import com.gengoai.string.StringUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 
 /**
@@ -98,7 +95,7 @@ public final class NamedOption {
       } else {
          this.value = null;
       }
-      this.aliases = option.aliases();
+      this.aliases = Arrays.stream(option.aliases()).distinct().toArray(String[]::new);
       this.required = option.required();
    }
 
@@ -112,7 +109,7 @@ public final class NamedOption {
     * @param aliases      the aliases
     * @param required     the required
     */
-   protected NamedOption(String name, Class<?> type, String description, Object defaultValue, Collection<String> aliases, boolean required) {
+   protected NamedOption(String name, Class<?> type, String description, Object defaultValue, Set<String> aliases, boolean required) {
       Validation.checkArgument(!StringUtils.isNullOrBlank(name) && !CharMatcher.WhiteSpace.matchesAnyOf(name),
                                "Option name must have at least one character and must not have a space");
       Validation.notNullOrBlank(description, "Description must not be blank");
@@ -132,7 +129,7 @@ public final class NamedOption {
    }
 
    /**
-    * Builder named option builder.
+    * Gets a builder for NamedOptions
     *
     * @return the named option builder
     */
@@ -142,9 +139,9 @@ public final class NamedOption {
 
 
    /**
-    * Get alias specifications string [ ].
+    * Converts the aliases into a specification forms, e.g. with "-" or "--" added.
     *
-    * @return the string [ ]
+    * @return the alias specifications
     */
    public String[] getAliasSpecifications() {
       if (aliases == null) {
@@ -158,16 +155,16 @@ public final class NamedOption {
    }
 
    /**
-    * Get aliases string [ ].
+    * Gets the aliases associated with the option
     *
-    * @return the string [ ]
+    * @return Aliases associated with the option
     */
    public String[] getAliases() {
       return this.aliases;
    }
 
    /**
-    * Gets description.
+    * Gets the help description for the option.
     *
     * @return the description
     */
@@ -176,7 +173,7 @@ public final class NamedOption {
    }
 
    /**
-    * Gets field.
+    * Gets the field associated if the option, if one.
     *
     * @return the field
     */
@@ -185,7 +182,7 @@ public final class NamedOption {
    }
 
    /**
-    * Gets name.
+    * Gets the name of the option.
     *
     * @return the name
     */
@@ -194,18 +191,18 @@ public final class NamedOption {
    }
 
    /**
-    * Gets type.
+    * Gets the type of the argument.
     *
-    * @return the type
+    * @return the class information for the type of the option
     */
    public Class<?> getType() {
       return this.type;
    }
 
    /**
-    * Is required boolean.
+    * Gets whether or not the option is required
     *
-    * @return the boolean
+    * @return True the option is required to be set on the command line
     */
    public boolean isRequired() {
       return this.required;
@@ -342,24 +339,23 @@ public final class NamedOption {
                                                                .build();
 
    public String toString() {
-      return "NamedOption(name=" + this.getName() + ", type=" + this.getType() + ", description=" + this.getDescription() + ", aliases=" + java.util.Arrays
-                                                                                                                                              .deepToString(
-                                                                                                                                                 this
-                                                                                                                                                    .getAliases()) + ", required=" + this
-                                                                                                                                                                                        .isRequired() + ", field=" + this
-                                                                                                                                                                                                                        .getField() + ", value=" + this
-                                                                                                                                                                                                                                                      .getValue() + ")";
+      return "NamedOption(name=" + this.getName() +
+                ", type=" + this.getType() +
+                ", description=" + this.getDescription() +
+                ", aliases=" + Arrays.toString(this.getAliases()) +
+                ", required=" + this.isRequired() +
+                ", value=" + this.getValue() + ")";
    }
 
    /**
-    * The type Named option builder.
+    * Builder class to create a named options
     */
    public static class NamedOptionBuilder {
       private String name;
       private Class<?> type;
       private String description;
       private Object defaultValue;
-      private ArrayList<String> aliases;
+      private Set<String> aliases = new HashSet<>();
       private boolean required;
 
       /**
@@ -369,67 +365,31 @@ public final class NamedOption {
       }
 
       /**
-       * Alias named option . named option builder.
+       * Adds an alias for this option
        *
-       * @param alias the alias
-       * @return the named option . named option builder
+       * @param alias the alias to add
+       * @return the named option builder
        */
       public NamedOption.NamedOptionBuilder alias(String alias) {
-         if (this.aliases == null) this.aliases = new ArrayList<String>();
          this.aliases.add(alias);
          return this;
       }
 
-      /**
-       * Aliases named option . named option builder.
-       *
-       * @param aliases the aliases
-       * @return the named option . named option builder
-       */
-      public NamedOption.NamedOptionBuilder aliases(Collection<? extends String> aliases) {
-         if (this.aliases == null) this.aliases = new ArrayList<String>();
-         this.aliases.addAll(aliases);
-         return this;
-      }
 
       /**
-       * Build named option.
+       * Builds the named option
        *
        * @return the named option
        */
       public NamedOption build() {
-         Collection<String> aliases;
-         switch (this.aliases == null ? 0 : this.aliases.size()) {
-            case 0:
-               aliases = java.util.Collections.emptyList();
-               break;
-            case 1:
-               aliases = java.util.Collections.singletonList(this.aliases.get(0));
-               break;
-            default:
-               aliases = java.util.Collections.unmodifiableList(new ArrayList<String>(this.aliases));
-         }
-
          return new NamedOption(name, type, description, defaultValue, aliases, required);
       }
 
       /**
-       * Clear aliases named option . named option builder.
-       *
-       * @return the named option . named option builder
-       */
-      public NamedOption.NamedOptionBuilder clearAliases() {
-         if (this.aliases != null)
-            this.aliases.clear();
-
-         return this;
-      }
-
-      /**
-       * Default value named option . named option builder.
+       * Sets the default value for the option
        *
        * @param defaultValue the default value
-       * @return the named option . named option builder
+       * @return the named option builder
        */
       public NamedOption.NamedOptionBuilder defaultValue(Object defaultValue) {
          this.defaultValue = defaultValue;
@@ -437,10 +397,10 @@ public final class NamedOption {
       }
 
       /**
-       * Description named option . named option builder.
+       * Sets the description of the option
        *
        * @param description the description
-       * @return the named option . named option builder
+       * @return the named option builder
        */
       public NamedOption.NamedOptionBuilder description(String description) {
          this.description = description;
@@ -448,10 +408,10 @@ public final class NamedOption {
       }
 
       /**
-       * Name named option . named option builder.
+       * Sets the name of the option
        *
        * @param name the name
-       * @return the named option . named option builder
+       * @return the named option builder
        */
       public NamedOption.NamedOptionBuilder name(String name) {
          this.name = name;
@@ -459,10 +419,10 @@ public final class NamedOption {
       }
 
       /**
-       * Required named option . named option builder.
+       * Sets whether or not the option is required
        *
-       * @param required the required
-       * @return the named option . named option builder
+       * @param required True - the option is required to be set
+       * @return the named option builder
        */
       public NamedOption.NamedOptionBuilder required(boolean required) {
          this.required = required;
@@ -470,14 +430,14 @@ public final class NamedOption {
       }
 
       public String toString() {
-         return "NamedOption.NamedOptionBuilder(name=" + this.name + ", type=" + this.type + ", description=" + this.description + ", defaultValue=" + this.defaultValue + ", aliases=" + this.aliases + ", required=" + this.required + ")";
+         return "NamedOptionBuilder(name=" + this.name + ", type=" + this.type + ", description=" + this.description + ", defaultValue=" + this.defaultValue + ", aliases=" + this.aliases + ", required=" + this.required + ")";
       }
 
       /**
-       * Type named option . named option builder.
+       * Sets the type of the option
        *
        * @param type the type
-       * @return the named option . named option builder
+       * @return the named option builder
        */
       public NamedOption.NamedOptionBuilder type(Class<?> type) {
          this.type = type;
