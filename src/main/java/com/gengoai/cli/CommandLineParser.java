@@ -58,7 +58,7 @@ public final class CommandLineParser {
    private static final String SHORT = "-";
    private final Map<String, NamedOption> options = new HashMap<>();
    private final Set<NamedOption> optionSet = new HashSet<>();
-   private final Map<String, String> unamedOptions = new HashMap<>();
+   private final Map<String, String> unnamedOptions = new HashMap<>();
    private final Object owner;
    private final String applicationDescription;
 
@@ -208,7 +208,7 @@ public final class CommandLineParser {
          }
       }));
 
-      return filtered.toArray(new String[filtered.size()]);
+      return filtered.toArray(new String[0]);
    }
 
 
@@ -225,7 +225,7 @@ public final class CommandLineParser {
          String out = Stream.concat(
             Stream.of(option.getAliasSpecifications()),
             Stream.of(option.getSpecification()))
-                            .sorted((s1, s2) -> Integer.compare(s1.length(), s2.length()))
+                            .sorted(Comparator.comparingInt(String::length))
                             .collect(Collectors.joining(", "));
          if (option.isRequired()) {
             out += " *";
@@ -266,7 +266,7 @@ public final class CommandLineParser {
             //if one was specified, add it
             filtered.add(value);
          }
-         unamedOptions.put(key.replaceAll("^-+", ""), value);
+         unnamedOptions.put(key.replaceAll("^-+", ""), value);
          return value;
 
       } else if (option.isBoolean()) {
@@ -303,8 +303,8 @@ public final class CommandLineParser {
       NamedOption option = options.get(optionName);
 
       if (option == null) {
-         return unamedOptions.containsKey(optionName) &&
-                   !unamedOptions.get(optionName).equalsIgnoreCase("false");
+         return unnamedOptions.containsKey(optionName) &&
+                   !unnamedOptions.get(optionName).equalsIgnoreCase("false");
       }
 
       return isSet(option);
@@ -336,7 +336,7 @@ public final class CommandLineParser {
       NamedOption option = options.get(optionName);
 
       if (option == null) {
-         return Cast.as(unamedOptions.get(optionName));
+         return Cast.as(unnamedOptions.get(optionName));
       }
 
       if (option.isBoolean()) {
@@ -368,7 +368,7 @@ public final class CommandLineParser {
                                                                              Convert.convert(no.getValue(),
                                                                                              String.class)))
                                                         .collect(Collectors.toSet());
-      entries.addAll(unamedOptions.entrySet());
+      entries.addAll(unnamedOptions.entrySet());
       return entries;
    }
 

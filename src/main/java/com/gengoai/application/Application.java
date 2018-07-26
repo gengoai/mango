@@ -36,10 +36,10 @@ import java.lang.annotation.Target;
 /**
  * <p>Generic interface for building applications that use Mango's {@link Config} and {@link CommandLineParser} to
  * reduce the boilerplate of application configuration and command line parsing. The command line parser is constructed
- * during the run and has it options set to fields in the application defined using the {@link
- * Option} annotation.</p>
+ * during the run and has it options set to fields in the application defined using the {@link Option} annotation.</p>
  *
- * <p>A <code>Description</code> annotation can be added to a class extending Application to provide a short description
+ * <p>A <code>Description</code> annotation can be added to a class extending Application to provide a short
+ * description
  * of what the program does and will be displayed as part of the help screen. </p>
  *
  * @author David B. Bracewell

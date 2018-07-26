@@ -87,7 +87,9 @@ public interface Cache<K, V> {
     *
     * @param keys The keys to remove
     */
-   void invalidateAll( Iterable<? extends K> keys);
+   default void invalidateAll(Iterable<? extends K> keys) {
+      keys.forEach(this::invalidate);
+   }
 
    /**
     * Clears the cache

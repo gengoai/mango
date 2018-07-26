@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- * LRU Cache
+ * Last-Recently-Used Cache with bounded size.
  *
  * @param <K> the key type parameter
  * @param <V> the value type parameter
@@ -18,7 +18,7 @@ public class LRUCache<K, V> implements Cache<K, V> {
    protected transient final Map<K, V> cache;
 
    /**
-    * Instantiates a new Lru cache.
+    * Instantiates a new LRU cache with given max size.
     *
     * @param maxSize the max size
     */
@@ -40,11 +40,6 @@ public class LRUCache<K, V> implements Cache<K, V> {
    @Override
    public void invalidate(K key) {
       cache.remove(key);
-   }
-
-   @Override
-   public void invalidateAll(Iterable<? extends K> keys) {
-      keys.forEach(cache::remove);
    }
 
    @Override

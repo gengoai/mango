@@ -149,7 +149,7 @@ public class BeanMap extends AbstractMap<String, Object> {
             }
             return m.invoke(bean, Convert.convert(arg1, clazz));
          } catch (Exception e) {
-            log.warn(e);
+            throw new RuntimeException(e);
          }
       } else {
          log.finest("{0} is not a setter on {1}.", arg0, bean.getClass());

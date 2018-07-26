@@ -34,6 +34,7 @@ import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 
 
 /**
@@ -130,33 +131,13 @@ public final class NamedOption {
       this.field = null;
    }
 
+   /**
+    * Builder named option builder.
+    *
+    * @return the named option builder
+    */
    public static NamedOptionBuilder builder() {
       return new NamedOptionBuilder();
-   }
-
-   public boolean equals(Object o) {
-      if (o == this) return true;
-      if (!(o instanceof NamedOption)) return false;
-      final NamedOption other = (NamedOption) o;
-      final Object this$name = this.getName();
-      final Object other$name = other.getName();
-      if (this$name == null ? other$name != null : !this$name.equals(other$name)) return false;
-      final Object this$type = this.getType();
-      final Object other$type = other.getType();
-      if (this$type == null ? other$type != null : !this$type.equals(other$type)) return false;
-      final Object this$description = this.getDescription();
-      final Object other$description = other.getDescription();
-      if (this$description == null ? other$description != null : !this$description.equals(other$description))
-         return false;
-      if (!java.util.Arrays.deepEquals(this.getAliases(), other.getAliases())) return false;
-      if (this.isRequired() != other.isRequired()) return false;
-      final Object this$field = this.getField();
-      final Object other$field = other.getField();
-      if (this$field == null ? other$field != null : !this$field.equals(other$field)) return false;
-      final Object this$value = this.getValue();
-      final Object other$value = other.getValue();
-      if (this$value == null ? other$value != null : !this$value.equals(other$value)) return false;
-      return true;
    }
 
 
@@ -176,48 +157,78 @@ public final class NamedOption {
       return a;
    }
 
+   /**
+    * Get aliases string [ ].
+    *
+    * @return the string [ ]
+    */
    public String[] getAliases() {
       return this.aliases;
    }
 
+   /**
+    * Gets description.
+    *
+    * @return the description
+    */
    public String getDescription() {
       return this.description;
    }
 
+   /**
+    * Gets field.
+    *
+    * @return the field
+    */
    public Field getField() {
       return this.field;
    }
 
+   /**
+    * Gets name.
+    *
+    * @return the name
+    */
    public String getName() {
       return this.name;
    }
 
+   /**
+    * Gets type.
+    *
+    * @return the type
+    */
    public Class<?> getType() {
       return this.type;
    }
 
-   public int hashCode() {
-      final int PRIME = 59;
-      int result = 1;
-      final Object $name = this.getName();
-      result = result * PRIME + ($name == null ? 43 : $name.hashCode());
-      final Object $type = this.getType();
-      result = result * PRIME + ($type == null ? 43 : $type.hashCode());
-      final Object $description = this.getDescription();
-      result = result * PRIME + ($description == null ? 43 : $description.hashCode());
-      result = result * PRIME + java.util.Arrays.deepHashCode(this.getAliases());
-      result = result * PRIME + (this.isRequired() ? 79 : 97);
-      final Object $field = this.getField();
-      result = result * PRIME + ($field == null ? 43 : $field.hashCode());
-      final Object $value = this.getValue();
-      result = result * PRIME + ($value == null ? 43 : $value.hashCode());
-      return result;
-   }
-
+   /**
+    * Is required boolean.
+    *
+    * @return the boolean
+    */
    public boolean isRequired() {
       return this.required;
    }
 
+   @Override
+   public int hashCode() {
+      return Objects.hash(name, type, description, aliases, required, field, value);
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {return true;}
+      if (obj == null || getClass() != obj.getClass()) {return false;}
+      final NamedOption other = (NamedOption) obj;
+      return Objects.equals(this.name, other.name)
+                && Objects.equals(this.type, other.type)
+                && Objects.equals(this.description, other.description)
+                && Objects.deepEquals(this.aliases, other.aliases)
+                && Objects.equals(this.required, other.required)
+                && Objects.equals(this.field, other.field)
+                && Objects.equals(this.value, other.value);
+   }
 
    private String toSpecificationForm(String optionName) {
       if (isBoolean() && optionName.length() == 1) {
@@ -340,6 +351,9 @@ public final class NamedOption {
                                                                                                                                                                                                                                                       .getValue() + ")";
    }
 
+   /**
+    * The type Named option builder.
+    */
    public static class NamedOptionBuilder {
       private String name;
       private Class<?> type;
@@ -348,21 +362,41 @@ public final class NamedOption {
       private ArrayList<String> aliases;
       private boolean required;
 
+      /**
+       * Instantiates a new Named option builder.
+       */
       NamedOptionBuilder() {
       }
 
+      /**
+       * Alias named option . named option builder.
+       *
+       * @param alias the alias
+       * @return the named option . named option builder
+       */
       public NamedOption.NamedOptionBuilder alias(String alias) {
          if (this.aliases == null) this.aliases = new ArrayList<String>();
          this.aliases.add(alias);
          return this;
       }
 
+      /**
+       * Aliases named option . named option builder.
+       *
+       * @param aliases the aliases
+       * @return the named option . named option builder
+       */
       public NamedOption.NamedOptionBuilder aliases(Collection<? extends String> aliases) {
          if (this.aliases == null) this.aliases = new ArrayList<String>();
          this.aliases.addAll(aliases);
          return this;
       }
 
+      /**
+       * Build named option.
+       *
+       * @return the named option
+       */
       public NamedOption build() {
          Collection<String> aliases;
          switch (this.aliases == null ? 0 : this.aliases.size()) {
@@ -379,6 +413,11 @@ public final class NamedOption {
          return new NamedOption(name, type, description, defaultValue, aliases, required);
       }
 
+      /**
+       * Clear aliases named option . named option builder.
+       *
+       * @return the named option . named option builder
+       */
       public NamedOption.NamedOptionBuilder clearAliases() {
          if (this.aliases != null)
             this.aliases.clear();
@@ -386,21 +425,45 @@ public final class NamedOption {
          return this;
       }
 
+      /**
+       * Default value named option . named option builder.
+       *
+       * @param defaultValue the default value
+       * @return the named option . named option builder
+       */
       public NamedOption.NamedOptionBuilder defaultValue(Object defaultValue) {
          this.defaultValue = defaultValue;
          return this;
       }
 
+      /**
+       * Description named option . named option builder.
+       *
+       * @param description the description
+       * @return the named option . named option builder
+       */
       public NamedOption.NamedOptionBuilder description(String description) {
          this.description = description;
          return this;
       }
 
+      /**
+       * Name named option . named option builder.
+       *
+       * @param name the name
+       * @return the named option . named option builder
+       */
       public NamedOption.NamedOptionBuilder name(String name) {
          this.name = name;
          return this;
       }
 
+      /**
+       * Required named option . named option builder.
+       *
+       * @param required the required
+       * @return the named option . named option builder
+       */
       public NamedOption.NamedOptionBuilder required(boolean required) {
          this.required = required;
          return this;
@@ -410,6 +473,12 @@ public final class NamedOption {
          return "NamedOption.NamedOptionBuilder(name=" + this.name + ", type=" + this.type + ", description=" + this.description + ", defaultValue=" + this.defaultValue + ", aliases=" + this.aliases + ", required=" + this.required + ")";
       }
 
+      /**
+       * Type named option . named option builder.
+       *
+       * @param type the type
+       * @return the named option . named option builder
+       */
       public NamedOption.NamedOptionBuilder type(Class<?> type) {
          this.type = type;
          return this;
