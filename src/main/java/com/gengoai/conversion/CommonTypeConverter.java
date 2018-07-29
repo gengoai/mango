@@ -157,7 +157,7 @@ public class CommonTypeConverter {
             DateFormat.getDateInstance(DateFormat.FULL),
             new SimpleDateFormat("yyyy-MM-dd"),
             new SimpleDateFormat("MM/dd/yyyy")}
-            ) {
+         ) {
             try {
                return format.parse(string);
             } catch (ParseException e) {

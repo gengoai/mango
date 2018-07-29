@@ -52,7 +52,7 @@ public final class Sets {
     * @return the set
     */
    public static <T> Set<T> newConcurrentHashSet() {
-      return Collections.newSetFromMap(new ConcurrentHashMap<>());
+      return ConcurrentHashMap.newKeySet();
    }
 
    /**

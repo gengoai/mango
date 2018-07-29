@@ -58,7 +58,7 @@ public final class Math2 {
    public static Double tryParseDouble(String string) {
       try {
          return Double.parseDouble(string);
-      } catch (Error t) {
+      } catch (NumberFormatException t) {
          return null;
       }
    }
@@ -72,7 +72,21 @@ public final class Math2 {
    public static Integer tryParseInteger(String string) {
       try {
          return Integer.parseInt(string);
-      } catch (Error t) {
+      } catch (NumberFormatException t) {
+         return null;
+      }
+   }
+
+   /**
+    * Try to parse a string into a long returning null if a parse error occurs
+    *
+    * @param string the string to parse
+    * @return the parsed long value or null if not parsable
+    */
+   public static Long tryParseLong(String string) {
+      try {
+         return Long.parseLong(string);
+      } catch (NumberFormatException t) {
          return null;
       }
    }
@@ -86,7 +100,7 @@ public final class Math2 {
    public static Float tryParseFloat(String string) {
       try {
          return Float.parseFloat(string);
-      } catch (Error t) {
+      } catch (NumberFormatException t) {
          return null;
       }
    }

@@ -1,6 +1,6 @@
 package com.gengoai.collection.table;
 
-import com.gengoai.collection.Sets;
+import com.gengoai.collection.Iterators;
 import com.gengoai.collection.set.IteratorSet;
 import com.gengoai.conversion.Cast;
 
@@ -22,7 +22,6 @@ import static com.gengoai.tuple.Tuples.$;
 public class HashBasedTable<R, C, V> implements Table<R, C, V>, Serializable {
 
    private final Map<R, Map<C, V>> map = new HashMap<>();
-   private final transient ColumnSet columnSet = new ColumnSet();
 
    @Override
    public V get(R row, C column) {
@@ -49,8 +48,8 @@ public class HashBasedTable<R, C, V> implements Table<R, C, V>, Serializable {
    public Map<R, V> removeColumn(C column) {
       Map<R, V> rval = map.keySet()
                           .stream()
+                          .filter(key -> map.get(key).containsKey(column))
                           .map(key -> $(key, map.get(key).remove(column)))
-                          .filter(entry -> entry.v2 != null)
                           .collect(Collectors.toMap(o -> o.v1, o -> o.v2));
       map.keySet().removeIf(k -> map.get(k).isEmpty());
       return rval;
@@ -73,7 +72,7 @@ public class HashBasedTable<R, C, V> implements Table<R, C, V>, Serializable {
 
    @Override
    public boolean containsColumn(C column) {
-      return columnSet.contains(column);
+      return map.values().stream().anyMatch(m -> m.containsKey(column));
    }
 
    @Override
@@ -93,12 +92,12 @@ public class HashBasedTable<R, C, V> implements Table<R, C, V>, Serializable {
 
    @Override
    public Collection<V> values() {
-      return map.values().stream().flatMap(map -> map.values().stream()).collect(Collectors.toSet());
+      return map.values().stream().flatMap(map -> map.values().stream()).collect(Collectors.toList());
    }
 
    @Override
    public Set<C> columnKeySet() {
-      return columnSet;
+      return new ColumnSet();
    }
 
    @Override
@@ -157,50 +156,78 @@ public class HashBasedTable<R, C, V> implements Table<R, C, V>, Serializable {
       }
    }
 
-   private class ColumnSet extends IteratorSet<C> {
+   private class ColumnIterator implements Iterator<C> {
+      private Iterator<Map.Entry<R, Map<C, V>>> rowEntryIterator = map.entrySet().iterator();
+      private Set<C> seen = new HashSet<>();
+      private Iterator<Map.Entry<C, V>> colValueIterator = null;
+      private C column;
+      private C lastColumn;
 
-      /**
-       * Instantiates a new Iterator set.
-       */
-      private ColumnSet() {
-         super(() -> Cast.as(map.values().stream()
-                                .flatMap(map -> map.keySet().stream())
-                                .distinct()
-                                .iterator()));
+      private boolean advance() {
+         while (column == null) {
+            while (colValueIterator != null && colValueIterator.hasNext()) {
+               C nc = colValueIterator.next().getKey();
+               if (!seen.contains(nc)) {
+                  column = nc;
+                  seen.add(nc);
+                  return true;
+               }
+            }
+            if (!rowEntryIterator.hasNext()) {
+               return false;
+            }
+            colValueIterator = rowEntryIterator.next().getValue().entrySet().iterator();
+         }
+         return true;
       }
 
+      @Override
+      public boolean hasNext() {
+         return advance();
+      }
+
+      @Override
+      public C next() {
+         advance();
+         lastColumn = column;
+         column = null;
+         return lastColumn;
+      }
+
+      @Override
+      public void remove() {
+         removeColumn(lastColumn);
+         map.keySet().forEach(HashBasedTable.this::deleteRowIfEmpty);
+      }
+   }
+
+   private class ColumnSet extends AbstractSet<C> {
+
+      @Override
+      public Iterator<C> iterator() {
+         return new ColumnIterator();
+      }
+
+      @Override
+      public int size() {
+         return Iterators.size(new ColumnIterator());
+      }
 
       @Override
       public boolean removeAll(Collection<?> c) {
-         boolean rval = map.values().stream()
-                           .anyMatch(m -> m.keySet().removeAll(c));
-         removeEmpty();
-         return rval;
+         int size = size();
+         map.values().forEach(m -> m.keySet().removeAll(c));
+         map.keySet().forEach(HashBasedTable.this::deleteRowIfEmpty);
+         return size != size();
       }
 
       @Override
       public boolean removeIf(Predicate<? super C> filter) {
-         boolean rval = map.values()
-                           .stream()
-                           .anyMatch
-                               (m -> m.keySet().removeIf(Cast.as(filter)));
-         removeEmpty();
-         return rval;
+         int size = size();
+         map.values().forEach(m -> m.keySet().removeIf(filter));
+         map.keySet().forEach(HashBasedTable.this::deleteRowIfEmpty);
+         return size != size();
       }
-
-      @Override
-      public boolean remove(Object o) {
-         boolean rval = map.values()
-                           .stream()
-                           .anyMatch(m -> m.keySet().remove(o));
-         removeEmpty();
-         return rval;
-      }
-
-      private void removeEmpty() {
-         map.keySet().removeIf(key -> map.get(key).isEmpty());
-      }
-
 
    }
 
@@ -214,12 +241,16 @@ public class HashBasedTable<R, C, V> implements Table<R, C, V>, Serializable {
 
       @Override
       public Set<Entry<R, V>> entrySet() {
-         return Sets.transform(new IteratorSet<>(() -> rowKeySet().stream()
-                                                                  .filter(row -> map.get(row).containsKey(column))
-                                                                  .iterator()),
-                               row -> $(row, HashBasedTable.this.get(row, column)));
+         return new IteratorSet<>(() -> Iterators.transform(Iterators.filter(map.entrySet().iterator(),
+                                                                             e -> e.getValue().containsKey(column)),
+                                                            e -> $(e.getKey(), e.getValue().get(column))));
       }
 
+
+      @Override
+      public boolean containsKey(Object key) {
+         return map.containsKey(key) && map.get(key).containsKey(column);
+      }
 
       @Override
       public V get(Object key) {
@@ -241,7 +272,6 @@ public class HashBasedTable<R, C, V> implements Table<R, C, V>, Serializable {
          HashBasedTable.this.removeColumn(column);
       }
    }
-
 
    @Override
    public void clear() {
