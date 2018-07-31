@@ -75,9 +75,9 @@ public abstract class Evaluator<O> extends Switch<Expression, O> {
     * @param consumer        the consumer to apply when the condition is met.
     */
    protected final <E extends Expression> void $void(Class<E> expressionClass, ParserTokenType type, CheckedConsumer<E> consumer) {
-      $voidCase(e -> e.match(expressionClass, type),
+      $consume(e -> e.match(expressionClass, type),
                 e -> Cast.as(e, expressionClass),
-                consumer);
+               consumer);
    }
 
 
@@ -104,9 +104,9 @@ public abstract class Evaluator<O> extends Switch<Expression, O> {
     * @param consumer        the consumer to apply when the condition is met.
     */
    protected final <E extends Expression> void $void(Class<E> expressionClass, CheckedConsumer<E> consumer) {
-      $voidCase(e -> e.isInstance(expressionClass),
+      $consume(e -> e.isInstance(expressionClass),
                 e -> Cast.as(e, expressionClass),
-                consumer);
+               consumer);
    }
 
 }// END OF Evaluator

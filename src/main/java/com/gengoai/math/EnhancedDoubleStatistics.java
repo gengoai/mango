@@ -19,7 +19,7 @@
  * under the License.
  */
 
-package com.gengoai;
+package com.gengoai.math;
 
 import com.gengoai.function.SerializableDoubleConsumer;
 

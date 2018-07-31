@@ -21,7 +21,6 @@
 
 package com.gengoai.math;
 
-import com.gengoai.EnhancedDoubleStatistics;
 import com.gengoai.collection.Streams;
 
 import java.math.BigDecimal;

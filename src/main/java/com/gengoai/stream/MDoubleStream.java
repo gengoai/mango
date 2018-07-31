@@ -21,7 +21,7 @@
 
 package com.gengoai.stream;
 
-import com.gengoai.EnhancedDoubleStatistics;
+import com.gengoai.math.EnhancedDoubleStatistics;
 import com.gengoai.function.*;
 
 import java.util.OptionalDouble;

@@ -21,7 +21,7 @@
 
 package com.gengoai.stream.accumulator;
 
-import com.gengoai.EnhancedDoubleStatistics;
+import com.gengoai.math.EnhancedDoubleStatistics;
 
 /**
  * <p>An implementation of a {@link MStatisticsAccumulator} for local streams</p>

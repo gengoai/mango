@@ -23,6 +23,8 @@ package com.gengoai.function;
 
 import java.io.Serializable;
 
+import static com.gengoai.Validation.notNull;
+
 /**
  * Version of Consumer that is serializable and checked
  *
@@ -31,6 +33,30 @@ import java.io.Serializable;
 @FunctionalInterface
 public interface CheckedConsumer<T> extends Serializable {
 
+   /**
+    * Accept.
+    *
+    * @param t the t
+    * @throws Throwable the throwable
+    */
    void accept(T t) throws Throwable;
+
+   /**
+    * As function checked function.
+    *
+    * @param <T>         the type parameter
+    * @param <R>         the type parameter
+    * @param consumer    the consumer
+    * @param returnValue the return value
+    * @return the checked function
+    */
+   static <T, R> CheckedFunction<T, R> asFunction(CheckedConsumer<? super T> consumer, R returnValue) {
+      notNull(consumer);
+      return t -> {
+         consumer.accept(t);
+         return returnValue;
+      };
+   }
+
 
 }//END OF CheckedConsumer

@@ -21,7 +21,7 @@
 
 package com.gengoai.stream.accumulator;
 
-import com.gengoai.EnhancedDoubleStatistics;
+import com.gengoai.math.EnhancedDoubleStatistics;
 
 /**
  * Accumulator for calculating descriptive statistics
