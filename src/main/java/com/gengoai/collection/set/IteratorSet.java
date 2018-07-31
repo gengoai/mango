@@ -28,10 +28,10 @@ public class IteratorSet<E> extends AbstractSet<E> {
    }
 
    public Iterator<E> iterator() {
-      return new RemovableIterator<>(Streams.asStream(iteratorSupplier.get()).distinct().iterator());
+      return new RemovableIterator(Streams.asStream(iteratorSupplier.get()).distinct().iterator());
    }
 
-   private class RemovableIterator<E> implements Iterator<E> {
+   private class RemovableIterator implements Iterator<E> {
       private final Iterator<E> backingIterator;
       private E lastValue;
 

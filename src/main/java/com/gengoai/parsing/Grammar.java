@@ -35,8 +35,7 @@ import java.util.Map;
  * associated with individual <code>ParserTokenType</code>s. There are two main types of handlers, prefix and infix.
  * The
  * <code>PrefixHandler</code> takes care of prefix operators and the <code>InfixHandler</code> handles infix and
- * postfix
- * operators.</p>
+ * postfix operators.</p>
  *
  * <p>By default a grammar will throw a <code>ParseException</code> when it encounters a token type that it does not
  * know how to handle. Grammars can be set to instead ignore these tokens.</p>

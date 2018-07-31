@@ -50,7 +50,8 @@ public class AssignmentHandler extends InfixHandler {
    public Expression parse(ExpressionIterator expressionIterator, Expression left, ParserToken token) throws ParseException {
       Expression right = expressionIterator.next(precedence() - 1);
       if (right == null) {
-         throw new ParseException("Assignment operator expects expression on right hand side of the operator, but found nothing");
+         throw new ParseException(
+            "Assignment operator expects an expression on the right hand side of the operator, but found nothing");
       }
       return new AssignmentExpression(left.toString(), token, right);
    }

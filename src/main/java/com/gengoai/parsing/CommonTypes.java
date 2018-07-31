@@ -50,7 +50,7 @@ public enum CommonTypes implements ParserTokenType, HasLexicalPattern {
   MINUS("\\-"),
   MULTIPLY("\\*"),
   DIVIDE("/"),
-  BANG("\\!"),
+  EXCLAMATION("\\!"),
   POUND("\\#"),
   COMMA(","),
   EQUALS("="),
