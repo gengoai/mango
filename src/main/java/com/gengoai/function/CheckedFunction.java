@@ -23,6 +23,8 @@ package com.gengoai.function;
 
 import java.io.Serializable;
 
+import static com.gengoai.Validation.notNull;
+
 /**
  * Version of Function that is serializable and checked
  *
@@ -32,16 +34,67 @@ import java.io.Serializable;
 @FunctionalInterface
 public interface CheckedFunction<T, R> extends Serializable {
 
+   /**
+    * Apply r.
+    *
+    * @param t the t
+    * @return the r
+    * @throws Throwable the throwable
+    */
    R apply(T t) throws Throwable;
 
+   /**
+    * As consumer serializable consumer.
+    *
+    * @return the serializable consumer
+    */
+   default CheckedConsumer<T> asConsumer() {
+      return this::apply;
+   }
 
+   /**
+    * As consumer serializable consumer.
+    *
+    * @return the serializable consumer
+    */
+   static <T> CheckedConsumer<T> asConsumer(CheckedFunction<T, ?> function) {
+      return notNull(function).asConsumer();
+   }
+
+   static <T, R> CheckedFunction<T, R> literal(R returnValue) {
+      return t -> returnValue;
+   }
+
+   /**
+    * Compose checked function.
+    *
+    * @param <V>    the type parameter
+    * @param before the before
+    * @return the checked function
+    */
    default <V> CheckedFunction<V, R> compose(CheckedFunction<? super V, ? extends T> before) {
       return v -> apply(before.apply(v));
    }
 
+   /**
+    * And then checked function.
+    *
+    * @param <V>   the type parameter
+    * @param after the after
+    * @return the checked function
+    */
    default <V> CheckedFunction<T, V> andThen(CheckedFunction<? super R, ? extends V> after) {
       return t -> after.apply(apply(t));
    }
 
+   /**
+    * Identity serializable function.
+    *
+    * @param <T> the type parameter
+    * @return the serializable function
+    */
+   static <T> CheckedFunction<T, T> identity() {
+      return t -> t;
+   }
 
 }//END OF CheckedFunction

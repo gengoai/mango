@@ -40,6 +40,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import static com.gengoai.Validation.notNull;
+import static com.gengoai.function.CheckedConsumer.asFunction;
 
 /**
  * @author David B. Bracewell
@@ -86,25 +87,25 @@ class ConfigParser extends Parser {
    );
 
    private final Evaluator<Expression> evaluator = new Evaluator<Expression>() {{
-      $void(PrefixOperatorExpression.class,
-            ConfigTokenizer.ConfigTokenType.IMPORT,
-            exp -> importConfig(exp.right.toString().trim()));
+      $(PrefixOperatorExpression.class,
+        ConfigTokenizer.ConfigTokenType.IMPORT,
+        asFunction(exp -> importConfig(exp.right.toString().trim())));
 
-      $void(PrefixOperatorExpression.class,
-            ConfigTokenizer.ConfigTokenType.SCRIPT,
-            exp -> importScript(exp.right.toString().trim()));
+      $(PrefixOperatorExpression.class,
+        ConfigTokenizer.ConfigTokenType.SCRIPT,
+        asFunction(exp -> importScript(exp.right.toString().trim())));
 
-      $void(PrefixOperatorExpression.class,
-            ConfigTokenizer.ConfigTokenType.APPEND_PROPERTY,
-            exp -> setProperty(exp, ""));
+      $(PrefixOperatorExpression.class,
+        ConfigTokenizer.ConfigTokenType.APPEND_PROPERTY,
+        asFunction(exp -> setProperty(exp, "")));
 
-      $void(PrefixOperatorExpression.class,
-            ConfigTokenizer.ConfigTokenType.PROPERTY,
-            exp -> setProperty(exp, ""));
+      $(PrefixOperatorExpression.class,
+        ConfigTokenizer.ConfigTokenType.PROPERTY,
+        asFunction(exp -> setProperty(exp, "")));
 
-      $void(SectionExpression.class,
-            ConfigTokenizer.ConfigTokenType.SECTION_HEADER,
-            exp -> handleSection(StringUtils.EMPTY, exp));
+      $(SectionExpression.class,
+        ConfigTokenizer.ConfigTokenType.SECTION_HEADER,
+        asFunction(exp -> handleSection(StringUtils.EMPTY, exp)));
    }};
 
    private final Resource resource;
@@ -116,7 +117,7 @@ class ConfigParser extends Parser {
     *
     * @param config the config
     */
-   public ConfigParser(Resource config) {
+   ConfigParser(Resource config) {
       super(CONFIG_GRAMMAR, CONFIG_LEXER);
       this.resource = config;
       this.resourceName = config.descriptor();
@@ -188,7 +189,6 @@ class ConfigParser extends Parser {
       Config.getInstance().setterFunction.setProperty(key, value, resourceName);
    }
 
-
    public void parse() throws ParseException {
       super.evaluateAll(resource, evaluator);
    }
@@ -204,6 +204,5 @@ class ConfigParser extends Parser {
          }
       }
    }
-
 
 }//END OF ConfigParser

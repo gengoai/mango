@@ -31,38 +31,44 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static com.gengoai.Validation.notNull;
 
+
 /**
- * The interface Streams.
+ * Convenience methods for creating and manipulating Java streams
  *
  * @author David B. Bracewell
  */
-public interface Streams {
+public final class Streams {
+
+   private Streams() {
+      throw new IllegalAccessError();
+   }
 
 
    /**
-    * As stream stream.
+    * Creates a <code>Stream</code> of <code>String</code> lines from an <code>InputStream</code> using a {@link
+    * CharsetDetectingReader} to read from the input stream.
     *
-    * @param stream the stream
-    * @return the stream
+    * @param stream the stream to read from
+    * @return the stream of strings from the input stream
     */
-   static Stream<String> asStream(InputStream stream) {
+   public static Stream<String> asStream(InputStream stream) {
       return asStream(new CharsetDetectingReader(notNull(stream)));
    }
 
    /**
-    * As stream stream.
+    * Creates a <code>Stream</code> of <code>String</code> lines from an <code>Reader</code> by converting the reader
+    * into a
+    * <code>BufferedReader</code> and calling the lines method
     *
-    * @param reader the reader
-    * @return the stream
+    * @param reader the reader to read from
+    * @return the stream of strings from the input stream
     */
-   static Stream<String> asStream(Reader reader) {
+   public static Stream<String> asStream(Reader reader) {
       notNull(reader);
       return ((reader instanceof BufferedReader) ? Cast.<BufferedReader>as(reader)
                                                  : new BufferedReader(reader))
@@ -72,36 +78,36 @@ public interface Streams {
 
 
    /**
-    * As parallel stream stream.
+    * Creates a parallel stream from a given iterator
     *
-    * @param <T>      the type parameter
+    * @param <T>      the element type of the iterator parameter
     * @param iterator the iterator
     * @return the stream
     */
-   static <T> Stream<T> asParallelStream(Iterator<? extends T> iterator) {
+   public static <T> Stream<T> asParallelStream(Iterator<? extends T> iterator) {
       return asStream(iterator, true);
    }
 
    /**
-    * As parallel stream stream.
+    * Creates a parallel stream for a given iterable
     *
-    * @param <T>      the type parameter
+    * @param <T>      the element type of the iterable parameter
     * @param iterable the iterable
     * @return the stream
     */
-   static <T> Stream<T> asParallelStream(Iterable<? extends T> iterable) {
+   public static <T> Stream<T> asParallelStream(Iterable<? extends T> iterable) {
       return asStream(iterable, true);
    }
 
    /**
-    * As stream stream.
+    * Creates a <code>Stream</code>  from a number of arguments returning an empty string if nothing is passed
     *
-    * @param <T>    the type parameter
+    * @param <T>    the value type parameter
     * @param values the values
     * @return the stream
     */
    @SafeVarargs
-   static <T> Stream<T> asStream(T... values) {
+   public static <T> Stream<T> asStream(T... values) {
       if (values == null) {
          return Stream.empty();
       }
@@ -109,150 +115,124 @@ public interface Streams {
    }
 
    /**
-    * As stream stream.
+    * Creates a stream from a given iterator
     *
-    * @param <T>      the type parameter
+    * @param <T>      the element type of the iterator parameter
     * @param iterator the iterator
     * @return the stream
     */
-   static <T> Stream<T> asStream(Iterator<? extends T> iterator) {
+   public static <T> Stream<T> asStream(Iterator<? extends T> iterator) {
       return asStream(iterator, false);
    }
 
    /**
-    * As stream stream.
+    * Creates a parallel stream from a given iterator
     *
-    * @param <T>      the type parameter
+    * @param <T>      the element type of the iterator parameter
     * @param iterator the iterator
-    * @param parallel the parallel
+    * @param parallel True - create a parallel stream, False create a sequential stream
     * @return the stream
     */
-   static <T> Stream<T> asStream(Iterator<? extends T> iterator, boolean parallel) {
-      return StreamSupport.stream(Spliterators.spliteratorUnknownSize(notNull(iterator), Spliterator.ORDERED),
+   public static <T> Stream<T> asStream(Iterator<? extends T> iterator, boolean parallel) {
+      return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED),
                                   parallel);
    }
 
    /**
-    * As stream stream.
+    * Convenience method for creating a stream from an iterable
     *
-    * @param <T>      the type parameter
+    * @param <T>      the iterable element type parameter
     * @param iterable the iterable
     * @return the stream
     */
-   static <T> Stream<T> asStream(Iterable<? extends T> iterable) {
-      return asStream(notNull(iterable), false);
+   public static <T> Stream<T> asStream(Iterable<? extends T> iterable) {
+      return asStream(iterable, false);
    }
 
    /**
-    * As stream stream.
+    * Convenience method for creating a stream from an iterable
     *
-    * @param <T>      the type parameter
+    * @param <T>      the iterable element type parameter
     * @param iterable the iterable
-    * @param parallel the parallel
+    * @param parallel True create a parallel stream, False create sequential stream
     * @return the stream
     */
-   static <T> Stream<T> asStream(Iterable<? extends T> iterable, boolean parallel) {
+   public static <T> Stream<T> asStream(Iterable<? extends T> iterable, boolean parallel) {
       return StreamSupport.stream(Cast.as(notNull(iterable).spliterator()), parallel);
    }
 
    /**
-    * Zip stream.
+    * <p>Zips (combines) items from both streams as tuples. Length of the new stream will the minimum length of the two
+    * streams.</p>
     *
-    * @param <T>     the type parameter
-    * @param <U>     the type parameter
-    * @param stream1 the stream 1
-    * @param stream2 the stream 2
-    * @return the stream
+    * @param <T>     the first stream's element type parameter
+    * @param <U>     the second stream's element type parameter
+    * @param stream1 the first stream * @param stream2 the second stream
+    * @return the zipped stream
     */
-   static <T, U> Stream<Map.Entry<T, U>> zip(final Stream<? extends T> stream1, final Stream<? extends U> stream2) {
+   public static <T, U> Stream<Map.Entry<T, U>> zip(final Stream<? extends T> stream1, final Stream<? extends U> stream2) {
       return asStream(Iterators.zip(notNull(stream1).iterator(), notNull(stream2).iterator()));
    }
 
    /**
-    * Zip with index.
+    * <p>Zips (combines) items from a stream with an integer in order of access. </p>
     *
-    * @param <T>    the type parameter
+    * @param <T>    the stream's type parameter
     * @param stream the stream
     * @return the stream
     */
-   static <T> Stream<Map.Entry<T, Integer>> zipWithIndex(Stream<T> stream) {
+   public static <T> Stream<Map.Entry<T, Integer>> zipWithIndex(Stream<T> stream) {
       final AtomicInteger integer = new AtomicInteger();
       return notNull(stream).map(t -> new Tuple2<>(t, integer.getAndIncrement()));
    }
 
    /**
-    * Flatten stream.
+    * Flattens an iterable of iterable into a single stream
     *
     * @param <T>       the type parameter
     * @param iterables the iterables
     * @return the stream
     */
-   static <T> Stream<T> flatten(Iterable<? extends Iterable<? extends T>> iterables) {
+   public static <T> Stream<T> flatten(Iterable<? extends Iterable<? extends T>> iterables) {
       return asStream(notNull(iterables)).flatMap(Streams::asStream);
    }
 
    /**
-    * Union stream.
+    * Concatenates two collections into a single stream
     *
     * @param <T> the type parameter
-    * @param c1  the c 1
-    * @param c2  the c 2
+    * @param c1  the first collection
+    * @param c2  the second collection
     * @return the stream
     */
-   static <T> Stream<T> union(Collection<? extends T> c1, Collection<? extends T> c2) {
+   public static <T> Stream<T> union(Collection<? extends T> c1, Collection<? extends T> c2) {
       return Stream.concat(notNull(c1).stream(), notNull(c2).stream());
    }
 
    /**
-    * Intersection stream.
+    * Creates a new stream that is the intersection of the two collections
     *
     * @param <T> the type parameter
-    * @param c1  the c 1
-    * @param c2  the c 2
+    * @param c1  the first collection
+    * @param c2  the second collection
     * @return the stream
     */
-   static <T> Stream<T> intersection(Collection<? extends T> c1, Collection<? extends T> c2) {
+   public static <T> Stream<T> intersection(Collection<? extends T> c1, Collection<? extends T> c2) {
       notNull(c2);
       return Cast.as(notNull(c1).stream().filter(c2::contains));
    }
 
    /**
-    * Difference stream.
+    * Creates a new stream that has all elements of the first collection that are not in the second collection
     *
     * @param <T> the type parameter
-    * @param c1  the c 1
-    * @param c2  the c 2
+    * @param c1  the first collection
+    * @param c2  the second collection
     * @return the stream
     */
-   static <T> Stream<T> difference(Collection<? extends T> c1, Collection<? extends T> c2) {
+   public static <T> Stream<T> difference(Collection<? extends T> c1, Collection<? extends T> c2) {
       notNull(c2);
       return Cast.as(notNull(c1).stream().filter(v -> !c2.contains(v)));
    }
-
-   /**
-    * Transform stream.
-    *
-    * @param <IN>      the type parameter
-    * @param <OUT>     the type parameter
-    * @param iterable  the iterable
-    * @param transform the transform
-    * @return the stream
-    */
-   static <IN, OUT> Stream<OUT> transform(Iterable<? extends IN> iterable, Function<? super IN, ? extends OUT> transform) {
-      return Cast.as(asStream(iterable).map(notNull(transform)));
-   }
-
-   /**
-    * Filter stream.
-    *
-    * @param <T>      the type parameter
-    * @param iterable the iterable
-    * @param filter   the filter
-    * @return the stream
-    */
-   static <T> Stream<T> filter(Iterable<? extends T> iterable, Predicate<? super T> filter) {
-      return Cast.as(asStream(iterable).filter(notNull(filter)));
-   }
-
 
 }//END OF Streams

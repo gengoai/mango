@@ -84,19 +84,19 @@ public class CollectTest {
 
    @Test
    public void create() throws Exception {
-      assertNull(Collect.create(null));
-      assertTrue(Collect.create(List.class) instanceof ArrayList);
-      assertTrue(Collect.create(Set.class) instanceof HashSet);
-      assertTrue(Collect.create(NavigableSet.class) instanceof TreeSet);
-      assertTrue(Collect.create(Queue.class) instanceof LinkedList);
-      assertTrue(Collect.create(Deque.class) instanceof LinkedList);
-      assertTrue(Collect.create(Stack.class).getClass() == Stack.class);
-      assertTrue(Collect.create(LinkedHashSet.class).getClass() == LinkedHashSet.class);
+      assertNull(Collect.newCollection(null));
+      assertTrue(Collect.newCollection(List.class) instanceof ArrayList);
+      assertTrue(Collect.newCollection(Set.class) instanceof HashSet);
+      assertTrue(Collect.newCollection(NavigableSet.class) instanceof TreeSet);
+      assertTrue(Collect.newCollection(Queue.class) instanceof LinkedList);
+      assertTrue(Collect.newCollection(Deque.class) instanceof LinkedList);
+      assertTrue(Collect.newCollection(Stack.class).getClass() == Stack.class);
+      assertTrue(Collect.newCollection(LinkedHashSet.class).getClass() == LinkedHashSet.class);
    }
 
    @Test(expected = RuntimeException.class)
    public void badCreate() throws Exception {
-      Collect.create(NoNoArg.class);
+      Collect.newCollection(NoNoArg.class);
    }
 
    @Test

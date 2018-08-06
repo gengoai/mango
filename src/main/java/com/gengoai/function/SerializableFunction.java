@@ -24,6 +24,8 @@ package com.gengoai.function;
 import java.io.Serializable;
 import java.util.function.Function;
 
+import static com.gengoai.Validation.notNull;
+
 /**
  * Version of Function that is serializable
  *
@@ -33,16 +35,57 @@ import java.util.function.Function;
 @FunctionalInterface
 public interface SerializableFunction<T, R> extends Function<T, R>, Serializable {
 
+   static <T, R> SerializableFunction<T, R> literal(R returnValue) {
+      return t -> returnValue;
+   }
 
+   /**
+    * As consumer serializable consumer.
+    *
+    * @return the serializable consumer
+    */
+   static <T> SerializableConsumer<T> asConsumer(SerializableFunction<T, ?> function) {
+      return notNull(function).asConsumer();
+   }
+
+   /**
+    * As consumer serializable consumer.
+    *
+    * @return the serializable consumer
+    */
+   default SerializableConsumer<T> asConsumer() {
+      return this::apply;
+   }
+
+   /**
+    * And then serializable function.
+    *
+    * @param <F>      the type parameter
+    * @param function the function
+    * @return the serializable function
+    */
    default <F> SerializableFunction<T, F> andThen(SerializableFunction<? super R, ? extends F> function) {
       return t -> function.apply(this.apply(t));
    }
 
+   /**
+    * Compose serializable function.
+    *
+    * @param <V>      the type parameter
+    * @param function the function
+    * @return the serializable function
+    */
    default <V> SerializableFunction<V, R> compose(SerializableFunction<? super V, ? extends T> function) {
       return v -> this.apply(function.apply(v));
    }
 
 
+   /**
+    * Identity serializable function.
+    *
+    * @param <T> the type parameter
+    * @return the serializable function
+    */
    static <T> SerializableFunction<T, T> identity() {
       return t -> t;
    }

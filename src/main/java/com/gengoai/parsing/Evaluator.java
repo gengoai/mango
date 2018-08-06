@@ -2,7 +2,6 @@ package com.gengoai.parsing;
 
 import com.gengoai.Switch;
 import com.gengoai.conversion.Cast;
-import com.gengoai.function.CheckedConsumer;
 import com.gengoai.function.CheckedFunction;
 import com.gengoai.parsing.expressions.Expression;
 
@@ -64,21 +63,6 @@ public abstract class Evaluator<O> extends Switch<Expression, O> {
             function);
    }
 
-   /**
-    * Adds a switch statement where the condition is that the expression is of type <code>expressionClass</code> and the
-    * expressions's token type is an instance of <code>type</code>. When the condition is met the expression is cast as
-    * the given expression class and the given function is applied.
-    *
-    * @param <E>             the type of expression
-    * @param expressionClass the expression class
-    * @param type            the token type
-    * @param consumer        the consumer to apply when the condition is met.
-    */
-   protected final <E extends Expression> void $void(Class<E> expressionClass, ParserTokenType type, CheckedConsumer<E> consumer) {
-      $consume(e -> e.match(expressionClass, type),
-                e -> Cast.as(e, expressionClass),
-               consumer);
-   }
 
 
    /**
@@ -93,20 +77,6 @@ public abstract class Evaluator<O> extends Switch<Expression, O> {
       $case(e -> e.isInstance(expressionClass),
             e -> Cast.as(e, expressionClass),
             function);
-   }
-
-   /**
-    * Adds a switch statement where the condition is that the expression is of type <code>expressionClass</code>. When
-    * the condition is met the expression is cast as the given expression class and the given function is applied.
-    *
-    * @param <E>             the type of expression
-    * @param expressionClass the expression class
-    * @param consumer        the consumer to apply when the condition is met.
-    */
-   protected final <E extends Expression> void $void(Class<E> expressionClass, CheckedConsumer<E> consumer) {
-      $consume(e -> e.isInstance(expressionClass),
-                e -> Cast.as(e, expressionClass),
-               consumer);
    }
 
 }// END OF Evaluator

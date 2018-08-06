@@ -24,6 +24,8 @@ package com.gengoai.function;
 import java.io.Serializable;
 import java.util.function.Consumer;
 
+import static com.gengoai.Validation.notNull;
+
 /**
  * Version of Consumer that is serializable
  *
@@ -31,5 +33,35 @@ import java.util.function.Consumer;
  */
 @FunctionalInterface
 public interface SerializableConsumer<T> extends Consumer<T>, Serializable {
+
+   static <T, R> SerializableFunction<T, R> asFunction(SerializableConsumer<T> consumer, R returnValue) {
+      return notNull(consumer).asFunction(returnValue);
+   }
+
+   static <T, R> SerializableFunction<T, R> asFunction(SerializableConsumer<T> consumer) {
+      return asFunction(consumer, null);
+   }
+
+
+   /**
+    * As consumer serializable consumer.
+    *
+    * @return the serializable consumer
+    */
+   default <R> SerializableFunction<T, R> asFunction(R returnValue) {
+      return t -> {
+         this.accept(t);
+         return returnValue;
+      };
+   }
+
+   /**
+    * As consumer serializable consumer.
+    *
+    * @return the serializable consumer
+    */
+   default <R> SerializableFunction<T, R> asFunction() {
+      return asFunction(null);
+   }
 
 }//END OF SerializableConsumer

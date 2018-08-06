@@ -159,7 +159,7 @@ public final class Reflect {
 
    private static Object convertValueType(Object value, Class<?> toClass) {
       if (value == null) {
-         return Defaults.defaultValue(toClass);
+         return Defaults.value(toClass);
       }
       if (Val.class.isAssignableFrom(toClass)) {
          return Cast.as(value, Val.class).as(toClass);

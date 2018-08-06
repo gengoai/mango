@@ -329,7 +329,7 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
     *
     * @param location the location to write the stream to
     */
-   default void saveAsTextFile( String location) {
+   default void saveAsTextFile(String location) {
       saveAsTextFile(Resources.from(location));
    }
 
@@ -397,7 +397,6 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
    List<T> take(int n);
 
    /**
-    *
     * @return True if the stream is distributed
     */
    boolean isDistributed();
@@ -445,7 +444,6 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
    MPairStream<T, Long> zipWithIndex();
 
    /**
-    *
     * @return A distributed version of the stream
     */
    default SparkStream<T> toDistributedStream() {

@@ -24,6 +24,8 @@ package com.gengoai.function;
 import java.io.Serializable;
 import java.util.function.Predicate;
 
+import static com.gengoai.Validation.notNull;
+
 /**
  * Version of Predicate that is serializable
  *
@@ -53,6 +55,11 @@ public interface SerializablePredicate<T> extends Predicate<T>, Serializable {
 
    default SerializablePredicate<T> and( SerializablePredicate<? super T> other) {
       return t -> this.test(t) && other.test(t);
+   }
+
+   static <T> SerializablePredicate<T> instanceOf(Class<?> clazz) {
+      notNull(clazz);
+      return clazz::isInstance;
    }
 
 }//END OF SerializablePredicate

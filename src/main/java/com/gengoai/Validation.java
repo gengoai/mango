@@ -24,7 +24,8 @@ public final class Validation {
     *
     * @param <T>               the return type parameter
     * @param evaluation        the evaluation test
-    * @param exceptionSupplier the supplier to use to generate exceptions (null will cause a default RuntimeException to be thrown)
+    * @param exceptionSupplier the supplier to use to generate exceptions (null will cause a default RuntimeException to
+    *                          be thrown)
     * @param returnValue       the return value to return if the evaluation is true
     * @return the return value
     */
@@ -36,8 +37,8 @@ public final class Validation {
    }
 
    /**
-    * Checks that the evaluation is true. If evaluation is true, the given value is returned, otherwise the
-    * exception supplier is used to generate a RuntimeException to throw.
+    * Checks that the evaluation is true. If evaluation is true, the given value is returned, otherwise the exception
+    * supplier is used to generate a RuntimeException to throw.
     *
     * @param <T>               the return type parameter
     * @param value             the value to test
@@ -56,11 +57,12 @@ public final class Validation {
    }
 
    /**
-    * Checks that the evaluation is true. If evaluation is true, the given value is returned, otherwise the
-    * exception supplier is used to generate a RuntimeException to throw.
+    * Checks that the evaluation is true. If evaluation is true, the given value is returned, otherwise the exception
+    * supplier is used to generate a RuntimeException to throw.
     *
     * @param <T>               the return type parameter
     * @param value             the value to test
+    * @param predicate         the predicate
     * @param message           the message to use when creating the runtime exception
     * @param exceptionSupplier the supplier to use to generate exceptions
     * @param nullable          True the value is able to be null, False it cannot be null
@@ -71,13 +73,14 @@ public final class Validation {
    }
 
    /**
-    * Checks that the evaluation is true. If evaluation is true, the given value is returned, otherwise the
-    * exception supplier is used to generate an IllegalArgumentException to throw.
+    * Checks that the evaluation is true. If evaluation is true, the given value is returned, otherwise the exception
+    * supplier is used to generate an IllegalArgumentException to throw.
     *
-    * @param <T>      the return type parameter
-    * @param value    the value to test
-    * @param message  the message to use when creating the runtime exception
-    * @param nullable True the value is able to be null, False it cannot be null
+    * @param <T>       the return type parameter
+    * @param value     the value to test
+    * @param predicate the predicate
+    * @param message   the message to use when creating the runtime exception
+    * @param nullable  True the value is able to be null, False it cannot be null
     * @return the given value
     */
    public static <T> T validateArg(T value, Predicate<T> predicate, String message, boolean nullable) {
@@ -85,12 +88,13 @@ public final class Validation {
    }
 
    /**
-    * Checks that the evaluation is true. If evaluation is true, the given value is returned, otherwise the
-    * exception supplier is used to generate an IllegalArgumentException to throw.
+    * Checks that the evaluation is true. If evaluation is true, the given value is returned, otherwise the exception
+    * supplier is used to generate an IllegalArgumentException to throw.
     *
-    * @param <T>      the return type parameter
-    * @param value    the value to test
-    * @param nullable True the value is able to be null, False it cannot be null
+    * @param <T>       the return type parameter
+    * @param value     the value to test
+    * @param predicate the predicate
+    * @param nullable  True the value is able to be null, False it cannot be null
     * @return the given value
     */
    public static <T> T validateArg(T value, Predicate<T> predicate, boolean nullable) {
@@ -188,75 +192,80 @@ public final class Validation {
       }
    }
 
-   private static String createIndexErrorMessage(int index, int size, String message) {
-      message = message == null ? StringUtils.EMPTY : message + " ";
-      if (index < 0) {
-         return String.format("%s(%s) must be non-negative.", message, index);
-      } else if (size < 0) {
-         throw new IllegalArgumentException("negative size: " + size);
-      } else {
-         return String.format("%s(%s) must be less than the size (%s).", message, index, size);
-      }
-   }
-
    /**
-    * Check element index int.
+    * Checks that the given index is in the  range <code>[0, size)</code>
     *
-    * @param index the index
-    * @param size  the size
-    * @return the int
+    * @param index the index to validate
+    * @param size  the size of the array, list, etc.
+    * @return the index
+    * @throws IndexOutOfBoundsException if index is negative or greater than equal to size
+    * @throws IllegalArgumentException  if size is negative
     */
    public static int checkElementIndex(int index, int size) {
-      if (index < 0 || index >= size) {
-         throw new IndexOutOfBoundsException(createIndexErrorMessage(index, size, StringUtils.EMPTY));
-      }
-      return index;
+      return checkElementIndex(index, size, "index");
    }
 
    /**
-    * Check element index int.
+    * Checks that the given index is in the  range <code>[0, size)</code>
     *
-    * @param index   the index
-    * @param size    the size
-    * @param message the message
-    * @return the int
+    * @param index   the index to validate
+    * @param size    the size of the array, list, etc.
+    * @param message Message to prepend to the exception
+    * @return the index
+    * @throws IndexOutOfBoundsException if index is negative or greater than equal to size
+    * @throws IllegalArgumentException  if size is negative
     */
    public static int checkElementIndex(int index, int size, String message) {
-      if (index < 0 || index >= size) {
-         throw new IndexOutOfBoundsException(createIndexErrorMessage(index, size, message));
+      if (size < 0) {
+         throw new IllegalArgumentException("Negative Size: " + size);
+      }
+      if (index < 0) {
+         throw new IndexOutOfBoundsException(
+            String.format("%s (%s) must be non negative", StringUtils.nullToEmpty(message), index));
+      }
+      if (index > size) {
+         throw new IndexOutOfBoundsException(String.format("%s (%s) must be less than (%s)",
+                                                           StringUtils.nullToEmpty(message), index, size));
       }
       return index;
    }
 
    /**
-    * Check element index and range.
+    * Checks that the given index is in the  range <code>[0, size]</code>
     *
-    * @param relativeStart the relative start
-    * @param relativeEnd   the relative end
-    * @param length        the length
+    * @param index   the index to validate
+    * @param size    the size of the array, list, etc.
+    * @param message Message to prepend to the exception
+    * @return the index
+    * @throws IndexOutOfBoundsException if index is negative or greater than size
+    * @throws IllegalArgumentException  if size is negative
     */
-   public static void checkElementIndexAndRange(int relativeStart, int relativeEnd, int length) {
-      checkElementIndexAndRange(relativeStart, relativeEnd, length, StringUtils.EMPTY);
+   public static int checkPositionIndex(int index, int size, String message) {
+      if (size < 0) {
+         throw new IllegalArgumentException("Negative Size: " + size);
+      }
+      if (index < 0) {
+         throw new IndexOutOfBoundsException(
+            String.format("%s (%s) must be non negative", StringUtils.nullToEmpty(message), index));
+      }
+      if (index > size) {
+         throw new IndexOutOfBoundsException(String.format("%s (%s) must be less than (%s)",
+                                                           StringUtils.nullToEmpty(message), index, size));
+      }
+      return index;
    }
 
    /**
-    * Check element index and range.
+    * Checks that the given index is in the  range <code>[0, size]</code>
     *
-    * @param relativeStart the relative start
-    * @param relativeEnd   the relative end
-    * @param length        the length
-    * @param message       the message
+    * @param index the index to validate
+    * @param size  the size of the array, list, etc.
+    * @return the index
+    * @throws IndexOutOfBoundsException if index is negative or greater than size
+    * @throws IllegalArgumentException  if size is negative
     */
-   public static void checkElementIndexAndRange(int relativeStart, int relativeEnd, int length, String message) {
-      if (relativeStart < 0 || relativeStart >= length) {
-         throw new IndexOutOfBoundsException(createIndexErrorMessage(relativeStart, length, message));
-      }
-      if (relativeEnd < 0 || relativeEnd > length) {
-         throw new IndexOutOfBoundsException(createIndexErrorMessage(relativeEnd, length, message));
-      }
-      if (relativeStart > relativeEnd) {
-         throw new IllegalArgumentException("starting index must be less than ending index");
-      }
+   public static int checkPositionIndex(int index, int size) {
+      return checkPositionIndex(index, size, "index");
    }
 
 

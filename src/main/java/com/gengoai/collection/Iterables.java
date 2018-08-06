@@ -93,7 +93,9 @@ public final class Iterables {
    public static <E> Iterable<E> filter(final Iterable<? extends E> iterable,
                                         final SerializablePredicate<? super E> predicate
                                        ) {
-      return new IteratorIterable<>(() -> Iterators.filter(notNull(iterable).iterator(), notNull(predicate)));
+      notNull(iterable);
+      notNull(predicate);
+      return new IteratorIterable<>(() -> Iterators.filter(iterable.iterator(), predicate));
    }
 
    /**
@@ -107,7 +109,7 @@ public final class Iterables {
       final SerializableSupplier<Iterator<T>> supplier = () -> Iterators.flatten(
          Iterators.transform(iterable.iterator(),
                              Iterable::iterator));
-      return new IteratorIterable<T>(Cast.as(supplier));
+      return new IteratorIterable<>(Cast.as(supplier));
    }
 
    /**

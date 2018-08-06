@@ -13,10 +13,10 @@ import java.util.stream.Collectors;
 import static com.gengoai.tuple.Tuples.$;
 
 /**
- * <p>A basic <a href="https://en.wikipedia.org/wiki/Trie">Trie</a> implementation that uses hashmaps to store its child
- * nodes. The {@link #find(String, CharMatcher)} method provides functionality to find all elements of the trie in the
- * specified string in longest-first style using the specified CharPredicate to accept or reject matches based on the
- * character after the match, e.g. only match if the next character is whitespace.</p>
+ * <p>A basic <a href="https://en.wikipedia.org/wiki/Trie">Trie</a> implementation that uses hashmaps to store its
+ * child nodes. The {@link #find(String, CharMatcher)} method provides functionality to find all elements of the trie in
+ * the specified string in longest-first style using the specified CharPredicate to accept or reject matches based on
+ * the character after the match, e.g. only match if the next character is whitespace.</p>
  *
  * <p>Note that views of the trie, i.e. keySet(), values(), entrySet(), and the resulting map from prefix(), are
  * unmodifiable.</p>
@@ -453,7 +453,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
                children.add(cNode);
                index = 0;
             } else {
-               index = Math.abs(index)-1;
+               index = Math.abs(index) - 1;
                children.add(index, cNode);
             }
          }

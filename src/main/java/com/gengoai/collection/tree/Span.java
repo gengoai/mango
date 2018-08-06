@@ -7,6 +7,8 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
+ * The type Span.
+ *
  * @author David B. Bracewell
  */
 public class Span implements Serializable, Comparable<Span> {
@@ -115,6 +117,13 @@ public class Span implements Serializable, Comparable<Span> {
       return Integer.compare(end, o.end);
    }
 
+   /**
+    * Of span.
+    *
+    * @param start the start
+    * @param end   the end
+    * @return the span
+    */
    public static Span of(int start, int end) {
       return new Span(start, end);
    }

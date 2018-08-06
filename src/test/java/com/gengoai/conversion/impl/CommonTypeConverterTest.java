@@ -39,7 +39,7 @@ public class CommonTypeConverterTest {
    @Test
    public void testCharacter() throws Exception {
       //Convert nulls
-      Assert.assertEquals(Defaults.defaultValue(char.class), Convert.convert(null, char.class));
+      Assert.assertEquals(Defaults.value(char.class), Convert.convert(null, char.class));
       assertNull(Convert.convert(null, Character.class));
 
       //casts
@@ -51,7 +51,7 @@ public class CommonTypeConverterTest {
       assertEquals(Character.valueOf('a'), Convert.convert("a", Character.class));
 
       //invalid string conversion
-      assertEquals(Defaults.defaultValue(char.class), Convert.convert("a longer string", char.class));
+      assertEquals(Defaults.value(char.class), Convert.convert("a longer string", char.class));
       assertNull(Convert.convert("a longer string", Character.class));
 
       //number conversion
@@ -60,13 +60,13 @@ public class CommonTypeConverterTest {
 
 
       //All other things
-      assertEquals(Defaults.defaultValue(char.class), Convert.convert(new Object[]{}, char.class));
+      assertEquals(Defaults.value(char.class), Convert.convert(new Object[]{}, char.class));
       assertNull(Convert.convert(new Object[]{}, Character.class));
 
       //Test val version
       Assert.assertEquals(Character.valueOf('a'), Val.NULL.asCharacter('a'));
       assertEquals(Character.valueOf('a'), Character.valueOf(Val.NULL.asCharacterValue('a')));
-      assertEquals(Defaults.defaultValue(char.class), Character.valueOf(Val.NULL.asCharacterValue()));
+      assertEquals(Defaults.value(char.class), Character.valueOf(Val.NULL.asCharacterValue()));
    }
 
 

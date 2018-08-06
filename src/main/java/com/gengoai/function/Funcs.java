@@ -1,6 +1,8 @@
 package com.gengoai.function;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static com.gengoai.Validation.notNull;
 
@@ -12,6 +14,57 @@ import static com.gengoai.Validation.notNull;
 public final class Funcs {
    private Funcs() {
       throw new IllegalAccessError();
+   }
+
+
+   public static <T, R> Function<T, R> literal(R returnValue) {
+      return t -> returnValue;
+   }
+
+   public static <T> Predicate<T> instanceOf(Class<?> clazz) {
+      notNull(clazz);
+      return clazz::isInstance;
+   }
+
+   /**
+    * As consumer consumer.
+    *
+    * @param <T>      the type parameter
+    * @param function the function
+    * @return the consumer
+    */
+   public static <T> Consumer<T> asConsumer(Function<? super T, ?> function) {
+      notNull(function);
+      return function::apply;
+   }
+
+   /**
+    * As function function.
+    *
+    * @param <T>         the type parameter
+    * @param <R>         the type parameter
+    * @param consumer    the consumer
+    * @param returnValue the return value
+    * @return the function
+    */
+   public static <T, R> Function<T, R> asFunction(Consumer<? super T> consumer, R returnValue) {
+      notNull(consumer);
+      return t -> {
+         consumer.accept(t);
+         return returnValue;
+      };
+   }
+
+   /**
+    * As function function.
+    *
+    * @param <T>      the type parameter
+    * @param <R>      the type parameter
+    * @param consumer the consumer
+    * @return the function
+    */
+   public static <T, R> Function<T, R> asFunction(Consumer<? super T> consumer) {
+      return asFunction(consumer, null);
    }
 
    /**
@@ -28,22 +81,6 @@ public final class Funcs {
    }
 
    /**
-    * Whenc when.
-    *
-    * @param <I>        the type parameter
-    * @param <O>        the type parameter
-    * @param predicate  the predicate
-    * @param trueAction the true action
-    * @return the when
-    */
-   public static <I, O> When<I, O> whenc(SerializablePredicate<? super I> predicate, Consumer<? super I> trueAction) {
-      return new When<>(notNull(predicate), i -> {
-         trueAction.accept(i);
-         return null;
-      });
-   }
-
-   /**
     * When when.
     *
     * @param <I>       the type parameter
@@ -55,6 +92,7 @@ public final class Funcs {
    public static <I, O> When<I, O> when(SerializablePredicate<? super I> predicate, O trueValue) {
       return new When<>(notNull(predicate), i -> trueValue);
    }
+
 
    /**
     * The type When.
@@ -86,20 +124,6 @@ public final class Funcs {
        */
       public SerializableFunction<I, O> otherwise(SerializableFunction<? super I, ? extends O> falseAction) {
          this.falseAction = notNull(falseAction);
-         return this;
-      }
-
-      /**
-       * Otherwisec function.
-       *
-       * @param falseAction the false action
-       * @return the function
-       */
-      public SerializableFunction<I, O> otherwisec(Consumer<? super I> falseAction) {
-         this.falseAction = i -> {
-            falseAction.accept(i);
-            return null;
-         };
          return this;
       }
 

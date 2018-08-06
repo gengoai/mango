@@ -26,8 +26,10 @@ import com.gengoai.conversion.Cast;
 import java.io.Serializable;
 import java.util.*;
 
+import static com.gengoai.Validation.notNull;
+
 /**
- * Static methods for working with collections and iterables.
+ * Static methods for working with collections.
  *
  * @author David B. Bracewell
  */
@@ -47,7 +49,7 @@ public final class Collect {
     * @param collectionClass the collection class
     * @return t t
     */
-   public static <T extends Collection> T create(Class<T> collectionClass) {
+   public static <T extends Collection> T newCollection(Class<T> collectionClass) {
       if (collectionClass == null) {
          return null;
       }
@@ -79,18 +81,7 @@ public final class Collect {
     * @return the collection
     */
    public static <T> Collection<T> asCollection(Iterable<? extends T> iterable) {
-      return new IterableCollection<>(iterable);
-   }
-
-   /**
-    * Wraps an iterator as a collection
-    *
-    * @param <T>      the element type parameter
-    * @param iterator the iterator to wrap
-    * @return the collection
-    */
-   public static <T> Collection<T> asCollection(Iterator<? extends T> iterator) {
-      return asCollection(Iterables.asIterable(iterator));
+      return new IterableCollection<>(notNull(iterable));
    }
 
    private static class IterableCollection<E> extends AbstractCollection<E> implements Serializable {

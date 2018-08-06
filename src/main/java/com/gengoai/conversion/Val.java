@@ -109,7 +109,7 @@ public class Val implements Serializable {
    public <E, T extends Collection<E>> T asCollection(Class<?> collectionClass, Class<E> genericClass) {
       T rval = Convert.convert(toConvert, collectionClass, genericClass);
       if (rval == null) {
-         return Collect.create(Cast.as(collectionClass));
+         return Collect.newCollection(Cast.as(collectionClass));
       }
       return rval;
    }

@@ -16,20 +16,13 @@ import java.util.*;
  */
 @SuppressWarnings("unchecked")
 public class IntervalTree<T extends Span> implements Serializable, Collection<T> {
-
-   /**
-    * The constant NULL.
-    */
-   protected static final Node<?> NULL = new Node<>(null, null, null, new Span(0, Integer.MAX_VALUE));
+   private static final Node<?> NULL = new Node<>(null, null, null, new Span(0, Integer.MAX_VALUE));
    private static final long serialVersionUID = 1L;
    /**
     * The Root.
     */
    protected Node<T> root = Cast.as(NULL);
-   /**
-    * The Size.
-    */
-   protected int size = 0;
+   private int size = 0;
 
    private boolean isRed(Node node) {
       return !isNull(node) && node.isRed;
@@ -151,7 +144,7 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
 
    @Override
    public boolean contains(Object o) {
-      if (o != null && o instanceof Span) {
+      if (o instanceof Span) {
          Node n = findNode(root, Cast.as(o));
          return !n.isNull() && n.items.contains(o);
       }
@@ -508,7 +501,7 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
     *
     * @param <T> the type parameter
     */
-   static class NodeIterator<T extends Span> implements Iterator<T> {
+   protected static class NodeIterator<T extends Span> implements Iterator<T> {
       private Deque<Node> stack = new LinkedList<>();
       private Span targetSpan;
       private boolean goLeft;
@@ -571,7 +564,7 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
             }
          }
 
-         return Ts.size() > 0;
+         return true;
       }
 
       @Override

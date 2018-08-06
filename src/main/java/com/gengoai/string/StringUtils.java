@@ -44,6 +44,9 @@ public final class StringUtils {
     */
    public static final String EMPTY = "";
 
+   /**
+    * The constant BLANK.
+    */
    public static final String BLANK = " ";
    /**
     * The constant SINGLE_UNICODE_WHITESPACE.
@@ -60,6 +63,16 @@ public final class StringUtils {
 
    private StringUtils() {
       throw new IllegalAccessError();
+   }
+
+   /**
+    * Null to empty string.
+    *
+    * @param input the input
+    * @return the string
+    */
+   public static String nullToEmpty(String input) {
+      return input == null ? EMPTY : input;
    }
 
    /**
@@ -301,18 +314,52 @@ public final class StringUtils {
       return StringMatcher.UpperCase.test(input);
    }
 
+   /**
+    * Join string.
+    *
+    * @param iterable  the iterable
+    * @param delimiter the delimiter
+    * @param prefix    the prefix
+    * @param suffix    the suffix
+    * @return the string
+    */
    public static String join(Iterable<?> iterable, CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
       return Streams.asStream(iterable).map(Object::toString).collect(Collectors.joining(delimiter, prefix, suffix));
    }
 
+   /**
+    * Join string.
+    *
+    * @param iterable  the iterable
+    * @param delimiter the delimiter
+    * @return the string
+    */
    public static String join(Iterable<?> iterable, CharSequence delimiter) {
       return Streams.asStream(iterable).map(Object::toString).collect(Collectors.joining(delimiter));
    }
 
+   /**
+    * Join string.
+    *
+    * @param <T>       the type parameter
+    * @param values    the values
+    * @param delimiter the delimiter
+    * @return the string
+    */
    public static <T> String join(T[] values, CharSequence delimiter) {
       return Streams.asStream(values).map(Object::toString).collect(Collectors.joining(delimiter));
    }
 
+   /**
+    * Join string.
+    *
+    * @param <T>       the type parameter
+    * @param values    the values
+    * @param delimiter the delimiter
+    * @param prefix    the prefix
+    * @param suffix    the suffix
+    * @return the string
+    */
    public static <T> String join(T[] values, CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
       return Streams.asStream(values).map(Object::toString).collect(Collectors.joining(delimiter, prefix, suffix));
    }
@@ -330,6 +377,14 @@ public final class StringUtils {
       return StringFunctions.LEFT_TRIM.apply(input.toString());
    }
 
+   /**
+    * Pad end string.
+    *
+    * @param sequence         the sequence
+    * @param desiredLength    the desired length
+    * @param paddingCharacter the padding character
+    * @return the string
+    */
    public static String padEnd(CharSequence sequence, int desiredLength, char paddingCharacter) {
       if (sequence == null) {
          return repeat(paddingCharacter, desiredLength);
@@ -339,6 +394,14 @@ public final class StringUtils {
       return sequence.toString() + repeat(paddingCharacter, desiredLength - sequence.length());
    }
 
+   /**
+    * Pad start string.
+    *
+    * @param sequence         the sequence
+    * @param desiredLength    the desired length
+    * @param paddingCharacter the padding character
+    * @return the string
+    */
    public static String padStart(CharSequence sequence, int desiredLength, char paddingCharacter) {
       if (sequence == null) {
          return repeat(paddingCharacter, desiredLength);

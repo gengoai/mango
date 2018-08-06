@@ -23,6 +23,8 @@ package com.gengoai.function;
 
 import java.io.Serializable;
 
+import static com.gengoai.Validation.notNull;
+
 /**
  * Version of Predicate that is serializable and checked
  *
@@ -32,5 +34,10 @@ import java.io.Serializable;
 public interface CheckedPredicate<T> extends Serializable {
 
    boolean test(T t) throws Throwable;
+
+   static <T> CheckedPredicate<T> instanceOf(Class<?> clazz) {
+      notNull(clazz);
+      return clazz::isInstance;
+   }
 
 }//END OF CheckedPredicate

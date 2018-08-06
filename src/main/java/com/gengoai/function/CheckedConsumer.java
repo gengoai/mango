@@ -42,20 +42,32 @@ public interface CheckedConsumer<T> extends Serializable {
    void accept(T t) throws Throwable;
 
    /**
-    * As function checked function.
+    * As consumer serializable consumer.
     *
-    * @param <T>         the type parameter
-    * @param <R>         the type parameter
-    * @param consumer    the consumer
-    * @param returnValue the return value
-    * @return the checked function
+    * @return the serializable consumer
     */
-   static <T, R> CheckedFunction<T, R> asFunction(CheckedConsumer<? super T> consumer, R returnValue) {
-      notNull(consumer);
+   default <R> CheckedFunction<T, R> asFunction(R returnValue) {
       return t -> {
-         consumer.accept(t);
+         this.accept(t);
          return returnValue;
       };
+   }
+
+   /**
+    * As consumer serializable consumer.
+    *
+    * @return the serializable consumer
+    */
+   default <R> CheckedFunction<T, R> asFunction() {
+      return asFunction(null);
+   }
+
+   static <T, R> CheckedFunction<T, R> asFunction(CheckedConsumer<T> consumer, R returnValue) {
+      return notNull(consumer).asFunction(returnValue);
+   }
+
+   static <T, R> CheckedFunction<T, R> asFunction(CheckedConsumer<T> consumer) {
+      return asFunction(consumer, null);
    }
 
 

@@ -175,7 +175,7 @@ public final class Convert {
    public static <T> T convert(Object object, Class<T> desiredType) {
       if (object == null) {
          if (desiredType != null && desiredType.isPrimitive()) {
-            return Defaults.defaultValue(desiredType);
+            return Defaults.value(desiredType);
          }
          return null;
       }
@@ -200,7 +200,7 @@ public final class Convert {
       if (converters.containsKey(desiredType)) {
          Object output = converters.get(desiredType).apply(object);
          if (output == null && desiredType.isPrimitive()) {
-            return Defaults.defaultValue(desiredType);
+            return Defaults.value(desiredType);
          }
          return Cast.as(output);
       }

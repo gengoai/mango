@@ -121,7 +121,7 @@ public final class CollectionConverter {
 
          Iterable<?> iterable = ITERABLE.apply(input);
          if (iterable != null) {
-            Collection<T> collection = Cast.as(Collect.create(collectionType));
+            Collection<T> collection = Cast.as(Collect.newCollection(collectionType));
             if (collection == null) {
                logFine("Unable to create a collection of type {0}", collectionType);
                return null;

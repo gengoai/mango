@@ -2,6 +2,8 @@ package com.gengoai;
 
 import com.gengoai.conversion.Cast;
 
+import static com.gengoai.Validation.notNull;
+
 /**
  * <p>Get default values for primitives and objects.</p>
  *
@@ -29,7 +31,8 @@ public final class Defaults {
     * @param clazz the class to get the default value for.
     * @return the default value
     */
-   public static <T> T defaultValue(Class<T> clazz) {
+   public static <T> T value(Class<T> clazz) {
+      notNull(clazz);
       if (clazz == boolean.class || clazz == Boolean.class) {
          return Cast.as(DEFAULT_BOOLEAN);
       } else if (clazz == byte.class || clazz == Byte.class) {

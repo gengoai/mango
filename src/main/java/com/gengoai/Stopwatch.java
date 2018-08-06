@@ -1,6 +1,6 @@
 package com.gengoai;
 
-import com.gengoai.concurrent.Threads;
+import com.gengoai.string.StringUtils;
 
 import java.io.Serializable;
 import java.time.Duration;
@@ -19,9 +19,11 @@ public class Stopwatch implements Serializable {
    private long start = -1L;
    private long elapsedTime = 0L;
    private boolean isRunning = false;
+   public final String name;
 
 
-   private Stopwatch(boolean started) {
+   private Stopwatch(boolean started, String name) {
+      this.name = name;
       if (started) {
          start();
       }
@@ -79,18 +81,29 @@ public class Stopwatch implements Serializable {
              : elapsedTime;
    }
 
-   public static void main(String[] args) throws Exception {
-      Stopwatch sw = Stopwatch.createStarted();
-      Threads.sleep(10000);
-      System.out.println(sw);
-   }
 
    @Override
    public String toString() {
-      return Duration.ofNanos(getElapsedTime()).toString()
-                     .substring(2)
-                     .replaceAll("(\\d[HMS])(?!$)", "$1 ")
-                     .toLowerCase();
+      StringBuilder stringBuilder = new StringBuilder();
+      if (StringUtils.isNotNullOrBlank(name)) {
+         stringBuilder.append(name).append(": ");
+      }
+      stringBuilder.append(Duration.ofNanos(getElapsedTime()).toString()
+                                   .substring(2)
+                                   .replaceAll("(\\d[HMS])(?!$)", "$1 ")
+                                   .toLowerCase());
+      return stringBuilder.toString();
+   }
+
+
+   /**
+    * Create a stopwatch that is started.
+    *
+    * @param name the name of the stopwatch for reporting purposes
+    * @return the stopwatch
+    */
+   public static Stopwatch createStarted(String name) {
+      return new Stopwatch(true, name);
    }
 
 
@@ -100,7 +113,17 @@ public class Stopwatch implements Serializable {
     * @return the stopwatch
     */
    public static Stopwatch createStarted() {
-      return new Stopwatch(true);
+      return new Stopwatch(true, null);
+   }
+
+   /**
+    * Create a stopwatch that is stopped.
+    *
+    * @param name the name of the stopwatch for reporting purposes
+    * @return the stopwatch
+    */
+   public static Stopwatch createStopped(String name) {
+      return new Stopwatch(false, name);
    }
 
    /**
@@ -109,8 +132,6 @@ public class Stopwatch implements Serializable {
     * @return the stopwatch
     */
    public static Stopwatch createStopped() {
-      return new Stopwatch(false);
+      return new Stopwatch(false, null);
    }
-
-
 }//END OF Stopwatch
