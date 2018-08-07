@@ -66,5 +66,5 @@ public enum JsonTokenType {
    /**
     * Marks the end of a key value pair
     */
-   END_KEY_VALUE
+   END_KEY_VALUE,
 } //END OF StructuredElement

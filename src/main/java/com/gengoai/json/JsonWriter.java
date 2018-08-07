@@ -29,6 +29,8 @@ import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Convert;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.string.StringUtils;
+import com.google.gson.JsonElement;
+import com.google.gson.internal.Streams;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -57,6 +59,11 @@ public final class JsonWriter implements AutoCloseable, Closeable {
       this.writer = new com.google.gson.stream.JsonWriter(resource.writer());
 //      this.writer.setHtmlSafe(true);
 //      this.writer.setLenient(true);
+   }
+
+   public JsonWriter write(JsonElement element) throws IOException {
+      Streams.write(element, writer);
+      return this;
    }
 
    /**

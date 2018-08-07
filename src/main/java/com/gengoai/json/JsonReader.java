@@ -165,6 +165,7 @@ public final class JsonReader implements AutoCloseable, Closeable {
       return this;
    }
 
+
    @Override
    public void close() throws IOException {
       reader.close();

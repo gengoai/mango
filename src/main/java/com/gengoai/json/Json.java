@@ -18,13 +18,14 @@ import java.util.Map;
  * @author David B. Bracewell
  */
 public final class Json {
-   private static final Type type = new TypeToken<Map<String, Object>>() {
+   public static final Type type = new TypeToken<Map<String, Object>>() {
    }.getType();
-   private static final Gson gson = new Gson();
+   public static final Gson gson = new Gson();
 
    private Json() {
       throw new IllegalAccessError();
    }
+
 
    /**
     * Quicker method for loading a json string into a <code>Map</code> of <code>String</code> keys and
