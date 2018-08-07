@@ -66,13 +66,14 @@ public enum SparkStreamingContext implements StreamingContext {
 
    private volatile Broadcast<Config> configBroadcast;
 
+
    /**
     * Gets the streaming context of a given spark stream
     *
     * @param stream the stream whose context we want
     * @return the spark streaming context
     */
-   public static SparkStreamingContext contextOf( SparkStream<?> stream) {
+   public static SparkStreamingContext contextOf(SparkStream<?> stream) {
       return contextOf(stream.getRDD().context());
    }
 
@@ -82,7 +83,7 @@ public enum SparkStreamingContext implements StreamingContext {
     * @param stream the stream whose context we want
     * @return the spark streaming context
     */
-   public static SparkStreamingContext contextOf( SparkDoubleStream stream) {
+   public static SparkStreamingContext contextOf(SparkDoubleStream stream) {
       return contextOf(stream.getRDD().context());
    }
 
@@ -92,7 +93,7 @@ public enum SparkStreamingContext implements StreamingContext {
     * @param stream the stream whose context we want
     * @return the spark streaming context
     */
-   public static SparkStreamingContext contextOf( SparkPairStream<?, ?> stream) {
+   public static SparkStreamingContext contextOf(SparkPairStream<?, ?> stream) {
       return contextOf(stream.getRDD().context());
    }
 
@@ -265,7 +266,7 @@ public enum SparkStreamingContext implements StreamingContext {
    }
 
    @Override
-   public <T> SparkStream<T> stream( Stream<T> stream) {
+   public <T> SparkStream<T> stream(Stream<T> stream) {
       if (stream == null) {
          return empty();
       }
