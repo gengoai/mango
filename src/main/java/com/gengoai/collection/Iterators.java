@@ -42,7 +42,7 @@ public final class Iterators {
     */
    @SafeVarargs
    public static <T> Iterator<T> concat(final Iterator<? extends T>... iterators) {
-      return new ConcatIterator<T>(Arrays.asList(notNull(iterators)).iterator());
+      return new ConcatIterator<>(Arrays.asList(notNull(iterators)).iterator());
    }
 
    /**

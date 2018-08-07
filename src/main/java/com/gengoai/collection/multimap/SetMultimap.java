@@ -11,10 +11,20 @@ import java.util.*;
 public abstract class SetMultimap<K, V> implements Multimap<K, V>, Serializable {
    private final Map<K, Set<V>> map;
 
-   @Override
-   public String toString() {
-      return map.toString();
+   public SetMultimap() {
+      this.map = createMap();
    }
+
+   @Override
+   public Map<K, Collection<V>> asMap() {
+      return Cast.cast(map);
+   }
+
+   protected Map<K, Set<V>> createMap() {
+      return new HashMap<>();
+   }
+
+   protected abstract Set<V> createSet();
 
    @Override
    public boolean equals(Object o) {
@@ -25,24 +35,14 @@ public abstract class SetMultimap<K, V> implements Multimap<K, V>, Serializable 
    }
 
    @Override
-   public int hashCode() {
-      return Objects.hash(map);
-   }
-
-   public SetMultimap() {
-      this.map = createMap();
-   }
-
-   protected Map<K, Set<V>> createMap() {
-      return new HashMap<>();
-   }
-
-   protected abstract Set<V> createSet();
-
-   @Override
    public Set<V> get(Object o) {
       map.putIfAbsent(Cast.as(o), createSet());
       return map.get(o);
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(map);
    }
 
    @Override
@@ -58,9 +58,10 @@ public abstract class SetMultimap<K, V> implements Multimap<K, V>, Serializable 
    }
 
    @Override
-   public Map<K, Collection<V>> asMap() {
-      return Cast.cast(map);
+   public String toString() {
+      return map.toString();
    }
+
 
 
 }//END OF SetMultimap

@@ -3,10 +3,7 @@ package com.gengoai.collection.multimap;
 import com.gengoai.conversion.Cast;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * List backed multimaps
@@ -60,5 +57,23 @@ public abstract class ListMultimap<K, V> implements Multimap<K, V>, Serializable
    @Override
    public Map<K, Collection<V>> asMap() {
       return Cast.as(map);
+   }
+
+   @Override
+   public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof ListMultimap)) return false;
+      ListMultimap<?, ?> that = (ListMultimap<?, ?>) o;
+      return Objects.equals(map, that.map);
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(map);
+   }
+
+   @Override
+   public String toString() {
+      return map.toString();
    }
 }//END OF ListMultimap

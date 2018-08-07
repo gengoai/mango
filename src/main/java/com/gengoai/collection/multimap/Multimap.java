@@ -3,8 +3,6 @@ package com.gengoai.collection.multimap;
 import com.gengoai.Validation;
 import com.gengoai.collection.Collect;
 import com.gengoai.collection.Iterables;
-import com.gengoai.collection.set.IteratorSet;
-import com.gengoai.conversion.Cast;
 
 import java.util.*;
 
@@ -36,7 +34,17 @@ public interface Multimap<K, V> {
     * @return the set
     */
    default Set<Map.Entry<K, V>> entries() {
-      return new IteratorSet<>(() -> new EntrySetIterator<>(asMap()));
+      return new AbstractSet<Map.Entry<K, V>>() {
+         @Override
+         public Iterator<Map.Entry<K, V>> iterator() {
+            return new EntrySetIterator<>(asMap());
+         }
+
+         @Override
+         public int size() {
+            return Multimap.this.size();
+         }
+      };
    }
 
    /**
@@ -111,7 +119,7 @@ public interface Multimap<K, V> {
     * @param value the value
     * @return the boolean
     */
-   default boolean remove(Object key, Object value){
+   default boolean remove(Object key, Object value) {
       return asMap().containsKey(key) && asMap().get(key).remove(value);
    }
 
@@ -150,43 +158,76 @@ public interface Multimap<K, V> {
       return Collect.asCollection(Iterables.flatten(asMap().values()));
    }
 
+   /**
+    * Clear.
+    */
    default void clear() {
       asMap().clear();
    }
 
+   /**
+    * As map map.
+    *
+    * @return the map
+    */
    Map<K, Collection<V>> asMap();
 
+   /**
+    * Contains key boolean.
+    *
+    * @param key the key
+    * @return the boolean
+    */
    default boolean containsKey(Object key) {
       return asMap().containsKey(key);
    }
 
+   /**
+    * Contains value boolean.
+    *
+    * @param value the value
+    * @return the boolean
+    */
    default boolean containsValue(Object value) {
       return values().contains(value);
    }
 
+   /**
+    * Trim.
+    */
    default void trim() {
       asMap().keySet().removeIf(key -> get(key).isEmpty());
    }
 
+   /**
+    * The type Entry set iterator.
+    *
+    * @param <K> the type parameter
+    * @param <V> the type parameter
+    */
    class EntrySetIterator<K, V> implements Iterator<Map.Entry<K, V>> {
       private final Map<K, Collection<V>> map;
-      private final Iterator<Map.Entry<? extends K, ? extends Collection<? extends V>>> entryIterator;
-      private Iterator<? extends V> currentCollectionIter = null;
+      private Iterator<K> keyIterator = null;
+      private Iterator<V> currentCollectionIter = null;
       private K currentKey = null;
       private V currentValue = null;
 
+      /**
+       * Instantiates a new Entry set iterator.
+       *
+       * @param map the map
+       */
       public EntrySetIterator(Map<K, Collection<V>> map) {
          this.map = map;
-         this.entryIterator = Cast.as(map.entrySet().iterator());
+         this.keyIterator = map.keySet().iterator();
       }
 
 
       private boolean advance() {
          while (currentCollectionIter == null || !currentCollectionIter.hasNext()) {
-            if (entryIterator.hasNext()) {
-               Map.Entry<K, ? extends Collection<? extends V>> entry = Cast.as(entryIterator.next());
-               currentKey = entry.getKey();
-               currentCollectionIter = entry.getValue().iterator();
+            if (keyIterator.hasNext()) {
+               currentKey = keyIterator.next();
+               currentCollectionIter = map.get(currentKey).iterator();
             } else {
                return false;
             }
