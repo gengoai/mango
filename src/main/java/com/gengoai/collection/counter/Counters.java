@@ -22,14 +22,10 @@
 package com.gengoai.collection.counter;
 
 import com.gengoai.conversion.Convert;
-import com.gengoai.conversion.Val;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVReader;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.json.Json;
-import com.gengoai.json.JsonReader;
-import com.gengoai.json.JsonTokenType;
-import com.gengoai.tuple.Tuple2;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -141,14 +137,9 @@ public interface Counters {
     */
    static <TYPE> Counter<TYPE> readJson(Resource resource, Class<TYPE> keyClass) throws IOException {
       Counter<TYPE> counter = Counters.newCounter();
-      try (JsonReader reader = Json.createReader(resource)) {
-         reader.beginDocument();
-         while (reader.peek() != JsonTokenType.END_DOCUMENT) {
-            Tuple2<String, Val> keyValue = reader.nextKeyValue();
-            counter.set(Convert.convert(keyValue.v1, keyClass), keyValue.v2.asDouble());
-         }
-         reader.endDocument();
-      }
+      Json.loads(resource).forEach((k, v) -> {
+         counter.set(Convert.convert(k, keyClass), Convert.convert(v, Double.class));
+      });
       return counter;
    }
 

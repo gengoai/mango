@@ -22,13 +22,11 @@
 package com.gengoai.collection.counter;
 
 import com.gengoai.conversion.Convert;
-import com.gengoai.conversion.Val;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVReader;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.json.Json;
 import com.gengoai.json.JsonReader;
-import com.gengoai.json.JsonTokenType;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -169,9 +167,11 @@ public interface MultiCounters {
       MultiCounter<K1, K2> counter = newMultiCounter();
       try (JsonReader reader = Json.createReader(resource)) {
          reader.beginDocument();
-         while (reader.peek() != JsonTokenType.END_DOCUMENT) {
-            Map<String, Val> map = reader.nextMap();
-            counter.set(map.get("k1").as(key1Class), map.get("k2").as(key2Class), map.get("v").asDoubleValue());
+         while (reader.hasNext()) {
+            Map<String, Object> map = reader.nextMap();
+            counter.set(Convert.convert(map.get("k1"), key1Class),
+                        Convert.convert(map.get("k2"), key2Class),
+                        Convert.convert(map.get("v"), Double.class));
          }
          reader.endDocument();
       }

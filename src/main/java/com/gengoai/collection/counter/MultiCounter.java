@@ -455,9 +455,9 @@ public interface MultiCounter<K, V> {
     */
    default void writeJson( Resource output) throws IOException {
       try (JsonWriter writer = Json.createWriter(output)) {
-         writer.beginDocument();
+         writer.beginDocument(true);
          for (Tuple3<K, V, Double> entry : entries()) {
-            writer.beginObject("entry");
+            writer.beginObject();
             writer.property("k1", Convert.convert(entry.v1, String.class));
             writer.property("k2", Convert.convert(entry.v2, String.class));
             writer.property("v", entry.v3);

@@ -1,6 +1,6 @@
 package com.gengoai.json;
 
-import com.gengoai.conversion.Val;
+import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.io.resource.StringResource;
 import com.google.gson.Gson;
@@ -8,8 +8,7 @@ import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,9 +17,21 @@ import java.util.Map;
  * @author David B. Bracewell
  */
 public final class Json {
-   public static final Type type = new TypeToken<Map<String, Object>>() {
+   /**
+    * The Map type.
+    */
+   static final Type MAP_TYPE = new TypeToken<Map<String, Object>>() {
    }.getType();
-   public static final Gson gson = new Gson();
+   /**
+    * The List type.
+    */
+   static final Type LIST_TYPE = new TypeToken<List<Object>>() {
+   }.getType();
+   /**
+    * The Gson.
+    */
+   static final Gson gson = new Gson();
+
 
    private Json() {
       throw new IllegalAccessError();
@@ -36,8 +47,10 @@ public final class Json {
     * @return the map of representing the json object in the string
     * @throws IOException Something went wrong in loading
     */
-   public static Map<String, Object> qloads(Resource json) throws IOException {
-      return qloads(json.readToString().trim());
+   public static Map<String, Object> loads(Resource json) throws IOException {
+      try (JsonReader reader = createReader(json)) {
+         return reader.nextMap();
+      }
    }
 
    /**
@@ -49,54 +62,8 @@ public final class Json {
     * @return the map of representing the json object in the string
     * @throws IOException Something went wrong in loading
     */
-   public static Map<String, Object> qloads(String json) throws IOException {
-      return gson.fromJson(json, type);
-   }
-
-   /**
-    * Reads the resource in the format to a map.
-    *
-    * @param resource the resource
-    * @return the data in the resource as a map
-    * @throws IOException something went wrong reading the resource
-    */
-   public static Map<String, Val> loads(Resource resource) throws IOException {
-      return loads(resource.readToString());
-   }
-
-   /**
-    * Reads the resource in the format to a map.
-    *
-    * @param data the data
-    * @return the data in the resource as a map
-    */
-   public static Map<String, Val> loads(String data) {
-      try {
-         Map<String, Val> r = new HashMap<>();
-         try (JsonReader reader = new JsonReader(new StringResource(data))) {
-            reader.beginDocument();
-            while (reader.peek() != JsonTokenType.END_DOCUMENT) {
-               String name = reader.peekName();
-               switch (reader.peek()) {
-                  case BEGIN_OBJECT:
-                     r.put(name, Val.of(reader.nextMap()));
-                     break;
-                  case BEGIN_ARRAY:
-                     r.put(name, Val.of(reader.nextCollection(ArrayList::new)));
-                     break;
-                  case NAME:
-                     r.put(name, reader.nextKeyValue(name));
-                     break;
-                  default:
-                     reader.skip();
-               }
-            }
-            reader.endDocument();
-         }
-         return r;
-      } catch (Exception e) {
-         throw new RuntimeException(e);
-      }
+   public static Map<String, Object> loads(String json) throws IOException {
+      return loads(Resources.fromString(json));
    }
 
    /**
@@ -109,11 +76,7 @@ public final class Json {
       try {
          Resource strResource = new StringResource();
          try (JsonWriter writer = new JsonWriter(strResource)) {
-            writer.beginDocument();
-            for (Map.Entry<String, ?> entry : map.entrySet()) {
-               writer.property(entry.getKey(), entry.getValue());
-            }
-            writer.endDocument();
+            writer.write(JsonEntry.from(map));
          }
          return strResource.readToString().trim();
       } catch (Exception e) {

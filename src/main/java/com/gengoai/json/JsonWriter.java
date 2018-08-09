@@ -21,12 +21,7 @@
 package com.gengoai.json;
 
 import com.gengoai.EnumValue;
-import com.gengoai.Validation;
-import com.gengoai.collection.Iterables;
-import com.gengoai.collection.counter.Counter;
-import com.gengoai.collection.multimap.Multimap;
 import com.gengoai.conversion.Cast;
-import com.gengoai.conversion.Convert;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.string.StringUtils;
 import com.google.gson.JsonElement;
@@ -34,10 +29,6 @@ import com.google.gson.internal.Streams;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Stack;
 
 /**
  * The type JSON writer.
@@ -46,7 +37,6 @@ import java.util.Stack;
  */
 public final class JsonWriter implements AutoCloseable, Closeable {
    private final com.google.gson.stream.JsonWriter writer;
-   private final Stack<JsonTokenType> writeStack = new Stack<>();
    private boolean isArray;
 
    /**
@@ -57,13 +47,6 @@ public final class JsonWriter implements AutoCloseable, Closeable {
     */
    public JsonWriter(Resource resource) throws IOException {
       this.writer = new com.google.gson.stream.JsonWriter(resource.writer());
-//      this.writer.setHtmlSafe(true);
-//      this.writer.setLenient(true);
-   }
-
-   public JsonWriter write(JsonElement element) throws IOException {
-      Streams.write(element, writer);
-      return this;
    }
 
    /**
@@ -74,7 +57,6 @@ public final class JsonWriter implements AutoCloseable, Closeable {
     */
    public JsonWriter beginArray() throws IOException {
       writer.beginArray();
-      writeStack.add(JsonTokenType.BEGIN_ARRAY);
       return this;
    }
 
@@ -86,9 +68,8 @@ public final class JsonWriter implements AutoCloseable, Closeable {
     * @throws IOException Something went wrong writing
     */
    public JsonWriter beginArray(String arrayName) throws IOException {
-      writeName(arrayName);
+      name(arrayName);
       writer.beginArray();
-      writeStack.add(JsonTokenType.BEGIN_ARRAY);
       return this;
    }
 
@@ -116,7 +97,6 @@ public final class JsonWriter implements AutoCloseable, Closeable {
       } else {
          writer.beginObject();
       }
-      writeStack.add(JsonTokenType.BEGIN_DOCUMENT);
       return this;
    }
 
@@ -128,7 +108,6 @@ public final class JsonWriter implements AutoCloseable, Closeable {
     */
    public JsonWriter beginObject() throws IOException {
       writer.beginObject();
-      writeStack.add(JsonTokenType.BEGIN_OBJECT);
       return this;
    }
 
@@ -140,18 +119,9 @@ public final class JsonWriter implements AutoCloseable, Closeable {
     * @throws IOException Something went wrong writing
     */
    public JsonWriter beginObject(String objectName) throws IOException {
-      writeName(objectName);
+      name(objectName);
       writer.beginObject();
-      writeStack.add(JsonTokenType.BEGIN_OBJECT);
       return this;
-   }
-
-   private void checkAndPop(JsonTokenType required) throws IOException {
-      if (writeStack.peek() != required) {
-         throw new IOException(
-            "Ill-formed JSON: " + required + " is required, but have the following unclosed: " + writeStack);
-      }
-      writeStack.pop();
    }
 
    @Override
@@ -166,8 +136,6 @@ public final class JsonWriter implements AutoCloseable, Closeable {
     * @throws IOException Something went wrong writing
     */
    public JsonWriter endArray() throws IOException {
-      checkAndPop(JsonTokenType.BEGIN_ARRAY);
-      popIf(JsonTokenType.NAME);
       writer.endArray();
       return this;
    }
@@ -178,7 +146,6 @@ public final class JsonWriter implements AutoCloseable, Closeable {
     * @throws IOException Something went wrong writing
     */
    public void endDocument() throws IOException {
-      checkAndPop(JsonTokenType.BEGIN_DOCUMENT);
       if (isArray) {
          writer.endArray();
       } else {
@@ -193,8 +160,6 @@ public final class JsonWriter implements AutoCloseable, Closeable {
     * @throws IOException Something went wrong writing
     */
    public JsonWriter endObject() throws IOException {
-      checkAndPop(JsonTokenType.BEGIN_OBJECT);
-      popIf(JsonTokenType.NAME);
       writer.endObject();
       return this;
    }
@@ -208,22 +173,8 @@ public final class JsonWriter implements AutoCloseable, Closeable {
       writer.flush();
    }
 
-   /**
-    * Determines if the writer is currently in an array
-    *
-    * @return True if in an array, False if not
-    */
-   public boolean inArray() {
-      return writeStack.peek() == JsonTokenType.BEGIN_ARRAY || (writeStack.peek() == JsonTokenType.BEGIN_DOCUMENT && isArray);
-   }
-
-   /**
-    * Determines if the writer is currently in an object
-    *
-    * @return True if in an object, False if not
-    */
-   public boolean inObject() {
-      return writeStack.peek() == JsonTokenType.BEGIN_OBJECT || (writeStack.peek() == JsonTokenType.BEGIN_DOCUMENT && !isArray);
+   public void name(String name) throws IOException {
+      writer.name(name);
    }
 
    /**
@@ -233,59 +184,8 @@ public final class JsonWriter implements AutoCloseable, Closeable {
     * @throws IOException Something went wrong writing
     */
    public JsonWriter nullValue() throws IOException {
-      Validation.checkArgument(inArray() || writeStack.peek() == JsonTokenType.NAME,
-                               "Expecting an array or a name, but found " + writeStack.peek());
-      popIf(JsonTokenType.NAME);
       writer.nullValue();
       return this;
-   }
-
-   private void popIf(JsonTokenType type) {
-      if (writeStack.peek() == type) {
-         writeStack.pop();
-      }
-   }
-
-   /**
-    * Writes an array with the given key name
-    *
-    * @param key   the key name for the array
-    * @param array the array to be written
-    * @return This structured writer
-    * @throws IOException Something went wrong writing
-    */
-   protected JsonWriter property(String key, Object[] array) throws IOException {
-      return property(key, Arrays.asList(array));
-   }
-
-   /**
-    * Writes an iterable with the given key name
-    *
-    * @param key      the key name for the collection
-    * @param iterable the iterable to be written
-    * @return This structured writer
-    * @throws IOException Something went wrong writing
-    */
-   protected JsonWriter property(String key, Iterable<?> iterable) throws IOException {
-      Validation.checkArgument(!inArray(), "Cannot write a property inside an array.");
-      beginArray(key);
-      for (Object o : iterable) {
-         value(o);
-      }
-      endArray();
-      return this;
-   }
-
-   /**
-    * Writes an iterator with the given key name
-    *
-    * @param key      the key name for the collection
-    * @param iterator the iterator to be written
-    * @return This structured writer
-    * @throws IOException Something went wrong writing
-    */
-   protected JsonWriter property(String key, Iterator<?> iterator) throws IOException {
-      return property(key, Iterables.asIterable(iterator));
    }
 
    /**
@@ -297,24 +197,18 @@ public final class JsonWriter implements AutoCloseable, Closeable {
     * @throws IOException Something went wrong writing
     */
    public JsonWriter property(String key, Object value) throws IOException {
-      Validation.checkArgument(!inArray(), "Cannot write a property inside an array.");
-      writeName(key);
+      name(key);
       value(value);
       return this;
    }
 
-   /**
-    * Writes a map with the given key name
-    *
-    * @param key the key name for the map
-    * @param map the map to be written
-    * @return This structured writer
-    * @throws IOException Something went wrong writing
-    */
-   public JsonWriter property(String key, Map<String, ?> map) throws IOException {
-      Validation.checkArgument(!inArray(), "Cannot write a property inside an array.");
-      writeName(key);
-      value(map);
+   public JsonWriter setHtmlSafe(boolean htmlSafe) {
+      writer.setHtmlSafe(htmlSafe);
+      return this;
+   }
+
+   public JsonWriter setLenient(boolean isLenient) {
+      writer.setLenient(isLenient);
       return this;
    }
 
@@ -341,113 +235,6 @@ public final class JsonWriter implements AutoCloseable, Closeable {
       return this;
    }
 
-   /**
-    * Writes an array
-    *
-    * @param array the array to be written
-    * @return This structured writer
-    * @throws IOException Something went wrong writing
-    */
-   protected JsonWriter value(Object[] array) throws IOException {
-      return value(Arrays.asList(array));
-   }
-
-   /**
-    * Writes a boolean.
-    *
-    * @param value the value
-    * @return This structured writer
-    * @throws IOException Something went wrong writing
-    */
-   public JsonWriter value(boolean value) throws IOException {
-      Validation.checkArgument(inArray() || writeStack.peek() == JsonTokenType.NAME,
-                               "Expecting an array or a name, but found " + writeStack.peek());
-      popIf(JsonTokenType.NAME);
-      writer.value(value);
-      return this;
-   }
-
-   /**
-    * Writes an iterable
-    *
-    * @param value the iterable to be written
-    * @return This structured writer
-    * @throws IOException Something went wrong writing
-    */
-   public JsonWriter value(Iterable<?> value) throws IOException {
-      Validation.checkArgument(inArray() || writeStack.peek() == JsonTokenType.NAME,
-                               "Expecting an array or a name, but found " + writeStack.peek());
-      popIf(JsonTokenType.NAME);
-      beginArray();
-      for (Object o : value) {
-         value(o);
-      }
-      endArray();
-      return this;
-   }
-
-   /**
-    * Writes an Iterator
-    *
-    * @param value the Iterator to be written
-    * @return This structured writer
-    * @throws IOException Something went wrong writing
-    */
-   public JsonWriter value(Iterator<?> value) throws IOException {
-      Validation.checkArgument(inArray() || writeStack.peek() == JsonTokenType.NAME,
-                               "Expecting an array or a name, but found " + writeStack.peek());
-      popIf(JsonTokenType.NAME);
-      return value(Iterables.asIterable(value));
-   }
-
-   /**
-    * Writes a map
-    *
-    * @param map the map to be written
-    * @return This structured writer
-    * @throws IOException Something went wrong writing
-    */
-   public JsonWriter value(Map<String, ?> map) throws IOException {
-      if (map == null) {
-         nullValue();
-      } else {
-         boolean inObject = inObject();
-         if (!inObject) beginObject();
-         for (Map.Entry<String, ?> entry : map.entrySet()) {
-            property(entry.getKey(), entry.getValue());
-         }
-         if (!inObject) endObject();
-      }
-      popIf(JsonTokenType.NAME);
-      return this;
-   }
-
-   /**
-    * Writes a number
-    *
-    * @param number the number
-    * @return This structured writer
-    * @throws IOException Something went wrong writing
-    */
-   public JsonWriter value(Number number) throws IOException {
-      Validation.checkArgument(inArray() || writeStack.peek() == JsonTokenType.NAME,
-                               "Expecting an array or a name, but found " + writeStack.peek());
-      popIf(JsonTokenType.NAME);
-      writer.value(number);
-      return this;
-   }
-
-   /**
-    * Writes a string
-    *
-    * @param string the string
-    * @return This structured writer
-    * @throws IOException Something went wrong writing
-    */
-   public JsonWriter value(String string) throws IOException {
-      writer.value(string);
-      return this;
-   }
 
    /**
     * Writes an array value
@@ -457,69 +244,35 @@ public final class JsonWriter implements AutoCloseable, Closeable {
     * @throws IOException Something went wrong writing
     */
    public JsonWriter value(Object value) throws IOException {
-      Validation.checkArgument(inArray() || writeStack.peek() == JsonTokenType.NAME,
-                               "Expecting an array or a name, but found " + writeStack.peek());
-      writeObject(value);
-      popIf(JsonTokenType.NAME);
-      return this;
-   }
-
-   private void writeName(String name) throws IOException {
-      if (writeStack.peek() == JsonTokenType.NAME) {
-         throw new IOException("Cannot write two consecutive names.");
-      }
-      writer.name(name);
-      writeStack.push(JsonTokenType.NAME);
-   }
-
-   /**
-    * Serializes an object
-    *
-    * @param object the object to serialize
-    * @return This structured writer
-    * @throws IOException Something went wrong writing
-    */
-   protected JsonWriter writeObject(Object object) throws IOException {
-      if (object == null) {
-         nullValue();
-      } else if (object instanceof JsonSerializable) {
-         JsonSerializable structuredSerializable = Cast.as(object);
-         if (object instanceof JsonArraySerializable) {
-            beginArray();
-         } else {
-            beginObject();
-         }
-         structuredSerializable.toJson(this);
-         if (object instanceof JsonArraySerializable) {
-            endArray();
-         } else {
-            endObject();
-         }
-      } else if (object instanceof Number) {
-         value(Cast.<Number>as(object));
-      } else if (object instanceof String) {
-         value(Cast.<String>as(object));
-      } else if (object instanceof Boolean) {
-         value(Cast.<Boolean>as(object).toString());
-      } else if (object instanceof Enum) {
-         value(Cast.<Enum>as(object).name());
-      } else if (object instanceof EnumValue) {
-         value(Cast.<EnumValue>as(object).name());
-      } else if (object instanceof Map) {
-         value(Cast.<Map<String, ?>>as(object));
-      } else if (object.getClass().isArray()) {
-         value(Cast.<Object[]>as(object));
-      } else if (object instanceof Multimap) {
-         value(Cast.<Multimap<String, ?>>as(object).asMap());
-      } else if (object instanceof Counter) {
-         value(Cast.<Counter<String>>as(object).asMap());
-      } else if (object instanceof Iterable) {
-         value(Cast.<Iterable>as(object));
-      } else if (object instanceof Iterator) {
-         value(Cast.<Iterator>as(object));
+      if (value == null) {
+         writer.nullValue();
+      } else if (value instanceof JsonElement) {
+         write(Cast.as(value));
+      } else if (value instanceof JsonSerializable) {
+         write(Cast.<JsonSerializable>as(value).toJson());
+      } else if (value instanceof Double) {
+         writer.value(Cast.<Double>as(value));
+      } else if (value instanceof Long) {
+         writer.value(Cast.<Long>as(value));
+      } else if (value instanceof Number) {
+         writer.value(Cast.<Number>as(value));
+      } else if (value instanceof CharSequence) {
+         writer.value(value.toString());
+      } else if (value instanceof Boolean) {
+         writer.value(Cast.<Boolean>as(value));
+      } else if (value instanceof Enum) {
+         writer.value(Cast.<Enum>as(value).name());
+      } else if (value instanceof EnumValue) {
+         writer.value(Cast.<EnumValue>as(value).name());
       } else {
-         value(Convert.convert(object, String.class));
+         write(JsonEntry.from(value));
       }
       return this;
    }
+
+   public JsonWriter write(JsonEntry element) throws IOException {
+      Streams.write(element.getElement(), writer);
+      return this;
+   }
+
 }//END OF JSONWriter
