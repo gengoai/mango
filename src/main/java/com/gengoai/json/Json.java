@@ -47,7 +47,7 @@ public final class Json {
     * @return the map of representing the json object in the string
     * @throws IOException Something went wrong in loading
     */
-   public static Map<String, Object> loads(Resource json) throws IOException {
+   public static Map<String, JsonEntry> load(Resource json) throws IOException {
       try (JsonReader reader = createReader(json)) {
          return reader.nextMap();
       }
@@ -62,9 +62,10 @@ public final class Json {
     * @return the map of representing the json object in the string
     * @throws IOException Something went wrong in loading
     */
-   public static Map<String, Object> loads(String json) throws IOException {
-      return loads(Resources.fromString(json));
+   public static Map<String, JsonEntry> loads(String json) throws IOException {
+      return load(Resources.fromString(json));
    }
+
 
    /**
     * Dumps a map in this format to a string.

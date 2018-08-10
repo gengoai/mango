@@ -22,6 +22,7 @@
 package com.gengoai.collection;
 
 import com.gengoai.collection.list.PrimitiveArrayList;
+import com.gengoai.function.SerializableFunction;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -315,5 +316,34 @@ public final class Lists {
       return partitions;
    }
 
+
+   public static <I, O> List<O> transform(List<? extends I> list, SerializableFunction<? super I, ? extends O> converter) {
+      return new TransformedList<>(list, converter);
+   }
+
+   private static class TransformedList<I, O> extends AbstractList<O> {
+      private final List<I> backing;
+      private final SerializableFunction<? super I, ? extends O> converter;
+
+      private TransformedList(List<I> backing, SerializableFunction<? super I, ? extends O> converter) {
+         this.backing = backing;
+         this.converter = converter;
+      }
+
+      @Override
+      public O get(int index) {
+         return converter.apply(backing.get(index));
+      }
+
+      @Override
+      public int size() {
+         return backing.size();
+      }
+
+      @Override
+      public O remove(int index) {
+         return converter.apply(backing.remove(index));
+      }
+   }
 
 }//END OF Lists

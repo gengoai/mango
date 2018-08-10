@@ -141,7 +141,7 @@ public class JsonReader implements AutoCloseable, Closeable {
     * @return the map
     * @throws IOException the io exception
     */
-   public Map<String, Object> nextMap() throws IOException {
+   public Map<String, JsonEntry> nextMap() throws IOException {
       return nextMap(null);
    }
 
@@ -152,13 +152,13 @@ public class JsonReader implements AutoCloseable, Closeable {
     * @return the map
     * @throws IOException the io exception
     */
-   public Map<String, Object> nextMap(String name) throws IOException {
+   public Map<String, JsonEntry> nextMap(String name) throws IOException {
       if (StringUtils.isNotNullOrBlank(name) || peek() == JsonToken.NAME) {
          String nextName = nextName();
          checkState(StringUtils.isNullOrBlank(name) || nextName.equals(name), "Next Map is named (" +
                                                                                  nextName + "), but was expecting (" + name + ")");
       }
-      return nextElement().asMap();
+      return nextElement().getAsMap();
    }
 
 
@@ -168,7 +168,7 @@ public class JsonReader implements AutoCloseable, Closeable {
     * @return the list
     * @throws IOException the io exception
     */
-   public List<Object> nextArray() throws IOException {
+   public List<JsonEntry> nextArray() throws IOException {
       return nextArray(null);
    }
 
@@ -179,13 +179,13 @@ public class JsonReader implements AutoCloseable, Closeable {
     * @return the list
     * @throws IOException the io exception
     */
-   public List<Object> nextArray(String name) throws IOException {
+   public List<JsonEntry> nextArray(String name) throws IOException {
       if (StringUtils.isNotNullOrBlank(name) || peek() == JsonToken.NAME) {
          String nextName = nextName();
          checkState(StringUtils.isNullOrBlank(name) || nextName.equals(name), "Next Collection is named (" +
                                                                                  nextName + "), but was expecting (" + name + ")");
       }
-      return nextElement().asArray();
+      return nextElement().getAsArray();
    }
 
    /**
@@ -254,7 +254,7 @@ public class JsonReader implements AutoCloseable, Closeable {
 
 
    public <T> T nextValue(Class<T> clazz) throws IOException {
-      return nextElement().getValue(clazz);
+      return nextElement().getAs(clazz);
    }
 
    /**
@@ -264,7 +264,7 @@ public class JsonReader implements AutoCloseable, Closeable {
     * @throws IOException the io exception
     */
    public Val nextValue() throws IOException {
-      return nextElement().getValue();
+      return nextElement().getAsVal();
    }
 
    /**

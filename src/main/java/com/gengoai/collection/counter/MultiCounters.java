@@ -26,6 +26,7 @@ import com.gengoai.io.CSV;
 import com.gengoai.io.CSVReader;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.json.Json;
+import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonReader;
 
 import java.io.IOException;
@@ -168,10 +169,10 @@ public interface MultiCounters {
       try (JsonReader reader = Json.createReader(resource)) {
          reader.beginDocument();
          while (reader.hasNext()) {
-            Map<String, Object> map = reader.nextMap();
-            counter.set(Convert.convert(map.get("k1"), key1Class),
-                        Convert.convert(map.get("k2"), key2Class),
-                        Convert.convert(map.get("v"), Double.class));
+            Map<String, JsonEntry> map = reader.nextMap();
+            counter.set(map.get("k1").getAs(key1Class),
+                        map.get("k2").getAs(key2Class),
+                        map.get("v").getAs(Double.class));
          }
          reader.endDocument();
       }
