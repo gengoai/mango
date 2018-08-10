@@ -2,7 +2,6 @@ package com.gengoai.json;
 
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
-import com.gengoai.io.resource.StringResource;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -18,14 +17,14 @@ import java.util.Map;
  */
 public final class Json {
    /**
-    * The Map type.
-    */
-   static final Type MAP_TYPE = new TypeToken<Map<String, Object>>() {
-   }.getType();
-   /**
     * The List type.
     */
    static final Type LIST_TYPE = new TypeToken<List<Object>>() {
+   }.getType();
+   /**
+    * The Map type.
+    */
+   static final Type MAP_TYPE = new TypeToken<Map<String, Object>>() {
    }.getType();
    /**
     * The Gson.
@@ -35,54 +34,6 @@ public final class Json {
 
    private Json() {
       throw new IllegalAccessError();
-   }
-
-
-   /**
-    * Quicker method for loading a json string into a <code>Map</code> of <code>String</code> keys and
-    * <code>Object</code> values. This method does not use information about {@link JsonSerializable} and instead loads
-    * into basic data types.
-    *
-    * @param json the json to load from
-    * @return the map of representing the json object in the string
-    * @throws IOException Something went wrong in loading
-    */
-   public static Map<String, JsonEntry> load(Resource json) throws IOException {
-      try (JsonReader reader = createReader(json)) {
-         return reader.nextMap();
-      }
-   }
-
-   /**
-    * Quicker method for loading a json string into a <code>Map</code> of <code>String</code> keys and
-    * <code>Object</code> values. This method does not use information about {@link JsonSerializable} and instead loads
-    * into basic data types.
-    *
-    * @param json the json to load from
-    * @return the map of representing the json object in the string
-    * @throws IOException Something went wrong in loading
-    */
-   public static Map<String, JsonEntry> loads(String json) throws IOException {
-      return load(Resources.fromString(json));
-   }
-
-
-   /**
-    * Dumps a map in this format to a string.
-    *
-    * @param map the map to dump
-    * @return the string representation of the map
-    */
-   public static String dumps(Map<String, ?> map) {
-      try {
-         Resource strResource = new StringResource();
-         try (JsonWriter writer = new JsonWriter(strResource)) {
-            writer.write(JsonEntry.from(map));
-         }
-         return strResource.readToString().trim();
-      } catch (Exception e) {
-         throw new RuntimeException(e);
-      }
    }
 
    /**
@@ -96,7 +47,6 @@ public final class Json {
       return new JsonReader(resource);
    }
 
-
    /**
     * Create writer json writer.
     *
@@ -106,6 +56,70 @@ public final class Json {
     */
    public static JsonWriter createWriter(Resource resource) throws IOException {
       return new JsonWriter(resource);
+   }
+
+   public static Resource dump(Object object, Resource out) throws IOException {
+      try (JsonWriter writer = new JsonWriter(out)) {
+         writer.write(JsonEntry.from(object));
+      }
+      return out;
+   }
+
+   /**
+    * Dumps a map in this format to a string.
+    *
+    * @param object the object to dump
+    * @return the string representation of the map
+    */
+   public static String dumps(Object object) {
+      try {
+         return dump(object, Resources.fromString()).readToString();
+      } catch (IOException e) {
+         throw new RuntimeException(e);
+      }
+   }
+
+   public static List<JsonEntry> loadArray(Resource json) throws IOException {
+      return parse(json).getAsArray();
+   }
+
+   public static List<JsonEntry> loadArray(String json) throws IOException {
+      return parse(json).getAsArray();
+   }
+
+   /**
+    * Quicker method for loading a json string into a <code>Map</code> of <code>String</code> keys and
+    * <code>Object</code> values. This method does not use information about {@link JsonSerializable} and instead loads
+    * into basic data types.
+    *
+    * @param json the json to load from
+    * @return the map of representing the json object in the string
+    * @throws IOException Something went wrong in loading
+    */
+   public static Map<String, JsonEntry> loadObject(Resource json) throws IOException {
+      return parse(json).getAsMap();
+   }
+
+   /**
+    * Quicker method for loading a json string into a <code>Map</code> of <code>String</code> keys and
+    * <code>Object</code> values. This method does not use information about {@link JsonSerializable} and instead loads
+    * into basic data types.
+    *
+    * @param json the json to load from
+    * @return the map of representing the json object in the string
+    */
+   public static Map<String, JsonEntry> loadObject(String json) throws IOException {
+      return loadObject(Resources.fromString(json));
+   }
+
+   public static JsonEntry parse(String json) throws IOException {
+      return parse(Resources.fromString(json));
+   }
+
+   public static JsonEntry parse(Resource json) throws IOException {
+      try (JsonReader reader = createReader(json)) {
+         return reader.nextElement();
+      }
    }
 
 
