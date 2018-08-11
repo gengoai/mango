@@ -137,7 +137,7 @@ public interface Counters {
     */
    static <TYPE> Counter<TYPE> readJson(Resource resource, Class<TYPE> keyClass) throws IOException {
       Counter<TYPE> counter = Counters.newCounter();
-      Json.loadObject(resource).forEach((k, v) -> {
+      Json.parseObject(resource).forEach((k, v) -> {
          counter.set(Convert.convert(k, keyClass), Convert.convert(v, Double.class));
       });
       return counter;

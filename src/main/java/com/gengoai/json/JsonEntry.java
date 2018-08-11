@@ -18,7 +18,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import static com.gengoai.Validation.checkState;
-import static com.gengoai.json.Json.gson;
 import static com.gengoai.tuple.Tuples.$;
 
 /**
@@ -26,6 +25,7 @@ import static com.gengoai.tuple.Tuples.$;
  * primitives that understands {@link JsonSerializable} objects</p>
  */
 public class JsonEntry {
+   private static final Gson gson = new Gson();
    private final JsonElement element;
 
    private JsonEntry(JsonElement element) {
