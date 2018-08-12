@@ -10,6 +10,7 @@ import com.google.gson.stream.JsonToken;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
@@ -198,7 +199,7 @@ public class JsonReader implements AutoCloseable, Closeable {
       return $(nextName(), nextValue());
    }
 
-   public <T> Tuple2<String, T> nextProperty(Class<T> clazz) throws IOException {
+   public <T> Tuple2<String, T> nextProperty(Type clazz) throws IOException {
       return $(nextName(), nextValue(clazz));
    }
 
@@ -253,7 +254,7 @@ public class JsonReader implements AutoCloseable, Closeable {
    }
 
 
-   public <T> T nextValue(Class<T> clazz) throws IOException {
+   public <T> T nextValue(Type clazz) throws IOException {
       return nextElement().getAs(clazz);
    }
 

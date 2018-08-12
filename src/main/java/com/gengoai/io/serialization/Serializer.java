@@ -24,6 +24,8 @@ package com.gengoai.io.serialization;
 
 import com.gengoai.io.resource.Resource;
 
+import java.lang.reflect.Type;
+
 /**
  * <p>A common interface for serializing and deserializing objects.</p>
  *
@@ -44,12 +46,12 @@ public interface Serializer {
     * Deserializes an object from a resource
     *
     * @param resource The resource containing the object
-    * @param clazz    Class information for the object
+    * @param type    Type information for the object
     * @param <T>      the type of object
     * @return The deserialized object
     * @throws Exception Something went wrong deserializing the object
     */
-   <T> T deserialize(Resource resource, Class<T> clazz) throws Exception;
+   <T> T deserialize(Resource resource, Type type) throws Exception;
 
 
 }//END OF Serializer

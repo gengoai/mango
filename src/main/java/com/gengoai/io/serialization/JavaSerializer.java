@@ -25,6 +25,7 @@ import com.gengoai.conversion.Cast;
 import com.gengoai.io.resource.Resource;
 
 import java.io.*;
+import java.lang.reflect.Type;
 
 /**
  * Serializer implementation that uses the standard Java serialization capabilities.
@@ -44,9 +45,9 @@ public class JavaSerializer implements Serializer, Serializable {
    }
 
    @Override
-   public <T> T deserialize(Resource resource, Class<T> clazz) throws Exception {
+   public <T> T deserialize(Resource resource, Type clazz) throws Exception {
       try (InputStream is = resource.inputStream(); ObjectInputStream ois = new ObjectInputStream(is);) {
-         return Cast.as(ois.readObject(), clazz);
+         return Cast.as(ois.readObject());
       }
    }
 

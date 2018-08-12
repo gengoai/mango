@@ -22,24 +22,25 @@
 package com.gengoai.io.serialization;
 
 import com.gengoai.io.resource.Resource;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.gengoai.json.Json;
+
+import java.lang.reflect.Type;
 
 /**
  * <p>JSON Serializer implementation</p>
  *
  * @author David B. Bracewell
  */
-public class JSONSerializer implements Serializer {
+public class JsonSerializer implements Serializer {
 
-    @Override
+   @Override
    public void serialize(Object o, Resource resource) throws Exception {
-      resource.write(new GsonBuilder().create().toJson(o).trim());
+      Json.dump(o, resource);
    }
 
    @Override
-   public <T> T deserialize(Resource resource, Class<T> clazz) throws Exception {
-      return new Gson().fromJson(resource.readToString(), clazz);
+   public <T> T deserialize(Resource resource, Type type) throws Exception {
+      return Json.parseObject(resource, type);
    }
 
 }//END OF JSONSerializer

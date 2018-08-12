@@ -25,7 +25,7 @@ import com.gengoai.conversion.Convert;
 import com.gengoai.graph.Vertex;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.io.resource.StringResource;
-import com.gengoai.io.serialization.JSONSerializer;
+import com.gengoai.io.serialization.JsonSerializer;
 
 import java.util.Collections;
 
@@ -104,7 +104,7 @@ public interface DefaultEncodersDecoders {
     */
    static <V> VertexEncoder<V> jsonVertexEncoder() {
       return vertex -> {
-         JSONSerializer serializer = new JSONSerializer();
+         JsonSerializer serializer = new JsonSerializer();
          Resource stringResource = new StringResource();
          try {
             serializer.serialize(vertex, stringResource);
@@ -124,7 +124,7 @@ public interface DefaultEncodersDecoders {
     */
    static <V> VertexDecoder<V> jsonVertexDecoder(final Class<V> vertexClass) {
       return vertex -> {
-         JSONSerializer serializer = new JSONSerializer();
+         JsonSerializer serializer = new JsonSerializer();
          Resource stringResource = new StringResource(vertex.getLabel());
          try {
             return serializer.deserialize(stringResource, vertexClass);

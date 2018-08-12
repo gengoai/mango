@@ -4,6 +4,7 @@ import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
@@ -95,8 +96,7 @@ public final class Json {
 
    /**
     * Quicker method for parsing a json string into a <code>Map</code> of <code>String</code> keys and
-    * <code>Object</code> values. This method does not use information about {@link JsonSerializable} and instead loads
-    * into basic data types.
+    * <code>Object</code> values.
     *
     * @param json the json to load from
     * @return the map of representing the json object in the string
@@ -106,10 +106,38 @@ public final class Json {
       return parse(json).getAsMap();
    }
 
+
+   /**
+    * Parses the json in the given resource creating an object of the given class type. This method is {@link
+    * JsonSerializable} aware and is useful for deserializing objects from json format.
+    *
+    * @param <T>      the class type parameter
+    * @param resource the resource to read from
+    * @param clazz    the class information for the object to deserialized
+    * @return the deserialized object
+    * @throws IOException something went wrong reading the json
+    */
+   public static <T> T parseObject(Resource resource, Type clazz) throws IOException {
+      return parse(resource).getAs(clazz);
+   }
+
+   /**
+    * Parses the json in the given json string creating an object of the given class type. This method is {@link
+    * JsonSerializable} aware and is useful for deserializing objects from json format.
+    *
+    * @param <T>   the class type parameter
+    * @param json  the json to read
+    * @param clazz the class information for the object to deserialized
+    * @return the deserialized object
+    * @throws IOException something went wrong reading the json
+    */
+   public static <T> T parseObject(String json, Type clazz) throws IOException {
+      return parse(json).getAs(clazz);
+   }
+
    /**
     * Quicker method for parsing a json string into a <code>Map</code> of <code>String</code> keys and
-    * <code>Object</code> values. This method does not use information about {@link JsonSerializable} and instead loads
-    * into basic data types.
+    * <code>Object</code> values.
     *
     * @param json the json to load from
     * @return the map of representing the json object in the string

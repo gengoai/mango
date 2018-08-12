@@ -22,8 +22,8 @@
 package com.gengoai.io.serialization;
 
 import com.gengoai.conversion.Cast;
-import com.gengoai.io.resource.ByteArrayResource;
 import com.gengoai.io.resource.Resource;
+import com.gengoai.io.resource.StringResource;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -31,9 +31,7 @@ import static org.junit.Assert.*;
 /**
  * @author David B. Bracewell
  */
-public class XMLSerializerTest {
-
-
+public class JsonSerializerTest {
 
   @Test
   public void test() throws Exception {
@@ -42,15 +40,12 @@ public class XMLSerializerTest {
     person.getHobbies().add("TV");
     person.getHobbies().add("Pool");
 
-    XMLSerializer xmlSerializer = new XMLSerializer();
+    JsonSerializer jsonSerializer = new JsonSerializer();
 
-    Resource resource = new ByteArrayResource();
-    xmlSerializer.serialize(person, resource);
-    Person deserialized = Cast.as(xmlSerializer.deserialize(resource, Person.class));
+    Resource resource = new StringResource();
+    jsonSerializer.serialize(person, resource);
+    Person deserialized = Cast.as(jsonSerializer.deserialize(resource, Person.class));
 
-    assertEquals(person,deserialized);
-
-
+    assertEquals(person, deserialized);
   }
-
 }

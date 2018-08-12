@@ -10,9 +10,7 @@ import com.gengoai.conversion.Val;
 import com.gengoai.reflection.Reflect;
 import com.google.gson.*;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -182,30 +180,57 @@ public class JsonEntry {
     * Gets the value of this entry as the given class. This method is {@link JsonSerializable} aware and will look for a
     * static <code>fromJson(JsonEntry)</code> method on the class if it is a subclass.
     *
-    * @param <T>   the type parameter
-    * @param clazz the class information for the type to be generated
+    * @param <T>  the type parameter
+    * @param type the type information for the type to be generated
     * @return the value
     */
-   public <T> T getAs(Class<T> clazz) {
-      if (clazz == null) {
+   public <T> T getAs(Type type) {
+      if (type == null) {
          return getAsVal().cast();
       }
-      if (JsonSerializable.class.isAssignableFrom(clazz)) {
-         Reflect reflected = Reflect.onClass(clazz).allowPrivilegedAccess();
-         Optional<Method> staticRead = reflected.getMethods("fromJson", 1).stream()
-                                                .filter(m -> JsonEntry.class.isAssignableFrom(
-                                                   m.getParameterTypes()[0]))
-                                                .filter(m -> Modifier.isStatic(m.getModifiers()))
-                                                .findFirst();
-         if (staticRead.isPresent()) {
-            try {
-               return Cast.as(staticRead.get().invoke(null, this));
-            } catch (IllegalAccessException | InvocationTargetException e) {
-               throw new RuntimeException(e);
+      if (type instanceof ParameterizedType) {
+         ParameterizedType pt = Cast.as(type);
+         boolean isJsonSerializable = Arrays.stream(pt.getActualTypeArguments())
+                                            .filter(t -> t instanceof Class)
+                                            .anyMatch(t -> JsonSerializable.class.isAssignableFrom(Cast.as(t)));
+         if (isJsonSerializable && pt.getRawType() instanceof Class) {
+            Class<?> rawType = Cast.as(pt.getRawType());
+            Class<?> c1Type = Cast.as(pt.getActualTypeArguments()[0]);
+            if (Iterable.class.isAssignableFrom(rawType) ||
+                   Iterator.class.isAssignableFrom(rawType) ||
+                   rawType.isArray()) {
+               List<?> list = Cast.as(getAsArray(c1Type));
+               return Cast.as(Convert.convert(list, rawType, c1Type));
+            } else if (Map.class.isAssignableFrom(rawType)) {
+               Class<?> c2Type = Cast.as(pt.getActualTypeArguments()[1]);
+               Map<String, ?> map = Cast.as(getAsMap(c2Type));
+               return Cast.as(Convert.convert(map, rawType, c1Type, c2Type));
+            }
+         }
+
+      }
+
+      if (type instanceof Class) {
+         Class<?> clazz = Cast.as(type);
+         if (JsonSerializable.class.isAssignableFrom(clazz)) {
+            Reflect reflected = Reflect.onClass(clazz).allowPrivilegedAccess();
+            Optional<Method> staticRead = reflected.getMethods("fromJson", 1).stream()
+                                                   .filter(m -> JsonEntry.class.isAssignableFrom(
+                                                      m.getParameterTypes()[0]))
+                                                   .filter(m -> Modifier.isStatic(m.getModifiers()))
+                                                   .findFirst();
+            if (staticRead.isPresent()) {
+               try {
+                  return Cast.as(staticRead.get().invoke(null, this));
+               } catch (IllegalAccessException | InvocationTargetException e) {
+                  throw new RuntimeException(e);
+               }
             }
          }
       }
-      return getAsVal().as(clazz);
+
+
+      return gson.fromJson(element, type);
    }
 
    /**
