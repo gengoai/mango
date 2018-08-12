@@ -34,6 +34,8 @@ import com.gengoai.conversion.Val;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.ClasspathResource;
 import com.gengoai.io.resource.Resource;
+import com.gengoai.json.JsonEntry;
+import com.gengoai.json.JsonSerializable;
 import com.gengoai.logging.LogManager;
 import com.gengoai.logging.Logger;
 import com.gengoai.parsing.ParseException;
@@ -62,7 +64,7 @@ import java.util.stream.Stream;
  *
  * @author David B. Bracewell
  */
-public final class Config implements Serializable {
+public final class Config implements Serializable, JsonSerializable {
 
    private static final String BEAN_PROPERTY = "@{";
    private static final Pattern BEAN_SUBSTITUTION = Pattern.compile(Pattern.quote(BEAN_PROPERTY) + "(.+?)\\}");
@@ -81,6 +83,20 @@ public final class Config implements Serializable {
     * The Setter function.
     */
    ConfigPropertySetter setterFunction = ConfigSettingError.INSTANCE;
+
+
+
+   @Override
+   public JsonEntry toJson() {
+      return JsonEntry.from(properties);
+   }
+
+
+   public static Config fromJson(JsonEntry entry) {
+      getInstance().properties.clear();
+      getInstance().properties.putAll(entry.getAsMap(String.class));
+      return getInstance();
+   }
 
    /**
     * Gets the singleton instance of the config. This should not normally be used by api consumers
@@ -254,7 +270,7 @@ public final class Config implements Serializable {
                propertyPrefix + "." + language.getCode().toLowerCase(),
                propertyPrefix
             }
-            ) {
+         ) {
             if (hasProperty(key)) {
                return key;
             }
@@ -278,7 +294,7 @@ public final class Config implements Serializable {
             propertyPrefix + "." + components + "." + language.getCode().toLowerCase(),
             propertyPrefix + "." + components
          }
-         ) {
+      ) {
          if (hasProperty(key)) {
             return key;
          }
@@ -453,7 +469,7 @@ public final class Config implements Serializable {
          if (!ste.getClassName().equals(Config.class.getName()) &&
                 !ste.getClassName().equals(CommandLineApplication.class.getName())
                 && !ste.getClassName().equals(Application.class.getName())
-            ) {
+         ) {
             return ste.getClassName();
          }
       }
