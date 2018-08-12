@@ -43,17 +43,17 @@ public class BreadthFirst<V> extends VisitorSearcher<V> {
 
   @Override
   public Iterator<V> iterator(V startingVertex) {
-    return new DepthFirstIterator<>(graph, Validation.notNull(startingVertex));
+    return new BreadthFirstIterator<>(graph, Validation.notNull(startingVertex));
   }
 
 
-  private static class DepthFirstIterator<V> implements Iterator<V> {
+  private static class BreadthFirstIterator<V> implements Iterator<V> {
 
     private final Graph<V> graph;
     private final Queue<V> queue = new LinkedList<>();
     private final Set<V> visited = new HashSet<>();
 
-    private DepthFirstIterator(Graph<V> graph, V startingVertex) {
+    private BreadthFirstIterator(Graph<V> graph, V startingVertex) {
       this.graph = graph;
       this.queue.add(startingVertex);
     }
