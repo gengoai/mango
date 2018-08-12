@@ -31,12 +31,19 @@ public class JsonEntry {
    }
 
    /**
-    * Creates a new empty array
+    * Creates a new array
     *
+    * @param items Items to add to the array
     * @return the json entry
     */
-   public static JsonEntry array() {
-      return new JsonEntry(new JsonArray());
+   public static JsonEntry array(Object... items) {
+      JsonEntry entry = new JsonEntry(new JsonArray());
+      if (items != null) {
+         for (Object item : items) {
+            entry.addValue(item);
+         }
+      }
+      return entry;
    }
 
    /**
