@@ -40,6 +40,39 @@ public final class Collect {
       throw new IllegalAccessError();
    }
 
+   @SafeVarargs
+   public static <T> T[] arrayOf(T... objects) {
+      return objects;
+   }
+
+   public static int[] arrayOf(int... values) {
+      return values;
+   }
+
+   public static double[] arrayOf(double... values) {
+      return values;
+   }
+
+   public static float[] arrayOf(float... values) {
+      return values;
+   }
+
+   public static byte[] arrayOf(byte... values) {
+      return values;
+   }
+
+   public static short[] arrayOf(short... values) {
+      return values;
+   }
+
+   public static char[] arrayOf(char... values) {
+      return values;
+   }
+
+   public static boolean[] arrayOf(boolean... values) {
+      return values;
+   }
+
    /**
     * <p>Creates a default instance of a collection type. If the passed in class is an implementation then that
     * implementation is created using the no-arg constructor. Interfaces (e.g. Set and List) have default
