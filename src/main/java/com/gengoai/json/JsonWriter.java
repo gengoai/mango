@@ -21,6 +21,7 @@
 package com.gengoai.json;
 
 import com.gengoai.EnumValue;
+import com.gengoai.collection.Iterables;
 import com.gengoai.conversion.Cast;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.string.StringUtils;
@@ -29,6 +30,7 @@ import com.google.gson.internal.Streams;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Iterator;
 
 /**
  * The type JSON writer.
@@ -264,6 +266,15 @@ public final class JsonWriter implements AutoCloseable, Closeable {
          writer.value(Cast.<Enum>as(value).name());
       } else if (value instanceof EnumValue) {
          writer.value(Cast.<EnumValue>as(value).name());
+      } else if (value instanceof Iterable) {
+         writer.beginArray();
+         Iterable<?> iterable = Cast.as(value);
+         for (Object o : iterable) {
+            value(o);
+         }
+         writer.endArray();
+      } else if (value instanceof Iterator) {
+         value(Iterables.asIterable(Cast.as(value)));
       } else {
          write(JsonEntry.from(value));
       }

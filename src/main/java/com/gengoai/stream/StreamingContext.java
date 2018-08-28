@@ -354,7 +354,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param items the items to stream
     * @return the stream
     */
-   @SuppressWarnings({"unchecked", "varargs"})
+   @SuppressWarnings("unchecked")
    <T> MStream<T> stream(T... items);
 
    /**

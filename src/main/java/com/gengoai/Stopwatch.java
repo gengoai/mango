@@ -5,6 +5,7 @@ import com.gengoai.string.StringUtils;
 import java.io.Serializable;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 import static com.gengoai.Validation.checkState;
 import static com.gengoai.Validation.notNull;
@@ -27,6 +28,28 @@ public class Stopwatch implements Serializable {
       if (started) {
          start();
       }
+   }
+
+
+   public static Stopwatch timeIt(Runnable runnable) {
+      Stopwatch toReturn = createStarted();
+      runnable.run();
+      toReturn.stop();
+      return toReturn;
+   }
+
+   public static Stopwatch timeIt(int nTrials, Runnable runnable) {
+      Stopwatch toReturn = createStarted();
+      IntStream.range(0, nTrials).forEach(i -> runnable.run());
+      toReturn.stop();
+      return toReturn.averageTime(nTrials);
+   }
+
+
+   public Stopwatch averageTime(long trials) {
+      checkState(!isRunning, "Can only average when stopped");
+      elapsedTime = (long) Math.floor((double) elapsedTime / trials);
+      return this;
    }
 
    private long getSystemNano() {

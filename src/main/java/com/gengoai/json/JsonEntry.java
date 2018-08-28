@@ -102,6 +102,8 @@ public class JsonEntry {
          return new JsonPrimitive((Number) v);
       } else if (v instanceof Character) {
          return new JsonPrimitive((Character) v);
+      } else if (v instanceof Class<?>) {
+         return new JsonPrimitive(((Class<?>) v).getCanonicalName());
       } else if (v instanceof JsonSerializable) {
          return Cast.<JsonSerializable>as(v).toJson().getElement();
       } else if (v instanceof Map) {
@@ -801,6 +803,19 @@ public class JsonEntry {
     */
    public boolean isPrimitive() {
       return element.isJsonPrimitive();
+   }
+
+   public boolean isString() {
+      return isPrimitive() && element.getAsJsonPrimitive().isString();
+   }
+
+
+   public boolean isNumber() {
+      return isPrimitive() && element.getAsJsonPrimitive().isNumber();
+   }
+
+   public boolean isBoolean() {
+      return isPrimitive() && element.getAsJsonPrimitive().isBoolean();
    }
 
    /**

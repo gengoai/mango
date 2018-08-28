@@ -29,8 +29,8 @@ public final class Iterators {
     * @param iterator the iterator
     * @return the flattened iterator
     */
-   public static <T> Iterator<T> flatten(final Iterator<Iterator<? extends T>> iterator) {
-      return new ConcatIterator<>(iterator);
+   public static <T> Iterator<T> flatten(final Iterator<? extends Iterator<? extends T>> iterator) {
+      return new ConcatIterator<T>(iterator);
    }
 
    /**
@@ -441,10 +441,10 @@ public final class Iterators {
    }
 
    private static class ConcatIterator<E> implements Iterator<E> {
-      private final Iterator<Iterator<? extends E>> iterators;
+      private final Iterator<? extends Iterator<? extends E>> iterators;
       private Iterator<? extends E> current = null;
 
-      private ConcatIterator(Iterator<Iterator<? extends E>> iterators) {
+      private ConcatIterator(Iterator<? extends Iterator<? extends E>> iterators) {
          this.iterators = iterators;
       }
 

@@ -192,6 +192,16 @@ public final class Validation {
       }
    }
 
+   public static void checkArgument(boolean evaluation, Supplier<String> message) {
+      if (!evaluation) {
+         if (message != null) {
+            throw new IllegalArgumentException(message.get());
+         } else {
+            throw new IllegalArgumentException();
+         }
+      }
+   }
+
    /**
     * Checks that the given index is in the  range <code>[0, size)</code>
     *
@@ -205,6 +215,10 @@ public final class Validation {
       return checkElementIndex(index, size, "index");
    }
 
+   public static int checkElementIndex(int index, int size, String message) {
+      return checkElementIndex(index, size, () -> message);
+   }
+
    /**
     * Checks that the given index is in the  range <code>[0, size)</code>
     *
@@ -215,17 +229,17 @@ public final class Validation {
     * @throws IndexOutOfBoundsException if index is negative or greater than equal to size
     * @throws IllegalArgumentException  if size is negative
     */
-   public static int checkElementIndex(int index, int size, String message) {
+   public static int checkElementIndex(int index, int size, Supplier<String> message) {
       if (size < 0) {
          throw new IllegalArgumentException("Negative Size: " + size);
       }
       if (index < 0) {
          throw new IndexOutOfBoundsException(
-            String.format("%s (%s) must be non negative", StringUtils.nullToEmpty(message), index));
+            String.format("%s (%s) must be non negative", StringUtils.nullToEmpty(message.get()), index));
       }
       if (index > size) {
          throw new IndexOutOfBoundsException(String.format("%s (%s) must be less than (%s)",
-                                                           StringUtils.nullToEmpty(message), index, size));
+                                                           StringUtils.nullToEmpty(message.get()), index, size));
       }
       return index;
    }
