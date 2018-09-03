@@ -20,6 +20,9 @@ public class Stopwatch implements Serializable {
    private long start = -1L;
    private long elapsedTime = 0L;
    private boolean isRunning = false;
+   /**
+    * The Name.
+    */
    public final String name;
 
 
@@ -31,6 +34,12 @@ public class Stopwatch implements Serializable {
    }
 
 
+   /**
+    * Calculates the time to execute the given runnable
+    *
+    * @param runnable the runnable to time
+    * @return the stopwatch in a stopped state
+    */
    public static Stopwatch timeIt(Runnable runnable) {
       Stopwatch toReturn = createStarted();
       runnable.run();
@@ -38,6 +47,13 @@ public class Stopwatch implements Serializable {
       return toReturn;
    }
 
+   /**
+    * Calculates the time to execute the given runnable nTrial times
+    *
+    * @param nTrials  the nunber of times to execute the runnable
+    * @param runnable the runnable to time
+    * @return the stopwatch in a stopped state
+    */
    public static Stopwatch timeIt(int nTrials, Runnable runnable) {
       Stopwatch toReturn = createStarted();
       IntStream.range(0, nTrials).forEach(i -> runnable.run());
@@ -46,6 +62,12 @@ public class Stopwatch implements Serializable {
    }
 
 
+   /**
+    * Sets the elapsed time of the stopwatch to <code>elapsed time / trials</code>
+    *
+    * @param trials the number of trials to use to average the time
+    * @return this stopwatch
+    */
    public Stopwatch averageTime(long trials) {
       checkState(!isRunning, "Can only average when stopped");
       elapsedTime = (long) Math.floor((double) elapsedTime / trials);
