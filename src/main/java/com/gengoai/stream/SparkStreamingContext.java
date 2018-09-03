@@ -47,11 +47,12 @@ import java.util.stream.Stream;
  *
  * @author David B. Bracewell
  */
-public enum SparkStreamingContext implements StreamingContext {
+public final class SparkStreamingContext extends StreamingContext {
+   private static final long serialVersionUID = 1L;
    /**
     * The singleton instance of the context
     */
-   INSTANCE;
+   public static final SparkStreamingContext INSTANCE = new SparkStreamingContext();
 
    /**
     * The config property name containing the spark application name
@@ -254,15 +255,6 @@ public enum SparkStreamingContext implements StreamingContext {
       SparkMStatisticsAccumulator accumulator = new SparkMStatisticsAccumulator(name);
       accumulator.register();
       return accumulator;
-   }
-
-   @Override
-   @SafeVarargs
-   public final <T> SparkStream<T> stream(T... items) {
-      if (items == null) {
-         return empty();
-      }
-      return new SparkStream<>(Arrays.asList(items));
    }
 
    @Override

@@ -63,17 +63,17 @@ public abstract class ForwardingGraph<V> implements Graph<V>, Serializable {
   }
 
   @Override
-  public <T extends Edge<V>> T addEdge(V fromVertex, V toVertex) {
+  public Edge<V> addEdge(V fromVertex, V toVertex) {
     return delegate().addEdge(fromVertex, toVertex);
   }
 
   @Override
-  public <T extends Edge<V>> T addEdge(V fromVertex, V toVertex, double weight) {
+  public Edge<V> addEdge(V fromVertex, V toVertex, double weight) {
     return delegate().addEdge(fromVertex, toVertex, weight);
   }
 
   @Override
-  public <T extends Edge<V>> T removeEdge(V fromVertex, V toVertex) {
+  public Edge<V> removeEdge(V fromVertex, V toVertex) {
     return delegate().removeEdge(fromVertex, toVertex);
   }
 
@@ -98,17 +98,17 @@ public abstract class ForwardingGraph<V> implements Graph<V>, Serializable {
   }
 
   @Override
-  public <T extends Edge<V>> Set<T> getOutEdges(V vertex) {
+  public Set<? extends Edge<V>> getOutEdges(V vertex) {
     return delegate().getOutEdges(vertex);
   }
 
   @Override
-  public <T extends Edge<V>> Set<T> getInEdges(V vertex) {
+  public Set<? extends Edge<V>> getInEdges(V vertex) {
     return delegate().getInEdges(vertex);
   }
 
   @Override
-  public <T extends Edge<V>> Set<T> getEdges(V vertex) {
+  public Set<? extends Edge<V>> getEdges(V vertex) {
     return delegate().getEdges(vertex);
   }
 
@@ -153,7 +153,7 @@ public abstract class ForwardingGraph<V> implements Graph<V>, Serializable {
   }
 
   @Override
-  public <T extends Edge<V>> Set<T> edges() {
+  public Set<? extends Edge<V>> edges() {
     return delegate().edges();
   }
 
@@ -173,7 +173,7 @@ public abstract class ForwardingGraph<V> implements Graph<V>, Serializable {
   }
 
   @Override
-  public <T extends Edge<V>> T getEdge(V v1, V v2) {
+  public Edge<V> getEdge(V v1, V v2) {
     return delegate().getEdge(v1, v2);
   }
 
@@ -198,7 +198,7 @@ public abstract class ForwardingGraph<V> implements Graph<V>, Serializable {
   }
 
   @Override
-  public void addEdges(Collection<Edge<V>> edges) {
+  public void addEdges(Collection<? extends Edge<V>> edges) {
     delegate().addEdges(edges);
   }
 

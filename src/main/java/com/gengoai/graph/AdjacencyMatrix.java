@@ -92,7 +92,7 @@ public class AdjacencyMatrix<V> implements Graph<V>, Serializable {
     * @param weight the weight
     * @return the edge
     */
-   protected final <T extends Edge<V>> T createEdge(V v1, V v2, double weight) {
+   protected final Edge<V> createEdge(V v1, V v2, double weight) {
       return Cast.as(edgeFactory.createEdge(v1, v2, weight));
    }
 
@@ -123,22 +123,22 @@ public class AdjacencyMatrix<V> implements Graph<V>, Serializable {
    }
 
    @Override
-   public <T extends Edge<V>> T addEdge(V fromVertex, V toVertex) {
+   public Edge<V> addEdge(V fromVertex, V toVertex) {
       return addEdge(fromVertex, toVertex, 1d);
    }
 
    @Override
-   public <T extends Edge<V>> T addEdge(V fromVertex, V toVertex, double weight) {
+   public Edge<V> addEdge(V fromVertex, V toVertex, double weight) {
       Validation.notNull(containsVertex(fromVertex), "Vertex must exist in the graph.");
       Validation.notNull(containsVertex(toVertex), "Vertex must exist in the graph.");
-      T edge = createEdge(fromVertex, toVertex, weight);
+      Edge<V> edge = createEdge(fromVertex, toVertex, weight);
       addEdge(edge);
       return edge;
    }
 
    @Override
-   public <T extends Edge<V>> T removeEdge(V fromVertex, V toVertex) {
-      T edge = Cast.as(matrix.remove(fromVertex, toVertex));
+   public Edge<V> removeEdge(V fromVertex, V toVertex) {
+      Edge<V> edge = Cast.as(matrix.remove(fromVertex, toVertex));
       if (edge != null && !isDirected()) {
          matrix.remove(toVertex, fromVertex);
       }
@@ -162,32 +162,24 @@ public class AdjacencyMatrix<V> implements Graph<V>, Serializable {
    }
 
    @Override
-   public <T extends Edge<V>> Set<T> getOutEdges(V vertex) {
-      return Sets.asSet(
-         Cast.<T>cast(matrix.row(vertex).values())
-                       );
+   public Set<? extends Edge<V>> getOutEdges(V vertex) {
+      return Sets.asSet(matrix.row(vertex).values());
    }
 
    @Override
-   public <T extends Edge<V>> Set<T> getInEdges(V vertex) {
-      return Sets.asSet(
-         Cast.<T>cast(matrix.column(vertex).values())
-                       );
+   public Set<? extends Edge<V>> getInEdges(V vertex) {
+      return Sets.asSet(matrix.column(vertex).values());
 
    }
 
    @Override
    public Set<V> getSuccessors(V vertex) {
-      return Sets.asSet(
-         matrix.row(vertex).keySet()
-                       );
+      return Sets.asSet(matrix.row(vertex).keySet());
    }
 
    @Override
    public Set<V> getPredecessors(V vertex) {
-      return Sets.asSet(
-         matrix.column(vertex).keySet()
-                       );
+      return Sets.asSet(matrix.column(vertex).keySet());
    }
 
 
@@ -207,8 +199,8 @@ public class AdjacencyMatrix<V> implements Graph<V>, Serializable {
    }
 
    @Override
-   public <T extends Edge<V>> Set<T> edges() {
-      return Sets.asSet(Cast.<T>cast(matrix.values()));
+   public Set<? extends Edge<V>> edges() {
+      return Sets.asSet(matrix.values());
    }
 
 
@@ -231,7 +223,7 @@ public class AdjacencyMatrix<V> implements Graph<V>, Serializable {
    }
 
    @Override
-   public <T extends Edge<V>> T getEdge(V v1, V v2) {
+   public Edge<V> getEdge(V v1, V v2) {
       return Cast.as(matrix.get(v1, v2));
    }
 

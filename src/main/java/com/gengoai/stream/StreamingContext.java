@@ -28,6 +28,7 @@ import com.gengoai.io.resource.Resource;
 import com.gengoai.stream.accumulator.*;
 import com.gengoai.tuple.Tuple2;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.DoubleStream;
@@ -39,14 +40,15 @@ import java.util.stream.Stream;
  *
  * @author David B. Bracewell
  */
-public interface StreamingContext extends AutoCloseable {
+public abstract class StreamingContext implements Serializable, AutoCloseable {
+   private static final long serialVersionUID = 1L;
 
    /**
     * Gets the distributed streaming context. (requires Spark jars to be on classpath).
     *
     * @return the distributed streaming context
     */
-   static SparkStreamingContext distributed() {
+   public static SparkStreamingContext distributed() {
       return SparkStreamingContext.INSTANCE;
    }
 
@@ -56,17 +58,17 @@ public interface StreamingContext extends AutoCloseable {
     * @param distributed Should the stream be distributed (True) or local (False)
     * @return the streaming context
     */
-   static StreamingContext get(boolean distributed) {
+   public static StreamingContext get(boolean distributed) {
       return distributed ? distributed() : local();
    }
 
    /**
-    * Gets the default streaming context as defined. if the config property <code>streams.distributed</code> is set to
-    * true, the default context will be distributed otherwise it will be local.
+    * Gets the public streaming context as defined. if the config property <code>streams.distributed</code> is set to
+    * true, the public context will be distributed otherwise it will be local.
     *
-    * @return the default streaming context
+    * @return the public streaming context
     */
-   static StreamingContext get() {
+   public static StreamingContext get() {
       return get(Config.get("streams.distributed").asBooleanValue(false));
    }
 
@@ -75,7 +77,7 @@ public interface StreamingContext extends AutoCloseable {
     *
     * @return the local streaming context
     */
-   static LocalStreamingContext local() {
+   public static LocalStreamingContext local() {
       return LocalStreamingContext.INSTANCE;
    }
 
@@ -85,7 +87,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param <E> the component type of the counter
     * @return the counter accumulator
     */
-   default <E> MCounterAccumulator<E> counterAccumulator() {
+   public <E> MCounterAccumulator<E> counterAccumulator() {
       return counterAccumulator(null);
    }
 
@@ -96,14 +98,14 @@ public interface StreamingContext extends AutoCloseable {
     * @param name the name of the accumulator
     * @return the counter accumulator
     */
-   <E> MCounterAccumulator<E> counterAccumulator(String name);
+   public abstract <E> MCounterAccumulator<E> counterAccumulator(String name);
 
    /**
     * Creates a new double accumulator with initial value of 0.
     *
     * @return the double accumulator
     */
-   default MDoubleAccumulator doubleAccumulator() {
+   public MDoubleAccumulator doubleAccumulator() {
       return doubleAccumulator(0d, null);
    }
 
@@ -113,7 +115,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param initialValue the initial value of the accumulator
     * @return the double accumulator
     */
-   default MDoubleAccumulator doubleAccumulator(double initialValue) {
+   public MDoubleAccumulator doubleAccumulator(double initialValue) {
       return doubleAccumulator(initialValue, null);
    }
 
@@ -124,7 +126,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param name         The name of the accumulator
     * @return the double accumulator
     */
-   MDoubleAccumulator doubleAccumulator(double initialValue, String name);
+   public abstract MDoubleAccumulator doubleAccumulator(double initialValue, String name);
 
    /**
     * Creates a MDoubleStream from a Java DoubleStream
@@ -132,7 +134,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param doubleStream the double stream to wrap / consume
     * @return the MDoubleStream
     */
-   MDoubleStream doubleStream(DoubleStream doubleStream);
+   public abstract MDoubleStream doubleStream(DoubleStream doubleStream);
 
    /**
     * Creates a MDoubleStream from a variable list of doubles
@@ -140,7 +142,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param values the values making up the double stream
     * @return the MDoubleStream
     */
-   default MDoubleStream doubleStream(double... values) {
+   public MDoubleStream doubleStream(double... values) {
       if (values == null) {
          return doubleStream(DoubleStream.empty());
       }
@@ -153,14 +155,14 @@ public interface StreamingContext extends AutoCloseable {
     * @param <T> the component type of the stream
     * @return the empty MStream
     */
-   <T> MStream<T> empty();
+   public abstract <T> MStream<T> empty();
 
    /**
     * Creates an empty MDoubleStream
     *
     * @return the empty double stream
     */
-   default MDoubleStream emptyDouble() {
+   public MDoubleStream emptyDouble() {
       return doubleStream(DoubleStream.empty());
    }
 
@@ -171,7 +173,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param <V> the value type parameter
     * @return the empty pair stream
     */
-   default <K, V> MPairStream<K, V> emptyPair() {
+   public <K, V> MPairStream<K, V> emptyPair() {
       return empty().mapToPair(k -> null);
    }
 
@@ -181,7 +183,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param <E> the component type of the list
     * @return the list accumulator
     */
-   default <E> MAccumulator<E, List<E>> listAccumulator() {
+   public <E> MAccumulator<E, List<E>> listAccumulator() {
       return listAccumulator(null);
    }
 
@@ -191,7 +193,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param <E> the component type of the set
     * @return the set accumulator
     */
-   default <E> MAccumulator<E, Set<E>> setAccumulator() {
+   public <E> MAccumulator<E, Set<E>> setAccumulator() {
       return setAccumulator(null);
    }
 
@@ -202,7 +204,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param name the name of the accumulator
     * @return the set accumulator
     */
-   <E> MAccumulator<E, Set<E>> setAccumulator(String name);
+   public abstract <E> MAccumulator<E, Set<E>> setAccumulator(String name);
 
 
    /**
@@ -212,7 +214,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param name the name of the accumulator
     * @return the list accumulator
     */
-   <E> MAccumulator<E, List<E>> listAccumulator(String name);
+   public abstract <E> MAccumulator<E, List<E>> listAccumulator(String name);
 
    /**
     * Creates a new long accumulator with the given initial value.
@@ -220,7 +222,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param initialValue the initial value of the accumulator
     * @return the long accumulator
     */
-   default MLongAccumulator longAccumulator(long initialValue) {
+   public MLongAccumulator longAccumulator(long initialValue) {
       return longAccumulator(initialValue, null);
    }
 
@@ -229,7 +231,7 @@ public interface StreamingContext extends AutoCloseable {
     *
     * @return the long accumulator
     */
-   default MLongAccumulator longAccumulator() {
+   public MLongAccumulator longAccumulator() {
       return longAccumulator(0L, null);
    }
 
@@ -240,7 +242,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param name         the name of the accumulator
     * @return the long accumulator
     */
-   MLongAccumulator longAccumulator(long initialValue, String name);
+   public abstract MLongAccumulator longAccumulator(long initialValue, String name);
 
    /**
     * Creates a new map accumulator
@@ -249,7 +251,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param <V> the value type parameter
     * @return the map accumulator
     */
-   default <K, V> MMapAccumulator<K, V> mapAccumulator() {
+   public <K, V> MMapAccumulator<K, V> mapAccumulator() {
       return mapAccumulator(null);
    }
 
@@ -261,7 +263,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param name the name of the accumulator
     * @return the map accumulator
     */
-   <K, V> MMapAccumulator<K, V> mapAccumulator(String name);
+   public abstract <K, V> MMapAccumulator<K, V> mapAccumulator(String name);
 
    /**
     * Creates a new MultiCounter accumulator
@@ -270,7 +272,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param <K2> the second key type parameter
     * @return the MultiCounter accumulator
     */
-   default <K1, K2> MMultiCounterAccumulator<K1, K2> multiCounterAccumulator() {
+   public <K1, K2> MMultiCounterAccumulator<K1, K2> multiCounterAccumulator() {
       return multiCounterAccumulator(null);
    }
 
@@ -282,7 +284,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param name the name of the accumulator
     * @return the MultiCounter accumulator
     */
-   <K1, K2> MMultiCounterAccumulator<K1, K2> multiCounterAccumulator(String name);
+   public abstract <K1, K2> MMultiCounterAccumulator<K1, K2> multiCounterAccumulator(String name);
 
    /**
     * Creates a new pair stream from the given map.
@@ -292,7 +294,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param map the map to stream
     * @return the pair stream
     */
-   <K, V> MPairStream<K, V> pairStream(Map<? extends K, ? extends V> map);
+   public abstract <K, V> MPairStream<K, V> pairStream(Map<? extends K, ? extends V> map);
 
    /**
     * Creates a new pair stream from the given collection of entries.
@@ -302,7 +304,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param tuples the collection of entries to use to create the pair stream
     * @return the pair stream
     */
-   <K, V> MPairStream<K, V> pairStream(Collection<Entry<? extends K, ? extends V>> tuples);
+   public abstract <K, V> MPairStream<K, V> pairStream(Collection<Entry<? extends K, ? extends V>> tuples);
 
    /**
     * Creates a new pair stream from the given array of tuples.
@@ -312,8 +314,9 @@ public interface StreamingContext extends AutoCloseable {
     * @param tuples the collection of entries to use to create the pair stream
     * @return the pair stream
     */
-   @SuppressWarnings({"unchecked", "varargs"})
-   default <K, V> MPairStream<K, V> pairStream(Tuple2<? extends K, ? extends V>... tuples) {
+   @SuppressWarnings("unchecked")
+   @SafeVarargs
+   public final <K, V> MPairStream<K, V> pairStream(Tuple2<? extends K, ? extends V>... tuples) {
       if (tuples == null) {
          return emptyPair();
       }
@@ -328,14 +331,14 @@ public interface StreamingContext extends AutoCloseable {
     * @param endExclusive   the ending number in the range (exclusive)
     * @return the integer stream
     */
-   MStream<Integer> range(int startInclusive, int endExclusive);
+   public abstract MStream<Integer> range(int startInclusive, int endExclusive);
 
    /**
     * Creates a new statistics accumulator
     *
     * @return the statistics accumulator
     */
-   default MStatisticsAccumulator statisticsAccumulator() {
+   public MStatisticsAccumulator statisticsAccumulator() {
       return statisticsAccumulator(null);
    }
 
@@ -345,7 +348,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param name the name of the accumulator
     * @return the statistics accumulator
     */
-   MStatisticsAccumulator statisticsAccumulator(String name);
+   public abstract MStatisticsAccumulator statisticsAccumulator(String name);
 
    /**
     * Creates a stream wrapping the given items.
@@ -355,7 +358,13 @@ public interface StreamingContext extends AutoCloseable {
     * @return the stream
     */
    @SuppressWarnings("unchecked")
-   <T> MStream<T> stream(T... items);
+   @SafeVarargs
+   public final <T> MStream<T> stream(T... items) {
+      if (items == null) {
+         return empty();
+      }
+      return stream(Arrays.asList(items));
+   }
 
    /**
     * Creates a new MStream from Java Stream
@@ -364,7 +373,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param stream the Java stream to wrap / consume
     * @return the new MStream
     */
-   <T> MStream<T> stream(Stream<T> stream);
+   public abstract <T> MStream<T> stream(Stream<T> stream);
 
    /**
     * Creates a new MStream from the given iterable
@@ -373,7 +382,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param iterable the iterable to wrap / consume
     * @return the new MStream
     */
-   <T> MStream<T> stream(Iterable<? extends T> iterable);
+   public abstract <T> MStream<T> stream(Iterable<? extends T> iterable);
 
    /**
     * Creates a new MStream from the given iterator
@@ -382,7 +391,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param iterator the iterator to wrap / consume
     * @return the new MStream
     */
-   default <T> MStream<T> stream(Iterator<? extends T> iterator) {
+   public <T> MStream<T> stream(Iterator<? extends T> iterator) {
       if (iterator == null) {
          return empty();
       }
@@ -395,7 +404,7 @@ public interface StreamingContext extends AutoCloseable {
     * @param location the location to read
     * @return the new MStream backed by the lines of the files in the given location.
     */
-   MStream<String> textFile(String location);
+   public abstract MStream<String> textFile(String location);
 
    /**
     * Creates a new MStream where each element is a line in the resources (recursive) at the given location.
@@ -403,12 +412,12 @@ public interface StreamingContext extends AutoCloseable {
     * @param location the location to read
     * @return the new MStream backed by the lines of the files in the given location.
     */
-   MStream<String> textFile(Resource location);
+   public abstract MStream<String> textFile(Resource location);
 
    /**
     * Updates the config object used by this stream (important for distributed environments).
     */
-   default void updateConfig() {
+   public void updateConfig() {
 
    }
 

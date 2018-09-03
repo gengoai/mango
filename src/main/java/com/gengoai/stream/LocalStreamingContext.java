@@ -40,11 +40,12 @@ import java.util.stream.Stream;
  *
  * @author David B. Bracewell
  */
-public enum LocalStreamingContext implements StreamingContext {
+public final class LocalStreamingContext extends StreamingContext {
+   private static final long serialVersionUID = 1L;
    /**
     * The singleton instance of the context
     */
-   INSTANCE;
+   public static final LocalStreamingContext INSTANCE = new LocalStreamingContext();
 
    @Override
    public void close() {
@@ -133,15 +134,6 @@ public enum LocalStreamingContext implements StreamingContext {
    @Override
    public MStatisticsAccumulator statisticsAccumulator(String name) {
       return new LocalMStatisticsAccumulator(name);
-   }
-
-   @Override
-   @SafeVarargs
-   public final <T> MStream<T> stream(T... items) {
-      if (items == null) {
-         return empty();
-      }
-      return new ReusableLocalStream<>(Arrays.asList(items));
    }
 
    @Override
