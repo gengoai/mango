@@ -5,6 +5,7 @@ import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Convert;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonSerializable;
+import com.gengoai.reflection.Types;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -99,6 +100,8 @@ public final class Parameters<K extends Enum<K> & ValueTypeInformation> implemen
          parameters.remove(name);
          return this;
       }
+      checkArgument(Types.isAssignable(name.getValueType(), value.getClass()),
+                    () -> "Illegal Argument: " + value.getClass() + " is not of type " + name.getValueType());
       parameters.put(name, value);
       return this;
    }
@@ -115,7 +118,6 @@ public final class Parameters<K extends Enum<K> & ValueTypeInformation> implemen
    @Override
    public JsonEntry toJson() {
       JsonEntry object = JsonEntry.object();
-      object.addProperty("key", getKeyClass().getName());
       JsonEntry params = JsonEntry.object();
       asMap().forEach((k, v) -> params.addProperty(k.toString(), v));
       object.addProperty("parameters", params);
@@ -129,8 +131,7 @@ public final class Parameters<K extends Enum<K> & ValueTypeInformation> implemen
     * @param entry the entry
     * @return the e
     */
-   static <K extends Enum<K> & ValueTypeInformation> Parameters<K> fromJson(JsonEntry entry) {
-      Class<K> keyClass = Cast.as(entry.getValProperty("key").asClass());
+   public static <K extends Enum<K> & ValueTypeInformation> Parameters<K> fromJson(JsonEntry entry, Class<K> keyClass) {
       Parameters<K> parameters = new Parameters<>(keyClass);
       entry.getProperty("parameters")
            .propertyIterator()
@@ -142,4 +143,8 @@ public final class Parameters<K extends Enum<K> & ValueTypeInformation> implemen
       return Cast.as(parameters);
    }
 
+   @Override
+   public String toString() {
+      return asMap().toString();
+   }
 }//END OF Parameters

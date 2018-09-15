@@ -52,6 +52,25 @@ public final class Types {
       return new ParameterizedTypeImpl(rawType, typeArguments, null);
    }
 
+   public static boolean isAssignable(Type t1, Type toCheck) {
+      return toClass(t1).isAssignableFrom(toClass(toCheck));
+   }
+
+   public static Class<?> toClass(Type type) {
+      if (type instanceof ParameterizedType) {
+         ParameterizedType pt = Cast.as(type);
+         return toClass(pt.getRawType());
+      }
+      return Cast.as(type, Class.class);
+   }
+
+   public static Type type(Type rawType, Type... typeArguments) {
+      if (typeArguments == null || typeArguments.length == 0) {
+         return rawType;
+      }
+      return new ParameterizedTypeImpl(rawType, typeArguments, null);
+   }
+
    private static class ParameterizedTypeImpl implements ParameterizedType {
       private final Type rawType;
       private final Type[] actualTypeArguments;

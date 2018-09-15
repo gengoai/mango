@@ -30,6 +30,13 @@ public class JsonEntry {
       this.element = element;
    }
 
+
+   public static JsonEntry array(Iterable<?> items) {
+      JsonEntry entry = new JsonEntry(new JsonArray());
+      items.forEach(entry::addValue);
+      return entry;
+   }
+
    /**
     * Creates a new array
     *
@@ -197,13 +204,15 @@ public class JsonEntry {
       if (type == null) {
          return getAsVal().cast();
       }
+
+
       if (type instanceof ParameterizedType) {
          ParameterizedType pt = Cast.as(type);
          boolean isJsonSerializable = Arrays.stream(pt.getActualTypeArguments())
                                             .filter(t -> t instanceof Class)
                                             .anyMatch(t -> JsonSerializable.class.isAssignableFrom(Cast.as(t)));
+         Class<?> rawType = Cast.as(pt.getRawType());
          if (isJsonSerializable && pt.getRawType() instanceof Class) {
-            Class<?> rawType = Cast.as(pt.getRawType());
             Class<?> c1Type = Cast.as(pt.getActualTypeArguments()[0]);
             if (Iterable.class.isAssignableFrom(rawType) ||
                    Iterator.class.isAssignableFrom(rawType) ||
@@ -215,9 +224,25 @@ public class JsonEntry {
                Map<String, ?> map = Cast.as(getAsMap(c2Type));
                return Cast.as(Convert.convert(map, rawType, c1Type, c2Type));
             }
+         } else if (JsonSerializable.class.isAssignableFrom(rawType)) {
+            Reflect reflected = Reflect.onClass(rawType).allowPrivilegedAccess();
+            Optional<Method> staticRead = reflected.getMethods("fromJson", 2).stream()
+                                                   .filter(m -> JsonEntry.class
+                                                                   .isAssignableFrom(m.getParameterTypes()[0])
+                                                                   && Class.class
+                                                                         .isAssignableFrom(m.getParameterTypes()[1]))
+                                                   .filter(m -> Modifier.isStatic(m.getModifiers()))
+                                                   .findFirst();
+            if (staticRead.isPresent()) {
+               try {
+                  return Cast.as(staticRead.get().invoke(null, this, pt.getActualTypeArguments()[0]));
+               } catch (IllegalAccessException | InvocationTargetException e) {
+                  throw new RuntimeException(e);
+               }
+            }
          }
-
       }
+
 
       if (type instanceof Class) {
          Class<?> clazz = Cast.as(type);
