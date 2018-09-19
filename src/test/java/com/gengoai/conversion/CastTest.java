@@ -21,8 +21,8 @@
 
 package com.gengoai.conversion;
 
-import com.gengoai.collection.Sets;
 import com.gengoai.collection.Lists;
+import com.gengoai.collection.Sets;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -52,7 +52,7 @@ public class CastTest {
       Assert.assertEquals(1d, Cast.as(1d, Double.class), 0d);
    }
 
-   @Test
+   @Test(expected = ClassCastException.class)
    public void testBadSafeAs() throws Exception {
       assertNull(Cast.as(1L, Double.class));
    }
@@ -67,9 +67,6 @@ public class CastTest {
    public void testAs() throws Exception {
       Double d = Cast.as(1.0);
       assertEquals(1d, d, 0);
-
-      d = Cast.as("no", Double.class);
-      assertNull(d);
    }
 
    @Test(expected = ClassCastException.class)

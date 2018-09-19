@@ -1,11 +1,14 @@
 package com.gengoai.reflection;
 
+import com.gengoai.Primitives;
 import com.gengoai.conversion.Cast;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * <p>Convenience methods for creating type information</p>
@@ -53,7 +56,36 @@ public final class Types {
    }
 
    public static boolean isAssignable(Type t1, Type toCheck) {
-      return toClass(t1).isAssignableFrom(toClass(toCheck));
+      Class<?> c1 = Primitives.wrap(toClass(t1));
+      Class<?> c2 = Primitives.wrap(toClass(toCheck));
+      return c1.isAssignableFrom(c2);
+   }
+
+
+   public static boolean isContainer(Type type) {
+      if (type == null) {
+         return false;
+      }
+      Class<?> clazz = toClass(type);
+      return Iterable.class.isAssignableFrom(clazz) ||
+                Iterator.class.isAssignableFrom(clazz) ||
+                clazz.isArray();
+   }
+
+   public static boolean isCollection(Type type) {
+      return Collection.class.isAssignableFrom(toClass(type));
+   }
+
+   public static boolean isIterable(Type type) {
+      return Iterable.class.isAssignableFrom(toClass(type));
+   }
+
+   public static boolean isIterator(Type type) {
+      return Iterator.class.isAssignableFrom(toClass(type));
+   }
+
+   public static boolean isArray(Type type) {
+      return toClass(type).isArray();
    }
 
    public static Class<?> toClass(Type type) {

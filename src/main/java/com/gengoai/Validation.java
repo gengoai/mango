@@ -310,4 +310,15 @@ public final class Validation {
       }
    }
 
+   public static void checkState(boolean evaluation, Supplier<String> messageSupplier) {
+      if (!evaluation) {
+         String message = messageSupplier == null ? null : messageSupplier.get();
+         if (message != null) {
+            throw new IllegalStateException(message);
+         } else {
+            throw new IllegalStateException();
+         }
+      }
+   }
+
 }//END OF Validation

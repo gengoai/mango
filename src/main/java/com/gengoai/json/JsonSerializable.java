@@ -11,8 +11,24 @@ import com.gengoai.reflection.BeanMap;
  */
 public interface JsonSerializable {
 
+   /**
+    * To json json entry.
+    *
+    * @return the json entry
+    */
    default JsonEntry toJson() {
       return JsonEntry.from(new BeanMap(this));
+   }
+
+   /**
+    * From json t.
+    *
+    * @param <T>   the type parameter
+    * @param entry the entry
+    * @return the t
+    */
+   static <T> T fromJson(JsonEntry entry) {
+      throw new IllegalStateException("Not Implemented");
    }
 
 

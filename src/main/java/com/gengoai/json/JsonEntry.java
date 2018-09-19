@@ -1,13 +1,13 @@
 package com.gengoai.json;
 
-import com.gengoai.collection.Iterables;
-import com.gengoai.collection.Iterators;
-import com.gengoai.collection.Lists;
-import com.gengoai.collection.Sets;
+import com.gengoai.collection.*;
+import com.gengoai.collection.counter.Counter;
+import com.gengoai.collection.counter.Counters;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Convert;
 import com.gengoai.conversion.Val;
 import com.gengoai.reflection.Reflect;
+import com.gengoai.reflection.ReflectionException;
 import com.google.gson.*;
 
 import java.lang.reflect.*;
@@ -16,6 +16,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import static com.gengoai.Validation.checkState;
+import static com.gengoai.reflection.Types.isCollection;
+import static com.gengoai.reflection.Types.toClass;
 import static com.gengoai.tuple.Tuples.$;
 
 /**
@@ -31,6 +33,12 @@ public class JsonEntry {
    }
 
 
+   /**
+    * Array json entry.
+    *
+    * @param items the items
+    * @return the json entry
+    */
    public static JsonEntry array(Iterable<?> items) {
       JsonEntry entry = new JsonEntry(new JsonArray());
       items.forEach(entry::addValue);
@@ -123,6 +131,8 @@ public class JsonEntry {
          return gson.toJsonTree(v);
       } else if (v.getClass().isArray()) {
          return iterableToElement(Arrays.asList((Object[]) v));
+      } else if (v instanceof Counter) {
+         return toElement(Cast.<Counter>as(v).asMap());
       }
       return gson.toJsonTree(v);
    }
@@ -192,6 +202,47 @@ public class JsonEntry {
       propertyIterator().forEachRemaining(e -> consumer.accept(e.getKey(), e.getValue()));
    }
 
+   public <T> T getAs(ParameterizedType pt) {
+      Class<?> rawType = toClass(pt.getRawType());
+      Class<?> c1Type = pt.getActualTypeArguments().length > 0 ? Cast.as(pt.getActualTypeArguments()[0]) : Object.class;
+
+      if (isCollection(rawType)) {
+         return Cast.as(getAsArray(c1Type, Collect.newCollection(Cast.as(rawType))));
+      } else if (rawType.isArray()) {
+         return Cast.as(Convert.convert(getAsArray(c1Type), rawType, c1Type));
+      } else if (Counter.class.isAssignableFrom(rawType)) {
+         Counter<Object> counter = Counters.newCounter();
+         propertyIterator().forEachRemaining(e -> {
+            Object key = Convert.convert(e.getKey(), c1Type);
+            counter.set(key, e.getValue().getAsDouble());
+         });
+         return Cast.as(counter);
+      } else if (Map.class.isAssignableFrom(rawType)) {
+         Class<?> c2Type = Cast.as(pt.getActualTypeArguments()[1]);
+         return Cast.as(Convert.convert(getAsMap(c2Type), rawType, c1Type, c2Type));
+      }
+
+
+      if (JsonSerializable.class.isAssignableFrom(rawType)) {
+         Reflect reflected = Reflect.onClass(rawType).allowPrivilegedAccess();
+         Optional<Method> staticRead = reflected.getMethods("fromJson", pt.getActualTypeArguments().length + 1).stream()
+                                                .filter(m -> Modifier.isStatic(m.getModifiers()))
+                                                .findFirst();
+         if (staticRead.isPresent()) {
+            try {
+               Object[] args = new Object[pt.getActualTypeArguments().length + 1];
+               args[0] = this;
+               System.arraycopy(pt.getActualTypeArguments(), 0, args, 1, pt.getActualTypeArguments().length);
+               return Cast.as(staticRead.get().invoke(null, args));
+            } catch (IllegalAccessException | InvocationTargetException e) {
+               throw new RuntimeException(e);
+            }
+         }
+
+      }
+      return getAs(rawType);
+   }
+
    /**
     * Gets the value of this entry as the given class. This method is {@link JsonSerializable} aware and will look for a
     * static <code>fromJson(JsonEntry)</code> method on the class if it is a subclass.
@@ -207,59 +258,31 @@ public class JsonEntry {
 
 
       if (type instanceof ParameterizedType) {
-         ParameterizedType pt = Cast.as(type);
-         boolean isJsonSerializable = Arrays.stream(pt.getActualTypeArguments())
-                                            .filter(t -> t instanceof Class)
-                                            .anyMatch(t -> JsonSerializable.class.isAssignableFrom(Cast.as(t)));
-         Class<?> rawType = Cast.as(pt.getRawType());
-         if (isJsonSerializable && pt.getRawType() instanceof Class) {
-            Class<?> c1Type = Cast.as(pt.getActualTypeArguments()[0]);
-            if (Iterable.class.isAssignableFrom(rawType) ||
-                   Iterator.class.isAssignableFrom(rawType) ||
-                   rawType.isArray()) {
-               List<?> list = Cast.as(getAsArray(c1Type));
-               return Cast.as(Convert.convert(list, rawType, c1Type));
-            } else if (Map.class.isAssignableFrom(rawType)) {
-               Class<?> c2Type = Cast.as(pt.getActualTypeArguments()[1]);
-               Map<String, ?> map = Cast.as(getAsMap(c2Type));
-               return Cast.as(Convert.convert(map, rawType, c1Type, c2Type));
-            }
-         } else if (JsonSerializable.class.isAssignableFrom(rawType)) {
-            Reflect reflected = Reflect.onClass(rawType).allowPrivilegedAccess();
-            Optional<Method> staticRead = reflected.getMethods("fromJson", 2).stream()
-                                                   .filter(m -> JsonEntry.class
-                                                                   .isAssignableFrom(m.getParameterTypes()[0])
-                                                                   && Class.class
-                                                                         .isAssignableFrom(m.getParameterTypes()[1]))
-                                                   .filter(m -> Modifier.isStatic(m.getModifiers()))
-                                                   .findFirst();
-            if (staticRead.isPresent()) {
-               try {
-                  return Cast.as(staticRead.get().invoke(null, this, pt.getActualTypeArguments()[0]));
-               } catch (IllegalAccessException | InvocationTargetException e) {
-                  throw new RuntimeException(e);
-               }
-            }
-         }
+         return getAs(Cast.<ParameterizedType>as(type));
       }
-
 
       if (type instanceof Class) {
          Class<?> clazz = Cast.as(type);
          if (JsonSerializable.class.isAssignableFrom(clazz)) {
-            Reflect reflected = Reflect.onClass(clazz).allowPrivilegedAccess();
-            Optional<Method> staticRead = reflected.getMethods("fromJson", 1).stream()
-                                                   .filter(m -> JsonEntry.class.isAssignableFrom(
-                                                      m.getParameterTypes()[0]))
-                                                   .filter(m -> Modifier.isStatic(m.getModifiers()))
-                                                   .findFirst();
-            if (staticRead.isPresent()) {
-               try {
-                  return Cast.as(staticRead.get().invoke(null, this));
-               } catch (IllegalAccessException | InvocationTargetException e) {
-                  throw new RuntimeException(e);
-               }
+            try {
+               return Cast.as(Reflect.onClass(clazz).invoke("fromJson", this));
+            } catch (ReflectionException e) {
+               throw new RuntimeException(e);
             }
+//            Reflect reflected = Reflect.onClass(clazz).allowPrivilegedAccess();
+//            Optional<Method> staticRead = reflected.getMethods("fromJson", 1).stream()
+//                                                   .filter(m -> JsonEntry.class.isAssignableFrom(
+//                                                      m.getParameterTypes()[0]))
+//                                                   .filter(m -> Modifier.isStatic(m.getModifiers()))
+//                                                   .findFirst();
+//            if (staticRead.isPresent()) {
+//               try {
+//                  return Reflect.onClass(clazz).invoke("fromJson", this);
+////                  return Cast.as(staticRead.get().invoke(null, this));
+//               } catch (IllegalAccessException | InvocationTargetException e) {
+//                  throw new RuntimeException(e);
+//               }
+//            }
          }
       }
 
@@ -286,9 +309,15 @@ public class JsonEntry {
     * @return the list
     * @throws IllegalStateException if the entry's element is not a json array
     */
-   public <T> List<T> getAsArray(Class<T> clazz) {
-      checkState(element.isJsonArray(), "Entry (" + element.getClass().getName() + ") is not an array.");
+   public <T> List<T> getAsArray(Type clazz) {
+      checkState(element.isJsonArray(), () -> "Entry (" + element.getClass().getName() + ") is not an array.");
       return Lists.transform(getAsArray(), entry -> entry.getAs(clazz));
+   }
+
+   public <T, E extends Collection<T>> E getAsArray(Class<T> clazz, E collection) {
+      checkState(element.isJsonArray(), () -> "Entry (" + element.getClass().getName() + ") is not an array.");
+      elementIterator().forEachRemaining(je -> collection.add(je.getAs(clazz)));
+      return collection;
    }
 
    /**
@@ -389,7 +418,7 @@ public class JsonEntry {
     * @return the map
     * @throws IllegalStateException if the entry's element is not a json object
     */
-   public <T> Map<String, T> getAsMap(Class<T> clazz) {
+   public <T> Map<String, T> getAsMap(Type clazz) {
       checkState(element.isJsonObject(), "Entry (" + element.getClass().getName() + ") is not an object.");
       Map<String, T> map = new HashMap<>();
       propertyIterator().forEachRemaining(e -> map.put(e.getKey(), e.getValue().getAs(clazz)));
@@ -830,15 +859,30 @@ public class JsonEntry {
       return element.isJsonPrimitive();
    }
 
+   /**
+    * Is string boolean.
+    *
+    * @return the boolean
+    */
    public boolean isString() {
       return isPrimitive() && element.getAsJsonPrimitive().isString();
    }
 
 
+   /**
+    * Is number boolean.
+    *
+    * @return the boolean
+    */
    public boolean isNumber() {
       return isPrimitive() && element.getAsJsonPrimitive().isNumber();
    }
 
+   /**
+    * Is boolean boolean.
+    *
+    * @return the boolean
+    */
    public boolean isBoolean() {
       return isPrimitive() && element.getAsJsonPrimitive().isBoolean();
    }

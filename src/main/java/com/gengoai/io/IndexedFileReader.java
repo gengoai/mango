@@ -139,8 +139,8 @@ public final class IndexedFileReader implements Serializable {
       File indexFile = indexFileFor(rawFile);
       OpenObjectLongHashMap<String> index = new OpenObjectLongHashMap<>();
       Json.parse(Resources.fromFile(indexFile))
-          .getAsMap(Long.class)
-          .forEach(index::put);
+         .<Long>getAsMap(Long.class)
+         .forEach(index::put);
       return index;
    }
 

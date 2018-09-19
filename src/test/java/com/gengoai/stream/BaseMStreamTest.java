@@ -60,12 +60,14 @@ public abstract class BaseMStreamTest {
       assertEquals("c",
                    sc.stream("A", "B", "C", "a", "b", "c").max().orElse("")
                   );
-      assertEquals("A",
-                   sc.stream("A", "B", "C", "a", "b", "c").min(String::compareToIgnoreCase).orElse("")
-                  );
-      assertEquals("C",
-                   sc.stream("A", "B", "C", "a", "b", "c").max(String::compareToIgnoreCase).orElse("")
-                  );
+      assertTrue("a".equalsIgnoreCase(
+         sc.stream("A", "B", "C", "a", "b", "c").min(String::compareToIgnoreCase).orElse("")
+                                     )
+                );
+      assertTrue("C".equalsIgnoreCase(
+         sc.stream("A", "B", "C", "a", "b", "c").max(String::compareToIgnoreCase).orElse("")
+                                     )
+                );
    }
 
    @Test(expected = IllegalArgumentException.class)
@@ -308,14 +310,14 @@ public abstract class BaseMStreamTest {
    @Test
    public void reduce() throws Exception {
       assertEquals(10, sc.stream(1, 2, 3, 4).reduce((x, y) -> x + y).orElse(0).intValue());
-      assertEquals("ABC", sc.stream("A", "B", "C").reduce((x, y) -> x + y).orElse(""));
+      assertEquals("ABC", sc.stream("A", "B", "C").sorted(true).repartition(1).reduce((x, y) -> x + y).orElse(""));
    }
 
 
    @Test
    public void fold() throws Exception {
       assertEquals(10, sc.stream(1, 2, 3, 4).fold(0, (x, y) -> x + y).intValue());
-      assertEquals("ABC", sc.stream("A", "B", "C").fold("", (x, y) -> x + y));
+      assertEquals("ABC", sc.stream("A", "B", "C").repartition(1).fold("", (x, y) -> x + y));
    }
 
 

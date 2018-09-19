@@ -43,9 +43,9 @@ public class MultiCountersTest {
                                                                       Tuples.$("B", "H")
                                                                      );
       Resource str = new StringResource();
-      mc.writeJson(str);
-      MultiCounter<String, String> mcPrime = MultiCounters.readJson(str, String.class, String.class);
-      assertEquals(mc,mcPrime);
+//      mc.writeJson(str);
+//      MultiCounter<String, String> mcPrime = MultiCounters.readJson(str, String.class, String.class);
+//      assertEquals(mc,mcPrime);
    }
 
 

@@ -21,34 +21,35 @@
 
 package com.gengoai.collection.counter;
 
-import com.gengoai.math.Math2;
+import com.gengoai.collection.index.Index;
+import com.gengoai.collection.index.Indexes;
 import com.gengoai.conversion.Convert;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVWriter;
 import com.gengoai.io.resource.Resource;
-import com.gengoai.json.Json;
-import com.gengoai.json.JsonWriter;
+import com.gengoai.json.JsonEntry;
+import com.gengoai.json.JsonSerializable;
+import com.gengoai.math.Math2;
 import com.gengoai.tuple.Tuple3;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.text.DecimalFormat;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * <p>A specialized object-object to double map that allows basic statistics over the object pairs and their values.</p>
+ * <p>A specialized object-object to double map that allows basic statistics over the object pairs and their
+ * values.</p>
  *
  * @param <K> component type of the first key in the pair
  * @param <V> component type of the second key in the pair
  * @author David B. Bracewell
  */
-public interface MultiCounter<K, V> {
+public interface MultiCounter<K, V> extends JsonSerializable {
 
    default MultiCounter<V, K> transpose() {
       MultiCounter<V, K> mc = MultiCounters.newMultiCounter();
@@ -435,7 +436,7 @@ public interface MultiCounter<K, V> {
     * @param output the resource to write to
     * @throws IOException Something went wrong writing
     */
-   default void writeCsv( Resource output) throws IOException {
+   default void writeCsv(Resource output) throws IOException {
       DecimalFormat decimalFormat = new DecimalFormat("#.#####");
       try (CSVWriter writer = CSV.builder().writer(output)) {
          for (Tuple3<K, V, Double> entry : entries()) {
@@ -447,25 +448,38 @@ public interface MultiCounter<K, V> {
       }
    }
 
-   /**
-    * Writes the counter items and values to Json
-    *
-    * @param output the resource to write to
-    * @throws IOException Something went wrong writing
-    */
-   default void writeJson( Resource output) throws IOException {
-      try (JsonWriter writer = Json.createWriter(output)) {
-         writer.beginDocument(true);
-         for (Tuple3<K, V, Double> entry : entries()) {
-            writer.beginObject();
-            writer.property("k1", Convert.convert(entry.v1, String.class));
-            writer.property("k2", Convert.convert(entry.v2, String.class));
-            writer.property("v", entry.v3);
-            writer.endObject();
-         }
-         writer.endDocument();
+   static <K, V> MultiCounter<K, V> fromJson(JsonEntry entry, Type kType, Type vType) {
+      MultiCounter<K, V> toReturn = MultiCounters.newMultiCounter();
+      Index<K> firstKeys = Indexes.indexOf(entry.getProperty("firstKeys").getAsArray(kType));
+      Index<V> secondKeys = Indexes.indexOf(entry.getProperty("secondKeys").getAsArray(vType));
+      int index = 0;
+      for (Iterator<JsonEntry> iterator = entry.getProperty("values").elementIterator(); iterator.hasNext(); ) {
+         JsonEntry e = iterator.next();
+         K fKey = firstKeys.get(index);
+         e.propertyIterator().forEachRemaining(pe -> toReturn.set(fKey,
+                                                                  secondKeys.get(Integer.parseInt(pe.getKey())),
+                                                                  pe.getValue().getAsDouble()
+                                                                 ));
+         index++;
       }
+      return toReturn;
    }
 
+   @Override
+   default JsonEntry toJson() {
+      JsonEntry entry = JsonEntry.object();
+      final Index<K> firstKeys = Indexes.indexOf(firstKeys());
+      entry.addProperty("firstKeys", firstKeys.asList());
+      final Index<V> secondKeys = Indexes.indexOf(secondKeys());
+      entry.addProperty("secondKeys", secondKeys.asList());
+      JsonEntry values = JsonEntry.array();
+      for (int i = 0; i < firstKeys.size(); i++) {
+         JsonEntry value = JsonEntry.object();
+         get(firstKeys.get(i)).forEach((k, v) -> value.addProperty(Integer.toString(secondKeys.getId(k)), v));
+         values.addValue(value);
+      }
+      entry.addProperty("values", values);
+      return entry;
+   }
 
 }//END OF MultiCounter

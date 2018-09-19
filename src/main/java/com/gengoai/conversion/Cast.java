@@ -24,6 +24,8 @@ package com.gengoai.conversion;
 import java.io.Serializable;
 import java.util.*;
 
+import static com.gengoai.Validation.notNull;
+
 /**
  * <p>A collection of static methods making casting from one type to another a bit easier. Note that the standard use
  * case for the collection based conversions are for use in for loops or method calls where the collection is read
@@ -35,226 +37,227 @@ import java.util.*;
  */
 public final class Cast {
 
-  private Cast() {
-    throw new IllegalAccessError();
-  }
+   private Cast() {
+      throw new IllegalAccessError();
+   }
 
-  /**
-   * Casts an object in an unchecked manner.
-   *
-   * @param <T> the type parameter
-   * @param o   the object
-   * @return the casted object or null if the object was null
-   */
-  @SuppressWarnings("unchecked")
-  public static <T> T as(Object o) {
-    return o == null ? null : (T) o;
-  }
+   /**
+    * Casts an object in an unchecked manner.
+    *
+    * @param <T> the type parameter
+    * @param o   the object
+    * @return the casted object or null if the object was null
+    */
+   @SuppressWarnings("unchecked")
+   public static <T> T as(Object o) {
+      return o == null ? null : (T) o;
+   }
 
-  /**
-   * Casts an object in a checked manner.
-   *
-   * @param <T>   the type parameter
-   * @param o     the object
-   * @param clazz The class to cast to
-   * @return the casted object or null if the object was null or the object was not of the desired type
-   */
-  public static <T> T as(Object o, Class<T> clazz) {
-    try {
-      return o == null ? null : clazz.cast(o);
-    } catch (Exception e) {
-      return null;
-    }
-  }
+   /**
+    * Casts an object in a checked manner.
+    *
+    * @param <T>   the type parameter
+    * @param o     the object
+    * @param clazz The class to cast to
+    * @return the casted object or null if the object was null or the object was not of the desired type
+    */
+   public static <T> T as(Object o, Class<T> clazz) {
+      notNull(clazz);
+      try {
+         return o == null ? null : clazz.cast(o);
+      } catch (Exception e) {
+         throw new ClassCastException("Cannot cast " + o.getClass() + " as " + clazz);
+      }
+   }
 
-  /**
-   * <p>Casts the elements in an iterable in a lazy fashion. Calls to remove on the iterator will be reflected in
-   * iterable </p>
-   *
-   * @param <T>      the type parameter
-   * @param iterable the iterable
-   * @return the casted iterable or null if the given iterable is null
-   */
-  public static <T> Iterable<T> cast(Iterable<?> iterable) {
-    return iterable == null ? null : new CastingIterable<T>(iterable);
-  }
+   /**
+    * <p>Casts the elements in an iterable in a lazy fashion. Calls to remove on the iterator will be reflected in
+    * iterable </p>
+    *
+    * @param <T>      the type parameter
+    * @param iterable the iterable
+    * @return the casted iterable or null if the given iterable is null
+    */
+   public static <T> Iterable<T> cast(Iterable<?> iterable) {
+      return iterable == null ? null : new CastingIterable<T>(iterable);
+   }
 
-  /**
-   * <p>Casts the elements in a set in a lazy fashion. Changes to the returned set are reflected in the the given
-   * set.</p>
-   *
-   * @param <T> the type parameter
-   * @param set the set
-   * @return the casted set or null if the given set is null
-   */
-  public static <T> Set<T> cast(Set<?> set) {
-    return set == null ? null : new CastingSet<T>(set);
-  }
+   /**
+    * <p>Casts the elements in a set in a lazy fashion. Changes to the returned set are reflected in the the given
+    * set.</p>
+    *
+    * @param <T> the type parameter
+    * @param set the set
+    * @return the casted set or null if the given set is null
+    */
+   public static <T> Set<T> cast(Set<?> set) {
+      return set == null ? null : new CastingSet<T>(set);
+   }
 
-  /**
-   * <p>Casts the elements in a list in a lazy fashion. Changes to the returned list are reflected in the the given
-   * list.</p>
-   *
-   * @param <T>  the type parameter
-   * @param list the list to cast
-   * @return the casted list or null if the given list is null
-   */
-  public static <T> List<T> cast(List<?> list) {
-    return list == null ? null : new CastingList<T>(list);
-  }
+   /**
+    * <p>Casts the elements in a list in a lazy fashion. Changes to the returned list are reflected in the the given
+    * list.</p>
+    *
+    * @param <T>  the type parameter
+    * @param list the list to cast
+    * @return the casted list or null if the given list is null
+    */
+   public static <T> List<T> cast(List<?> list) {
+      return list == null ? null : new CastingList<T>(list);
+   }
 
-  /**
-   * <p>Casts the elements in an iterator in a lazy fashion. Changes to the returned iterator are reflected in the the
-   * given iterator.</p>
-   *
-   * @param <T>      the type parameter
-   * @param iterator the iterator to cast
-   * @return the casted iterator or null if the given iterator was null
-   */
-  public static <T> Iterator<T> cast(Iterator<?> iterator) {
-    return iterator == null ? null : new CastingIterator<T>(iterator);
-  }
+   /**
+    * <p>Casts the elements in an iterator in a lazy fashion. Changes to the returned iterator are reflected in the the
+    * given iterator.</p>
+    *
+    * @param <T>      the type parameter
+    * @param iterator the iterator to cast
+    * @return the casted iterator or null if the given iterator was null
+    */
+   public static <T> Iterator<T> cast(Iterator<?> iterator) {
+      return iterator == null ? null : new CastingIterator<T>(iterator);
+   }
 
-  /**
-   * <p>Casts the elements in a collection in a lazy fashion. Changes to the returned collection are reflected in the
-   * the given collection.</p>
-   *
-   * @param <T>        the type parameter
-   * @param collection the collection to cast
-   * @return the casted collection or null if the collection is null
-   */
-  public static <T> Collection<T> cast(Collection<?> collection) {
-    return collection == null ? null : new CastingCollection<T>(collection);
-  }
+   /**
+    * <p>Casts the elements in a collection in a lazy fashion. Changes to the returned collection are reflected in the
+    * the given collection.</p>
+    *
+    * @param <T>        the type parameter
+    * @param collection the collection to cast
+    * @return the casted collection or null if the collection is null
+    */
+   public static <T> Collection<T> cast(Collection<?> collection) {
+      return collection == null ? null : new CastingCollection<T>(collection);
+   }
 
-  /**
-   * <p>Casts a map in a lazy fashion. Changes to the returned map are reflected in the
-   * the given map.</p>
-   *
-   * @param <K> the type parameter
-   * @param <V> the type parameter
-   * @param map the map to cast
-   * @return the casted map or null if the map is null
-   */
-  public static <K, V> Map<K, V> cast(Map<?, ?> map) {
-    return map == null ? null : new CastingMap<K, V>(map);
-  }
+   /**
+    * <p>Casts a map in a lazy fashion. Changes to the returned map are reflected in the
+    * the given map.</p>
+    *
+    * @param <K> the type parameter
+    * @param <V> the type parameter
+    * @param map the map to cast
+    * @return the casted map or null if the map is null
+    */
+   public static <K, V> Map<K, V> cast(Map<?, ?> map) {
+      return map == null ? null : new CastingMap<K, V>(map);
+   }
 
-  private static class CastingMap<K, V> extends AbstractMap<K, V> implements Serializable {
+   private static class CastingMap<K, V> extends AbstractMap<K, V> implements Serializable {
 
-    private static final long serialVersionUID = -2611216527976365947L;
-    private final Map<?, ?> map;
+      private static final long serialVersionUID = -2611216527976365947L;
+      private final Map<?, ?> map;
 
-    private CastingMap(Map<?, ?> map) {
-      this.map = map;
-    }
+      private CastingMap(Map<?, ?> map) {
+         this.map = map;
+      }
 
-    @Override
-    public Set<Entry<K, V>> entrySet() {
-      return new CastingSet<>(map.entrySet());
-    }
-  }//END OF Cast$CastingMap
+      @Override
+      public Set<Entry<K, V>> entrySet() {
+         return new CastingSet<>(map.entrySet());
+      }
+   }//END OF Cast$CastingMap
 
-  private static class CastingCollection<V> extends AbstractCollection<V> implements Serializable {
+   private static class CastingCollection<V> extends AbstractCollection<V> implements Serializable {
 
-    private static final long serialVersionUID = 7649013713070530029L;
-    private final Collection<?> wrap;
+      private static final long serialVersionUID = 7649013713070530029L;
+      private final Collection<?> wrap;
 
-    private CastingCollection(Collection<?> wrap) {
-      this.wrap = wrap;
-    }
+      private CastingCollection(Collection<?> wrap) {
+         this.wrap = wrap;
+      }
 
-    @Override
-    public Iterator<V> iterator() {
-      return new CastingIterator<>(wrap.iterator());
-    }
+      @Override
+      public Iterator<V> iterator() {
+         return new CastingIterator<>(wrap.iterator());
+      }
 
-    @Override
-    public int size() {
-      return wrap.size();
-    }
-  }//END OF Cast$CastingCollection
+      @Override
+      public int size() {
+         return wrap.size();
+      }
+   }//END OF Cast$CastingCollection
 
-  private static class CastingList<V> extends AbstractList<V> implements Serializable {
+   private static class CastingList<V> extends AbstractList<V> implements Serializable {
 
-    private static final long serialVersionUID = -5983768563529915927L;
-    private final List<?> wrap;
+      private static final long serialVersionUID = -5983768563529915927L;
+      private final List<?> wrap;
 
-    private CastingList(List<?> wrap) {
-      this.wrap = wrap;
-    }
+      private CastingList(List<?> wrap) {
+         this.wrap = wrap;
+      }
 
-    @Override
-    public V get(int index) {
-      return Cast.as(wrap.get(index));
-    }
+      @Override
+      public V get(int index) {
+         return Cast.as(wrap.get(index));
+      }
 
-    @Override
-    public int size() {
-      return wrap.size();
-    }
+      @Override
+      public int size() {
+         return wrap.size();
+      }
 
-  }//END OF Cast$CastingList
+   }//END OF Cast$CastingList
 
-  private static class CastingIterable<V> implements Iterable<V>, Serializable {
+   private static class CastingIterable<V> implements Iterable<V>, Serializable {
 
-    private static final long serialVersionUID = 4904704966440313023L;
-    private final Iterable<?> wrap;
+      private static final long serialVersionUID = 4904704966440313023L;
+      private final Iterable<?> wrap;
 
-    private CastingIterable(Iterable<?> wrap) {
-      this.wrap = wrap;
-    }
+      private CastingIterable(Iterable<?> wrap) {
+         this.wrap = wrap;
+      }
 
-    @Override
-    public Iterator<V> iterator() {
-      return new CastingIterator<>(wrap.iterator());
-    }
-  }//END OF Cast$CastingIterable
+      @Override
+      public Iterator<V> iterator() {
+         return new CastingIterator<>(wrap.iterator());
+      }
+   }//END OF Cast$CastingIterable
 
-  private static class CastingIterator<V> implements Iterator<V>, Serializable {
+   private static class CastingIterator<V> implements Iterator<V>, Serializable {
 
-    private static final long serialVersionUID = -6524171187233137692L;
-    private final Iterator<?> wrap;
+      private static final long serialVersionUID = -6524171187233137692L;
+      private final Iterator<?> wrap;
 
-    private CastingIterator(Iterator<?> wrap) {
-      this.wrap = wrap;
-    }
+      private CastingIterator(Iterator<?> wrap) {
+         this.wrap = wrap;
+      }
 
-    @Override
-    public boolean hasNext() {
-      return wrap.hasNext();
-    }
+      @Override
+      public boolean hasNext() {
+         return wrap.hasNext();
+      }
 
-    @Override
-    public V next() {
-      return as(wrap.next());
-    }
+      @Override
+      public V next() {
+         return as(wrap.next());
+      }
 
-    @Override
-    public void remove() {
-      wrap.remove();
-    }
-  }//END OF Cast$CastingIterator
+      @Override
+      public void remove() {
+         wrap.remove();
+      }
+   }//END OF Cast$CastingIterator
 
-  private static class CastingSet<V> extends AbstractSet<V> implements Serializable {
+   private static class CastingSet<V> extends AbstractSet<V> implements Serializable {
 
-    private static final long serialVersionUID = 8015953484790512598L;
-    private final Set<?> wrap;
+      private static final long serialVersionUID = 8015953484790512598L;
+      private final Set<?> wrap;
 
-    private CastingSet(Set<?> wrap) {
-      this.wrap = wrap;
-    }
+      private CastingSet(Set<?> wrap) {
+         this.wrap = wrap;
+      }
 
-    @Override
-    public Iterator<V> iterator() {
-      return new CastingIterator<>(wrap.iterator());
-    }
+      @Override
+      public Iterator<V> iterator() {
+         return new CastingIterator<>(wrap.iterator());
+      }
 
-    @Override
-    public int size() {
-      return wrap.size();
-    }
+      @Override
+      public int size() {
+         return wrap.size();
+      }
 
-  }//END OF Cast$CastingSet
+   }//END OF Cast$CastingSet
 
 }//END OF Cast
