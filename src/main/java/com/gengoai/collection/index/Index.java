@@ -22,14 +22,16 @@
 package com.gengoai.collection.index;
 
 import com.gengoai.Copyable;
+import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Convert;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVWriter;
 import com.gengoai.io.resource.Resource;
-import com.gengoai.json.Json;
-import com.gengoai.json.JsonWriter;
+import com.gengoai.json.JsonEntry;
+import com.gengoai.json.JsonSerializable;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -40,7 +42,7 @@ import java.util.stream.StreamSupport;
  * @param <E> the type parameter
  * @author David B. Bracewell
  */
-public interface Index<E> extends Iterable<E>, Copyable<Index<E>> {
+public interface Index<E> extends Iterable<E>, Copyable<Index<E>>, JsonSerializable {
 
    /**
     * <p>Adds an item to the index. If the item is already in the index, the item's id is returned otherwise the newly
@@ -157,20 +159,15 @@ public interface Index<E> extends Iterable<E>, Copyable<Index<E>> {
       }
    }
 
-   /**
-    * Writes the index to a json file.
-    *
-    * @param output the resource to write to
-    * @throws IOException Something went wrong writing to the output
-    */
-   default void writeJson(Resource output) throws IOException {
-      try (JsonWriter writer = Json.createWriter(output)) {
-         writer.beginDocument(true);
-         for (E item : this) {
-            writer.value(Convert.convert(item, String.class));
-         }
-         writer.endDocument();
-      }
+   @Override
+   default JsonEntry toJson() {
+      return JsonEntry.array(this);
+   }
+
+
+   static <T> Index<T> fromJson(JsonEntry entry, Type... types) {
+      Type itemType = Cast.as(types.length > 0 ? types[0] : Object.class);
+      return Indexes.indexOf(entry.getAsArray(itemType));
    }
 
 
