@@ -2,7 +2,6 @@ package com.gengoai.json;
 
 import com.gengoai.collection.*;
 import com.gengoai.collection.counter.Counter;
-import com.gengoai.collection.counter.Counters;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Convert;
 import com.gengoai.conversion.Val;
@@ -10,7 +9,8 @@ import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
 import com.google.gson.*;
 
-import java.lang.reflect.*;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -210,13 +210,6 @@ public class JsonEntry {
          return Cast.as(getAsArray(c1Type, Collect.newCollection(Cast.as(rawType))));
       } else if (rawType.isArray()) {
          return Cast.as(Convert.convert(getAsArray(c1Type), rawType, c1Type));
-      } else if (Counter.class.isAssignableFrom(rawType)) {
-         Counter<Object> counter = Counters.newCounter();
-         propertyIterator().forEachRemaining(e -> {
-            Object key = Convert.convert(e.getKey(), c1Type);
-            counter.set(key, e.getValue().getAsDouble());
-         });
-         return Cast.as(counter);
       } else if (Map.class.isAssignableFrom(rawType)) {
          Class<?> c2Type = Cast.as(pt.getActualTypeArguments()[1]);
          return Cast.as(Convert.convert(getAsMap(c2Type), rawType, c1Type, c2Type));
@@ -224,22 +217,16 @@ public class JsonEntry {
 
 
       if (JsonSerializable.class.isAssignableFrom(rawType)) {
-         Reflect reflected = Reflect.onClass(rawType).allowPrivilegedAccess();
-         Optional<Method> staticRead = reflected.getMethods("fromJson", pt.getActualTypeArguments().length + 1).stream()
-                                                .filter(m -> Modifier.isStatic(m.getModifiers()))
-                                                .findFirst();
-         if (staticRead.isPresent()) {
-            try {
-               Object[] args = new Object[pt.getActualTypeArguments().length + 1];
-               args[0] = this;
-               System.arraycopy(pt.getActualTypeArguments(), 0, args, 1, pt.getActualTypeArguments().length);
-               return Cast.as(staticRead.get().invoke(null, args));
-            } catch (IllegalAccessException | InvocationTargetException e) {
-               throw new RuntimeException(e);
-            }
+         try {
+            return Cast.as(Reflect.onClass(rawType)
+                                  .allowPrivilegedAccess()
+                                  .invoke("fromJson", this, pt.getActualTypeArguments())
+                                  .get());
+         } catch (ReflectionException e) {
+            throw new RuntimeException(e.getCause());
          }
-
       }
+
       return getAs(rawType);
    }
 
@@ -265,24 +252,13 @@ public class JsonEntry {
          Class<?> clazz = Cast.as(type);
          if (JsonSerializable.class.isAssignableFrom(clazz)) {
             try {
-               return Cast.as(Reflect.onClass(clazz).invoke("fromJson", this));
+               return Cast.as(Reflect.onClass(clazz)
+                                     .allowPrivilegedAccess()
+                                     .invoke("fromJson", this)
+                                     .get());
             } catch (ReflectionException e) {
-               throw new RuntimeException(e);
+               throw new RuntimeException(e.getCause());
             }
-//            Reflect reflected = Reflect.onClass(clazz).allowPrivilegedAccess();
-//            Optional<Method> staticRead = reflected.getMethods("fromJson", 1).stream()
-//                                                   .filter(m -> JsonEntry.class.isAssignableFrom(
-//                                                      m.getParameterTypes()[0]))
-//                                                   .filter(m -> Modifier.isStatic(m.getModifiers()))
-//                                                   .findFirst();
-//            if (staticRead.isPresent()) {
-//               try {
-//                  return Reflect.onClass(clazz).invoke("fromJson", this);
-////                  return Cast.as(staticRead.get().invoke(null, this));
-//               } catch (IllegalAccessException | InvocationTargetException e) {
-//                  throw new RuntimeException(e);
-//               }
-//            }
          }
       }
 

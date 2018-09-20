@@ -23,16 +23,19 @@ package com.gengoai.collection.counter;
 
 
 import com.gengoai.Copyable;
-import com.gengoai.math.Math2;
+import com.gengoai.collection.index.Index;
+import com.gengoai.collection.index.Indexes;
 import com.gengoai.conversion.Convert;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVWriter;
 import com.gengoai.io.Commitable;
 import com.gengoai.io.resource.Resource;
-import com.gengoai.json.Json;
-import com.gengoai.json.JsonWriter;
+import com.gengoai.json.JsonEntry;
+import com.gengoai.json.JsonSerializable;
+import com.gengoai.math.Math2;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.function.*;
@@ -44,7 +47,7 @@ import java.util.stream.Collectors;
  * @param <T> Component type being counted.
  * @author David B. Bracewell
  */
-public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable, Commitable {
+public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable, Commitable, JsonSerializable {
 
    /**
     * Constructs a new counter made up of counts that are adjusted using the supplied function.
@@ -52,7 +55,7 @@ public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable, Commita
     * @param function The function to use to adjust the counts
     * @return The new counter with adjusted counts.
     */
-   default Counter<T> adjustValues( DoubleUnaryOperator function) {
+   default Counter<T> adjustValues(DoubleUnaryOperator function) {
       return copy().adjustValuesSelf(function);
    }
 
@@ -384,7 +387,7 @@ public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable, Commita
     * @param rnd The random number generator
     * @return the sampled item
     */
-   default T sample( Random rnd) {
+   default T sample(Random rnd) {
       double target = rnd.nextDouble() * sum();
       double runningSum = 0;
       T lastEntry = null;
@@ -453,7 +456,7 @@ public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable, Commita
     * @param output the resource to write to
     * @throws IOException Something went wrong writing
     */
-   default void writeCsv( Resource output) throws IOException {
+   default void writeCsv(Resource output) throws IOException {
       DecimalFormat decimalFormat = new DecimalFormat("#.#####");
       try (CSVWriter writer = CSV.builder().writer(output)) {
          for (Map.Entry<T, Double> entry : entries()) {
@@ -464,20 +467,30 @@ public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable, Commita
       }
    }
 
-   /**
-    * Writes the counter items and values to Json
-    *
-    * @param output the resource to write to
-    * @throws IOException Something went wrong writing
-    */
-   default void writeJson( Resource output) throws IOException {
-      try (JsonWriter writer = Json.createWriter(output)) {
-         writer.beginDocument();
-         for (Map.Entry<T, Double> entry : entries()) {
-            writer.property(Convert.convert(entry.getKey(), String.class), entry.getValue());
-         }
-         writer.endDocument();
+
+   default JsonEntry toJson() {
+      JsonEntry entry = JsonEntry.object();
+      final Index<T> keys = Indexes.indexOf(items());
+      entry.addProperty("keys", keys.asList());
+      JsonEntry values = JsonEntry.array();
+      for (int i = 0; i < keys.size(); i++) {
+         values.addValue(get(keys.get(i)));
       }
+      entry.addProperty("values", values);
+      return entry;
+   }
+
+
+   static <T> Counter<T> fromJson(JsonEntry entry, Type... types) {
+      Type keyType = types.length > 0 ? types[0] : Object.class;
+      Counter<T> toReturn = Counters.newCounter();
+      Index<T> keys = Indexes.indexOf(entry.getProperty("keys").getAsArray(keyType));
+      int index = 0;
+      for (Iterator<JsonEntry> iterator = entry.getProperty("values").elementIterator(); iterator.hasNext(); ) {
+         toReturn.set(keys.get(index), iterator.next().getAsDouble());
+         index++;
+      }
+      return toReturn;
    }
 
    /**
@@ -485,7 +498,7 @@ public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable, Commita
     *
     * @param consumer the consumer to use for processing the key value pairs
     */
-   default void forEach( BiConsumer<? super T, ? super Double> consumer) {
+   default void forEach(BiConsumer<? super T, ? super Double> consumer) {
       entries().forEach(e -> consumer.accept(e.getKey(), e.getValue()));
    }
 

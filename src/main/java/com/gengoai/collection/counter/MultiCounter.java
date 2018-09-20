@@ -448,10 +448,12 @@ public interface MultiCounter<K, V> extends JsonSerializable {
       }
    }
 
-   static <K, V> MultiCounter<K, V> fromJson(JsonEntry entry, Type kType, Type vType) {
+   static <K, V> MultiCounter<K, V> fromJson(JsonEntry entry, Type... types) {
       MultiCounter<K, V> toReturn = MultiCounters.newMultiCounter();
-      Index<K> firstKeys = Indexes.indexOf(entry.getProperty("firstKeys").getAsArray(kType));
-      Index<V> secondKeys = Indexes.indexOf(entry.getProperty("secondKeys").getAsArray(vType));
+      Type keyType = types.length > 0 ? types[0] : Object.class;
+      Type valueType = types.length > 1 ? types[1] : Object.class;
+      Index<K> firstKeys = Indexes.indexOf(entry.getProperty("firstKeys").getAsArray(keyType));
+      Index<V> secondKeys = Indexes.indexOf(entry.getProperty("secondKeys").getAsArray(valueType));
       int index = 0;
       for (Iterator<JsonEntry> iterator = entry.getProperty("values").elementIterator(); iterator.hasNext(); ) {
          JsonEntry e = iterator.next();

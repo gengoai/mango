@@ -8,12 +8,14 @@ import com.gengoai.json.JsonSerializable;
 import com.gengoai.reflection.Types;
 
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.Map;
 
 import static com.gengoai.Validation.checkArgument;
+import static com.gengoai.reflection.Types.toClass;
 
 /**
  * The interface Parameters.
@@ -224,24 +226,22 @@ public final class Parameters<K extends Enum<K> & ValueTypeInformation> implemen
    @Override
    public JsonEntry toJson() {
       JsonEntry object = JsonEntry.object();
-      JsonEntry params = JsonEntry.object();
-      asMap().forEach((k, v) -> params.addProperty(k.toString(), v));
-      object.addProperty("parameters", params);
+      asMap().forEach((k, v) -> object.addProperty(k.toString(), v));
       return object;
    }
 
    /**
     * Static method to construct a parameter set from a json entry and key class.
     *
-    * @param <K>      the key type parameter
-    * @param entry    the json entry to parse
-    * @param keyClass the key class
+    * @param <K>   the key type parameter
+    * @param entry the json entry to parse
+    * @param types the parameter types
     * @return the parameter set
     */
-   public static <K extends Enum<K> & ValueTypeInformation> Parameters<K> fromJson(JsonEntry entry, Class<K> keyClass) {
+   public static <K extends Enum<K> & ValueTypeInformation> Parameters<K> fromJson(JsonEntry entry, Type... types) {
+      Class<K> keyClass = Cast.as(toClass(types[0]));
       Parameters<K> parameters = new Parameters<>(keyClass);
-      entry.getProperty("parameters")
-           .propertyIterator()
+      entry.propertyIterator()
            .forEachRemaining(e -> {
               K key = Enum.valueOf(keyClass, e.getKey());
               Object value = e.getValue().getAs(key.getValueType());

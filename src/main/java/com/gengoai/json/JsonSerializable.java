@@ -20,16 +20,5 @@ public interface JsonSerializable {
       return JsonEntry.from(new BeanMap(this));
    }
 
-   /**
-    * From json t.
-    *
-    * @param <T>   the type parameter
-    * @param entry the entry
-    * @return the t
-    */
-   static <T> T fromJson(JsonEntry entry) {
-      throw new IllegalStateException("Not Implemented");
-   }
-
 
 }//END OF JsonSerializable
