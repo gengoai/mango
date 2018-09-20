@@ -16,8 +16,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import static com.gengoai.Validation.checkState;
-import static com.gengoai.reflection.Types.isCollection;
-import static com.gengoai.reflection.Types.toClass;
+import static com.gengoai.reflection.Types.*;
 import static com.gengoai.tuple.Tuples.$;
 
 /**
@@ -203,19 +202,11 @@ public class JsonEntry {
    }
 
    public <T> T getAs(ParameterizedType pt) {
+      if (pt == null) {
+         return getAsVal().cast();
+      }
       Class<?> rawType = toClass(pt.getRawType());
       Class<?> c1Type = pt.getActualTypeArguments().length > 0 ? Cast.as(pt.getActualTypeArguments()[0]) : Object.class;
-
-      if (isCollection(rawType)) {
-         return Cast.as(getAsArray(c1Type, Collect.newCollection(Cast.as(rawType))));
-      } else if (rawType.isArray()) {
-         return Cast.as(Convert.convert(getAsArray(c1Type), rawType, c1Type));
-      } else if (Map.class.isAssignableFrom(rawType)) {
-         Class<?> c2Type = Cast.as(pt.getActualTypeArguments()[1]);
-         return Cast.as(Convert.convert(getAsMap(c2Type), rawType, c1Type, c2Type));
-      }
-
-
       if (JsonSerializable.class.isAssignableFrom(rawType)) {
          try {
             return Cast.as(Reflect.onClass(rawType)
@@ -225,8 +216,18 @@ public class JsonEntry {
          } catch (ReflectionException e) {
             throw new RuntimeException(e.getCause());
          }
+      } else if (isCollection(rawType)) {
+         return Cast.as(getAsArray(c1Type, Collect.newCollection(Cast.as(rawType))));
+      } else if (isIterable(rawType)) {
+         return Cast.as(getAsArray(c1Type));
+      } else if (isIterator(rawType)) {
+         return Cast.as(getAsArray(c1Type).iterator());
+      } else if (rawType.isArray()) {
+         return Cast.as(Convert.convert(getAsArray(c1Type), rawType, c1Type));
+      } else if (Map.class.isAssignableFrom(rawType)) {
+         Class<?> c2Type = Cast.as(pt.getActualTypeArguments()[1]);
+         return Cast.as(Convert.convert(getAsMap(c2Type), rawType, c1Type, c2Type));
       }
-
       return getAs(rawType);
    }
 
@@ -241,14 +242,9 @@ public class JsonEntry {
    public <T> T getAs(Type type) {
       if (type == null) {
          return getAsVal().cast();
-      }
-
-
-      if (type instanceof ParameterizedType) {
-         return getAs(Cast.<ParameterizedType>as(type));
-      }
-
-      if (type instanceof Class) {
+      } else if (type instanceof ParameterizedType) {
+         return getAs(Cast.as(type, ParameterizedType.class));
+      } else if (type instanceof Class) {
          Class<?> clazz = Cast.as(type);
          if (JsonSerializable.class.isAssignableFrom(clazz)) {
             try {
@@ -261,8 +257,6 @@ public class JsonEntry {
             }
          }
       }
-
-
       return gson.fromJson(element, type);
    }
 
