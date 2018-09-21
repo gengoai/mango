@@ -2,6 +2,7 @@ package com.gengoai.reflection;
 
 import com.gengoai.Primitives;
 import com.gengoai.conversion.Cast;
+import com.gengoai.json.Json;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.GenericArrayType;
@@ -127,6 +128,11 @@ public final class Types {
       @Override
       public Type getOwnerType() {
          return ownerType;
+      }
+
+      @Override
+      public String toString() {
+         return Json.dumps(this);
       }
    }
 

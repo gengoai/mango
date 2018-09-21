@@ -1,12 +1,12 @@
 package com.gengoai.json;
 
 import com.gengoai.collection.*;
-import com.gengoai.collection.counter.Counter;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Convert;
 import com.gengoai.conversion.Val;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
+import com.gengoai.reflection.ReflectionUtils;
 import com.google.gson.*;
 
 import java.lang.reflect.ParameterizedType;
@@ -14,6 +14,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static com.gengoai.Validation.checkState;
 import static com.gengoai.reflection.Types.*;
@@ -130,8 +131,12 @@ public class JsonEntry {
          return gson.toJsonTree(v);
       } else if (v.getClass().isArray()) {
          return iterableToElement(Arrays.asList((Object[]) v));
-      } else if (v instanceof Counter) {
-         return toElement(Cast.<Counter>as(v).asMap());
+      } else if (v instanceof ParameterizedType) {
+         ParameterizedType pt = Cast.as(v);
+         return JsonEntry.object()
+                         .addProperty("rawType", pt.getRawType())
+                         .addProperty("actualTypeArguments", pt.getActualTypeArguments())
+                   .element;
       }
       return gson.toJsonTree(v);
    }
@@ -231,6 +236,11 @@ public class JsonEntry {
       return getAs(rawType);
    }
 
+
+   public Stream<JsonEntry> elementStream() {
+      return Streams.asStream(elementIterator());
+   }
+
    /**
     * Gets the value of this entry as the given class. This method is {@link JsonSerializable} aware and will look for a
     * static <code>fromJson(JsonEntry)</code> method on the class if it is a subclass.
@@ -242,8 +252,20 @@ public class JsonEntry {
    public <T> T getAs(Type type) {
       if (type == null) {
          return getAsVal().cast();
-      } else if (type instanceof ParameterizedType) {
-         return getAs(Cast.as(type, ParameterizedType.class));
+      } else if (isAssignable(ParameterizedType.class, type)) {
+         Type rawType = getProperty("rawType").getAs(Type.class);
+         Type[] parameterTypes = getProperty("actualTypeArguments").elementStream()
+                                                                   .map(e -> e.getAs(Type.class))
+                                                                   .toArray(Type[]::new);
+         return Cast.as(type(rawType, parameterTypes));
+      } else if (isAssignable(Type.class, type) && hasProperty("rawType")) {
+         return getAs(ParameterizedType.class);
+      } else if (isAssignable(Type.class, type)) {
+         try {
+            return Cast.as(ReflectionUtils.getClassForName(getAsString()));
+         } catch (Exception e) {
+            throw new RuntimeException(e);
+         }
       } else if (type instanceof Class) {
          Class<?> clazz = Cast.as(type);
          if (JsonSerializable.class.isAssignableFrom(clazz)) {
@@ -257,6 +279,8 @@ public class JsonEntry {
             }
          }
       }
+
+
       return gson.fromJson(element, type);
    }
 

@@ -53,7 +53,14 @@ public final class Json {
     */
    public static Resource dump(Object object, Resource resource) throws IOException {
       try (JsonWriter writer = new JsonWriter(resource)) {
-         writer.write(JsonEntry.from(object));
+         JsonEntry objJson = JsonEntry.from(object);
+         if( objJson.isPrimitive() ){
+            writer.beginDocument(true);
+         }
+         writer.write(objJson);
+         if (objJson.isPrimitive()) {
+            writer.endDocument();
+         }
       }
       return resource;
    }

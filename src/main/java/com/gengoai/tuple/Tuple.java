@@ -25,11 +25,16 @@ import com.gengoai.Copyable;
 import com.gengoai.Validation;
 import com.gengoai.collection.Sorting;
 import com.gengoai.conversion.Cast;
+import com.gengoai.json.JsonEntry;
+import com.gengoai.json.JsonSerializable;
 import com.gengoai.string.StringUtils;
 
 import java.io.Serializable;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,7 +44,7 @@ import java.util.stream.Stream;
  *
  * @author David B. Bracewell
  */
-public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copyable<Tuple>, Serializable {
+public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copyable<Tuple>, Serializable, JsonSerializable {
    private static final long serialVersionUID = 1L;
 
    /**
@@ -77,7 +82,7 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
     * @param function the mapping function
     * @return the result of the mapping function
     */
-   public <R> R map( Function<Tuple, R> function) {
+   public <R> R map(Function<Tuple, R> function) {
       return function.apply(this);
    }
 
@@ -88,7 +93,7 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
     * @return A new tuple of same degree whose values are the result of the mapping function applied to the this tuple's
     * elements.
     */
-   public Tuple mapValues( Function<Object, ? extends Object> function) {
+   public Tuple mapValues(Function<Object, ? extends Object> function) {
       return NTuple.of(Arrays.stream(array()).map(function).collect(Collectors.toList()));
    }
 
@@ -183,7 +188,7 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
 
 
    @Override
-   public final int compareTo( Tuple o) {
+   public final int compareTo(Tuple o) {
       if (degree() < o.degree()) {
          return -1;
       } else if (degree() > o.degree()) {
@@ -221,5 +226,21 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
       return StringUtils.join(array(), ", ", "(", ")");
    }
 
+
+   @Override
+   public JsonEntry toJson() {
+      return JsonEntry.array(array());
+   }
+
+   public static Tuple fromJson(JsonEntry entry, Type... types) {
+      List<Object> elements = new ArrayList<>();
+      int index = 0;
+      for (Iterator<JsonEntry> itr = entry.elementIterator(); itr.hasNext(); ) {
+         Type type = types.length > index ? types[index] : Object.class;
+         elements.add(itr.next().getAs(type));
+         index++;
+      }
+      return new NTuple(elements.toArray());
+   }
 
 }//END OF Tuple
