@@ -41,12 +41,9 @@ import com.gengoai.logging.Logger;
 import com.gengoai.parsing.ParseException;
 import com.gengoai.reflection.BeanUtils;
 import com.gengoai.reflection.ReflectionException;
-import com.gengoai.scripting.ScriptEnvironment;
-import com.gengoai.scripting.ScriptEnvironmentManager;
 import com.gengoai.string.StringMatcher;
 import com.gengoai.string.StringUtils;
 
-import javax.script.ScriptException;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -69,7 +66,6 @@ public final class Config implements Serializable, JsonSerializable {
    private static final String BEAN_PROPERTY = "@{";
    private static final Pattern BEAN_SUBSTITUTION = Pattern.compile(Pattern.quote(BEAN_PROPERTY) + "(.+?)\\}");
    private static final String DEFAULT_CONFIG_FILE_NAME = "default.conf";
-   private static final String SCRIPT_PROPERTY = "script[";
    private static final Pattern STRING_SUBSTITUTION = Pattern.compile("\\$\\{(.+?)\\}");
    private static final String SYSTEM_PROPERTY = "system.";
    private static final long serialVersionUID = 6875819132224789761L;
@@ -401,11 +397,6 @@ public final class Config implements Serializable, JsonSerializable {
          return new Val(null);
       }
 
-      //If the value is a script then process it
-      if (value.startsWith(SCRIPT_PROPERTY)) {
-         return Val.of(processScript(value));
-      }
-
       if (value.contains(BEAN_PROPERTY)) {
          return getBean(value);
       }
@@ -678,40 +669,6 @@ public final class Config implements Serializable, JsonSerializable {
       return initialize(programName, args, new CommandLineParser(), otherPackages);
    }
 
-   private static Object processScript(String scriptStatement) {
-      int idx = scriptStatement.indexOf(']');
-
-      if (idx == -1) {
-         throw new RuntimeException(scriptStatement + " is malformed (missing closing ']'')");
-      }
-
-      String extension = scriptStatement.substring(SCRIPT_PROPERTY.length(), idx).trim();
-
-      String objectName = null;
-      if (extension.contains(",")) {
-         String[] splits = extension.split(",");
-         extension = splits[0].trim();
-         objectName = splits[1].trim();
-      }
-
-      ScriptEnvironment env = ScriptEnvironmentManager.getInstance().getEnvironment(extension);
-      if (!StringUtils.isNullOrBlank(objectName)) {
-         return env.getObject(objectName);
-      }
-
-      idx = scriptStatement.indexOf(':');
-      if (idx == -1) {
-         throw new RuntimeException(scriptStatement + " is malformed (missing :)");
-      }
-
-      String script = scriptStatement.substring(idx + 1).trim();
-      try {
-         return env.eval(script);
-      } catch (ScriptException e) {
-         throw new RuntimeException(e);
-      }
-   }
-
    /**
     * Resolve variables string.
     *
@@ -761,18 +718,6 @@ public final class Config implements Serializable, JsonSerializable {
          System.setProperty(systemSetting, value);
       }
       log.finest("Setting property {0} to value of {1}", name, value);
-   }
-
-   /**
-    * Determines if the value of the given property is a script or not
-    *
-    * @param propertyName The name of the property to check
-    * @return True if the property exists and its value is a script
-    */
-   public static boolean valueIsScript(String propertyName) {
-      return (getInstance().properties.containsKey(propertyName) && getInstance().properties.get(propertyName)
-                                                                                            .startsWith(
-                                                                                               SCRIPT_PROPERTY));
    }
 
    /**

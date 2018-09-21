@@ -38,7 +38,6 @@ public static enum ConfigTokenType implements ParserTokenType {
     PROPERTY,
     APPEND_PROPERTY,
     VALUE,
-    SCRIPT,
     IMPORT,
     COMMENT,
     SECTION_HEADER,
@@ -87,7 +86,6 @@ COMMENT = "#" .*
 NEWLINE=\r?\n
 
 IMPORT = "@import"
-SCRIPT = "@script"
 
 IMPORT_SCRIPT = [^\n]+
 
@@ -95,7 +93,6 @@ IMPORT_SCRIPT = [^\n]+
 %state SECTION_PROPERTY
 %state SECTION_VALUE
 %state IMPORT
-%state SCRIPT
 %state APPENDER
 %state START_SECTION
 %state START_VALUE
@@ -103,15 +100,10 @@ IMPORT_SCRIPT = [^\n]+
 
 %%
 
-<IMPORT,SCRIPT>{
-    {IMPORT_SCRIPT}     {yybegin(YYINITIAL); return new ParserToken(yytext(),ConfigTokenType.VALUE); }
-}
-
 <YYINITIAL>{
      {PROPERTY} / ({WHITESPACE} {NEWLINE}*)* {START_SECTION}        {stack.push(YYINITIAL);yybegin(START_SECTION); return new ParserToken(yytext(),ConfigTokenType.SECTION_HEADER); }
      {PROPERTY} / {WHITESPACE}* {APPEND_OPERATOR}                   {stack.push(YYINITIAL);yybegin(APPENDER); return new ParserToken(yytext(),ConfigTokenType.APPEND_PROPERTY); }
      {PROPERTY} / {WHITESPACE}* {ASSIGNMENT_OPERATOR}               {stack.push(YYINITIAL);yybegin(START_VALUE); return new ParserToken(yytext(),ConfigTokenType.PROPERTY); }
-     {SCRIPT}                                                       {yybegin(SCRIPT); return new ParserToken(yytext(),ConfigTokenType.SCRIPT); }
      {IMPORT}                                                       {yybegin(IMPORT); return new ParserToken(yytext(),ConfigTokenType.IMPORT); }
 }
 

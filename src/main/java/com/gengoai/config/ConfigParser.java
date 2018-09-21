@@ -30,11 +30,8 @@ import com.gengoai.parsing.expressions.PrefixOperatorExpression;
 import com.gengoai.parsing.expressions.ValueExpression;
 import com.gengoai.parsing.handlers.PrefixOperatorHandler;
 import com.gengoai.parsing.handlers.ValueHandler;
-import com.gengoai.scripting.ScriptEnvironment;
-import com.gengoai.scripting.ScriptEnvironmentManager;
 import com.gengoai.string.StringUtils;
 
-import javax.script.ScriptException;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -50,7 +47,6 @@ class ConfigParser extends Parser {
 
    private static Grammar CONFIG_GRAMMAR = new Grammar() {{
       register(ConfigTokenizer.ConfigTokenType.IMPORT, new PrefixOperatorHandler(ValueExpression.class));
-      register(ConfigTokenizer.ConfigTokenType.SCRIPT, new PrefixOperatorHandler(ValueExpression.class));
       register(ConfigTokenizer.ConfigTokenType.PROPERTY, new PrefixOperatorHandler(ValueExpression.class));
       register(ConfigTokenizer.ConfigTokenType.APPEND_PROPERTY, new PrefixOperatorHandler(ValueExpression.class));
       register(ConfigTokenizer.ConfigTokenType.VALUE, new ValueHandler());
@@ -92,10 +88,6 @@ class ConfigParser extends Parser {
         asFunction(exp -> importConfig(exp.right.toString().trim())));
 
       $(PrefixOperatorExpression.class,
-        ConfigTokenizer.ConfigTokenType.SCRIPT,
-        asFunction(exp -> importScript(exp.right.toString().trim())));
-
-      $(PrefixOperatorExpression.class,
         ConfigTokenizer.ConfigTokenType.APPEND_PROPERTY,
         asFunction(exp -> setProperty(exp, "")));
 
@@ -121,17 +113,6 @@ class ConfigParser extends Parser {
       super(CONFIG_GRAMMAR, CONFIG_LEXER);
       this.resource = config;
       this.resourceName = config.descriptor();
-   }
-
-   private void importScript(String script) {
-      Resource scriptResource = new ClasspathResource(script.trim(), Config.getDefaultClassLoader());
-      String extension = script.substring(script.lastIndexOf('.') + 1);
-      ScriptEnvironment env = ScriptEnvironmentManager.getInstance().getEnvironmentForExtension(extension);
-      try {
-         env.eval(scriptResource);
-      } catch (ScriptException | IOException e) {
-         throw new RuntimeException(e);
-      }
    }
 
    private void importConfig(String importStatement) throws ParseException {

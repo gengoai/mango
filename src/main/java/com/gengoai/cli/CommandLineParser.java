@@ -102,7 +102,7 @@ public final class CommandLineParser {
     *
     * @param namedOption the named option
     */
-   public void addOption(NamedOption namedOption) {
+   public CommandLineParser addOption(NamedOption namedOption) {
       options.put(namedOption.getName(), namedOption);
       optionSet.add(namedOption);
       if (namedOption.getAliases() != null) {
@@ -110,6 +110,7 @@ public final class CommandLineParser {
             options.put(alias, namedOption);
          }
       }
+      return this;
    }
 
    private int processKeyValue(List<String> cleanedArgs, int i, String current, List<String> filtered) {

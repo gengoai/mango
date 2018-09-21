@@ -64,7 +64,7 @@ public class BeanUtils {
     * @return A new instance of the given class
     */
    public static <T> T getBean(Class<T> clazz) throws ReflectionException {
-      return parameterizeObject(Reflect.onClass(clazz).create().<T>get());
+      return parameterizeObject(Reflect.onClass(clazz).create().get());
    }
 
    /**
@@ -80,9 +80,9 @@ public class BeanUtils {
          return Cast.as(SINGLETONS.get(name));
       }
 
-      if (Config.valueIsScript(name)) {
-         return Config.get(name).as(clazz);
-      }
+//      if (Config.valueIsScript(name)) {
+//         return Config.get(name).as(clazz);
+//      }
 
       Reflect reflect;
       if (Config.hasProperty(name + ".class")) {

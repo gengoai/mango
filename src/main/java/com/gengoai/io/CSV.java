@@ -22,7 +22,6 @@
 package com.gengoai.io;
 
 import com.gengoai.io.resource.Resource;
-import com.gengoai.reflection.Specification;
 import com.gengoai.string.CSVFormatter;
 
 import java.io.IOException;
@@ -38,7 +37,7 @@ import java.util.List;
  *
  * @author David B. Bracewell
  */
-public class CSV implements Specification, Serializable {
+public class CSV implements Serializable {
    private static final long serialVersionUID = 1L;
 
    private char comment = '#';

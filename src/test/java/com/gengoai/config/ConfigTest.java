@@ -23,7 +23,6 @@ package com.gengoai.config;
 
 import com.gengoai.Language;
 import com.gengoai.io.Resources;
-import com.gengoai.scripting.ScriptEnvironmentManager;
 import com.gengoai.string.StringMatcher;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,7 +44,6 @@ public class ConfigTest {
     Config.setProperty("age", "script[js]: 34+1;");
     Config.setProperty("named", "bean");
     Config.setProperty("object", "script[js]: 'Hello';");
-    ScriptEnvironmentManager.getInstance().getEnvironment("js").eval("object = 'Hola';");
     Config.setProperty("objectAlias", "script[js,object]");
   }
 
@@ -69,7 +67,6 @@ public class ConfigTest {
     assertEquals((Integer) 134, Config.get("sectionName.testing.arg").asInteger());
     assertEquals(true, Config.get("the.other.property").asBoolean());
 
-    assertEquals("espresso", ScriptEnvironmentManager.getInstance().getEnvironmentForExtension("js").getObject("libraryName"));
 
 
     assertEquals("HELLO, World", Config.get("keyA").asString());
@@ -89,10 +86,5 @@ public class ConfigTest {
     assertTrue(Config.hasProperty("age"));
   }
 
-  @Test
-  public void testValueIsScript() throws Exception {
-    assertTrue(Config.valueIsScript("age"));
-    assertFalse(Config.valueIsScript("name"));
-  }
 
 }
