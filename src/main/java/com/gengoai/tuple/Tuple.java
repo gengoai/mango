@@ -232,6 +232,13 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
       return JsonEntry.array(array());
    }
 
+   /**
+    * From json tuple.
+    *
+    * @param entry the entry
+    * @param types the types
+    * @return the tuple
+    */
    public static Tuple fromJson(JsonEntry entry, Type... types) {
       List<Object> elements = new ArrayList<>();
       int index = 0;

@@ -10,6 +10,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.regex.Pattern;
 
 /**
  * <p>Convenience methods for creating type information</p>
@@ -54,6 +55,38 @@ public final class Types {
     */
    public static Type parameterizedType(Type rawType, Type... typeArguments) {
       return new ParameterizedTypeImpl(rawType, typeArguments, null);
+   }
+
+   final static Pattern TYPE_PATTERN = Pattern.compile("([^<>]+)(?:<([^>])+?>)");
+
+   public static void main(String[] args) throws Exception {
+      String s = "Map<String,List<String>>";
+      System.out.println(fromString(s));
+      System.out.println(fromString("List<com.gengoai.Language>"));
+   }
+
+   public static Type fromString(String s) {
+      int tStart = s.indexOf('<');
+      int tEnd = s.lastIndexOf('>');
+      int rawEnd = tStart > 0 ? tStart : s.length();
+
+      if ((tStart == -1 && tEnd != -1) || (tStart != -1 && tEnd != s.length() - 1)) {
+         throw new RuntimeException("Invalid Parameterized Type Declaration: " + s);
+      }
+
+      Type rawType = null;
+      try {
+         rawType = ReflectionUtils.getClassForName(s.substring(0, rawEnd));
+      } catch (Exception e) {
+         throw new RuntimeException(e);
+      }
+      Type[] pTypes = null;
+      if (tStart > 0) {
+         pTypes = java.util.Arrays.stream(s.substring(tStart + 1, tEnd).split("[, ]+"))
+                                  .map(Types::fromString)
+                                  .toArray(Type[]::new);
+      }
+      return pTypes == null ? rawType : parameterizedType(rawType, pTypes);
    }
 
    public static boolean isAssignable(Type t1, Type toCheck) {
