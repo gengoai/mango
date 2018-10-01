@@ -1,0 +1,26 @@
+package com.gengoai.conversion;
+
+import org.kohsuke.MetaInfServices;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
+import static com.gengoai.collection.Collect.arrayOf;
+
+/**
+ * The type Set type converter.
+ */
+@MetaInfServices(value = TypeConverter.class)
+public class SetTypeConverter extends CollectionTypeConverter {
+
+   @Override
+   public Class[] getConversionType() {
+      return arrayOf(Set.class, HashSet.class);
+   }
+
+   @Override
+   protected Collection<?> newCollection() {
+      return new HashSet<>();
+   }
+}

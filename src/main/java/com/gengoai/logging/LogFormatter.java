@@ -57,7 +57,7 @@ public class LogFormatter extends Formatter {
 
       Throwable thrown = arg0.getThrown();
       if (thrown == null) {
-         className = arg0.getSourceClassName();
+         className = arg0.getLoggerName();
       } else {
          StackTraceElement element = thrown.getStackTrace()[0];
          className = element.getClassName();
@@ -73,13 +73,12 @@ public class LogFormatter extends Formatter {
          .append("] ");
 
       if (arg0.getLevel() == Level.WARNING || arg0.getLevel() == Level.SEVERE) {
-         msg.append("[")
-            .append(className);
+         msg.append("[").append(className);
          if (lineNumber >= 0) {
             msg.append(':')
-               .append(lineNumber)
-               .append("] ");
+               .append(lineNumber);
          }
+         msg.append("] ");
       }
       msg.append(MessageFormat.format(arg0.getMessage(), arg0.getParameters()));
 

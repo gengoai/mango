@@ -1,7 +1,7 @@
 package com.gengoai.collection.table;
 
 import com.gengoai.collection.Iterators;
-import com.gengoai.collection.set.IteratorSet;
+import com.gengoai.collection.IteratorSet;
 import com.gengoai.conversion.Cast;
 
 import java.io.Serializable;

@@ -15,7 +15,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import static com.gengoai.Validation.checkArgument;
-import static com.gengoai.reflection.Types.toClass;
+import static com.gengoai.reflection.Types.asClass;
 
 /**
  * The interface Parameters.
@@ -239,7 +239,7 @@ public final class Parameters<K extends Enum<K> & ValueTypeInformation> implemen
     * @return the parameter set
     */
    public static <K extends Enum<K> & ValueTypeInformation> Parameters<K> fromJson(JsonEntry entry, Type... types) {
-      Class<K> keyClass = Cast.as(toClass(types[0]));
+      Class<K> keyClass = Cast.as(asClass(types[0]));
       Parameters<K> parameters = new Parameters<>(keyClass);
       entry.propertyIterator()
            .forEachRemaining(e -> {

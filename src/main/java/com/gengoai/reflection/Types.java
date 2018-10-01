@@ -2,15 +2,18 @@ package com.gengoai.reflection;
 
 import com.gengoai.Primitives;
 import com.gengoai.conversion.Cast;
-import com.gengoai.json.Json;
+import com.gengoai.tuple.Tuple2;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.regex.Pattern;
+
+import static com.gengoai.tuple.Tuples.$;
 
 /**
  * <p>Convenience methods for creating type information</p>
@@ -45,6 +48,92 @@ public final class Types {
       throw new IllegalArgumentException("Unable to handle type (" + type.getClass() + "): " + type.getTypeName());
    }
 
+   /**
+    * Is array boolean.
+    *
+    * @param type the type
+    * @return the boolean
+    */
+   public static boolean isArray(Type type) {
+      return asClass(type).isArray();
+   }
+
+   /**
+    * Is assignable boolean.
+    *
+    * @param parent the t 1
+    * @param child  the to check
+    * @return the boolean
+    */
+   public static boolean isAssignable(Type parent, Type child) {
+      Class<?> c1 = Primitives.wrap(asClass(parent));
+      Class<?> c2 = Primitives.wrap(asClass(child));
+      return c1.isAssignableFrom(c2);
+   }
+
+   public static Type[] getActualTypeArguments(Type type) {
+      if (type instanceof ParameterizedType) {
+         return Cast.<ParameterizedType>as(type).getActualTypeArguments();
+      }
+      return null;
+   }
+
+   /**
+    * Is collection boolean.
+    *
+    * @param type the type
+    * @return the boolean
+    */
+   public static boolean isCollection(Type type) {
+      return Collection.class.isAssignableFrom(asClass(type));
+   }
+
+   /**
+    * Is container boolean.
+    *
+    * @param type the type
+    * @return the boolean
+    */
+   public static boolean isContainer(Type type) {
+      if (type == null) {
+         return false;
+      }
+      Class<?> clazz = asClass(type);
+      return Iterable.class.isAssignableFrom(clazz) ||
+                Iterator.class.isAssignableFrom(clazz) ||
+                clazz.isArray();
+   }
+
+   /**
+    * Is iterable boolean.
+    *
+    * @param type the type
+    * @return the boolean
+    */
+   public static boolean isIterable(Type type) {
+      return Iterable.class.isAssignableFrom(asClass(type));
+   }
+
+   /**
+    * Is iterator boolean.
+    *
+    * @param type the type
+    * @return the boolean
+    */
+   public static boolean isIterator(Type type) {
+      return Iterator.class.isAssignableFrom(asClass(type));
+   }
+
+   /**
+    * Is primitive boolean.
+    *
+    * @param type the type
+    * @return the boolean
+    */
+   public static boolean isPrimitive(Type type) {
+      Class<?> c = asClass(type);
+      return c.isPrimitive() || (c.isArray() && c.getComponentType().isPrimitive());
+   }
 
    /**
     * Creates parameterized type information for the given raw type and optional type arguments.
@@ -57,15 +146,13 @@ public final class Types {
       return new ParameterizedTypeImpl(rawType, typeArguments, null);
    }
 
-   final static Pattern TYPE_PATTERN = Pattern.compile("([^<>]+)(?:<([^>])+?>)");
-
-   public static void main(String[] args) throws Exception {
-      String s = "Map<String,List<String>>";
-      System.out.println(fromString(s));
-      System.out.println(fromString("List<com.gengoai.Language>"));
-   }
-
-   public static Type fromString(String s) {
+   /**
+    * From string type.
+    *
+    * @param s the s
+    * @return the type
+    */
+   public static Type parse(String s) {
       int tStart = s.indexOf('<');
       int tEnd = s.lastIndexOf('>');
       int rawEnd = tStart > 0 ? tStart : s.length();
@@ -73,7 +160,6 @@ public final class Types {
       if ((tStart == -1 && tEnd != -1) || (tStart != -1 && tEnd != s.length() - 1)) {
          throw new RuntimeException("Invalid Parameterized Type Declaration: " + s);
       }
-
       Type rawType = null;
       try {
          rawType = ReflectionUtils.getClassForName(s.substring(0, rawEnd));
@@ -82,62 +168,15 @@ public final class Types {
       }
       Type[] pTypes = null;
       if (tStart > 0) {
-         pTypes = java.util.Arrays.stream(s.substring(tStart + 1, tEnd).split("[, ]+"))
-                                  .map(Types::fromString)
-                                  .toArray(Type[]::new);
+         pTypes = Arrays.stream(s.substring(tStart + 1, tEnd).split("[, ]+"))
+                        .map(Types::parse)
+                        .toArray(Type[]::new);
       }
       return pTypes == null ? rawType : parameterizedType(rawType, pTypes);
    }
 
-   public static boolean isAssignable(Type t1, Type toCheck) {
-      Class<?> c1 = Primitives.wrap(toClass(t1));
-      Class<?> c2 = Primitives.wrap(toClass(toCheck));
-      return c1.isAssignableFrom(c2);
-   }
-
-
-   public static boolean isContainer(Type type) {
-      if (type == null) {
-         return false;
-      }
-      Class<?> clazz = toClass(type);
-      return Iterable.class.isAssignableFrom(clazz) ||
-                Iterator.class.isAssignableFrom(clazz) ||
-                clazz.isArray();
-   }
-
-   public static boolean isCollection(Type type) {
-      return Collection.class.isAssignableFrom(toClass(type));
-   }
-
-   public static boolean isIterable(Type type) {
-      return Iterable.class.isAssignableFrom(toClass(type));
-   }
-
-   public static boolean isIterator(Type type) {
-      return Iterator.class.isAssignableFrom(toClass(type));
-   }
-
-   public static boolean isArray(Type type) {
-      return toClass(type).isArray();
-   }
-
-   public static Class<?> toClass(Type type) {
-      if (type instanceof ParameterizedType) {
-         ParameterizedType pt = Cast.as(type);
-         return toClass(pt.getRawType());
-      }
-      return Cast.as(type, Class.class);
-   }
-
-   public static Type type(Type rawType, Type... typeArguments) {
-      if (typeArguments == null || typeArguments.length == 0) {
-         return rawType;
-      }
-      return new ParameterizedTypeImpl(rawType, typeArguments, null);
-   }
-
-   private static class ParameterizedTypeImpl implements ParameterizedType {
+   private static class ParameterizedTypeImpl implements ParameterizedType, Serializable {
+      private static final long serialVersionUID = 1L;
       private final Type rawType;
       private final Type[] actualTypeArguments;
       private final Type ownerType;
@@ -154,18 +193,27 @@ public final class Types {
       }
 
       @Override
-      public Type getRawType() {
-         return rawType;
-      }
-
-      @Override
       public Type getOwnerType() {
          return ownerType;
       }
 
       @Override
+      public Type getRawType() {
+         return rawType;
+      }
+
+      @Override
       public String toString() {
-         return Json.dumps(this);
+         StringBuilder sb = new StringBuilder(rawType.getTypeName());
+         if (actualTypeArguments != null) {
+            sb.append("<");
+            sb.append(actualTypeArguments[0].getTypeName());
+            for (int i = 1; i < actualTypeArguments.length; i++) {
+               sb.append(", ").append(actualTypeArguments[i].getTypeName());
+            }
+            sb.append(">");
+         }
+         return sb.toString();
       }
    }
 

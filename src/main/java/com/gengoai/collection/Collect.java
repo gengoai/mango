@@ -45,31 +45,31 @@ public final class Collect {
       return objects;
    }
 
-   public static int[] arrayOf(int... values) {
+   public static int[] arrayOfInt(int... values) {
       return values;
    }
 
-   public static double[] arrayOf(double... values) {
+   public static double[] arrayOfDouble(double... values) {
       return values;
    }
 
-   public static float[] arrayOf(float... values) {
+   public static float[] arrayOfFloat(float... values) {
       return values;
    }
 
-   public static byte[] arrayOf(byte... values) {
+   public static byte[] arrayOfByte(byte... values) {
       return values;
    }
 
-   public static short[] arrayOf(short... values) {
+   public static short[] arrayOfShort(short... values) {
       return values;
    }
 
-   public static char[] arrayOf(char... values) {
+   public static char[] arrayOfChar(char... values) {
       return values;
    }
 
-   public static boolean[] arrayOf(boolean... values) {
+   public static boolean[] arrayOfBoolean(boolean... values) {
       return values;
    }
 
@@ -104,6 +104,16 @@ public final class Collect {
       } catch (InstantiationException | IllegalAccessException e) {
          throw new RuntimeException(e);
       }
+   }
+
+   public static <T> Collection<T> addAll(Collection<T> collection, Iterable<? extends T> iterable) {
+      iterable.forEach(collection::add);
+      return collection;
+   }
+
+   public static <T> Collection<T> addAll(Collection<T> collection, Iterator<? extends T> iterator) {
+      iterator.forEachRemaining(collection::add);
+      return collection;
    }
 
    /**

@@ -1,6 +1,8 @@
 package com.gengoai.collection;
 
 import com.gengoai.Validation;
+import com.gengoai.collection.counter.Counter;
+import com.gengoai.collection.counter.MultiCounter;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.SerializableFunction;
 import com.gengoai.function.SerializablePredicate;
@@ -20,6 +22,24 @@ import static com.gengoai.tuple.Tuples.$;
 public final class Iterators {
    private Iterators() {
       throw new IllegalAccessError();
+   }
+
+
+   public static Iterator<?> asIterator(Object object) {
+      if (object instanceof Iterable) {
+         return Cast.<Iterable>as(object).iterator();
+      } else if (object instanceof Iterator) {
+         return Cast.as(object);
+      } else if (object.getClass().isArray()) {
+         return Iterables.asIterable(object, Object.class).iterator();
+      } else if (object instanceof Map) {
+         return Cast.<Map<?, ?>>as(object).entrySet().iterator();
+      } else if (object instanceof Counter) {
+         return Cast.<Counter<?>>as(object).entries().iterator();
+      } else if (object instanceof MultiCounter) {
+         return Cast.<MultiCounter<?, ?>>as(object).entries().iterator();
+      }
+      return Collections.singleton(object).iterator();
    }
 
    /**

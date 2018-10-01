@@ -25,7 +25,7 @@ import com.gengoai.Validation;
 import com.gengoai.collection.Sorting;
 import com.gengoai.collection.counter.Counter;
 import com.gengoai.collection.counter.Counters;
-import com.gengoai.collection.map.LRUMap;
+import com.gengoai.collection.LRUMap;
 import com.gengoai.collection.multimap.ArrayListMultimap;
 import com.gengoai.collection.multimap.ListMultimap;
 import com.gengoai.conversion.Cast;

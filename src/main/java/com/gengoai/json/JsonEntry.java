@@ -210,7 +210,7 @@ public class JsonEntry {
       if (pt == null) {
          return getAsVal().cast();
       }
-      Class<?> rawType = toClass(pt.getRawType());
+      Class<?> rawType = asClass(pt.getRawType());
       Class<?> c1Type = pt.getActualTypeArguments().length > 0 ? Cast.as(pt.getActualTypeArguments()[0]) : Object.class;
       if (JsonSerializable.class.isAssignableFrom(rawType)) {
          try {
@@ -257,7 +257,7 @@ public class JsonEntry {
          Type[] parameterTypes = getProperty("actualTypeArguments").elementStream()
                                                                    .map(e -> e.getAs(Type.class))
                                                                    .toArray(Type[]::new);
-         return Cast.as(type(rawType, parameterTypes));
+         return Cast.as(parameterizedType(rawType, parameterTypes));
       } else if (isAssignable(Type.class, type) && hasProperty("rawType")) {
          return getAs(ParameterizedType.class);
       } else if (isAssignable(Type.class, type)) {
@@ -306,6 +306,10 @@ public class JsonEntry {
    public <T> List<T> getAsArray(Type clazz) {
       checkState(element.isJsonArray(), () -> "Entry (" + element.getClass().getName() + ") is not an array.");
       return Lists.transform(getAsArray(), entry -> entry.getAs(clazz));
+   }
+
+   public <T> List<T> getAsArray(Class<? extends T> clazz) {
+      return Cast.as(getAsArray(Cast.<Type>as(clazz)));
    }
 
    public <T, E extends Collection<T>> E getAsArray(Class<T> clazz, E collection) {

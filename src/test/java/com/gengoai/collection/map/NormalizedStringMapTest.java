@@ -21,6 +21,7 @@
 
 package com.gengoai.collection.map;
 
+import com.gengoai.collection.NormalizedStringMap;
 import org.junit.Before;
 import org.junit.Test;
 

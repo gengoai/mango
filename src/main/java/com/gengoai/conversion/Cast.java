@@ -24,8 +24,6 @@ package com.gengoai.conversion;
 import java.io.Serializable;
 import java.util.*;
 
-import static com.gengoai.Validation.notNull;
-
 /**
  * <p>A collection of static methods making casting from one type to another a bit easier. Note that the standard use
  * case for the collection based conversions are for use in for loops or method calls where the collection is read
@@ -62,7 +60,6 @@ public final class Cast {
     * @return the casted object or null if the object was null or the object was not of the desired type
     */
    public static <T> T as(Object o, Class<T> clazz) {
-      notNull(clazz);
       try {
          return o == null ? null : clazz.cast(o);
       } catch (Exception e) {

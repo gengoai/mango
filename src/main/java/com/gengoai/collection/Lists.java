@@ -21,7 +21,6 @@
 
 package com.gengoai.collection;
 
-import com.gengoai.collection.list.PrimitiveArrayList;
 import com.gengoai.function.SerializableFunction;
 
 import java.util.*;
