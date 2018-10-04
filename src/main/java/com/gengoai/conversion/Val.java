@@ -107,7 +107,7 @@ public class Val implements Serializable {
     * @return The object as a collection
     */
    public <E, T extends Collection<E>> T asCollection(Class<?> collectionClass, Class<E> genericClass) {
-      T rval = Convert.convert(toConvert, collectionClass, genericClass);
+      T rval = Converter.convertSilently(toConvert, collectionClass, genericClass);
       if (rval == null) {
          return Collect.newCollection(Cast.as(collectionClass));
       }
@@ -125,7 +125,7 @@ public class Val implements Serializable {
     * @return the object as a map
     */
    public <K, V> Map<K, V> asMap(Class<?> mapClass, Class<K> keyClass, Class<V> valueClass) {
-      return Convert.convert(toConvert, mapClass, keyClass, valueClass);
+      return Converter.convertSilently(toConvert, mapClass, keyClass, valueClass);
    }
 
    /**
@@ -206,7 +206,7 @@ public class Val implements Serializable {
     * @return This object as the given type or null if the wrapped object is null
     */
    public <T> T as(Class<T> clazz) {
-      return Convert.convert(toConvert, clazz);
+      return Converter.convertSilently(toConvert, clazz);
    }
 
    /**
@@ -787,7 +787,7 @@ public class Val implements Serializable {
     * @return An array of the object
     */
    public <T> T[] asArray(Class<T> clazz) {
-      return Cast.as(Convert.convert(toConvert, Array.newInstance(clazz, 0).getClass()));
+      return Cast.as(Converter.convertSilently(toConvert, Array.newInstance(clazz, 0).getClass()));
    }
 
 }//END OF ConvertibleObject

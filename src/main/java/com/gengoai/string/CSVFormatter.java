@@ -23,7 +23,7 @@ package com.gengoai.string;
 
 import com.gengoai.Validation;
 import com.gengoai.conversion.Cast;
-import com.gengoai.conversion.Convert;
+import com.gengoai.conversion.Converter;
 import com.gengoai.io.CSV;
 
 import java.io.Serializable;
@@ -236,7 +236,7 @@ public class CSVFormatter implements Serializable {
          return StringUtils.EMPTY;
       }
       if (array.length == 1 && array[0].getClass().isArray()) {
-         return format(Convert.convert(array[0], Iterable.class));
+         return format(Converter.convertSilently(array[0], Iterable.class));
       }
       return format(Arrays.asList(array).iterator());
    }

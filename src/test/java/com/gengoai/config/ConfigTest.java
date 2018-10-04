@@ -41,10 +41,10 @@ public class ConfigTest {
     Config.initializeTest();
     Config.loadConfig(Resources.fromClasspath("com/gengoai/testing.conf"));
     Config.setProperty("name", "David");
-    Config.setProperty("age", "script[js]: 34+1;");
+    Config.setProperty("age", "35");
     Config.setProperty("named", "bean");
-    Config.setProperty("object", "script[js]: 'Hello';");
-    Config.setProperty("objectAlias", "script[js,object]");
+    Config.setProperty("object", "Hello");
+    Config.setProperty("objectAlias", "Hola");
   }
 
   @Test

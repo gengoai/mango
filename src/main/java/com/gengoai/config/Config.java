@@ -29,7 +29,7 @@ import com.gengoai.cli.CommandLineParser;
 import com.gengoai.cli.NamedOption;
 import com.gengoai.collection.Sorting;
 import com.gengoai.conversion.Cast;
-import com.gengoai.conversion.Convert;
+import com.gengoai.conversion.Converter;
 import com.gengoai.conversion.Val;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.ClasspathResource;
@@ -79,7 +79,6 @@ public final class Config implements Serializable, JsonSerializable {
     * The Setter function.
     */
    ConfigPropertySetter setterFunction = ConfigSettingError.INSTANCE;
-
 
 
    @Override
@@ -194,7 +193,7 @@ public final class Config implements Serializable, JsonSerializable {
       getPropertiesMatching(StringMatcher.startsWith(mapName)).forEach(property -> {
          if (property.length() > mapName.length()) {
             String k = property.substring(mapName.length() + 1);
-            map.put(Convert.convert(k, keyClass), get(property).as(valueClass));
+            map.put(Converter.convertSilently(k, keyClass), get(property).as(valueClass));
          }
       });
       return map;

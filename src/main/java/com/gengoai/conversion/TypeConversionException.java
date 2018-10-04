@@ -7,16 +7,18 @@ import java.lang.reflect.Type;
  */
 public class TypeConversionException extends Exception {
 
-   public TypeConversionException(Type sourceType, Type destType) {
-      this(sourceType, destType, null);
+   public TypeConversionException(Object source, Type destType) {
+      this(source, destType, null);
    }
 
    public TypeConversionException(String message) {
       super(message);
    }
 
-   public TypeConversionException(Type sourceType, Type destType, Throwable cause) {
-      super("Cannot convert object of type (" + sourceType + ") to object of type (" + destType + ")", cause);
+   public TypeConversionException(Object source, Type destType, Throwable cause) {
+      super(
+         "Cannot convert object (" + source + ") of type (" + source.getClass() + ") to object of type (" + destType + ")",
+         cause);
    }
 
 

@@ -39,17 +39,15 @@ public class StringTypeConverter implements TypeConverter {
       } else if (object instanceof Byte[]) {
          return new String(Primitives.toByteArray(Arrays.asList(Cast.as(object))));
       } else if (object instanceof File || object instanceof Path || object instanceof URI || object instanceof URL || object instanceof InputStream || object instanceof Blob || object instanceof Reader) {
-         byte[] bytes = PrimitiveArrayConverter.BYTE.apply(object);
-         if (bytes != null) {
-            return new String(bytes);
-         }
+         byte[] bytes = Converter.convert(object, byte[].class);
+         return new String(bytes);
       } else if (object.getClass().isArray()) {
          StringBuilder array = new StringBuilder("[");
          for (int i = 0; i < Array.getLength(object); i++) {
             if (i != 0) {
                array.append(", ");
             }
-            array.append(Convert.convert(Array.get(object, i), String.class));
+            array.append(Converter.convert(Array.get(object, i), String.class));
          }
          return array + "]";
       } else if (object instanceof Date) {

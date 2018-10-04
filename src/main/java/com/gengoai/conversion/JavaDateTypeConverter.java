@@ -28,7 +28,7 @@ public class JavaDateTypeConverter implements TypeConverter {
          return Cast.as(object, Calendar.class).getTime();
       }
 
-      String string = Convert.convert(object, String.class);
+      String string = Converter.convert(object, String.class);
       if (string != null) {
          string = StringUtils.trim(string.replaceAll(StringUtils.MULTIPLE_WHITESPACE, " "));
 

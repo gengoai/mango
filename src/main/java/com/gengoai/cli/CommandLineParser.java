@@ -23,7 +23,7 @@ package com.gengoai.cli;
 
 import com.gengoai.collection.Iterables;
 import com.gengoai.conversion.Cast;
-import com.gengoai.conversion.Convert;
+import com.gengoai.conversion.Converter;
 import com.gengoai.function.Unchecked;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.string.StringUtils;
@@ -366,8 +366,8 @@ public final class CommandLineParser {
       Set<Map.Entry<String, String>> entries = optionSet.stream()
                                                         .filter(this::isSet)
                                                         .map(no -> Tuple2.of(no.getName(),
-                                                                             Convert.convert(no.getValue(),
-                                                                                             String.class)))
+                                                                             Converter.convertSilently(no.getValue(),
+                                                                                                       String.class)))
                                                         .collect(Collectors.toSet());
       entries.addAll(unnamedOptions.entrySet());
       return entries;

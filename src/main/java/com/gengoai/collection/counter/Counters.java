@@ -21,7 +21,7 @@
 
 package com.gengoai.collection.counter;
 
-import com.gengoai.conversion.Convert;
+import com.gengoai.conversion.Converter;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVReader;
 import com.gengoai.io.resource.Resource;
@@ -119,7 +119,7 @@ public interface Counters {
       try (CSVReader reader = CSV.builder().reader(resource)) {
          reader.forEach(row -> {
             if (row.size() >= 2) {
-               counter.increment(Convert.convert(row.get(0), keyClass), Double.valueOf(row.get(1)));
+               counter.increment(Converter.convertSilently(row.get(0), keyClass), Double.valueOf(row.get(1)));
             }
          });
       }
@@ -138,7 +138,7 @@ public interface Counters {
    static <TYPE> Counter<TYPE> readJson(Resource resource, Class<TYPE> keyClass) throws IOException {
       Counter<TYPE> counter = Counters.newCounter();
       Json.parseObject(resource).forEach((k, v) -> {
-         counter.set(Convert.convert(k, keyClass), Convert.convert(v, Double.class));
+         counter.set(Converter.convertSilently(k, keyClass), Converter.convertSilently(v, Double.class));
       });
       return counter;
    }

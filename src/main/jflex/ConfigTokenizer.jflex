@@ -100,6 +100,10 @@ IMPORT_SCRIPT = [^\n]+
 
 %%
 
+<IMPORT>{
+    {IMPORT_SCRIPT}     {yybegin(YYINITIAL); return new ParserToken(yytext(),ConfigTokenType.VALUE); }
+}
+
 <YYINITIAL>{
      {PROPERTY} / ({WHITESPACE} {NEWLINE}*)* {START_SECTION}        {stack.push(YYINITIAL);yybegin(START_SECTION); return new ParserToken(yytext(),ConfigTokenType.SECTION_HEADER); }
      {PROPERTY} / {WHITESPACE}* {APPEND_OPERATOR}                   {stack.push(YYINITIAL);yybegin(APPENDER); return new ParserToken(yytext(),ConfigTokenType.APPEND_PROPERTY); }

@@ -24,7 +24,7 @@ package com.gengoai.io;
 import com.gengoai.SystemInfo;
 import com.gengoai.collection.index.HashMapIndex;
 import com.gengoai.collection.index.Index;
-import com.gengoai.conversion.Convert;
+import com.gengoai.conversion.Converter;
 import com.gengoai.string.CSVFormatter;
 import com.gengoai.string.StringUtils;
 
@@ -100,7 +100,7 @@ public class CSVWriter implements AutoCloseable {
    public void write(Map<?, ?> row) throws IOException {
       if (row != null) {
          if (header.isEmpty()) {
-            List<?> entries = row.values().stream().map(o -> Convert.convert(o, String.class)).collect(
+            List<?> entries = row.values().stream().map(o -> Converter.convertSilently(o, String.class)).collect(
                Collectors.toList());
             writer.write(formatter.format(entries));
             writer.write(SystemInfo.LINE_SEPARATOR);
@@ -110,11 +110,11 @@ public class CSVWriter implements AutoCloseable {
                   Stream.concat(
                      header.stream()
                            .map(
-                              h -> row.containsKey(h) ? Convert.convert(row.get(h), String.class) : StringUtils.EMPTY),
+                              h -> row.containsKey(h) ? Converter.convertSilently(row.get(h), String.class) : StringUtils.EMPTY),
                      row.keySet().stream()
-                        .map(k -> Convert.convert(k, String.class))
+                        .map(k -> Converter.convertSilently(k, String.class))
                         .filter(h -> !header.contains(h))
-                        .map(h -> Convert.convert(row.get(h), String.class))
+                        .map(h -> Converter.convertSilently(row.get(h), String.class))
                                )
                         .collect(Collectors.toList())
                                )
@@ -141,12 +141,12 @@ public class CSVWriter implements AutoCloseable {
             writer.write(formatter.format(Stream.concat(header.stream()
                                                               .map(
                                                                  h -> row.containsKey(h)
-                                                                      ? Convert.convert(row.get(h), String.class)
+                                                                      ? Converter.convertSilently(row.get(h), String.class)
                                                                       : StringUtils.EMPTY),
                                                         row.keySet().stream()
-                                                           .map(k -> Convert.convert(k, String.class))
+                                                           .map(k -> Converter.convertSilently(k, String.class))
                                                            .filter(h -> !header.contains(h))
-                                                           .map(h -> Convert.convert(row.get(h), String.class))
+                                                           .map(h -> Converter.convertSilently(row.get(h), String.class))
                                                        )
                                                 .collect(Collectors.toList())
                                          )

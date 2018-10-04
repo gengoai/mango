@@ -2,7 +2,7 @@ package com.gengoai;
 
 import com.gengoai.collection.Iterables;
 import com.gengoai.conversion.Cast;
-import com.gengoai.conversion.Convert;
+import com.gengoai.conversion.Converter;
 
 import java.lang.reflect.Array;
 import java.util.HashMap;
@@ -47,7 +47,7 @@ public final class Primitives {
       Object array = Array.newInstance(targetClass, Iterables.size(numbers));
       int index = 0;
       for (Number number : numbers) {
-         Array.set(array, index, Convert.convert(number, targetClass));
+         Array.set(array, index, Converter.convertSilently(number, targetClass));
          index++;
       }
       return array;

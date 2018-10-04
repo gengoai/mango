@@ -21,7 +21,7 @@
 
 package com.gengoai.collection.counter;
 
-import com.gengoai.conversion.Convert;
+import com.gengoai.conversion.Converter;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVReader;
 import com.gengoai.io.resource.Resource;
@@ -145,7 +145,7 @@ public interface MultiCounters {
       try (CSVReader reader = CSV.builder().reader(resource)) {
          reader.forEach(row -> {
             if (row.size() >= 3) {
-               counter.increment(Convert.convert(row.get(0), key1Class), Convert.convert(row.get(1), key2Class),
+               counter.increment(Converter.convertSilently(row.get(0), key1Class), Converter.convertSilently(row.get(1), key2Class),
                                  Double.valueOf(row.get(2)));
             }
          });

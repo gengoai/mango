@@ -1,5 +1,6 @@
 package com.gengoai.conversion;
 
+import com.gengoai.json.JsonEntry;
 import org.kohsuke.MetaInfServices;
 
 import java.lang.reflect.Type;
@@ -14,6 +15,17 @@ public class BooleanTypeConverter implements TypeConverter {
 
    @Override
    public Object convert(Object object, Type... parameters) throws TypeConversionException {
+      if (object instanceof JsonEntry) {
+         JsonEntry entry = Cast.as(object);
+         if (entry.isBoolean()) {
+            return entry.getAsBoolean();
+         } else if (entry.isNumber()) {
+            return entry.getAsNumber().intValue() == 1;
+         } else if (entry.isString()) {
+            return convert(entry.getAsString());
+         }
+         throw new TypeConversionException(object, Boolean.class);
+      }
       if (object instanceof Boolean) {
          return Cast.as(object);
       } else if (object instanceof Number) {
@@ -21,7 +33,7 @@ public class BooleanTypeConverter implements TypeConverter {
       } else if (object instanceof CharSequence) {
          return Boolean.parseBoolean(object.toString());
       }
-      throw new TypeConversionException(object.getClass(), Boolean.class);
+      throw new TypeConversionException(object, Boolean.class);
    }
 
    @Override

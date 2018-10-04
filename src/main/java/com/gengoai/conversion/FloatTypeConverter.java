@@ -14,7 +14,7 @@ public class FloatTypeConverter implements TypeConverter {
 
    @Override
    public Object convert(Object object, Type... parameters) throws TypeConversionException {
-      return Convert.convert(object, Number.class).floatValue();
+      return Converter.convert(object, Number.class).floatValue();
    }
 
    @Override

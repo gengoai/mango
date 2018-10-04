@@ -14,7 +14,7 @@ public class ShortTypeConverter implements TypeConverter {
 
    @Override
    public Object convert(Object object, Type... parameters) throws TypeConversionException {
-      return Convert.convert(object, Long.class).shortValue();
+      return Converter.convert(object, Long.class).shortValue();
    }
 
    @Override

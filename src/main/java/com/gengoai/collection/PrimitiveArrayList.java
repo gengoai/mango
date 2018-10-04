@@ -1,6 +1,6 @@
 package com.gengoai.collection;
 
-import com.gengoai.conversion.Convert;
+import com.gengoai.conversion.Converter;
 
 import java.io.Serializable;
 import java.lang.reflect.Array;
@@ -55,14 +55,14 @@ public class PrimitiveArrayList<E> extends AbstractList<E> implements Serializab
    @Override
    public E set(int index, E element) {
       E out = get(start + index);
-      Array.set(array, start + index, Convert.convert(element, primitiveClass));
+      Array.set(array, start + index, Converter.convertSilently(element, primitiveClass));
       return out;
    }
 
    @Override
    public E get(int index) {
       Object o = Array.get(array, start + index);
-      return Convert.convert(o, boxedType);
+      return Converter.convertSilently(o, boxedType);
    }
 
    @Override

@@ -2,7 +2,8 @@ package com.gengoai;
 
 import com.gengoai.collection.Iterators;
 import com.gengoai.conversion.Cast;
-import com.gengoai.conversion.Convert;
+import com.gengoai.conversion.Converter;
+import com.gengoai.conversion.TypeConversionException;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonSerializable;
 import com.gengoai.reflection.Types;
@@ -84,7 +85,11 @@ public final class Parameters<K extends Enum<K> & ValueTypeInformation> implemen
     * @return the parameter value
     */
    public <T> T get(K name, Class<T> clazz) {
-      return Convert.convert(parameters.getOrDefault(name, name.defaultValue()), clazz);
+      try {
+         return Converter.convert(parameters.getOrDefault(name, name.defaultValue()), clazz);
+      } catch (TypeConversionException e) {
+         throw new RuntimeException(e);
+      }
    }
 
    /**

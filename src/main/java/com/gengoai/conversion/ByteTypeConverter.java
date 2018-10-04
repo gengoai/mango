@@ -14,7 +14,7 @@ public class ByteTypeConverter implements TypeConverter {
 
    @Override
    public Object convert(Object object, Type... parameters) throws TypeConversionException {
-      return Convert.convert(object, Long.class).byteValue();
+      return Converter.convert(object, Long.class).byteValue();
    }
 
    @Override

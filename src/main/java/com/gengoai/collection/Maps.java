@@ -21,14 +21,9 @@
 
 package com.gengoai.collection;
 
-import com.gengoai.conversion.Convert;
-import com.gengoai.io.CSV;
-import com.gengoai.io.CSVReader;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
-import com.gengoai.string.StringUtils;
 
-import java.io.StringReader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -209,60 +204,7 @@ public final class Maps {
       return minEntry(map).map(Map.Entry::getKey).orElse(null);
    }
 
-   /**
-    * <p>Creates a HashMap from a string converting the keys and values using {@link Convert#getConverter(Class)}.
-    * Empty or null  strings result in an empty Map. The string format should be in csv where the commas separate the
-    * key-value pairs. Keys and values are the separated using either <code>:</code> or <code>=</code> depending on
-    * which one is present and appears first. </p>
-    *
-    * @param <K>        The key type
-    * @param <V>        The value type
-    * @param input      The input string
-    * @param keyClass   The key class
-    * @param valueClass The value class
-    * @return The resulting map
-    */
-   public static <K, V> Map<K, V> parseString(String input, Class<K> keyClass, Class<V> valueClass) {
-      return parseString(input, Convert.getConverter(keyClass), Convert.getConverter(valueClass));
-   }
 
-   /**
-    * <p>Creates a HashMap from a string converting the keys and values using the supplied functions. Empty or null
-    * strings result in an empty Map. The string format should be in csv where the commas separate the key-value pairs.
-    * Keys and values are the separated using either <code>:</code> or <code>=</code> depending on which one is present
-    * and appears first. </p>
-    *
-    * @param <K>            The key type
-    * @param <V>            The value type
-    * @param input          The input string
-    * @param keyConverter   The function to convert an object to the key type
-    * @param valueConverter The function to convert an object to the value type
-    * @return The resulting map
-    */
-   public static <K, V> Map<K, V> parseString(String input, Function<Object, K> keyConverter, Function<Object, V> valueConverter) {
-      if (StringUtils.isNullOrBlank(input)) {
-         return Collections.emptyMap();
-      }
-      String str = input.replaceAll("^\\s*\\{", "").replaceAll("}$\\s*", "");
-      Map<K, V> map = new HashMap<>();
-
-      try (CSVReader reader = CSV.builder().reader(new StringReader(str))) {
-         reader.forEach(row ->
-                           row.forEach(cell -> {
-                              int ci = cell.indexOf(':');
-                              int ei = cell.indexOf('=');
-                              char delimiter = ei == -1 || (ci != -1 && ci < ei) ? ':' : '=';
-                              List<String> keyValuePair = StringUtils.split(cell, delimiter);
-                              String key = keyValuePair.size() > 0 ? keyValuePair.get(0) : null;
-                              String value = keyValuePair.size() > 1 ? keyValuePair.get(1) : null;
-                              map.put(keyConverter.apply(key), valueConverter.apply(value));
-                           })
-                       );
-      } catch (Exception e) {
-         throw new RuntimeException(e);
-      }
-      return map;
-   }
 
    /**
     * Puts all given entries into the given map

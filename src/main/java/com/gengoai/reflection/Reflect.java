@@ -23,7 +23,7 @@ package com.gengoai.reflection;
 
 import com.gengoai.Defaults;
 import com.gengoai.conversion.Cast;
-import com.gengoai.conversion.Convert;
+import com.gengoai.conversion.Converter;
 import com.gengoai.conversion.Val;
 import com.gengoai.string.StringUtils;
 
@@ -167,7 +167,7 @@ public final class Reflect {
       if (toClass.isAssignableFrom(value.getClass())) {
          return value;
       }
-      Object out = Convert.convert(value, toClass);
+      Object out = Converter.convertSilently(value, toClass);
       return out == null ? value : out;
    }
 

@@ -29,8 +29,6 @@ import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
 import com.gengoai.reflection.ReflectionUtils;
 
-import java.util.Collection;
-import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -63,17 +61,17 @@ public class NewObjectConverter<T> implements Function<Object, T> {
          return null;
       }
 
-      if (convertToClass != Object.class && Convert.hasConverter(convertToClass)) {
-         return Cast.as(Convert.convert(obj, convertToClass));
-      } else if (Map.class.isAssignableFrom(convertToClass)) {
-         return Cast.as(Convert.convert(obj, convertToClass, Object.class, Object.class));
-      } else if (Collection.class.isAssignableFrom(convertToClass)) {
-         return Cast.as(Convert.convert(obj, convertToClass, Object.class));
-      } else if (convertToClass.isEnum()) {
-         return Cast.as(Convert.convert(obj, Cast.<Class<? extends Enum>>as(convertToClass)));
-      } else if (convertToClass != Object.class && convertToClass.isInstance(obj)) {
-         return Cast.as(obj);
-      }
+//      if (convertToClass != Object.class && Convert.hasConverter(convertToClass)) {
+//         return Cast.as(Convert.convert(obj, convertToClass));
+//      } else if (Map.class.isAssignableFrom(convertToClass)) {
+//         return Cast.as(Convert.convert(obj, convertToClass, Object.class, Object.class));
+//      } else if (Collection.class.isAssignableFrom(convertToClass)) {
+//         return Cast.as(Convert.convert(obj, convertToClass, Object.class));
+//      } else if (convertToClass.isEnum()) {
+//         return Cast.as(Convert.convert(obj, Cast.<Class<? extends Enum>>as(convertToClass)));
+//      } else if (convertToClass != Object.class && convertToClass.isInstance(obj)) {
+//         return Cast.as(obj);
+//      }
 
 
       if (obj instanceof CharSequence) {

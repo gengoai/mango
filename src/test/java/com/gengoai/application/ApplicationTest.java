@@ -59,7 +59,7 @@ public class ApplicationTest {
    @Test
    public void testReflection() throws Exception {
       TestApp app1 = new TestApp();
-      app1.run(new String[]{"--name=John", "--age=", "35", "--map", "{ALPHA:23}", "--action", "update", "-abc"});
+      app1.run(new String[]{"--name=John", "--age=", "35", "--map", "{\"ALPHA\":23}", "--action", "update", "-abc"});
    }
 
    private static class TestApp extends CommandLineApplication {
@@ -111,7 +111,7 @@ public class ApplicationTest {
 
 
          assertArrayEquals(
-            new String[]{"--name=John", "--age=", "35", "--map", "{ALPHA:23}", "--action", "update", "-abc"},
+            new String[]{"--name=John", "--age=", "35", "--map", "{\"ALPHA\":23}", "--action", "update", "-abc"},
             getAllArguments()
                           );
          assertArrayEquals(new String[]{"--action", "update"}, getNonSpecifiedArguments());

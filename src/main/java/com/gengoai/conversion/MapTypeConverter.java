@@ -4,10 +4,12 @@ import com.gengoai.collection.Iterators;
 import com.gengoai.function.Unchecked;
 import com.gengoai.json.Json;
 import com.gengoai.json.JsonEntry;
+import com.gengoai.string.StringUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import static com.gengoai.reflection.Types.parameterizedType;
@@ -18,17 +20,31 @@ import static com.gengoai.reflection.Types.parameterizedType;
 public abstract class MapTypeConverter implements TypeConverter {
 
 
+   private Map<?, ?> convertJson(JsonEntry json, Object source, Type keyType, Type valueType) throws TypeConversionException {
+      Map<?, ?> map = createMap();
+      if (!json.isObject()) {
+         throw new TypeConversionException(source, parameterizedType(Map.class, keyType, valueType));
+      }
+      try {
+         json.propertyIterator()
+             .forEachRemaining(Unchecked.consumer(
+                (Map.Entry<String, JsonEntry> entry) -> map.put(
+                   Converter.convert(entry.getKey(), keyType),
+                   Converter.convert(entry.getValue(), valueType))));
+      } catch (Exception e) {
+         throw new TypeConversionException(source, parameterizedType(Map.class, keyType, valueType), e.getCause());
+      }
+      return map;
+   }
+
    @Override
    public Object convert(Object source, Type... parameters) throws TypeConversionException {
-      Map<?, ?> map = createMap();
-
-      Type keyType = (parameters == null || parameters.length == 0) ? Object.class
-                                                                    : parameters[0];
-      Type valueType = (parameters == null || parameters.length < 2) ? Object.class
-                                                                     : parameters[1];
+      Type keyType = (parameters == null || parameters.length == 0) ? Object.class : parameters[0];
+      Type valueType = (parameters == null || parameters.length < 2) ? Object.class : parameters[1];
 
       //In the case that the source object is a map, convert its keys and values
       if (source instanceof Map) {
+         Map<?, ?> map = createMap();
          for (Map.Entry<?, ?> entry : ((Map<?, ?>) source).entrySet()) {
             map.put(Converter.convert(entry.getKey(), keyType),
                     Converter.convert(entry.getValue(), valueType));
@@ -37,29 +53,46 @@ public abstract class MapTypeConverter implements TypeConverter {
       }
 
 
-      //CharSequences should be JSON format, so process it with JsonEntry
-      if (source instanceof JsonEntry || source instanceof CharSequence) {
-         try {
-            JsonEntry json = (source instanceof JsonEntry) ? Cast.as(source)
-                                                           : Json.parse(source.toString());
-            if (!json.isObject()) {
-               throw new TypeConversionException(source.getClass(), Map.class);
-            }
-            json.propertyIterator()
-                .forEachRemaining(Unchecked.consumer(
-                   (Map.Entry<String, JsonEntry> entry) -> map.put(
-                      Converter.convert(entry.getKey(), keyType),
-                      Converter.convert(entry.getValue(), valueType))));
-            return map;
-         } catch (RuntimeException | IOException e) {
-            throw new TypeConversionException(source.getClass(),
-                                              parameterizedType(Map.class, keyType, valueType),
-                                              e.getCause() == null ? e : e.getCause());
+      if (source instanceof CharSequence) {
+         String str = source.toString();
+
+         //Empty String
+         if (StringUtils.isNullOrBlank(str)) {
+            return createMap();
          }
+
+         //JSON
+         if (str.startsWith("{")) {
+            try {
+               return convertJson(Json.parse(str), str, keyType, valueType);
+            } catch (IOException e) {
+               throw new TypeConversionException(str, parameterizedType(Map.class, keyType, valueType), e);
+            }
+         }
+
+         //Alt. form Key=Value, Key=Value
+         Map<?, ?> map = createMap();
+         for (String entry : StringUtils.split(source.toString()
+                                                     .replaceFirst("\\[", "")
+                                                     .replaceFirst("]$", ""),
+                                               ',')) {
+            List<String> keyValue = StringUtils.split(entry.trim(), '=');
+            if (keyValue.size() != 2) {
+               throw new TypeConversionException(source, Map.class);
+            }
+            map.put(Converter.convert(keyValue.get(0), keyType),
+                    Converter.convert(keyValue.get(1), valueType));
+         }
+         return map;
+      }
+
+      //CharSequences should be JSON format, so process it with JsonEntry
+      if (source instanceof JsonEntry) {
+         return convertJson(Cast.as(source), source, keyType, valueType);
       }
 
       //Last chance is to try and convert the source into an iterable and process the times in the iterable as key value pairs.
-
+      Map<?, ?> map = createMap();
       for (Iterator<?> iterator = Iterators.asIterator(source); iterator.hasNext(); ) {
          Object o = iterator.next();
          Object key;
@@ -70,7 +103,7 @@ public abstract class MapTypeConverter implements TypeConverter {
          } else {
             key = o;
             if (!iterator.hasNext()) {
-               throw new TypeConversionException(source.getClass(), parameterizedType(Map.class, keyType, valueType));
+               throw new TypeConversionException(source, parameterizedType(Map.class, keyType, valueType));
             }
             value = iterator.next();
          }

@@ -23,7 +23,7 @@ package com.gengoai.collection.index;
 
 import com.gengoai.Copyable;
 import com.gengoai.conversion.Cast;
-import com.gengoai.conversion.Convert;
+import com.gengoai.conversion.Converter;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVWriter;
 import com.gengoai.io.resource.Resource;
@@ -154,7 +154,7 @@ public interface Index<E> extends Iterable<E>, Copyable<Index<E>>, JsonSerializa
    default void writeCSV(Resource output) throws IOException {
       try (CSVWriter writer = CSV.builder().writer(output)) {
          for (E item : this) {
-            writer.write(Convert.convert(item, String.class));
+            writer.write(Converter.convertSilently(item, String.class));
          }
       }
    }

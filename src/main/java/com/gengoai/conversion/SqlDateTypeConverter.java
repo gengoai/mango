@@ -19,7 +19,7 @@ public class SqlDateTypeConverter implements TypeConverter {
          return Cast.as(object);
       }
 
-      return new Date(Convert.convert(object, java.util.Date.class).getTime());
+      return new Date(Converter.convert(object, java.util.Date.class).getTime());
    }
 
    @Override

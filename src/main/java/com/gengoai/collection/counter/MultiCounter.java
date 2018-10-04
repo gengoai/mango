@@ -23,7 +23,7 @@ package com.gengoai.collection.counter;
 
 import com.gengoai.collection.index.Index;
 import com.gengoai.collection.index.Indexes;
-import com.gengoai.conversion.Convert;
+import com.gengoai.conversion.Converter;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVWriter;
 import com.gengoai.io.resource.Resource;
@@ -440,8 +440,8 @@ public interface MultiCounter<K, V> extends JsonSerializable {
       DecimalFormat decimalFormat = new DecimalFormat("#.#####");
       try (CSVWriter writer = CSV.builder().writer(output)) {
          for (Tuple3<K, V, Double> entry : entries()) {
-            writer.write(Convert.convert(entry.v1, String.class),
-                         Convert.convert(entry.v2, String.class),
+            writer.write(Converter.convertSilently(entry.v1, String.class),
+                         Converter.convertSilently(entry.v2, String.class),
                          decimalFormat.format(entry.v3)
                         );
          }

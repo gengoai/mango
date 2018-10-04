@@ -35,8 +35,36 @@ public final class Converter {
    }
 
 
+   public static <T> T convertSilently(Object sourceObject, Class<T> destType) {
+      try {
+         return convert(sourceObject, destType);
+      } catch (TypeConversionException e) {
+         return null;
+      }
+   }
+
+   public static <T> T convertSilently(Object sourceObject, Class<?> destType, Type... parameters) {
+      try {
+         return convert(sourceObject, destType, parameters);
+      } catch (TypeConversionException e) {
+         return null;
+      }
+   }
+
+   public static <T> T convertSilently(Object sourceObject, Type destType) {
+      try {
+         return convert(sourceObject, destType);
+      } catch (TypeConversionException e) {
+         return null;
+      }
+   }
+
    public static <T> T convert(Object sourceObject, Class<?> destType, Type... parameters) throws TypeConversionException {
       return Cast.as(convert(sourceObject, parameterizedType(destType, parameters)));
+   }
+
+   public static <T> T convert(Object sourceObject, Class<T> destType) throws TypeConversionException {
+      return Cast.as(convert(sourceObject, Cast.<Type>as(destType)));
    }
 
    public static <T> T convert(Object sourceObject, Type destType) throws TypeConversionException {

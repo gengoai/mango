@@ -25,7 +25,7 @@ package com.gengoai.collection.counter;
 import com.gengoai.Copyable;
 import com.gengoai.collection.index.Index;
 import com.gengoai.collection.index.Indexes;
-import com.gengoai.conversion.Convert;
+import com.gengoai.conversion.Converter;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVWriter;
 import com.gengoai.io.Commitable;
@@ -460,7 +460,7 @@ public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable, Commita
       DecimalFormat decimalFormat = new DecimalFormat("#.#####");
       try (CSVWriter writer = CSV.builder().writer(output)) {
          for (Map.Entry<T, Double> entry : entries()) {
-            writer.write(Convert.convert(entry.getKey(), String.class),
+            writer.write(Converter.convertSilently(entry.getKey(), String.class),
                          decimalFormat.format(entry.getValue())
                         );
          }

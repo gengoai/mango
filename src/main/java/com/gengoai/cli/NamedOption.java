@@ -24,7 +24,7 @@ package com.gengoai.cli;
 import com.gengoai.Validation;
 import com.gengoai.config.Config;
 import com.gengoai.conversion.Cast;
-import com.gengoai.conversion.Convert;
+import com.gengoai.conversion.Converter;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.string.CharMatcher;
 import com.gengoai.string.StringUtils;
@@ -91,7 +91,7 @@ public final class NamedOption {
 
       if (!StringUtils.isNullOrBlank(option.defaultValue())) {
          Config.setProperty(this.name, option.defaultValue());
-         this.value = Convert.convert(option.defaultValue(), type);
+         this.value = Converter.convertSilently(option.defaultValue(), type);
       } else {
          this.value = null;
       }
@@ -119,8 +119,8 @@ public final class NamedOption {
       this.description = description;
       this.aliases = aliases == null ? new String[0] : aliases.toArray(new String[0]);
       if (defaultValue != null) {
-         Config.setProperty(this.name, Convert.convert(defaultValue, String.class));
-         this.value = Convert.convert(defaultValue, type);
+         Config.setProperty(this.name, Converter.convertSilently(defaultValue, String.class));
+         this.value = Converter.convertSilently(defaultValue, type);
       } else {
          this.value = null;
       }
@@ -270,7 +270,7 @@ public final class NamedOption {
             Class<?> genericType = field == null
                                    ? String.class
                                    : (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
-            this.value = Convert.convert(optionValue, type, genericType);
+            this.value = Converter.convertSilently(optionValue, type, genericType);
 
          } else if (Map.class.isAssignableFrom(type)) {
 
@@ -280,11 +280,11 @@ public final class NamedOption {
             Class<?> valueType = field == null
                                  ? String.class
                                  : (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[1];
-            this.value = Convert.convert(optionValue, type, keyType, valueType);
+            this.value = Converter.convertSilently(optionValue, type, keyType, valueType);
 
          } else {
 
-            this.value = Convert.convert(optionValue, type);
+            this.value = Converter.convertSilently(optionValue, type);
 
          }
 

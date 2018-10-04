@@ -26,7 +26,7 @@ import com.gengoai.collection.Iterators;
 import com.gengoai.collection.Sorting;
 import com.gengoai.collection.Streams;
 import com.gengoai.conversion.Cast;
-import com.gengoai.conversion.Convert;
+import com.gengoai.conversion.Converter;
 import com.gengoai.function.*;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.tuple.Tuples;
@@ -262,7 +262,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
    public void saveAsTextFile(Resource location) {
       try (BufferedWriter writer = new BufferedWriter(location.writer())) {
          stream.forEach(Unchecked.consumer(o -> {
-                                              writer.write(Convert.convert(o, String.class));
+                                              writer.write(Converter.convertSilently(o, String.class));
                                               writer.newLine();
                                            }
                                           ));

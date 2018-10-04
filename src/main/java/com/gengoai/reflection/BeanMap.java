@@ -22,7 +22,7 @@
 package com.gengoai.reflection;
 
 import com.gengoai.conversion.Cast;
-import com.gengoai.conversion.Convert;
+import com.gengoai.conversion.Converter;
 import com.gengoai.logging.Logger;
 import com.gengoai.tuple.Tuple2;
 
@@ -143,11 +143,11 @@ public class BeanMap extends AbstractMap<String, Object> {
                return m.invoke(bean, arg1);
             }
             if (Map.class.isAssignableFrom(clazz)) {
-               return m.invoke(bean, Convert.convert(arg1, clazz, Object.class, Object.class));
+               return m.invoke(bean, Converter.convertSilently(arg1, clazz, Object.class, Object.class));
             } else if (Collection.class.isAssignableFrom(clazz)) {
-               return m.invoke(bean, Convert.convert(arg1, clazz, Object.class));
+               return m.invoke(bean, Converter.convertSilently(arg1, clazz, Object.class));
             }
-            return m.invoke(bean, Convert.convert(arg1, clazz));
+            return m.invoke(bean, Converter.convertSilently(arg1, clazz));
          } catch (Exception e) {
             throw new RuntimeException(e);
          }

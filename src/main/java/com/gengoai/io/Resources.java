@@ -22,7 +22,7 @@
 package com.gengoai.io;
 
 import com.gengoai.SystemInfo;
-import com.gengoai.conversion.Val;
+import com.gengoai.conversion.Converter;
 import com.gengoai.io.resource.*;
 import com.gengoai.io.resource.spi.ResourceProvider;
 import com.gengoai.string.StringUtils;
@@ -77,8 +77,6 @@ public final class Resources {
 
          if (StringUtils.isNullOrBlank(options)) {
             options = "";
-         } else {
-            options = options.replaceFirst("\\[", "").replaceFirst("\\]$", "");
          }
          ResourceProvider provider = resourceProviders.get(schema.toLowerCase());
 
@@ -95,8 +93,8 @@ public final class Resources {
          if (provider.requiresProtocol()) {
             path = schema + ":" + path;
          }
-
-         return provider.createResource(path, Val.of(options).asMap(String.class, String.class));
+         return provider.createResource(path,
+                                        Converter.convertSilently(options, Map.class, String.class, String.class));
       }
 
       return new FileResource(resource);

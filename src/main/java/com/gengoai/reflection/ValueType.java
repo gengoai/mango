@@ -23,7 +23,7 @@ package com.gengoai.reflection;
 
 import com.gengoai.config.Config;
 import com.gengoai.conversion.Cast;
-import com.gengoai.conversion.Convert;
+import com.gengoai.conversion.Converter;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -208,7 +208,7 @@ public abstract class ValueType implements Serializable {
          if (clazz.isInstance(input)) {
             return Cast.as(input);
          }
-         return Cast.as(Convert.convert(input, clazz));
+         return Cast.as(Converter.convertSilently(input, clazz));
       }
 
    }
@@ -243,7 +243,7 @@ public abstract class ValueType implements Serializable {
 
       @Override
       public <T> T convert(Object input) {
-         return Cast.as(Convert.convert(input, collectionType, genericType));
+         return Cast.as(Converter.convertSilently(input, collectionType, genericType));
       }
 
       @Override
@@ -284,7 +284,7 @@ public abstract class ValueType implements Serializable {
 
       @Override
       public <T> T convert(Object input) {
-         return Cast.as(Convert.convert(input, mapType, keyType, valueType));
+         return Cast.as(Converter.convertSilently(input, mapType, keyType, valueType));
       }
 
       @Override

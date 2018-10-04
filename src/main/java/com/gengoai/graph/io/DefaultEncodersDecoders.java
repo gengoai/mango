@@ -21,7 +21,7 @@
 
 package com.gengoai.graph.io;
 
-import com.gengoai.conversion.Convert;
+import com.gengoai.conversion.Converter;
 import com.gengoai.graph.Vertex;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.io.resource.StringResource;
@@ -50,7 +50,7 @@ public interface DefaultEncodersDecoders {
     * @return the vertex encoder
     */
    static <V> VertexEncoder<V> defaultVertexEncoder() {
-      return vertex -> Vertex.builder().label(Convert.convert(vertex, String.class)).build();
+      return vertex -> Vertex.builder().label(Converter.convertSilently(vertex, String.class)).build();
    }
 
    /**
@@ -61,7 +61,7 @@ public interface DefaultEncodersDecoders {
     * @return the vertex decoder
     */
    static <V> VertexDecoder<V> defaultVertexDecoder(final Class<V> vertexClass) {
-      return vertex -> Convert.convert(vertex.getLabel(), vertexClass);
+      return vertex -> Converter.convertSilently(vertex.getLabel(), vertexClass);
    }
 
    /**

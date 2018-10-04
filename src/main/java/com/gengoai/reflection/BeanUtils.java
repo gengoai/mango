@@ -23,7 +23,7 @@ package com.gengoai.reflection;
 
 import com.gengoai.config.Config;
 import com.gengoai.conversion.Cast;
-import com.gengoai.conversion.Convert;
+import com.gengoai.conversion.Converter;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -68,8 +68,8 @@ public class BeanUtils {
    }
 
    /**
-    * Instantiates a named bean (defined via the Config) which can describe the class (name.class) and properties or
-    * can instantiate a bean that is described as a script.
+    * Instantiates a named bean (defined via the Config) which can describe the class (name.class) and properties or can
+    * instantiate a bean that is described as a script.
     *
     * @param name  The name of the bean
     * @param clazz The class type of the bean
@@ -141,7 +141,7 @@ public class BeanUtils {
          try {
             Object[] newValues = new Object[values.size()];
             for (int i = 0; i < newValues.length; i++) {
-               newValues[i] = Convert.convert(rawValues.get(i), constructor.getParameterTypes()[i]);
+               newValues[i] = Converter.convertSilently(rawValues.get(i), constructor.getParameterTypes()[i]);
             }
             beanMap = new BeanMap(parameterizeObject(constructor.newInstance(newValues)));
          } catch (InstantiationException | IllegalAccessException | InvocationTargetException e1) {
@@ -159,8 +159,8 @@ public class BeanUtils {
    }
 
    /**
-    * Sets properties on an object using the values defined in the Config. Will set properties defined in the Config
-    * for all of this object's super classes as well.
+    * Sets properties on an object using the values defined in the Config. Will set properties defined in the Config for
+    * all of this object's super classes as well.
     *
     * @param object The object to parameterize
     * @return The object

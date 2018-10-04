@@ -17,7 +17,7 @@ public class StringBuilderTypeConverter implements TypeConverter {
       if (object instanceof StringBuilder) {
          return object;
       }
-      return new StringBuilder(Convert.convert(object, String.class));
+      return new StringBuilder(Converter.convert(object, String.class));
    }
 
    @Override

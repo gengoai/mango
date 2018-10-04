@@ -2,7 +2,7 @@ package com.gengoai.json;
 
 import com.gengoai.collection.*;
 import com.gengoai.conversion.Cast;
-import com.gengoai.conversion.Convert;
+import com.gengoai.conversion.Converter;
 import com.gengoai.conversion.Val;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
@@ -83,7 +83,7 @@ public class JsonEntry {
    private static JsonElement mapToElement(Map<?, ?> map) {
       JsonObject obj = new JsonObject();
       if (map != null) {
-         map.forEach((k, v) -> obj.add(Convert.convert(k, String.class), from(v).element));
+         map.forEach((k, v) -> obj.add(Converter.convertSilently(k, String.class), from(v).element));
       }
       return obj;
    }
@@ -228,10 +228,10 @@ public class JsonEntry {
       } else if (isIterator(rawType)) {
          return Cast.as(getAsArray(c1Type).iterator());
       } else if (rawType.isArray()) {
-         return Cast.as(Convert.convert(getAsArray(c1Type), rawType, c1Type));
+         return Cast.as(Converter.convertSilently(getAsArray(c1Type), rawType, c1Type));
       } else if (Map.class.isAssignableFrom(rawType)) {
          Class<?> c2Type = Cast.as(pt.getActualTypeArguments()[1]);
-         return Cast.as(Convert.convert(getAsMap(c2Type), rawType, c1Type, c2Type));
+         return Cast.as(Converter.convertSilently(getAsMap(c2Type), rawType, c1Type, c2Type));
       }
       return getAs(rawType);
    }

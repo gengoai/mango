@@ -21,14 +21,14 @@
 
 package com.gengoai.stream;
 
-import com.gengoai.math.EnhancedDoubleStatistics;
 import com.gengoai.Validation;
 import com.gengoai.collection.PrimitiveArrayList;
 import com.gengoai.config.Config;
 import com.gengoai.config.Configurator;
 import com.gengoai.conversion.Cast;
-import com.gengoai.conversion.Convert;
+import com.gengoai.conversion.Converter;
 import com.gengoai.function.*;
+import com.gengoai.math.EnhancedDoubleStatistics;
 import com.gengoai.stream.accumulator.MStatisticsAccumulator;
 import org.apache.spark.api.java.JavaDoubleRDD;
 import org.apache.spark.broadcast.Broadcast;
@@ -303,7 +303,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
 
    @Override
    public double[] toArray() {
-      return Convert.convert(doubleStream.collect(), double[].class);
+      return Converter.convertSilently(doubleStream.collect(), double[].class);
    }
 
    @Override
