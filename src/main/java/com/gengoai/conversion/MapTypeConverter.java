@@ -73,7 +73,7 @@ public abstract class MapTypeConverter implements TypeConverter {
          //Alt. form Key=Value, Key=Value
          Map<?, ?> map = createMap();
          for (String entry : StringUtils.split(source.toString()
-                                                     .replaceFirst("\\[", "")
+                                                     .replaceFirst("^\\[", "")
                                                      .replaceFirst("]$", ""),
                                                ',')) {
             List<String> keyValue = StringUtils.split(entry.trim(), '=');

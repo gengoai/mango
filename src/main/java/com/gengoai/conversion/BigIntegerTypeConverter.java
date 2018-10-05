@@ -1,5 +1,6 @@
 package com.gengoai.conversion;
 
+import com.gengoai.json.JsonEntry;
 import org.kohsuke.MetaInfServices;
 
 import java.lang.reflect.Type;
@@ -16,13 +17,24 @@ public class BigIntegerTypeConverter implements TypeConverter {
 
    @Override
    public Object convert(Object object, Type... parameters) throws TypeConversionException {
+
       if (object instanceof BigInteger) {
          return Cast.as(object);
       } else if (object instanceof Boolean) {
          return new BigInteger(Integer.toString(Cast.<Boolean>as(object) ? 1 : 0));
       } else if (object instanceof Character) {
          return BigInteger.valueOf((long) Cast.<Character>as(object));
+      } else if (object instanceof JsonEntry) {
+         JsonEntry e = Cast.as(object);
+         if (e.isBoolean()) {
+            return convert(e.getAsBoolean(), parameters);
+         } else if (e.isNumber()) {
+            return convert(e.getAsNumber(), parameters);
+         } else if (e.isString()) {
+            return convert(e.getAsString(), parameters);
+         }
       }
+
       try {
          return new BigInteger(object.toString());
       } catch (Exception e) {
@@ -30,9 +42,9 @@ public class BigIntegerTypeConverter implements TypeConverter {
       }
 
       try {
-         return BigInteger.valueOf(new Double(object.toString()).longValue());
+         return BigInteger.valueOf(new BigDecimal(object.toString()).longValue());
       } catch (Exception e) {
-         throw new TypeConversionException(object.getClass(), BigDecimal.class, e);
+         throw new TypeConversionException(object, BigDecimal.class, e);
       }
    }
 

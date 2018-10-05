@@ -1,0 +1,37 @@
+package com.gengoai.conversion;
+
+import com.gengoai.tuple.Tuple1;
+import org.kohsuke.MetaInfServices;
+
+import java.lang.reflect.Type;
+import java.util.List;
+
+import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.reflection.Types.getOrObject;
+import static com.gengoai.reflection.Types.parameterizedType;
+import static com.gengoai.tuple.Tuples.$;
+
+/**
+ * @author David B. Bracewell
+ */
+@MetaInfServices(value = TypeConverter.class)
+public class Tuple1TypeConverter extends Tuple2TypeConverter {
+
+   @Override
+   public Object convert(Object source, Type... parameters) throws TypeConversionException {
+      if (source instanceof Tuple1) {
+         Tuple1<?> m = Cast.as(source);
+         return $(Converter.<Object>convert(m.v1, getOrObject(0, parameters)));
+      }
+      List<?> list = Converter.convert(source, List.class, parameters);
+      if (list.size() <= 1) {
+         return $(getValue(0, list, parameters));
+      }
+      throw new TypeConversionException(source, parameterizedType(Tuple1.class, parameters));
+   }
+
+   @Override
+   public Class[] getConversionType() {
+      return arrayOf(Tuple1.class);
+   }
+}//END OF TupleTypeConverter

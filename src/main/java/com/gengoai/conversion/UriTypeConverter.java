@@ -28,16 +28,16 @@ public class UriTypeConverter implements TypeConverter {
          try {
             return Cast.as(source, URL.class).toURI();
          } catch (URISyntaxException e) {
-            throw new TypeConversionException(source.getClass(), URI.class, e);
+            throw new TypeConversionException(source, URI.class, e);
          }
       } else if (source instanceof CharSequence) {
          try {
             return new URI(source.toString());
          } catch (URISyntaxException e) {
-            throw new TypeConversionException(source.getClass(), URI.class, e);
+            throw new TypeConversionException(source, URI.class, e);
          }
       }
-      throw new TypeConversionException(source.getClass(), URI.class);
+      throw new TypeConversionException(source, URI.class);
    }
 
    @Override

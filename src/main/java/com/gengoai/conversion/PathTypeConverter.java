@@ -29,12 +29,12 @@ public class PathTypeConverter implements TypeConverter {
          try {
             return Paths.get(Cast.as(source, URL.class).toURI());
          } catch (URISyntaxException e) {
-            throw new TypeConversionException(source.getClass(), Path.class, e);
+            throw new TypeConversionException(source, Path.class, e);
          }
       } else if (source instanceof CharSequence) {
          return Paths.get(source.toString());
       }
-      throw new TypeConversionException(source.getClass(), Path.class);
+      throw new TypeConversionException(source, Path.class);
    }
 
    @Override

@@ -36,10 +36,10 @@ public class OutputStreamTypeConverter implements TypeConverter {
             return Resources.fromURI(Cast.as(source)).outputStream();
          }
       } catch (IOException e) {
-         throw new TypeConversionException(source.getClass(), InputStream.class, e);
+         throw new TypeConversionException(source, InputStream.class, e);
       }
 
-      throw new TypeConversionException(source.getClass(), OutputStream.class);
+      throw new TypeConversionException(source, OutputStream.class);
    }
 
    @Override

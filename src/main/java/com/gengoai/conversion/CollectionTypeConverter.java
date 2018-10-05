@@ -3,13 +3,15 @@ package com.gengoai.conversion;
 import com.gengoai.collection.Collect;
 import com.gengoai.collection.Iterators;
 import com.gengoai.json.Json;
+import com.gengoai.json.JsonEntry;
 import com.gengoai.string.StringUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+
+import static com.gengoai.reflection.Types.*;
+import static java.util.Collections.singletonList;
 
 /**
  * The type Collection type converter.
@@ -30,6 +32,24 @@ public abstract class CollectionTypeConverter implements TypeConverter {
       Type elementType = (parameters == null || parameters.length == 0) ? Object.class
                                                                         : parameters[0];
 
+      if (source instanceof JsonEntry) {
+         JsonEntry je = Cast.as(source);
+         if (je.isArray()) {
+            return Collect.addAll(newCollection(),
+                                  je.getAsArray(elementType));
+         } else if (je.isObject() && isAssignable(Map.Entry.class, elementType)) {
+            Collection<?> c = newCollection();
+            for (Iterator<Map.Entry<String, JsonEntry>> itr = je.propertyIterator(); itr.hasNext(); ) {
+               c.add(Converter.convert(itr.next(), elementType));
+            }
+            return c;
+         } else if (je.isPrimitive()) {
+            return Collect.addAll(newCollection(), singletonList(je.getAsVal().cast()));
+         }
+         throw new TypeConversionException(source, parameterizedType(Collection.class, parameters));
+      }
+
+
       if (source instanceof CharSequence) {
          String str = source.toString();
          //Assume JSON
@@ -40,7 +60,21 @@ public abstract class CollectionTypeConverter implements TypeConverter {
                //Ignore and try csv style conversion
             }
          }
-         List<String> strList = StringUtils.split(str.replaceFirst("^\\[", "").replaceFirst("]$", ""), ',');
+
+         //Fallback to csv
+         List<String> strList = new ArrayList<>();
+         if (asClass(elementType).isArray()) {
+            str = str.replaceFirst("^\\[", "").replaceFirst("]$", "").trim();
+            if (str.startsWith("[")) {
+               for (String s : StringUtils.split(str, ',')) {
+                  strList.add(s.replaceFirst("^\\[", "").replaceFirst("]$", ""));
+               }
+            } else {
+               strList.add(str);
+            }
+         } else {
+            strList = StringUtils.split(str.replaceFirst("^\\[", "").replaceFirst("]$", ""), ',');
+         }
          Collection<?> newCollection = newCollection();
          for (String s : strList) {
             newCollection.add(Converter.convert(s, elementType));

@@ -48,12 +48,12 @@ public class DynamicEnumTypeConverter implements TypeConverter {
          try {
             return Reflect.onClass(enumClass).invoke("create", source.toString());
          } catch (ReflectionException e) {
-            throw new TypeConversionException(source.getClass(), parameterizedType(EnumValue.class, enumClass), e);
+            throw new TypeConversionException(source, parameterizedType(EnumValue.class, enumClass), e);
          }
       }
 
 
-      throw new TypeConversionException(source.getClass(), parameterizedType(EnumValue.class, enumClass));
+      throw new TypeConversionException(source, parameterizedType(EnumValue.class, enumClass));
    }
 
    @Override

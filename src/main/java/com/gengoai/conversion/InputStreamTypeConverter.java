@@ -38,7 +38,7 @@ public class InputStreamTypeConverter implements TypeConverter {
             return Resources.fromURI(Cast.as(source)).inputStream();
          }
       } catch (IOException e) {
-         throw new TypeConversionException(source.getClass(), InputStream.class, e);
+         throw new TypeConversionException(source, InputStream.class, e);
       }
 
 
@@ -58,7 +58,7 @@ public class InputStreamTypeConverter implements TypeConverter {
          return new ByteArrayInputStream(bytes);
       }
 
-      throw new TypeConversionException(source.getClass(), InputStream.class);
+      throw new TypeConversionException(source, InputStream.class);
    }
 
    @Override

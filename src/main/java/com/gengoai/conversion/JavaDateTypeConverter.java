@@ -49,7 +49,7 @@ public class JavaDateTypeConverter implements TypeConverter {
          }
 
       }
-      throw new TypeConversionException(object.getClass(), Date.class);
+      throw new TypeConversionException(object, Date.class);
    }
 
    @Override

@@ -1,7 +1,6 @@
-package com.gengoai.conversion.impl;
+package com.gengoai.conversion;
 
-import com.gengoai.conversion.Converter;
-import com.gengoai.conversion.TypeConversionException;
+import com.gengoai.Defaults;
 import com.gengoai.json.JsonEntry;
 import org.junit.Test;
 
@@ -26,7 +25,11 @@ public abstract class BaseNumberConversionTest {
 
    @Test
    public void nullValue() throws TypeConversionException {
-      assertNull(Converter.convert(null, aClass));
+      if (aClass.isPrimitive()) {
+         assertEquals(Defaults.value(aClass), Converter.convert(null, aClass));
+      } else {
+         assertNull(Converter.convert(null, aClass));
+      }
    }
 
    @Test

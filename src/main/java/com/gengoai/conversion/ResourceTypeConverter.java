@@ -35,7 +35,7 @@ public class ResourceTypeConverter implements TypeConverter {
          try {
             return Resources.fromUrl(((URI) source).toURL());
          } catch (MalformedURLException e) {
-            throw new TypeConversionException(source.getClass(), Resource.class, e);
+            throw new TypeConversionException(source, Resource.class, e);
          }
       } else if (source instanceof Reader) {
          return new ReaderResource(Cast.as(source));
@@ -48,7 +48,7 @@ public class ResourceTypeConverter implements TypeConverter {
       } else if (source instanceof CharSequence) {
          return Resources.from(source.toString());
       }
-      throw new TypeConversionException(source.getClass(), Resource.class);
+      throw new TypeConversionException(source, Resource.class);
    }
 
    @Override

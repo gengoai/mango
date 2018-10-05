@@ -27,7 +27,7 @@ public class EnumTypeConverter implements TypeConverter {
             try {
                source = enumClass.getFields()[Integer.parseInt(sourceStr.substring(lastDollar + 1)) - 1].get(null);
             } catch (IllegalAccessException e) {
-               throw new TypeConversionException(source.getClass(), parameterizedType(Enum.class, enumClass));
+               throw new TypeConversionException(source, parameterizedType(Enum.class, enumClass));
             }
          } else if (lastDot > 0) {
             enumClass = ReflectionUtils.getClassForNameQuietly(sourceStr.substring(0, lastDot));
@@ -52,7 +52,7 @@ public class EnumTypeConverter implements TypeConverter {
       if (source instanceof Class) {
          return convert(Cast.<Class>as(source).getName(), enumClass);
       }
-      throw new TypeConversionException(source.getClass(), parameterizedType(Enum.class, enumClass));
+      throw new TypeConversionException(source, parameterizedType(Enum.class, enumClass));
    }
 
    @Override

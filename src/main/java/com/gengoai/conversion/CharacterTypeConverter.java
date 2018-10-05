@@ -24,7 +24,7 @@ public class CharacterTypeConverter implements TypeConverter {
             return sequence.charAt(0);
          }
       }
-      throw new TypeConversionException(object.getClass(), Character.class);
+      throw new TypeConversionException(object, Character.class);
    }
 
    @Override

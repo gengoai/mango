@@ -20,10 +20,10 @@ public class CharsetTypeConverter implements TypeConverter {
          try {
             return Charset.forName(source.toString());
          } catch (Exception e) {
-            throw new TypeConversionException(source.getClass(), Charset.class, e.getCause());
+            throw new TypeConversionException(source, Charset.class, e.getCause());
          }
       }
-      throw new TypeConversionException(source.getClass(), Charset.class);
+      throw new TypeConversionException(source, Charset.class);
    }
 
    @Override

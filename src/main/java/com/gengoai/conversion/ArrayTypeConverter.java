@@ -19,10 +19,7 @@ public class ArrayTypeConverter implements TypeConverter {
    public Object convert(Object source, Type... parameters) throws TypeConversionException {
       Type componentType = (parameters == null || parameters.length == 0) ? Object.class
                                                                           : parameters[0];
-      Class<?> sourceClass = source.getClass();
-      if (sourceClass.isArray() && sourceClass.getComponentType().equals(componentType)) {
-         return source;
-      }
+      //Convert the source to a list and create an array from it.
       List<?> list = Converter.convert(source, List.class, parameters);
       Object array = Array.newInstance(Types.asClass(componentType), list.size());
       for (int i = 0; i < list.size(); i++) {

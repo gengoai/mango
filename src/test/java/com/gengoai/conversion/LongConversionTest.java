@@ -1,4 +1,4 @@
-package com.gengoai.conversion.impl;
+package com.gengoai.conversion;
 
 /**
  * @author David B. Bracewell

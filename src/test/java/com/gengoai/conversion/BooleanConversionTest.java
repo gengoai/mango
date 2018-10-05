@@ -1,4 +1,4 @@
-package com.gengoai.conversion.impl;
+package com.gengoai.conversion;
 
 import com.gengoai.conversion.Converter;
 import com.gengoai.conversion.TypeConversionException;

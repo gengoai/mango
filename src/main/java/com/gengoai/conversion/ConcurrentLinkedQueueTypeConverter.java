@@ -1,5 +1,7 @@
 package com.gengoai.conversion;
 
+import org.kohsuke.MetaInfServices;
+
 import java.util.Collection;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -8,6 +10,7 @@ import static com.gengoai.collection.Collect.arrayOf;
 /**
  * @author David B. Bracewell
  */
+@MetaInfServices(value = TypeConverter.class)
 public class ConcurrentLinkedQueueTypeConverter extends CollectionTypeConverter {
    @Override
    public Class[] getConversionType() {

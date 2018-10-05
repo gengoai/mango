@@ -27,12 +27,12 @@ public class FileTypeConverter implements TypeConverter {
          try {
             return new File(Cast.as(source, URL.class).toURI());
          } catch (Exception e) {
-            throw new TypeConversionException(source.getClass(), File.class, e.getCause());
+            throw new TypeConversionException(source, File.class, e.getCause());
          }
       } else if (source instanceof CharSequence) {
          return new File(source.toString());
       }
-      throw new TypeConversionException(source.getClass(), File.class);
+      throw new TypeConversionException(source, File.class);
    }
 
    @Override

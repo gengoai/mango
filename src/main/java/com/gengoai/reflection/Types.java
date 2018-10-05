@@ -2,7 +2,6 @@ package com.gengoai.reflection;
 
 import com.gengoai.Primitives;
 import com.gengoai.conversion.Cast;
-import com.gengoai.tuple.Tuple2;
 
 import java.io.Serializable;
 import java.lang.reflect.Array;
@@ -12,8 +11,6 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-
-import static com.gengoai.tuple.Tuples.$;
 
 /**
  * <p>Convenience methods for creating type information</p>
@@ -26,6 +23,10 @@ public final class Types {
       throw new IllegalAccessError();
    }
 
+
+   public static Type getOrObject(int n, Type... types) {
+      return types == null || types.length < n ? Object.class : types[n];
+   }
 
    /**
     * Converts type information to class information

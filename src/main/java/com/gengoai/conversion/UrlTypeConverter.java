@@ -20,9 +20,9 @@ public class UrlTypeConverter implements TypeConverter {
          return source;
       }
       try {
-         return Converter.<URI>convert(source, URI.class).toURL();
+         return Converter.convert(source, URI.class).toURL();
       } catch (MalformedURLException | TypeConversionException e) {
-         throw new TypeConversionException(source.getClass(), URL.class, e);
+         throw new TypeConversionException(source, URL.class, e);
       }
    }
 
