@@ -17,14 +17,14 @@ public class ArrayTypeConverter implements TypeConverter {
 
    @Override
    public Object convert(Object source, Type... parameters) throws TypeConversionException {
-      Class<?> componentType = (parameters == null || parameters.length == 0) ? Object.class
-                                                                              : Types.asClass(parameters[0]);
+      Type componentType = (parameters == null || parameters.length == 0) ? Object.class
+                                                                          : parameters[0];
       Class<?> sourceClass = source.getClass();
       if (sourceClass.isArray() && sourceClass.getComponentType().equals(componentType)) {
          return source;
       }
       List<?> list = Converter.convert(source, List.class, parameters);
-      Object array = Array.newInstance(componentType, list.size());
+      Object array = Array.newInstance(Types.asClass(componentType), list.size());
       for (int i = 0; i < list.size(); i++) {
          Array.set(array, i, list.get(i));
       }

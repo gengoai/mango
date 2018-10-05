@@ -37,10 +37,10 @@ public abstract class CollectionTypeConverter implements TypeConverter {
             try {
                return Collect.addAll(newCollection(), Json.parse(source.toString()).getAsArray(elementType));
             } catch (IOException e) {
-               throw new TypeConversionException(source, Collection.class, e);
+               //Ignore and try csv style conversion
             }
          }
-         List<String> strList = StringUtils.split(str, ',');
+         List<String> strList = StringUtils.split(str.replaceFirst("^\\[", "").replaceFirst("]$", ""), ',');
          Collection<?> newCollection = newCollection();
          for (String s : strList) {
             newCollection.add(Converter.convert(s, elementType));

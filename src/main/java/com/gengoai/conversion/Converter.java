@@ -73,7 +73,6 @@ public final class Converter {
       }
 
       Class<?> rawClass = Primitives.wrap(Types.asClass(destType));
-
       if (converterMap.containsKey(rawClass)) {
          return Cast.as(converterMap.get(rawClass).convert(sourceObject, Types.getActualTypeArguments(destType)));
       }
@@ -85,7 +84,12 @@ public final class Converter {
          return Cast.as(converterMap.get(EnumValue.class).convert(sourceObject, rawClass));
       }
       if (rawClass.isArray()) {
-         return Cast.as(converterMap.get(Object[].class).convert(sourceObject, rawClass.getComponentType()));
+         Type[] pt = Types.getActualTypeArguments(destType);
+         Type componentType = rawClass.getComponentType();
+         if (pt != null && pt.length > 0) {
+            componentType = parameterizedType(componentType, pt);
+         }
+         return Cast.as(converterMap.get(Object[].class).convert(sourceObject, componentType));
       }
 
       throw new TypeConversionException(sourceObject.getClass(), destType);
