@@ -42,6 +42,10 @@ public final class ParserToken {
       this.type = type;
    }
 
+   public boolean isInstance(ParserTokenType... types) {
+      return type.isInstance(types);
+   }
+
    public boolean equals(Object o) {
       if (o == this) return true;
       if (!(o instanceof ParserToken)) return false;

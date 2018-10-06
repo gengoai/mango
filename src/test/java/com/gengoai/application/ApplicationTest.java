@@ -107,6 +107,7 @@ public class ApplicationTest {
          assertEquals("update", Config.get("action").asString());
 
          //Make sure config was loaded
+         System.out.println(Config.get("direction"));
          assertEquals("up", Config.get("direction").asString());
 
 

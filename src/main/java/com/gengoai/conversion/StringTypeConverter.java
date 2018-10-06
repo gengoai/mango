@@ -2,6 +2,7 @@ package com.gengoai.conversion;
 
 import com.gengoai.Primitives;
 import com.gengoai.json.Json;
+import com.gengoai.json.JsonEntry;
 import org.kohsuke.MetaInfServices;
 
 import java.io.File;
@@ -28,6 +29,13 @@ public class StringTypeConverter implements TypeConverter {
 
    @Override
    public Object convert(Object object, Type... parameters) throws TypeConversionException {
+      if (object instanceof JsonEntry) {
+         JsonEntry entry = Cast.as(object);
+         if (entry.isString()) {
+            return entry.getAsString();
+         }
+         return entry.toString();
+      }
       if (object instanceof CharSequence) {
          return object.toString();
       } else if (object instanceof char[]) {

@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * A handler to process an array of items with an optional separator between items.
+ *
  * @author David B. Bracewell
  */
 public class ArrayHandler extends PrefixHandler implements Serializable {
@@ -19,6 +21,12 @@ public class ArrayHandler extends PrefixHandler implements Serializable {
    private final ParserTokenType endOfArray;
    private final ParserTokenType separator;
 
+   /**
+    * Instantiates a new Array handler.
+    *
+    * @param endOfArray the end of array token type
+    * @param separator  the separator token type (Optional)
+    */
    public ArrayHandler(ParserTokenType endOfArray, ParserTokenType separator) {
       this.endOfArray = endOfArray;
       this.separator = separator;
@@ -31,7 +39,9 @@ public class ArrayHandler extends PrefixHandler implements Serializable {
          Expression exp = expressionIterator.next();
          subExpressions.add(exp);
          if (!expressionIterator.tokenStream().lookAheadType(0).isInstance(endOfArray)) {
-            expressionIterator.tokenStream().consume(separator);
+            if (separator != null) {
+               expressionIterator.tokenStream().consume(separator);
+            }
          }
       }
       expressionIterator.tokenStream().consume(endOfArray);

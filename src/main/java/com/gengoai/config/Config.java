@@ -62,7 +62,6 @@ import java.util.stream.Stream;
  * @author David B. Bracewell
  */
 public final class Config implements Serializable, JsonSerializable {
-
    private static final String BEAN_PROPERTY = "@{";
    private static final Pattern BEAN_SUBSTITUTION = Pattern.compile(Pattern.quote(BEAN_PROPERTY) + "(.+?)\\}");
    private static final String DEFAULT_CONFIG_FILE_NAME = "default.conf";
@@ -435,13 +434,13 @@ public final class Config implements Serializable, JsonSerializable {
     */
    public static void loadConfig(Resource resource) {
       if (resource == null || !resource.exists()) {
-         return;
+         throw new RuntimeException("Unable to Load Config: " + resource);
       }
       if (resource.path() != null && getInstance().loaded.contains(resource.path())) {
          return; //Only load once!
       }
       try {
-         new ConfigParser(resource).parse();
+         new MsonConfigParser(resource).parse();
       } catch (ParseException e) {
          throw new RuntimeException(e);
       }

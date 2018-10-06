@@ -8,6 +8,8 @@ import com.gengoai.parsing.expressions.Expression;
 import static com.gengoai.Validation.notNull;
 
 /**
+ * A validator for {@link BinaryOperatorExpression}s.
+ *
  * @author David B. Bracewell
  */
 public class BinaryOperatorValidator implements ExpressionValidator {
@@ -15,12 +17,27 @@ public class BinaryOperatorValidator implements ExpressionValidator {
    private final SerializablePredicate<Expression> leftValidator;
    private final SerializablePredicate<Expression> rightValidator;
 
-   protected BinaryOperatorValidator(SerializablePredicate<Expression> leftValidator, SerializablePredicate<Expression> rightValidator) {
+   /**
+    * Instantiates a new Binary operator validator.
+    *
+    * @param leftValidator  predicate to check if the left hand side of the expression is valid
+    * @param rightValidator predicate to check if the right hand side of the expression is valid
+    */
+   private BinaryOperatorValidator(SerializablePredicate<Expression> leftValidator,
+                                   SerializablePredicate<Expression> rightValidator
+                                  ) {
       this.leftValidator = leftValidator;
       this.rightValidator = rightValidator;
    }
 
 
+   /**
+    * Creates a <code>BinaryOperatorValidator</code> for the given left and right hand validators.
+    *
+    * @param leftValidator  predicate to check if the left hand side of the expression is valid
+    * @param rightValidator predicate to check if the right hand side of the expression is valid
+    * @return the binary operator validator
+    */
    public static BinaryOperatorValidator newBinaryOpValidator(SerializablePredicate<Expression> leftValidator,
                                                               SerializablePredicate<Expression> rightValidator
                                                              ) {

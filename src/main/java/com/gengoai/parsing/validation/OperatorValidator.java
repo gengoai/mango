@@ -11,16 +11,25 @@ import com.gengoai.parsing.expressions.PrefixOperatorExpression;
 import static com.gengoai.Validation.notNull;
 
 /**
+ * Validator to test the operator of {@link BinaryOperatorExpression}, {@link PrefixOperatorExpression}, and {@link
+ * PostfixOperatorExpression}s.
+ *
  * @author David B. Bracewell
  */
 public class OperatorValidator implements ExpressionValidator {
    private static final long serialVersionUID = 1L;
    private final SerializablePredicate<ParserToken> typePredicate;
 
-   protected OperatorValidator(SerializablePredicate<ParserToken> typePredicate) {
+   private OperatorValidator(SerializablePredicate<ParserToken> typePredicate) {
       this.typePredicate = typePredicate;
    }
 
+   /**
+    * Creates a new validator to check operator tokens
+    *
+    * @param typePredicate predicate to test the operator token
+    * @return the operator validator
+    */
    public static OperatorValidator newOperatorValidator(SerializablePredicate<ParserToken> typePredicate) {
       return new OperatorValidator(notNull(typePredicate));
    }

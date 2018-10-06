@@ -1,7 +1,6 @@
 package com.gengoai.conversion;
 
 import com.gengoai.collection.Iterators;
-import com.gengoai.function.Unchecked;
 import com.gengoai.json.Json;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.string.StringUtils;
@@ -26,11 +25,11 @@ public abstract class MapTypeConverter implements TypeConverter {
          throw new TypeConversionException(source, parameterizedType(Map.class, keyType, valueType));
       }
       try {
-         json.propertyIterator()
-             .forEachRemaining(Unchecked.consumer(
-                (Map.Entry<String, JsonEntry> entry) -> map.put(
-                   Converter.convert(entry.getKey(), keyType),
-                   Converter.convert(entry.getValue(), valueType))));
+         for (Iterator<Map.Entry<String, JsonEntry>> itr = json.propertyIterator(); itr.hasNext(); ) {
+            Map.Entry<String, JsonEntry> entry = itr.next();
+            map.put(Converter.convert(entry.getKey(), keyType),
+                    entry.getValue().getAs(valueType));
+         }
       } catch (Exception e) {
          throw new TypeConversionException(source, parameterizedType(Map.class, keyType, valueType), e.getCause());
       }

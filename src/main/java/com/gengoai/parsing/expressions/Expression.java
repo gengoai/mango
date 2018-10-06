@@ -78,6 +78,17 @@ public abstract class Expression {
       return clazz.isInstance(this);
    }
 
+   public final boolean isInstance(Class... clazz) {
+      if (clazz != null) {
+         for (Class aClass : clazz) {
+            if (aClass.isInstance(this)) {
+               return true;
+            }
+         }
+      }
+      return false;
+   }
+
    /**
     * Gets token type.
     *
