@@ -29,41 +29,17 @@ import com.gengoai.parsing.expressions.Expression;
 import com.gengoai.parsing.expressions.PrefixOperatorExpression;
 
 /**
- * <p>Creates {@link PrefixOperatorExpression}s where the current token is the operator and the next expression is what the
- * operator is operating on.</p>
+ * <p>Creates {@link PrefixOperatorExpression}s where the current token is the operator and the next expression is what
+ * the operator is operating on.</p>
  *
  * @author David B. Bracewell
  */
 public class PrefixOperatorHandler extends PrefixHandler {
    private static final long serialVersionUID = 1L;
-   private final Class<? extends Expression> expectedRightHandType;
-
-
-   /**
-    * Default constructor
-    */
-   public PrefixOperatorHandler() {
-      this(null);
-   }
-
-   /**
-    * Default constructor
-    *
-    * @param expectedRightHandType the expected right hand type
-    */
-   public PrefixOperatorHandler(Class<? extends Expression> expectedRightHandType) {
-      this.expectedRightHandType = expectedRightHandType;
-   }
 
    @Override
    public Expression parse(ExpressionIterator expressionIterator, ParserToken token) throws ParseException {
       Expression right = expressionIterator.next(precedence());
-      if (expectedRightHandType != null && (right == null || right.as(expectedRightHandType) == null)) {
-         throw new ParseException("Expecting the right hand argument to be of type" + expectedRightHandType + " but got " + (right == null
-                                                                                                                             ? "null"
-                                                                                                                             : right
-                                                                                                                                  .getClass()));
-      }
       return new PrefixOperatorExpression(token, right);
    }
 

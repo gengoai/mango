@@ -48,6 +48,7 @@ public class Grammar implements Serializable {
    private final Map<ParserTokenType, InfixHandler> infixHandlers = new HashMap<>();
    private final PrefixHandler prefixSkipHandler;
 
+
    /**
     * Instantiates a new Grammar which will throw a <code>ParseException</code> when encountering token types it cannot
     * handle.
@@ -66,6 +67,14 @@ public class Grammar implements Serializable {
       this.prefixSkipHandler = skipNonRegisteredTokenTypes ? new PrefixSkipHandler() : null;
    }
 
+
+   public PrefixHandler getPrefixHandler(ParserTokenType type) {
+      return prefixHandlers.get(type);
+   }
+
+   public InfixHandler getInfixHandler(ParserTokenType type) {
+      return infixHandlers.get(type);
+   }
 
    /**
     * Registers a prefix handler
@@ -110,6 +119,7 @@ public class Grammar implements Serializable {
    public boolean isInfix(ParserToken token) {
       return token != null && infixHandlers.containsKey(token.type);
    }
+
 
    /**
     * Determines if the token can be parsed with a prefix handler

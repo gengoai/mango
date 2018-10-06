@@ -2,19 +2,17 @@ package com.gengoai.conversion;
 
 import org.kohsuke.MetaInfServices;
 
-import java.lang.reflect.Type;
-
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)
-public class IntegerTypeConverter implements TypeConverter {
+public class IntegerTypeConverter extends BaseNumberTypeConverter {
 
    @Override
-   public Object convert(Object object, Type... parameters) throws TypeConversionException {
-      return Converter.convert(object, Long.class).intValue();
+   protected Object convertNumber(Number number) {
+      return number.intValue();
    }
 
    @Override

@@ -85,9 +85,4 @@ public enum CommonTypes implements ParserTokenType, HasLexicalPattern {
     return pattern;
   }
 
-  @Override
-  public boolean isInstance(ParserTokenType tokenType) {
-    return this.toString().equals(tokenType.toString());
-  }
-
 }//END OF CommonTypes

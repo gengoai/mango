@@ -27,7 +27,7 @@ import com.gengoai.io.resource.Resource;
 import com.gengoai.parsing.*;
 import com.gengoai.parsing.expressions.Expression;
 import com.gengoai.parsing.expressions.PrefixOperatorExpression;
-import com.gengoai.parsing.expressions.ValueExpression;
+import com.gengoai.parsing.expressions.StringValueExpression;
 import com.gengoai.parsing.handlers.PrefixOperatorHandler;
 import com.gengoai.parsing.handlers.ValueHandler;
 import com.gengoai.string.StringUtils;
@@ -38,6 +38,8 @@ import java.util.NoSuchElementException;
 
 import static com.gengoai.Validation.notNull;
 import static com.gengoai.function.CheckedConsumer.asFunction;
+import static com.gengoai.parsing.validation.PrefixOperatorValidator.newPrefixOpValidator;
+import static com.gengoai.parsing.validation.ValidatingPrefixHandler.prefixValidator;
 
 /**
  * @author David B. Bracewell
@@ -46,9 +48,16 @@ class ConfigParser extends Parser {
    private static final long serialVersionUID = 1L;
 
    private static Grammar CONFIG_GRAMMAR = new Grammar() {{
-      register(ConfigTokenizer.ConfigTokenType.IMPORT, new PrefixOperatorHandler(ValueExpression.class));
-      register(ConfigTokenizer.ConfigTokenType.PROPERTY, new PrefixOperatorHandler(ValueExpression.class));
-      register(ConfigTokenizer.ConfigTokenType.APPEND_PROPERTY, new PrefixOperatorHandler(ValueExpression.class));
+      register(ConfigTokenizer.ConfigTokenType.IMPORT,
+               prefixValidator(new PrefixOperatorHandler(),
+                               newPrefixOpValidator(e -> e.isInstance(StringValueExpression.class))));
+      register(ConfigTokenizer.ConfigTokenType.PROPERTY,
+               prefixValidator(new PrefixOperatorHandler(),
+                               newPrefixOpValidator(e -> e.isInstance(
+                                  StringValueExpression.class))));
+      register(ConfigTokenizer.ConfigTokenType.APPEND_PROPERTY,
+               prefixValidator(new PrefixOperatorHandler(),
+                               newPrefixOpValidator(e -> e.isInstance(StringValueExpression.class))));
       register(ConfigTokenizer.ConfigTokenType.VALUE, new ValueHandler());
       register(ConfigTokenizer.ConfigTokenType.SECTION_HEADER, new SectionHandler());
    }};
@@ -154,7 +163,12 @@ class ConfigParser extends Parser {
          key = section + assignment.operator.text;
       }
 
-      String value = assignment.right.as(ValueExpression.class).value;
+      String value = null;
+      try {
+         value = assignment.right.as(StringValueExpression.class).value;
+      } catch (ParseException e) {
+         throw new RuntimeException(e);
+      }
 
       //unescape things
       value = StringUtils.trim(value);
@@ -174,7 +188,7 @@ class ConfigParser extends Parser {
       super.evaluateAll(resource, evaluator);
    }
 
-   private void handleSection(String parent, SectionExpression exp) {
+   private void handleSection(String parent, SectionExpression exp) throws ParseException {
       final SectionExpression section = notNull(exp.as(SectionExpression.class));
       final String prefix = StringUtils.isNullOrBlank(parent) ? exp.sectionPrefix : parent + "." + exp.sectionPrefix;
       for (Expression x : section.assignments) {

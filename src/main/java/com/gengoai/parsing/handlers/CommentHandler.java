@@ -27,9 +27,9 @@ import com.gengoai.parsing.ParserToken;
 import com.gengoai.parsing.ParserTokenType;
 import com.gengoai.parsing.expressions.CommentExpression;
 import com.gengoai.parsing.expressions.Expression;
-import com.gengoai.string.StringUtils;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>Creates a comment expression where the everything from the comment token to the end of line (specified via the
@@ -59,9 +59,7 @@ public class CommentHandler extends PrefixHandler {
       return new CommentExpression(token.type,
                                    token.text + tokens.stream()
                                                       .map(ParserToken::getText)
-                                                      .reduce(String::concat)
-                                                      .orElse(StringUtils.EMPTY)
-      );
+                                                      .collect(Collectors.joining("")));
    }
 
 }//END OF CommentHandler

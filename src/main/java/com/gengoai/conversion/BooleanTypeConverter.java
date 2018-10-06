@@ -20,7 +20,7 @@ public class BooleanTypeConverter implements TypeConverter {
          if (entry.isBoolean()) {
             return entry.getAsBoolean();
          } else if (entry.isNumber()) {
-            return entry.getAsNumber().intValue() == 1;
+            return convert(entry.getAsNumber());
          } else if (entry.isString()) {
             return convert(entry.getAsString());
          }

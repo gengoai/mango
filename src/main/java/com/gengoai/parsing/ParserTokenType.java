@@ -34,8 +34,18 @@ public interface ParserTokenType {
     * @param tokenType The type to check
     * @return True if this is the same type as the given
     */
-   default boolean isInstance(ParserTokenType tokenType) {
-      return this == tokenType;
+   default boolean isInstance(ParserTokenType tokenType, ParserTokenType... other) {
+      if (this == tokenType) {
+         return true;
+      }
+      if (other != null) {
+         for (ParserTokenType o : other) {
+            if (this == o) {
+               return true;
+            }
+         }
+      }
+      return false;
    }
 
 }//END OF TokenType

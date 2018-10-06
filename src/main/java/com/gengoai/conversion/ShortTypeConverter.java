@@ -2,19 +2,17 @@ package com.gengoai.conversion;
 
 import org.kohsuke.MetaInfServices;
 
-import java.lang.reflect.Type;
-
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)
-public class ShortTypeConverter implements TypeConverter {
+public class ShortTypeConverter extends BaseNumberTypeConverter {
 
    @Override
-   public Object convert(Object object, Type... parameters) throws TypeConversionException {
-      return Converter.convert(object, Long.class).shortValue();
+   protected Object convertNumber(Number number) {
+      return number.shortValue();
    }
 
    @Override

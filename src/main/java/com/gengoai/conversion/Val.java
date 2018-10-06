@@ -26,6 +26,7 @@ import com.gengoai.io.resource.Resource;
 
 import java.io.Serializable;
 import java.lang.reflect.Array;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -35,7 +36,6 @@ import java.util.function.Supplier;
  * @author David B. Bracewell
  */
 public class Val implements Serializable {
-
    /**
     * False value
     */
@@ -67,7 +67,7 @@ public class Val implements Serializable {
     * @return The ConvertibleObject wrapping the given object
     */
    public static Val of(Object o) {
-      if (o != null && o instanceof Val) {
+      if (o instanceof Val) {
          return Cast.as(o);
       }
       return new Val(o);
@@ -198,6 +198,22 @@ public class Val implements Serializable {
       return toConvert;
    }
 
+
+   public <T> T as(Type type) {
+      return Converter.convertSilently(toConvert, type);
+   }
+
+   public <T> T as(Type type, T defaultValue) {
+      if (isNull()) {
+         return defaultValue;
+      }
+      T toReturn = Converter.convertSilently(toConvert, type);
+      if (toReturn == null) {
+         return defaultValue;
+      }
+      return toReturn;
+   }
+
    /**
     * Converts the underlying object to the given class type.
     *
@@ -218,14 +234,7 @@ public class Val implements Serializable {
     * @return This object as the given type or null if the wrapped object is null
     */
    public <T> T as(Class<T> clazz, T defaultValue) {
-      if (isNull()) {
-         return defaultValue;
-      }
-      T value = as(clazz);
-      if (value == null) {
-         return defaultValue;
-      }
-      return value;
+      return as(((Type) clazz), defaultValue);
    }
 
    /**

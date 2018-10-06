@@ -27,7 +27,7 @@ import com.gengoai.parsing.ParseException;
 import com.gengoai.parsing.ParserToken;
 import com.gengoai.parsing.ParserTokenType;
 import com.gengoai.parsing.expressions.Expression;
-import com.gengoai.parsing.expressions.ValueExpression;
+import com.gengoai.parsing.expressions.StringValueExpression;
 
 /**
  * <p>Treats everything between the open group type and closed group type as a single group which should result in a
@@ -54,7 +54,7 @@ public class GroupHandler extends PrefixHandler {
       if (!expressionIterator.tokenStream().nonConsumingMatch(closeGroupType)) {
          right = expressionIterator.next();
       } else {
-         right = new ValueExpression("", null);
+         right = new StringValueExpression("", null);
       }
       expressionIterator.tokenStream().consume(closeGroupType);
       return right;

@@ -23,7 +23,7 @@ public class Tuple1TypeConverter extends Tuple2TypeConverter {
          Tuple1<?> m = Cast.as(source);
          return $(Converter.<Object>convert(m.v1, getOrObject(0, parameters)));
       }
-      List<?> list = Converter.convert(source, List.class, parameters);
+      List<?> list = createList(source, parameters);
       if (list.size() <= 1) {
          return $(getValue(0, list, parameters));
       }

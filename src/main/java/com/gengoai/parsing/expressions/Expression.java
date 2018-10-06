@@ -21,6 +21,7 @@
 
 package com.gengoai.parsing.expressions;
 
+import com.gengoai.parsing.ParseException;
 import com.gengoai.parsing.ParserTokenType;
 
 /**
@@ -58,11 +59,12 @@ public abstract class Expression {
     * @param clazz Class information for the implementation to convert to
     * @return The expression as the given implementation or null if could not convert.
     */
-   public final <T extends Expression> T as(Class<T> clazz) {
+   public final <T extends Expression> T as(Class<T> clazz) throws ParseException {
       if (isInstance(clazz)) {
          return clazz.cast(this);
       }
-      throw new IllegalArgumentException("Cannot Cast as " + clazz.getName());
+      throw new ParseException(String.format("Invalid expression type: expected=%s, found=%s",
+                                             clazz, getClass()));
    }
 
    /**

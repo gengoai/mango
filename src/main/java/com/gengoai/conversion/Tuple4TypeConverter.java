@@ -26,7 +26,7 @@ public class Tuple4TypeConverter extends Tuple2TypeConverter {
                   Converter.convert(m.v3, getOrObject(2, parameters)),
                   Converter.convert(m.v4, getOrObject(3, parameters)));
       }
-      List<?> list = Converter.convert(source, List.class);
+      List<?> list = createList(source, parameters);
       if (list.size() <= 4) {
          return $(getValue(0, list, parameters),
                   getValue(1, list, parameters),

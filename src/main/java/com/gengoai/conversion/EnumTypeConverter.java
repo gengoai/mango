@@ -18,6 +18,10 @@ public class EnumTypeConverter implements TypeConverter {
    @Override
    public Object convert(Object source, Type... parameters) throws TypeConversionException {
       Class<?> enumClass = null;
+      if (source instanceof Class) {
+         return convert(Cast.<Class>as(source).getName(), parameters);
+      }
+
       if (source instanceof CharSequence) {
          String sourceStr = source.toString();
          int lastDot = sourceStr.lastIndexOf('.');
@@ -47,10 +51,11 @@ public class EnumTypeConverter implements TypeConverter {
          return source;
       }
       if (source instanceof CharSequence) {
-         return Enum.valueOf(Cast.as(enumClass), source.toString());
-      }
-      if (source instanceof Class) {
-         return convert(Cast.<Class>as(source).getName(), enumClass);
+         try {
+            return Enum.valueOf(Cast.as(enumClass), source.toString());
+         } catch (Exception e) {
+            throw new TypeConversionException(source, Enum.class, e);
+         }
       }
       throw new TypeConversionException(source, parameterizedType(Enum.class, enumClass));
    }

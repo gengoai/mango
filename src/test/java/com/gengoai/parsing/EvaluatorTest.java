@@ -24,7 +24,7 @@ package com.gengoai.parsing;
 import com.gengoai.collection.Lists;
 import com.gengoai.parsing.expressions.BinaryOperatorExpression;
 import com.gengoai.parsing.expressions.PostfixOperatorExpression;
-import com.gengoai.parsing.expressions.ValueExpression;
+import com.gengoai.parsing.expressions.StringValueExpression;
 import com.gengoai.parsing.handlers.BinaryOperatorHandler;
 import com.gengoai.parsing.handlers.GroupHandler;
 import com.gengoai.parsing.handlers.PostfixOperatorHandler;
@@ -67,7 +67,7 @@ public class EvaluatorTest {
          $(BinaryOperatorExpression.class, CommonTypes.MULTIPLY, boe -> eval(boe.left) * eval(boe.right));
          $(BinaryOperatorExpression.class, CommonTypes.DIVIDE, boe -> eval(boe.left) / eval(boe.right));
          $(PostfixOperatorExpression.class, CommonTypes.EXCLAMATION, pe -> eval(pe.left) * 10);
-         $(ValueExpression.class, v -> Double.parseDouble(v.value));
+         $(StringValueExpression.class, v -> Double.parseDouble(v.value));
       }
    };
 

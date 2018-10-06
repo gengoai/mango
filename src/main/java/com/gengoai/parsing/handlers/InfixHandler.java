@@ -61,5 +61,4 @@ public abstract class InfixHandler implements ParserHandler {
     */
    public abstract Expression parse(ExpressionIterator expressionIterator, Expression left, ParserToken token) throws ParseException;
 
-
 } //END OF InfixHandler

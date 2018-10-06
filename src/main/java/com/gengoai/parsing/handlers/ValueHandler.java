@@ -22,23 +22,34 @@
 package com.gengoai.parsing.handlers;
 
 
+import com.gengoai.function.SerializableFunction;
 import com.gengoai.parsing.ExpressionIterator;
 import com.gengoai.parsing.ParseException;
 import com.gengoai.parsing.ParserToken;
 import com.gengoai.parsing.expressions.Expression;
+import com.gengoai.parsing.expressions.StringValueExpression;
 import com.gengoai.parsing.expressions.ValueExpression;
 
 /**
- * <p>Creates {@link ValueExpression}s which simply wrap the type and text of the current token.</p>
+ * <p>Creates {@link StringValueExpression}s which simply wrap the type and text of the current token.</p>
  *
  * @author David B. Bracewell
  */
 public class ValueHandler extends PrefixHandler {
    private static final long serialVersionUID = 1L;
+   private final SerializableFunction<ParserToken, ValueExpression> expressionSupplier;
+
+   public ValueHandler(SerializableFunction<ParserToken, ValueExpression> expressionSupplier) {
+      this.expressionSupplier = expressionSupplier;
+   }
+
+   public ValueHandler() {
+      this(token -> new StringValueExpression(token.text, token.type));
+   }
 
    @Override
    public Expression parse(ExpressionIterator expressionIterator, ParserToken token) throws ParseException {
-      return new ValueExpression(token.text, token.type);
+      return expressionSupplier.apply(token);
    }
 
 }//END OF ValueHandler

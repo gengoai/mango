@@ -4,70 +4,65 @@ import com.gengoai.parsing.*;
 import java.util.*;
 import java.io.*;
 
+
+
 %%
 
 %class Scanner
 %public
 %unicode
-%type com.gengoai.config.Scanner.Token
+%type com.gengoai.parsing.ParserToken
 %function next
 %pack
 %char
 %line
+%yylexthrow{
+    com.gengoai.parsing.ParseException
+%yylexthrow}
+
 
 %{
-public static class Token {
-    public final String type;
+public enum ConfigTokenType implements ParserTokenType {
+    NULL,
+    BOOLEAN,
+    APPEND,
+    IMPORT,
+    COMMENT,
+    SECTION_HEADER,
+    KEY,
+    MAP,
+    BEAN;
 
-    public Token(String type){
-        this.type = type;
+    @Override
+    public boolean isInstance(ParserTokenType tokenType) {
+      return tokenType == this;
     }
-
 }
 %}
 
-//Let's build a regular expression for any real number
-digit = [0-9]
-non_zero_digit = [1-9]
-integer = -?(0|{non_zero_digit}{digit}*)
+string = (\\\"|[^\"])*
+safestring = [_a-zA-Z]+([_a-zA-Z0-9\.]+)*
+comment = \#[^\r\n]*
 
-//Include real numbers (floating point) and scientific notation
-dot = ["."]
-exp = (e|E)("+"|-)
-frac = {dot}{digit}+
-scientific_notation = {exp}{digit}+
-any_number = {integer}{frac}?{scientific_notation}?
-
-//Accept any unicode character except certain control characters
-string = (\\\"|[^\"])+
-
-safestring = [^(\\)(\")(\/)(\b)(\f)(\n)(\r)(\t), ]+
 %%
 
-//Scan for commas, square brackets, braces and colons
-"," { return new Token("Comma"); }
-"[" { return new Token("Left Square Bracket"); }
-"]" { return new Token("Right Square Bracket"); }
-"${" { return new Token("Map"); }
-"@{" { return new Token("Bean"); }
-"{" { return new Token("Left Brace");}
-"}" { return new Token("Right Brace");}
-"+" { return new Token("Add"); }
-"." { return new Token("Period"); }
-":" { return new Token("Colon");}
-
-
-//Scan for unicode strings: letters, numbers, symbols
-\"{string}\" { return new Token(new String(yytext()));}
-{safestring} { return new Token(new String(yytext()));}
-
-//Scan for boolean strings
-"true"|"false" { return new Token(new String(yytext()));}
-
-Scan for null strings
-"null" { return new Token("Null Symbol");}
-
-//Scan for numbers: 0, integers or real numbers (floating point)
-{any_number} { return new Token(new String(yytext())); }
+"@type" { return new ParserToken(new String(yytext()), ConfigTokenType.KEY);}
+"@constructor" { return new ParserToken(new String(yytext()), ConfigTokenType.KEY);}
+"@import" { return new ParserToken(new String(yytext()), ConfigTokenType.IMPORT);}
+"true"|"false" { return  new ParserToken(new String(yytext()), ConfigTokenType.BOOLEAN);}
+"null" { return new ParserToken(null,ConfigTokenType.NULL);}
+{comment} { return new ParserToken(new String(yytext()), ConfigTokenType.COMMENT); }
+"," { return new ParserToken(new String(yytext()), CommonTypes.COMMA); }
+// {map_operator} { return new ParserToken(new String(yytext()), ConfigTokenType.MAP);}
+"[" { return new ParserToken(new String(yytext()), CommonTypes.OPENBRACKET); }
+"]" { return new ParserToken(new String(yytext()), CommonTypes.CLOSEBRACKET); }
+"@{"{safestring}"}" { return new ParserToken(new String(yytext()), ConfigTokenType.BEAN); }
+"{" { return new ParserToken(new String(yytext()), CommonTypes.OPENBRACE);}
+"}" { return new ParserToken(new String(yytext()), CommonTypes.CLOSEBRACE);}
+":" { return new ParserToken(new String(yytext()), CommonTypes.COLON);}
+"=" { return new ParserToken(new String(yytext()), CommonTypes.EQUALS);}
+"+=" { return new ParserToken(new String(yytext()), ConfigTokenType.APPEND);}
+\"{string}\" { return new ParserToken(new String(yytext()).substring(1,yytext().length()-1), CommonTypes.WORD);}
+{safestring} { return new ParserToken(new String(yytext()), ConfigTokenType.KEY);}
 [ \t\r\n\f] { /* ignore white space. */ }
-. { System.err.println("Illegal character: "+yytext()); }
+. { throw new com.gengoai.parsing.ParseException("Illegal character: "+yytext()+"\" at line: " + yyline + " char offset: " + yychar + " state: " + yystate()); }

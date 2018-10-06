@@ -99,8 +99,7 @@ public class Parser implements Serializable {
 
    /**
     * <p>Parses the given resource and evaluates it with the given evaluator. Requires that the parse result in a
-    * single
-    * expression.</p>
+    * single expression.</p>
     *
     * @param <O>       the return type of the evaluator
     * @param resource  the resource to evaluate

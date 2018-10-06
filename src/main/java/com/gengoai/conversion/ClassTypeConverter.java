@@ -6,6 +6,7 @@ import org.kohsuke.MetaInfServices;
 import java.lang.reflect.Type;
 
 import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.reflection.Types.asClass;
 
 /**
  * @author David B. Bracewell
@@ -15,8 +16,12 @@ public class ClassTypeConverter implements TypeConverter {
 
    @Override
    public Object convert(Object object, Type... parameters) throws TypeConversionException {
-      if (object instanceof Class) {
-         return Cast.as(object);
+      if (object instanceof Type) {
+         try {
+            return asClass(Cast.as(object));
+         } catch (IllegalArgumentException e) {
+            throw new TypeConversionException(object, Class.class, e);
+         }
       } else if (object instanceof CharSequence) {
          Class<?> clazz = ReflectionUtils.getClassForNameQuietly(object.toString());
          if (clazz != null) {

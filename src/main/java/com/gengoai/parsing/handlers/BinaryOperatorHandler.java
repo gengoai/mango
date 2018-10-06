@@ -51,8 +51,9 @@ public class BinaryOperatorHandler extends InfixHandler {
 
    @Override
    public Expression parse(ExpressionIterator expressionIterator, Expression left, ParserToken token) throws ParseException {
-      Expression right = expressionIterator.next(precedence() - (rightAssociative ? 1 : 0));
-      return new BinaryOperatorExpression(left, token, right);
+      return new BinaryOperatorExpression(left,
+                                          token,
+                                          expressionIterator.next(precedence() - (rightAssociative ? 1 : 0)));
    }
 
 

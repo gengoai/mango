@@ -13,11 +13,11 @@ import static com.gengoai.reflection.Types.getOrObject;
 /**
  * @author David B. Bracewell
  */
-public class NTupleTypeConverter implements TypeConverter {
+public class NTupleTypeConverter extends Tuple2TypeConverter {
 
    @Override
    public Object convert(Object source, Type... parameters) throws TypeConversionException {
-      List<?> list = Converter.convert(source, List.class);
+      List<?> list = createList(source, parameters);
       List<?> conv = new ArrayList<>();
       for (int i = 0; i < list.size(); i++) {
          conv.add(Converter.convert(list.get(i), getOrObject(i, parameters)));

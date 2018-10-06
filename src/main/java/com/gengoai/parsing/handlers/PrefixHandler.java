@@ -44,8 +44,11 @@ public abstract class PrefixHandler implements ParserHandler {
     */
    public abstract Expression parse(ExpressionIterator expressionIterator, ParserToken token) throws ParseException;
 
+
    @Override
    public int precedence() {
       return 0;
    }
+
+
 }//END OF PrefixHandler

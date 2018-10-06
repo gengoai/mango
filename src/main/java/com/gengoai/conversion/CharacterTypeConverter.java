@@ -1,5 +1,6 @@
 package com.gengoai.conversion;
 
+import com.gengoai.json.JsonEntry;
 import org.kohsuke.MetaInfServices;
 
 import java.lang.reflect.Type;
@@ -22,6 +23,13 @@ public class CharacterTypeConverter implements TypeConverter {
          CharSequence sequence = Cast.as(object);
          if (sequence.length() == 1) {
             return sequence.charAt(0);
+         }
+      } else if (object instanceof JsonEntry) {
+         JsonEntry e = Cast.as(object);
+         if (e.isString()) {
+            return convert(e.getAsString());
+         } else if (e.isNumber()) {
+            return convert(e.getAsNumber());
          }
       }
       throw new TypeConversionException(object, Character.class);

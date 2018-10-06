@@ -19,23 +19,37 @@
  * under the License.
  */
 
-package com.gengoai.parsing.handlers;
+package com.gengoai.parsing.expressions;
 
-import java.io.Serializable;
+
+import com.gengoai.parsing.ParserTokenType;
 
 /**
- * <p>Abstract base class for all parser handlers.</p>
+ * An <code>Expression</code> representing a simple value.
  *
  * @author David B. Bracewell
  */
-public interface ParserHandler extends Serializable {
+public class StringValueExpression extends ValueExpression {
 
-   /**
-    * Retrieves the precedence of the handler. Note that all PrefixHandlers will have a precedence of 0
-    *
-    * @return The precedence of the handler
-    */
-   int precedence();
+  /**
+   * The value
+   */
+  public final String value;
 
+  /**
+   * Default Constructor
+   *
+   * @param value The value
+   * @param type  The type of the value
+   */
+  public StringValueExpression(String value, ParserTokenType type) {
+    super(type);
+    this.value = value;
+  }
 
-}//END OF ParserHandler
+  @Override
+  public String toString() {
+    return value;
+  }
+
+}//END OF ValueExpression
