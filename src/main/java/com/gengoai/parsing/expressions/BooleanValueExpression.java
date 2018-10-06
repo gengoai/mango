@@ -7,7 +7,7 @@ import com.gengoai.parsing.ParserToken;
  *
  * @author David B. Bracewell
  */
-public class BooleanValueExpression extends ValueExpression {
+public class BooleanValueExpression extends ValueExpression<Boolean> {
    /**
     * The Value.
     */
@@ -24,8 +24,8 @@ public class BooleanValueExpression extends ValueExpression {
    }
 
    @Override
-   public String toString() {
-      return Boolean.toString(value);
+   public Boolean getValue() {
+      return value;
    }
 
 }//END OF BooleanValueExpression

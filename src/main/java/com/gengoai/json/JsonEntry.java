@@ -3,6 +3,7 @@ package com.gengoai.json;
 import com.gengoai.collection.*;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Converter;
+import com.gengoai.conversion.TypeConversionException;
 import com.gengoai.conversion.Val;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
@@ -43,6 +44,10 @@ public class JsonEntry {
       JsonEntry entry = new JsonEntry(new JsonArray());
       items.forEach(entry::addValue);
       return entry;
+   }
+
+   public Object get() {
+      return getAs(Object.class);
    }
 
    /**
@@ -252,7 +257,8 @@ public class JsonEntry {
    public <T> T getAs(Type type) {
       if (type == null) {
          return getAsVal().cast();
-      } else if (isAssignable(ParameterizedType.class, type)) {
+      }
+      if (isAssignable(ParameterizedType.class, type)) {
          Type rawType = getProperty("rawType").getAs(Type.class);
          Type[] parameterTypes = getProperty("actualTypeArguments").elementStream()
                                                                    .map(e -> e.getAs(Type.class))
@@ -278,8 +284,19 @@ public class JsonEntry {
                throw new RuntimeException(e.getCause());
             }
          }
+      } else if (type instanceof ParameterizedType) {
+         ParameterizedType pt = Cast.as(type);
+         if (isAssignable(Collection.class, pt.getRawType())) {
+            return Cast.as(getAsArray(getOrObject(0, pt.getActualTypeArguments()),
+                                      Collect.newCollection(asClass(pt.getRawType()))));
+         } else if (isAssignable(Map.class, pt.getRawType())) {
+            try {
+               return Converter.convert(getAsMap(), pt);
+            } catch (TypeConversionException e) {
+               throw new RuntimeException(e);
+            }
+         }
       }
-
 
       return gson.fromJson(element, type);
    }
@@ -312,7 +329,7 @@ public class JsonEntry {
       return Cast.as(getAsArray(Cast.<Type>as(clazz)));
    }
 
-   public <T, E extends Collection<T>> E getAsArray(Class<T> clazz, E collection) {
+   public <T, E extends Collection<T>> E getAsArray(Type clazz, E collection) {
       checkState(element.isJsonArray(), () -> "Entry (" + element.getClass().getName() + ") is not an array.");
       elementIterator().forEachRemaining(je -> collection.add(je.getAs(clazz)));
       return collection;

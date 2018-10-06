@@ -28,19 +28,19 @@ package com.gengoai.parsing;
  */
 public interface ParserTokenType {
 
+   default boolean isInstance(ParserTokenType tokenType) {
+      return this == tokenType;
+   }
+
    /**
     * Determines if this type is the same type as the given one
     *
-    * @param tokenType The type to check
     * @return True if this is the same type as the given
     */
-   default boolean isInstance(ParserTokenType tokenType, ParserTokenType... other) {
-      if (this == tokenType) {
-         return true;
-      }
+   default boolean isInstance(ParserTokenType... other) {
       if (other != null) {
          for (ParserTokenType o : other) {
-            if (this == o) {
+            if (isInstance(o)) {
                return true;
             }
          }

@@ -5,7 +5,7 @@ import com.gengoai.parsing.ParserTokenType;
 /**
  * @author David B. Bracewell
  */
-public abstract class ValueExpression extends Expression {
+public abstract class ValueExpression<T> extends Expression {
    /**
     * Default Constructor
     *
@@ -15,4 +15,11 @@ public abstract class ValueExpression extends Expression {
       super(type);
    }
 
+
+   public abstract T getValue();
+
+   @Override
+   public String toString() {
+      return String.valueOf(getValue());
+   }
 }//END OF ValueExpression

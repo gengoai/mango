@@ -7,7 +7,7 @@ import com.gengoai.parsing.ParserToken;
  *
  * @author David B. Bracewell
  */
-public class NullValueExpression extends ValueExpression {
+public class NullValueExpression extends ValueExpression<Object> {
    /**
     * Instantiates a new Null value expression.
     *
@@ -17,10 +17,9 @@ public class NullValueExpression extends ValueExpression {
       super(token.type);
    }
 
-
    @Override
-   public String toString() {
-      return "null";
+   public Object getValue() {
+      return null;
    }
 
 }//END OF NullValueExpression

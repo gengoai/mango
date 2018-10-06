@@ -31,25 +31,25 @@ import com.gengoai.parsing.ParserTokenType;
  */
 public class StringValueExpression extends ValueExpression {
 
-  /**
-   * The value
-   */
-  public final String value;
+   /**
+    * The value
+    */
+   public final String value;
 
-  /**
-   * Default Constructor
-   *
-   * @param value The value
-   * @param type  The type of the value
-   */
-  public StringValueExpression(String value, ParserTokenType type) {
-    super(type);
-    this.value = value;
-  }
+   /**
+    * Default Constructor
+    *
+    * @param value The value
+    * @param type  The type of the value
+    */
+   public StringValueExpression(String value, ParserTokenType type) {
+      super(type);
+      this.value = value;
+   }
 
-  @Override
-  public String toString() {
-    return value;
-  }
+   @Override
+   public Object getValue() {
+      return value;
+   }
 
 }//END OF ValueExpression

@@ -53,6 +53,13 @@ public final class ExpressionIterator {
       return next(0);
    }
 
+   private void doSkip() {
+      //Consume things that will be skipped
+      while (grammar.skip(tokenStream.lookAhead(0))) {
+         tokenStream.consume();
+      }
+   }
+
    /**
     * Parses the token stream to get the next expression
     *
@@ -72,16 +79,14 @@ public final class ExpressionIterator {
          result = grammar.parse(this, token);
       } while (result == null);
 
-      //Consume things that will be skipped
-      while (grammar.skip(tokenStream.lookAhead(0))) {
-         tokenStream.consume();
-      }
+
+      doSkip();
 
       while (precedence < grammar.precedence(tokenStream.lookAhead(0))) {
          token = tokenStream.consume();
          result = grammar.parse(this, result, token);
+         doSkip();
       }
-
 
       return result;
    }
@@ -101,6 +106,7 @@ public final class ExpressionIterator {
     * @return True if more expressions can be parsed, False if not
     */
    public boolean hasNext() {
+      doSkip();
       return tokenStream.lookAheadType(0) != null;
    }
 
