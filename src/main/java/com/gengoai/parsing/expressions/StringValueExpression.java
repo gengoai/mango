@@ -22,6 +22,7 @@
 package com.gengoai.parsing.expressions;
 
 
+import com.gengoai.parsing.ParserToken;
 import com.gengoai.parsing.ParserTokenType;
 
 /**
@@ -45,6 +46,11 @@ public class StringValueExpression extends ValueExpression {
    public StringValueExpression(String value, ParserTokenType type) {
       super(type);
       this.value = value;
+   }
+
+   public StringValueExpression(ParserToken token) {
+      super(token.type);
+      this.value = token.text;
    }
 
    @Override

@@ -11,7 +11,6 @@ import com.gengoai.parsing.expressions.*;
 import com.gengoai.parsing.handlers.*;
 import com.gengoai.string.StringUtils;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -24,25 +23,32 @@ import static com.gengoai.parsing.validation.OperatorValidator.newOperatorValida
 import static com.gengoai.parsing.validation.PrefixOperatorValidator.newPrefixOpValidator;
 
 /**
- * The type Mson config parser.
+ * Config parser for files in MSON (Mangofied JSON) format
  *
  * @author David B. Bracewell
  */
 public class MsonConfigParser extends Parser {
-   public static final String MSON_EXTENSION = ".conf";
    private static final Logger LOG = Logger.getLogger(MsonConfigParser.class);
    private static final Grammar MSON_GRAMMAR = new Grammar() {{
       registerSkip(ConfigTokenType.COMMENT);
 
+      //--------------------------------------------------------------------------------------------
       //Value Handlers
-      register(ConfigTokenType.STRING,
-               new ValueHandler(t -> new StringValueExpression(t.text.replaceAll("\\\\(.)", "$1"), t.type)));
+      //--------------------------------------------------------------------------------------------
+
+      //Quoted strings, need to replace escape characters
+      register(ConfigTokenType.STRING, new ValueHandler(
+         t -> new StringValueExpression(t.text.replaceAll("\\\\(.)", "$1"), t.type)));
+
       register(ConfigTokenType.BOOLEAN, new ValueHandler(BooleanValueExpression::new));
       register(ConfigTokenType.NULL, new ValueHandler(NullValueExpression::new));
-      register(ConfigTokenType.BEAN, new ValueHandler(t -> new StringValueExpression(t.text, t.type)));
+      register(ConfigTokenType.BEAN, new ValueHandler(StringValueExpression::new));
       register(ConfigTokenType.KEY, new ValueHandler(KeyValueExpression::new));
       register(ConfigTokenType.VALUE_SEPARATOR, new ValueHandler());
 
+      //--------------------------------------------------------------------------------------------
+      // Key-Value Operators
+      //--------------------------------------------------------------------------------------------
 
       //Key Value Properties can take strings on the left and anything on the right
       register(ConfigTokenType.KEY_VALUE_SEPARATOR, infixValidator(new BinaryOperatorHandler(10, false),
@@ -57,12 +63,6 @@ public class MsonConfigParser extends Parser {
                                                                                    StringValueExpression.class),
                                                                  e -> true)));
 
-      //Imports can take a string or key on the right
-      register(ConfigTokenType.IMPORT, prefixValidator(new PrefixOperatorHandler(),
-                                                       newPrefixOpValidator(
-                                                          e -> e.isInstance(StringValueExpression.class,
-                                                                            KeyValueExpression.class))));
-
       //Append Properties can take keys or strings on the left and anything on the right
       register(ConfigTokenType.APPEND_PROPERTY, infixValidator(new BinaryOperatorHandler(10, false),
                                                                newBinaryOpValidator(
@@ -71,16 +71,35 @@ public class MsonConfigParser extends Parser {
                                                                   e -> true)));
 
 
+      //--------------------------------------------------------------------------------------------
+      // Config Actions (e.g. import)
+      //--------------------------------------------------------------------------------------------
+
+      //Imports can take a string or key on the right
+      register(ConfigTokenType.IMPORT, prefixValidator(new PrefixOperatorHandler(),
+                                                       newPrefixOpValidator(
+                                                          e -> e.isInstance(StringValueExpression.class,
+                                                                            KeyValueExpression.class))));
+
+
+      //--------------------------------------------------------------------------------------------
+      // Arrays
+      //--------------------------------------------------------------------------------------------
+
+      register(ConfigTokenType.BEGIN_ARRAY, new ArrayHandler(ConfigTokenType.END_ARRAY,
+                                                             ConfigTokenType.VALUE_SEPARATOR));
+
+
+      //--------------------------------------------------------------------------------------------
+      // Objects
+      //--------------------------------------------------------------------------------------------
+
       //Only time we have begin object as a prefix is when we are defining a map value
       register(ConfigTokenType.BEGIN_OBJECT, new MapPrefixHandler(ConfigTokenType.END_OBJECT,
                                                                   ConfigTokenType.VALUE_SEPARATOR,
                                                                   newOperatorValidator(
                                                                      token -> token.isInstance(
                                                                         ConfigTokenType.KEY_VALUE_SEPARATOR))));
-
-
-      register(ConfigTokenType.BEGIN_ARRAY, new ArrayHandler(ConfigTokenType.END_ARRAY,
-                                                             ConfigTokenType.VALUE_SEPARATOR));
 
       //Begin object as an infix operator is used for sections
       register(ConfigTokenType.BEGIN_OBJECT, new MapInfixHandler(10,
@@ -91,8 +110,6 @@ public class MsonConfigParser extends Parser {
                                                                        ConfigTokenType.EQUAL_PROPERTY,
                                                                        ConfigTokenType.BEGIN_OBJECT))));
    }};
-
-
    private static final Lexer MSON_LEXER = input -> new ParserTokenStream(new Iterator<ParserToken>() {
       ConfigScanner scanner = new ConfigScanner(input.reader());
       ParserToken token = null;
@@ -172,90 +189,76 @@ public class MsonConfigParser extends Parser {
       new MsonConfigParser(resource).parse();
    }
 
-   /**
-    * Convert expression json entry.
-    *
-    * @param exp the exp
-    * @return the json entry
-    * @throws ParseException the parse exception
-    */
-   public JsonEntry convertExpression(Expression exp) throws ParseException {
+   private JsonEntry convertExpression(Expression exp) throws ParseException {
+
       if (exp.isInstance(ValueExpression.class)) {
          return JsonEntry.from(exp.as(ValueExpression.class).getValue());
-      } else if (exp.isInstance(ArrayExpression.class)) {
-         return createArray(exp.as(ArrayExpression.class));
-      } else if (exp.isInstance(MultivalueExpression.class)) {
-         return createJsonMap(exp.as(MultivalueExpression.class));
       }
+
+      if (exp.isInstance(ArrayExpression.class)) {
+         ArrayExpression arrayExpression = exp.as(ArrayExpression.class);
+         JsonEntry array = JsonEntry.array();
+         for (Expression e : arrayExpression.expressions) {
+            array.addValue(convertExpression(e));
+         }
+         return array;
+      }
+
+      if (exp.isInstance(MultivalueExpression.class)) {
+         MultivalueExpression mve = exp.as(MultivalueExpression.class);
+         JsonEntry map = JsonEntry.object();
+         for (Expression e : mve.expressions) {
+            BinaryOperatorExpression boe = e.as(BinaryOperatorExpression.class);
+            String key = boe.left.toString();
+            map.addProperty(key, convertExpression(boe.right));
+         }
+         return map;
+      }
+
       throw new ParseException("Unexpected Expression: " + exp);
    }
 
-   private JsonEntry createArray(ArrayExpression exp) throws ParseException {
-      JsonEntry array = JsonEntry.array();
-      for (Expression e : exp.expressions) {
-         array.addValue(convertExpression(e));
-      }
-      return array;
-   }
-
-   private JsonEntry createJsonMap(MultivalueExpression mve) throws ParseException {
-      JsonEntry map = JsonEntry.object();
-      for (Expression e : mve.expressions) {
-         BinaryOperatorExpression boe = e.as(BinaryOperatorExpression.class);
-         String key = boe.left.toString();
-         map.addProperty(key, convertExpression(boe.right));
-      }
-      return map;
-   }
-
    private String effectiveKey(String scope, String key) {
-      return StringUtils.isNullOrBlank(scope)
-             ? key
-             : scope + "." + key;
+      String effectiveKey = StringUtils.isNullOrBlank(scope)
+                            ? key
+                            : scope + "." + key;
+      if (effectiveKey.endsWith("._") && effectiveKey.length() > 2) {
+         effectiveKey = effectiveKey.substring(0, effectiveKey.length() - 2);
+      }
+      return effectiveKey;
    }
 
    private void handleAppendProperty(String prepend, BinaryOperatorExpression exp) throws ParseException {
       String key = effectiveKey(prepend, exp.left.toString());
-      if (key.endsWith("._")) {
-         key = key.substring(0, key.length() - 2);
-      }
-      JsonEntry value = convertExpression(exp.right);
-      List<Object> list = new ArrayList<>(Config.get(key).asList(Object.class));
-      processJson(list, value);
-      Config.getInstance().setterFunction.setProperty(key, JsonEntry.array(list).toString(), resourceName);
+      List<Object> list = Config.get(key).asList(Object.class);
+      processJson(list, convertExpression(exp.right));
+      Config.getInstance()
+         .setterFunction
+         .setProperty(key, JsonEntry.array(list).toString(), resourceName);
    }
 
-   private void handleImport(String importString) {
-      String path;
-      if (importString.contains("/")) {
-         path = importString;
-         if (!path.endsWith(MSON_EXTENSION)) {
-            path += MSON_EXTENSION;
-         }
-      } else if (importString.endsWith(MSON_EXTENSION)) {
-         int index = importString.lastIndexOf('.');
-         path = importString.substring(0, index).replaceAll("\\.", "/") + MSON_EXTENSION;
-      } else {
-         path = importString.replace(".", "/") + MSON_EXTENSION;
+   private void handleImport(String importString) throws ParseException {
+      if (!importString.endsWith(Config.CONF_EXTENSION) && importString.contains("/")) {
+         //We don't have a MSON extension at the end and the import string is a path
+         throw new ParseException(String.format("Invalid Import Statement (%s)", importString));
       }
-
-      path = Config.resolveVariables(path).trim();
-      LOG.fine("Importing Conf: {0}", path);
-      if (path.startsWith("file:")) {
-         Config.loadConfig(Resources.from(path));
+      String path = Config.resolveVariables(importString).trim();
+      if (path.contains("/")) {
+         if (path.startsWith("file:")) {
+            Config.loadConfig(Resources.from(path));
+         } else {
+            Config.loadConfig(new ClasspathResource(path));
+         }
       } else {
-         Config.loadConfig(new ClasspathResource(path));
+         Config.loadPackageConfig(path);
       }
    }
 
    private void handleProperty(String prepend, BinaryOperatorExpression exp) throws ParseException {
       String key = effectiveKey(prepend, exp.left.toString());
-      if (key.endsWith("._")) {
-         key = key.substring(0, key.length() - 2);
-      }
       JsonEntry value = convertExpression(exp.right);
-      String strvalue = value.isPrimitive() ? value.get().toString() : value.toString();
-      Config.getInstance().setterFunction.setProperty(key, strvalue, resourceName);
+      String stringValue = value.isPrimitive() ? value.get().toString() : value.toString();
+      Config.getInstance().setterFunction.setProperty(key, stringValue, resourceName);
    }
 
    private void handleSection(String prepend, BinaryOperatorExpression exp) throws ParseException {
@@ -282,12 +285,6 @@ public class MsonConfigParser extends Parser {
       super.evaluateAll(resource, MSON_EVALUATOR);
    }
 
-   private void processArray(List<Object> list, JsonEntry value) {
-      for (JsonEntry entry : Iterables.asIterable(value.elementIterator())) {
-         processJson(list, entry);
-      }
-   }
-
    private void processJson(List<Object> list, JsonEntry entry) {
       if (entry.isNull()) {
          list.add(null);
@@ -296,7 +293,9 @@ public class MsonConfigParser extends Parser {
       } else if (entry.isObject()) {
          list.add(entry.getAsMap());
       } else if (entry.isArray()) {
-         processArray(list, entry);
+         for (JsonEntry e : Iterables.asIterable(entry.elementIterator())) {
+            processJson(list, e);
+         }
       }
    }
 
