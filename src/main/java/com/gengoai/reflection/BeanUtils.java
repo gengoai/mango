@@ -48,7 +48,6 @@ public class BeanUtils {
       beanMap.getSetters()
              .stream()
              .filter(propertyName -> Config.hasProperty(className, propertyName)
-                                        || Config.hasProperty(className, propertyName, "_")
                     )
              .forEach(propertyName -> {
                 String property = className + "." + propertyName;
@@ -62,11 +61,7 @@ public class BeanUtils {
                       type = Types.parse(Config.get(property + ".@type").asString());
                    }
                    try {
-                      if (Config.hasProperty(property)) {
-                         val = Json.parse(Config.get(className, propertyName).asString()).getAs(type);
-                      } else {
-                         val = Json.parse(Config.get(className, propertyName, "_").asString()).getAs(type);
-                      }
+                      val = Json.parse(Config.get(className, propertyName).asString()).getAs(type);
                    } catch (IOException e) {
                       throw new RuntimeException(e);
                    }

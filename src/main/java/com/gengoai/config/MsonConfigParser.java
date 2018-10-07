@@ -216,6 +216,9 @@ public class MsonConfigParser extends Parser {
 
    private void handleAppendProperty(String prepend, BinaryOperatorExpression exp) throws ParseException {
       String key = effectiveKey(prepend, exp.left.toString());
+      if (key.endsWith("._")) {
+         key = key.substring(0, key.length() - 2);
+      }
       JsonEntry value = convertExpression(exp.right);
       List<Object> list = new ArrayList<>(Config.get(key).asList(Object.class));
       processJson(list, value);
@@ -247,6 +250,9 @@ public class MsonConfigParser extends Parser {
 
    private void handleProperty(String prepend, BinaryOperatorExpression exp) throws ParseException {
       String key = effectiveKey(prepend, exp.left.toString());
+      if (key.endsWith("._")) {
+         key = key.substring(0, key.length() - 2);
+      }
       JsonEntry value = convertExpression(exp.right);
       String strvalue = value.isPrimitive() ? value.get().toString() : value.toString();
       Config.getInstance().setterFunction.setProperty(key, strvalue, resourceName);
