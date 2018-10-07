@@ -66,7 +66,6 @@ public class BeanUtilsTest {
    public void test() throws Exception {
       TestBean testBean = BeanUtils.getNamedBean("testbean", TestBean.class);
       assertEquals("John", testBean.getName());
-      System.out.println(testBean.getChildren());
       assertTrue(Sets.difference(Sets.set("Sam", "Ryan", "Billy"), testBean.getChildren()).isEmpty());
    }
 

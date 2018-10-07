@@ -17,7 +17,6 @@ import java.util.List;
 
 import static com.gengoai.config.ConfigScanner.ConfigTokenType;
 import static com.gengoai.function.CheckedConsumer.asFunction;
-import static com.gengoai.parsing.CommonTypes.OPENBRACE;
 import static com.gengoai.parsing.handlers.ValidatingInfixHandler.infixValidator;
 import static com.gengoai.parsing.handlers.ValidatingPrefixHandler.prefixValidator;
 import static com.gengoai.parsing.validation.BinaryOperatorValidator.newBinaryOpValidator;
@@ -258,7 +257,7 @@ public class MsonConfigParser extends Parser {
       MultivalueExpression mve = exp.right.as(MultivalueExpression.class);
       for (Expression expression : mve.expressions) {
          BinaryOperatorExpression boe = expression.as(BinaryOperatorExpression.class);
-         if (boe.getTokenType().equals(OPENBRACE)) {
+         if (boe.getTokenType().equals(ConfigTokenType.BEGIN_OBJECT)) {
             handleSection(section, boe);
          } else if (boe.getTokenType().equals(ConfigTokenType.APPEND_PROPERTY)) {
             handleAppendProperty(section, boe);

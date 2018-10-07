@@ -21,15 +21,19 @@
 
 package com.gengoai.reflection;
 
+import com.gengoai.collection.Iterables;
 import com.gengoai.config.Config;
 import com.gengoai.conversion.Cast;
-import com.gengoai.conversion.Converter;
+import com.gengoai.json.Json;
+import com.gengoai.json.JsonEntry;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
@@ -43,15 +47,29 @@ public class BeanUtils {
    private static void doParametrization(BeanMap beanMap, String className) {
       beanMap.getSetters()
              .stream()
-             .filter(propertyName -> Config.hasProperty(className, propertyName))
+             .filter(propertyName -> Config.hasProperty(className, propertyName)
+                                        || Config.hasProperty(className, propertyName, "_")
+                    )
              .forEach(propertyName -> {
                 String property = className + "." + propertyName;
                 Object val = null;
+
                 if (Config.isBean(property)) {
                    val = Config.get(property);
                 } else {
-                   ValueType valueType = ValueType.fromConfig(className + "." + propertyName);
-                   val = valueType.convert(Config.get(className, propertyName).asString());
+                   Type type = Object.class;
+                   if (Config.hasProperty(property + ".@type")) {
+                      type = Types.parse(Config.get(property + ".@type").asString());
+                   }
+                   try {
+                      if (Config.hasProperty(property)) {
+                         val = Json.parse(Config.get(className, propertyName).asString()).getAs(type);
+                      } else {
+                         val = Json.parse(Config.get(className, propertyName, "_").asString()).getAs(type);
+                      }
+                   } catch (IOException e) {
+                      throw new RuntimeException(e);
+                   }
                 }
                 beanMap.put(propertyName, val);
              });
@@ -80,13 +98,11 @@ public class BeanUtils {
          return Cast.as(SINGLETONS.get(name));
       }
 
-//      if (Config.valueIsScript(name)) {
-//         return Config.get(name).as(clazz);
-//      }
 
       Reflect reflect;
-      if (Config.hasProperty(name + ".class")) {
-         reflect = Reflect.onClass(Config.get(name + ".class").asClass());
+      if (Config.hasProperty(name + ".@type")) {
+         reflect = Reflect.onClass(Config.get(name + ".@type").asClass());
+         clazz = Cast.as(reflect.getReflectedClass());
       } else {
          reflect = Reflect.onClass(clazz);
       }
@@ -95,62 +111,60 @@ public class BeanUtils {
 
       List<Class<?>> paramTypes = new ArrayList<>();
       List<Object> values = new ArrayList<>();
-      List<String> rawValues = new ArrayList<>();
-      boolean hadType = false;
 
-      for (int i = 1; i <= 1000; i++) {
-         String cParam = name + ".constructor.param" + i;
-         if (Config.hasProperty(cParam) || Config.hasProperty(cParam, "value")) {
-            ValueType valueType = ValueType.fromConfig(cParam);
-            paramTypes.add(valueType.getType());
-            String valueCfg = Config.hasProperty(cParam, "value")
-                              ? Config.get(cParam, "value").asString()
-                              : Config.get(cParam).asString();
-            if (Config.hasProperty(cParam, "type")) {
-               hadType = true;
+      if (Config.hasProperty(name + ".@constructor")) {
+         try {
+            JsonEntry cons = Json.parse(Config.get(name + ".@constructor").asString());
+            for (Map.Entry<String, JsonEntry> e : Iterables.asIterable(cons.propertyIterator())) {
+               Type type = Types.parse(e.getKey());
+               values.add(e.getValue().getAs(type));
+               paramTypes.add(Types.asClass(type));
             }
-            rawValues.add(valueCfg);
-            values.add(valueType.convert(valueCfg));
+         } catch (IOException e) {
+            throw new RuntimeException(e);
          }
       }
 
-      if (paramTypes.size() != values.size()) {
-         throw new IllegalStateException("Number of parameters does not equal the number of values");
-      }
-
-      BeanMap beanMap;
+      Object bean;
       if (values.isEmpty()) {
-         beanMap = new BeanMap(parameterizeObject(reflect.create().get()));
-      } else if (hadType) {
-         beanMap = new BeanMap(parameterizeObject(reflect.create(paramTypes.toArray(new Class[paramTypes.size()]),
-                                                                 values.toArray()).<T>get()));
+         bean = reflect.create().get();
       } else {
          Constructor<?> constructor = ClassDescriptorCache.getInstance()
                                                           .getClassDescriptor(clazz)
                                                           .getConstructors(false)
                                                           .stream()
                                                           .filter(
-                                                             c -> c.getParameterTypes().length == values.size()
-                                                                 )
+                                                             c -> {
+                                                                if (c.getParameterTypes().length == values.size()) {
+                                                                   for (int i = 0; i < values.size(); i++) {
+                                                                      if (!Types.isAssignable(c.getParameterTypes()[i],
+                                                                                              paramTypes.get(i))) {
+                                                                         return false;
+                                                                      }
+                                                                   }
+                                                                   return true;
+                                                                }
+                                                                return false;
+                                                             })
                                                           .findFirst()
                                                           .orElse(null);
          if (constructor == null) {
-            throw new ReflectionException("Cannot find a matching constructor for " +
-                                             reflect.getReflectedClass() + " that takes " + values);
+            throw new RuntimeException(String.format(
+               "Could not find the correct constructor for class (%s) with argument types (%s)",
+               clazz,
+               paramTypes
+                                                    ));
          }
          try {
-            Object[] newValues = new Object[values.size()];
-            for (int i = 0; i < newValues.length; i++) {
-               newValues[i] = Converter.convertSilently(rawValues.get(i), constructor.getParameterTypes()[i]);
-            }
-            beanMap = new BeanMap(parameterizeObject(constructor.newInstance(newValues)));
-         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e1) {
-            throw new ReflectionException(e1);
+            bean = constructor.newInstance(values.toArray());
+         } catch (Exception e) {
+            throw new RuntimeException(e);
          }
       }
 
+      BeanMap beanMap = new BeanMap(parameterizeObject(bean));
       doParametrization(beanMap, name);
-      Object bean = beanMap.getBean();
+      bean = beanMap.getBean();
       if (isSingleton) {
          SINGLETONS.putIfAbsent(name, bean);
          bean = SINGLETONS.get(name);

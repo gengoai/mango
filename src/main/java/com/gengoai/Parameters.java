@@ -29,11 +29,6 @@ public final class Parameters<K extends Enum<K> & ValueTypeInformation> implemen
    private final Class<K> keyClass;
    private final EnumMap<K, Object> parameters;
 
-
-   public static void main(String[] args) throws Exception {
-      System.out.println(Types.isAssignable(Integer.class, int.class));
-   }
-
    /**
     * Static method for easily constructing a set of parameters
     *

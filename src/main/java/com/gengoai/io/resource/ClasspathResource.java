@@ -262,11 +262,4 @@ public class ClasspathResource extends BaseResource {
                 Objects.equals(resource, other.resource);
    }
 
-   public static void main(String[] args) throws Exception {
-      ClasspathResource cpr = new ClasspathResource("com/ibm/icu/text/");
-      for (Resource r : cpr.getChildren()) {
-         System.out.println(r);
-      }
-   }
-
-}// END OF ClasspathResource
+ }// END OF ClasspathResource
