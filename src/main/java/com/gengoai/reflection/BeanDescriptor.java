@@ -26,10 +26,7 @@ import com.gengoai.string.StringUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -68,35 +65,19 @@ public class BeanDescriptor implements Serializable {
       return other instanceof BeanDescriptor;
    }
 
-   public boolean equals(Object o) {
-      if (o == this) return true;
-      if (!(o instanceof BeanDescriptor)) return false;
-      final BeanDescriptor other = (BeanDescriptor) o;
-      if (!other.canEqual((Object) this)) return false;
-      final Object this$readMethods = this.getReadMethods();
-      final Object other$readMethods = other.getReadMethods();
-      if (this$readMethods == null ? other$readMethods != null : !this$readMethods.equals(other$readMethods))
-         return false;
-      final Object this$writeMethods = this.getWriteMethods();
-      final Object other$writeMethods = other.getWriteMethods();
-      if (this$writeMethods == null ? other$writeMethods != null : !this$writeMethods.equals(other$writeMethods))
-         return false;
-      final Object this$clazz = this.clazz;
-      final Object other$clazz = other.clazz;
-      if (this$clazz == null ? other$clazz != null : !this$clazz.equals(other$clazz)) return false;
-      return true;
+   @Override
+   public int hashCode() {
+      return Objects.hash(readMethods, writeMethods, clazz);
    }
 
-   public int hashCode() {
-      final int PRIME = 59;
-      int result = 1;
-      final Object $readMethods = this.getReadMethods();
-      result = result * PRIME + ($readMethods == null ? 43 : $readMethods.hashCode());
-      final Object $writeMethods = this.getWriteMethods();
-      result = result * PRIME + ($writeMethods == null ? 43 : $writeMethods.hashCode());
-      final Object $clazz = this.clazz;
-      result = result * PRIME + ($clazz == null ? 43 : $clazz.hashCode());
-      return result;
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {return true;}
+      if (obj == null || getClass() != obj.getClass()) {return false;}
+      final BeanDescriptor other = (BeanDescriptor) obj;
+      return Objects.equals(this.readMethods, other.readMethods)
+                && Objects.equals(this.writeMethods, other.writeMethods)
+                && Objects.equals(this.clazz, other.clazz);
    }
 
    private void setReadWrite(Class<?> clazz) {
@@ -123,7 +104,7 @@ public class BeanDescriptor implements Serializable {
       if (name.length() == prefixLen) {
          return StringUtils.EMPTY;
       }
-      char[] carrry = name.substring(prefixLen, name.length()).toCharArray();
+      char[] carrry = name.substring(prefixLen).toCharArray();
       carrry[0] = Character.toLowerCase(carrry[0]);
       return new String(carrry);
    }
@@ -236,10 +217,7 @@ public class BeanDescriptor implements Serializable {
    public Object createInstanceQuietly() {
       try {
          return clazz.newInstance();
-      } catch (InstantiationException e) {
-         log.finest(e);
-         return null;
-      } catch (IllegalAccessException e) {
+      } catch (InstantiationException | IllegalAccessException e) {
          log.finest(e);
          return null;
       }

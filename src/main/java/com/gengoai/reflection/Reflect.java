@@ -56,70 +56,18 @@ public final class Reflect {
       this.accessAll = accessAll;
    }
 
-   /**
-    * Creates an instance of Reflect associated with an object
-    *
-    * @param object The object for reflection
-    * @return The Reflect object
-    */
-   public static Reflect onObject(Object object) {
-      if (object == null) {
-         return new Reflect(null, null);
+   private static Object convertValueType(Object value, Class<?> toClass) {
+      if (value == null) {
+         return Defaults.value(toClass);
       }
-      return new Reflect(object, object.getClass());
-   }
-
-   /**
-    * Creates an instance of Reflect associated with a class
-    *
-    * @param clazz The class for reflection
-    * @return The Reflect object
-    */
-   public static Reflect onClass(Class<?> clazz) {
-      return new Reflect(null, clazz);
-   }
-
-   /**
-    * Creates an instance of Reflect associated with a class
-    *
-    * @param clazz The class for reflection as string
-    * @return The Reflect object
-    * @throws Exception the exception
-    */
-   public static Reflect onClass(String clazz) throws Exception {
-      return new Reflect(null, ReflectionUtils.getClassForName(clazz));
-   }
-
-   /**
-    * Creates an instance Reflect for an object that gets constructed using the supplied constructor and arguments.
-    *
-    * @param constructor           The constructor to call
-    * @param allowPrivilegedAccess Allows access to all methods on the object or class
-    * @param args                  The arguments to pass to the constructor
-    * @return A Reflect wrapper around the constructed object
-    * @throws ReflectionException Something went wrong constructing the object
-    */
-   public static Reflect on(Constructor constructor, boolean allowPrivilegedAccess, Object... args) throws ReflectionException {
-      boolean accessible = constructor.isAccessible();
-      try {
-         if (!accessible && allowPrivilegedAccess) {
-            constructor.setAccessible(true);
-         }
-         if (args != null) {
-            Class<?>[] parameterTypes = constructor.getParameterTypes();
-            for (int i = 0; i < args.length; i++) {
-               args[i] = convertValueType(args[i], parameterTypes[i]);
-            }
-         }
-         Object object = constructor.newInstance(args);
-         return new Reflect(object, object.getClass(), allowPrivilegedAccess);
-      } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-         throw new ReflectionException(e);
-      } finally {
-         if (!accessible && allowPrivilegedAccess) {
-            constructor.setAccessible(false);
-         }
+      if (Val.class.isAssignableFrom(toClass)) {
+         return Cast.as(value, Val.class).as(toClass);
       }
+      if (toClass.isAssignableFrom(value.getClass())) {
+         return value;
+      }
+      Object out = Converter.convertSilently(value, toClass);
+      return out == null ? value : out;
    }
 
    /**
@@ -157,18 +105,80 @@ public final class Reflect {
       }
    }
 
-   private static Object convertValueType(Object value, Class<?> toClass) {
-      if (value == null) {
-         return Defaults.value(toClass);
+   /**
+    * Creates an instance Reflect for an object that gets constructed using the supplied constructor and arguments.
+    *
+    * @param constructor           The constructor to call
+    * @param allowPrivilegedAccess Allows access to all methods on the object or class
+    * @param args                  The arguments to pass to the constructor
+    * @return A Reflect wrapper around the constructed object
+    * @throws ReflectionException Something went wrong constructing the object
+    */
+   public static Reflect on(Constructor constructor, boolean allowPrivilegedAccess, Object... args) throws ReflectionException {
+      boolean accessible = constructor.isAccessible();
+      try {
+         if (!accessible && allowPrivilegedAccess) {
+            constructor.setAccessible(true);
+         }
+         if (args != null) {
+            Class<?>[] parameterTypes = constructor.getParameterTypes();
+            for (int i = 0; i < args.length; i++) {
+               args[i] = convertValueType(args[i], parameterTypes[i]);
+            }
+         }
+         Object object = constructor.newInstance(args);
+         return new Reflect(object, object.getClass(), allowPrivilegedAccess);
+      } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+         throw new ReflectionException(e);
+      } finally {
+         if (!accessible && allowPrivilegedAccess) {
+            constructor.setAccessible(false);
+         }
       }
-      if (Val.class.isAssignableFrom(toClass)) {
-         return Cast.as(value, Val.class).as(toClass);
+   }
+
+   /**
+    * Creates an instance of Reflect associated with a class
+    *
+    * @param clazz The class for reflection as string
+    * @return The Reflect object
+    * @throws Exception the exception
+    */
+   public static Reflect onClass(String clazz) throws Exception {
+      return new Reflect(null, ReflectionUtils.getClassForName(clazz));
+   }
+
+   /**
+    * Creates an instance of Reflect associated with a class
+    *
+    * @param clazz The class for reflection
+    * @return The Reflect object
+    */
+   public static Reflect onClass(Class<?> clazz) {
+      return new Reflect(null, clazz);
+   }
+
+   /**
+    * Creates an instance of Reflect associated with an object
+    *
+    * @param object The object for reflection
+    * @return The Reflect object
+    */
+   public static Reflect onObject(Object object) {
+      if (object == null) {
+         return new Reflect(null, null);
       }
-      if (toClass.isAssignableFrom(value.getClass())) {
-         return value;
-      }
-      Object out = Converter.convertSilently(value, toClass);
-      return out == null ? value : out;
+      return new Reflect(object, object.getClass());
+   }
+
+   /**
+    * Allow privileged access.
+    *
+    * @return An new Reflect object based on the current one that allows privileged access to methods, fields, and
+    * constructors.
+    */
+   public Reflect allowPrivilegedAccess() {
+      return new Reflect(object, clazz, true);
    }
 
    /**
@@ -189,32 +199,20 @@ public final class Reflect {
    }
 
    /**
-    * Allow privileged access.
+    * Contains method.
     *
-    * @return An new Reflect object based on the current one that allows privileged access to methods, fields, and
-    * constructors.
+    * @param name the name
+    * @return the boolean
     */
-   public Reflect allowPrivilegedAccess() {
-      return new Reflect(object, clazz, true);
-   }
-
-   /**
-    * Get t.
-    *
-    * @param <T> The object type
-    * @return The object used in reflection or null if there is not one
-    */
-   public <T> T get() {
-      return Cast.as(object);
-   }
-
-   /**
-    * Gets reflected class.
-    *
-    * @return Class information for what is being reflected on
-    */
-   public Class<?> getReflectedClass() {
-      return clazz;
+   public boolean containsMethod(final String name) {
+      if (StringUtils.isNullOrBlank(name)) {
+         return false;
+      }
+      return ClassDescriptorCache.getInstance()
+                                 .getClassDescriptor(clazz)
+                                 .getMethods(accessAll)
+                                 .stream()
+                                 .anyMatch(f -> f.getName().equals(name));
    }
 
    /**
@@ -271,6 +269,45 @@ public final class Reflect {
    }
 
    /**
+    * Get t.
+    *
+    * @param <T> The object type
+    * @return The object used in reflection or null if there is not one
+    */
+   public <T> T get() {
+      return Cast.as(object);
+   }
+
+   /**
+    * Gets the value of a field.
+    *
+    * @param fieldName The name of the field to get
+    * @return An instance of Reflect wrapping the result of the field value
+    * @throws ReflectionException Something went wrong getting the value of field
+    */
+   public Reflect get(String fieldName) throws ReflectionException {
+      Field f = getField(fieldName);
+
+      if (f == null) {
+         throw new ReflectionException(new NoSuchFieldException(fieldName + " is not a valid field for " + clazz));
+      }
+
+      boolean isAccessible = f.isAccessible();
+      try {
+         if (accessAll) {
+            f.setAccessible(true);
+         }
+         return onObject(f.get(object));
+      } catch (IllegalAccessException e) {
+         e.printStackTrace();
+         throw new ReflectionException(e);
+      } finally {
+         f.setAccessible(isAccessible);
+      }
+
+   }
+
+   /**
     * Gets constructors.
     *
     * @return The set of constructors for the object which is a combination of and if <code>allowPrivilegedAccess</code>
@@ -282,16 +319,25 @@ public final class Reflect {
                                  .getConstructors(accessAll);
    }
 
-   /**
-    * Gets methods.
-    *
-    * @return The set of methods for the object which is a combination of and if <code>allowPrivilegedAccess</code> was
-    * called.
-    */
-   public Set<Method> getMethods() {
+   private Field getField(String fieldName) {
       return ClassDescriptorCache.getInstance()
                                  .getClassDescriptor(clazz)
-                                 .getMethods(accessAll);
+                                 .getFields(accessAll)
+                                 .stream()
+                                 .filter(field -> field.getName().equals(fieldName))
+                                 .findFirst().orElse(null);
+   }
+
+   /**
+    * Gets fields.
+    *
+    * @return The set of fields for the object which is a combination of and if <code>allowPrivilegedAccess</code> was
+    * called.
+    */
+   public Set<Field> getFields() {
+      return ClassDescriptorCache.getInstance()
+                                 .getClassDescriptor(clazz)
+                                 .getFields(accessAll);
    }
 
    /**
@@ -308,20 +354,15 @@ public final class Reflect {
    }
 
    /**
-    * Contains method.
+    * Gets methods.
     *
-    * @param name the name
-    * @return the boolean
+    * @return The set of methods for the object which is a combination of and if <code>allowPrivilegedAccess</code> was
+    * called.
     */
-   public boolean containsMethod(final String name) {
-      if (StringUtils.isNullOrBlank(name)) {
-         return false;
-      }
+   public Set<Method> getMethods() {
       return ClassDescriptorCache.getInstance()
                                  .getClassDescriptor(clazz)
-                                 .getMethods(accessAll)
-                                 .stream()
-                                 .anyMatch(f -> f.getName().equals(name));
+                                 .getMethods(accessAll);
    }
 
    /**
@@ -344,6 +385,29 @@ public final class Reflect {
    }
 
    /**
+    * Gets reflected class.
+    *
+    * @return Class information for what is being reflected on
+    */
+   public Class<?> getReflectedClass() {
+      return clazz;
+   }
+
+   /**
+    * Has field boolean.
+    *
+    * @param fieldName the field name
+    * @return the boolean
+    */
+   public boolean hasField(String fieldName) {
+      return ClassDescriptorCache.getInstance()
+                                 .getClassDescriptor(clazz)
+                                 .getFields(accessAll)
+                                 .stream()
+                                 .anyMatch(f -> f.getName().equals(fieldName));
+   }
+
+   /**
     * Invokes a method with a given name and arguments with the most specific method possible
     *
     * @param methodName The name of the method
@@ -363,30 +427,6 @@ public final class Reflect {
          throw new ReflectionException(e);
       }
 
-   }
-
-
-   /**
-    * Has field boolean.
-    *
-    * @param fieldName the field name
-    * @return the boolean
-    */
-   public boolean hasField(String fieldName) {
-      return ClassDescriptorCache.getInstance()
-                                 .getClassDescriptor(clazz)
-                                 .getFields(accessAll)
-                                 .stream()
-                                 .anyMatch(f -> f.getName().equals(fieldName));
-   }
-
-   private Field getField(String fieldName) {
-      return ClassDescriptorCache.getInstance()
-                                 .getClassDescriptor(clazz)
-                                 .getFields(accessAll)
-                                 .stream()
-                                 .filter(field -> field.getName().equals(fieldName))
-                                 .findFirst().orElse(null);
    }
 
    /**
@@ -419,48 +459,6 @@ public final class Reflect {
          }
       }
 
-   }
-
-   /**
-    * Gets the value of a field.
-    *
-    * @param fieldName The name of the field to get
-    * @return An instance of Reflect wrapping the result of the field value
-    * @throws ReflectionException Something went wrong getting the value of field
-    */
-   public Reflect get(String fieldName) throws ReflectionException {
-      Field f = getField(fieldName);
-
-      if (f == null) {
-         throw new ReflectionException(new NoSuchFieldException(fieldName + " is not a valid field for " + clazz));
-      }
-
-      boolean isAccessible = f.isAccessible();
-      try {
-         if (accessAll) {
-            f.setAccessible(true);
-         }
-         return onObject(f.get(object));
-      } catch (IllegalAccessException e) {
-         e.printStackTrace();
-         throw new ReflectionException(e);
-      } finally {
-         f.setAccessible(isAccessible);
-      }
-
-   }
-
-
-   /**
-    * Gets fields.
-    *
-    * @return The set of fields for the object which is a combination of and if <code>allowPrivilegedAccess</code> was
-    * called.
-    */
-   public Set<Field> getFields() {
-      return ClassDescriptorCache.getInstance()
-                                 .getClassDescriptor(clazz)
-                                 .getFields(accessAll);
    }
 
    @Override

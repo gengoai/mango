@@ -37,14 +37,6 @@ public class ClassDescriptorCache implements Serializable {
 
    private final Cache<Class<?>, ClassDescriptor> classDescriptorCache = Cache.create(1000, ClassDescriptor::new);
 
-   private final Cache<String, Class<?>> classNameCache = Cache.create(1000, key -> {
-      try {
-         return ReflectionUtils.getClassForName(key);
-      } catch (Exception e) {
-         throw new RuntimeException(e);
-      }
-   });
-
    /**
     * Gets instance.
     *
@@ -70,17 +62,5 @@ public class ClassDescriptorCache implements Serializable {
    public ClassDescriptor getClassDescriptor(Class<?> clazz) {
       return classDescriptorCache.get(clazz);
    }
-
-   /**
-    * Gets class for name.
-    *
-    * @param string the string
-    * @return the class for name
-    * @throws Exception the exception
-    */
-   public Class<?> getClassForName(String string) throws Exception {
-      return classNameCache.get(string);
-   }
-
 
 }//END OF ClassDescriptorCache

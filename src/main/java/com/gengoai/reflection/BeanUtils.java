@@ -28,7 +28,6 @@ import com.gengoai.json.Json;
 import com.gengoai.json.JsonEntry;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,12 +46,10 @@ public class BeanUtils {
    private static void doParametrization(BeanMap beanMap, String className) {
       beanMap.getSetters()
              .stream()
-             .filter(propertyName -> Config.hasProperty(className, propertyName)
-                    )
+             .filter(propertyName -> Config.hasProperty(className, propertyName))
              .forEach(propertyName -> {
                 String property = className + "." + propertyName;
-                Object val = null;
-
+                Object val;
                 if (Config.isBean(property)) {
                    val = Config.get(property);
                 } else {
@@ -81,8 +78,7 @@ public class BeanUtils {
    }
 
    /**
-    * Instantiates a named bean (defined via the Config) which can describe the class (name.class) and properties or can
-    * instantiate a bean that is described as a script.
+    * Instantiates a named bean (defined via the Config)
     *
     * @param name  The name of the bean
     * @param clazz The class type of the bean
@@ -96,10 +92,9 @@ public class BeanUtils {
 
       Reflect reflect;
       if (Config.hasProperty(name + ".@type")) {
-         reflect = Reflect.onClass(Config.get(name + ".@type").asClass());
-         clazz = Cast.as(reflect.getReflectedClass());
+         reflect = Reflect.onClass(Config.get(name + ".@type").asClass()).allowPrivilegedAccess();
       } else {
-         reflect = Reflect.onClass(clazz);
+         reflect = Reflect.onClass(clazz).allowPrivilegedAccess();
       }
 
       boolean isSingleton = Config.get(name + ".singleton").asBoolean(false);
@@ -124,42 +119,11 @@ public class BeanUtils {
       if (values.isEmpty()) {
          bean = reflect.create().get();
       } else {
-         Constructor<?> constructor = ClassDescriptorCache.getInstance()
-                                                          .getClassDescriptor(clazz)
-                                                          .getConstructors(false)
-                                                          .stream()
-                                                          .filter(
-                                                             c -> {
-                                                                if (c.getParameterTypes().length == values.size()) {
-                                                                   for (int i = 0; i < values.size(); i++) {
-                                                                      if (!Types.isAssignable(c.getParameterTypes()[i],
-                                                                                              paramTypes.get(i))) {
-                                                                         return false;
-                                                                      }
-                                                                   }
-                                                                   return true;
-                                                                }
-                                                                return false;
-                                                             })
-                                                          .findFirst()
-                                                          .orElse(null);
-         if (constructor == null) {
-            throw new RuntimeException(String.format(
-               "Could not find the correct constructor for class (%s) with argument types (%s)",
-               clazz,
-               paramTypes
-                                                    ));
-         }
-         try {
-            bean = constructor.newInstance(values.toArray());
-         } catch (Exception e) {
-            throw new RuntimeException(e);
-         }
+         bean = reflect.create(paramTypes.toArray(new Class[1]),
+                               values.toArray()).get();
       }
 
-      BeanMap beanMap = new BeanMap(parameterizeObject(bean));
-      doParametrization(beanMap, name);
-      bean = beanMap.getBean();
+      bean = parameterizeObject(bean);
       if (isSingleton) {
          SINGLETONS.putIfAbsent(name, bean);
          bean = SINGLETONS.get(name);
@@ -178,14 +142,12 @@ public class BeanUtils {
       if (object == null) {
          return null;
       }
-
       BeanMap beanMap = new BeanMap(object);
       List<Class<?>> list = ReflectionUtils.getAncestorClasses(object);
       Collections.reverse(list);
       for (Class<?> clazz : list) {
          doParametrization(beanMap, clazz.getName());
       }
-
       return object;
    }
 

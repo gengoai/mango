@@ -11,6 +11,7 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * <p>Convenience methods for creating type information</p>
@@ -23,9 +24,25 @@ public final class Types {
       throw new IllegalAccessError();
    }
 
-
-   public static Type getOrObject(int n, Type... types) {
-      return types == null || types.length < n ? Object.class : types[n];
+   /**
+    * All assignable boolean.
+    *
+    * @param l1 the l 1
+    * @param l2 the l 2
+    * @return the boolean
+    */
+   public static boolean allAssignable(List<Type> l1, List<Type> l2) {
+      if (l1.size() == l2.size()) {
+         for (int i = 0; i < l1.size(); i++) {
+            if (!isAssignable(l1.get(i), l2.get(i)) &&
+                   !isAssignable(Primitives.wrap(asClass(l1.get(i))), Primitives.wrap(asClass(l2.get(i))))
+            ) {
+               return false;
+            }
+         }
+         return true;
+      }
+      return false;
    }
 
    /**
@@ -50,6 +67,30 @@ public final class Types {
    }
 
    /**
+    * Get actual type arguments type [ ].
+    *
+    * @param type the type
+    * @return the type [ ]
+    */
+   public static Type[] getActualTypeArguments(Type type) {
+      if (type instanceof ParameterizedType) {
+         return Cast.<ParameterizedType>as(type).getActualTypeArguments();
+      }
+      return null;
+   }
+
+   /**
+    * Gets or object.
+    *
+    * @param n     the n
+    * @param types the types
+    * @return the or object
+    */
+   public static Type getOrObject(int n, Type... types) {
+      return types == null || types.length < n ? Object.class : types[n];
+   }
+
+   /**
     * Is array boolean.
     *
     * @param type the type
@@ -70,13 +111,6 @@ public final class Types {
       Class<?> c1 = Primitives.wrap(asClass(parent));
       Class<?> c2 = Primitives.wrap(asClass(child));
       return c1.isAssignableFrom(c2);
-   }
-
-   public static Type[] getActualTypeArguments(Type type) {
-      if (type instanceof ParameterizedType) {
-         return Cast.<ParameterizedType>as(type).getActualTypeArguments();
-      }
-      return null;
    }
 
    /**

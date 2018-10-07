@@ -51,7 +51,7 @@ public class BeanDescriptorCache {
    }
 
    protected BeanDescriptorCache() {
-      cache = Cache.create(100, BeanDescriptor::new);
+      cache = Cache.create(1000, BeanDescriptor::new);
    }
 
    /**
