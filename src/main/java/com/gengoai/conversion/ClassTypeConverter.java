@@ -1,6 +1,7 @@
 package com.gengoai.conversion;
 
 import com.gengoai.reflection.ReflectionUtils;
+import com.gengoai.reflection.Types;
 import org.kohsuke.MetaInfServices;
 
 import java.lang.reflect.Type;
@@ -26,6 +27,11 @@ public class ClassTypeConverter implements TypeConverter {
          Class<?> clazz = ReflectionUtils.getClassForNameQuietly(object.toString());
          if (clazz != null) {
             return clazz;
+         }
+         try {
+            return Types.asClass(Types.parse(object.toString()));
+         } catch (Exception e) {
+            //Ignore to return String.class
          }
       }
       return object.getClass();

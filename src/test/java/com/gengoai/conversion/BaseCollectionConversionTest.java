@@ -48,8 +48,7 @@ public abstract class BaseCollectionConversionTest {
       assertArrayEquals(create("ALOHA").toArray(),
                         Converter.<Collection<?>>convert(JsonEntry.from("ALOHA"), aClass, String.class).toArray());
       assertArrayEquals(create($("A", 1.0)).toArray(),
-                        Converter.<Collection<?>>convert(JsonEntry.object()
-                                                                  .addProperty("A", 1.0), aClass,
+                        Converter.<Collection<?>>convert(JsonEntry.object().addProperty("A", 1.0), aClass,
                                                          parameterizedType(Map.Entry.class, String.class, Double.class))
                            .toArray());
    }
