@@ -16,14 +16,12 @@ public class CharsetTypeConverter implements TypeConverter {
    public Object convert(Object source, Type... parameters) throws TypeConversionException {
       if (source instanceof Charset) {
          return source;
-      } else if (source instanceof CharSequence) {
-         try {
-            return Charset.forName(source.toString());
-         } catch (Exception e) {
-            throw new TypeConversionException(source, Charset.class, e.getCause());
-         }
       }
-      throw new TypeConversionException(source, Charset.class);
+      try {
+         return Charset.forName(Converter.convert(source, String.class));
+      } catch (Exception e) {
+         throw new TypeConversionException(source, Charset.class);
+      }
    }
 
    @Override

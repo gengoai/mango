@@ -29,7 +29,6 @@ public class Tuple2TypeConverter implements TypeConverter {
    protected List<?> createList(Object source, Type... parameters) throws TypeConversionException {
       if (Types.asClass(getOrObject(0, parameters)).isArray()) {
          return Converter.convert(source, List.class, Object[].class);
-
       }
       return Converter.convert(source, List.class);
    }

@@ -27,54 +27,59 @@ public abstract class CollectionTypeConverter implements TypeConverter {
     */
    protected abstract Collection<?> newCollection();
 
+   private Collection<?> fromJson(Object source, JsonEntry je, Type elementType) throws TypeConversionException {
+      if (je.isArray()) {
+         return Collect.addAll(newCollection(),
+                               je.getAsArray(elementType));
+      } else if (je.isObject() && isAssignable(Map.Entry.class, elementType)) {
+         Collection<?> c = newCollection();
+         for (Iterator<Map.Entry<String, JsonEntry>> itr = je.propertyIterator(); itr.hasNext(); ) {
+            c.add(Converter.convert(itr.next(), elementType));
+         }
+         return c;
+      } else if (je.isObject()) {
+         return Collect.addAll(newCollection(), singletonList(Converter.convert(je.getAsMap(), elementType)));
+      } else if (je.isPrimitive()) {
+         return Collect.addAll(newCollection(), singletonList(je.getAsVal()
+                                                                .as(elementType)));
+      }
+      throw new TypeConversionException(source, parameterizedType(Collection.class, elementType));
+   }
+
    @Override
    public Object convert(Object source, Type... parameters) throws TypeConversionException {
       Type elementType = (parameters == null || parameters.length == 0) ? Object.class
                                                                         : parameters[0];
 
       if (source instanceof JsonEntry) {
-         JsonEntry je = Cast.as(source);
-         if (je.isArray()) {
-            return Collect.addAll(newCollection(),
-                                  je.getAsArray(elementType));
-         } else if (je.isObject() && isAssignable(Map.Entry.class, elementType)) {
-            Collection<?> c = newCollection();
-            for (Iterator<Map.Entry<String, JsonEntry>> itr = je.propertyIterator(); itr.hasNext(); ) {
-               c.add(Converter.convert(itr.next(), elementType));
-            }
-            return c;
-         } else if (je.isPrimitive()) {
-            return Collect.addAll(newCollection(), singletonList(je.getAsVal().cast()));
-         }
-         throw new TypeConversionException(source, parameterizedType(Collection.class, parameters));
+         return fromJson(source, Cast.as(source), elementType);
       }
 
 
       if (source instanceof CharSequence) {
          String str = source.toString();
-         //Assume JSON
-         if (str.startsWith("[")) {
-            try {
-               return Collect.addAll(newCollection(), Json.parse(source.toString()).getAsArray(elementType));
-            } catch (IOException e) {
-               //Ignore and try csv style conversion
-            }
+
+         //Try Json
+         try {
+            return fromJson(source, Json.parse(source.toString()), elementType);
+         } catch (IOException e) {
+            //Ignore and try csv style conversion
          }
 
-         //Fallback to csv
+         //Not Json, so try CSV
+         str = str.replaceFirst("^\\[", "").replaceFirst("]$", "").trim();
          List<String> strList = new ArrayList<>();
-         if (asClass(elementType).isArray()) {
-            str = str.replaceFirst("^\\[", "").replaceFirst("]$", "").trim();
-            if (str.startsWith("[")) {
-               for (String s : StringUtils.split(str, ',')) {
-                  strList.add(s.replaceFirst("^\\[", "").replaceFirst("]$", ""));
-               }
-            } else {
-               strList.add(str);
+         if (isArray(elementType) || isAssignable(Collection.class, elementType)) {
+            for (String s : str.split("]")) {
+               s = s.replaceFirst("^\\[", "")
+                    .replaceFirst("^,", "").trim();
+               strList.add(s);
             }
          } else {
-            strList = StringUtils.split(str.replaceFirst("^\\[", "").replaceFirst("]$", ""), ',');
+            strList.addAll(StringUtils.split(str, ','));
          }
+
+
          Collection<?> newCollection = newCollection();
          for (String s : strList) {
             newCollection.add(Converter.convert(s, elementType));
