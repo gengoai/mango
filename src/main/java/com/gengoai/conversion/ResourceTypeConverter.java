@@ -4,12 +4,8 @@ import com.gengoai.io.Resources;
 import com.gengoai.io.resource.*;
 import org.kohsuke.MetaInfServices;
 
-import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
+import java.io.*;
 import java.lang.reflect.Type;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
@@ -32,11 +28,7 @@ public class ResourceTypeConverter implements TypeConverter {
       } else if (source instanceof URL) {
          return Resources.fromUrl((URL) source);
       } else if (source instanceof URI) {
-         try {
-            return Resources.fromUrl(((URI) source).toURL());
-         } catch (MalformedURLException e) {
-            throw new TypeConversionException(source, Resource.class, e);
-         }
+         return new URIResource(Cast.as(source));
       } else if (source instanceof Reader) {
          return new ReaderResource(Cast.as(source));
       } else if (source instanceof InputStream) {
@@ -47,6 +39,8 @@ public class ResourceTypeConverter implements TypeConverter {
          return new ByteArrayResource(Cast.as(source));
       } else if (source instanceof CharSequence) {
          return Resources.from(source.toString());
+      } else if (source instanceof Writer) {
+         return new WriterResource(Cast.as(source));
       }
       throw new TypeConversionException(source, Resource.class);
    }

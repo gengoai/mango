@@ -8,6 +8,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.reflection.Types.getOrObject;
 
 /**
  * @author David B. Bracewell
@@ -17,8 +18,7 @@ public class ArrayTypeConverter implements TypeConverter {
 
    @Override
    public Object convert(Object source, Type... parameters) throws TypeConversionException {
-      Type componentType = (parameters == null || parameters.length == 0) ? Object.class
-                                                                          : parameters[0];
+      Type componentType = getOrObject(0, parameters);
       //Convert the source to a list and create an array from it.
       List<?> list = Converter.convert(source, List.class, parameters);
       Object array = Array.newInstance(Types.asClass(componentType), list.size());

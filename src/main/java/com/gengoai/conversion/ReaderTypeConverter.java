@@ -23,7 +23,7 @@ public class ReaderTypeConverter implements TypeConverter {
       if (source instanceof Reader) {
          return new BufferedReader(Cast.as(source));
       }
-      return new CharsetDetectingReader(Converter.convert(source, InputStream.class));
+      return new BufferedReader(new CharsetDetectingReader(Converter.convert(source, InputStream.class)));
    }
 
    @Override

@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
@@ -96,6 +97,11 @@ public class URLResource extends BaseResource {
       return true;
    }
 
+   @Override
+   public Optional<URI> asURI() {
+      return Optional.of(URI.create(url.toString()));
+   }
+
    public int hashCode() {
       final int PRIME = 59;
       int result = 1;
@@ -116,6 +122,7 @@ public class URLResource extends BaseResource {
    public String baseName() {
       return url.getFile();
    }
+
 
    @Override
    public Optional<URL> asURL() {

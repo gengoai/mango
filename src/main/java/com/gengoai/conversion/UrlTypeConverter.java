@@ -1,10 +1,9 @@
 package com.gengoai.conversion;
 
+import com.gengoai.io.resource.Resource;
 import org.kohsuke.MetaInfServices;
 
 import java.lang.reflect.Type;
-import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 
 import static com.gengoai.collection.Collect.arrayOf;
@@ -16,14 +15,8 @@ import static com.gengoai.collection.Collect.arrayOf;
 public class UrlTypeConverter implements TypeConverter {
    @Override
    public Object convert(Object source, Type... parameters) throws TypeConversionException {
-      if (source instanceof URL) {
-         return source;
-      }
-      try {
-         return Converter.convert(source, URI.class).toURL();
-      } catch (MalformedURLException | TypeConversionException e) {
-         throw new TypeConversionException(source, URL.class, e);
-      }
+      return Converter.convert(source, Resource.class).asURL()
+                      .orElseThrow(() -> new TypeConversionException(source, URL.class));
    }
 
    @Override

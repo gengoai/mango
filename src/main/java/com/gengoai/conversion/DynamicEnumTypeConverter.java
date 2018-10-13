@@ -2,6 +2,7 @@ package com.gengoai.conversion;
 
 import com.gengoai.EnumValue;
 import com.gengoai.HierarchicalEnumValue;
+import com.gengoai.json.JsonEntry;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
 import com.gengoai.reflection.ReflectionUtils;
@@ -20,37 +21,42 @@ public class DynamicEnumTypeConverter implements TypeConverter {
 
    @Override
    public Object convert(Object source, Type... parameters) throws TypeConversionException {
-      String asString = Converter.convert(source, String.class);
-      String enumName = null;
-      Class<?> enumClass = null;
+      if (source instanceof JsonEntry
+             || source instanceof CharSequence
+             || source instanceof EnumValue) {
+         String asString = Converter.convert(source, String.class);
+         String enumName = asString;
+         Class<?> enumClass = null;
 
-      //We can either get the EnumValue class as part of the name or as a type parameter
+         //We can either get the EnumValue class as part of the name or as a type parameter
 
-      //Check in the name
-      int lastDot = asString.lastIndexOf('.');
-      if (lastDot > 0) {
-         enumClass = ReflectionUtils.getClassForNameQuietly(asString.substring(0, lastDot));
-         enumName = asString.substring(lastDot + 1);
+         //Check in the name
+         int lastDot = asString.lastIndexOf('.');
+         if (lastDot > 0) {
+            enumClass = ReflectionUtils.getClassForNameQuietly(asString.substring(0, lastDot));
+            enumName = asString.substring(lastDot + 1);
+         }
+
+         if (enumClass == null) {
+            //Didn't find it in the name, so check in the parameters
+            enumClass = asClass(getOrObject(0, parameters));
+         } else if (parameters != null && parameters.length > 0 && !isAssignable(parameters[0], enumClass)) {
+            //make sure we didn't specify a parameter that is invalid.
+            throw new TypeConversionException(
+               "Invalid type parameter (" + enumClass + ") is not of type (" + parameters[0] + ")");
+         }
+
+         if (enumClass == null || !EnumValue.class.isAssignableFrom(enumClass)) {
+            throw new TypeConversionException("Invalid type parameter (" + enumClass + ")");
+         }
+
+         try {
+            return Reflect.onClass(enumClass).invoke("create", enumName).get();
+         } catch (ReflectionException e) {
+            throw new TypeConversionException(source, parameterizedType(EnumValue.class, enumClass), e);
+         }
       }
-
-      if (enumClass == null) {
-         //Didn't find it in the name, so check in the parameters
-         enumClass = asClass(getOrObject(0, parameters));
-      } else if (parameters.length > 0 && !isAssignable(parameters[0], enumClass)) {
-         //make sure we didn't specify a parameter that is invalid.
-         throw new TypeConversionException(
-            "Invalid type parameter (" + enumClass + ") is not of type (" + parameters[0] + ")");
-      }
-
-      if (enumClass == null || !EnumValue.class.isAssignableFrom(enumClass)) {
-         throw new TypeConversionException("Invalid type parameter (" + enumClass + ")");
-      }
-
-      try {
-         return Reflect.onClass(enumClass).invoke("create", enumName);
-      } catch (ReflectionException e) {
-         throw new TypeConversionException(source, parameterizedType(EnumValue.class, enumClass), e);
-      }
+      throw new TypeConversionException(source, parameterizedType(EnumValue.class, parameters));
    }
 
    @Override

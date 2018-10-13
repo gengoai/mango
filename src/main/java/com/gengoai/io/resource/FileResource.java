@@ -29,6 +29,7 @@ import com.gengoai.string.StringUtils;
 
 import java.io.*;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,6 +76,11 @@ public class FileResource extends BaseResource {
    @Override
    public Optional<File> asFile() {
       return Optional.of(file.getAbsoluteFile());
+   }
+
+   @Override
+   public Optional<URI> asURI() {
+      return Optional.of(file.toURI());
    }
 
    @Override

@@ -1,13 +1,12 @@
 package com.gengoai.conversion;
 
 import com.gengoai.reflection.ReflectionUtils;
-import com.gengoai.reflection.Types;
 import org.kohsuke.MetaInfServices;
 
 import java.lang.reflect.Type;
 
 import static com.gengoai.collection.Collect.arrayOf;
-import static com.gengoai.reflection.Types.parameterizedType;
+import static com.gengoai.reflection.Types.*;
 
 /**
  * @author David B. Bracewell
@@ -39,9 +38,7 @@ public class EnumTypeConverter implements TypeConverter {
          }
       }
       if (enumClass == null) {
-         enumClass = (parameters == null || parameters.length < 1)
-                     ? Object.class
-                     : Types.asClass(parameters[0]);
+         enumClass = asClass(getOrObject(0, parameters));
       }
       if (enumClass == null || !Enum.class.isAssignableFrom(enumClass)) {
          throw new TypeConversionException("Invalid type parameter (" + enumClass + ")");

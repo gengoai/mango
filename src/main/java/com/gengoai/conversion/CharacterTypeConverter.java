@@ -18,7 +18,7 @@ public class CharacterTypeConverter implements TypeConverter {
       if (object instanceof Character) {
          return Cast.as(object);
       } else if (object instanceof Number) {
-         return (char) Cast.as(object, Number.class).intValue();
+         return (char) Cast.as(object, Number.class).longValue();
       } else if (object instanceof CharSequence) {
          CharSequence sequence = Cast.as(object);
          if (sequence.length() == 1) {
