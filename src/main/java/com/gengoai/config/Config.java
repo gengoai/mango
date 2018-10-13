@@ -85,7 +85,11 @@ public final class Config implements Serializable, JsonSerializable {
       getInstance().properties.clear();
    }
 
-   private static String findKey(String root, Object... path) {
+   public static String findKey(Class<?> root, Object... path) {
+      return findKey(root.getName(), path);
+   }
+
+   public static String findKey(String root, Object... path) {
       if (path == null || path.length == 0) {
          return hasProperty(root) ? root : null;
       }
