@@ -1,5 +1,6 @@
 package com.gengoai.conversion;
 
+import com.gengoai.EnumValue;
 import com.gengoai.Primitives;
 import com.gengoai.json.Json;
 import com.gengoai.json.JsonEntry;
@@ -58,6 +59,11 @@ public class StringTypeConverter implements TypeConverter {
          return SimpleDateFormat.getDateTimeInstance().format(object);
       } else if (object instanceof Map) {
          return Json.dumps(object);
+      } else if (object instanceof Enum) {
+         Enum e = Cast.as(object);
+         return e.getDeclaringClass().getName() + "." + e.name();
+      } else if (object instanceof EnumValue) {
+         return Cast.<EnumValue>as(object).canonicalName();
       }
 
       return object.toString();

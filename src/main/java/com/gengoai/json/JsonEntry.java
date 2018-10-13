@@ -1,5 +1,6 @@
 package com.gengoai.json;
 
+import com.gengoai.EnumValue;
 import com.gengoai.collection.*;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Converter;
@@ -142,6 +143,10 @@ public class JsonEntry {
                          .addProperty("rawType", pt.getRawType())
                          .addProperty("actualTypeArguments", pt.getActualTypeArguments())
                    .element;
+      } else if (v instanceof Enum) {
+         return new JsonPrimitive(((Enum) v).getDeclaringClass().getName() + "." + Cast.<Enum>as(v).name());
+      } else if (v instanceof EnumValue) {
+         return new JsonPrimitive(Cast.<EnumValue>as(v).canonicalName());
       }
       return gson.toJsonTree(v);
    }

@@ -32,11 +32,13 @@ public abstract class BaseNumberTypeConverter implements TypeConverter {
       } else if (object instanceof Character) {
          return convertNumber(((long) Cast.as(object, Character.class)));
       }
+
       try {
          return convertNumber(Long.parseLong(object.toString()));
       } catch (Exception e) {
          //ignore this and try a double parse
       }
+
       try {
          return convertNumber(Double.parseDouble(object.toString()));
       } catch (Exception e) {

@@ -5,13 +5,12 @@ import com.gengoai.HierarchicalEnumValue;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
 import com.gengoai.reflection.ReflectionUtils;
-import com.gengoai.reflection.Types;
 import org.kohsuke.MetaInfServices;
 
 import java.lang.reflect.Type;
 
 import static com.gengoai.collection.Collect.arrayOf;
-import static com.gengoai.reflection.Types.parameterizedType;
+import static com.gengoai.reflection.Types.*;
 
 /**
  * @author David B. Bracewell
@@ -21,39 +20,37 @@ public class DynamicEnumTypeConverter implements TypeConverter {
 
    @Override
    public Object convert(Object source, Type... parameters) throws TypeConversionException {
-      if (source instanceof EnumValue) {
-         return source;
+      String asString = Converter.convert(source, String.class);
+      String enumName = null;
+      Class<?> enumClass = null;
+
+      //We can either get the EnumValue class as part of the name or as a type parameter
+
+      //Check in the name
+      int lastDot = asString.lastIndexOf('.');
+      if (lastDot > 0) {
+         enumClass = ReflectionUtils.getClassForNameQuietly(asString.substring(0, lastDot));
+         enumName = asString.substring(lastDot + 1);
       }
 
-      Class<?> enumClass = null;
-      if (source instanceof CharSequence) {
-         String sourceStr = source.toString();
-         int lastDot = sourceStr.lastIndexOf('.');
-         if (lastDot > 0) {
-            enumClass = ReflectionUtils.getClassForNameQuietly(sourceStr.substring(0, lastDot));
-            source = sourceStr.substring(lastDot + 1);
-         }
-      }
       if (enumClass == null) {
-         enumClass = (parameters == null || parameters.length < 1)
-                     ? Object.class
-                     : Types.asClass(parameters[0]);
+         //Didn't find it in the name, so check in the parameters
+         enumClass = asClass(getOrObject(0, parameters));
+      } else if (parameters.length > 0 && !isAssignable(parameters[0], enumClass)) {
+         //make sure we didn't specify a parameter that is invalid.
+         throw new TypeConversionException(
+            "Invalid type parameter (" + enumClass + ") is not of type (" + parameters[0] + ")");
       }
+
       if (enumClass == null || !EnumValue.class.isAssignableFrom(enumClass)) {
          throw new TypeConversionException("Invalid type parameter (" + enumClass + ")");
       }
 
-
-      if (source instanceof CharSequence) {
-         try {
-            return Reflect.onClass(enumClass).invoke("create", source.toString());
-         } catch (ReflectionException e) {
-            throw new TypeConversionException(source, parameterizedType(EnumValue.class, enumClass), e);
-         }
+      try {
+         return Reflect.onClass(enumClass).invoke("create", enumName);
+      } catch (ReflectionException e) {
+         throw new TypeConversionException(source, parameterizedType(EnumValue.class, enumClass), e);
       }
-
-
-      throw new TypeConversionException(source, parameterizedType(EnumValue.class, enumClass));
    }
 
    @Override
