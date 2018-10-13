@@ -17,12 +17,8 @@ public abstract class BaseNumberTypeConverter implements TypeConverter {
    public final Object convert(Object object, Type... parameters) throws TypeConversionException {
       if (object instanceof JsonEntry) {
          JsonEntry entry = Cast.as(object);
-         if (entry.isNumber()) {
-            return convertNumber(entry.getAsNumber());
-         } else if (entry.isBoolean()) {
-            return convertNumber(entry.getAsBoolean() ? 1L : 0L);
-         } else if (entry.isString()) {
-            return convert(entry.getAsString());
+         if (entry.isPrimitive()) {
+            return convert(entry.get(), parameters);
          }
          throw new TypeConversionException(object, Number.class);
       } else if (object instanceof Number) {

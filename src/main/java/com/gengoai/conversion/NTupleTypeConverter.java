@@ -2,6 +2,7 @@ package com.gengoai.conversion;
 
 import com.gengoai.tuple.NTuple;
 import com.gengoai.tuple.Tuple;
+import org.kohsuke.MetaInfServices;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import static com.gengoai.reflection.Types.getOrObject;
 /**
  * @author David B. Bracewell
  */
+@MetaInfServices(value = TypeConverter.class)
 public class NTupleTypeConverter extends Tuple2TypeConverter {
 
    @Override

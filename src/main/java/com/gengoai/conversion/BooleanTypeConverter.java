@@ -17,12 +17,8 @@ public class BooleanTypeConverter implements TypeConverter {
    public Object convert(Object object, Type... parameters) throws TypeConversionException {
       if (object instanceof JsonEntry) {
          JsonEntry entry = Cast.as(object);
-         if (entry.isBoolean()) {
-            return entry.getAsBoolean();
-         } else if (entry.isNumber()) {
-            return convert(entry.getAsNumber());
-         } else if (entry.isString()) {
-            return convert(entry.getAsString());
+         if (entry.isPrimitive()) {
+            return convert(entry.get(), parameters);
          }
          throw new TypeConversionException(object, Boolean.class);
       }

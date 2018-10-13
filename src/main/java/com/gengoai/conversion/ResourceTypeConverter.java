@@ -37,11 +37,14 @@ public class ResourceTypeConverter implements TypeConverter {
          return new OutputStreamResource(Cast.as(source));
       } else if (source instanceof byte[]) {
          return new ByteArrayResource(Cast.as(source));
+      } else if (source instanceof Byte[]) {
+         return new ByteArrayResource(Converter.convert(source, byte[].class));
       } else if (source instanceof CharSequence) {
          return Resources.from(source.toString());
       } else if (source instanceof Writer) {
          return new WriterResource(Cast.as(source));
       }
+
       throw new TypeConversionException(source, Resource.class);
    }
 
