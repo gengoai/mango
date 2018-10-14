@@ -24,12 +24,15 @@ package com.gengoai.config;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
+ * Utility class for handling configuration in a distributed environment.
+ *
  * @author David B. Bracewell
  */
 public enum Configurator {
    INSTANCE;
 
    private volatile AtomicBoolean done = new AtomicBoolean(false);
+
 
    public void configure(Config config) {
       if (!done.get()) {

@@ -59,6 +59,9 @@ import java.util.stream.Stream;
  * @author David B. Bracewell
  */
 public final class Config implements Serializable, JsonSerializable {
+   /**
+    * The constant CONF_EXTENSION.
+    */
    public static final String CONF_EXTENSION = ".conf";
    private static final String BEAN_PROPERTY = "@{";
    private static final Pattern BEAN_SUBSTITUTION = Pattern.compile(Pattern.quote(BEAN_PROPERTY) + "(.+?)\\}");
@@ -85,10 +88,24 @@ public final class Config implements Serializable, JsonSerializable {
       getInstance().properties.clear();
    }
 
+   /**
+    * Find key string.
+    *
+    * @param root the root
+    * @param path the path
+    * @return the string
+    */
    public static String findKey(Class<?> root, Object... path) {
       return findKey(root.getName(), path);
    }
 
+   /**
+    * Find key string.
+    *
+    * @param root the root
+    * @param path the path
+    * @return the string
+    */
    public static String findKey(String root, Object... path) {
       if (path == null || path.length == 0) {
          return hasProperty(root) ? root : null;
