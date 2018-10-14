@@ -59,8 +59,17 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
       return this;
    }
 
-   protected boolean canEqual(Object other) {
-      return other instanceof HashMapMultiCounter;
+   @Override
+   public int hashCode() {
+      return Objects.hash(map);
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {return true;}
+      if (obj == null || getClass() != obj.getClass()) {return false;}
+      final HashMapMultiCounter other = (HashMapMultiCounter) obj;
+      return Objects.equals(this.map, other.map);
    }
 
    @Override
@@ -78,24 +87,6 @@ public class HashMapMultiCounter<K, V> implements MultiCounter<K, V>, Serializab
       return map.containsKey(item1) && map.get(item1).contains(item2);
    }
 
-   public boolean equals(Object o) {
-      if (o == this) return true;
-      if (!(o instanceof HashMapMultiCounter)) return false;
-      final HashMapMultiCounter other = (HashMapMultiCounter) o;
-      if (!other.canEqual((Object) this)) return false;
-      final Object this$map = this.map;
-      final Object other$map = other.map;
-      if (this$map == null ? other$map != null : !this$map.equals(other$map)) return false;
-      return true;
-   }
-
-   public int hashCode() {
-      final int PRIME = 59;
-      int result = 1;
-      final Object $map = this.map;
-      result = result * PRIME + ($map == null ? 43 : $map.hashCode());
-      return result;
-   }
 
    @Override
    public Collection<Double> values() {

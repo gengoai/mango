@@ -22,8 +22,8 @@
 package com.gengoai.io;
 
 import com.gengoai.SystemInfo;
-import com.gengoai.collection.index.HashMapIndex;
-import com.gengoai.collection.index.Index;
+import com.gengoai.collection.HashMapIndex;
+import com.gengoai.collection.Index;
 import com.gengoai.conversion.Converter;
 import com.gengoai.string.CSVFormatter;
 import com.gengoai.string.StringUtils;

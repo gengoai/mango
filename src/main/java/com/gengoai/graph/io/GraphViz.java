@@ -22,8 +22,8 @@
 package com.gengoai.graph.io;
 
 import com.gengoai.SystemInfo;
-import com.gengoai.collection.index.Index;
-import com.gengoai.collection.index.Indexes;
+import com.gengoai.collection.Index;
+import com.gengoai.collection.Indexes;
 import com.gengoai.collection.multimap.ListMultimap;
 import com.gengoai.config.Config;
 import com.gengoai.graph.Edge;

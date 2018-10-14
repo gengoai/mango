@@ -95,18 +95,6 @@ public interface MultiCounters {
    }
 
    /**
-    * Wraps a mutli-counter making its entries unmodifiable.
-    *
-    * @param <K1>         the component type of the first key
-    * @param <K2>         the component type of the second key
-    * @param multiCounter the multi counter to wrap
-    * @return the unmodifiable multi counter
-    */
-   static <K1, K2> MultiCounter<K1, K2> unmodifiableMultiCounter(MultiCounter<K1, K2> multiCounter) {
-      return new UnmodifiableMultiCounter<>(multiCounter);
-   }
-
-   /**
     * <p>Wraps a counter making each method call synchronized.</p>
     *
     * @param <K1>         the component type of the first key
@@ -145,7 +133,8 @@ public interface MultiCounters {
       try (CSVReader reader = CSV.builder().reader(resource)) {
          reader.forEach(row -> {
             if (row.size() >= 3) {
-               counter.increment(Converter.convertSilently(row.get(0), key1Class), Converter.convertSilently(row.get(1), key2Class),
+               counter.increment(Converter.convertSilently(row.get(0), key1Class),
+                                 Converter.convertSilently(row.get(1), key2Class),
                                  Double.valueOf(row.get(2)));
             }
          });

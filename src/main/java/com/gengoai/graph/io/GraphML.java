@@ -21,8 +21,8 @@
 
 package com.gengoai.graph.io;
 
-import com.gengoai.collection.index.Index;
-import com.gengoai.collection.index.Indexes;
+import com.gengoai.collection.Index;
+import com.gengoai.collection.Indexes;
 import com.gengoai.collection.multimap.ListMultimap;
 import com.gengoai.conversion.Cast;
 import com.gengoai.graph.AdjacencyMatrix;

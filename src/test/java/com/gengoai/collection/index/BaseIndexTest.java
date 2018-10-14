@@ -21,6 +21,8 @@
 
 package com.gengoai.collection.index;
 
+import com.gengoai.collection.Index;
+import com.gengoai.collection.Indexes;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -90,25 +92,12 @@ public abstract class BaseIndexTest {
    }
 
    @Test
-   public void testRemove() throws Exception {
-      Index<String> index = getIndex();
-      assertEquals("A", index.remove(0));
-      assertEquals(0, index.remove("B"));
-   }
-
-   @Test
    public void testIndexOf() throws Exception {
       Index<String> index = getIndex();
       assertEquals(0, index.getId("A"));
       assertEquals(-1, index.getId("Z"));
    }
 
-
-   @Test
-   public void parallelStream() throws Exception {
-      Index<String> index = getIndex();
-      assertEquals("A", index.parallelStream().filter(k -> k.equalsIgnoreCase("a")).findFirst().orElse(null));
-   }
 
    @Test
    public void stream() throws Exception {

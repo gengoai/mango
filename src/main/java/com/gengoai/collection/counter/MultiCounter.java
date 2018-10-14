@@ -21,8 +21,8 @@
 
 package com.gengoai.collection.counter;
 
-import com.gengoai.collection.index.Index;
-import com.gengoai.collection.index.Indexes;
+import com.gengoai.collection.Index;
+import com.gengoai.collection.Indexes;
 import com.gengoai.conversion.Converter;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVWriter;

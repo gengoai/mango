@@ -23,8 +23,8 @@ package com.gengoai.collection.counter;
 
 
 import com.gengoai.Copyable;
-import com.gengoai.collection.index.Index;
-import com.gengoai.collection.index.Indexes;
+import com.gengoai.collection.Index;
+import com.gengoai.collection.Indexes;
 import com.gengoai.conversion.Converter;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVWriter;
@@ -48,6 +48,18 @@ import java.util.stream.Collectors;
  * @author David B. Bracewell
  */
 public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable, Commitable, JsonSerializable {
+
+   static <T> Counter<T> fromJson(JsonEntry entry, Type... types) {
+      Type keyType = types.length > 0 ? types[0] : Object.class;
+      Counter<T> toReturn = Counters.newCounter();
+      Index<T> keys = Indexes.indexOf(entry.getProperty("keys").getAsArray(keyType));
+      int index = 0;
+      for (Iterator<JsonEntry> iterator = entry.getProperty("values").elementIterator(); iterator.hasNext(); ) {
+         toReturn.set(keys.get(index), iterator.next().getAsDouble());
+         index++;
+      }
+      return toReturn;
+   }
 
    /**
     * Constructs a new counter made up of counts that are adjusted using the supplied function.
@@ -96,6 +108,18 @@ public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable, Commita
     */
    void clear();
 
+   @Override
+   default void close() throws Exception {
+
+   }
+
+   /**
+    * Commits changes
+    */
+   default void commit() {
+
+   }
+
    /**
     * Determines if the item is in the counter
     *
@@ -103,13 +127,6 @@ public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable, Commita
     * @return True if item is in the counter, false otherwise
     */
    boolean contains(T item);
-
-   /**
-    * The values associated with the items in the counter
-    *
-    * @return The values of the items in the counter.
-    */
-   Collection<Double> values();
 
    /**
     * Decrements the count of the item by one.
@@ -191,6 +208,15 @@ public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable, Commita
     * @return A new counter containing only those items whose value evaluate true for the given predicate
     */
    Counter<T> filterByValue(DoublePredicate doublePredicate);
+
+   /**
+    * Convenience method for consuming item - count pairs.
+    *
+    * @param consumer the consumer to use for processing the key value pairs
+    */
+   default void forEach(BiConsumer<? super T, ? super Double> consumer) {
+      entries().forEach(e -> consumer.accept(e.getKey(), e.getValue()));
+   }
 
    /**
     * Returns the value for the given item
@@ -442,6 +468,18 @@ public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable, Commita
     */
    double sum();
 
+   default JsonEntry toJson() {
+      JsonEntry entry = JsonEntry.object();
+      final Index<T> keys = Indexes.indexOf(items());
+      entry.addProperty("keys", keys.asList());
+      JsonEntry values = JsonEntry.array();
+      for (int i = 0; i < keys.size(); i++) {
+         values.addValue(get(keys.get(i)));
+      }
+      entry.addProperty("values", values);
+      return entry;
+   }
+
    /**
     * Creates a new counter containing the N items with highest values
     *
@@ -449,6 +487,13 @@ public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable, Commita
     * @return a counter containing the N items with highest values from this counter
     */
    Counter<T> topN(int n);
+
+   /**
+    * The values associated with the items in the counter
+    *
+    * @return The values of the items in the counter.
+    */
+   Collection<Double> values();
 
    /**
     * Writes the counter items and values to CSV
@@ -465,53 +510,6 @@ public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable, Commita
                         );
          }
       }
-   }
-
-
-   default JsonEntry toJson() {
-      JsonEntry entry = JsonEntry.object();
-      final Index<T> keys = Indexes.indexOf(items());
-      entry.addProperty("keys", keys.asList());
-      JsonEntry values = JsonEntry.array();
-      for (int i = 0; i < keys.size(); i++) {
-         values.addValue(get(keys.get(i)));
-      }
-      entry.addProperty("values", values);
-      return entry;
-   }
-
-
-   static <T> Counter<T> fromJson(JsonEntry entry, Type... types) {
-      Type keyType = types.length > 0 ? types[0] : Object.class;
-      Counter<T> toReturn = Counters.newCounter();
-      Index<T> keys = Indexes.indexOf(entry.getProperty("keys").getAsArray(keyType));
-      int index = 0;
-      for (Iterator<JsonEntry> iterator = entry.getProperty("values").elementIterator(); iterator.hasNext(); ) {
-         toReturn.set(keys.get(index), iterator.next().getAsDouble());
-         index++;
-      }
-      return toReturn;
-   }
-
-   /**
-    * Convenience method for consuming item - count pairs.
-    *
-    * @param consumer the consumer to use for processing the key value pairs
-    */
-   default void forEach(BiConsumer<? super T, ? super Double> consumer) {
-      entries().forEach(e -> consumer.accept(e.getKey(), e.getValue()));
-   }
-
-   @Override
-   default void close() throws Exception {
-
-   }
-
-   /**
-    * Commits changes
-    */
-   default void commit() {
-
    }
 
 }//END OF Counter

@@ -11,7 +11,7 @@ import com.gengoai.collection.counter.Counters;
  */
 public class LocalMCounterAccumulator<IN> extends LocalMAccumulator<IN, Counter<IN>> implements MCounterAccumulator<IN> {
    private static final long serialVersionUID = 1L;
-   private final Counter<IN> counter = Counters.synchronizedCounter();
+   private final Counter<IN> counter = Counters.newConcurrentCounter();
 
    /**
     * Instantiates a new LocalMCounterAccumulator.

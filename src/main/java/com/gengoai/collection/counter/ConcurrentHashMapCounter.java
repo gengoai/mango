@@ -19,16 +19,28 @@
  * under the License.
  */
 
-package com.gengoai.collection.index;
+package com.gengoai.collection.counter;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * Implementation of a Counter using a HashMap
+ *
+ * @param <T> the component type of the counter
  * @author David B. Bracewell
  */
-public class SynchronizedIndexTest extends BaseIndexTest {
+public class ConcurrentHashMapCounter<T> extends BaseMapCounter<T> {
+   private static final long serialVersionUID = 1L;
 
    @Override
-   public Index<String> getIndex() {
-      return Indexes.synchronizedIndex(super.getIndex());
+   protected Map<T, Double> createMap() {
+      return new ConcurrentHashMap<>();
    }
 
-}//END OF HashMapIndexTest
+   @Override
+   protected <R> Counter<R> newInstance() {
+      return new ConcurrentHashMapCounter<>();
+   }
+
+}//END OF ConcurrentHashMapCounter

@@ -150,8 +150,8 @@ public interface Counters {
     * @param counter the counter to wrap
     * @return the wrapped counter
     */
-   static <TYPE> Counter<TYPE> synchronizedCounter(Counter<TYPE> counter) {
-      return new SynchronizedCounter<>(counter);
+   static <TYPE> Counter<TYPE> newConcurrentCounter(Counter<TYPE> counter) {
+      return new ConcurrentHashMapCounter<TYPE>().merge(counter);
    }
 
    /**
@@ -160,19 +160,8 @@ public interface Counters {
     * @param <TYPE> the item type
     * @return the wrapped counter
     */
-   static <TYPE> Counter<TYPE> synchronizedCounter() {
-      return new SynchronizedCounter<>(newCounter());
-   }
-
-   /**
-    * <p>Wraps a counter making its entries unmodifiable.</p>
-    *
-    * @param <TYPE>  the item type
-    * @param counter the counter to wrap
-    * @return the wrapped counter
-    */
-   static <TYPE> Counter<TYPE> unmodifiableCounter(final Counter<TYPE> counter) {
-      return new UnmodifiableCounter<>(counter);
+   static <TYPE> Counter<TYPE> newConcurrentCounter() {
+      return new ConcurrentHashMapCounter<>();
    }
 
 

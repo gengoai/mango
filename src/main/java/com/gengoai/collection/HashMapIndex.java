@@ -19,16 +19,12 @@
  * under the License.
  */
 
-package com.gengoai.collection.index;
+package com.gengoai.collection;
 
-import com.gengoai.collection.Iterators;
 import org.apache.mahout.math.map.OpenObjectIntHashMap;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * <p>An Index implementation that uses a combination of a HashMap and List.</p>
@@ -68,10 +64,6 @@ public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
       return Collections.unmodifiableList(list);
    }
 
-   protected boolean canEqual(Object other) {
-      return other instanceof HashMapIndex;
-   }
-
    @Override
    public void clear() {
       map.clear();
@@ -91,17 +83,6 @@ public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
       return copy;
    }
 
-   public boolean equals(Object o) {
-      if (o == this) return true;
-      if (!(o instanceof HashMapIndex)) return false;
-      final HashMapIndex other = (HashMapIndex) o;
-      if (!other.canEqual((Object) this)) return false;
-      final Object this$list = this.list;
-      final Object other$list = other.list;
-      if (this$list == null ? other$list != null : !this$list.equals(other$list)) return false;
-      return true;
-   }
-
    @Override
    public TYPE get(int id) {
       if (id < 0 || id >= list.size()) {
@@ -118,13 +99,6 @@ public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
       return -1;
    }
 
-   public int hashCode() {
-      final int PRIME = 59;
-      int result = 1;
-      final Object $list = this.list;
-      result = result * PRIME + ($list == null ? 43 : $list.hashCode());
-      return result;
-   }
 
    @Override
    public boolean isEmpty() {
@@ -137,27 +111,6 @@ public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
    }
 
    @Override
-   public TYPE remove(int id) {
-      if (id < 0 || id >= list.size()) {
-         return null;
-      }
-      for (int i = id + 1; i < list.size(); i++) {
-         map.put(list.get(i), i - 1);
-      }
-      map.removeKey(list.get(id));
-      return list.remove(id);
-   }
-
-   @Override
-   public int remove(TYPE item) {
-      int index = getId(item);
-      if (index >= 0) {
-         remove(index);
-      }
-      return index;
-   }
-
-   @Override
    public int size() {
       return list.size();
    }
@@ -165,5 +118,19 @@ public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
    @Override
    public String toString() {
       return list.toString();
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(map, list);
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {return true;}
+      if (obj == null || getClass() != obj.getClass()) {return false;}
+      final HashMapIndex other = (HashMapIndex) obj;
+      return Objects.equals(this.map, other.map)
+                && Objects.equals(this.list, other.list);
    }
 }//END OF HashMapIndex

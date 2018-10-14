@@ -19,12 +19,10 @@
  * under the License.
  */
 
-package com.gengoai.collection.index;
+package com.gengoai.collection;
 
 
 import java.util.Arrays;
-
-import static com.gengoai.Validation.notNull;
 
 /**
  * Common methods for reading counters from structured files, creating synchronized and unmodifiable wrappers.
@@ -61,39 +59,5 @@ public final class Indexes {
       index.addAll(elements);
       return index;
    }
-
-   /**
-    * <p>Wraps an index making each method call synchronized.</p>
-    *
-    * @param <TYPE> the type parameter of the item being indexed.
-    * @param index  The index to wrap
-    * @return the synchronized index
-    */
-   public static <TYPE> Index<TYPE> synchronizedIndex(Index<TYPE> index) {
-      return new SynchronizedIndex<>(notNull(index));
-   }
-
-   /**
-    * <p>Creates a new index with each method call synchronized.</p>
-    *
-    * @param <TYPE> the type parameter of the item being indexed.
-    * @return the synchronized index
-    */
-   public static <TYPE> Index<TYPE> synchronizedIndex() {
-      return new SynchronizedIndex<>(new HashMapIndex<>());
-   }
-
-
-   /**
-    * Wraps an index making its entries unmodifiable.
-    *
-    * @param <TYPE> the type parameter of the item being indexed.
-    * @param index  The index to wrap
-    * @return the unmodifiable index
-    */
-   public static <TYPE> Index<TYPE> unmodifiableIndex(final Index<TYPE> index) {
-      return new UnmodifiableIndex<>(notNull(index));
-   }
-
 
 }//END OF Indexes

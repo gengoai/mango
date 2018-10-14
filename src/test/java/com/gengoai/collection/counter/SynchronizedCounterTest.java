@@ -33,22 +33,22 @@ public class SynchronizedCounterTest extends BaseCounterTest {
 
    @Override
    Counter<String> getCounter1() {
-      return Counters.synchronizedCounter(super.getCounter1());
+      return Counters.newConcurrentCounter(super.getCounter1());
    }
 
    @Override
    Counter<String> getCounter2() {
-      return Counters.synchronizedCounter(super.getCounter2());
+      return Counters.newConcurrentCounter(super.getCounter2());
    }
 
    @Override
    Counter<String> getCounter3() {
-      return Counters.synchronizedCounter(super.getCounter3());
+      return Counters.newConcurrentCounter(super.getCounter3());
    }
 
    @Override
    Counter<String> getEmptyCounter() {
-      return Counters.synchronizedCounter(super.getEmptyCounter());
+      return Counters.newConcurrentCounter(super.getEmptyCounter());
    }
 
 
@@ -57,7 +57,7 @@ public class SynchronizedCounterTest extends BaseCounterTest {
       Counter<String> counter = getCounter2();
       Resource r = new StringResource();
       counter.writeCsv(r);
-      Counter<String> fromCSV = Counters.synchronizedCounter(Counters.readCsv(r, String.class));
+      Counter<String> fromCSV = Counters.newConcurrentCounter(Counters.readCsv(r, String.class));
       assertEquals(counter, fromCSV);
    }
 
