@@ -55,7 +55,6 @@ public abstract class CollectionTypeConverter implements TypeConverter {
          return fromJson(source, Cast.as(source), elementType);
       }
 
-
       if (source instanceof CharSequence) {
          String str = source.toString();
 

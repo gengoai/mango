@@ -21,14 +21,13 @@
 
 package com.gengoai.conversion;
 
-import com.gengoai.collection.Collect;
 import com.gengoai.io.resource.Resource;
 
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.function.Supplier;
+
+import static com.gengoai.reflection.Types.parameterizedType;
 
 /**
  * Wraps an object allowing conversion into other formats.
@@ -56,7 +55,7 @@ public class Val implements Serializable {
     *
     * @param toConvert The object to convert
     */
-   public Val(Object toConvert) {
+   protected Val(Object toConvert) {
       this.toConvert = toConvert;
    }
 
@@ -74,135 +73,24 @@ public class Val implements Serializable {
    }
 
    /**
-    * As object.
+    * As t.
     *
-    * @param clazz the clazz
-    * @return the object
+    * @param <T>  the type parameter
+    * @param type the type
+    * @return the t
     */
-   public Object asObject(Class<?> clazz) {
-      if (Map.class.isAssignableFrom(clazz)) {
-         return asMap(clazz, String.class, String.class);
-      } else if (Collection.class.isAssignableFrom(clazz)) {
-         return asCollection(clazz, String.class);
-      }
-      return Object.class.cast(as(clazz));
-   }
-
-   /**
-    * Is null.
-    *
-    * @return True if the object to convert is null
-    */
-   public boolean isNull() {
-      return toConvert == null;
-   }
-
-   /**
-    * Converts the object to a collection
-    *
-    * @param <E>             the type parameter
-    * @param <T>             the type parameter
-    * @param collectionClass The collection to convert to
-    * @param genericClass    The class of the item in the collection
-    * @return The object as a collection
-    */
-   public <E, T extends Collection<E>> T asCollection(Class<?> collectionClass, Class<E> genericClass) {
-      T rval = Converter.convertSilently(toConvert, collectionClass, genericClass);
-      if (rval == null) {
-         return Collect.newCollection(Cast.as(collectionClass));
-      }
-      return rval;
-   }
-
-   /**
-    * Converts the object to a map
-    *
-    * @param <K>        the type parameter
-    * @param <V>        the type parameter
-    * @param mapClass   The map class
-    * @param keyClass   The key class
-    * @param valueClass The value class
-    * @return the object as a map
-    */
-   public <K, V> Map<K, V> asMap(Class<?> mapClass, Class<K> keyClass, Class<V> valueClass) {
-      return Converter.convertSilently(toConvert, mapClass, keyClass, valueClass);
-   }
-
-   /**
-    * Converts the object to a map
-    *
-    * @param <K>        the type parameter
-    * @param <V>        the type parameter
-    * @param keyClass   The key class
-    * @param valueClass The value class
-    * @return the object as a map
-    */
-   public <K, V> Map<K, V> asMap(Class<K> keyClass, Class<V> valueClass) {
-      return asMap(HashMap.class, keyClass, valueClass);
-   }
-
-   /**
-    * As string.
-    *
-    * @return the object as a string
-    */
-   public String asString() {
-      return as(String.class);
-   }
-
-   /**
-    * As string.
-    *
-    * @param defaultValue The default value
-    * @return the object as a string
-    */
-   public String asString(String defaultValue) {
-      return as(String.class, defaultValue);
-   }
-
-   /**
-    * As string array.
-    *
-    * @return the object as a string array
-    */
-   public String[] asStringArray() {
-      return as(String[].class);
-   }
-
-   /**
-    * Casts the object
-    *
-    * @param <T> the type of the class
-    * @return the object cast as the class type
-    */
-   @SuppressWarnings("unchecked")
-   public <T> T cast() {
-      return Cast.as(toConvert);
-   }
-
-   /**
-    * Get wrapped class.
-    *
-    * @return the class
-    */
-   public Class<?> getWrappedClass() {
-      return toConvert == null ? null : toConvert.getClass();
-   }
-
-   /**
-    * Get object.
-    *
-    * @return The wrapped object
-    */
-   public Object get() {
-      return toConvert;
-   }
-
-
    public <T> T as(Type type) {
       return Converter.convertSilently(toConvert, type);
    }
 
+   /**
+    * As t.
+    *
+    * @param <T>          the type parameter
+    * @param type         the type
+    * @param defaultValue the default value
+    * @return the t
+    */
    public <T> T as(Type type, T defaultValue) {
       if (isNull()) {
          return defaultValue;
@@ -238,24 +126,26 @@ public class Val implements Serializable {
    }
 
    /**
-    * Converts the underlying object to the given class type.
+    * As array t [ ].
     *
-    * @param <T>      the type parameter
-    * @param clazz    The class to convert to
-    * @param supplier The supplier to use to generate a default value
-    * @return This object as the given type or null if the wrapped object is null
+    * @param <T>           the type parameter
+    * @param componentType the component type
+    * @return the t [ ]
     */
-   public <T> T asOrElse(Class<T> clazz, Supplier<T> supplier) {
-      if (isNull()) {
-         return supplier.get();
-      }
-      T value = as(clazz);
-      if (value == null) {
-         return supplier.get();
-      }
-      return value;
+   public <T> T[] asArray(Type componentType) {
+      return as(parameterizedType(Object[].class, componentType));
    }
 
+   /**
+    * Converts an object into an array of objects
+    *
+    * @param <T>   the type parameter
+    * @param clazz The type of the object to create.
+    * @return An array of the object
+    */
+   public <T> T[] asArray(Class<T> clazz) {
+      return as(parameterizedType(Object[].class, clazz));
+   }
 
    /**
     * As boolean.
@@ -333,6 +223,15 @@ public class Val implements Serializable {
    }
 
    /**
+    * As byte array.
+    *
+    * @return the object as a Byte array.
+    */
+   public Byte[] asByteArray() {
+      return as(Byte[].class);
+   }
+
+   /**
     * As byte value.
     *
     * @return the object as a byte.
@@ -342,12 +241,13 @@ public class Val implements Serializable {
    }
 
    /**
-    * As byte array.
+    * As byte value.
     *
-    * @return the object as a Byte array.
+    * @param defaultValue the default value
+    * @return the object as a byte.
     */
-   public Byte[] asByteArray() {
-      return as(Byte[].class);
+   public byte asByteValue(byte defaultValue) {
+      return as(byte.class, defaultValue);
    }
 
    /**
@@ -360,13 +260,59 @@ public class Val implements Serializable {
    }
 
    /**
-    * As byte value.
+    * As character.
     *
-    * @param defaultValue the default value
-    * @return the object as a byte.
+    * @return The object as a Character
     */
-   public byte asByteValue(byte defaultValue) {
-      return as(byte.class, defaultValue);
+   public Character asCharacter() {
+      return as(Character.class);
+   }
+
+   /**
+    * As character.
+    *
+    * @param defaultValue The default value
+    * @return The object as a char
+    */
+   public Character asCharacter(Character defaultValue) {
+      return as(Character.class, defaultValue);
+   }
+
+   /**
+    * As character array.
+    *
+    * @return The object as a Character array
+    */
+   public Character[] asCharacterArray() {
+      return as(Character[].class);
+   }
+
+   /**
+    * As character value.
+    *
+    * @return The object as a char
+    */
+   public char asCharacterValue() {
+      return as(char.class);
+   }
+
+   /**
+    * As character value.
+    *
+    * @param defaultValue The default value
+    * @return The object as a char
+    */
+   public char asCharacterValue(char defaultValue) {
+      return as(char.class, defaultValue);
+   }
+
+   /**
+    * As character value array.
+    *
+    * @return The object as a char array
+    */
+   public char[] asCharacterValueArray() {
+      return as(char[].class);
    }
 
    /**
@@ -389,6 +335,7 @@ public class Val implements Serializable {
    public <T> Class<T> asClass(Class<T> defaultValue) {
       return as(Class.class, defaultValue);
    }
+
 
    /**
     * As double.
@@ -559,6 +506,21 @@ public class Val implements Serializable {
    }
 
    /**
+    * Converts the object to a List
+    *
+    * @param <T>      the type parameter
+    * @param itemType The class of the item in the List
+    * @return The object as a List
+    */
+   public <T> List<T> asList(Class<T> itemType) {
+      return as(parameterizedType(List.class, itemType));
+   }
+
+   public <T> List<T> asList(Type itemType) {
+      return as(parameterizedType(List.class, itemType));
+   }
+
+   /**
     * As long.
     *
     * @return The object as a Long
@@ -612,6 +574,53 @@ public class Val implements Serializable {
     */
    public long[] asLongValueArray() {
       return as(long[].class);
+   }
+
+   /**
+    * Converts the object to a map
+    *
+    * @param <K>        the type parameter
+    * @param <V>        the type parameter
+    * @param keyClass   The key class
+    * @param valueClass The value class
+    * @return the object as a map
+    */
+   public <K, V> Map<K, V> asMap(Class<K> keyClass, Class<V> valueClass) {
+      return as(parameterizedType(HashMap.class, keyClass, valueClass));
+   }
+
+   /**
+    * Converts the object to resource
+    *
+    * @return The object as a Resource
+    */
+   public Resource asResource() {
+      return as(Resource.class);
+   }
+
+   /**
+    * Converts the object to resource with a given default if the conversion results in a null value.
+    *
+    * @param defaultResource The default value when conversion results in null
+    * @return The value as a resource or <code>defaultResource</code> if null
+    */
+   public Resource asResource(Resource defaultResource) {
+      return as(Resource.class, defaultResource);
+   }
+
+   /**
+    * Converts the object to a Set
+    *
+    * @param <T>      the type parameter
+    * @param itemType The class of the item in the Set
+    * @return The object as a Set
+    */
+   public <T> Set<T> asSet(Class<T> itemType) {
+      return as(parameterizedType(Set.class, itemType));
+   }
+
+   public <T> Set<T> asSet(Type itemType) {
+      return as(parameterizedType(Set.class, itemType));
    }
 
    /**
@@ -671,102 +680,33 @@ public class Val implements Serializable {
    }
 
    /**
-    * As character.
+    * As string.
     *
-    * @return The object as a Character
+    * @return the object as a string
     */
-   public Character asCharacter() {
-      return as(Character.class);
+   public String asString() {
+      return as(String.class);
    }
 
    /**
-    * As character.
+    * As string.
     *
     * @param defaultValue The default value
-    * @return The object as a char
+    * @return the object as a string
     */
-   public Character asCharacter(Character defaultValue) {
-      return as(Character.class, defaultValue);
+   public String asString(String defaultValue) {
+      return as(String.class, defaultValue);
    }
 
    /**
-    * As character array.
+    * Casts the object
     *
-    * @return The object as a Character array
-    */
-   public Character[] asCharacterArray() {
-      return as(Character[].class);
-   }
-
-   /**
-    * As character value.
-    *
-    * @return The object as a char
-    */
-   public char asCharacterValue() {
-      return as(char.class);
-   }
-
-   /**
-    * As character value.
-    *
-    * @param defaultValue The default value
-    * @return The object as a char
-    */
-   public char asCharacterValue(char defaultValue) {
-      return as(char.class, defaultValue);
-   }
-
-   /**
-    * As character value array.
-    *
-    * @return The object as a char array
-    */
-   public char[] asCharacterValueArray() {
-      return as(char[].class);
-   }
-
-   /**
-    * Converts the object to a List
-    *
-    * @param <T>      the type parameter
-    * @param itemType The class of the item in the List
-    * @return The object as a List
+    * @param <T> the type of the class
+    * @return the object cast as the class type
     */
    @SuppressWarnings("unchecked")
-   public <T> List<T> asList(Class<T> itemType) {
-      return asCollection(List.class, itemType);
-   }
-
-
-   /**
-    * Converts the object to resource
-    *
-    * @return The object as a Resource
-    */
-   public Resource asResource() {
-      return as(Resource.class);
-   }
-
-   /**
-    * Converts the object to resource with a given default if the conversion results in a null value.
-    *
-    * @param defaultResource The default value when conversion results in null
-    * @return The value as a resource or <code>defaultResource</code> if null
-    */
-   public Resource asResource(Resource defaultResource) {
-      return as(Resource.class, defaultResource);
-   }
-
-   /**
-    * Converts the object to a Set
-    *
-    * @param <T>      the type parameter
-    * @param itemType The class of the item in the Set
-    * @return The object as a Set
-    */
-   public <T> Set<T> asSet(Class<T> itemType) {
-      return asCollection(Set.class, itemType);
+   public <T> T cast() {
+      return Cast.as(toConvert);
    }
 
    @Override
@@ -783,20 +723,36 @@ public class Val implements Serializable {
       return Objects.equals(this.toConvert, o);
    }
 
-   @Override
-   public String toString() {
-      return Objects.toString(toConvert);
+   /**
+    * Get object.
+    *
+    * @return The wrapped object
+    */
+   public Object get() {
+      return toConvert;
    }
 
    /**
-    * Converts an object into an array of objects
+    * Get wrapped class.
     *
-    * @param <T>   the type parameter
-    * @param clazz The type of the object to create.
-    * @return An array of the object
+    * @return the class
     */
-   public <T> T[] asArray(Class<T> clazz) {
-      return Cast.as(Converter.convertSilently(toConvert, Array.newInstance(clazz, 0).getClass()));
+   public Class<?> getWrappedClass() {
+      return toConvert == null ? null : toConvert.getClass();
+   }
+
+   /**
+    * Is null.
+    *
+    * @return True if the object to convert is null
+    */
+   public boolean isNull() {
+      return toConvert == null;
+   }
+
+   @Override
+   public String toString() {
+      return Objects.toString(toConvert);
    }
 
 }//END OF ConvertibleObject

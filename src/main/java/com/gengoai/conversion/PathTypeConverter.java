@@ -4,6 +4,7 @@ import org.kohsuke.MetaInfServices;
 
 import java.lang.reflect.Type;
 import java.net.URI;
+import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -19,7 +20,11 @@ public class PathTypeConverter implements TypeConverter {
       if (source instanceof Path) {
          return source;
       }
-      return Paths.get(Converter.convert(source, URI.class));
+      try {
+         return Paths.get(Converter.convert(source, URI.class));
+      } catch (FileSystemNotFoundException e) {
+         throw new TypeConversionException(source, Path.class, e);
+      }
    }
 
    @Override

@@ -2,6 +2,7 @@ package com.gengoai.conversion;
 
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.*;
+import com.gengoai.json.JsonEntry;
 import org.kohsuke.MetaInfServices;
 
 import java.io.*;
@@ -43,6 +44,11 @@ public class ResourceTypeConverter implements TypeConverter {
          return Resources.from(source.toString());
       } else if (source instanceof Writer) {
          return new WriterResource(Cast.as(source));
+      } else if (source instanceof JsonEntry) {
+         JsonEntry e = Cast.as(source);
+         if (e.isString()) {
+            return Resources.from(e.getAsString());
+         }
       }
 
       throw new TypeConversionException(source, Resource.class);
