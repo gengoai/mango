@@ -21,18 +21,32 @@
 
 package com.gengoai.collection.counter;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
+ * Implementation of a MultiCounter using a HashMaps.
+ *
+ * @param <K> the first key type
+ * @param <V> the second type
  * @author David B. Bracewell
  */
-public class SynchronizedMultiCounterTest extends BaseMultiCounterTest {
+public class ConcurrentHashMapMultiCounter<K, V> extends BaseMultiCounter<K, V> {
+   private static final long serialVersionUID = 1L;
 
    @Override
-   public MultiCounter<String, String> getEmptyCounter() {
-      return MultiCounters.synchronizedMultiCounter();
+   protected Map<K, Counter<V>> createMap() {
+      return new ConcurrentHashMap<>();
    }
 
    @Override
-   public MultiCounter<String, String> getEntryCounter() {
-      return MultiCounters.synchronizedMultiCounter(super.getEntryCounter());
+   protected Counter<V> createCounter() {
+      return new ConcurrentHashMapCounter<>();
    }
-}//END OF MultiCounterTest
+
+   @Override
+   protected MultiCounter<K, V> newInstance() {
+      return new ConcurrentHashMapMultiCounter<>();
+   }
+
+}//END OF HashMapMultiCounter

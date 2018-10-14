@@ -123,6 +123,7 @@ public abstract class BaseMultiCounterTest {
       z.clear();
       assertEquals(0, mc.sum(), 0);
       assertEquals(0, z.sum(), 0);
+      mc.trimToSize();
       assertTrue(mc.firstKeys().isEmpty());
    }
 

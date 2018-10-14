@@ -57,6 +57,8 @@ public interface MultiCounter<K, V> extends JsonSerializable {
       return mc;
    }
 
+   void trimToSize();
+
    /**
     * A set of triplies entries (key1,key2,double) making up the counter
     *

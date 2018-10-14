@@ -34,7 +34,7 @@ import com.gengoai.tuple.Tuple2;
  */
 public class LocalMMultiCounterAccumulator<K1, K2> extends LocalMAccumulator<Tuple2<K1, K2>, MultiCounter<K1, K2>> implements MMultiCounterAccumulator<K1, K2> {
    private static final long serialVersionUID = 1L;
-   private final MultiCounter<K1, K2> counter = MultiCounters.synchronizedMultiCounter();
+   private final MultiCounter<K1, K2> counter = MultiCounters.newConcurrentCounter();
 
    /**
     * Instantiates a new LocalMMultiCounterAccumulator.

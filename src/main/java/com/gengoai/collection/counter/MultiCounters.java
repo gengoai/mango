@@ -102,8 +102,8 @@ public interface MultiCounters {
     * @param multiCounter the multi counter to wrap
     * @return the synchronized multi-counter
     */
-   static <K1, K2> MultiCounter<K1, K2> synchronizedMultiCounter(MultiCounter<K1, K2> multiCounter) {
-      return new SynchronizedMultiCounter<>(multiCounter);
+   static <K1, K2> MultiCounter<K1, K2> newConcurrentCounter(MultiCounter<K1, K2> multiCounter) {
+      return new ConcurrentHashMapMultiCounter<K1,K2>().merge(multiCounter);
    }
 
    /**
@@ -113,8 +113,8 @@ public interface MultiCounters {
     * @param <K2> the component type of the second key
     * @return the synchronized multi-counter
     */
-   static <K1, K2> MultiCounter<K1, K2> synchronizedMultiCounter() {
-      return synchronizedMultiCounter(newMultiCounter());
+   static <K1, K2> MultiCounter<K1, K2> newConcurrentCounter() {
+      return new ConcurrentHashMapMultiCounter<>();
    }
 
    /**

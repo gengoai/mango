@@ -37,6 +37,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -65,8 +66,19 @@ public class URLResource extends BaseResource {
       this.url = url;
    }
 
-   protected boolean canEqual(Object other) {
-      return other instanceof URLResource;
+   @Override
+   public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof URLResource)) return false;
+      URLResource that = (URLResource) o;
+      return connectionTimeOut == that.connectionTimeOut &&
+                Objects.equals(url, that.url) &&
+                Objects.equals(userAgent, that.userAgent);
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(url, userAgent, connectionTimeOut);
    }
 
    @Override
@@ -82,35 +94,9 @@ public class URLResource extends BaseResource {
       return super.asFile();
    }
 
-   public boolean equals(Object o) {
-      if (o == this) return true;
-      if (!(o instanceof URLResource)) return false;
-      final URLResource other = (URLResource) o;
-      if (!other.canEqual((Object) this)) return false;
-      final Object this$url = this.url;
-      final Object other$url = other.url;
-      if (this$url == null ? other$url != null : !this$url.equals(other$url)) return false;
-      final Object this$userAgent = this.getUserAgent();
-      final Object other$userAgent = other.getUserAgent();
-      if (this$userAgent == null ? other$userAgent != null : !this$userAgent.equals(other$userAgent)) return false;
-      if (this.getConnectionTimeOut() != other.getConnectionTimeOut()) return false;
-      return true;
-   }
-
    @Override
    public Optional<URI> asURI() {
       return Optional.of(URI.create(url.toString()));
-   }
-
-   public int hashCode() {
-      final int PRIME = 59;
-      int result = 1;
-      final Object $url = this.url;
-      result = result * PRIME + ($url == null ? 43 : $url.hashCode());
-      final Object $userAgent = this.getUserAgent();
-      result = result * PRIME + ($userAgent == null ? 43 : $userAgent.hashCode());
-      result = result * PRIME + this.getConnectionTimeOut();
-      return result;
    }
 
    @Override
