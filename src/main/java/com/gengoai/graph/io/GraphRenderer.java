@@ -23,7 +23,7 @@ package com.gengoai.graph.io;
 
 
 import com.gengoai.collection.multimap.ArrayListMultimap;
-import com.gengoai.collection.multimap.ListMultimap;
+import com.gengoai.collection.multimap.Multimap;
 import com.gengoai.graph.Graph;
 import com.gengoai.io.resource.Resource;
 
@@ -70,6 +70,6 @@ public interface GraphRenderer<V> {
     * @param parameters the parameters
     * @throws IOException the iO exception
     */
-   void render(Graph<V> graph, Resource location, ListMultimap<String, String> parameters) throws IOException;
+   void render(Graph<V> graph, Resource location, Multimap<String, String> parameters) throws IOException;
 
 }//END OF GraphRenderer

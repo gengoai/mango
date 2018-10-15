@@ -21,11 +21,13 @@
 
 package com.gengoai.collection.counter;
 
-import java.util.Map;
+import com.gengoai.json.JsonEntry;
+
+import java.lang.reflect.Type;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Implementation of a Counter using a HashMap
+ * Implementation of a Counter using a ConcurrentHashMap
  *
  * @param <T> the component type of the counter
  * @author David B. Bracewell
@@ -33,14 +35,29 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ConcurrentHashMapCounter<T> extends BaseMapCounter<T> {
    private static final long serialVersionUID = 1L;
 
-   @Override
-   protected Map<T, Double> createMap() {
-      return new ConcurrentHashMap<>();
+   /**
+    * Instantiates a new Concurrent hash map counter.
+    */
+   public ConcurrentHashMapCounter() {
+      super(new ConcurrentHashMap<>());
    }
 
    @Override
    protected <R> Counter<R> newInstance() {
       return new ConcurrentHashMapCounter<>();
+   }
+
+
+   /**
+    * Static method for deserializing a <code>ConcurrentHashMapCounter</code> from json.
+    *
+    * @param <T>   the key type parameter
+    * @param entry the json entry
+    * @param types the key type parameter information
+    * @return the counter
+    */
+   static <T> Counter<T> fromJson(JsonEntry entry, Type... types) {
+      return Counter.fromJson(new ConcurrentHashMapCounter<>(), entry, types);
    }
 
 }//END OF ConcurrentHashMapCounter

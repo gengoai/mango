@@ -51,20 +51,46 @@ import java.util.stream.Collectors;
  */
 public interface MultiCounter<K, V> extends JsonSerializable {
 
-   default MultiCounter<V, K> transpose() {
-      MultiCounter<V, K> mc = MultiCounters.newMultiCounter();
-      entries().forEach(e -> mc.set(e.v2, e.v1, e.v3));
-      return mc;
+   /**
+    * Common methodology for deserializing a MultiCounter from json
+    *
+    * @param <K>     the key type parameter
+    * @param <V>     the value type parameter
+    * @param counter the counter to fill
+    * @param entry   the json entry
+    * @param types   the key and value types
+    * @return the multi counter
+    */
+   static <K, V> MultiCounter<K, V> fromJson(MultiCounter<K, V> counter, JsonEntry entry, Type... types) {
+      Type keyType = types.length > 0 ? types[0] : Object.class;
+      Type valueType = types.length > 1 ? types[1] : Object.class;
+      Index<K> firstKeys = Indexes.indexOf(entry.getProperty("firstKeys").getAsArray(keyType));
+      Index<V> secondKeys = Indexes.indexOf(entry.getProperty("secondKeys").getAsArray(valueType));
+      int index = 0;
+      for (Iterator<JsonEntry> iterator = entry.getProperty("values").elementIterator(); iterator.hasNext(); ) {
+         JsonEntry e = iterator.next();
+         K fKey = firstKeys.get(index);
+         e.propertyIterator().forEachRemaining(pe -> counter.set(fKey,
+                                                                 secondKeys.get(Integer.parseInt(pe.getKey())),
+                                                                 pe.getValue().getAsDouble()
+                                                                ));
+         index++;
+      }
+      return counter;
    }
 
-   void trimToSize();
-
    /**
-    * A set of triplies entries (key1,key2,double) making up the counter
+    * Deserializes a <code>MultiCounter</code> from Json
     *
-    * @return the set of entries
+    * @param <K>   the key type parameter
+    * @param <V>   the value type parameter
+    * @param entry the json entry
+    * @param types the key and value types
+    * @return the multi counter
     */
-   Set<Tuple3<K, V, Double>> entries();
+   static <K, V> MultiCounter<K, V> fromJson(JsonEntry entry, Type... types) {
+      return fromJson(MultiCounters.newMultiCounter(), entry, types);
+   }
 
    /**
     * Constructs a new multi-counter made up of counts that are adjusted using the supplied function.
@@ -112,13 +138,6 @@ public interface MultiCounter<K, V> extends JsonSerializable {
     * @return the boolean
     */
    boolean contains(K item1, V item2);
-
-   /**
-    * The values associated with the items in the counter
-    *
-    * @return The values of the items in the counter.
-    */
-   Collection<Double> values();
 
    /**
     * Decrements the count of the pair (item1, item2) by one.
@@ -190,6 +209,13 @@ public interface MultiCounter<K, V> extends JsonSerializable {
    }
 
    /**
+    * A set of triplies entries (key1,key2,double) making up the counter
+    *
+    * @return the set of entries
+    */
+   Set<Tuple3<K, V, Double>> entries();
+
+   /**
     * Creates a new multi-counter containing only those entries whose first key evaluate true for the given predicate
     *
     * @param predicate the predicate to use to filter the first keys
@@ -212,6 +238,13 @@ public interface MultiCounter<K, V> extends JsonSerializable {
     * @return A new counter containing only those entries whose value evaluate true for the given predicate
     */
    MultiCounter<K, V> filterByValue(DoublePredicate predicate);
+
+   /**
+    * Retrieves a set of the first keys in the counter
+    *
+    * @return The items making up the first level keys in the counter
+    */
+   Set<K> firstKeys();
 
    /**
     * Gets the count of the item1, item2 pair
@@ -293,20 +326,12 @@ public interface MultiCounter<K, V> extends JsonSerializable {
    boolean isEmpty();
 
    /**
-    * Retrieves a set of the first keys in the counter
+    * Returns the items as a sorted list by their counts.
     *
-    * @return The items making up the first level keys in the counter
+    * @param ascending True if the counts are sorted in ascending order, False if in descending order.
+    * @return The sorted list of items.
     */
-   Set<K> firstKeys();
-
-   /**
-    * Retrieves an unmodifiable set of secondary level keys in the counter
-    *
-    * @return an unmodifiable set of secondary level keys in the counter
-    */
-   default Set<V> secondKeys() {
-      return entries().parallelStream().map(Tuple3::getV2).collect(Collectors.toSet());
-   }
+   List<Map.Entry<K, V>> itemsByCount(boolean ascending);
 
    /**
     * Retrieves the set of key pairs making up the counts in the counter
@@ -314,14 +339,6 @@ public interface MultiCounter<K, V> extends JsonSerializable {
     * @return A set of key pairs that make up the items in the counter
     */
    Set<Map.Entry<K, V>> keyPairs();
-
-   /**
-    * Returns the items as a sorted list by their counts.
-    *
-    * @param ascending True if the counts are sorted in ascending order, False if in descending order.
-    * @return The sorted list of items.
-    */
-   List<Map.Entry<K, V>> itemsByCount(boolean ascending);
 
    /**
     * Calculates the magnitude (square root of sum of squares) of the items in the Counter.
@@ -389,6 +406,15 @@ public interface MultiCounter<K, V> extends JsonSerializable {
    }
 
    /**
+    * Retrieves an unmodifiable set of secondary level keys in the counter
+    *
+    * @return an unmodifiable set of secondary level keys in the counter
+    */
+   default Set<V> secondKeys() {
+      return entries().parallelStream().map(Tuple3::getV2).collect(Collectors.toSet());
+   }
+
+   /**
     * Sets the value of the given key pair to the given amount
     *
     * @param item1  the first key
@@ -432,6 +458,46 @@ public interface MultiCounter<K, V> extends JsonSerializable {
       return Math2.summaryStatistics(values()).getSum();
    }
 
+   @Override
+   default JsonEntry toJson() {
+      JsonEntry entry = JsonEntry.object();
+      final Index<K> firstKeys = Indexes.indexOf(firstKeys());
+      entry.addProperty("firstKeys", firstKeys.asList());
+      final Index<V> secondKeys = Indexes.indexOf(secondKeys());
+      entry.addProperty("secondKeys", secondKeys.asList());
+      JsonEntry values = JsonEntry.array();
+      for (int i = 0; i < firstKeys.size(); i++) {
+         JsonEntry value = JsonEntry.object();
+         get(firstKeys.get(i)).forEach((k, v) -> value.addProperty(Integer.toString(secondKeys.getId(k)), v));
+         values.addValue(value);
+      }
+      entry.addProperty("values", values);
+      return entry;
+   }
+
+   /**
+    * Transpose multi counter.
+    *
+    * @return the multi counter
+    */
+   default MultiCounter<V, K> transpose() {
+      MultiCounter<V, K> mc = MultiCounters.newMultiCounter();
+      entries().forEach(e -> mc.set(e.v2, e.v1, e.v3));
+      return mc;
+   }
+
+   /**
+    * Trim to size.
+    */
+   void trimToSize();
+
+   /**
+    * The values associated with the items in the counter
+    *
+    * @return The values of the items in the counter.
+    */
+   Collection<Double> values();
+
    /**
     * Writes the counter items and values to CSV
     *
@@ -448,42 +514,6 @@ public interface MultiCounter<K, V> extends JsonSerializable {
                         );
          }
       }
-   }
-
-   static <K, V> MultiCounter<K, V> fromJson(JsonEntry entry, Type... types) {
-      MultiCounter<K, V> toReturn = MultiCounters.newMultiCounter();
-      Type keyType = types.length > 0 ? types[0] : Object.class;
-      Type valueType = types.length > 1 ? types[1] : Object.class;
-      Index<K> firstKeys = Indexes.indexOf(entry.getProperty("firstKeys").getAsArray(keyType));
-      Index<V> secondKeys = Indexes.indexOf(entry.getProperty("secondKeys").getAsArray(valueType));
-      int index = 0;
-      for (Iterator<JsonEntry> iterator = entry.getProperty("values").elementIterator(); iterator.hasNext(); ) {
-         JsonEntry e = iterator.next();
-         K fKey = firstKeys.get(index);
-         e.propertyIterator().forEachRemaining(pe -> toReturn.set(fKey,
-                                                                  secondKeys.get(Integer.parseInt(pe.getKey())),
-                                                                  pe.getValue().getAsDouble()
-                                                                 ));
-         index++;
-      }
-      return toReturn;
-   }
-
-   @Override
-   default JsonEntry toJson() {
-      JsonEntry entry = JsonEntry.object();
-      final Index<K> firstKeys = Indexes.indexOf(firstKeys());
-      entry.addProperty("firstKeys", firstKeys.asList());
-      final Index<V> secondKeys = Indexes.indexOf(secondKeys());
-      entry.addProperty("secondKeys", secondKeys.asList());
-      JsonEntry values = JsonEntry.array();
-      for (int i = 0; i < firstKeys.size(); i++) {
-         JsonEntry value = JsonEntry.object();
-         get(firstKeys.get(i)).forEach((k, v) -> value.addProperty(Integer.toString(secondKeys.getId(k)), v));
-         values.addValue(value);
-      }
-      entry.addProperty("values", values);
-      return entry;
    }
 
 }//END OF MultiCounter

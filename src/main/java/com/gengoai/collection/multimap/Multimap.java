@@ -1,37 +1,68 @@
 package com.gengoai.collection.multimap;
 
-import com.gengoai.Validation;
 import com.gengoai.collection.Collect;
 import com.gengoai.collection.Iterables;
 
 import java.util.*;
 
-import static com.gengoai.tuple.Tuples.$;
-
 /**
- * The interface Multimap.
+ * Maps keys to multiple values.
  *
- * @param <K> the type parameter
- * @param <V> the type parameter
+ * @param <K> the key type parameter
+ * @param <V> the value type parameter
  * @author David B. Bracewell
  */
 public interface Multimap<K, V> {
 
    /**
-    * Contains boolean.
+    * A map representation of the multimap where the values are represented in a Collection.
+    *
+    * @return the map
+    */
+   Map<K, Collection<V>> asMap();
+
+   /**
+    * Clears all items in the multimap
+    */
+   default void clear() {
+      asMap().clear();
+   }
+
+   /**
+    * Checks if the given key and value exist in the multimap
     *
     * @param key   the key
     * @param value the value
-    * @return the boolean
+    * @return True if the key is mapped to value, false otherwise
     */
    default boolean contains(Object key, Object value) {
       return asMap().containsKey(key) && asMap().get(key).contains(value);
    }
 
    /**
-    * Entry set set.
+    * Checks if the key is contained in the multimap
     *
-    * @return the set
+    * @param key the key
+    * @return True if the key is mapped to one or more values in the multimap
+    */
+   default boolean containsKey(Object key) {
+      return asMap().containsKey(key);
+   }
+
+   /**
+    * Checks if the value exists in the multimap
+    *
+    * @param value the value
+    * @return True if there exists a key that is mapped to the value, false otherwise
+    */
+   default boolean containsValue(Object value) {
+      return values().contains(value);
+   }
+
+   /**
+    * A set of the entries in the multimap
+    *
+    * @return the set of key-value pairs in the multimap
     */
    default Set<Map.Entry<K, V>> entries() {
       return new AbstractSet<Map.Entry<K, V>>() {
@@ -48,62 +79,63 @@ public interface Multimap<K, V> {
    }
 
    /**
-    * Get v.
+    * Gets the values mapped to by the given key. A new collection is created if the key does not exist in the
+    * multimap.
     *
-    * @param o the o
-    * @return the v
+    * @param key the key
+    * @return the collection of values.
     */
-   Collection<V> get(Object o);
+   Collection<V> get(Object key);
 
    /**
-    * Is empty boolean.
+    * Checks if the multimap is empty, i.e. has no valid mappings.
     *
-    * @return the boolean
+    * @return True if it is empty
     */
    default boolean isEmpty() {
       return asMap().isEmpty();
    }
 
    /**
-    * Key set set.
+    * Gets the set of keys in the multimap
     *
-    * @return the set
+    * @return the set of keys in the multimap
     */
    default Set<K> keySet() {
       return asMap().keySet();
    }
 
    /**
-    * Put boolean.
+    * Puts the key-value pair mapping in the multimap
     *
     * @param key   the key
     * @param value the value
-    * @return the boolean
+    * @return true if the key-value pair was successfully added.
     */
    default boolean put(K key, V value) {
       return get(key).add(value);
    }
 
    /**
-    * Put all boolean.
+    * Put all key-value pairs in the multimap
     *
-    * @param map the map
+    * @param map the map of key value pairs to add
     */
    default void putAll(Map<? extends K, ? extends Collection<? extends V>> map) {
       map.forEach(this::putAll);
    }
 
    /**
-    * Put all boolean.
+    * Put all key-value pairs in the multimap
     *
-    * @param multimap the multimap
+    * @param multimap the map of key value pairs to add
     */
    default void putAll(Multimap<? extends K, ? extends V> multimap) {
       putAll(multimap.asMap());
    }
 
    /**
-    * Put all boolean.
+    * Puts all values for a given key
     *
     * @param key    the key
     * @param values the values
@@ -113,144 +145,56 @@ public interface Multimap<K, V> {
    }
 
    /**
-    * Remove boolean.
+    * Removes the given key-value pair from the multimap
     *
     * @param key   the key
     * @param value the value
-    * @return the boolean
+    * @return true the key-value pair was successfully removed
     */
    default boolean remove(Object key, Object value) {
-      return asMap().containsKey(key) && asMap().get(key).remove(value);
+      boolean success = asMap().containsKey(key) && asMap().get(key).remove(value);
+      trimToSize();
+      return success;
    }
 
    /**
-    * Remove all collection.
+    * Removes all values for the given key.
     *
     * @param key the key
-    * @return the collection
+    * @return the collection of values associated with the key
     */
    Collection<V> removeAll(Object key);
 
    /**
-    * Replace boolean.
+    * Replaces the values for a given key with the given new values
     *
     * @param key    the key
     * @param values the values
-    * @return the boolean
+    * @return true if the values were successfully replaced
     */
    void replace(K key, Iterable<? extends V> values);
 
    /**
-    * Size int.
+    * The number of key-value mappings in the multimap
     *
-    * @return the int
+    * @return the number of key-value mappings
     */
    default int size() {
       return asMap().values().stream().mapToInt(Collection::size).sum();
    }
 
    /**
-    * Values collection.
+    * Trims keys that have no value mappings (i.e. empty value collection) from the multimap
+    */
+   void trimToSize();
+
+   /**
+    * Provides a  view of the values in the multimap
     *
     * @return the collection
     */
    default Collection<V> values() {
       return Collect.asCollection(Iterables.flatten(asMap().values()));
-   }
-
-   /**
-    * Clear.
-    */
-   default void clear() {
-      asMap().clear();
-   }
-
-   /**
-    * As map map.
-    *
-    * @return the map
-    */
-   Map<K, Collection<V>> asMap();
-
-   /**
-    * Contains key boolean.
-    *
-    * @param key the key
-    * @return the boolean
-    */
-   default boolean containsKey(Object key) {
-      return asMap().containsKey(key);
-   }
-
-   /**
-    * Contains value boolean.
-    *
-    * @param value the value
-    * @return the boolean
-    */
-   default boolean containsValue(Object value) {
-      return values().contains(value);
-   }
-
-   /**
-    * Trim.
-    */
-   default void trim() {
-      asMap().keySet().removeIf(key -> get(key).isEmpty());
-   }
-
-   /**
-    * The type Entry set iterator.
-    *
-    * @param <K> the type parameter
-    * @param <V> the type parameter
-    */
-   class EntrySetIterator<K, V> implements Iterator<Map.Entry<K, V>> {
-      private final Map<K, Collection<V>> map;
-      private Iterator<K> keyIterator = null;
-      private Iterator<V> currentCollectionIter = null;
-      private K currentKey = null;
-      private V currentValue = null;
-
-      /**
-       * Instantiates a new Entry set iterator.
-       *
-       * @param map the map
-       */
-      public EntrySetIterator(Map<K, Collection<V>> map) {
-         this.map = map;
-         this.keyIterator = map.keySet().iterator();
-      }
-
-
-      private boolean advance() {
-         while (currentCollectionIter == null || !currentCollectionIter.hasNext()) {
-            if (keyIterator.hasNext()) {
-               currentKey = keyIterator.next();
-               currentCollectionIter = map.get(currentKey).iterator();
-            } else {
-               return false;
-            }
-         }
-         return true;
-      }
-
-      @Override
-      public void remove() {
-         map.getOrDefault(currentKey, Collections.emptyList()).remove(currentValue);
-      }
-
-      @Override
-      public boolean hasNext() {
-         return advance();
-      }
-
-      @Override
-      public Map.Entry<K, V> next() {
-         Validation.checkState(advance(), "No such element");
-         currentValue = currentCollectionIter.next();
-         return $(currentKey, currentValue);
-      }
    }
 
 

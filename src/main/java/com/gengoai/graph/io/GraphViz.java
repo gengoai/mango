@@ -24,7 +24,7 @@ package com.gengoai.graph.io;
 import com.gengoai.SystemInfo;
 import com.gengoai.collection.Index;
 import com.gengoai.collection.Indexes;
-import com.gengoai.collection.multimap.ListMultimap;
+import com.gengoai.collection.multimap.Multimap;
 import com.gengoai.config.Config;
 import com.gengoai.graph.Edge;
 import com.gengoai.graph.Graph;
@@ -128,7 +128,7 @@ public class GraphViz<V> implements GraphWriter<V>, GraphRenderer<V> {
    }
 
    @Override
-   public void render(Graph<V> graph, Resource location, ListMultimap<String, String> parameters) throws IOException {
+   public void render(Graph<V> graph, Resource location, Multimap<String, String> parameters) throws IOException {
       Resource tempLoc = Resources.temporaryFile();
       tempLoc.deleteOnExit();
       write(graph, tempLoc, parameters);
@@ -179,7 +179,7 @@ public class GraphViz<V> implements GraphWriter<V>, GraphRenderer<V> {
    }
 
    @Override
-   public void write(Graph<V> graph, Resource location, ListMultimap<String, String> parameters) throws IOException {
+   public void write(Graph<V> graph, Resource location, Multimap<String, String> parameters) throws IOException {
       location.setCharset(StandardCharsets.UTF_8);
       try (BufferedWriter writer = new BufferedWriter(location.writer())) {
 

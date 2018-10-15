@@ -21,8 +21,10 @@
 
 package com.gengoai.collection.counter;
 
+import com.gengoai.json.JsonEntry;
+
+import java.lang.reflect.Type;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Implementation of a MultiCounter using a HashMaps.
@@ -34,9 +36,11 @@ import java.util.Map;
 public class HashMapMultiCounter<K, V> extends BaseMultiCounter<K, V> {
    private static final long serialVersionUID = 1L;
 
-   @Override
-   protected Map<K, Counter<V>> createMap() {
-      return new HashMap<>();
+   /**
+    * Instantiates a new Hash map multi counter.
+    */
+   public HashMapMultiCounter() {
+      super(new HashMap<>());
    }
 
    @Override
@@ -47,6 +51,19 @@ public class HashMapMultiCounter<K, V> extends BaseMultiCounter<K, V> {
    @Override
    protected MultiCounter<K, V> newInstance() {
       return new HashMapMultiCounter<>();
+   }
+
+   /**
+    * Deserializes a <code>HashMapMultiCounter</code> from Json
+    *
+    * @param <K>   the key type parameter
+    * @param <V>   the value type parameter
+    * @param entry the json entry
+    * @param types the key and value types
+    * @return the multi counter
+    */
+   static <K, V> MultiCounter<K, V> fromJson(JsonEntry entry, Type... types) {
+      return MultiCounter.fromJson(new HashMapMultiCounter<>(), entry, types);
    }
 
 }//END OF HashMapMultiCounter

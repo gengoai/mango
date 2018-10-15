@@ -47,7 +47,7 @@ public final class Sorting {
     * @param <E> the type parameter
     * @return the serializable comparator
     */
-   public static <E extends Comparable> SerializableComparator<E> natural() {
+   public static <E> SerializableComparator<E> natural() {
       return Sorting::compare;
    }
 

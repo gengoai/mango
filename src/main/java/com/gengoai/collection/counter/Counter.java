@@ -28,7 +28,6 @@ import com.gengoai.collection.Indexes;
 import com.gengoai.conversion.Converter;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVWriter;
-import com.gengoai.io.Commitable;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonSerializable;
@@ -41,24 +40,47 @@ import java.util.*;
 import java.util.function.*;
 import java.util.stream.Collectors;
 
+import static com.gengoai.reflection.Types.getOrObject;
+
 /**
  * <p>A specialized object to double map that allows basic statistics over the objects and their values.</p>
  *
  * @param <T> Component type being counted.
  * @author David B. Bracewell
  */
-public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable, Commitable, JsonSerializable {
+public interface Counter<T> extends Copyable<Counter<T>>, JsonSerializable {
 
-   static <T> Counter<T> fromJson(JsonEntry entry, Type... types) {
-      Type keyType = types.length > 0 ? types[0] : Object.class;
-      Counter<T> toReturn = Counters.newCounter();
+   /**
+    * Common methodology to deserialize a counter from json
+    *
+    * @param <T>     the key type parameter
+    * @param counter The counter to fill
+    * @param entry   the json entry
+    * @param types   the key type parameter information
+    * @return the counter
+    */
+   static <T> Counter<T> fromJson(Counter<T> counter, JsonEntry entry, Type... types) {
+      Type keyType = getOrObject(0, types);
       Index<T> keys = Indexes.indexOf(entry.getProperty("keys").getAsArray(keyType));
       int index = 0;
       for (Iterator<JsonEntry> iterator = entry.getProperty("values").elementIterator(); iterator.hasNext(); ) {
-         toReturn.set(keys.get(index), iterator.next().getAsDouble());
+         counter.set(keys.get(index), iterator.next().getAsDouble());
          index++;
       }
-      return toReturn;
+      return counter;
+   }
+
+   /**
+    * Static method for deserializing a <code>Counter</code> from json. By default a {@link HashMapCounter} is
+    * returned.
+    *
+    * @param <T>   the key type parameter
+    * @param entry the json entry
+    * @param types the key type parameter information
+    * @return the counter
+    */
+   static <T> Counter<T> fromJson(JsonEntry entry, Type... types) {
+      return Counter.fromJson(new HashMapCounter<>(), entry, types);
    }
 
    /**
@@ -107,18 +129,6 @@ public interface Counter<T> extends Copyable<Counter<T>>, AutoCloseable, Commita
     * Clears the counter
     */
    void clear();
-
-   @Override
-   default void close() throws Exception {
-
-   }
-
-   /**
-    * Commits changes
-    */
-   default void commit() {
-
-   }
 
    /**
     * Determines if the item is in the counter

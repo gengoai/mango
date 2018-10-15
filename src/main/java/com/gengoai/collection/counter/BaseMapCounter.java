@@ -33,7 +33,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * Implementation of a Counter using a HashMap
+ * Abstract implementation of a counter backed by a {@link Map}.
  *
  * @param <T> the component type of the counter
  * @author David B. Bracewell
@@ -45,12 +45,12 @@ public abstract class BaseMapCounter<T> implements Counter<T>, Serializable {
 
    /**
     * Instantiates a new Hash map counter.
+    *
+    * @param backingMap the backing map
     */
-   protected BaseMapCounter() {
-      this.map = createMap();
+   protected BaseMapCounter(Map<T, Double> backingMap) {
+      this.map = backingMap;
    }
-
-   protected abstract Map<T, Double> createMap();
 
    @Override
    public double get(T item) {

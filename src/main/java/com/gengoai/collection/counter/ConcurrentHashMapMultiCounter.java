@@ -21,7 +21,9 @@
 
 package com.gengoai.collection.counter;
 
-import java.util.Map;
+import com.gengoai.json.JsonEntry;
+
+import java.lang.reflect.Type;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -34,9 +36,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ConcurrentHashMapMultiCounter<K, V> extends BaseMultiCounter<K, V> {
    private static final long serialVersionUID = 1L;
 
-   @Override
-   protected Map<K, Counter<V>> createMap() {
-      return new ConcurrentHashMap<>();
+   /**
+    * Instantiates a new Concurrent hash map multi counter.
+    */
+   public ConcurrentHashMapMultiCounter() {
+      super(new ConcurrentHashMap<>());
    }
 
    @Override
@@ -47,6 +51,19 @@ public class ConcurrentHashMapMultiCounter<K, V> extends BaseMultiCounter<K, V> 
    @Override
    protected MultiCounter<K, V> newInstance() {
       return new ConcurrentHashMapMultiCounter<>();
+   }
+
+   /**
+    * Deserializes a <code>ConcurrentHashMapMultiCounter</code> from Json
+    *
+    * @param <K>   the key type parameter
+    * @param <V>   the value type parameter
+    * @param entry the json entry
+    * @param types the key and value types
+    * @return the multi counter
+    */
+   static <K, V> MultiCounter<K, V> fromJson(JsonEntry entry, Type... types) {
+      return MultiCounter.fromJson(new ConcurrentHashMapMultiCounter<>(), entry, types);
    }
 
 }//END OF HashMapMultiCounter

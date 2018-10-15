@@ -23,7 +23,7 @@ package com.gengoai.graph.io;
 
 import com.gengoai.collection.Index;
 import com.gengoai.collection.Indexes;
-import com.gengoai.collection.multimap.ListMultimap;
+import com.gengoai.collection.multimap.Multimap;
 import com.gengoai.conversion.Cast;
 import com.gengoai.graph.AdjacencyMatrix;
 import com.gengoai.graph.Edge;
@@ -190,7 +190,7 @@ public class GraphML<V> implements GraphReader<V>, GraphWriter<V> {
    }
 
    @Override
-   public void write(Graph<V> graph, Resource location, ListMultimap<String, String> parameters) throws IOException {
+   public void write(Graph<V> graph, Resource location, Multimap<String, String> parameters) throws IOException {
       GraphType graphType = new GraphType();
       graphType.setEdgedefault(graph.isDirected() ? DIRECTED : GraphEdgedefaultType.UNDIRECTED);
       graphType.setId("G");

@@ -15,7 +15,8 @@ public class LinkedListMultimap<K, V> extends ListMultimap<K, V> implements Seri
    private static final long serialVersionUID = 1L;
 
    @Override
-   protected List<V> createList() {
+   protected List<V> createCollection() {
       return new LinkedList<>();
    }
+
 }//END OF LinkedListMultimap

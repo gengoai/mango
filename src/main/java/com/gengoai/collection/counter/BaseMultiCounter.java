@@ -46,13 +46,20 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
    private final Map<K, Counter<V>> map;
 
 
-   protected BaseMultiCounter() {
-      this.map = createMap();
+   /**
+    * Instantiates a new Base multi counter.
+    *
+    * @param backingMap the backing map
+    */
+   protected BaseMultiCounter(Map<K, Counter<V>> backingMap) {
+      this.map = backingMap;
    }
 
-   protected abstract Map<K, Counter<V>> createMap();
-
-
+   /**
+    * Creates a new counter.
+    *
+    * @return the counter
+    */
    protected abstract Counter<V> createCounter();
 
    @Override
@@ -162,11 +169,13 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
 
    @Override
    public boolean isEmpty() {
+      trimToSize();
       return map.isEmpty();
    }
 
    @Override
    public Set<K> firstKeys() {
+      trimToSize();
       return map.keySet();
    }
 
@@ -195,9 +204,10 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
 
    @Override
    public Counter<V> remove(K item) {
-      Counter<V> c = get(item);
-      map.remove(item);
-      return c;
+      if (map.containsKey(item)) {
+         return map.remove(item);
+      }
+      return createCounter();
    }
 
    @Override
@@ -222,6 +232,7 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
    @Override
    public MultiCounter<K, V> set(K item, Counter<V> counter) {
       map.put(item, counter);
+      trimToSize();
       return this;
    }
 
@@ -311,7 +322,7 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
    }
 
    @Override
-   public void trimToSize(){
+   public void trimToSize() {
       map.keySet().removeIf(k -> map.get(k).isEmpty());
    }
 

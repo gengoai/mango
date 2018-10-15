@@ -3,39 +3,38 @@ package com.gengoai.collection.multimap;
 import com.gengoai.collection.Sorting;
 import com.gengoai.function.SerializableComparator;
 
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.PriorityQueue;
 
 /**
- * Multimap in which keys are mapped to values in a tree set.
+ * Multimap in which keys are mapped to value stored in a priority queue.
  *
  * @param <K> the type parameter
  * @param <V> the type parameter
  * @author David B. Bracewell
  */
-public class TreeSetMultimap<K, V> extends SetMultimap<K, V> {
+public class PriorityQueueMultimap<K, V> extends BaseMultimap<K, V, PriorityQueue<V>> {
    private static final long serialVersionUID = 1L;
    private final SerializableComparator<V> comparator;
 
    /**
-    * Instantiates a new TreeSetMultimap.
+    * Instantiates a new Priority queue multimap.
     */
-   public TreeSetMultimap() {
+   public PriorityQueueMultimap() {
       this(Sorting.natural());
    }
 
    /**
-    * Instantiates a new TreeSetMultimap
+    * Instantiates a new Priority queue multimap.
     *
     * @param comparator the comparator to use for comparing values
     */
-   public TreeSetMultimap(SerializableComparator<V> comparator) {
+   public PriorityQueueMultimap(SerializableComparator<V> comparator) {
       this.comparator = comparator;
    }
 
    @Override
-   protected Set<V> createCollection() {
-      return new TreeSet<>(comparator);
+   protected PriorityQueue<V> createCollection() {
+      return new PriorityQueue<>(comparator);
    }
 
-}//END OF TreeSetMultimap
+}//END OF PriorityQueueMultimap
