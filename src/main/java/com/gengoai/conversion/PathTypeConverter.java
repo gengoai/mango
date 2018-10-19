@@ -11,6 +11,8 @@ import java.nio.file.Paths;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
+ * Path Converter
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

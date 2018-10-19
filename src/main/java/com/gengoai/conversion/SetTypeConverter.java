@@ -9,7 +9,9 @@ import java.util.Set;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
- * The type Set type converter.
+ * Set and HashSet Converter.
+ *
+ * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)
 public class SetTypeConverter extends CollectionTypeConverter {

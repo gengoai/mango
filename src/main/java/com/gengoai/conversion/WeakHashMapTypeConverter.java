@@ -8,6 +8,8 @@ import java.util.WeakHashMap;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
+ * WeakHashMap Converter
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

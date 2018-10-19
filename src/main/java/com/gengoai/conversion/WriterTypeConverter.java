@@ -12,6 +12,8 @@ import java.nio.charset.StandardCharsets;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
+ * Writer and BufferedWriter Converter
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

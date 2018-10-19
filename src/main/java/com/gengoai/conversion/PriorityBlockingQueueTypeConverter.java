@@ -8,6 +8,8 @@ import java.util.concurrent.PriorityBlockingQueue;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
+ * PriorityBlockingQueue Converter
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

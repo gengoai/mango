@@ -12,6 +12,8 @@ import static com.gengoai.reflection.Types.parameterizedType;
 import static com.gengoai.tuple.Tuples.$;
 
 /**
+ * Tuple3 Converter
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

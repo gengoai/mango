@@ -8,7 +8,9 @@ import java.util.Stack;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
- * The type Set type converter.
+ * Stack Converter
+ *
+ * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)
 public class StackTypeConverter extends CollectionTypeConverter {

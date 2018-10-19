@@ -2,19 +2,13 @@ package com.gengoai.conversion;
 
 import com.gengoai.EnumValue;
 import com.gengoai.Primitives;
+import com.gengoai.io.resource.Resource;
 import com.gengoai.json.Json;
 import com.gengoai.json.JsonEntry;
 import org.kohsuke.MetaInfServices;
 
-import java.io.File;
-import java.io.InputStream;
-import java.io.Reader;
-import java.lang.reflect.Array;
+import java.io.IOException;
 import java.lang.reflect.Type;
-import java.net.URI;
-import java.net.URL;
-import java.nio.file.Path;
-import java.sql.Blob;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -23,6 +17,8 @@ import java.util.Map;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
+ * String Converter that handles encoding different object types to make them more easily converted back.
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)
@@ -43,18 +39,8 @@ public class StringTypeConverter implements TypeConverter {
          return new String(Primitives.toCharArray(Arrays.asList(Cast.as(object))));
       } else if (object instanceof Byte[]) {
          return new String(Primitives.toByteArray(Arrays.asList(Cast.as(object))));
-      } else if (object instanceof File || object instanceof Path || object instanceof URI || object instanceof URL || object instanceof InputStream || object instanceof Blob || object instanceof Reader) {
-         byte[] bytes = Converter.convert(object, byte[].class);
-         return new String(bytes);
       } else if (object.getClass().isArray()) {
-         StringBuilder array = new StringBuilder("[");
-         for (int i = 0; i < Array.getLength(object); i++) {
-            if (i != 0) {
-               array.append(", ");
-            }
-            array.append(Converter.convert(Array.get(object, i), String.class));
-         }
-         return array + "]";
+         return Json.dumps(object);
       } else if (object instanceof Date) {
          return SimpleDateFormat.getDateTimeInstance().format(object);
       } else if (object instanceof Map) {
@@ -64,6 +50,13 @@ public class StringTypeConverter implements TypeConverter {
          return e.getDeclaringClass().getName() + "." + e.name();
       } else if (object instanceof EnumValue) {
          return Cast.<EnumValue>as(object).canonicalName();
+      }
+
+      try {
+         Resource r = Converter.convert(object, Resource.class);
+         return r.readToString();
+      } catch (IOException | RuntimeException e) {
+         //Ignore
       }
 
       return object.toString();

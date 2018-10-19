@@ -8,6 +8,8 @@ import java.sql.Date;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
+ * SQL Date Converter
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

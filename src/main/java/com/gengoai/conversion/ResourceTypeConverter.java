@@ -14,6 +14,8 @@ import java.nio.file.Path;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
+ * Resource Converter
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

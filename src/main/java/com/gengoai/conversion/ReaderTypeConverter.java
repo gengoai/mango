@@ -11,6 +11,8 @@ import java.lang.reflect.Type;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
+ * Reader and BufferedReader Converter.
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

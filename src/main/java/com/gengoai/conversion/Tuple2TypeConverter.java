@@ -14,6 +14,8 @@ import static com.gengoai.reflection.Types.parameterizedType;
 import static com.gengoai.tuple.Tuples.$;
 
 /**
+ * Map Entry and Tuple2 Converter
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

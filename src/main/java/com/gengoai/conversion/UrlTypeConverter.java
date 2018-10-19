@@ -9,6 +9,8 @@ import java.net.URL;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
+ * URL Type Converter
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

@@ -15,6 +15,8 @@ import java.nio.file.Path;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
+ * OutputStream Converter
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

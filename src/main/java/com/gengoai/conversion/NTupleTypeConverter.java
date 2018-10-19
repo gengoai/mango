@@ -12,6 +12,8 @@ import static com.gengoai.collection.Collect.arrayOf;
 import static com.gengoai.reflection.Types.getOrObject;
 
 /**
+ * NTuple and Tuple Converter.
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

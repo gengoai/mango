@@ -9,6 +9,8 @@ import java.util.TreeMap;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
+ * SortedMap and TreeMap Converter
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)
