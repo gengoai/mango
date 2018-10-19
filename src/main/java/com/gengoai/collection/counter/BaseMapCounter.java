@@ -268,7 +268,7 @@ public abstract class BaseMapCounter<T> implements Counter<T>, Serializable {
    @Override
    public <R> Counter<R> mapKeys(Function<? super T, ? extends R> function) {
       Counter<R> result = newInstance();
-      map.entrySet().forEach(e -> result.increment(function.apply(e.getKey()), e.getValue()));
+      map.forEach((key, value) -> result.increment(function.apply(key), value));
       return result;
    }
 

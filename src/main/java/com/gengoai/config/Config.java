@@ -275,7 +275,9 @@ public final class Config implements Serializable, JsonSerializable {
    public static Config getInstance() {
       if (INSTANCE == null) {
          synchronized (Config.class) {
-            INSTANCE = new Config();
+            if (INSTANCE == null) {
+               INSTANCE = new Config();
+            }
          }
       }
       return INSTANCE;
@@ -594,6 +596,10 @@ public final class Config implements Serializable, JsonSerializable {
     * @param value the value of the property
     */
    public static void setProperty(String name, String value) {
+//      if (value == null) {
+//         getInstance().properties.remove(name);
+//         return;
+//      }
       getInstance().properties.put(name, value);
       if (name.toLowerCase().endsWith(".level")) {
          String className = name.substring(0, name.length() - ".level".length());

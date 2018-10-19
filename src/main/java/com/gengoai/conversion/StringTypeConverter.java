@@ -7,7 +7,6 @@ import com.gengoai.json.Json;
 import com.gengoai.json.JsonEntry;
 import org.kohsuke.MetaInfServices;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -55,7 +54,7 @@ public class StringTypeConverter implements TypeConverter {
       try {
          Resource r = Converter.convert(object, Resource.class);
          return r.readToString();
-      } catch (IOException | RuntimeException e) {
+      } catch (Exception e) {
          //Ignore
       }
 

@@ -3,6 +3,9 @@ package com.gengoai.conversion;
 import com.gengoai.Defaults;
 import com.gengoai.EnumValue;
 import com.gengoai.Primitives;
+import com.gengoai.json.Json;
+import com.gengoai.json.JsonEntry;
+import com.gengoai.json.JsonSerializable;
 import com.gengoai.reflection.Types;
 
 import java.lang.reflect.Type;
@@ -158,6 +161,18 @@ public final class Converter {
       //Just in case the we get this far and the source object is an instance of the destination type return it.
       if (isAssignable(destType, sourceObject.getClass())) {
          return Cast.as(sourceObject);
+      }
+
+      if (isAssignable(JsonSerializable.class, rawClass)) {
+         try {
+            if (sourceObject instanceof CharSequence) {
+               return Json.parse(sourceObject.toString()).getAs(destType);
+            } else if (sourceObject instanceof JsonEntry) {
+               Cast.<JsonEntry>as(sourceObject).getAs(destType);
+            }
+         } catch (Exception e) {
+            throw new TypeConversionException(sourceObject, destType, e);
+         }
       }
 
       throw new TypeConversionException(sourceObject, destType);

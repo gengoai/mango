@@ -242,6 +242,12 @@ public class JsonEntry {
       } else if (Map.class.isAssignableFrom(rawType)) {
          Class<?> c2Type = Cast.as(pt.getActualTypeArguments()[1]);
          return Cast.as(Converter.convertSilently(getAsMap(c2Type), rawType, c1Type, c2Type));
+      } else {
+         try {
+            return Converter.convert(get(), pt);
+         } catch (TypeConversionException e) {
+            //ignore
+         }
       }
       return getAs(rawType);
    }
@@ -262,8 +268,9 @@ public class JsonEntry {
    public <T> T getAs(Type type) {
       if (type == null) {
          return getAsVal().cast();
-      }
-      if (isAssignable(ParameterizedType.class, type)) {
+      } else if (type instanceof ParameterizedType) {
+         return getAs(Cast.as(type));
+      } else if (isAssignable(ParameterizedType.class, type)) {
          Type rawType = getProperty("rawType").getAs(Type.class);
          Type[] parameterTypes = getProperty("actualTypeArguments").elementStream()
                                                                    .map(e -> e.getAs(Type.class))
@@ -276,36 +283,6 @@ public class JsonEntry {
             return Cast.as(ReflectionUtils.getClassForName(getAsString()));
          } catch (Exception e) {
             throw new RuntimeException(e);
-         }
-      } else if (type instanceof Class) {
-         Class<?> clazz = Cast.as(type);
-         if (JsonSerializable.class.isAssignableFrom(clazz)) {
-            try {
-               return Cast.as(Reflect.onClass(clazz)
-                                     .allowPrivilegedAccess()
-                                     .invoke("fromJson", this)
-                                     .get());
-            } catch (ReflectionException e) {
-               throw new RuntimeException(e.getCause());
-            }
-         }
-      } else if (type instanceof ParameterizedType) {
-         ParameterizedType pt = Cast.as(type);
-         if (isAssignable(Collection.class, pt.getRawType())) {
-            return Cast.as(getAsArray(getOrObject(0, pt.getActualTypeArguments()),
-                                      Collect.newCollection(asClass(pt.getRawType()))));
-         } else if (isAssignable(Map.class, pt.getRawType())) {
-            try {
-               return Converter.convert(getAsMap(), pt);
-            } catch (TypeConversionException e) {
-               throw new RuntimeException(e);
-            }
-         } else {
-            try {
-               return Converter.convert(get(), type);
-            } catch (TypeConversionException e) {
-               throw new RuntimeException(e);
-            }
          }
       }
 
