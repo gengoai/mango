@@ -487,11 +487,6 @@ public interface MultiCounter<K, V> extends JsonSerializable {
    }
 
    /**
-    * Trim to size.
-    */
-   void trimToSize();
-
-   /**
     * The values associated with the items in the counter
     *
     * @return The values of the items in the counter.

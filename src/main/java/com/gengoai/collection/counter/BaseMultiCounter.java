@@ -31,20 +31,20 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
  * Implementation of a MultiCounter using a HashMaps.
  *
- * @param <K> the first key type
- * @param <V> the second type
+ * @param <K> the first key V
+ * @param <V> the second V
  * @author David B. Bracewell
  */
 public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Serializable {
    private static final long serialVersionUID = 1L;
    private final Map<K, Counter<V>> map;
-
 
    /**
     * Instantiates a new Base multi counter.
@@ -102,7 +102,6 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
    public boolean contains(K item1, V item2) {
       return map.containsKey(item1) && map.get(item1).contains(item2);
    }
-
 
    @Override
    public Collection<Double> values() {
@@ -164,18 +163,16 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
 
    @Override
    public Counter<V> get(K firstKey) {
-      return map.computeIfAbsent(firstKey, k -> createCounter());
+      return new ForwardingCounter(firstKey);
    }
 
    @Override
    public boolean isEmpty() {
-      trimToSize();
       return map.isEmpty();
    }
 
    @Override
    public Set<K> firstKeys() {
-      trimToSize();
       return map.keySet();
    }
 
@@ -212,15 +209,7 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
 
    @Override
    public double remove(K item1, V item2) {
-      if (map.containsKey(item1)) {
-         Counter<V> c = map.get(item1);
-         double v = c.remove(item2);
-         if (c.isEmpty()) {
-            map.remove(item1);
-         }
-         return v;
-      }
-      return 0d;
+      return get(item1).remove(item2);
    }
 
    @Override
@@ -231,8 +220,11 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
 
    @Override
    public MultiCounter<K, V> set(K item, Counter<V> counter) {
-      map.put(item, counter);
-      trimToSize();
+      if (counter == null || counter.isEmpty()) {
+         map.remove(item);
+      } else {
+         map.put(item, counter);
+      }
       return this;
    }
 
@@ -321,9 +313,317 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
       }
    }
 
-   @Override
-   public void trimToSize() {
-      map.keySet().removeIf(k -> map.get(k).isEmpty());
-   }
+
+   class ForwardingCounter implements Counter<V>, Serializable {
+      private static final long serialVersionUID = 1L;
+      private final K key;
+
+      ForwardingCounter(K key) {
+         this.key = key;
+      }
+
+
+      protected Counter<V> delegate() {
+         return map.get(key);
+      }
+
+      protected Counter<V> createIfNeeded() {
+         return map.computeIfAbsent(key, k -> createCounter());
+      }
+
+
+      private void removeIfEmpty() {
+         if (delegate() == null || delegate().isEmpty()) {
+            map.remove(key);
+         }
+      }
+
+      @Override
+      public Counter<V> adjustValues(DoubleUnaryOperator function) {
+         Counter<V> toReturn = createIfNeeded().adjustValues(function);
+         removeIfEmpty();
+         return toReturn;
+      }
+
+      @Override
+      public Counter<V> adjustValuesSelf(DoubleUnaryOperator function) {
+         createIfNeeded().adjustValuesSelf(function);
+         removeIfEmpty();
+         return this;
+      }
+
+      @Override
+      public Map<V, Double> asMap() {
+         return delegate() == null
+                ? Collections.emptyMap()
+                : delegate().asMap();
+      }
+
+      @Override
+      public double average() {
+         return delegate() == null
+                ? 0d
+                : delegate().average();
+      }
+
+      @Override
+      public Counter<V> bottomN(int n) {
+         Counter<V> toReturn = createIfNeeded().bottomN(n);
+         removeIfEmpty();
+         return toReturn;
+      }
+
+      @Override
+      public void clear() {
+         map.remove(key);
+      }
+
+      @Override
+      public boolean contains(V item) {
+         return delegate() != null && delegate().contains(item);
+      }
+
+      @Override
+      public Collection<Double> values() {
+         return delegate() == null
+                ? Collections.emptyList()
+                : delegate().values();
+      }
+
+      @Override
+      public Counter<V> decrement(V item) {
+         return decrement(item, 1);
+      }
+
+      @Override
+      public Counter<V> decrement(V item, double amount) {
+         return increment(item, -amount);
+      }
+
+      @Override
+      public Counter<V> decrementAll(Iterable<? extends V> iterable) {
+         return decrementAll(iterable, 1);
+      }
+
+      @Override
+      public Counter<V> decrementAll(Iterable<? extends V> iterable, double amount) {
+         if (iterable != null) {
+            iterable.forEach(i -> decrement(i, amount));
+            removeIfEmpty();
+         }
+         return this;
+      }
+
+
+      @Override
+      public Counter<V> divideBySum() {
+         createIfNeeded().divideBySum();
+         removeIfEmpty();
+         return this;
+      }
+
+      @Override
+      public double get(V item) {
+         return delegate() == null
+                ? 0d
+                : delegate().get(item);
+      }
+
+      @Override
+      public Counter<V> increment(V item) {
+         return increment(item, 1);
+      }
+
+      @Override
+      public Counter<V> increment(V item, double amount) {
+         createIfNeeded().increment(item, amount);
+         removeIfEmpty();
+         return this;
+      }
+
+      @Override
+      public Counter<V> incrementAll(Iterable<? extends V> iterable) {
+         return incrementAll(iterable, 1);
+      }
+
+      @Override
+      public Counter<V> incrementAll(Iterable<? extends V> iterable, double amount) {
+         if (iterable != null) {
+            iterable.forEach(i -> increment(i, amount));
+            removeIfEmpty();
+         }
+         return this;
+      }
+
+      @Override
+      public boolean isEmpty() {
+         return delegate() == null || delegate().isEmpty();
+      }
+
+      @Override
+      public Set<V> items() {
+         return delegate() == null
+                ? Collections.emptySet()
+                : delegate().items();
+      }
+
+      @Override
+      public List<V> itemsByCount(boolean ascending) {
+         return delegate() == null
+                ? Collections.emptyList()
+                : delegate().itemsByCount(ascending);
+      }
+
+      @Override
+      public Set<Map.Entry<V, Double>> entries() {
+         return delegate() == null
+                ? Collections.emptySet()
+                : delegate().entries();
+      }
+
+      @Override
+      public double magnitude() {
+         return delegate() == null
+                ? 0d
+                : delegate().magnitude();
+      }
+
+      @Override
+      public <R> Counter<R> mapKeys(Function<? super V, ? extends R> function) {
+         Counter<R> toReturn = createIfNeeded().mapKeys(function);
+         removeIfEmpty();
+         return toReturn;
+      }
+
+      @Override
+      public V max() {
+         return delegate() == null
+                ? null
+                : delegate().max();
+      }
+
+      @Override
+      public double maximumCount() {
+         return delegate() == null
+                ? 0d
+                : delegate().maximumCount();
+      }
+
+      @Override
+      public Counter<V> merge(Counter<? extends V> other) {
+         createIfNeeded().merge(other);
+         removeIfEmpty();
+         return this;
+      }
+
+      @Override
+      public Counter<V> merge(Map<? extends V, ? extends Number> other) {
+         createIfNeeded().merge(other);
+         removeIfEmpty();
+         return this;
+      }
+
+      @Override
+      public V min() {
+         return delegate() == null
+                ? null
+                : delegate().min();
+      }
+
+      @Override
+      public double minimumCount() {
+         return delegate() == null
+                ? 0d
+                : delegate().minimumCount();
+      }
+
+      @Override
+      public double remove(V item) {
+         double d = delegate() == null
+                    ? 0d
+                    : delegate().remove(item);
+         removeIfEmpty();
+         return d;
+      }
+
+      @Override
+      public Counter<V> removeAll(Iterable<V> items) {
+         Counter<V> toReturn = createIfNeeded().removeAll(items);
+         removeIfEmpty();
+         return toReturn;
+      }
+
+
+      @Override
+      public V sample() {
+         return delegate() == null
+                ? null
+                : delegate().sample();
+      }
+
+      @Override
+      public Counter<V> set(V item, double count) {
+         createIfNeeded().set(item, count);
+         removeIfEmpty();
+         return this;
+      }
+
+      @Override
+      public int size() {
+         return delegate() == null
+                ? 0
+                : delegate().size();
+      }
+
+      @Override
+      public double standardDeviation() {
+         return delegate() == null
+                ? Double.NaN
+                : delegate().standardDeviation();
+      }
+
+      @Override
+      public double sum() {
+         return delegate() == null
+                ? 0
+                : delegate().sum();
+      }
+
+      @Override
+      public Counter<V> topN(int n) {
+         Counter<V> toReturn = createIfNeeded().topN(n);
+         removeIfEmpty();
+         return toReturn;
+      }
+
+      @Override
+      public Counter<V> filterByKey(Predicate<? super V> predicate) {
+         Counter<V> toReturn = createIfNeeded().filterByKey(predicate);
+         removeIfEmpty();
+         return toReturn;
+      }
+
+      @Override
+      public Counter<V> filterByValue(DoublePredicate doublePredicate) {
+         Counter<V> toReturn = createIfNeeded().filterByValue(doublePredicate);
+         removeIfEmpty();
+         return toReturn;
+      }
+
+      @Override
+      public String toString() {
+         return delegate() == null
+                ? "{}"
+                : delegate().toString();
+      }
+
+      @Override
+      public Counter<V> copy() {
+         Counter<V> toReturn = createIfNeeded().copy();
+         removeIfEmpty();
+         return toReturn;
+      }
+
+   }//END OF ForwardingCounter
 
 }//END OF HashMapMultiCounter
