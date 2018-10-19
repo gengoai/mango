@@ -9,6 +9,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
+ * LinkedBlockingQueue Converter
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

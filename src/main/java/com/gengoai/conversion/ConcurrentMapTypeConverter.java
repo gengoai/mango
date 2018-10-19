@@ -9,6 +9,8 @@ import java.util.concurrent.ConcurrentMap;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
+ * ConcurrentHashMap and ConcurrentMap Converter
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

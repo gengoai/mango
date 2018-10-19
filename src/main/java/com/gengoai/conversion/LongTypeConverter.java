@@ -5,6 +5,8 @@ import org.kohsuke.MetaInfServices;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
+ * Converts object into Long (see {@link BaseNumberTypeConverter} for details on conversion.
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

@@ -13,6 +13,8 @@ import java.util.Date;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
+ * Data Converter. Will try various common date formats based on the current Locale.
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

@@ -8,6 +8,12 @@ import java.nio.charset.Charset;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
+ * Converts object into Charsets. Conversion is possible for the following types:
+ * <ul>
+ * <li>Charset</li>
+ * <li>Other: Objects are converted to strings and Charset#forName is used to parse the string.</li>
+ * </ul>
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

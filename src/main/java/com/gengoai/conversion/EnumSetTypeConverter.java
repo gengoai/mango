@@ -4,18 +4,23 @@ import org.kohsuke.MetaInfServices;
 
 import java.lang.reflect.Type;
 import java.util.EnumSet;
+import java.util.List;
 
 import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.reflection.Types.parameterizedType;
 
 /**
+ * Converts objects into EnumSets.
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)
 public class EnumSetTypeConverter implements TypeConverter {
 
+   @SuppressWarnings("unchecked")
    @Override
    public Object convert(Object object, Type... parameters) throws TypeConversionException {
-      return EnumSet.copyOf(Converter.convert(object,Enum.class,parameters));
+      return EnumSet.copyOf(Converter.<List>convert(object, List.class, parameterizedType(Enum.class, parameters)));
    }
 
    @Override

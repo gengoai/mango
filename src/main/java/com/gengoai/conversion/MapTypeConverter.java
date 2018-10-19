@@ -14,6 +14,8 @@ import java.util.Map;
 import static com.gengoai.reflection.Types.parameterizedType;
 
 /**
+ * Base Map type converter
+ *
  * @author David B. Bracewell
  */
 public abstract class MapTypeConverter implements TypeConverter {

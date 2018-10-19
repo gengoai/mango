@@ -8,6 +8,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
+ * ConcurrentLinkedQueue Converter
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

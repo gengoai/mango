@@ -9,6 +9,8 @@ import java.util.List;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
+ * Iterator converter
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

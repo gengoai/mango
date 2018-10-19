@@ -8,6 +8,14 @@ import java.lang.reflect.Type;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
+ * Converts object into Boolean values. Conversion is possible for the following types:
+ * <ul>
+ * <li>{@link JsonEntry} if the entry is a primitive</li>
+ * <li>Booleans</li>
+ * <li>Number: True if the integer value of the number is 0, False otherwise</li>
+ * <li>Charsequence: using Boolean.parseBoolean</li>
+ * </ul>
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

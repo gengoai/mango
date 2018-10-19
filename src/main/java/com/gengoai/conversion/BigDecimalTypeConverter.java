@@ -7,6 +7,8 @@ import java.math.BigDecimal;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
+ * Converts object into BigDecimals (see {@link BaseNumberTypeConverter} for details on conversion.
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

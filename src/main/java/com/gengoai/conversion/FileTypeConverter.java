@@ -9,6 +9,8 @@ import java.lang.reflect.Type;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
+ * Converts objects into File values
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

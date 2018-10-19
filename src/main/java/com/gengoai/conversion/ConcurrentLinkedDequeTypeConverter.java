@@ -8,6 +8,8 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
+ * ConcurrentLinkedDeque Converter
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

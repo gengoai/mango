@@ -10,6 +10,8 @@ import java.lang.reflect.Type;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
+ * JsonEntry converter. Will first try to parse CharSequences and if fails create JsonEntry string for them.
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

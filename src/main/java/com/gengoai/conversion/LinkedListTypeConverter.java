@@ -10,7 +10,9 @@ import java.util.Queue;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
- * The type Linked list type converter.
+ * LinkedList Converter
+ *
+ * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)
 public class LinkedListTypeConverter extends CollectionTypeConverter {

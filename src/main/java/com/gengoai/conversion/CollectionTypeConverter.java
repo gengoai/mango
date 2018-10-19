@@ -14,7 +14,14 @@ import static com.gengoai.reflection.Types.*;
 import static java.util.Collections.singletonList;
 
 /**
- * The type Collection type converter.
+ * Base class for converting object into Collections. Conversion is possible for the following types:
+ * <ul>
+ * <li>Default: A singleton collection is created for the object passed in being converted to the collection element
+ * type if possible.</li>
+ * <li>{@link JsonEntry}: arrays as collection of desired type, objects as either collection map entries, or
+ * attempts to create an object from the map, primitive - singleton collection</li>
+ * <li>CharSequence: Try to parse as json, if that fails treat as csv with optional []</li>
+ * </ul>
  *
  * @author David B. Bracewell
  */

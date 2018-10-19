@@ -300,6 +300,12 @@ public class JsonEntry {
             } catch (TypeConversionException e) {
                throw new RuntimeException(e);
             }
+         } else {
+            try {
+               return Converter.convert(get(), type);
+            } catch (TypeConversionException e) {
+               throw new RuntimeException(e);
+            }
          }
       }
 

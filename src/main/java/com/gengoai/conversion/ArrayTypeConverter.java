@@ -11,6 +11,9 @@ import static com.gengoai.collection.Collect.arrayOf;
 import static com.gengoai.reflection.Types.getOrObject;
 
 /**
+ * Type Converter to convert objects into Arrays. Uses {@link CollectionTypeConverter} to convert the object into a
+ * collection and then constructs the required array. Is capable of handling primitive arrays as well as object arrays.
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

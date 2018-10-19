@@ -11,6 +11,8 @@ import static com.gengoai.reflection.Types.getOrObject;
 import static com.gengoai.reflection.Types.isAssignable;
 
 /**
+ * Converts objects into EnumMap
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

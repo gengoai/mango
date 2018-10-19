@@ -8,7 +8,9 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
- * The type List type converter.
+ * ConcurrentSkipListSet Converter
+ *
+ * @author David Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)
 public class ConcurrentSkipListSetTypeConverter extends CollectionTypeConverter {

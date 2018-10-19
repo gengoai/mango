@@ -3,13 +3,14 @@ package com.gengoai.conversion;
 import org.kohsuke.MetaInfServices;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
- * The type Linked hash set type converter.
+ * LinkedHashSet Converter
+ *
+ * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)
 public class LinkedHashSetTypeConverter extends CollectionTypeConverter {
@@ -21,6 +22,6 @@ public class LinkedHashSetTypeConverter extends CollectionTypeConverter {
 
    @Override
    protected Collection<?> newCollection() {
-      return new HashSet<>();
+      return new LinkedHashSet<>();
    }
 }

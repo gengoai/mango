@@ -7,6 +7,15 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 /**
+ * Base class for converter objects to numbers. The following types are supported.
+ * <ul>
+ * <li>{@link JsonEntry} can be converted if it is a primitive</li>
+ * <li>Numbers</li>
+ * <li>Booleans are converted to 1 or 0</li>
+ * <li>Characters are converted to their integer values</li>
+ * <li>Other objects are converted to Strings and the class attempts to parse the strings in various formats.</li>
+ * </ul>
+ *
  * @author David B. Bracewell
  */
 public abstract class BaseNumberTypeConverter implements TypeConverter {

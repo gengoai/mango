@@ -14,6 +14,10 @@ import static com.gengoai.collection.Collect.arrayOf;
 import static com.gengoai.reflection.Types.*;
 
 /**
+ * Converts objects in {@link EnumValue} and {@link HierarchicalEnumValue}s. JsonEntry, CharSequence, and EnumValues are
+ * supported. All are converted to String values and the string parsed to determine the correct class and enum value.
+ * Enum values will be created if needed.
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)

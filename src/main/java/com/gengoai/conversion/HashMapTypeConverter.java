@@ -8,6 +8,8 @@ import java.util.Map;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
+ * Map and HashMap Converter
+ *
  * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)
@@ -19,6 +21,6 @@ public class HashMapTypeConverter extends MapTypeConverter {
 
    @Override
    public Class[] getConversionType() {
-      return arrayOf(HashMap.class,Map.class);
+      return arrayOf(HashMap.class, Map.class);
    }
 }//END OF HashMapTypeConverter

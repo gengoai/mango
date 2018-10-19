@@ -8,7 +8,9 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
- * The type List type converter.
+ * CopyOnWriteArraySet Converter
+ *
+ * @author David Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)
 public class CopyOnWriteArraySetTypeConverter extends CollectionTypeConverter {

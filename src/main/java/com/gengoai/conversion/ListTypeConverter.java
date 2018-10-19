@@ -9,14 +9,16 @@ import java.util.List;
 import static com.gengoai.collection.Collect.arrayOf;
 
 /**
- * The type List type converter.
+ * List, ArrayList, Iterable, and Collection Converter
+ *
+ * @author David B. Bracewell
  */
 @MetaInfServices(value = TypeConverter.class)
 public class ListTypeConverter extends CollectionTypeConverter {
 
    @Override
    public Class[] getConversionType() {
-      return arrayOf(List.class, ArrayList.class, Iterable.class);
+      return arrayOf(List.class, ArrayList.class, Iterable.class, Collection.class);
    }
 
    @Override
