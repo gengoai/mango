@@ -43,16 +43,16 @@ public final class Interner<E> implements Serializable {
    private volatile WeakHashMap<E, E> map = new WeakHashMap<>();
 
    @Override
-   public int hashCode() {
-      return Objects.hash(map);
-   }
-
-   @Override
    public boolean equals(Object obj) {
       if (this == obj) {return true;}
       if (obj == null || getClass() != obj.getClass()) {return false;}
       final Interner other = (Interner) obj;
       return Objects.equals(this.map, other.map);
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(map);
    }
 
    /**

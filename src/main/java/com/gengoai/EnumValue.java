@@ -134,7 +134,7 @@ public abstract class EnumValue implements Tag, Serializable, Cloneable {
 
    @Override
    public boolean isInstance(Tag value) {
-      return value != null && this.equals(value);
+      return this.equals(value);
    }
 
    /**

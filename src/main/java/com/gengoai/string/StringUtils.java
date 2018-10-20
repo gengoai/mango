@@ -30,6 +30,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -63,6 +64,15 @@ public final class StringUtils {
 
    private StringUtils() {
       throw new IllegalAccessError();
+   }
+
+
+   public static Pattern re(String pattern, int flags){
+      return Pattern.compile(pattern,flags);
+   }
+
+   public static Pattern re(String pattern) {
+      return Pattern.compile(pattern);
    }
 
    /**
