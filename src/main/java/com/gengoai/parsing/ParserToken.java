@@ -21,6 +21,8 @@
 
 package com.gengoai.parsing;
 
+import java.util.Objects;
+
 /**
  * A parse token from a Lexer to be used in a Parser
  *
@@ -28,7 +30,13 @@ package com.gengoai.parsing;
  */
 public final class ParserToken {
 
+   /**
+    * The Text.
+    */
    public final String text;
+   /**
+    * The Type.
+    */
    public final ParserTokenType type;
 
    /**
@@ -42,39 +50,46 @@ public final class ParserToken {
       this.type = type;
    }
 
-   public boolean isInstance(ParserTokenType... types) {
-      return type.isInstance(types);
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {return true;}
+      if (obj == null || getClass() != obj.getClass()) {return false;}
+      final ParserToken other = (ParserToken) obj;
+      return Objects.equals(this.text, other.text)
+                && Objects.equals(this.type, other.type);
    }
 
-   public boolean equals(Object o) {
-      if (o == this) return true;
-      if (!(o instanceof ParserToken)) return false;
-      final ParserToken other = (ParserToken) o;
-      final Object this$text = this.getText();
-      final Object other$text = other.getText();
-      if (this$text == null ? other$text != null : !this$text.equals(other$text)) return false;
-      final Object this$type = this.getType();
-      final Object other$type = other.getType();
-      if (this$type == null ? other$type != null : !this$type.equals(other$type)) return false;
-      return true;
-   }
-
+   /**
+    * Gets text.
+    *
+    * @return the text
+    */
    public String getText() {
       return this.text;
    }
 
+   /**
+    * Gets type.
+    *
+    * @return the type
+    */
    public ParserTokenType getType() {
       return this.type;
    }
 
+   @Override
    public int hashCode() {
-      final int PRIME = 59;
-      int result = 1;
-      final Object $text = this.getText();
-      result = result * PRIME + ($text == null ? 43 : $text.hashCode());
-      final Object $type = this.getType();
-      result = result * PRIME + ($type == null ? 43 : $type.hashCode());
-      return result;
+      return Objects.hash(text, type);
+   }
+
+   /**
+    * Is instance boolean.
+    *
+    * @param types the types
+    * @return the boolean
+    */
+   public boolean isInstance(ParserTokenType... types) {
+      return type.isInstance(types);
    }
 
    public String toString() {

@@ -23,9 +23,11 @@ package com.gengoai.collection.counter;
 
 import com.gengoai.io.resource.Resource;
 import com.gengoai.io.resource.StringResource;
+import com.gengoai.json.Json;
 import com.gengoai.tuple.Tuples;
 import org.junit.Test;
 
+import static com.gengoai.reflection.Types.parameterizedType;
 import static org.junit.Assert.*;
 
 /**
@@ -43,9 +45,11 @@ public class MultiCountersTest {
                                                                       Tuples.$("B", "H")
                                                                      );
       Resource str = new StringResource();
-//      mc.writeJson(str);
-//      MultiCounter<String, String> mcPrime = MultiCounters.readJson(str, String.class, String.class);
-//      assertEquals(mc,mcPrime);
+      Json.dump(mc, str);
+      MultiCounter<String, String> mcPrime = Json.parse(str.readToString())
+                                                 .getAs(
+                                                    parameterizedType(MultiCounter.class, String.class, String.class));
+      assertEquals(mc, mcPrime);
    }
 
 

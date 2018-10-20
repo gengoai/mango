@@ -35,6 +35,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static com.gengoai.tuple.Tuples.$;
+
 /**
  * Implementation of a MultiCounter using a HashMaps.
  *
@@ -261,7 +263,7 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
          @Override
          public Iterator<Map.Entry<K, V>> iterator() {
             return Iterators.transform(new KeyKeyValueIterator(),
-                                       t -> new AbstractMap.SimpleImmutableEntry<>(t.v1, t.v2));
+                                       t -> $(t.v1, t.v2));
          }
 
          @Override
@@ -312,7 +314,6 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
          }
       }
    }
-
 
    class ForwardingCounter implements Counter<V>, Serializable {
       private static final long serialVersionUID = 1L;

@@ -44,7 +44,7 @@ public abstract class BaseMapCounter<T> implements Counter<T>, Serializable {
 
 
    /**
-    * Instantiates a new Hash map counter.
+    * Instantiates a new map counter.
     *
     * @param backingMap the backing map
     */

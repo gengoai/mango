@@ -21,33 +21,33 @@
 
 package com.gengoai.collection.counter;
 
-import com.gengoai.math.Math2;
 import com.gengoai.collection.Sets;
+import com.gengoai.math.Math2;
 import com.gengoai.tuple.Tuple3;
-import com.gengoai.tuple.Tuples;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.*;
 
+import static com.gengoai.tuple.Tuples.$;
 import static org.junit.Assert.*;
 
 /**
  * @author David B. Bracewell
  */
-public abstract class BaseMultiCounterTest {
+public class BaseMultiCounterTest {
 
    public MultiCounter<String, String> getEmptyCounter() {
       return MultiCounters.newMultiCounter();
    }
 
    public MultiCounter<String, String> getEntryCounter() {
-      return MultiCounters.newMultiCounter(Tuples.$("A", "B"),
-                                           Tuples.$("A", "C"),
-                                           Tuples.$("A", "D"),
-                                           Tuples.$("B", "E"),
-                                           Tuples.$("B", "G"),
-                                           Tuples.$("B", "H")
+      return MultiCounters.newMultiCounter($("A", "B"),
+                                           $("A", "C"),
+                                           $("A", "D"),
+                                           $("B", "E"),
+                                           $("B", "G"),
+                                           $("B", "H")
                                           );
    }
 
@@ -196,21 +196,38 @@ public abstract class BaseMultiCounterTest {
    }
 
    @Test
+   public void keyPairs() throws Exception {
+      MultiCounter<String, String> mc = getEntryCounter();
+      assertEquals(Sets.set(
+         $("A", "B"),
+         $("A", "C"),
+         $("A", "D"),
+         $("B", "E"),
+         $("B", "G"),
+         $("B", "H")
+                           ), mc.keyPairs());
+
+      mc.keyPairs().remove($("A", "D"));
+      assertFalse(mc.contains("A", "D"));
+      assertFalse(mc.keyPairs().contains($("A", "D")));
+   }
+
+   @Test
    public void itemsByCount() throws Exception {
       MultiCounter<String, String> mc = getEmptyCounter();
-      mc.merge(MultiCounters.newMultiCounter(Tuples.$("A", "B")));
-      mc.merge(MultiCounters.newMultiCounter(Tuples.$("A", "B")));
-      mc.merge(MultiCounters.newMultiCounter(Tuples.$("A", "B")));
-      mc.merge(MultiCounters.newMultiCounter(Tuples.$("A", "C"),
-                                             Tuples.$("A", "C"),
-                                             Tuples.$("A", "A")
+      mc.merge(MultiCounters.newMultiCounter($("A", "B")));
+      mc.merge(MultiCounters.newMultiCounter($("A", "B")));
+      mc.merge(MultiCounters.newMultiCounter($("A", "B")));
+      mc.merge(MultiCounters.newMultiCounter($("A", "C"),
+                                             $("A", "C"),
+                                             $("A", "A")
                                             ));
 
       List<Map.Entry<String, String>> items = mc.itemsByCount(false);
       assertEquals(3, items.size(), 0);
-      Assert.assertEquals(Tuples.$("A", "B"), items.get(0));
-      Assert.assertEquals(Tuples.$("A", "C"), items.get(1));
-      Assert.assertEquals(Tuples.$("A", "A"), items.get(2));
+      Assert.assertEquals($("A", "B"), items.get(0));
+      Assert.assertEquals($("A", "C"), items.get(1));
+      Assert.assertEquals($("A", "A"), items.get(2));
    }
 
 }//END OF BaseMultiCounterTest

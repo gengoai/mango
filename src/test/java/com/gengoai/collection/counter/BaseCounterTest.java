@@ -38,7 +38,7 @@ import static org.junit.Assert.*;
 /**
  * @author David B. Bracewell
  */
-public abstract class BaseCounterTest {
+public class BaseCounterTest {
 
    Counter<String> getCounter1() {
       return Counters.newCounter("a", "b", "c", "a", "b", "a");

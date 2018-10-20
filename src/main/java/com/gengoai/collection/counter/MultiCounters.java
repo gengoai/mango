@@ -25,9 +25,6 @@ import com.gengoai.conversion.Converter;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVReader;
 import com.gengoai.io.resource.Resource;
-import com.gengoai.json.Json;
-import com.gengoai.json.JsonEntry;
-import com.gengoai.json.JsonReader;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -90,7 +87,7 @@ public interface MultiCounters {
     */
    static <K1, K2> MultiCounter<K1, K2> newMultiCounter(Map<? extends Map.Entry<? extends K1, ? extends K2>, ? extends Number> map) {
       MultiCounter<K1, K2> mc = new HashMapMultiCounter<>();
-      map.entrySet().forEach(e -> mc.increment(e.getKey().getKey(), e.getKey().getValue(), e.getValue().doubleValue()));
+      map.forEach((key, value) -> mc.increment(key.getKey(), key.getValue(), value.doubleValue()));
       return mc;
    }
 
@@ -103,7 +100,7 @@ public interface MultiCounters {
     * @return the synchronized multi-counter
     */
    static <K1, K2> MultiCounter<K1, K2> newConcurrentCounter(MultiCounter<K1, K2> multiCounter) {
-      return new ConcurrentHashMapMultiCounter<K1,K2>().merge(multiCounter);
+      return new ConcurrentHashMapMultiCounter<K1, K2>().merge(multiCounter);
    }
 
    /**
@@ -138,32 +135,6 @@ public interface MultiCounters {
                                  Double.valueOf(row.get(2)));
             }
          });
-      }
-      return counter;
-   }
-
-   /**
-    * <p>Reads a counter from a Json file.</p>
-    *
-    * @param <K1>      the component type of the first key
-    * @param <K2>      the component type of the second key
-    * @param resource  the resource that the counter values are read from.
-    * @param key1Class the class of first key
-    * @param key2Class the class of the second key
-    * @return the new MultiCounter
-    * @throws IOException Something went wrong reading in the counter.
-    */
-   static <K1, K2> MultiCounter<K1, K2> readJson(Resource resource, Class<K1> key1Class, Class<K2> key2Class) throws IOException {
-      MultiCounter<K1, K2> counter = newMultiCounter();
-      try (JsonReader reader = Json.createReader(resource)) {
-         reader.beginDocument();
-         while (reader.hasNext()) {
-            Map<String, JsonEntry> map = reader.nextMap();
-            counter.set(map.get("k1").getAs(key1Class),
-                        map.get("k2").getAs(key2Class),
-                        map.get("v").getAs(Double.class));
-         }
-         reader.endDocument();
       }
       return counter;
    }
