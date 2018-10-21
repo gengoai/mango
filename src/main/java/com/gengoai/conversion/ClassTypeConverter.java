@@ -36,6 +36,7 @@ public class ClassTypeConverter implements TypeConverter {
          if (clazz != null) {
             return clazz;
          }
+
          try {
             return Types.asClass(Types.parse(object.toString()));
          } catch (Exception e) {

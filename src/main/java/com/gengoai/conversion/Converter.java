@@ -5,6 +5,7 @@ import com.gengoai.Primitives;
 import com.gengoai.json.Json;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonSerializable;
+import com.gengoai.reflection.BeanUtils;
 import com.gengoai.reflection.Types;
 
 import java.lang.reflect.Type;
@@ -172,6 +173,15 @@ public final class Converter {
          } catch (Exception e) {
             throw new TypeConversionException(sourceObject, destType, e);
          }
+      }
+
+      //Last chance
+      try {
+         Class<?> clazz = convert(sourceObject, Class.class);
+         return Cast.as(BeanUtils.parameterizeObject(clazz.newInstance()));
+      } catch (Exception e) {
+         e.printStackTrace();
+         //ignore
       }
 
       throw new TypeConversionException(sourceObject, destType);

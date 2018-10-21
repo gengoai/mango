@@ -27,7 +27,12 @@ public class StringTypeConverter implements TypeConverter {
    public Object convert(Object object, Type... parameters) throws TypeConversionException {
       if (object instanceof JsonEntry) {
          JsonEntry entry = Cast.as(object);
-         return entry.isPrimitive() ? entry.get().toString() : entry.toString();
+         if (entry.isString()) {
+            return entry.getAsString();
+         }
+         return entry.isPrimitive()
+                ? entry.get().toString()
+                : entry.toString();
       } else if (object instanceof CharSequence) {
          return object.toString();
       } else if (object instanceof char[]) {

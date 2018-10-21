@@ -108,7 +108,8 @@ public class MsonConfigParser extends Parser {
                                                                  newOperatorValidator(
                                                                     token -> token.isInstance(
                                                                        ConfigTokenType.EQUAL_PROPERTY,
-                                                                       ConfigTokenType.BEGIN_OBJECT))));
+                                                                       ConfigTokenType.BEGIN_OBJECT,
+                                                                       ConfigTokenType.APPEND_PROPERTY))));
    }};
    private static final Lexer MSON_LEXER = input -> new ParserTokenStream(new Iterator<ParserToken>() {
       ConfigScanner scanner = new ConfigScanner(input.reader());

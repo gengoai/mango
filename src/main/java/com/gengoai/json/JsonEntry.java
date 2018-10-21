@@ -286,6 +286,13 @@ public class JsonEntry {
          }
       }
 
+      try{
+         return Converter.convert(this, type);
+      } catch (TypeConversionException tce ){
+         tce.printStackTrace();
+         //ignore
+      }
+
       return gson.fromJson(element, type);
    }
 
