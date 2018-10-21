@@ -5,7 +5,7 @@ import org.kohsuke.MetaInfServices;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentSkipListSet;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 
 /**
  * ConcurrentSkipListSet Converter

@@ -6,7 +6,7 @@ import org.kohsuke.MetaInfServices;
 import java.io.File;
 import java.lang.reflect.Type;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 
 /**
  * Converts objects into File values

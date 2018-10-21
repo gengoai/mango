@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 
 /**
  * Set and HashSet Converter.

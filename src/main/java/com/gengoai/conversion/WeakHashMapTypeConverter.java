@@ -5,7 +5,7 @@ import org.kohsuke.MetaInfServices;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 
 /**
  * WeakHashMap Converter

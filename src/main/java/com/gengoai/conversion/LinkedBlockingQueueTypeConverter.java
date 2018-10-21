@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 
 /**
  * LinkedBlockingQueue Converter

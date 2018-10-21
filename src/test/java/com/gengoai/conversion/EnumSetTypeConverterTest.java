@@ -5,7 +5,7 @@ import org.junit.Test;
 
 import java.util.EnumSet;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 import static org.junit.Assert.*;
 
 /**

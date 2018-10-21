@@ -1,6 +1,5 @@
 package com.gengoai.conversion;
 
-import com.gengoai.Defaults;
 import com.gengoai.EnumValue;
 import com.gengoai.Primitives;
 import com.gengoai.json.Json;
@@ -126,7 +125,7 @@ public final class Converter {
       //If the source is null, return null or default value if the destination type is a primitive
       if (sourceObject == null) {
          if (isPrimitive(destType)) {
-            return Defaults.value(Types.asClass(destType));
+            return Primitives.defaultValue(Types.asClass(destType));
          }
          return null;
       }

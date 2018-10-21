@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 
 /**
  * InputStream Converter

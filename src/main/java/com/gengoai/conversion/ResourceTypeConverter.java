@@ -11,7 +11,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 
 /**
  * Resource Converter

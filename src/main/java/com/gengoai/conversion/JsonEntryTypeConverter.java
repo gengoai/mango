@@ -7,7 +7,7 @@ import org.kohsuke.MetaInfServices;
 import java.io.IOException;
 import java.lang.reflect.Type;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 
 /**
  * JsonEntry converter. Will first try to parse CharSequences and if fails create JsonEntry string for them.

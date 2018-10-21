@@ -5,7 +5,7 @@ import org.kohsuke.MetaInfServices;
 import java.util.Collection;
 import java.util.concurrent.PriorityBlockingQueue;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 
 /**
  * PriorityBlockingQueue Converter

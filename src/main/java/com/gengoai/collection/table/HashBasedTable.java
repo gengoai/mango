@@ -1,7 +1,7 @@
 package com.gengoai.collection.table;
 
-import com.gengoai.collection.Iterators;
 import com.gengoai.collection.IteratorSet;
+import com.gengoai.collection.Iterators;
 import com.gengoai.conversion.Cast;
 
 import java.io.Serializable;
@@ -117,6 +117,23 @@ public class HashBasedTable<R, C, V> implements Table<R, C, V>, Serializable {
       }
    }
 
+   @Override
+   public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof HashBasedTable)) return false;
+      HashBasedTable<?, ?, ?> that = (HashBasedTable<?, ?, ?>) o;
+      return Objects.equals(map, that.map);
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(map);
+   }
+
+   @Override
+   public String toString() {
+      return map.toString();
+   }
 
    private class RowView extends AbstractMap<C, V> {
       private final R row;

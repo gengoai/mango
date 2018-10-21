@@ -5,7 +5,7 @@ import org.kohsuke.MetaInfServices;
 
 import java.lang.reflect.Type;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 
 /**
  * Converts object into Character values. Conversion is possible for the following types:

@@ -94,7 +94,7 @@ public class EvaluatorTest {
 
    @Test
    public void all() throws Exception {
-      assertEquals(Lists.list(8d), parser.evaluateAll("2+3 * 2", mathEvaluator));
+      assertEquals(Lists.arrayListOf(8d), parser.evaluateAll("2+3 * 2", mathEvaluator));
    }
 
 }//END OF EvaluatorTest

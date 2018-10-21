@@ -36,7 +36,7 @@ public class CollectTest {
 
    @Test
    public void iteratorToIterable() throws Exception {
-      Iterable<CharSequence> ibl1 = Iterables.asIterable(Lists.list("A", "B", "C").iterator());
+      Iterable<CharSequence> ibl1 = Iterables.asIterable(Lists.arrayListOf("A", "B", "C").iterator());
       assertEquals(3, Iterables.size(ibl1));
 
       Iterable<CharSequence> ibl3 = Iterables.asIterable(Collections.emptyIterator());
@@ -45,24 +45,24 @@ public class CollectTest {
 
    @Test
    public void sort() throws Exception {
-      Assert.assertEquals(Lists.list("a", "b", "c"), Iterables.sort(Sets.set("c", "b", "a")));
-      Assert.assertEquals(Lists.list(3, 2, 1), Iterables.sort(Lists.list(1, 2, 3), Sorting.natural().reversed()));
+      Assert.assertEquals(Lists.arrayListOf("a", "b", "c"), Iterables.sort(Sets.set("c", "b", "a")));
+      Assert.assertEquals(Lists.arrayListOf(3, 2, 1), Iterables.sort(Lists.arrayListOf(1, 2, 3), Sorting.natural().reversed()));
    }
 
 
    @Test
    public void arrayAsIterable() throws Exception {
-      Assert.assertEquals(Lists.list(1, 2, 3),
+      Assert.assertEquals(Lists.arrayListOf(1, 2, 3),
                           Lists.asArrayList(Iterables.asIterable(new int[]{1, 2, 3}, Integer.class)));
-      Assert.assertEquals(Lists.list(1, 2, 3),
+      Assert.assertEquals(Lists.arrayListOf(1, 2, 3),
                           Lists.asArrayList(Iterables.asIterable(new Integer[]{1, 2, 3}, Integer.class)));
-      Assert.assertEquals(Lists.list(1, 2, 3),
+      Assert.assertEquals(Lists.arrayListOf(1, 2, 3),
                           Lists.asArrayList(Iterables.asIterable(new double[]{1.0, 2.0, 3.0}, Integer.class)));
    }
 
    @Test(expected = ClassCastException.class)
    public void arrayAsIterableBadCast() throws Exception {
-      Assert.assertEquals(Lists.list(1, 2, 3),
+      Assert.assertEquals(Lists.arrayListOf(1, 2, 3),
                           Lists.asArrayList(Iterables.asIterable(new Double[]{1.0, 2.0, 3.0}, Integer.class)));
    }
 
@@ -101,10 +101,10 @@ public class CollectTest {
 
    @Test
    public void zip() throws Exception {
-      Assert.assertEquals(Lists.list(new AbstractMap.SimpleEntry<>("A", 1),
-                                     new AbstractMap.SimpleEntry<>("B", 2),
-                                     new AbstractMap.SimpleEntry<>("C", 3)
-                                    ),
+      Assert.assertEquals(Lists.arrayListOf(new AbstractMap.SimpleEntry<>("A", 1),
+                                            new AbstractMap.SimpleEntry<>("B", 2),
+                                            new AbstractMap.SimpleEntry<>("C", 3)
+                                           ),
                           Lists.asArrayList(Iterables.zip(Arrays.asList("A", "B", "C"), Arrays.asList(1, 2, 3, 4)))
                          );
 

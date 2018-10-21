@@ -41,9 +41,9 @@ public class PrimitiveArrayListTest {
    @Before
    public void setUp() throws Exception {
       double[] array = {1.0, 2.0, 3.0};
-      doubleList = Lists.ofPrimitive(array, Double.class);
-      intList = Lists.ofPrimitive(array, Integer.class);
-      floatList = Lists.ofPrimitive(array, Float.class);
+      doubleList = Lists.primitiveList(array, Double.class);
+      intList = Lists.primitiveList(array, Integer.class);
+      floatList = Lists.primitiveList(array, Float.class);
    }
 
    @Test

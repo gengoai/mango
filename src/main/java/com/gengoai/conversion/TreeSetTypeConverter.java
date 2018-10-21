@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 
 /**
  * SortedSet and TreeSet Converter.

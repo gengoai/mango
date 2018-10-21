@@ -1,13 +1,13 @@
 package com.gengoai.conversion;
 
-import com.gengoai.Defaults;
+import com.gengoai.Primitives;
 import com.gengoai.json.JsonEntry;
 import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 import static org.junit.Assert.*;
 
 /**
@@ -26,7 +26,7 @@ public abstract class BaseNumberConversionTest {
    @Test
    public void nullValue() throws TypeConversionException {
       if (aClass.isPrimitive()) {
-         assertEquals(Defaults.value(aClass), Converter.convert(null, aClass));
+         assertEquals(Primitives.defaultValue(aClass), Converter.convert(null, aClass));
       } else {
          assertNull(Converter.convert(null, aClass));
       }

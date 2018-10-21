@@ -1,13 +1,11 @@
 package com.gengoai.conversion;
 
-import com.gengoai.conversion.Converter;
-import com.gengoai.conversion.TypeConversionException;
 import org.junit.Test;
 
 import java.util.Map;
 
-import static com.gengoai.collection.Collect.arrayOf;
-import static com.gengoai.collection.Collect.arrayOfDouble;
+import static com.gengoai.collection.Arrays2.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOfDouble;
 import static com.gengoai.collection.Maps.hashMapOf;
 import static com.gengoai.tuple.Tuples.$;
 import static java.util.Arrays.asList;

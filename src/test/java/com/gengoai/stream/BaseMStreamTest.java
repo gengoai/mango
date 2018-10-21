@@ -326,30 +326,30 @@ public abstract class BaseMStreamTest {
       MStream<String> stream = sc.stream("A", "B", "C", "D", "E", "F", "G", "H", "I", "J");
       List<Iterable<String>> partitions = stream.split(3).collect();
       assertEquals(3, partitions.size());
-      Assert.assertEquals(Lists.list("A", "B", "C"), Lists.asArrayList(partitions.get(0)));
-      Assert.assertEquals(Lists.list("D", "E", "F"), Lists.asArrayList(partitions.get(1)));
-      Assert.assertEquals(Lists.list("G", "H", "I", "J"), Lists.asArrayList(partitions.get(2)));
+      Assert.assertEquals(Lists.arrayListOf("A", "B", "C"), Lists.asArrayList(partitions.get(0)));
+      Assert.assertEquals(Lists.arrayListOf("D", "E", "F"), Lists.asArrayList(partitions.get(1)));
+      Assert.assertEquals(Lists.arrayListOf("G", "H", "I", "J"), Lists.asArrayList(partitions.get(2)));
 
       partitions = new LocalStream<>(stream.javaStream()).split(3).collect();
       assertEquals(3, partitions.size());
-      Assert.assertEquals(Lists.list("A", "B", "C"), Lists.asArrayList(partitions.get(0)));
-      Assert.assertEquals(Lists.list("D", "E", "F"), Lists.asArrayList(partitions.get(1)));
-      Assert.assertEquals(Lists.list("G", "H", "I", "J"), Lists.asArrayList(partitions.get(2)));
+      Assert.assertEquals(Lists.arrayListOf("A", "B", "C"), Lists.asArrayList(partitions.get(0)));
+      Assert.assertEquals(Lists.arrayListOf("D", "E", "F"), Lists.asArrayList(partitions.get(1)));
+      Assert.assertEquals(Lists.arrayListOf("G", "H", "I", "J"), Lists.asArrayList(partitions.get(2)));
 
 
       partitions = stream.partition(3).collect();
       assertEquals(4, partitions.size());
-      Assert.assertEquals(Lists.list("A", "B", "C"), Lists.asArrayList(partitions.get(0)));
-      Assert.assertEquals(Lists.list("D", "E", "F"), Lists.asArrayList(partitions.get(1)));
-      Assert.assertEquals(Lists.list("G", "H", "I"), Lists.asArrayList(partitions.get(2)));
-      Assert.assertEquals(Lists.list("J"), Lists.asArrayList(partitions.get(3)));
+      Assert.assertEquals(Lists.arrayListOf("A", "B", "C"), Lists.asArrayList(partitions.get(0)));
+      Assert.assertEquals(Lists.arrayListOf("D", "E", "F"), Lists.asArrayList(partitions.get(1)));
+      Assert.assertEquals(Lists.arrayListOf("G", "H", "I"), Lists.asArrayList(partitions.get(2)));
+      Assert.assertEquals(Lists.arrayListOf("J"), Lists.asArrayList(partitions.get(3)));
 
       partitions = new LocalStream<>(stream.javaStream()).partition(3).collect();
       assertEquals(4, partitions.size());
-      Assert.assertEquals(Lists.list("A", "B", "C"), Lists.asArrayList(partitions.get(0)));
-      Assert.assertEquals(Lists.list("D", "E", "F"), Lists.asArrayList(partitions.get(1)));
-      Assert.assertEquals(Lists.list("G", "H", "I"), Lists.asArrayList(partitions.get(2)));
-      Assert.assertEquals(Lists.list("J"), Lists.asArrayList(partitions.get(3)));
+      Assert.assertEquals(Lists.arrayListOf("A", "B", "C"), Lists.asArrayList(partitions.get(0)));
+      Assert.assertEquals(Lists.arrayListOf("D", "E", "F"), Lists.asArrayList(partitions.get(1)));
+      Assert.assertEquals(Lists.arrayListOf("G", "H", "I"), Lists.asArrayList(partitions.get(2)));
+      Assert.assertEquals(Lists.arrayListOf("J"), Lists.asArrayList(partitions.get(3)));
    }
 
    @Test

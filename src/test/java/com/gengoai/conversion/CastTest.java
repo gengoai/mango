@@ -82,10 +82,10 @@ public class CastTest {
       Iterable<?> i = l;
       Set<?> s = Sets.asSet(l);
 
-      Assert.assertEquals(Lists.list(1d, 2d, 3d), Cast.<Double>cast(l));
-      Assert.assertEquals(Lists.list(1d, 2d, 3d), Lists.asArrayList(Cast.<Double>cast(l.iterator())));
-      Assert.assertEquals(Lists.list(1d, 2d, 3d), Lists.asArrayList(Cast.<Double>cast(c)));
-      Assert.assertEquals(Lists.list(1d, 2d, 3d), Lists.asArrayList(Cast.<Double>cast(i)));
+      Assert.assertEquals(Lists.arrayListOf(1d, 2d, 3d), Cast.<Double>cast(l));
+      Assert.assertEquals(Lists.arrayListOf(1d, 2d, 3d), Lists.asArrayList(Cast.<Double>cast(l.iterator())));
+      Assert.assertEquals(Lists.arrayListOf(1d, 2d, 3d), Lists.asArrayList(Cast.<Double>cast(c)));
+      Assert.assertEquals(Lists.arrayListOf(1d, 2d, 3d), Lists.asArrayList(Cast.<Double>cast(i)));
       Assert.assertEquals(Sets.treeSet(1d, 2d, 3d), Sets.asTreeSet(Cast.<Double>cast(s)));
 
    }

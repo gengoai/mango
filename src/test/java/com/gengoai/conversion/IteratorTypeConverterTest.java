@@ -14,7 +14,7 @@ public class IteratorTypeConverterTest {
 
    @Test
    public void convert() throws TypeConversionException {
-      assertEquals(Lists.list("A", "B", "C"),
+      assertEquals(Lists.arrayListOf("A", "B", "C"),
                    Lists.asArrayList(Converter.<Iterator<String>>convert("A,B,C", Iterator.class, String.class)));
    }
 }

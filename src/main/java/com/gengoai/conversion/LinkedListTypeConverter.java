@@ -7,7 +7,7 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 
 /**
  * LinkedList Converter

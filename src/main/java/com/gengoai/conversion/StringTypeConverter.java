@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 
 /**
  * String Converter that handles encoding different object types to make them more easily converted back.

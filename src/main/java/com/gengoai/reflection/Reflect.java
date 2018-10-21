@@ -21,7 +21,7 @@
 
 package com.gengoai.reflection;
 
-import com.gengoai.Defaults;
+import com.gengoai.Primitives;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Converter;
 import com.gengoai.conversion.Val;
@@ -58,7 +58,7 @@ public final class Reflect {
 
    private static Object convertValueType(Object value, Class<?> toClass) {
       if (value == null) {
-         return Defaults.value(toClass);
+         return Primitives.defaultValue(toClass);
       }
       if (Val.class.isAssignableFrom(toClass)) {
          return Cast.as(value, Val.class).as(toClass);

@@ -94,7 +94,7 @@ public class HierarchicalEnumValueTest {
 
    @Test
    public void getAncestors() throws Exception {
-      assertEquals(Lists.list(GENERAL, PRESIDENT), COLONEL.getAncestors());
+      assertEquals(Lists.arrayListOf(GENERAL, PRESIDENT), COLONEL.getAncestors());
    }
 
 }

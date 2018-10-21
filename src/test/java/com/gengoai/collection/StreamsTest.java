@@ -72,10 +72,10 @@ public class StreamsTest {
 
    @Test
    public void zip() throws Exception {
-      Assert.assertEquals(Lists.list(new AbstractMap.SimpleEntry<>("A", 1),
-                                     new AbstractMap.SimpleEntry<>("B", 2),
-                                     new AbstractMap.SimpleEntry<>("C", 3)
-                                    ),
+      Assert.assertEquals(Lists.arrayListOf(new AbstractMap.SimpleEntry<>("A", 1),
+                                            new AbstractMap.SimpleEntry<>("B", 2),
+                                            new AbstractMap.SimpleEntry<>("C", 3)
+                                           ),
                           Streams.zip(Stream.of("A", "B", "C"), Stream.of(1, 2, 3, 4)).collect(Collectors.toList())
                          );
       assertEquals(0L, Streams.zip(Stream.empty(), Stream.of(1, 2, 3, 4)).count());
@@ -83,10 +83,10 @@ public class StreamsTest {
 
    @Test
    public void zipWithIndex() throws Exception {
-      Assert.assertEquals(Lists.list(new AbstractMap.SimpleEntry<>("A", 0),
-                                     new AbstractMap.SimpleEntry<>("B", 1),
-                                     new AbstractMap.SimpleEntry<>("C", 2)
-                                    ),
+      Assert.assertEquals(Lists.arrayListOf(new AbstractMap.SimpleEntry<>("A", 0),
+                                            new AbstractMap.SimpleEntry<>("B", 1),
+                                            new AbstractMap.SimpleEntry<>("C", 2)
+                                           ),
                           Streams.zipWithIndex(Stream.of("A", "B", "C")).collect(Collectors.toList())
                          );
       assertEquals(0L, Streams.zipWithIndex(Stream.empty()).count());

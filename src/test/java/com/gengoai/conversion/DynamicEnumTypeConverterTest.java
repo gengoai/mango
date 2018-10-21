@@ -4,7 +4,7 @@ import com.gengoai.DynamicEnum;
 import com.gengoai.EnumValue;
 import org.junit.Test;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 import static org.junit.Assert.*;
 
 /**

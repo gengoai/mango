@@ -9,7 +9,7 @@ import java.io.Writer;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 
 /**
  * Writer and BufferedWriter Converter

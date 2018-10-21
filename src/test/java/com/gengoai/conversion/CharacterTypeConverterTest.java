@@ -3,7 +3,7 @@ package com.gengoai.conversion;
 import com.gengoai.json.JsonEntry;
 import org.junit.Test;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 import static org.junit.Assert.*;
 
 /**

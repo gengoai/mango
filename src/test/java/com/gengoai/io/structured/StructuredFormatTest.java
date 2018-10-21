@@ -40,7 +40,7 @@ public class StructuredFormatTest {
       Map<String, Object> map = hashMapOf($("A", 1.0),
                                           $("B", 2.0),
                                           $("C", 3.0),
-                                          $("D", Lists.list(1.0, 2.0, 3.0)),
+                                          $("D", Lists.arrayListOf(1.0, 2.0, 3.0)),
                                           $("E", hashMapOf($("A", "B"))));
 
       String json = Json.dumps(map);

@@ -189,7 +189,7 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
 
    @Override
    public Iterator<T> iterator() {
-      return new NodeIterator(root);
+      return new NodeIterator<>(root);
    }
 
    /**
@@ -205,7 +205,7 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
       return overlapping(root, span, new ArrayList<>());
    }
 
-   private List<T> overlapping(Node node, Span span, List<T> results) {
+   private List<T> overlapping(Node<T> node, Span span, List<T> results) {
       if (isNull(node)) {
          return results;
       }

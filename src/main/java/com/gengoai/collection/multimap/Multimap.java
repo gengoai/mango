@@ -170,7 +170,6 @@ public interface Multimap<K, V> {
     *
     * @param key    the key
     * @param values the values
-    * @return true if the values were successfully replaced
     */
    void replace(K key, Iterable<? extends V> values);
 

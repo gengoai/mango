@@ -18,10 +18,17 @@ import static com.gengoai.Validation.notNull;
  */
 public final class Primitives {
 
-   private Primitives() {
-      throw new IllegalAccessError();
-   }
-
+   private static final Switch<Class<?>, Object> defaultValues = new Switch<Class<?>, Object>() {{
+      $case(Boolean.class, true);
+      $case(Byte.class, (byte) 0);
+      $case(Character.class, (char) 0);
+      $case(Double.class, 0d);
+      $case(Float.class, 0f);
+      $case(Integer.class, 0);
+      $case(Long.class, 0L);
+      $case(Short.class, (short) 0);
+      $defaultValue(null);
+   }};
    private static final Map<Class<?>, Class<?>> primitiveToWrap = new HashMap<>(20);
    private static final Map<Class<?>, Class<?>> wrapToPrimitive = new HashMap<>(20);
 
@@ -37,11 +44,25 @@ public final class Primitives {
       add(double.class, Double.class);
    }
 
+   private Primitives() {
+      throw new IllegalAccessError();
+   }
+
    private static void add(Class<?> primitive, Class<?> wrap) {
       primitiveToWrap.put(primitive, wrap);
       wrapToPrimitive.put(wrap, primitive);
    }
 
+   /**
+    * Default value t.
+    *
+    * @param <T>   the type parameter
+    * @param clazz the clazz
+    * @return the t
+    */
+   public static <T> T defaultValue(Class<T> clazz) {
+      return Cast.as(defaultValues.apply(wrap(notNull(clazz))));
+   }
 
    private static Object toArray(Iterable<? extends Number> numbers, Class<?> targetClass) {
       Object array = Array.newInstance(targetClass, Iterables.size(numbers));
@@ -64,13 +85,29 @@ public final class Primitives {
    }
 
    /**
-    * Converts and iterable of numbers to an array of int
+    * Converts and iterable of Character to an array of char
+    *
+    * @param characters the characters to convert
+    * @return the char array
+    */
+   public static char[] toCharArray(Iterable<Character> characters) {
+      char[] rval = new char[Iterables.size(notNull(characters))];
+      int index = 0;
+      for (Character character : characters) {
+         rval[index] = character;
+         index++;
+      }
+      return rval;
+   }
+
+   /**
+    * Converts and iterable of numbers to an array of double
     *
     * @param numbers the numbers to convert
-    * @return the int array
+    * @return the double array
     */
-   public static int[] toIntArray(Iterable<? extends Number> numbers) {
-      return Cast.as(toArray(notNull(numbers), int.class), int[].class);
+   public static double[] toDoubleArray(Iterable<? extends Number> numbers) {
+      return Cast.as(toArray(notNull(numbers), double.class), double[].class);
    }
 
    /**
@@ -84,13 +121,13 @@ public final class Primitives {
    }
 
    /**
-    * Converts and iterable of numbers to an array of double
+    * Converts and iterable of numbers to an array of int
     *
     * @param numbers the numbers to convert
-    * @return the double array
+    * @return the int array
     */
-   public static double[] toDoubleArray(Iterable<? extends Number> numbers) {
-      return Cast.as(toArray(notNull(numbers), double.class), double[].class);
+   public static int[] toIntArray(Iterable<? extends Number> numbers) {
+      return Cast.as(toArray(notNull(numbers), int.class), int[].class);
    }
 
    /**
@@ -114,19 +151,15 @@ public final class Primitives {
    }
 
    /**
-    * Converts and iterable of Character to an array of char
+    * Gets the primitive type class corresponding to an boxed type.
     *
-    * @param characters the characters to convert
-    * @return the char array
+    * @param <T>  the type parameter
+    * @param type the boxed type
+    * @return the primitive class
     */
-   public static char[] toCharArray(Iterable<Character> characters) {
-      char[] rval = new char[Iterables.size(notNull(characters))];
-      int index = 0;
-      for (Character character : characters) {
-         rval[index] = character;
-         index++;
-      }
-      return rval;
+   public static <T> Class<T> unwrap(Class<T> type) {
+      notNull(type);
+      return Cast.as(wrapToPrimitive.getOrDefault(type, type));
    }
 
    /**
@@ -141,16 +174,5 @@ public final class Primitives {
       return Cast.as(primitiveToWrap.getOrDefault(type, type));
    }
 
-   /**
-    * Gets the primitive type class corresponding to an boxed type.
-    *
-    * @param <T>  the type parameter
-    * @param type the boxed type
-    * @return the primitive class
-    */
-   public static <T> Class<T> unwrap(Class<T> type) {
-      notNull(type);
-      return Cast.as(wrapToPrimitive.getOrDefault(type, type));
-   }
 
 }//END OF Primitives

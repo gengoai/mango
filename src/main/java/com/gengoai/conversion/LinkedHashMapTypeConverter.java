@@ -5,7 +5,7 @@ import org.kohsuke.MetaInfServices;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 
 /**
  * LinkedHashMap Converter

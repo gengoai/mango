@@ -6,7 +6,7 @@ import org.junit.Test;
 import java.util.Collection;
 import java.util.Map;
 
-import static com.gengoai.collection.Collect.arrayOfInt;
+import static com.gengoai.collection.Arrays2.arrayOfInt;
 import static com.gengoai.reflection.Types.parameterizedType;
 import static com.gengoai.tuple.Tuples.$;
 import static org.junit.Assert.*;

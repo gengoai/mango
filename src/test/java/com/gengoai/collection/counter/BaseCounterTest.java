@@ -112,8 +112,8 @@ public abstract class BaseCounterTest {
    @Test
    public void itemsByCount() throws Exception {
       Counter<String> counter = getCounter2();
-      Assert.assertEquals(Lists.list("B", "A", "C"), counter.itemsByCount(false));
-      assertEquals(Lists.list("C", "A", "B"), counter.itemsByCount(true));
+      Assert.assertEquals(Lists.arrayListOf("B", "A", "C"), counter.itemsByCount(false));
+      assertEquals(Lists.arrayListOf("C", "A", "B"), counter.itemsByCount(true));
    }
 
    @Test

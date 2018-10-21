@@ -65,7 +65,7 @@ public class Math2Test {
       assertEquals(3, Math2.sum(1, 2));
       assertEquals(3L, Math2.sum(1L, 2L));
       assertEquals(3.5, Math2.sum(1.5, 2.0));
-      assertEquals(3.5, Math2.sum(Lists.list(1.5, 2.0)));
+      assertEquals(3.5, Math2.sum(Lists.arrayListOf(1.5, 2.0)));
    }
 
    @Test

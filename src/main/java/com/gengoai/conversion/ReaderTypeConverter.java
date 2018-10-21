@@ -8,7 +8,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.lang.reflect.Type;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 
 /**
  * Reader and BufferedReader Converter.

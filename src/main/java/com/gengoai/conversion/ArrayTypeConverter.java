@@ -7,7 +7,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.util.List;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 import static com.gengoai.reflection.Types.getOrObject;
 
 /**

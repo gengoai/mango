@@ -44,17 +44,174 @@ public final class Lists {
    }
 
    /**
-    * Wraps a primitive array as  a list
+    * Creates an array list of the supplied elements
     *
-    * @param <E>      the output type parameter
-    * @param array    the array to wrap as a list
-    * @param outclass the class type of the output element
-    * @return the list
+    * @param <T>      the component type of the set
+    * @param elements the elements to add to the set
+    * @return the new array list containing the given elements
     */
-   public static <E> List<E> ofPrimitive(Object array, Class<E> outclass) {
-      return new PrimitiveArrayList<>(array, outclass);
+   @SafeVarargs
+   @SuppressWarnings("varargs")
+   public static <T> List<T> arrayListOf(T... elements) {
+      return createList(ArrayList::new, elements);
    }
 
+   /**
+    * Creates an array list of the supplied elements
+    *
+    * @param <T>    the component type of the set
+    * @param stream the elements to add to the set
+    * @return the new array list containing the given elements
+    */
+   public static <T> List<T> asArrayList(Stream<? extends T> stream) {
+      return createList(ArrayList::new, stream);
+   }
+
+   /**
+    * Creates an array list of the supplied elements
+    *
+    * @param <T>      the component type of the set
+    * @param iterator the elements to add to the set
+    * @return the new array list containing the given elements
+    */
+   public static <T> List<T> asArrayList(Iterator<? extends T> iterator) {
+      return createList(ArrayList::new, Streams.asStream(iterator));
+   }
+
+   /**
+    * Creates an array list of the supplied elements
+    *
+    * @param <T>      the component type of the set
+    * @param iterable the elements to add to the set
+    * @return the new array list containing the given elements
+    */
+   public static <T> List<T> asArrayList(Iterable<? extends T> iterable) {
+      return createList(ArrayList::new, Streams.asStream(iterable));
+   }
+
+   /**
+    * Creates a copy on write array list  of the supplied elements
+    *
+    * @param <T>    the component type of the set
+    * @param stream the elements to add to the set
+    * @return the new  copy on write array list  containing the given elements
+    */
+   public static <T> List<T> asConcurrentList(Stream<? extends T> stream) {
+      return createList(CopyOnWriteArrayList::new, stream);
+   }
+
+   /**
+    * Creates a copy on write array list  of the supplied elements
+    *
+    * @param <T>      the component type of the set
+    * @param iterator the elements to add to the set
+    * @return the new  copy on write array list  containing the given elements
+    */
+   public static <T> List<T> asConcurrentList(Iterator<? extends T> iterator) {
+      return createList(CopyOnWriteArrayList::new, Streams.asStream(iterator));
+   }
+
+   /**
+    * Creates a copy on write array list  of the supplied elements
+    *
+    * @param <T>      the component type of the set
+    * @param iterable the elements to add to the set
+    * @return the new  copy on write array list  containing the given elements
+    */
+   public static <T> List<T> asConcurrentList(Iterable<? extends T> iterable) {
+      return createList(CopyOnWriteArrayList::new, Streams.asStream(iterable));
+   }
+
+   /**
+    * Creates a linked list of the supplied elements
+    *
+    * @param <T>    the component type of the set
+    * @param stream the elements to add to the set
+    * @return the new linked list containing the given elements
+    */
+   public static <T> List<T> asLinkedList(Stream<? extends T> stream) {
+      return createList(LinkedList::new, stream);
+   }
+
+   /**
+    * Creates a linked list of the supplied elements
+    *
+    * @param <T>      the component type of the set
+    * @param iterator the elements to add to the set
+    * @return the new linked list containing the given elements
+    */
+   public static <T> List<T> asLinkedList(Iterator<? extends T> iterator) {
+      return createList(LinkedList::new, Streams.asStream(iterator));
+   }
+
+   /**
+    * Creates a linked list of the supplied elements
+    *
+    * @param <T>      the component type of the set
+    * @param iterable the elements to add to the set
+    * @return the new linked list containing the given elements
+    */
+   public static <T> List<T> asLinkedList(Iterable<? extends T> iterable) {
+      return createList(LinkedList::new, Streams.asStream(iterable));
+   }
+
+   /**
+    * Creates a copy on write array list of the supplied elements
+    *
+    * @param <T>      the component type of the set
+    * @param elements the elements to add to the set
+    * @return the new copy on write array list  containing the given elements
+    */
+   @SafeVarargs
+   @SuppressWarnings("varargs")
+   public static <T> List<T> concurrentListOf(T... elements) {
+      return createList(CopyOnWriteArrayList::new, elements);
+   }
+
+   /**
+    * Creates a new list of the supplied elements
+    *
+    * @param <T>      the component type of the set
+    * @param supplier Supplies new set instances
+    * @param elements the elements to add to the  set
+    * @return the new list containing the given elements
+    */
+   @SafeVarargs
+   @SuppressWarnings("varargs")
+   public static <T> List<T> createList(Supplier<List<T>> supplier, T... elements) {
+      if (elements == null || elements.length == 0) {
+         return supplier.get();
+      }
+      return createList(supplier, Streams.asStream(elements));
+   }
+
+   /**
+    * Creates a new list of the supplied elements
+    *
+    * @param <T>      the component type of the set
+    * @param supplier Supplies new set instances
+    * @param stream   the elements to add to the  set
+    * @return the new list containing the given elements
+    */
+   public static <T> List<T> createList(Supplier<List<T>> supplier, Stream<? extends T> stream) {
+      notNull(supplier);
+      if (stream == null) {
+         return supplier.get();
+      }
+      return stream.collect(Collectors.toCollection(supplier));
+   }
+
+   /**
+    * <p>Retains all items in collection1 that are not in collection2 and returns them as a list.</p>
+    *
+    * @param <E>         the component type of the collections
+    * @param collection1 the first collection of items
+    * @param collection2 the second collection of items
+    * @return A list of the collection1 - collection2
+    */
+   public static <E> List<E> difference(Collection<? extends E> collection1, Collection<? extends E> collection2) {
+      return Streams.difference(collection1, collection2).collect(Collectors.toList());
+   }
 
    /**
     * <p>Ensures that the size of the given list is at least the supplied desired size. If the list size is smaller, it
@@ -86,18 +243,6 @@ public final class Lists {
    }
 
    /**
-    * <p>Retains all items in collection1 and collection2 and returns them as a list.</p>
-    *
-    * @param <E>         the component type of the collections
-    * @param collection1 the first collection of items
-    * @param collection2 the second collection of items
-    * @return A list of the collection1 + collection2
-    */
-   public static <E> List<E> union(Collection<? extends E> collection1, Collection<? extends E> collection2) {
-      return Streams.union(collection1, collection2).collect(Collectors.toList());
-   }
-
-   /**
     * <p>Retains all items that are in both collection1 and collection2 and returns them as a list.</p>
     *
     * @param <E>         the component type of the collections
@@ -110,32 +255,6 @@ public final class Lists {
    }
 
    /**
-    * <p>Retains all items in collection1 that are not in collection2 and returns them as a list.</p>
-    *
-    * @param <E>         the component type of the collections
-    * @param collection1 the first collection of items
-    * @param collection2 the second collection of items
-    * @return A list of the collection1 - collection2
-    */
-   public static <E> List<E> difference(Collection<? extends E> collection1, Collection<? extends E> collection2) {
-      return Streams.difference(collection1, collection2).collect(Collectors.toList());
-   }
-
-
-   /**
-    * Creates an array list of the supplied elements
-    *
-    * @param <T>      the component type of the set
-    * @param elements the elements to add to the set
-    * @return the new array list containing the given elements
-    */
-   @SafeVarargs
-   @SuppressWarnings("varargs")
-   public static <T> List<T> list(T... elements) {
-      return createList(ArrayList::new, elements);
-   }
-
-   /**
     * Creates a linked list of the supplied elements
     *
     * @param <T>      the component type of the set
@@ -144,157 +263,9 @@ public final class Lists {
     */
    @SafeVarargs
    @SuppressWarnings("varargs")
-   public static <T> List<T> linkedList(T... elements) {
+   public static <T> List<T> linkedListOf(T... elements) {
       return createList(LinkedList::new, elements);
    }
-
-   /**
-    * Creates a copy on write array list of the supplied elements
-    *
-    * @param <T>      the component type of the set
-    * @param elements the elements to add to the set
-    * @return the new copy on write array list  containing the given elements
-    */
-   @SafeVarargs
-   @SuppressWarnings("varargs")
-   public static <T> List<T> concurrentList(T... elements) {
-      return createList(CopyOnWriteArrayList::new, elements);
-   }
-
-   /**
-    * Creates a new list of the supplied elements
-    *
-    * @param <T>      the component type of the set
-    * @param supplier Supplies new set instances
-    * @param elements the elements to add to the  set
-    * @return the new list containing the given elements
-    */
-   @SafeVarargs
-   @SuppressWarnings("varargs")
-   public static <T> List<T> createList(Supplier<List<T>> supplier, T... elements) {
-      if (elements == null || elements.length == 0) {
-         return supplier.get();
-      }
-      return createList(supplier, Streams.asStream(elements));
-   }
-
-   /**
-    * Creates an array list of the supplied elements
-    *
-    * @param <T>    the component type of the set
-    * @param stream the elements to add to the set
-    * @return the new array list containing the given elements
-    */
-   public static <T> List<T> asArrayList(Stream<? extends T> stream) {
-      return createList(ArrayList::new, stream);
-   }
-
-   /**
-    * Creates a linked list of the supplied elements
-    *
-    * @param <T>    the component type of the set
-    * @param stream the elements to add to the set
-    * @return the new linked list containing the given elements
-    */
-   public static <T> List<T> asLinkedList(Stream<? extends T> stream) {
-      return createList(LinkedList::new, stream);
-   }
-
-
-   /**
-    * Creates a copy on write array list  of the supplied elements
-    *
-    * @param <T>    the component type of the set
-    * @param stream the elements to add to the set
-    * @return the new  copy on write array list  containing the given elements
-    */
-   public static <T> List<T> asConcurrentList(Stream<? extends T> stream) {
-      return createList(CopyOnWriteArrayList::new, stream);
-   }
-
-   /**
-    * Creates an array list of the supplied elements
-    *
-    * @param <T>      the component type of the set
-    * @param iterator the elements to add to the set
-    * @return the new array list containing the given elements
-    */
-   public static <T> List<T> asArrayList(Iterator<? extends T> iterator) {
-      return createList(ArrayList::new, Streams.asStream(iterator));
-   }
-
-   /**
-    * Creates a linked list of the supplied elements
-    *
-    * @param <T>      the component type of the set
-    * @param iterator the elements to add to the set
-    * @return the new linked list containing the given elements
-    */
-   public static <T> List<T> asLinkedList(Iterator<? extends T> iterator) {
-      return createList(LinkedList::new, Streams.asStream(iterator));
-   }
-
-
-   /**
-    * Creates a copy on write array list  of the supplied elements
-    *
-    * @param <T>      the component type of the set
-    * @param iterator the elements to add to the set
-    * @return the new  copy on write array list  containing the given elements
-    */
-   public static <T> List<T> asConcurrentList(Iterator<? extends T> iterator) {
-      return createList(CopyOnWriteArrayList::new, Streams.asStream(iterator));
-   }
-
-   /**
-    * Creates an array list of the supplied elements
-    *
-    * @param <T>      the component type of the set
-    * @param iterable the elements to add to the set
-    * @return the new array list containing the given elements
-    */
-   public static <T> List<T> asArrayList(Iterable<? extends T> iterable) {
-      return createList(ArrayList::new, Streams.asStream(iterable));
-   }
-
-   /**
-    * Creates a linked list of the supplied elements
-    *
-    * @param <T>      the component type of the set
-    * @param iterable the elements to add to the set
-    * @return the new linked list containing the given elements
-    */
-   public static <T> List<T> asLinkedList(Iterable<? extends T> iterable) {
-      return createList(LinkedList::new, Streams.asStream(iterable));
-   }
-
-   /**
-    * Creates a copy on write array list  of the supplied elements
-    *
-    * @param <T>      the component type of the set
-    * @param iterable the elements to add to the set
-    * @return the new  copy on write array list  containing the given elements
-    */
-   public static <T> List<T> asConcurrentList(Iterable<? extends T> iterable) {
-      return createList(CopyOnWriteArrayList::new, Streams.asStream(iterable));
-   }
-
-   /**
-    * Creates a new list of the supplied elements
-    *
-    * @param <T>      the component type of the set
-    * @param supplier Supplies new set instances
-    * @param stream   the elements to add to the  set
-    * @return the new list containing the given elements
-    */
-   public static <T> List<T> createList(Supplier<List<T>> supplier, Stream<? extends T> stream) {
-      notNull(supplier);
-      if (stream == null) {
-         return supplier.get();
-      }
-      return stream.collect(Collectors.toCollection(supplier));
-   }
-
 
    /**
     * Partitions a list into multiple lists of partition size (last list may have a size less than partition size). This
@@ -315,9 +286,41 @@ public final class Lists {
       return partitions;
    }
 
+   /**
+    * Wraps a primitive array as  a list
+    *
+    * @param <E>      the output type parameter
+    * @param array    the array to wrap as a list
+    * @param outclass the class type of the output element
+    * @return the list
+    */
+   public static <E> List<E> primitiveList(Object array, Class<E> outclass) {
+      return new PrimitiveArrayList<>(array, outclass);
+   }
 
+   /**
+    * Transform list.
+    *
+    * @param <I>       the type parameter
+    * @param <O>       the type parameter
+    * @param list      the list
+    * @param converter the converter
+    * @return the list
+    */
    public static <I, O> List<O> transform(List<? extends I> list, SerializableFunction<? super I, ? extends O> converter) {
       return new TransformedList<>(list, converter);
+   }
+
+   /**
+    * <p>Retains all items in collection1 and collection2 and returns them as a list.</p>
+    *
+    * @param <E>         the component type of the collections
+    * @param collection1 the first collection of items
+    * @param collection2 the second collection of items
+    * @return A list of the collection1 + collection2
+    */
+   public static <E> List<E> union(Collection<? extends E> collection1, Collection<? extends E> collection2) {
+      return Streams.union(collection1, collection2).collect(Collectors.toList());
    }
 
    private static class TransformedList<I, O> extends AbstractList<O> {
@@ -335,13 +338,13 @@ public final class Lists {
       }
 
       @Override
-      public int size() {
-         return backing.size();
+      public O remove(int index) {
+         return converter.apply(backing.remove(index));
       }
 
       @Override
-      public O remove(int index) {
-         return converter.apply(backing.remove(index));
+      public int size() {
+         return backing.size();
       }
    }
 

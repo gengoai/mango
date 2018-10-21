@@ -8,7 +8,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 import static com.gengoai.reflection.Types.getOrObject;
 import static com.gengoai.reflection.Types.parameterizedType;
 import static com.gengoai.tuple.Tuples.$;

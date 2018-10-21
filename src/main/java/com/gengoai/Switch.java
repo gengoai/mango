@@ -153,6 +153,17 @@ public class Switch<T, R> implements SerializableFunction<T, R> {
       this.defaultStmt = notNull(function);
    }
 
+   protected void $defaultValue(R result) {
+      this.defaultStmt = t -> result;
+   }
+
+
+   protected void $case(T value, R result) {
+      this.statements.add(new PredFunc<>(
+         v -> v.equals(value),
+         k -> result
+      ));
+   }
 
    @Override
    public final R apply(T t) {

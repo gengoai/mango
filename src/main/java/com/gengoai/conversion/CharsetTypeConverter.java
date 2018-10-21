@@ -5,7 +5,7 @@ import org.kohsuke.MetaInfServices;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 
 /**
  * Converts object into Charsets. Conversion is possible for the following types:

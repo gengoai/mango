@@ -5,7 +5,7 @@ import com.gengoai.tuple.Tuple2;
 import com.gengoai.tuple.Tuple3;
 import org.junit.Test;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 import static org.junit.Assert.*;
 
 /**

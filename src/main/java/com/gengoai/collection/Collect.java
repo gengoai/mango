@@ -25,12 +25,13 @@ import com.gengoai.conversion.Cast;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.gengoai.Validation.notNull;
 
 /**
- * Static methods for working with collections.
+ * <p>Convenience methods for manipulating Collections.</p>
  *
  * @author David B. Bracewell
  */
@@ -42,12 +43,12 @@ public final class Collect {
    }
 
    /**
-    * Add all collection.
+    * Adds all elements in the iterable to the given collection
     *
-    * @param <T>        the type parameter
-    * @param collection the collection
-    * @param iterable   the iterable
-    * @return the collection
+    * @param <T>        the element type parameter
+    * @param collection the collection to add values to
+    * @param iterable   the iterable of elements to add
+    * @return the collection with new elements added
     */
    public static <T> Collection<T> addAll(Collection<T> collection, Iterable<? extends T> iterable) {
       iterable.forEach(collection::add);
@@ -55,12 +56,12 @@ public final class Collect {
    }
 
    /**
-    * Add all collection.
+    * Adds all elements in the iterator to the given collection
     *
-    * @param <T>        the type parameter
-    * @param collection the collection
-    * @param iterator   the iterator
-    * @return the collection
+    * @param <T>        the element type parameter
+    * @param collection the collection to add values to
+    * @param iterator   the iterator of elements to add
+    * @return the collection with new elements added
     */
    public static <T> Collection<T> addAll(Collection<T> collection, Iterator<? extends T> iterator) {
       iterator.forEachRemaining(collection::add);
@@ -68,12 +69,12 @@ public final class Collect {
    }
 
    /**
-    * Add all collection.
+    * Adds all elements in the stream to the given collection
     *
-    * @param <T>        the type parameter
-    * @param collection the collection
-    * @param stream     the iterator
-    * @return the collection
+    * @param <T>        the element type parameter
+    * @param collection the collection to add values to
+    * @param stream     the stream of elements to add
+    * @return the collection with new elements added
     */
    public static <T> Collection<T> addAll(Collection<T> collection, Stream<? extends T> stream) {
       stream.forEach(collection::add);
@@ -81,93 +82,11 @@ public final class Collect {
    }
 
    /**
-    * Array of t [ ].
-    *
-    * @param <T>     the type parameter
-    * @param objects the objects
-    * @return the t [ ]
-    */
-   @SafeVarargs
-   public static <T> T[] arrayOf(T... objects) {
-      return objects;
-   }
-
-   /**
-    * Array of boolean boolean [ ].
-    *
-    * @param values the values
-    * @return the boolean [ ]
-    */
-   public static boolean[] arrayOfBoolean(boolean... values) {
-      return values;
-   }
-
-   /**
-    * Array of byte byte [ ].
-    *
-    * @param values the values
-    * @return the byte [ ]
-    */
-   public static byte[] arrayOfByte(byte... values) {
-      return values;
-   }
-
-   /**
-    * Array of char char [ ].
-    *
-    * @param values the values
-    * @return the char [ ]
-    */
-   public static char[] arrayOfChar(char... values) {
-      return values;
-   }
-
-   /**
-    * Array of double double [ ].
-    *
-    * @param values the values
-    * @return the double [ ]
-    */
-   public static double[] arrayOfDouble(double... values) {
-      return values;
-   }
-
-   /**
-    * Array of float float [ ].
-    *
-    * @param values the values
-    * @return the float [ ]
-    */
-   public static float[] arrayOfFloat(float... values) {
-      return values;
-   }
-
-   /**
-    * Array of int int [ ].
-    *
-    * @param values the values
-    * @return the int [ ]
-    */
-   public static int[] arrayOfInt(int... values) {
-      return values;
-   }
-
-   /**
-    * Array of short short [ ].
-    *
-    * @param values the values
-    * @return the short [ ]
-    */
-   public static short[] arrayOfShort(short... values) {
-      return values;
-   }
-
-   /**
-    * Wraps an iterable as a collection
+    * Wraps an iterable as a collection.
     *
     * @param <T>      the element type parameter
     * @param iterable the iterable to wrap
-    * @return the collection
+    * @return the wrapped iterable
     */
    public static <T> Collection<T> asCollection(Iterable<? extends T> iterable) {
       if (iterable instanceof Collection) {
@@ -207,6 +126,33 @@ public final class Collect {
       } catch (InstantiationException | IllegalAccessException e) {
          throw new RuntimeException(e);
       }
+   }
+
+   /**
+    * Sorts the given collection using the given comparator returning a list of the results
+    *
+    * @param <T>        the element type parameter
+    * @param collection the collection to sort
+    * @param comparator the comparator to use for sorting
+    * @return the list of items in the collection sorted using the given comparator
+    */
+   public static <T> List<T> sort(Collection<T> collection, Comparator<? super T> comparator) {
+      return collection.stream()
+                       .sorted(comparator)
+                       .collect(Collectors.toList());
+   }
+
+   /**
+    * Sorts the items in the given collection.
+    *
+    * @param <T>        the element type parameter
+    * @param collection the collection to sort
+    * @return the list of items in the collection sorted.
+    */
+   public static <T extends Comparable<? super T>> List<T> sort(Collection<T> collection) {
+      return collection.stream()
+                       .sorted()
+                       .collect(Collectors.toList());
    }
 
    private static class IterableCollection<E> extends AbstractCollection<E> implements Serializable {

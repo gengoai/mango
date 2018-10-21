@@ -8,7 +8,7 @@ import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static com.gengoai.collection.Collect.arrayOf;
+import static com.gengoai.collection.Arrays2.arrayOf;
 
 /**
  * Path Converter

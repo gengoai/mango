@@ -56,7 +56,7 @@ public class InternerTest {
 
    @Test
    public void internAll() throws Exception {
-      Collection<String> result = interner.internAll(Lists.list("A", "B", "C", "D"));
+      Collection<String> result = interner.internAll(Lists.arrayListOf("A", "B", "C", "D"));
       assertEquals(4, result.size());
    }
 
