@@ -1,5 +1,6 @@
 package com.gengoai.conversion;
 
+import com.gengoai.json.JsonEntry;
 import com.gengoai.reflection.ReflectionUtils;
 import org.kohsuke.MetaInfServices;
 
@@ -21,6 +22,9 @@ public class EnumTypeConverter implements TypeConverter {
          return convert(Cast.<Class>as(source).getName(), parameters);
       }
 
+      if( source instanceof JsonEntry){
+         return convert(Cast.<JsonEntry>as(source).get(), parameters);
+      }
       if (source instanceof CharSequence) {
          String sourceStr = source.toString();
          int lastDot = sourceStr.lastIndexOf('.');

@@ -36,8 +36,11 @@ public abstract class CollectionTypeConverter implements TypeConverter {
 
    private Collection<?> fromJson(Object source, JsonEntry je, Type elementType) throws TypeConversionException {
       if (je.isArray()) {
-         return Collect.addAll(newCollection(),
-                               je.getAsArray(elementType));
+         Collection<?> c = newCollection();
+         for (Iterator<JsonEntry> itr = je.elementIterator(); itr.hasNext(); ) {
+            c.add(Converter.convert(itr.next(), elementType));
+         }
+         return c;
       } else if (je.isObject() && isAssignable(Map.Entry.class, elementType)) {
          Collection<?> c = newCollection();
          for (Iterator<Map.Entry<String, JsonEntry>> itr = je.propertyIterator(); itr.hasNext(); ) {

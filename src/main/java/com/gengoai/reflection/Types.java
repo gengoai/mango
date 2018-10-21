@@ -87,7 +87,7 @@ public final class Types {
     * @return the or object
     */
    public static Type getOrObject(int n, Type... types) {
-      return types == null || types.length < n ? Object.class : types[n];
+      return types == null || types.length <= n ? Object.class : types[n];
    }
 
    /**

@@ -1,6 +1,7 @@
 package com.gengoai.json;
 
 import com.gengoai.EnumValue;
+import com.gengoai.Primitives;
 import com.gengoai.collection.*;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Converter;
@@ -48,6 +49,24 @@ public class JsonEntry {
    }
 
    public Object get() {
+      if (isString()) {
+         return getAsString();
+      }
+      if (isNumber()) {
+         return getAsNumber();
+      }
+      if (isBoolean()) {
+         return getAsBoolean();
+      }
+      if (isNull()) {
+         return getAsNumber();
+      }
+      if (isObject()) {
+         return getAsMap();
+      }
+      if (isArray()) {
+         return getAsArray();
+      }
       return getAs(Object.class);
    }
 
@@ -268,17 +287,22 @@ public class JsonEntry {
    public <T> T getAs(Type type) {
       if (type == null) {
          return getAsVal().cast();
-      } else if (type instanceof ParameterizedType) {
-         return getAs(Cast.as(type));
-      } else if (isAssignable(ParameterizedType.class, type)) {
+      }
+
+      if (type instanceof ParameterizedType) {
+         return getAs((ParameterizedType) type);
+      }
+
+      if (isAssignable(ParameterizedType.class, type)
+             || (isAssignable(Type.class, type) && hasProperty("rawType"))) {
          Type rawType = getProperty("rawType").getAs(Type.class);
          Type[] parameterTypes = getProperty("actualTypeArguments").elementStream()
                                                                    .map(e -> e.getAs(Type.class))
                                                                    .toArray(Type[]::new);
          return Cast.as(parameterizedType(rawType, parameterTypes));
-      } else if (isAssignable(Type.class, type) && hasProperty("rawType")) {
-         return getAs(ParameterizedType.class);
-      } else if (isAssignable(Type.class, type)) {
+      }
+
+      if (isAssignable(Type.class, type)) {
          try {
             return Cast.as(ReflectionUtils.getClassForName(getAsString()));
          } catch (Exception e) {
@@ -286,11 +310,28 @@ public class JsonEntry {
          }
       }
 
-      try{
-         return Converter.convert(this, type);
-      } catch (TypeConversionException tce ){
-         tce.printStackTrace();
-         //ignore
+      if (isAssignable(JsonSerializable.class, type)) {
+         try {
+            return Cast.as(Reflect.onClass(asClass(type))
+                                  .allowPrivilegedAccess()
+                                  .invoke("fromJson", this, new Type[]{})
+                                  .get());
+         } catch (ReflectionException e) {
+            throw new RuntimeException(e.getCause());
+         }
+      }
+
+      Class<T> wrapped = Primitives.wrap(asClass(type));
+      if (wrapped == String.class) {
+         return Cast.as(getAsString());
+      }
+
+      if (isAssignable(Number.class, wrapped)) {
+         try {
+            return Converter.convert(getAsNumber(), wrapped);
+         } catch (TypeConversionException e) {
+            throw new RuntimeException(e);
+         }
       }
 
       return gson.fromJson(element, type);
