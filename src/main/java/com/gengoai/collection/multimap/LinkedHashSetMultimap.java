@@ -2,7 +2,6 @@ package com.gengoai.collection.multimap;
 
 import java.io.Serializable;
 import java.util.LinkedHashSet;
-import java.util.Set;
 
 /**
  * Multimap that stores values in a LinkedHashSet
@@ -14,9 +13,9 @@ import java.util.Set;
 public class LinkedHashSetMultimap<K, V> extends SetMultimap<K, V> implements Serializable {
    private static final long serialVersionUID = 1L;
 
-   @Override
-   protected Set<V> createCollection() {
-      return new LinkedHashSet<>();
+   public LinkedHashSetMultimap() {
+      super(LinkedHashSet::new);
    }
+
 
 }//END OF LinkedHashSetMultimap

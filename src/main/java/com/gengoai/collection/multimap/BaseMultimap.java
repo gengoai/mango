@@ -17,20 +17,7 @@ import java.util.Objects;
  */
 public abstract class BaseMultimap<K, V, C extends Collection<V>> implements Multimap<K, V>, Serializable {
    private static final long serialVersionUID = 1L;
-   private final Map<K, C> map = new HashMap<>();
-
-   /**
-    * Creates a new list for a key.
-    *
-    * @return the list
-    */
-   protected abstract C createCollection();
-
-   @Override
-   public C get(Object key) {
-      map.putIfAbsent(Cast.as(key), createCollection());
-      return map.get(key);
-   }
+   protected final Map<K, C> map = new HashMap<>();
 
    @Override
    public C removeAll(Object key) {
@@ -39,19 +26,13 @@ public abstract class BaseMultimap<K, V, C extends Collection<V>> implements Mul
 
    @Override
    public void replace(K key, Iterable<? extends V> values) {
-      C list = get(key);
+      Collection<V> list = get(key);
       list.clear();
       values.forEach(list::add);
    }
 
    @Override
-   public void trimToSize() {
-      map.keySet().removeIf(key -> get(key).isEmpty());
-   }
-
-   @Override
    public Map<K, Collection<V>> asMap() {
-      trimToSize();
       return Cast.as(map);
    }
 

@@ -2,7 +2,6 @@ package com.gengoai.collection.multimap;
 
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Multimap that stores values in a HashSet.
@@ -14,9 +13,9 @@ import java.util.Set;
 public class HashSetMultimap<K, V> extends SetMultimap<K, V> implements Serializable {
    private static final long serialVersionUID = 1L;
 
-   @Override
-   protected Set<V> createCollection() {
-      return new HashSet<>();
+   public HashSetMultimap() {
+      super(HashSet::new);
    }
+
 
 }//END OF HashSetMultimap

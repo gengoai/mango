@@ -1,5 +1,8 @@
 package com.gengoai.collection.multimap;
 
+import com.gengoai.conversion.Cast;
+import com.gengoai.function.SerializableSupplier;
+
 import java.util.Set;
 
 /**
@@ -11,4 +14,14 @@ import java.util.Set;
  */
 public abstract class SetMultimap<K, V> extends BaseMultimap<K, V, Set<V>> {
    private static final long serialVersionUID = 1L;
+   private final SerializableSupplier<Set<V>> setSupplier;
+
+   protected SetMultimap(SerializableSupplier<Set<V>> setSupplier) {
+      this.setSupplier = setSupplier;
+   }
+
+   @Override
+   public Set<V> get(Object key) {
+      return new ForwardingSet<>(Cast.as(key), map, setSupplier);
+   }
 }//END OF ListMultimap

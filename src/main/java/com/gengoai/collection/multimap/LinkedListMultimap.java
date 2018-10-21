@@ -2,7 +2,6 @@ package com.gengoai.collection.multimap;
 
 import java.io.Serializable;
 import java.util.LinkedList;
-import java.util.List;
 
 /**
  * The type Linked list multimap.
@@ -14,9 +13,12 @@ import java.util.List;
 public class LinkedListMultimap<K, V> extends ListMultimap<K, V> implements Serializable {
    private static final long serialVersionUID = 1L;
 
-   @Override
-   protected List<V> createCollection() {
-      return new LinkedList<>();
+   /**
+    * Instantiates a new Linked list multimap.
+    */
+   public LinkedListMultimap() {
+      super(LinkedList::new);
    }
+
 
 }//END OF LinkedListMultimap

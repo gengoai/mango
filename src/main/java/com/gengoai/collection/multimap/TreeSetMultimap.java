@@ -3,7 +3,6 @@ package com.gengoai.collection.multimap;
 import com.gengoai.collection.Sorting;
 import com.gengoai.function.SerializableComparator;
 
-import java.util.Set;
 import java.util.TreeSet;
 
 /**
@@ -30,12 +29,9 @@ public class TreeSetMultimap<K, V> extends SetMultimap<K, V> {
     * @param comparator the comparator to use for comparing values
     */
    public TreeSetMultimap(SerializableComparator<V> comparator) {
+      super(TreeSet::new);
       this.comparator = comparator;
    }
 
-   @Override
-   protected Set<V> createCollection() {
-      return new TreeSet<>(comparator);
-   }
 
 }//END OF TreeSetMultimap

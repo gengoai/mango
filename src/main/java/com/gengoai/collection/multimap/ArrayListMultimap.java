@@ -2,7 +2,6 @@ package com.gengoai.collection.multimap;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Multimap that stores values in an ArrayList
@@ -14,9 +13,11 @@ import java.util.List;
 public class ArrayListMultimap<K, V> extends ListMultimap<K, V> implements Serializable {
    private static final long serialVersionUID = 1L;
 
-   @Override
-   protected List<V> createCollection() {
-      return new ArrayList<>();
+   /**
+    * Instantiates a new Array list multimap.
+    */
+   public ArrayListMultimap() {
+      super(ArrayList::new);
    }
 
 }//END OF ArrayListMultimap

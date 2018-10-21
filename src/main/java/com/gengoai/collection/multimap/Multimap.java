@@ -6,7 +6,8 @@ import com.gengoai.collection.Iterables;
 import java.util.*;
 
 /**
- * Maps keys to multiple values.
+ * Maps keys to multiple values. Acts as a <code>Map<K, Collection<V>></code> where individual implementations specify
+ * the type of collection, e.g. List, Set, etc.
  *
  * @param <K> the key type parameter
  * @param <V> the value type parameter
@@ -153,7 +154,6 @@ public interface Multimap<K, V> {
     */
    default boolean remove(Object key, Object value) {
       boolean success = asMap().containsKey(key) && asMap().get(key).remove(value);
-      trimToSize();
       return success;
    }
 
@@ -181,11 +181,6 @@ public interface Multimap<K, V> {
    default int size() {
       return asMap().values().stream().mapToInt(Collection::size).sum();
    }
-
-   /**
-    * Trims keys that have no value mappings (i.e. empty value collection) from the multimap
-    */
-   void trimToSize();
 
    /**
     * Provides a  view of the values in the multimap
