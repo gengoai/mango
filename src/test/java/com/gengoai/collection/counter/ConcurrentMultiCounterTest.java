@@ -7,17 +7,19 @@ import static com.gengoai.tuple.Tuples.$;
  */
 public class ConcurrentMultiCounterTest extends BaseMultiCounterTest {
 
+   @Override
    public MultiCounter<String, String> getEmptyCounter() {
-      return MultiCounters.newConcurrentCounter();
+      return MultiCounters.newConcurrentMultiCounter();
    }
 
+   @Override
    public MultiCounter<String, String> getEntryCounter() {
-      return MultiCounters.newConcurrentCounter(MultiCounters.newMultiCounter($("A", "B"),
-                                                                              $("A", "C"),
-                                                                              $("A", "D"),
-                                                                              $("B", "E"),
-                                                                              $("B", "G"),
-                                                                              $("B", "H")
-                                                                             ));
+      return MultiCounters.newConcurrentMultiCounter($("A", "B"),
+                                                     $("A", "C"),
+                                                     $("A", "D"),
+                                                     $("B", "E"),
+                                                     $("B", "G"),
+                                                     $("B", "H")
+                                                    );
    }
 }//END OF ConcurrentMultiCounterTest

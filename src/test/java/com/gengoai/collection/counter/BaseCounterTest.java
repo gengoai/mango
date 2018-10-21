@@ -21,40 +21,33 @@
 
 package com.gengoai.collection.counter;
 
-import com.gengoai.math.Math2;
 import com.gengoai.collection.Lists;
 import com.gengoai.collection.Sets;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.io.resource.StringResource;
+import com.gengoai.json.Json;
+import com.gengoai.math.Math2;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.*;
 
-import static com.gengoai.collection.Maps.hashMapOf;
+import static com.gengoai.reflection.Types.parameterizedType;
 import static com.gengoai.tuple.Tuples.$;
 import static org.junit.Assert.*;
 
 /**
  * @author David B. Bracewell
  */
-public class BaseCounterTest {
+public abstract class BaseCounterTest {
 
-   Counter<String> getCounter1() {
-      return Counters.newCounter("a", "b", "c", "a", "b", "a");
-   }
+   protected abstract Counter<String> getCounter1();
 
-   Counter<String> getCounter2() {
-      return Counters.newCounter(hashMapOf($("A", 4.0), $("B", 5.0), $("C", 1.0)));
-   }
+   protected abstract Counter<String> getCounter2();
 
-   Counter<String> getCounter3() {
-      return Counters.newCounter(Collections.singleton("a"));
-   }
+   protected abstract Counter<String> getCounter3();
 
-   Counter<String> getEmptyCounter() {
-      return Counters.newCounter();
-   }
+   protected abstract Counter<String> getEmptyCounter();
 
    @Test
    public void valueChange() throws Exception {
@@ -157,15 +150,9 @@ public class BaseCounterTest {
       Resource r = new StringResource();
       counter.writeCsv(r);
       Counter<String> fromCSV = Counters.readCsv(r, String.class);
+      assertEquals(counter, fromCSV);
    }
 
-   @Test
-   public void json() throws Exception {
-      Counter<String> counter = getCounter2();
-      Resource r = new StringResource();
-//      counter.writeJson(r);
-//      Counter<String> fromJSON = Counters.readJson(r, String.class);
-   }
 
    @Test
    public void contains() throws Exception {
@@ -361,4 +348,13 @@ public class BaseCounterTest {
       Counter<String> counter = getCounter2();
       assertEquals(counter, counter.copy());
    }
+
+   @Test
+   public void testJson() throws Exception {
+      Counter<String> counter = getCounter2();
+      String str = Json.dumps(counter);
+      Counter<String> des = Json.parse(str).getAs(parameterizedType(counter.getClass(), String.class));
+      assertEquals(counter, des);
+   }
+
 }

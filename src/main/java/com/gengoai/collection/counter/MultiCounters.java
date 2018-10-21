@@ -22,18 +22,25 @@
 package com.gengoai.collection.counter;
 
 import com.gengoai.conversion.Converter;
+import com.gengoai.conversion.TypeConversionException;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVReader;
 import com.gengoai.io.resource.Resource;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Common methods for reading multi-counters from structured files, creating synchronized and unmodifiable wrappers.
  */
-public interface MultiCounters {
+public final class MultiCounters {
+
+
+   private MultiCounters() {
+      throw new IllegalAccessError();
+   }
 
 
    /**
@@ -44,7 +51,7 @@ public interface MultiCounters {
     * @param counter the counter to copy
     * @return A new MultiCounter that is a copy of the given MultiCounter
     */
-   static <K1, K2> MultiCounter<K1, K2> newMultiCounter(MultiCounter<? extends K1, ? extends K2> counter) {
+   public static <K1, K2> MultiCounter<K1, K2> newMultiCounter(MultiCounter<? extends K1, ? extends K2> counter) {
       MultiCounter<K1, K2> mc = new HashMapMultiCounter<>();
       counter.entries().forEach(triple -> mc.increment(triple.v1, triple.v2, triple.v3));
       return mc;
@@ -59,7 +66,7 @@ public interface MultiCounters {
     * @return A new MultiCounter with counts of the given entries
     */
    @SafeVarargs
-   static <K1, K2> MultiCounter<K1, K2> newMultiCounter(Map.Entry<? extends K1, ? extends K2>... entries) {
+   public static <K1, K2> MultiCounter<K1, K2> newMultiCounter(Map.Entry<? extends K1, ? extends K2>... entries) {
       return entries == null ? new HashMapMultiCounter<>() : newMultiCounter(Arrays.asList(entries));
    }
 
@@ -71,7 +78,7 @@ public interface MultiCounters {
     * @param entries the entries to increment in the counter.
     * @return A new MultiCounter with counts of the given entries
     */
-   static <K1, K2> MultiCounter<K1, K2> newMultiCounter(Iterable<? extends Map.Entry<? extends K1, ? extends K2>> entries) {
+   public static <K1, K2> MultiCounter<K1, K2> newMultiCounter(Iterable<? extends Map.Entry<? extends K1, ? extends K2>> entries) {
       MultiCounter<K1, K2> mc = new HashMapMultiCounter<>();
       entries.forEach(e -> mc.increment(e.getKey(), e.getValue()));
       return mc;
@@ -85,37 +92,69 @@ public interface MultiCounters {
     * @param map  A map whose keys are the entries of the counter and values are the counts.
     * @return A new MultiCounter with counts of the given entries
     */
-   static <K1, K2> MultiCounter<K1, K2> newMultiCounter(Map<? extends Map.Entry<? extends K1, ? extends K2>, ? extends Number> map) {
+   public static <K1, K2> MultiCounter<K1, K2> newMultiCounter(Map<? extends Map.Entry<? extends K1, ? extends K2>, ? extends Number> map) {
       MultiCounter<K1, K2> mc = new HashMapMultiCounter<>();
       map.forEach((key, value) -> mc.increment(key.getKey(), key.getValue(), value.doubleValue()));
       return mc;
    }
 
    /**
-    * <p>Wraps a counter making each method call synchronized.</p>
+    * <p>Creates a new ConcurrentHashMapMultiCounter using the given multi counter.</p>
     *
     * @param <K1>         the component type of the first key
     * @param <K2>         the component type of the second key
     * @param multiCounter the multi counter to wrap
     * @return the synchronized multi-counter
     */
-   static <K1, K2> MultiCounter<K1, K2> newConcurrentCounter(MultiCounter<K1, K2> multiCounter) {
+   public static <K1, K2> MultiCounter<K1, K2> newConcurrentMultiCounter(MultiCounter<K1, K2> multiCounter) {
       return new ConcurrentHashMapMultiCounter<K1, K2>().merge(multiCounter);
    }
 
+
    /**
-    * <p>Creates a new multi-counter where each method call is synchronized.</p>
+    * Creates a new ConcurrentHashMapMultiCounter using the given map entries.
     *
-    * @param <K1> the component type of the first key
-    * @param <K2> the component type of the second key
-    * @return the synchronized multi-counter
+    * @param <K1>    the component type of the first key
+    * @param <K2>    the component type of the second key
+    * @param entries the entries to increment in the counter.
+    * @return A new MultiCounter with counts of the given entries
     */
-   static <K1, K2> MultiCounter<K1, K2> newConcurrentCounter() {
-      return new ConcurrentHashMapMultiCounter<>();
+   @SafeVarargs
+   public static <K1, K2> MultiCounter<K1, K2> newConcurrentMultiCounter(Map.Entry<? extends K1, ? extends K2>... entries) {
+      return entries == null ? new ConcurrentHashMapMultiCounter<>() : newConcurrentMultiCounter(
+         Arrays.asList(entries));
    }
 
    /**
-    * <p>Reads a counter from a CSV file.</p>
+    * Creates a new ConcurrentHashMapMultiCounter using the given map entries.
+    *
+    * @param <K1>    the component type of the first key
+    * @param <K2>    the component type of the second key
+    * @param entries the entries to increment in the counter.
+    * @return A new MultiCounter with counts of the given entries
+    */
+   public static <K1, K2> MultiCounter<K1, K2> newConcurrentMultiCounter(Iterable<? extends Map.Entry<? extends K1, ? extends K2>> entries) {
+      MultiCounter<K1, K2> mc = new ConcurrentHashMapMultiCounter<>();
+      entries.forEach(e -> mc.increment(e.getKey(), e.getValue()));
+      return mc;
+   }
+
+   /**
+    * Creates a new ConcurrentHashMapMultiCounter using the given map.
+    *
+    * @param <K1> the component type of the first key
+    * @param <K2> the component type of the second key
+    * @param map  A map whose keys are the entries of the counter and values are the counts.
+    * @return A new MultiCounter with counts of the given entries
+    */
+   public static <K1, K2> MultiCounter<K1, K2> newConcurrentMultiCounter(Map<? extends Map.Entry<? extends K1, ? extends K2>, ? extends Number> map) {
+      MultiCounter<K1, K2> mc = new ConcurrentHashMapMultiCounter<>();
+      map.forEach((key, value) -> mc.increment(key.getKey(), key.getValue(), value.doubleValue()));
+      return mc;
+   }
+
+   /**
+    * <p>Reads a multi-counter from a CSV file.</p>
     *
     * @param <K1>      the component type of the first key
     * @param <K2>      the component type of the second key
@@ -125,16 +164,20 @@ public interface MultiCounters {
     * @return the new MultiCounter
     * @throws IOException Something went wrong reading in the counter.
     */
-   static <K1, K2> MultiCounter<K1, K2> readCsv(Resource resource, Class<K1> key1Class, Class<K2> key2Class) throws IOException {
+   public static <K1, K2> MultiCounter<K1, K2> readCsv(Resource resource, Class<K1> key1Class, Class<K2> key2Class) throws IOException {
       MultiCounter<K1, K2> counter = newMultiCounter();
       try (CSVReader reader = CSV.builder().reader(resource)) {
-         reader.forEach(row -> {
+         for (List<String> row : reader) {
             if (row.size() >= 3) {
-               counter.increment(Converter.convertSilently(row.get(0), key1Class),
-                                 Converter.convertSilently(row.get(1), key2Class),
-                                 Double.valueOf(row.get(2)));
+               try {
+                  counter.increment(Converter.convert(row.get(0), key1Class),
+                                    Converter.convert(row.get(1), key2Class),
+                                    Double.valueOf(row.get(2)));
+               } catch (TypeConversionException e) {
+                  throw new IOException(e);
+               }
             }
-         });
+         }
       }
       return counter;
    }

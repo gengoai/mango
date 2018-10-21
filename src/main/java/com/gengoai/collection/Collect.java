@@ -25,6 +25,7 @@ import com.gengoai.conversion.Cast;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static com.gengoai.Validation.notNull;
 
@@ -40,37 +41,139 @@ public final class Collect {
       throw new IllegalAccessError();
    }
 
+   /**
+    * Add all collection.
+    *
+    * @param <T>        the type parameter
+    * @param collection the collection
+    * @param iterable   the iterable
+    * @return the collection
+    */
+   public static <T> Collection<T> addAll(Collection<T> collection, Iterable<? extends T> iterable) {
+      iterable.forEach(collection::add);
+      return collection;
+   }
+
+   /**
+    * Add all collection.
+    *
+    * @param <T>        the type parameter
+    * @param collection the collection
+    * @param iterator   the iterator
+    * @return the collection
+    */
+   public static <T> Collection<T> addAll(Collection<T> collection, Iterator<? extends T> iterator) {
+      iterator.forEachRemaining(collection::add);
+      return collection;
+   }
+
+   /**
+    * Add all collection.
+    *
+    * @param <T>        the type parameter
+    * @param collection the collection
+    * @param stream     the iterator
+    * @return the collection
+    */
+   public static <T> Collection<T> addAll(Collection<T> collection, Stream<? extends T> stream) {
+      stream.forEach(collection::add);
+      return collection;
+   }
+
+   /**
+    * Array of t [ ].
+    *
+    * @param <T>     the type parameter
+    * @param objects the objects
+    * @return the t [ ]
+    */
    @SafeVarargs
    public static <T> T[] arrayOf(T... objects) {
       return objects;
    }
 
-   public static int[] arrayOfInt(int... values) {
+   /**
+    * Array of boolean boolean [ ].
+    *
+    * @param values the values
+    * @return the boolean [ ]
+    */
+   public static boolean[] arrayOfBoolean(boolean... values) {
       return values;
    }
 
-   public static double[] arrayOfDouble(double... values) {
-      return values;
-   }
-
-   public static float[] arrayOfFloat(float... values) {
-      return values;
-   }
-
+   /**
+    * Array of byte byte [ ].
+    *
+    * @param values the values
+    * @return the byte [ ]
+    */
    public static byte[] arrayOfByte(byte... values) {
       return values;
    }
 
-   public static short[] arrayOfShort(short... values) {
-      return values;
-   }
-
+   /**
+    * Array of char char [ ].
+    *
+    * @param values the values
+    * @return the char [ ]
+    */
    public static char[] arrayOfChar(char... values) {
       return values;
    }
 
-   public static boolean[] arrayOfBoolean(boolean... values) {
+   /**
+    * Array of double double [ ].
+    *
+    * @param values the values
+    * @return the double [ ]
+    */
+   public static double[] arrayOfDouble(double... values) {
       return values;
+   }
+
+   /**
+    * Array of float float [ ].
+    *
+    * @param values the values
+    * @return the float [ ]
+    */
+   public static float[] arrayOfFloat(float... values) {
+      return values;
+   }
+
+   /**
+    * Array of int int [ ].
+    *
+    * @param values the values
+    * @return the int [ ]
+    */
+   public static int[] arrayOfInt(int... values) {
+      return values;
+   }
+
+   /**
+    * Array of short short [ ].
+    *
+    * @param values the values
+    * @return the short [ ]
+    */
+   public static short[] arrayOfShort(short... values) {
+      return values;
+   }
+
+   /**
+    * Wraps an iterable as a collection
+    *
+    * @param <T>      the element type parameter
+    * @param iterable the iterable to wrap
+    * @return the collection
+    */
+   public static <T> Collection<T> asCollection(Iterable<? extends T> iterable) {
+      if (iterable instanceof Collection) {
+         return Cast.as(iterable);
+      }
+      return new IterableCollection<>(notNull(iterable));
    }
 
    /**
@@ -104,27 +207,6 @@ public final class Collect {
       } catch (InstantiationException | IllegalAccessException e) {
          throw new RuntimeException(e);
       }
-   }
-
-   public static <T> Collection<T> addAll(Collection<T> collection, Iterable<? extends T> iterable) {
-      iterable.forEach(collection::add);
-      return collection;
-   }
-
-   public static <T> Collection<T> addAll(Collection<T> collection, Iterator<? extends T> iterator) {
-      iterator.forEachRemaining(collection::add);
-      return collection;
-   }
-
-   /**
-    * Wraps an iterable as a collection
-    *
-    * @param <T>      the element type parameter
-    * @param iterable the iterable to wrap
-    * @return the collection
-    */
-   public static <T> Collection<T> asCollection(Iterable<? extends T> iterable) {
-      return new IterableCollection<>(notNull(iterable));
    }
 
    private static class IterableCollection<E> extends AbstractCollection<E> implements Serializable {

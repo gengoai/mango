@@ -27,7 +27,8 @@ import java.lang.reflect.Type;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Implementation of a MultiCounter using a HashMaps.
+ * Implementation of a MultiCounter using a ConcurrentHashMaps with {@link ConcurrentHashMapCounter} as the child
+ * counters..
  *
  * @param <K> the first key type
  * @param <V> the second type

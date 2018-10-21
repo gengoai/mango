@@ -1,16 +1,10 @@
 package com.gengoai.conversion;
 
-import com.gengoai.io.Resources;
+import com.gengoai.io.resource.Resource;
 import org.kohsuke.MetaInfServices;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
-import java.net.URI;
-import java.net.URL;
-import java.nio.file.Path;
 
 import static com.gengoai.collection.Collect.arrayOf;
 
@@ -27,21 +21,17 @@ public class OutputStreamTypeConverter implements TypeConverter {
          return source;
       }
 
-      try {
-         if (source instanceof File) {
-            return Resources.fromFile(Cast.<File>as(source)).outputStream();
-         } else if (source instanceof Path) {
-            return Resources.fromFile(Cast.<Path>as(source).toFile()).outputStream();
-         } else if (source instanceof URL) {
-            return Resources.fromUrl(Cast.as(source)).outputStream();
-         } else if (source instanceof URI) {
-            return Resources.fromURI(Cast.as(source)).outputStream();
-         }
-      } catch (IOException e) {
-         throw new TypeConversionException(source, InputStream.class, e);
+      Resource resource = Converter.convert(source, Resource.class);
+
+      if (source instanceof CharSequence && !source.toString().toLowerCase().startsWith("string:")) {
+         throw new TypeConversionException(source, OutputStream.class);
       }
 
-      throw new TypeConversionException(source, OutputStream.class);
+      try {
+         return resource.outputStream();
+      } catch (Exception e) {
+         throw new TypeConversionException(source, OutputStream.class, e);
+      }
    }
 
    @Override

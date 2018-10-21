@@ -54,7 +54,7 @@ public final class Json {
    public static Resource dump(Object object, Resource resource) throws IOException {
       try (JsonWriter writer = new JsonWriter(resource)) {
          JsonEntry objJson = JsonEntry.from(object);
-         if( objJson.isPrimitive() ){
+         if (objJson.isPrimitive()) {
             writer.beginDocument(true);
          }
          writer.write(objJson);
@@ -165,6 +165,11 @@ public final class Json {
       return parse(Resources.fromString(json));
    }
 
+   public static <T> T parse(String json, Type type) throws IOException {
+      return parse(Resources.fromString(json)).getAs(type);
+   }
+
+
    /**
     * Parses the given resource as json entry
     *
@@ -178,5 +183,9 @@ public final class Json {
       }
    }
 
+
+   public static <T> T parse(Resource json, Type type) throws IOException {
+      return parse(json).getAs(type);
+   }
 
 }//END OF Json

@@ -29,8 +29,6 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static com.gengoai.reflection.Types.getOrObject;
-
 /**
  * <p>An index represents a mapping from an Item to an id. All ids are positive integers.</p>
  *
@@ -48,8 +46,9 @@ public interface Index<E> extends Iterable<E>, Copyable<Index<E>>, JsonSerializa
     * @return the index
     */
    static <T> Index<T> fromJson(JsonEntry entry, Type... types) {
-      return Indexes.indexOf(entry.getAsArray(getOrObject(0, types)));
+      return Indexes.fromJson(new HashMapIndex<>(), entry, types);
    }
+
 
    /**
     * <p>Adds an item to the index. If the item is already in the index, the item's id is returned otherwise the newly

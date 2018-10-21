@@ -22,6 +22,9 @@
 package com.gengoai.collection.counter;
 
 import com.gengoai.collection.Sets;
+import com.gengoai.io.resource.Resource;
+import com.gengoai.io.resource.StringResource;
+import com.gengoai.json.Json;
 import com.gengoai.math.Math2;
 import com.gengoai.tuple.Tuple3;
 import org.junit.Assert;
@@ -29,27 +32,18 @@ import org.junit.Test;
 
 import java.util.*;
 
+import static com.gengoai.reflection.Types.parameterizedType;
 import static com.gengoai.tuple.Tuples.$;
 import static org.junit.Assert.*;
 
 /**
  * @author David B. Bracewell
  */
-public class BaseMultiCounterTest {
+public abstract class BaseMultiCounterTest {
 
-   public MultiCounter<String, String> getEmptyCounter() {
-      return MultiCounters.newMultiCounter();
-   }
+   protected abstract MultiCounter<String, String> getEmptyCounter();
 
-   public MultiCounter<String, String> getEntryCounter() {
-      return MultiCounters.newMultiCounter($("A", "B"),
-                                           $("A", "C"),
-                                           $("A", "D"),
-                                           $("B", "E"),
-                                           $("B", "G"),
-                                           $("B", "H")
-                                          );
-   }
+   protected abstract MultiCounter<String, String> getEntryCounter();
 
 
    @Test
@@ -228,6 +222,28 @@ public class BaseMultiCounterTest {
       Assert.assertEquals($("A", "B"), items.get(0));
       Assert.assertEquals($("A", "C"), items.get(1));
       Assert.assertEquals($("A", "A"), items.get(2));
+   }
+
+   @Test
+   public void writeJson() throws Exception {
+      MultiCounter<String, String> mc = getEntryCounter();
+      Resource str = new StringResource();
+      Json.dump(mc, str);
+      MultiCounter<String, String> mcPrime = Json.parse(str.readToString())
+                                                 .getAs(
+                                                    parameterizedType(mc.getClass(), String.class, String.class));
+      assertEquals(mc, mcPrime);
+   }
+
+
+   @Test
+   public void writeCsv() throws Exception {
+      MultiCounter<String, String> mc = getEntryCounter();
+      Resource str = new StringResource();
+      mc.writeCsv(str);
+      MultiCounter<String, String> mcPrime = getEmptyCounter().merge(
+         MultiCounters.readCsv(str, String.class, String.class));
+      assertEquals(mc, mcPrime);
    }
 
 }//END OF BaseMultiCounterTest

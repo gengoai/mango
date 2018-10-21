@@ -237,14 +237,7 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
 
    @Override
    public String toString() {
-      StringBuilder builder = new StringBuilder();
-      firstKeys().stream().limit(10).forEach(item -> {
-         builder.append(item).append(":").append(get(item)).append("\n");
-      });
-      if (size() > 10) {
-         builder.append("....");
-      }
-      return builder.toString().trim();
+      return map.toString();
    }
 
    @Override
