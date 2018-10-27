@@ -252,8 +252,8 @@ public class TableFormatter implements Serializable {
    public static void main(String[] args) throws Exception {
       TableFormatter f = new TableFormatter();
       f.header(Arrays.asList("A", "B", "C"));
-      f.content(Arrays.asList("A", "B", "C"));
-      f.footer(Arrays.asList("A", "B", "C"));
+      f.content(Arrays.asList("ABBA", "B", "C"));
+      f.footer(Arrays.asList("A", "BABBA", "C"));
       f.print(System.out);
    }
 
