@@ -19,14 +19,14 @@
  * under the License.
  */
 
-package com.gengoai.collection.index;
+package com.gengoai.collection;
 
-import com.gengoai.collection.Index;
-import com.gengoai.collection.Indexes;
+import com.gengoai.json.JsonEntry;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.function.Supplier;
 
 import static org.junit.Assert.*;
 
@@ -35,10 +35,36 @@ import static org.junit.Assert.*;
  */
 public abstract class BaseIndexTest {
 
-   public Index<String> getIndex() {
-      return Indexes.indexOf("A", "B", "C", "D", "E");
+
+   private final Supplier<Index<String>> indexSupplier;
+
+   protected BaseIndexTest(Supplier<Index<String>> indexSupplier) {
+      this.indexSupplier = indexSupplier;
    }
 
+
+   public Index<String> getIndex() {
+      Index<String> index = indexSupplier.get();
+      index.addAll(Arrays.asList("A", "B", "C", "D", "E"));
+      return index;
+   }
+
+
+   public abstract Index<String> fromJson(JsonEntry entry);
+
+   @Test
+   public void testJson() throws Exception {
+      Index<String> index = getIndex();
+      JsonEntry entry = index.toJson();
+      Index<String> fromJson = fromJson(entry);
+      assertEquals(index, fromJson);
+   }
+
+   @Test
+   public void testCopy() throws Exception {
+      Index<String> index = getIndex();
+      assertEquals(index, index.copy());
+   }
 
    @Test
    public void testSize() throws Exception {

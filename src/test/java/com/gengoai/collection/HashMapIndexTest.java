@@ -19,10 +19,22 @@
  * under the License.
  */
 
-package com.gengoai.collection.index;
+package com.gengoai.collection;
+
+import com.gengoai.json.JsonEntry;
 
 /**
  * @author David B. Bracewell
  */
 public class HashMapIndexTest extends BaseIndexTest {
+
+   public HashMapIndexTest() {
+      super(HashMapIndex::new);
+   }
+
+   @Override
+   public Index<String> fromJson(JsonEntry entry) {
+      return HashMapIndex.fromJson(entry, String.class);
+   }
+
 }//END OF HashMapIndexTest

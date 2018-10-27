@@ -47,7 +47,7 @@ public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
     * @param types the types
     * @return the index
     */
-   static <T> Index<T> fromJson(JsonEntry entry, Type... types) {
+   public static <T> Index<T> fromJson(JsonEntry entry, Type... types) {
       return Indexes.fromJson(new HashMapIndex<>(), entry, types);
    }
 
