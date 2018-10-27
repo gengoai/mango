@@ -25,7 +25,7 @@ import com.gengoai.collection.Streams;
 import com.gengoai.function.SerializableFunction;
 import com.gengoai.function.Unchecked;
 import com.gengoai.string.CharMatcher;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
@@ -86,9 +86,9 @@ public class CSVReader implements Closeable, AutoCloseable, Iterable<List<String
    private void addCell(boolean isQuoted) {
       String cellString = cell.toString();
       if (STATE == IN_FIELD) {
-         cellString = StringUtils.rightTrim(cellString);
+         cellString = Strings.rightTrim(cellString);
       }
-      if (keepEmptyCells || !StringUtils.isNullOrBlank(cellString)) {
+      if (keepEmptyCells || !Strings.isNullOrBlank(cellString)) {
          if (cellString.length() > 0 && cellString.charAt(cellString.length() - 1) == escape) {
             cellString += " ";
          }
@@ -181,7 +181,7 @@ public class CSVReader implements Closeable, AutoCloseable, Iterable<List<String
          } else {
             return OUT_QUOTE;
          }
-      } else if (c == quote && StringUtils.isNullOrBlank(cell.toString())) {
+      } else if (c == quote && Strings.isNullOrBlank(cell.toString())) {
          return IN_QUOTE;
       } else if (c == delimiter && !isQuoted) {
          addCell(isQuoted);

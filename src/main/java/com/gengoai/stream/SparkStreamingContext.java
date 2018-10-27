@@ -26,7 +26,7 @@ import com.gengoai.config.Config;
 import com.gengoai.conversion.Cast;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.stream.accumulator.*;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
@@ -114,7 +114,7 @@ public final class SparkStreamingContext extends StreamingContext {
          synchronized (SparkStreamingContext.class) {
             if (context == null || context.sc().isStopped()) {
                SparkConf conf = new SparkConf()
-                                   .setAppName(Config.get(SPARK_APPNAME).asString(StringUtils.randomHexString(20)));
+                                   .setAppName(Config.get(SPARK_APPNAME).asString(Strings.randomHexString(20)));
                if (Config.hasProperty(SPARK_MASTER)) {
                   conf = conf.setMaster(Config.get(SPARK_MASTER).asString("local[*]"));
                }
@@ -280,7 +280,7 @@ public final class SparkStreamingContext extends StreamingContext {
 
    @Override
    public SparkStream<String> textFile(String location) {
-      if (StringUtils.isNullOrBlank(location)) {
+      if (Strings.isNullOrBlank(location)) {
          return empty();
       }
       return new SparkStream<>(getSparkContext().textFile(location));

@@ -21,13 +21,14 @@
 
 package com.gengoai.graph.scoring;
 
-import com.gengoai.Validation;
-import com.gengoai.collection.Sorting;
+import com.gengoai.collection.Maps;
 import com.gengoai.graph.Graph;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+
+import static com.gengoai.Validation.notNull;
 
 /**
  * Abstract base vertex scorer that provides the rank method
@@ -40,7 +41,7 @@ public abstract class AbstractVertexScorer<V> implements VertexScorer<V>, Serial
 
    @Override
    public List<Map.Entry<V, Double>> rank(Graph<V> g) {
-      return Sorting.sortMapEntriesByValue(score(Validation.notNull(g)).asMap(), false);
+      return Maps.sortEntriesByValue(score(notNull(g)).asMap(), false);
    }
 
 

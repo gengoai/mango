@@ -37,83 +37,83 @@ public class SetsTest {
 
    @Test
    public void transform() throws Exception {
-      assertEquals(Sets.set("A", "B", "C"),
-                   Sets.transform(Sets.set("a", "b", "c"), String::toUpperCase)
+      assertEquals(Sets.hashSetOf("A", "B", "C"),
+                   Sets.transform(Sets.hashSetOf("a", "b", "c"), String::toUpperCase)
                   );
       assertTrue(Sets.transform(Collections.<String>emptySet(), String::toUpperCase).isEmpty());
    }
 
    @Test
    public void filter() throws Exception {
-      assertEquals(Sets.set(2, 4, 6),
-                   Sets.filter(Sets.set(1, 2, 3, 4, 5, 6), i -> i % 2 == 0)
+      assertEquals(Sets.hashSetOf(2, 4, 6),
+                   Sets.filter(Sets.hashSetOf(1, 2, 3, 4, 5, 6), i -> i % 2 == 0)
                   );
       assertTrue(Sets.filter(Collections.<String>emptySet(), Objects::nonNull).isEmpty());
    }
 
    @Test
    public void difference() throws Exception {
-      assertEquals(Sets.set("A", "B", "C"),
-                   Sets.difference(Sets.set("A", "B", "C"), Sets.set("G", "F", "D"))
+      assertEquals(Sets.hashSetOf("A", "B", "C"),
+                   Sets.difference(Sets.hashSetOf("A", "B", "C"), Sets.hashSetOf("G", "F", "D"))
                   );
-      assertEquals(Sets.set("A", "B", "C"),
-                   Sets.difference(Sets.set("A", "B", "C"), Collections.emptyList())
+      assertEquals(Sets.hashSetOf("A", "B", "C"),
+                   Sets.difference(Sets.hashSetOf("A", "B", "C"), Collections.emptyList())
                   );
-      assertTrue(Sets.difference(Collections.emptySet(), Sets.set("A", "B", "C")).isEmpty());
+      assertTrue(Sets.difference(Collections.emptySet(), Sets.hashSetOf("A", "B", "C")).isEmpty());
    }
 
    @Test
    public void union() throws Exception {
-      assertEquals(Sets.set("A", "B", "C", "D", "F", "G"),
-                   Sets.union(Sets.set("A", "B", "C"), Sets.set("G", "F", "D"))
+      assertEquals(Sets.hashSetOf("A", "B", "C", "D", "F", "G"),
+                   Sets.union(Sets.hashSetOf("A", "B", "C"), Sets.hashSetOf("G", "F", "D"))
                   );
-      assertEquals(Sets.set("A", "B", "C"),
-                   Sets.union(Sets.set("A", "B", "C"), Collections.emptyList())
+      assertEquals(Sets.hashSetOf("A", "B", "C"),
+                   Sets.union(Sets.hashSetOf("A", "B", "C"), Collections.emptyList())
                   );
       assertTrue(Sets.union(Collections.emptySet(), Collections.emptySet()).isEmpty());
    }
 
    @Test
    public void intersection() throws Exception {
-      assertEquals(Sets.set("A", "B", "C"),
-                   Sets.intersection(Sets.set("A", "B", "C"), Sets.set("A", "B", "C", "G", "F", "D"))
+      assertEquals(Sets.hashSetOf("A", "B", "C"),
+                   Sets.intersection(Sets.hashSetOf("A", "B", "C"), Sets.hashSetOf("A", "B", "C", "G", "F", "D"))
                   );
-      assertTrue(Sets.intersection(Sets.set("A", "B", "C"), Collections.emptyList()).isEmpty());
+      assertTrue(Sets.intersection(Sets.hashSetOf("A", "B", "C"), Collections.emptyList()).isEmpty());
       assertTrue(Sets.intersection(Collections.emptySet(), Collections.emptySet()).isEmpty());
    }
 
    @Test
    public void treeSet() throws Exception {
-      assertEquals("[A, B, C]", Sets.treeSet("A", "B", "C").toString());
-      assertTrue(Sets.treeSet().isEmpty());
+      assertEquals("[A, B, C]", Sets.sortedSetOf("A", "B", "C").toString());
+      assertTrue(Sets.sortedSetOf().isEmpty());
    }
 
    @Test
    public void linkedHashSet() throws Exception {
-      assertEquals("[A, B, C]", Sets.linkedHashSet("A", "B", "C").toString());
-      assertTrue(Sets.linkedHashSet().isEmpty());
+      assertEquals("[A, B, C]", Sets.linkedHashSetOf("A", "B", "C").toString());
+      assertTrue(Sets.linkedHashSetOf().isEmpty());
    }
 
    @Test
    public void concurrentSet() throws Exception {
-      assertEquals(Sets.set("A", "B", "C"), Sets.concurrentSet("A", "B", "C"));
-      assertTrue(Sets.concurrentSet().isEmpty());
+      assertEquals(Sets.hashSetOf("A", "B", "C"), Sets.concurrentSetOf("A", "B", "C"));
+      assertTrue(Sets.concurrentSetOf().isEmpty());
    }
 
    @Test
    public void asSet() throws Exception {
-      assertEquals(Sets.set("A", "B", "C"), Sets.asSet(Arrays.asList("A", "B", "C")));
-      assertEquals(Sets.set("A", "B", "C"), Sets.asSet(Stream.of("A", "B", "C")));
-      assertEquals(Sets.set("A", "B", "C"), Sets.asSet(Arrays.asList("A", "B", "C").iterator()));
-      assertTrue(Sets.asSet(Collections.emptyList()).isEmpty());
-      assertTrue(Sets.asSet(Collections.emptyIterator()).isEmpty());
+      assertEquals(Sets.hashSetOf("A", "B", "C"), Sets.asHashSet(Arrays.asList("A", "B", "C")));
+      assertEquals(Sets.hashSetOf("A", "B", "C"), Sets.asHashSet(Stream.of("A", "B", "C")));
+      assertEquals(Sets.hashSetOf("A", "B", "C"), Sets.asHashSet(Arrays.asList("A", "B", "C").iterator()));
+      assertTrue(Sets.asHashSet(Collections.emptyList()).isEmpty());
+      assertTrue(Sets.asHashSet(Collections.emptyIterator()).isEmpty());
    }
 
    @Test
    public void asConcurrentSet() throws Exception {
-      assertEquals(Sets.set("A", "B", "C"), Sets.asConcurrentHashSet(Arrays.asList("A", "B", "C")));
-      assertEquals(Sets.set("A", "B", "C"), Sets.asConcurrentHashSet(Stream.of("A", "B", "C")));
-      assertEquals(Sets.set("A", "B", "C"), Sets.asConcurrentHashSet(Arrays.asList("A", "B", "C").iterator()));
+      assertEquals(Sets.hashSetOf("A", "B", "C"), Sets.asConcurrentHashSet(Arrays.asList("A", "B", "C")));
+      assertEquals(Sets.hashSetOf("A", "B", "C"), Sets.asConcurrentHashSet(Stream.of("A", "B", "C")));
+      assertEquals(Sets.hashSetOf("A", "B", "C"), Sets.asConcurrentHashSet(Arrays.asList("A", "B", "C").iterator()));
       assertTrue(Sets.asConcurrentHashSet(Collections.emptyList()).isEmpty());
       assertTrue(Sets.asConcurrentHashSet(Collections.emptyIterator()).isEmpty());
    }

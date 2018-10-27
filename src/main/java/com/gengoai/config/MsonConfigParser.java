@@ -9,7 +9,7 @@ import com.gengoai.logging.Logger;
 import com.gengoai.parsing.*;
 import com.gengoai.parsing.expressions.*;
 import com.gengoai.parsing.handlers.*;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.util.Iterator;
 import java.util.List;
@@ -220,7 +220,7 @@ public class MsonConfigParser extends Parser {
    }
 
    private String effectiveKey(String scope, String key) {
-      String effectiveKey = StringUtils.isNullOrBlank(scope)
+      String effectiveKey = Strings.isNullOrBlank(scope)
                             ? key
                             : scope + "." + key;
       if (effectiveKey.endsWith("._") && effectiveKey.length() > 2) {

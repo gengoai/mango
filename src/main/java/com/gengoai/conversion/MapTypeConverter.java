@@ -3,7 +3,7 @@ package com.gengoai.conversion;
 import com.gengoai.collection.Iterators;
 import com.gengoai.json.Json;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -58,7 +58,7 @@ public abstract class MapTypeConverter implements TypeConverter {
          String str = source.toString();
 
          //Empty String
-         if (StringUtils.isNullOrBlank(str)) {
+         if (Strings.isNullOrBlank(str)) {
             return createMap();
          }
 
@@ -73,11 +73,11 @@ public abstract class MapTypeConverter implements TypeConverter {
 
          //Alt. form Key=Value, Key=Value
          Map<?, ?> map = createMap();
-         for (String entry : StringUtils.split(source.toString()
-                                                     .replaceFirst("^\\[", "")
-                                                     .replaceFirst("]$", ""),
-                                               ',')) {
-            List<String> keyValue = StringUtils.split(entry.trim(), '=');
+         for (String entry : Strings.split(source.toString()
+                                                 .replaceFirst("^\\[", "")
+                                                 .replaceFirst("]$", ""),
+                                           ',')) {
+            List<String> keyValue = Strings.split(entry.trim(), '=');
             if (keyValue.size() != 2) {
                throw new TypeConversionException(source, Map.class);
             }

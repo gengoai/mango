@@ -68,10 +68,10 @@ public abstract class BaseMultiCounterTest {
    @Test
    public void items() throws Exception {
       MultiCounter<String, String> mc = getEntryCounter();
-      Assert.assertEquals(Sets.set("A", "B"), mc.firstKeys());
+      Assert.assertEquals(Sets.hashSetOf("A", "B"), mc.firstKeys());
       assertEquals(6, mc.sum(), 0);
       mc.firstKeys().remove("A");
-      assertEquals(Sets.set("B"), mc.firstKeys());
+      assertEquals(Sets.hashSetOf("B"), mc.firstKeys());
       assertEquals(3, mc.sum(), 0);
    }
 
@@ -146,10 +146,10 @@ public abstract class BaseMultiCounterTest {
       assertEquals(1, mc.remove("A", "B"), 0);
       assertEquals(1, mc.remove("A", "C"), 0);
       mc.remove("A", "D");
-      assertEquals(Sets.set("B"), mc.firstKeys());
+      assertEquals(Sets.hashSetOf("B"), mc.firstKeys());
       mc.increment("A", "B");
       mc.remove("A");
-      assertEquals(Sets.set("B"), mc.firstKeys());
+      assertEquals(Sets.hashSetOf("B"), mc.firstKeys());
       mc.removeAll(Collections.singleton("B"));
       assertTrue(mc.isEmpty());
    }
@@ -180,10 +180,10 @@ public abstract class BaseMultiCounterTest {
    public void filter() throws Exception {
       MultiCounter<String, String> mc = getEntryCounter();
       MultiCounter<String, String> mc2 = mc.filterByFirstKey(k -> k.equalsIgnoreCase("a"));
-      assertEquals(Sets.set("A"), mc2.firstKeys());
+      assertEquals(Sets.hashSetOf("A"), mc2.firstKeys());
       assertEquals(3, mc2.sum(), 0);
       mc2 = mc.filterBySecondKey(k -> k.equalsIgnoreCase("H"));
-      assertEquals(Sets.set("B"), mc2.firstKeys());
+      assertEquals(Sets.hashSetOf("B"), mc2.firstKeys());
       assertEquals(1, mc2.sum(), 0);
       mc2 = mc.filterByValue(d -> d > 1);
       assertTrue(mc2.isEmpty());
@@ -192,14 +192,14 @@ public abstract class BaseMultiCounterTest {
    @Test
    public void keyPairs() throws Exception {
       MultiCounter<String, String> mc = getEntryCounter();
-      assertEquals(Sets.set(
+      assertEquals(Sets.hashSetOf(
          $("A", "B"),
          $("A", "C"),
          $("A", "D"),
          $("B", "E"),
          $("B", "G"),
          $("B", "H")
-                           ), mc.keyPairs());
+                                 ), mc.keyPairs());
 
       mc.keyPairs().remove($("A", "D"));
       assertFalse(mc.contains("A", "D"));

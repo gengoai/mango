@@ -21,7 +21,7 @@
 
 package com.gengoai.logging;
 
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.text.MessageFormat;
 import java.util.logging.Level;
@@ -122,7 +122,7 @@ public final class Logger {
     * @param t The throwable to log
     */
    public void fine(Throwable t) {
-      log(Level.FINE, StringUtils.EMPTY, t);
+      log(Level.FINE, Strings.EMPTY, t);
    }
 
    /**
@@ -141,7 +141,7 @@ public final class Logger {
     * @param t The throwable to log
     */
    public void finer(Throwable t) {
-      log(Level.FINER, StringUtils.EMPTY, t);
+      log(Level.FINER, Strings.EMPTY, t);
    }
 
    /**
@@ -160,7 +160,7 @@ public final class Logger {
     * @param t The throwable to log
     */
    public void finest(Throwable t) {
-      log(Level.FINEST, StringUtils.EMPTY, t);
+      log(Level.FINEST, Strings.EMPTY, t);
    }
 
    /**
@@ -179,7 +179,7 @@ public final class Logger {
     * @param t The throwable to log.
     */
    public void info(Throwable t) {
-      log(Level.INFO, StringUtils.EMPTY, t);
+      log(Level.INFO, Strings.EMPTY, t);
    }
 
    /**
@@ -240,7 +240,7 @@ public final class Logger {
     * @param t The throwable to log
     */
    public void severe(Throwable t) {
-      log(Level.SEVERE, StringUtils.EMPTY, t);
+      log(Level.SEVERE, Strings.EMPTY, t);
    }
 
    /**
@@ -259,7 +259,7 @@ public final class Logger {
     * @param t The throwable to log
     */
    public void warn(Throwable t) {
-      log(Level.WARNING, StringUtils.EMPTY, t);
+      log(Level.WARNING, Strings.EMPTY, t);
    }
 
 }// END OF CLASS Logger

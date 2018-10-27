@@ -1,7 +1,7 @@
 package com.gengoai.stream;
 
 import com.gengoai.config.Config;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 import org.junit.Test;
 
 import java.util.List;
@@ -124,7 +124,7 @@ public abstract class BaseDoubleStreamTest {
 
    @Test
    public void mapToObj() throws Exception {
-      List<String> strings = sc.doubleStream(1, 2, 1).mapToObj(d -> StringUtils.randomHexString((int) d)).collect();
+      List<String> strings = sc.doubleStream(1, 2, 1).mapToObj(d -> Strings.randomHexString((int) d)).collect();
       assertEquals(1, strings.get(0).length());
       assertEquals(2, strings.get(1).length());
       assertEquals(1, strings.get(2).length());

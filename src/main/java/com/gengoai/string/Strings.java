@@ -30,7 +30,6 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -38,7 +37,7 @@ import java.util.stream.Collectors;
  *
  * @author David B. Bracewell
  */
-public final class StringUtils {
+public final class Strings {
 
    /**
     * Empty String
@@ -49,31 +48,12 @@ public final class StringUtils {
     * The constant BLANK.
     */
    public static final String BLANK = " ";
-   /**
-    * The constant SINGLE_UNICODE_WHITESPACE.
-    */
-   public static String SINGLE_UNICODE_WHITESPACE = "[\\p{Z}\t\r\n\f]";
-   /**
-    * The constant ZERO_OR_MORE_WHITESPACE.
-    */
-   public static String ZERO_OR_MORE_WHITESPACE = "[\\p{Z}\t\r\n\f]*";
-   /**
-    * The constant MULTIPLE_WHITESPACE.
-    */
-   public static String MULTIPLE_WHITESPACE = "[\\p{Z}\t\r\n\f]+";
 
-   private StringUtils() {
+   private Strings() {
       throw new IllegalAccessError();
    }
 
 
-   public static Pattern re(String pattern, int flags){
-      return Pattern.compile(pattern,flags);
-   }
-
-   public static Pattern re(String pattern) {
-      return Pattern.compile(pattern);
-   }
 
    /**
     * Null to empty string.

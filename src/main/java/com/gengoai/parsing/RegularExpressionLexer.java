@@ -25,7 +25,7 @@ import com.gengoai.Regex;
 import com.gengoai.Validation;
 import com.gengoai.conversion.Cast;
 import com.gengoai.io.resource.Resource;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 import com.gengoai.tuple.Tuple2;
 
 import java.io.IOException;
@@ -124,7 +124,7 @@ public class RegularExpressionLexer implements Lexer, Serializable {
 
          if (startOffset > 0) {
             String s = input.substring(lastEnd, startOffset);
-            if (!StringUtils.isNullOrBlank(s)) {
+            if (!Strings.isNullOrBlank(s)) {
                throw new IllegalStateException("Error in parsing {" + input + "} unparsed region: " + s);
             }
          }

@@ -130,7 +130,7 @@ public enum StringFunctions implements SerializableFunction<String, String> {
    NULL_TO_EMPTY {
       @Override
       public String apply(String input) {
-         return input == null ? StringUtils.EMPTY : input;
+         return input == null ? Strings.EMPTY : input;
       }
    };
 

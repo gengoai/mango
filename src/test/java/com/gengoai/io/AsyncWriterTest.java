@@ -22,7 +22,7 @@
 package com.gengoai.io;
 
 import com.gengoai.io.resource.Resource;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -39,7 +39,7 @@ import static org.junit.Assert.*;
 public class AsyncWriterTest {
 
   private static List<String> randomList() {
-    return IntStream.range(0, 100).mapToObj(i -> StringUtils.randomString(10, 'a', 'z')).collect(Collectors.toList());
+    return IntStream.range(0, 100).mapToObj(i -> Strings.randomString(10, 'a', 'z')).collect(Collectors.toList());
   }
 
   @Test

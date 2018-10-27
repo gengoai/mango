@@ -22,7 +22,7 @@
 package com.gengoai.concurrent;
 
 import com.gengoai.string.CharMatcher;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -52,7 +52,7 @@ public class BrokerTest {
       public void produce() {
          start();
          for (int i = 0; i < 100; i++) {
-            String s = StringUtils.randomString(3, CharMatcher.LetterOrDigit);
+            String s = Strings.randomString(3, CharMatcher.LetterOrDigit);
             yield(s);
          }
          stop();
@@ -65,7 +65,7 @@ public class BrokerTest {
 
       @Override
       public void accept(String input) {
-         if (StringUtils.isNotNullOrBlank(input)) {
+         if (Strings.isNotNullOrBlank(input)) {
             ai.incrementAndGet();
          }
       }

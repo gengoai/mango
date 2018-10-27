@@ -111,7 +111,7 @@ public class CSVFormatter implements Serializable {
 
    public String format(Stream<?> stream) {
       if (stream == null) {
-         return StringUtils.EMPTY;
+         return Strings.EMPTY;
       }
       return format(stream.iterator());
    }
@@ -127,7 +127,7 @@ public class CSVFormatter implements Serializable {
 
       for (; itr.hasNext(); ) {
          Object n = itr.next();
-         String s = n == null ? StringUtils.EMPTY : n.toString();
+         String s = n == null ? Strings.EMPTY : n.toString();
          if (escape.equals("\\")) {
             s = s.replaceAll(Pattern.quote(escape), doubleEscape + doubleEscape);
          } else {
@@ -169,7 +169,7 @@ public class CSVFormatter implements Serializable {
     */
    public String format(Map<?, ?> map, char keyValueSeparator) {
       if (map == null) {
-         return StringUtils.EMPTY;
+         return Strings.EMPTY;
       }
       Validation.checkArgument(keyValueSeparator != ' ');
 
@@ -219,7 +219,7 @@ public class CSVFormatter implements Serializable {
     */
    public String format(Iterable<?> iterable) {
       if (iterable == null) {
-         return StringUtils.EMPTY;
+         return Strings.EMPTY;
       }
       return format(iterable.iterator());
    }
@@ -233,7 +233,7 @@ public class CSVFormatter implements Serializable {
     */
    public String format(Object... array) {
       if (array == null) {
-         return StringUtils.EMPTY;
+         return Strings.EMPTY;
       }
       if (array.length == 1 && array[0].getClass().isArray()) {
          return format(Converter.convertSilently(array[0], Iterable.class));

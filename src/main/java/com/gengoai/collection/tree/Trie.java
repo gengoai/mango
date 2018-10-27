@@ -4,7 +4,7 @@ import com.gengoai.collection.Iterators;
 import com.gengoai.collection.Maps;
 import com.gengoai.conversion.Cast;
 import com.gengoai.string.CharMatcher;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.io.Serializable;
 import java.util.*;
@@ -60,7 +60,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
          return false;
       }
       TrieNode<V> match = root.find(key.toString());
-      return match != null && StringUtils.safeEquals(match.matches, Cast.as(key), true);
+      return match != null && Strings.safeEquals(match.matches, Cast.as(key), true);
    }
 
    @Override
@@ -103,7 +103,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
     * @return the list of matched elements
     */
    public List<TrieMatch<V>> find(String text, CharMatcher delimiter) {
-      if (StringUtils.isNullOrBlank(text)) {
+      if (Strings.isNullOrBlank(text)) {
          return Collections.emptyList();
       }
       if (delimiter == null) {
@@ -337,7 +337,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
     * @return the map
     */
    public Map<String, Integer> suggest(String string, int maxCost, int substitutionCost) {
-      if (StringUtils.isNullOrBlank(string)) {
+      if (Strings.isNullOrBlank(string)) {
          return Collections.emptyMap();
       } else if (containsKey(string)) {
          return Maps.hashMapOf($(string, 0));

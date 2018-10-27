@@ -1,6 +1,6 @@
 package com.gengoai.io.resource;
 
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,7 +24,7 @@ public class ZipResource extends BaseResource implements ReadOnlyResource {
       } catch (IOException e) {
          e.printStackTrace();
       }
-      if (StringUtils.isNotNullOrBlank(entry)) {
+      if (Strings.isNotNullOrBlank(entry)) {
          this.entry = this.zipFile.getEntry(entry);
       }
    }

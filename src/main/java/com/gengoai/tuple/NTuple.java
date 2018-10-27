@@ -1,7 +1,7 @@
 package com.gengoai.tuple;
 
 import com.gengoai.conversion.Cast;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -79,7 +79,7 @@ public class NTuple extends Tuple {
 
    @Override
    public String toString() {
-      return StringUtils.join(array(), ", ", "(", ")");
+      return Strings.join(array(), ", ", "(", ")");
    }
 
 }// END OF NTuple

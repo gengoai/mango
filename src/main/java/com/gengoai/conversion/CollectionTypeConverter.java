@@ -4,7 +4,7 @@ import com.gengoai.collection.Collect;
 import com.gengoai.collection.Iterators;
 import com.gengoai.json.Json;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -85,7 +85,7 @@ public abstract class CollectionTypeConverter implements TypeConverter {
                strList.add(s);
             }
          } else {
-            strList.addAll(StringUtils.split(str, ','));
+            strList.addAll(Strings.split(str, ','));
          }
 
 

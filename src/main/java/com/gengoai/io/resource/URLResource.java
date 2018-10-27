@@ -25,7 +25,7 @@ import com.gengoai.io.FileUtils;
 import com.gengoai.io.QuietIO;
 import com.gengoai.stream.MStream;
 import com.gengoai.stream.StreamingContext;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.io.File;
 import java.io.IOException;
@@ -176,7 +176,7 @@ public class URLResource extends BaseResource {
 
    private URLConnection createConnection() throws IOException {
       URLConnection connection = url.openConnection();
-      if (!StringUtils.isNullOrBlank(userAgent)) {
+      if (!Strings.isNullOrBlank(userAgent)) {
          connection.setRequestProperty("User-Agent", userAgent);
       }
       connection.setConnectTimeout(connectionTimeOut);

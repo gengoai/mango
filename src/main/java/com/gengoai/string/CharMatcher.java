@@ -48,7 +48,7 @@ public interface CharMatcher extends SerializablePredicate<Character> {
    /**
     * The constant isPunctuation.
     */
-   CharMatcher Punctuation = StringUtils::isPunctuation;
+   CharMatcher Punctuation = Strings::isPunctuation;
    /**
     * The constant isUpperCase.
     */
@@ -196,7 +196,7 @@ public interface CharMatcher extends SerializablePredicate<Character> {
             return sequence.subSequence(first, sequence.length()).toString();
          }
       }
-      return StringUtils.EMPTY;
+      return Strings.EMPTY;
    }
 
    /**
@@ -211,7 +211,7 @@ public interface CharMatcher extends SerializablePredicate<Character> {
             return sequence.subSequence(0, last + 1).toString();
          }
       }
-      return StringUtils.EMPTY;
+      return Strings.EMPTY;
    }
 
 

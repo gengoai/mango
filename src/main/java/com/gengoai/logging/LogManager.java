@@ -24,7 +24,7 @@ package com.gengoai.logging;
 import com.gengoai.SystemInfo;
 import com.gengoai.config.Config;
 import com.gengoai.io.Resources;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -75,7 +75,7 @@ public final class LogManager {
     * @param formatter the formatter to use
     */
    public synchronized static void setFormatter(Formatter formatter) {
-      java.util.logging.Logger root = java.util.logging.LogManager.getLogManager().getLogger(StringUtils.EMPTY);
+      java.util.logging.Logger root = java.util.logging.LogManager.getLogManager().getLogger(Strings.EMPTY);
       for (Handler h : root.getHandlers()) {
          h.setFormatter(formatter);
       }
@@ -85,7 +85,7 @@ public final class LogManager {
     * Clears all handlers from the logger
     */
    public synchronized static void clearHandlers() {
-      java.util.logging.Logger root = java.util.logging.LogManager.getLogManager().getLogger(StringUtils.EMPTY);
+      java.util.logging.Logger root = java.util.logging.LogManager.getLogManager().getLogger(Strings.EMPTY);
       Handler[] handlers = root.getHandlers();
       for (Handler h : handlers) {
          root.removeHandler(h);
@@ -111,7 +111,7 @@ public final class LogManager {
     * @param handler the handler to add
     */
    public synchronized static void addHandler(Handler handler) {
-      java.util.logging.Logger root = java.util.logging.LogManager.getLogManager().getLogger(StringUtils.EMPTY);
+      java.util.logging.Logger root = java.util.logging.LogManager.getLogManager().getLogger(Strings.EMPTY);
       root.addHandler(handler);
    }
 

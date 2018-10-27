@@ -23,7 +23,7 @@ package com.gengoai.io;
 
 
 import com.gengoai.SystemInfo;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.io.IOException;
 import java.io.PushbackInputStream;
@@ -48,7 +48,7 @@ public class FileUtils {
     * @return the pattern
     */
    public static Pattern createFilePattern(String filePattern) {
-      filePattern = StringUtils.isNullOrBlank(filePattern) ? "\\*" : filePattern;
+      filePattern = Strings.isNullOrBlank(filePattern) ? "\\*" : filePattern;
       filePattern = filePattern.replaceAll("\\.", "\\.");
       filePattern = filePattern.replaceAll("\\*", ".*");
       return Pattern.compile("^" + filePattern + "$");
@@ -112,7 +112,7 @@ public class FileUtils {
     */
    public static String toUnix(String spec) {
       if (spec == null) {
-         return StringUtils.EMPTY;
+         return Strings.EMPTY;
       }
       return spec.replaceAll("\\\\+", "/");
    }
@@ -125,7 +125,7 @@ public class FileUtils {
     */
    public static String toWindows(String spec) {
       if (spec == null) {
-         return StringUtils.EMPTY;
+         return Strings.EMPTY;
       }
       return spec.replaceAll("/+", "\\\\");
    }
@@ -139,7 +139,7 @@ public class FileUtils {
     * string.
     */
    public static String baseName(String file) {
-      return baseName(file, StringUtils.EMPTY);
+      return baseName(file, Strings.EMPTY);
    }
 
    /**
@@ -152,10 +152,10 @@ public class FileUtils {
     * string.
     */
    public static String baseName(String file, String suffix) {
-      if (StringUtils.isNullOrBlank(file)) {
-         return StringUtils.EMPTY;
+      if (Strings.isNullOrBlank(file)) {
+         return Strings.EMPTY;
       }
-      file = StringUtils.trim(file);
+      file = Strings.trim(file);
       int index = indexOfLastSeparator(file);
       if (index == -1) {
          return file.replaceAll(Pattern.quote(suffix) + "$", "");
@@ -172,13 +172,13 @@ public class FileUtils {
     * @return The file extension of the file spec or null if it is null
     */
    public static String extension(String file) {
-      if (StringUtils.isNullOrBlank(file)) {
-         return StringUtils.EMPTY;
+      if (Strings.isNullOrBlank(file)) {
+         return Strings.EMPTY;
       }
-      file = StringUtils.trim(file);
+      file = Strings.trim(file);
       int index = indexOfFileExtension(file);
       if (index == -1) {
-         return StringUtils.EMPTY;
+         return Strings.EMPTY;
       }
       return file.substring(index + 1);
    }
@@ -192,8 +192,8 @@ public class FileUtils {
     * @return A directory name with a trailing slash
     */
    public static String addTrailingSlashIfNeeded(String directory) {
-      if (StringUtils.isNullOrBlank(directory)) {
-         return StringUtils.EMPTY;
+      if (Strings.isNullOrBlank(directory)) {
+         return Strings.EMPTY;
       }
       int separator = indexOfLastSeparator(directory);
       String slash = SystemInfo.isUnix() ? Character.toString(UNIX_SEPARATOR) : Character.toString(WINDOWS_SEPARATOR);
@@ -211,17 +211,17 @@ public class FileUtils {
     * @return The path of the file spec or null if it is null
     */
    public static String directory(String file) {
-      if (StringUtils.isNullOrBlank(file)) {
-         return StringUtils.EMPTY;
+      if (Strings.isNullOrBlank(file)) {
+         return Strings.EMPTY;
       }
-      file = StringUtils.trim(file);
+      file = Strings.trim(file);
       int separator = indexOfLastSeparator(file);
       int extension = indexOfFileExtension(file);
 
       if (extension == -1) {
          return addTrailingSlashIfNeeded(file);
       } else if (separator == -1) {
-         return StringUtils.EMPTY;
+         return Strings.EMPTY;
       }
 
       return directory(file.substring(0, separator + 1));
@@ -235,10 +235,10 @@ public class FileUtils {
     * @return The parent or null if the file is null or empty
     */
    public static String parent(String file) {
-      if (StringUtils.isNullOrBlank(file)) {
-         return StringUtils.EMPTY;
+      if (Strings.isNullOrBlank(file)) {
+         return Strings.EMPTY;
       }
-      file = StringUtils.trim(file);
+      file = Strings.trim(file);
       String path = path(file);
       int index = indexOfLastSeparator(path);
       if (index <= 0) {
@@ -254,10 +254,10 @@ public class FileUtils {
     * @return The path or null if the file is null or empty
     */
    public static String path(String file) {
-      if (StringUtils.isNullOrBlank(file)) {
-         return StringUtils.EMPTY;
+      if (Strings.isNullOrBlank(file)) {
+         return Strings.EMPTY;
       }
-      file = StringUtils.trim(file);
+      file = Strings.trim(file);
       int pos = indexOfLastSeparator(file);
       return pos == file.length() - 1 ? file.substring(0, file.length() - 1) : file;
    }

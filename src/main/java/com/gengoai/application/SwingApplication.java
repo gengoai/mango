@@ -1,7 +1,7 @@
 package com.gengoai.application;
 
 import com.gengoai.logging.Loggable;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
@@ -65,7 +65,7 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
     *                        configuration.
     */
    protected SwingApplication(String applicationName, String packageName) {
-      this.applicationName = StringUtils.isNullOrBlank(applicationName) ? getClass().getSimpleName() : applicationName;
+      this.applicationName = Strings.isNullOrBlank(applicationName) ? getClass().getSimpleName() : applicationName;
       this.packageName = packageName;
       nativeLookAndFeel();
    }

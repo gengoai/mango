@@ -25,7 +25,7 @@ import com.gengoai.io.QuietIO;
 import com.gengoai.io.resource.spi.FileResourceProvider;
 import com.gengoai.stream.LocalStream;
 import com.gengoai.stream.MStream;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -144,7 +144,7 @@ public class FileResource extends BaseResource {
    @Override
    public Resource getChild(String relativePath) {
       if (relativePath == null) {
-         relativePath = StringUtils.EMPTY;
+         relativePath = Strings.EMPTY;
       }
       return new FileResource(new File(file, relativePath.trim()));
    }

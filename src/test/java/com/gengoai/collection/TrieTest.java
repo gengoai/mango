@@ -107,13 +107,13 @@ public class TrieTest {
       Map<String, String> prefix = trie.prefix("ran");
 
       assertEquals(2, prefix.size());
-      assertEquals(Sets.set("ran", "rand"), prefix.keySet());
+      assertEquals(Sets.hashSetOf("ran", "rand"), prefix.keySet());
    }
 
    @Test
    public void keySet() throws Exception {
-      assertEquals(Sets.set("ran", "rand", "was", "wasn't", "isn't"), trie.keySet());
-      assertEquals(Sets.set("was", "wasn't"), trie.prefix("was").keySet());
+      assertEquals(Sets.hashSetOf("ran", "rand", "was", "wasn't", "isn't"), trie.keySet());
+      assertEquals(Sets.hashSetOf("was", "wasn't"), trie.prefix("was").keySet());
       assertTrue(trie.prefix("zeb").keySet().isEmpty());
       assertTrue(new Trie<String>().keySet().isEmpty());
    }
@@ -151,7 +151,7 @@ public class TrieTest {
       Map<String, String> prefix = trie.prefix("ran");
 
       assertEquals(2, prefix.size());
-      assertEquals(Sets.set("ran", "rand"), prefix.keySet());
+      assertEquals(Sets.hashSetOf("ran", "rand"), prefix.keySet());
    }
 
    @Test

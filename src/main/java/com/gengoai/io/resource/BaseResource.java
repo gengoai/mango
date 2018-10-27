@@ -23,7 +23,7 @@ package com.gengoai.io.resource;
 
 import com.gengoai.Validation;
 import com.gengoai.io.FileUtils;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.io.*;
 import java.net.URI;
@@ -152,7 +152,7 @@ public abstract class BaseResource implements Resource, Serializable {
 
    @Override
    public String baseName() {
-      return StringUtils.EMPTY;
+      return Strings.EMPTY;
    }
 
    @Override
@@ -167,7 +167,7 @@ public abstract class BaseResource implements Resource, Serializable {
 
    @Override
    public String path() {
-      return StringUtils.EMPTY;
+      return Strings.EMPTY;
    }
 
 }//END OF BaseResource

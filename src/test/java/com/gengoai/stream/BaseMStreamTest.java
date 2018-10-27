@@ -4,7 +4,7 @@ import com.gengoai.collection.Lists;
 import com.gengoai.collection.Maps;
 import com.gengoai.config.Config;
 import com.gengoai.stream.accumulator.*;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 import com.gengoai.tuple.Tuple2;
 import org.junit.Assert;
 import org.junit.Test;
@@ -386,7 +386,7 @@ public abstract class BaseMStreamTest {
    @Test
    public void mapToPair() throws Exception {
       Map<String, Boolean> g = sc.stream("AB", "BC", "Aa")
-                                 .mapToPair(s -> Tuple2.of(s, StringUtils.isUpperCase(s)))
+                                 .mapToPair(s -> Tuple2.of(s, Strings.isUpperCase(s)))
                                  .collectAsMap();
       assertTrue(g.get("AB"));
       assertTrue(g.get("BC"));

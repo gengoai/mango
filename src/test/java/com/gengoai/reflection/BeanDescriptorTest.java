@@ -92,7 +92,7 @@ public class BeanDescriptorTest {
   @Test
   public void testGetReadMethodNames() throws Exception {
     Assert.assertEquals(
-       Sets.set("name", "stocks", "children"),
+       Sets.hashSetOf("name", "stocks", "children"),
        descriptor.getReadMethodNames()
                        );
   }
@@ -100,7 +100,7 @@ public class BeanDescriptorTest {
   @Test
   public void testGetWriteMethodNames() throws Exception {
     Assert.assertEquals(
-       Sets.set("stocks", "children"),
+       Sets.hashSetOf("stocks", "children"),
        descriptor.getWriteMethodNames()
                        );
   }

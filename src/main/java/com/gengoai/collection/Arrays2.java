@@ -39,6 +39,20 @@ public final class Arrays2 {
     * @param values the values
     * @return the byte array
     */
+   public static byte[] arrayOfByte(int... values) {
+      byte[] b = new byte[values.length];
+      for (int i = 0; i < b.length; i++) {
+         b[i] = (byte) values[i];
+      }
+      return b;
+   }
+
+   /**
+    * Creates an array of byte values
+    *
+    * @param values the values
+    * @return the byte array
+    */
    public static byte[] arrayOfByte(byte... values) {
       return values;
    }
@@ -89,7 +103,31 @@ public final class Arrays2 {
     * @param values the values
     * @return the short values
     */
+   public static short[] arrayOfShort(int... values) {
+      short[] b = new short[values.length];
+      for (int i = 0; i < b.length; i++) {
+         b[i] = (short) values[i];
+      }
+      return b;
+   }
+
+   /**
+    * Creates an array of short values
+    *
+    * @param values the values
+    * @return the short values
+    */
    public static short[] arrayOfShort(short... values) {
+      return values;
+   }
+
+   /**
+    * Creates an array of long values
+    *
+    * @param values the values
+    * @return the long values
+    */
+   public static long[] arrayOfLong(long... values){
       return values;
    }
 

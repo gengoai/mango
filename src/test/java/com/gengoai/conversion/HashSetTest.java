@@ -17,6 +17,6 @@ public class HashSetTest extends BaseCollectionConversionTest {
 
    @Override
    protected Collection<?> create(Object... items) {
-      return Sets.asSet(Arrays.asList(items));
+      return Sets.asHashSet(Arrays.asList(items));
    }
 }

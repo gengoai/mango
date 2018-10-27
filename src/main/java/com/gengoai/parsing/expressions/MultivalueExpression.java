@@ -22,7 +22,7 @@
 package com.gengoai.parsing.expressions;
 
 import com.gengoai.parsing.ParserTokenType;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,7 +47,7 @@ public class MultivalueExpression extends Expression {
 
    @Override
    public String toString() {
-      return StringUtils.join(expressions, " ");
+      return Strings.join(expressions, " ");
    }
 
 }//END OF MultivalueExpression

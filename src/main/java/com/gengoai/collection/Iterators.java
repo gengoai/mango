@@ -25,6 +25,12 @@ public final class Iterators {
    }
 
 
+   /**
+    * As iterator iterator.
+    *
+    * @param object the object
+    * @return the iterator
+    */
    public static Iterator<?> asIterator(Object object) {
       if (object instanceof Iterable) {
          return Cast.<Iterable>as(object).iterator();
@@ -43,17 +49,6 @@ public final class Iterators {
    }
 
    /**
-    * Flattens an iterator of iterators.
-    *
-    * @param <T>      the iterator element type parameter
-    * @param iterator the iterator
-    * @return the flattened iterator
-    */
-   public static <T> Iterator<T> flatten(final Iterator<? extends Iterator<? extends T>> iterator) {
-      return new ConcatIterator<T>(iterator);
-   }
-
-   /**
     * Concatenates iterators together
     *
     * @param <T>       the iterator element type parameter
@@ -62,7 +57,7 @@ public final class Iterators {
     */
    @SafeVarargs
    public static <T> Iterator<T> concat(final Iterator<? extends T>... iterators) {
-      return new ConcatIterator<>(Arrays.asList(notNull(iterators)).iterator());
+      return new ConcatIterator<>(Arrays.asList(iterators).iterator());
    }
 
    /**
@@ -89,6 +84,17 @@ public final class Iterators {
                                         final SerializablePredicate<? super E> filter
                                        ) {
       return new FilteredIterator<>(notNull(iterator), notNull(filter));
+   }
+
+   /**
+    * Flattens an iterator of iterators.
+    *
+    * @param <T>      the iterator element type parameter
+    * @param iterator the iterator
+    * @return the flattened iterator
+    */
+   public static <T> Iterator<T> flatten(final Iterator<? extends Iterator<? extends T>> iterator) {
+      return new ConcatIterator<T>(iterator);
    }
 
    /**
@@ -131,20 +137,6 @@ public final class Iterators {
    }
 
    /**
-    * Gets the next element of the iterator that would be returned by calling <code>next</code> if it exists.
-    *
-    * @param <T>      the iterator element type parameter
-    * @param iterator the iterator
-    * @return the next element in the iterator
-    */
-   public static <T> Optional<T> next(Iterator<? extends T> iterator) {
-      if (notNull(iterator).hasNext()) {
-         return Optional.ofNullable(iterator.next());
-      }
-      return Optional.empty();
-   }
-
-   /**
     * Gets the last element of the iterator that would be returned by calling <code>next</code> until
     * <code>hasNext</code> returns false if it exists  or the default value.
     *
@@ -172,6 +164,20 @@ public final class Iterators {
          value = iterator.next();
       }
       return Optional.ofNullable(value);
+   }
+
+   /**
+    * Gets the next element of the iterator that would be returned by calling <code>next</code> if it exists.
+    *
+    * @param <T>      the iterator element type parameter
+    * @param iterator the iterator
+    * @return the next element in the iterator
+    */
+   public static <T> Optional<T> next(Iterator<? extends T> iterator) {
+      if (notNull(iterator).hasNext()) {
+         return Optional.ofNullable(iterator.next());
+      }
+      return Optional.empty();
    }
 
    /**

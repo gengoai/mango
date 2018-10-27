@@ -22,7 +22,7 @@
 package com.gengoai.reflection;
 
 import com.gengoai.logging.Logger;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -102,7 +102,7 @@ public class BeanDescriptor implements Serializable {
          prefixLen = 2;
       }
       if (name.length() == prefixLen) {
-         return StringUtils.EMPTY;
+         return Strings.EMPTY;
       }
       char[] carrry = name.substring(prefixLen).toCharArray();
       carrry[0] = Character.toLowerCase(carrry[0]);

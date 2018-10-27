@@ -35,13 +35,11 @@ public final class Iterables {
     * @return An Iterable wrapping the iterator.
     */
    public static <T> Iterable<T> asIterable(final Object array, final Class<T> itemClass) {
-      notNull(array);
-      notNull(itemClass);
       checkArgument(array.getClass().isArray());
       if (array.getClass().getComponentType().isPrimitive()) {
          return new PrimitiveArrayList<>(array, itemClass);
       }
-      return () -> new Iterator<T>() {
+      return new IteratorIterable<>(() -> new Iterator<T>() {
          int pos = 0;
 
          @Override
@@ -54,7 +52,7 @@ public final class Iterables {
             Validation.checkElementIndex(pos, Array.getLength(array));
             return itemClass.cast(Array.get(array, pos++));
          }
-      };
+      });
    }
 
    /**
@@ -65,8 +63,7 @@ public final class Iterables {
     * @return An Iterable wrapping the iterator.
     */
    public static <T> Iterable<T> asIterable(final Iterator<? extends T> iterator) {
-      notNull(iterator);
-      return () -> Cast.as(iterator);
+      return new IteratorIterable<>(() -> Cast.as(iterator));
    }
 
    /**
@@ -92,8 +89,6 @@ public final class Iterables {
    public static <E> Iterable<E> filter(final Iterable<? extends E> iterable,
                                         final SerializablePredicate<? super E> predicate
                                        ) {
-      notNull(iterable);
-      notNull(predicate);
       return new IteratorIterable<>(() -> Iterators.filter(iterable.iterator(), predicate));
    }
 
@@ -106,8 +101,7 @@ public final class Iterables {
     */
    public static <T> Iterable<T> flatten(Iterable<? extends Iterable<? extends T>> iterable) {
       final SerializableSupplier<Iterator<T>> supplier = () -> Iterators.flatten(
-         Iterators.transform(iterable.iterator(),
-                             Iterable::iterator));
+         Iterators.transform(iterable.iterator(), Iterable::iterator));
       return new IteratorIterable<>(Cast.as(supplier));
    }
 
@@ -289,6 +283,22 @@ public final class Iterables {
       public Iterator<T> iterator() {
          return Cast.cast(supplier.get());
       }
+
+      @Override
+      public boolean equals(Object o) {
+         if (this == o) return true;
+         if (!(o instanceof Iterable)) return false;
+         Iterable<?> that = (Iterable<?>) o;
+         return Objects.equals(supplier.get(), that);
+      }
+
+      @Override
+      public String toString() {
+         return Streams.asStream(this)
+                       .map(Object::toString)
+                       .collect(Collectors.joining(", ", "[", "]"));
+      }
+
    }
 
 }//END OF Iterables

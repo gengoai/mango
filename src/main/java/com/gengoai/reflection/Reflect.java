@@ -25,7 +25,7 @@ import com.gengoai.Primitives;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Converter;
 import com.gengoai.conversion.Val;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -188,7 +188,7 @@ public final class Reflect {
     * @return True if there is a field with the given name
     */
    public boolean containsField(String name) {
-      if (StringUtils.isNullOrBlank(name)) {
+      if (Strings.isNullOrBlank(name)) {
          return false;
       }
       return ClassDescriptorCache.getInstance()
@@ -205,7 +205,7 @@ public final class Reflect {
     * @return the boolean
     */
    public boolean containsMethod(final String name) {
-      if (StringUtils.isNullOrBlank(name)) {
+      if (Strings.isNullOrBlank(name)) {
          return false;
       }
       return ClassDescriptorCache.getInstance()
@@ -347,7 +347,7 @@ public final class Reflect {
     * @return the method
     */
    public Method getMethod(final String name) {
-      if (StringUtils.isNullOrBlank(name)) {
+      if (Strings.isNullOrBlank(name)) {
          return null;
       }
       return getMethods().stream().filter(method -> method.getName().equals(name)).findFirst().orElse(null);
@@ -373,7 +373,7 @@ public final class Reflect {
     * @return the methods
     */
    public Set<Method> getMethods(final String name, final int numParams) {
-      if (StringUtils.isNullOrBlank(name) || numParams < 0) {
+      if (Strings.isNullOrBlank(name) || numParams < 0) {
          return Collections.emptySet();
       }
       return ClassDescriptorCache.getInstance()

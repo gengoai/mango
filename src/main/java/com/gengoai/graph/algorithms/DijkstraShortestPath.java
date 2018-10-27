@@ -23,12 +23,10 @@ package com.gengoai.graph.algorithms;
 
 import com.gengoai.Validation;
 import com.gengoai.collection.LRUMap;
-import com.gengoai.collection.Sorting;
 import com.gengoai.collection.counter.Counter;
 import com.gengoai.collection.counter.Counters;
 import com.gengoai.collection.multimap.ArrayListMultimap;
 import com.gengoai.collection.multimap.ListMultimap;
-import com.gengoai.conversion.Cast;
 import com.gengoai.graph.Edge;
 import com.gengoai.graph.Graph;
 import com.gengoai.tuple.Tuple2;
@@ -115,8 +113,7 @@ public class DijkstraShortestPath<V> implements SingleSourceShortestPath<V>, Sho
          }
       }
 
-      Comparator<Tuple2<V, Double>> comparator = Cast.as(Sorting.mapEntryComparator(false, true));
-      PriorityQueue<Tuple2<V, Double>> queue = new PriorityQueue<>(comparator);
+      PriorityQueue<Tuple2<V, Double>> queue = new PriorityQueue<>(Comparator.comparing(Tuple2::getV2));
       queue.add(Tuple2.of(source, 0d));
 
       while (!queue.isEmpty()) {

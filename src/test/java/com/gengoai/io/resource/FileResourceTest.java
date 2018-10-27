@@ -22,7 +22,7 @@
 package com.gengoai.io.resource;
 
 import com.gengoai.io.Resources;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -93,7 +93,7 @@ public class FileResourceTest {
    @Test
    public void testReadWriteAppend() throws Exception {
       tempDir.mkdirs();
-      Resource tempFile = tempDir.getChild(StringUtils.randomHexString(10));
+      Resource tempFile = tempDir.getChild(Strings.randomHexString(10));
       tempFile.write("This is output");
       assertEquals("This is output", tempFile.readToString().trim());
 
@@ -125,7 +125,7 @@ public class FileResourceTest {
       assertTrue(tempDir.isDirectory());
 
       //Mkdir with child
-      Resource tempChild = tempDir.getChild(StringUtils.randomHexString(10));
+      Resource tempChild = tempDir.getChild(Strings.randomHexString(10));
       tempChild.mkdir();
       assertTrue(tempChild.exists());
 

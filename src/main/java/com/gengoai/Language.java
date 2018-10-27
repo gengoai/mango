@@ -23,7 +23,7 @@ package com.gengoai;
 
 import com.gengoai.collection.Streams;
 import com.gengoai.logging.Logger;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.text.Collator;
 import java.text.DateFormat;
@@ -772,7 +772,7 @@ public enum Language {
     */
    public String join(String[] words) {
       return Streams.asStream(words)
-                    .collect(Collectors.joining((usesWhitespace() ? StringUtils.BLANK : StringUtils.EMPTY)));
+                    .collect(Collectors.joining((usesWhitespace() ? Strings.BLANK : Strings.EMPTY)));
    }
 
    /**
@@ -783,7 +783,7 @@ public enum Language {
     */
    public String join(CharSequence[] words) {
       return Streams.asStream(words)
-                    .collect(Collectors.joining((usesWhitespace() ? StringUtils.BLANK : StringUtils.EMPTY)));
+                    .collect(Collectors.joining((usesWhitespace() ? Strings.BLANK : Strings.EMPTY)));
    }
 
    /**
@@ -794,7 +794,7 @@ public enum Language {
     */
    public String join(Iterable<? extends CharSequence> words) {
       return Streams.asStream(words)
-                    .collect(Collectors.joining((usesWhitespace() ? StringUtils.BLANK : StringUtils.EMPTY)));
+                    .collect(Collectors.joining((usesWhitespace() ? Strings.BLANK : Strings.EMPTY)));
    }
 
    /**

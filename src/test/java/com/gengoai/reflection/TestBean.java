@@ -50,7 +50,7 @@ public class TestBean {
 
    public TestBean(String name, String... children) {
       this.name = name;
-      this.children = Sets.set(children);
+      this.children = Sets.hashSetOf(children);
    }
 
    public String getName() {

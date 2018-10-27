@@ -26,7 +26,7 @@ import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Converter;
 import com.gengoai.function.Unchecked;
 import com.gengoai.reflection.Reflect;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 import com.gengoai.tuple.Tuple2;
 
 import java.util.*;
@@ -67,7 +67,7 @@ public final class CommandLineParser {
     * Instantiates a new Command line parser.
     */
    public CommandLineParser() {
-      this(null, StringUtils.EMPTY);
+      this(null, Strings.EMPTY);
    }
 
    /**
@@ -85,7 +85,7 @@ public final class CommandLineParser {
             }
          });
       }
-      this.applicationDescription = StringUtils.isNullOrBlank(applicationDescription)
+      this.applicationDescription = Strings.isNullOrBlank(applicationDescription)
                                     ? "Help"
                                     : applicationDescription.trim();
       addOption(NamedOption.HELP);
@@ -115,10 +115,10 @@ public final class CommandLineParser {
 
    private int processKeyValue(List<String> cleanedArgs, int i, String current, List<String> filtered) {
       String value = "true";
-      String next = Iterables.get(cleanedArgs, i + 1, StringUtils.EMPTY);
+      String next = Iterables.get(cleanedArgs, i + 1, Strings.EMPTY);
       if (next.equalsIgnoreCase(KEY_VALUE_SEPARATOR)) {
          //If are peeked at value is our key value separator then lets set the value to what comes after.
-         value = Iterables.get(cleanedArgs, i + 2, StringUtils.EMPTY);
+         value = Iterables.get(cleanedArgs, i + 2, Strings.EMPTY);
          if (isOptionName(value)) {
             //If the value is an option name, we have an error
             throw new CommandLineParserException(current, null);
@@ -157,7 +157,7 @@ public final class CommandLineParser {
             cleanedArgs.add(c.substring(0, index));
             cleanedArgs.add(KEY_VALUE_SEPARATOR);
             cleanedArgs.add(c.substring(index + KEY_VALUE_SEPARATOR.length()));
-         } else if (StringUtils.isNotNullOrBlank(c)) {
+         } else if (Strings.isNotNullOrBlank(c)) {
             //Anything else that isn't null or blank we keep as is
             cleanedArgs.add(c);
          }
@@ -261,7 +261,7 @@ public final class CommandLineParser {
       if (option == null) {
          //We have a non-specified argument, so add it to the filter list and check the value.
          filtered.add(key);
-         if (StringUtils.isNullOrBlank(value)) {
+         if (Strings.isNullOrBlank(value)) {
             value = "true";
          } else {
             //if one was specified, add it
@@ -272,7 +272,7 @@ public final class CommandLineParser {
 
       } else if (option.isBoolean()) {
 
-         if (StringUtils.isNullOrBlank(value) || value.equalsIgnoreCase("true")) {
+         if (Strings.isNullOrBlank(value) || value.equalsIgnoreCase("true")) {
             option.setValue(Boolean.toString(true));
             return null;
          } else {
@@ -282,7 +282,7 @@ public final class CommandLineParser {
 
       } else {
 
-         if (StringUtils.isNullOrBlank(value)) {
+         if (Strings.isNullOrBlank(value)) {
             throw new CommandLineParserException(key, value);
          }
 

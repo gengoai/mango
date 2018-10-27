@@ -27,7 +27,7 @@ import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Converter;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.string.CharMatcher;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -78,9 +78,9 @@ public final class NamedOption {
       Option option = Validation.notNull(field.getAnnotationsByType(Option.class))[0];
       this.field = field;
 
-      this.name = StringUtils.isNullOrBlank(option.name()) ? field.getName() : option.name();
+      this.name = Strings.isNullOrBlank(option.name()) ? field.getName() : option.name();
 
-      Validation.checkArgument(!StringUtils.isNullOrBlank(this.name) && !CharMatcher.WhiteSpace.matchesAnyOf(this.name),
+      Validation.checkArgument(!Strings.isNullOrBlank(this.name) && !CharMatcher.WhiteSpace.matchesAnyOf(this.name),
                                "Option name must have at least one character and must not have a space");
 
       this.type = field.getType();
@@ -89,7 +89,7 @@ public final class NamedOption {
 
       this.description = option.description();
 
-      if (!StringUtils.isNullOrBlank(option.defaultValue())) {
+      if (!Strings.isNullOrBlank(option.defaultValue())) {
          Config.setProperty(this.name, option.defaultValue());
          this.value = Converter.convertSilently(option.defaultValue(), type);
       } else {
@@ -110,7 +110,7 @@ public final class NamedOption {
     * @param required     the required
     */
    protected NamedOption(String name, Class<?> type, String description, Object defaultValue, Set<String> aliases, boolean required) {
-      Validation.checkArgument(!StringUtils.isNullOrBlank(name) && !CharMatcher.WhiteSpace.matchesAnyOf(name),
+      Validation.checkArgument(!Strings.isNullOrBlank(name) && !CharMatcher.WhiteSpace.matchesAnyOf(name),
                                "Option name must have at least one character and must not have a space");
       Validation.notNullOrBlank(description, "Description must not be blank");
 
@@ -259,11 +259,11 @@ public final class NamedOption {
     * @param optionValue the option value
     */
    void setValue(String optionValue) {
-      if (StringUtils.isNullOrBlank(optionValue) && isBoolean()) {
+      if (Strings.isNullOrBlank(optionValue) && isBoolean()) {
 
          this.value = true;
 
-      } else if (!StringUtils.isNullOrBlank(optionValue)) {
+      } else if (!Strings.isNullOrBlank(optionValue)) {
 
          if (Collection.class.isAssignableFrom(type)) {
 

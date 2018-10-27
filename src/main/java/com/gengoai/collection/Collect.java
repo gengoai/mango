@@ -25,7 +25,6 @@ import com.gengoai.conversion.Cast;
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.gengoai.Validation.notNull;
@@ -126,33 +125,6 @@ public final class Collect {
       } catch (InstantiationException | IllegalAccessException e) {
          throw new RuntimeException(e);
       }
-   }
-
-   /**
-    * Sorts the given collection using the given comparator returning a list of the results
-    *
-    * @param <T>        the element type parameter
-    * @param collection the collection to sort
-    * @param comparator the comparator to use for sorting
-    * @return the list of items in the collection sorted using the given comparator
-    */
-   public static <T> List<T> sort(Collection<T> collection, Comparator<? super T> comparator) {
-      return collection.stream()
-                       .sorted(comparator)
-                       .collect(Collectors.toList());
-   }
-
-   /**
-    * Sorts the items in the given collection.
-    *
-    * @param <T>        the element type parameter
-    * @param collection the collection to sort
-    * @return the list of items in the collection sorted.
-    */
-   public static <T extends Comparable<? super T>> List<T> sort(Collection<T> collection) {
-      return collection.stream()
-                       .sorted()
-                       .collect(Collectors.toList());
    }
 
    private static class IterableCollection<E> extends AbstractCollection<E> implements Serializable {

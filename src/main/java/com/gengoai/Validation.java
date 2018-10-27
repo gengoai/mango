@@ -1,6 +1,6 @@
 package com.gengoai;
 
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -141,7 +141,7 @@ public final class Validation {
     * @return the object
     */
    public static String notNullOrBlank(String string) {
-      if (StringUtils.isNullOrBlank(string)) {
+      if (Strings.isNullOrBlank(string)) {
          throw new IllegalArgumentException("String must not be null or blank.");
       }
       return string;
@@ -155,7 +155,7 @@ public final class Validation {
     * @return the object
     */
    public static String notNullOrBlank(String string, String message) {
-      if (StringUtils.isNullOrBlank(string)) {
+      if (Strings.isNullOrBlank(string)) {
          if (message != null) {
             throw new IllegalArgumentException(message);
          } else {
@@ -235,11 +235,11 @@ public final class Validation {
       }
       if (index < 0) {
          throw new IndexOutOfBoundsException(
-            String.format("%s (%s) must be non negative", StringUtils.nullToEmpty(message.get()), index));
+            String.format("%s (%s) must be non negative", Strings.nullToEmpty(message.get()), index));
       }
       if (index > size) {
          throw new IndexOutOfBoundsException(String.format("%s (%s) must be less than (%s)",
-                                                           StringUtils.nullToEmpty(message.get()), index, size));
+                                                           Strings.nullToEmpty(message.get()), index, size));
       }
       return index;
    }
@@ -260,11 +260,11 @@ public final class Validation {
       }
       if (index < 0) {
          throw new IndexOutOfBoundsException(
-            String.format("%s (%s) must be non negative", StringUtils.nullToEmpty(message), index));
+            String.format("%s (%s) must be non negative", Strings.nullToEmpty(message), index));
       }
       if (index > size) {
          throw new IndexOutOfBoundsException(String.format("%s (%s) must be less than (%s)",
-                                                           StringUtils.nullToEmpty(message), index, size));
+                                                           Strings.nullToEmpty(message), index, size));
       }
       return index;
    }

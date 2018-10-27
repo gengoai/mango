@@ -2,7 +2,7 @@ package com.gengoai.json;
 
 import com.gengoai.conversion.Val;
 import com.gengoai.io.resource.Resource;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 import com.gengoai.tuple.Tuple2;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.internal.LazilyParsedNumber;
@@ -154,9 +154,9 @@ public class JsonReader implements AutoCloseable, Closeable {
     * @throws IOException the io exception
     */
    public Map<String, JsonEntry> nextMap(String name) throws IOException {
-      if (StringUtils.isNotNullOrBlank(name) || peek() == JsonToken.NAME) {
+      if (Strings.isNotNullOrBlank(name) || peek() == JsonToken.NAME) {
          String nextName = nextName();
-         checkState(StringUtils.isNullOrBlank(name) || nextName.equals(name), "Next Map is named (" +
+         checkState(Strings.isNullOrBlank(name) || nextName.equals(name), "Next Map is named (" +
                                                                                  nextName + "), but was expecting (" + name + ")");
       }
       return nextElement().getAsMap();
@@ -181,9 +181,9 @@ public class JsonReader implements AutoCloseable, Closeable {
     * @throws IOException the io exception
     */
    public List<JsonEntry> nextArray(String name) throws IOException {
-      if (StringUtils.isNotNullOrBlank(name) || peek() == JsonToken.NAME) {
+      if (Strings.isNotNullOrBlank(name) || peek() == JsonToken.NAME) {
          String nextName = nextName();
-         checkState(StringUtils.isNullOrBlank(name) || nextName.equals(name), "Next Collection is named (" +
+         checkState(Strings.isNullOrBlank(name) || nextName.equals(name), "Next Collection is named (" +
                                                                                  nextName + "), but was expecting (" + name + ")");
       }
       return nextElement().getAsArray();

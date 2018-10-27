@@ -26,7 +26,7 @@ import com.gengoai.conversion.Val;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.logging.Loggable;
 import com.gengoai.logging.Logger;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -54,7 +54,7 @@ public final class ReflectionUtils implements Loggable {
     * @return Null if there is no match, otherwise the Method which bests fits the given method name and types
     */
    public static Method bestMatchingMethod(Collection<Method> methods, String methodName, Class[] types) {
-      if (methods == null || StringUtils.isNullOrBlank(methodName) || types == null) {
+      if (methods == null || Strings.isNullOrBlank(methodName) || types == null) {
          return null;
       }
       for (Method method : methods) {
@@ -74,7 +74,7 @@ public final class ReflectionUtils implements Loggable {
     * @return An object or null if the object the string maps to cannot be determined.
     */
    public static Object createObject(String string) {
-      if (StringUtils.isNullOrBlank(string)) {
+      if (Strings.isNullOrBlank(string)) {
          return null;
       }
       if (ReflectionUtils.isClassName(string)) {
@@ -189,7 +189,7 @@ public final class ReflectionUtils implements Loggable {
     * @throws Exception the exception
     */
    public static Class<?> getClassForName(String name) throws Exception {
-      if (StringUtils.isNullOrBlank(name)) {
+      if (Strings.isNullOrBlank(name)) {
          throw new ClassNotFoundException();
       }
       name = name.trim();
@@ -345,7 +345,7 @@ public final class ReflectionUtils implements Loggable {
     * @return True if value of the string is a class name.
     */
    public static boolean isClassName(String string) {
-      return StringUtils.isNotNullOrBlank(string) && getClassForNameQuietly(string) != null;
+      return Strings.isNotNullOrBlank(string) && getClassForNameQuietly(string) != null;
    }
 
    private static boolean isConvertible(Class<?> c1, Class<?> c2) {

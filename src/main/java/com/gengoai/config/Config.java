@@ -39,7 +39,7 @@ import com.gengoai.logging.Logger;
 import com.gengoai.parsing.ParseException;
 import com.gengoai.reflection.BeanUtils;
 import com.gengoai.reflection.ReflectionException;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.io.*;
 import java.util.*;
@@ -112,7 +112,7 @@ public final class Config implements Serializable, JsonSerializable {
       }
       Language language = path[0] instanceof Language ? Cast.as(path[0]) : null;
       if (language == null) {
-         String key = root + "." + StringUtils.join(path, ".");
+         String key = root + "." + Strings.join(path, ".");
          return hasProperty(key) ? key : null;
       }
 
@@ -130,7 +130,7 @@ public final class Config implements Serializable, JsonSerializable {
             }
          }
       }
-      String components = StringUtils.join(Arrays.copyOfRange(path, 1, path.length), ".");
+      String components = Strings.join(Arrays.copyOfRange(path, 1, path.length), ".");
       for (String key : new String[]{
          root + "." + language + "." + components,
          root + "." + language.toString().toLowerCase() + "." + components,
@@ -216,7 +216,7 @@ public final class Config implements Serializable, JsonSerializable {
    }
 
    private static Val getBean(String value) {
-      List<String> parts = StringUtils.split(value, ',');
+      List<String> parts = Strings.split(value, ',');
       List<Object> beans = new ArrayList<>();
       for (String beanName : parts) {
          Matcher m = BEAN_SUBSTITUTION.matcher(beanName);
@@ -467,7 +467,7 @@ public final class Config implements Serializable, JsonSerializable {
     * @return the boolean
     */
    public static boolean isBean(String property) {
-      if (StringUtils.isNullOrBlank(getInstance().properties.get(property))) {
+      if (Strings.isNullOrBlank(getInstance().properties.get(property))) {
          return false;
       }
       return BEAN_SUBSTITUTION.matcher(getInstance().properties.get(property)).find();

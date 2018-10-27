@@ -128,7 +128,7 @@ public final class Sets {
     * @param iterator the elements to add to the set
     * @return the new hash set containing the given elements
     */
-   public static <T> Set<T> asSet(Iterator<? extends T> iterator) {
+   public static <T> Set<T> asHashSet(Iterator<? extends T> iterator) {
       return createSet(HashSet::new, Streams.asStream(iterator));
    }
 
@@ -139,7 +139,7 @@ public final class Sets {
     * @param iterable the elements to add to the set
     * @return the new hash set containing the given elements
     */
-   public static <T> Set<T> asSet(Iterable<? extends T> iterable) {
+   public static <T> Set<T> asHashSet(Iterable<? extends T> iterable) {
       return createSet(HashSet::new, Streams.asStream(iterable));
    }
 
@@ -150,7 +150,7 @@ public final class Sets {
     * @param stream the elements to add to the set
     * @return the new hash set containing the given elements
     */
-   public static <T> Set<T> asSet(Stream<? extends T> stream) {
+   public static <T> Set<T> asHashSet(Stream<? extends T> stream) {
       return createSet(HashSet::new, stream);
    }
 
@@ -196,7 +196,7 @@ public final class Sets {
     */
    @SafeVarargs
    @SuppressWarnings("varargs")
-   public static <T> Set<T> concurrentSet(T... elements) {
+   public static <T> Set<T> concurrentSetOf(T... elements) {
       return createSet(Sets::newConcurrentHashSet, elements);
    }
 
@@ -276,8 +276,7 @@ public final class Sets {
     * @return the new linked hash set containing the given elements
     */
    @SafeVarargs
-   @SuppressWarnings("varargs")
-   public static <T> Set<T> linkedHashSet(T... elements) {
+   public static <T> Set<T> linkedHashSetOf(T... elements) {
       return createSet(LinkedHashSet::new, elements);
    }
 
@@ -289,8 +288,7 @@ public final class Sets {
     * @return the new hash set containing the given elements
     */
    @SafeVarargs
-   @SuppressWarnings("varargs")
-   public static <T> Set<T> set(T... elements) {
+   public static <T> Set<T> hashSetOf(T... elements) {
       return createSet(HashSet::new, elements);
    }
 
@@ -317,10 +315,10 @@ public final class Sets {
     * @return the new tree set containing the given elements
     */
    @SafeVarargs
-   @SuppressWarnings("varargs")
-   public static <T> Set<T> treeSet(T... elements) {
+   public static <T> Set<T> sortedSetOf(T... elements) {
       return createSet(TreeSet::new, elements);
    }
+
 
    /**
     * <p>Retains all items in collection1 and collection2 and returns them as a set.</p>

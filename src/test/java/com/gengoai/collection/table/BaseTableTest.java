@@ -76,13 +76,13 @@ public abstract class BaseTableTest {
    @Test
    public void values() {
       assertEquals(4, table.values().size());
-      assertEquals(Sets.set(1.0, 2.0, 5.0), Sets.asSet(table.values()));
+      assertEquals(Sets.hashSetOf(1.0, 2.0, 5.0), Sets.asHashSet(table.values()));
    }
 
    @Test
    public void columnKeySet() {
       Map<String, Double> c = Maps.hashMapOf($("A", 2.0), $("B", 5.0));
-      Set<String> cKeys = Sets.set("C", "B", "D");
+      Set<String> cKeys = Sets.hashSetOf("C", "B", "D");
 
       assertEquals(cKeys, table.columnKeySet());
 

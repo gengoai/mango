@@ -25,7 +25,7 @@ import com.gengoai.conversion.Cast;
 import com.gengoai.io.resource.ByteArrayResource;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.reflection.BeanMap;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 import org.kohsuke.MetaInfServices;
 
 import java.util.Map;
@@ -48,7 +48,7 @@ public class ByteArrayResourceProvider implements ResourceProvider {
    @Override
    public Resource createResource(String specification, Map<String, String> properties) {
       BeanMap beanMap;
-      if (StringUtils.isNullOrBlank(specification)) {
+      if (Strings.isNullOrBlank(specification)) {
          beanMap = new BeanMap(new ByteArrayResource());
       } else {
          beanMap = new BeanMap(new ByteArrayResource(specification.getBytes()));

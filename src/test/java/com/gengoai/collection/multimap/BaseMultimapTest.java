@@ -116,9 +116,9 @@ public abstract class BaseMultimapTest {
 
    @Test
    public void keySet() {
-      assertEquals(Sets.set("A", "B", "C"), multimap.keySet());
+      assertEquals(Sets.hashSetOf("A", "B", "C"), multimap.keySet());
       multimap.keySet().remove("C");
-      assertEquals(Sets.set("A", "B"), multimap.keySet());
+      assertEquals(Sets.hashSetOf("A", "B"), multimap.keySet());
       multimap.put("C", "D");
       assertEquals(cValues, multimap.get("C"));
    }

@@ -22,11 +22,12 @@
 package com.gengoai.collection;
 
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.stream.Stream;
 
+import static com.gengoai.collection.Lists.arrayListOf;
 import static org.junit.Assert.*;
 
 /**
@@ -34,51 +35,25 @@ import static org.junit.Assert.*;
  */
 public class CollectTest {
 
-   @Test
-   public void iteratorToIterable() throws Exception {
-      Iterable<CharSequence> ibl1 = Iterables.asIterable(Lists.arrayListOf("A", "B", "C").iterator());
-      assertEquals(3, Iterables.size(ibl1));
-
-      Iterable<CharSequence> ibl3 = Iterables.asIterable(Collections.emptyIterator());
-      assertEquals(0, Iterables.size(ibl3));
-   }
 
    @Test
-   public void sort() throws Exception {
-      Assert.assertEquals(Lists.arrayListOf("a", "b", "c"), Iterables.sort(Sets.set("c", "b", "a")));
-      Assert.assertEquals(Lists.arrayListOf(3, 2, 1), Iterables.sort(Lists.arrayListOf(1, 2, 3), Sorting.natural().reversed()));
-   }
+   public void addAll() {
+      List<String> list = new ArrayList<>();
+      Collect.addAll(list, Arrays.asList("A", "B"));
+      assertEquals(arrayListOf("A", "B"), list);
 
 
-   @Test
-   public void arrayAsIterable() throws Exception {
-      Assert.assertEquals(Lists.arrayListOf(1, 2, 3),
-                          Lists.asArrayList(Iterables.asIterable(new int[]{1, 2, 3}, Integer.class)));
-      Assert.assertEquals(Lists.arrayListOf(1, 2, 3),
-                          Lists.asArrayList(Iterables.asIterable(new Integer[]{1, 2, 3}, Integer.class)));
-      Assert.assertEquals(Lists.arrayListOf(1, 2, 3),
-                          Lists.asArrayList(Iterables.asIterable(new double[]{1.0, 2.0, 3.0}, Integer.class)));
-   }
-
-   @Test(expected = ClassCastException.class)
-   public void arrayAsIterableBadCast() throws Exception {
-      Assert.assertEquals(Lists.arrayListOf(1, 2, 3),
-                          Lists.asArrayList(Iterables.asIterable(new Double[]{1.0, 2.0, 3.0}, Integer.class)));
-   }
+      Collect.addAll(list, Arrays.asList("A", "B").iterator());
+      assertEquals(arrayListOf("A", "B", "A", "B"), list);
 
 
-   @Test
-   public void getFirst() throws Exception {
-      assertTrue(Iterables.getFirst(Arrays.asList("A", "B", "C")).isPresent());
-      assertFalse(Iterables.getFirst(Collections.emptySet()).isPresent());
-      assertEquals("A", Iterables.getFirst(Arrays.asList("A", "B", "C")).orElse(null));
-   }
+      Collect.addAll(list, Stream.of("A", "B"));
+      assertEquals(arrayListOf("A", "B", "A", "B", "A", "B"), list);
 
-   @Test
-   public void getLast() throws Exception {
-      assertTrue(Iterables.getLast(Arrays.asList("A", "B", "C")).isPresent());
-      assertFalse(Iterables.getLast(Collections.emptySet()).isPresent());
-      assertEquals("C", Iterables.getLast(Arrays.asList("A", "B", "C")).orElse(null));
+
+      assertEquals(list, Collect.asCollection(list));
+      assertEquals(list.toString(),
+                   Iterables.asIterable(arrayListOf("A", "B", "A", "B", "A", "B").iterator()).toString());
    }
 
 
@@ -99,17 +74,6 @@ public class CollectTest {
       Collect.newCollection(NoNoArg.class);
    }
 
-   @Test
-   public void zip() throws Exception {
-      Assert.assertEquals(Lists.arrayListOf(new AbstractMap.SimpleEntry<>("A", 1),
-                                            new AbstractMap.SimpleEntry<>("B", 2),
-                                            new AbstractMap.SimpleEntry<>("C", 3)
-                                           ),
-                          Lists.asArrayList(Iterables.zip(Arrays.asList("A", "B", "C"), Arrays.asList(1, 2, 3, 4)))
-                         );
-
-      assertEquals(0L, Iterables.size(Iterables.zip(Collections.emptySet(), Arrays.asList(1, 2, 3, 4))));
-   }
 
 
    static class NoNoArg extends AbstractCollection<String> {

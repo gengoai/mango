@@ -27,7 +27,7 @@ import com.gengoai.collection.Sorting;
 import com.gengoai.conversion.Cast;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonSerializable;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
@@ -223,7 +223,7 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
 
    @Override
    public String toString() {
-      return StringUtils.join(array(), ", ", "(", ")");
+      return Strings.join(array(), ", ", "(", ")");
    }
 
 

@@ -131,7 +131,7 @@ public final class IndexedFileReader implements Serializable {
 
    public Set<String> keySet() {
       ensureIndex();
-      return Sets.asSet(index.keys().iterator());
+      return Sets.asHashSet(index.keys().iterator());
    }
 
 

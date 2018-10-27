@@ -166,7 +166,7 @@ public abstract class BaseCounterTest {
    @Test
    public void items() throws Exception {
       Counter<String> counterOne = getCounter1();
-      Assert.assertEquals(Sets.set("a", "b", "c"), counterOne.items());
+      Assert.assertEquals(Sets.hashSetOf("a", "b", "c"), counterOne.items());
 
       counterOne.items().removeIf(s -> s.equals("a") || s.equals("b"));
       assertEquals(1, counterOne.sum(), 0);

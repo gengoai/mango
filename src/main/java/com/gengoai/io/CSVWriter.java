@@ -26,7 +26,7 @@ import com.gengoai.collection.HashMapIndex;
 import com.gengoai.collection.Index;
 import com.gengoai.conversion.Converter;
 import com.gengoai.string.CSVFormatter;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -110,7 +110,7 @@ public class CSVWriter implements AutoCloseable {
                   Stream.concat(
                      header.stream()
                            .map(
-                              h -> row.containsKey(h) ? Converter.convertSilently(row.get(h), String.class) : StringUtils.EMPTY),
+                              h -> row.containsKey(h) ? Converter.convertSilently(row.get(h), String.class) : Strings.EMPTY),
                      row.keySet().stream()
                         .map(k -> Converter.convertSilently(k, String.class))
                         .filter(h -> !header.contains(h))
@@ -142,7 +142,7 @@ public class CSVWriter implements AutoCloseable {
                                                               .map(
                                                                  h -> row.containsKey(h)
                                                                       ? Converter.convertSilently(row.get(h), String.class)
-                                                                      : StringUtils.EMPTY),
+                                                                      : Strings.EMPTY),
                                                         row.keySet().stream()
                                                            .map(k -> Converter.convertSilently(k, String.class))
                                                            .filter(h -> !header.contains(h))

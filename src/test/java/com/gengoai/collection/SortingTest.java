@@ -23,10 +23,6 @@ package com.gengoai.collection;
 
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import static org.junit.Assert.*;
 
 /**
@@ -34,29 +30,14 @@ import static org.junit.Assert.*;
  */
 public class SortingTest {
 
-  @Test
-  public void testHashCodeComparator() throws Exception {
-    String s1 = null;
-    String s2 = "a";
-    String s3 = "b";
-    String s4 = "b";
-    assertEquals(Sorting.hashCodeComparator().compare(s1, s2), 1);
-    assertEquals(Sorting.hashCodeComparator().compare(s2, s1), -1);
-    assertEquals(Sorting.hashCodeComparator().compare(s4, s3), 0);
-  }
-
-  @Test
-  public void testSortMapEntriesByValue() throws Exception {
-    Map<String, Double> map = new HashMap<>();
-    map.put("a", 1.0);
-    map.put("b", 2.0);
-
-    List<Map.Entry<String, Double>> list = Sorting.sortMapEntriesByValue(map, false);
-    assertEquals(list.get(0).getKey(), "b");
-    assertEquals(list.get(1).getKey(), "a");
-    list = Sorting.sortMapEntriesByValue(map, true);
-    assertEquals(list.get(0).getKey(), "a");
-    assertEquals(list.get(1).getKey(), "b");
-
-  }
+   @Test
+   public void testHashCodeComparator() throws Exception {
+      String s1 = null;
+      String s2 = "a";
+      String s3 = "b";
+      String s4 = "b";
+      assertEquals(Sorting.hashCodeComparator().compare(s1, s2), 1);
+      assertEquals(Sorting.hashCodeComparator().compare(s2, s1), -1);
+      assertEquals(Sorting.hashCodeComparator().compare(s4, s3), 0);
+   }
 }//END OF SortingTest

@@ -163,23 +163,23 @@ public class AdjacencyMatrix<V> implements Graph<V>, Serializable {
 
    @Override
    public Set<? extends Edge<V>> getOutEdges(V vertex) {
-      return Sets.asSet(matrix.row(vertex).values());
+      return Sets.asHashSet(matrix.row(vertex).values());
    }
 
    @Override
    public Set<? extends Edge<V>> getInEdges(V vertex) {
-      return Sets.asSet(matrix.column(vertex).values());
+      return Sets.asHashSet(matrix.column(vertex).values());
 
    }
 
    @Override
    public Set<V> getSuccessors(V vertex) {
-      return Sets.asSet(matrix.row(vertex).keySet());
+      return Sets.asHashSet(matrix.row(vertex).keySet());
    }
 
    @Override
    public Set<V> getPredecessors(V vertex) {
-      return Sets.asSet(matrix.column(vertex).keySet());
+      return Sets.asHashSet(matrix.column(vertex).keySet());
    }
 
 
@@ -200,7 +200,7 @@ public class AdjacencyMatrix<V> implements Graph<V>, Serializable {
 
    @Override
    public Set<? extends Edge<V>> edges() {
-      return Sets.asSet(matrix.values());
+      return Sets.asHashSet(matrix.values());
    }
 
 

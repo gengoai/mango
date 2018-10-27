@@ -24,7 +24,7 @@ import com.gengoai.EnumValue;
 import com.gengoai.collection.Iterables;
 import com.gengoai.conversion.Cast;
 import com.gengoai.io.resource.Resource;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 import com.google.gson.JsonElement;
 import com.google.gson.internal.Streams;
 
@@ -222,7 +222,7 @@ public final class JsonWriter implements AutoCloseable, Closeable {
     */
    public JsonWriter spaceIndent(int numberOfSpaces) {
       if (numberOfSpaces >= 0) {
-         writer.setIndent(StringUtils.repeat(' ', numberOfSpaces));
+         writer.setIndent(Strings.repeat(' ', numberOfSpaces));
       }
       return this;
    }

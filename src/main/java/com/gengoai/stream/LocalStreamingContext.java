@@ -27,7 +27,7 @@ import com.gengoai.function.Unchecked;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.stream.accumulator.*;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.io.IOException;
 import java.util.*;
@@ -157,7 +157,7 @@ public final class LocalStreamingContext extends StreamingContext {
 
    @Override
    public MStream<String> textFile(String location) {
-      if (StringUtils.isNullOrBlank(location)) {
+      if (Strings.isNullOrBlank(location)) {
          return empty();
       }
       return textFile(Resources.from(location));

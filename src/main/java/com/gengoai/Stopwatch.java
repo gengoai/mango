@@ -1,6 +1,6 @@
 package com.gengoai;
 
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.io.Serializable;
 import java.time.Duration;
@@ -130,7 +130,7 @@ public class Stopwatch implements Serializable {
    @Override
    public String toString() {
       StringBuilder stringBuilder = new StringBuilder();
-      if (StringUtils.isNotNullOrBlank(name)) {
+      if (Strings.isNotNullOrBlank(name)) {
          stringBuilder.append(name).append(": ");
       }
       stringBuilder.append(Duration.ofNanos(getElapsedTime()).toString()

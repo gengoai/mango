@@ -53,7 +53,7 @@ public class BeanUtilsTest {
       assertEquals(98.7, map.get("ZEB"), 0);
 
       testBean = Config.get("bean.redirect").cast();
-      assertEquals(Sets.set("Sam", "Ryan", "Billy"), testBean.getChildren());
+      assertEquals(Sets.hashSetOf("Sam", "Ryan", "Billy"), testBean.getChildren());
 
       map = testBean.getStocks();
       assertEquals(120.5, map.get("GE"), 0);
@@ -66,14 +66,14 @@ public class BeanUtilsTest {
    public void test() throws Exception {
       TestBean testBean = BeanUtils.getNamedBean("testbean", TestBean.class);
       assertEquals("John", testBean.getName());
-      assertTrue(Sets.difference(Sets.set("Sam", "Ryan", "Billy"), testBean.getChildren()).isEmpty());
+      assertTrue(Sets.difference(Sets.hashSetOf("Sam", "Ryan", "Billy"), testBean.getChildren()).isEmpty());
    }
 
    @Test
    public void testNamedBeanWithConstructor() throws Exception {
       TestBean testBean = BeanUtils.getNamedBean("testbean2", TestBean.class);
       assertEquals("John", testBean.getName());
-      assertTrue(Sets.difference(Sets.set("Sam", "Ryan", "Billy"), testBean.getChildren()).isEmpty());
+      assertTrue(Sets.difference(Sets.hashSetOf("Sam", "Ryan", "Billy"), testBean.getChildren()).isEmpty());
    }
 
 }

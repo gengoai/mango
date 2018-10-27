@@ -32,7 +32,7 @@ import com.gengoai.graph.Vertex;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.logging.Logger;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -149,7 +149,7 @@ public class GraphViz<V> implements GraphWriter<V>, GraphRenderer<V> {
 
    private String escape(String input) {
       if (input == null || input.length() == 0) {
-         return "\"" + StringUtils.EMPTY + "\"";
+         return "\"" + Strings.EMPTY + "\"";
       }
       if (input.length() == 1) {
          return "\"" + input + "\"";

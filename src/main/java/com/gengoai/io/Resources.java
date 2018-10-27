@@ -25,7 +25,7 @@ import com.gengoai.SystemInfo;
 import com.gengoai.conversion.Converter;
 import com.gengoai.io.resource.*;
 import com.gengoai.io.resource.spi.ResourceProvider;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.io.*;
 import java.net.URI;
@@ -66,7 +66,7 @@ public final class Resources {
     * @return A resource representing the string representation
     */
    public static Resource from(String resource) {
-      if (StringUtils.isNullOrBlank(resource)) {
+      if (Strings.isNullOrBlank(resource)) {
          return new StringResource();
       }
       Matcher matcher = protocolPattern.matcher(resource);
@@ -75,7 +75,7 @@ public final class Resources {
          String options = matcher.group("OPTIONS");
          String path = matcher.group("PATH");
 
-         if (StringUtils.isNullOrBlank(options)) {
+         if (Strings.isNullOrBlank(options)) {
             options = "";
          }
          ResourceProvider provider = resourceProviders.get(schema.toLowerCase());

@@ -2,7 +2,7 @@ package com.gengoai.io;
 
 import com.gengoai.Validation;
 import com.gengoai.io.resource.Resource;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -37,7 +37,7 @@ public class MultiFileWriter extends Writer implements Serializable, AutoCloseab
       this.writers = new Writer[numberOfFiles];
       this.numberOfFiles = numberOfFiles;
       for (int i = 0; i < numberOfFiles; i++) {
-         String name = filePrefix + StringUtils.padStart(Integer.toString(i), 5, '0');
+         String name = filePrefix + Strings.padStart(Integer.toString(i), 5, '0');
          this.writers[i] = new AsyncWriter(baseDirectory.getChild(name).writer());
       }
    }

@@ -27,7 +27,7 @@ import com.gengoai.io.JarUtils;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.spi.ClasspathResourceProvider;
 import com.gengoai.logging.Logger;
-import com.gengoai.string.StringUtils;
+import com.gengoai.string.Strings;
 
 import java.io.*;
 import java.net.URI;
@@ -158,7 +158,7 @@ public class ClasspathResource extends BaseResource {
    @Override
    public Resource getChild(String relativePath) {
       if (relativePath == null) {
-         relativePath = StringUtils.EMPTY;
+         relativePath = Strings.EMPTY;
       }
       relativePath = relativePath.replaceFirst("^[\\\\/]+", "");
       if (resource.endsWith("/")) {

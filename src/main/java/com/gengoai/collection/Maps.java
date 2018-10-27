@@ -29,8 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
-import static com.gengoai.tuple.Tuples.$;
+import java.util.stream.Collectors;
 
 /**
  * <p>Convenience methods for creating, reading, and manipulating maps.</p>
@@ -52,22 +51,12 @@ public final class Maps {
     * @param valueMapper the function to use to generate values from keys
     * @return the map
     */
-   public static <K, V> Map<K, V> asMap(Iterable<? extends K> keys, Function<? super K, ? extends V> valueMapper) {
+   public static <K, V> Map<K, V> asHashMap(Iterable<? extends K> keys, Function<? super K, ? extends V> valueMapper) {
       Map<K, V> map = new HashMap<>();
       keys.forEach(key -> map.put(key, valueMapper.apply(key)));
       return map;
    }
 
-   /**
-    * Creates a Map builder
-    *
-    * @param <K> the key type parameter
-    * @param <V> the value type parameter
-    * @return the builder
-    */
-   public static <K, V> Builder<K, V> builder() {
-      return new Builder<>();
-   }
 
    /**
     * Creates an instance of the given map class.
@@ -82,7 +71,7 @@ public final class Maps {
          return new HashMap<>();
       } else if (clazz == LinkedHashMap.class) {
          return new LinkedHashMap<>();
-      } else if (clazz == TreeMap.class) {
+      } else if (clazz == TreeMap.class || clazz == SortedMap.class) {
          return new TreeMap<>();
       } else if (clazz == ConcurrentMap.class || clazz == ConcurrentHashMap.class) {
          return new ConcurrentHashMap<>();
@@ -117,94 +106,15 @@ public final class Maps {
     * @return the map
     */
    @SafeVarargs
-   public static <K, V> Map<K, V> mapOf(Supplier<? extends Map<K, V>> supplier, Map.Entry<? extends K, ? extends V>... objects) {
+   public static <K, V> Map<K, V> mapOf(Supplier<? extends Map<K, V>> supplier,
+                                        Map.Entry<? extends K, ? extends V>... objects
+                                       ) {
       Map<K, V> map = supplier.get();
       for (Map.Entry<? extends K, ? extends V> entry : objects) {
          map.put(entry.getKey(), entry.getValue());
       }
       return map;
    }
-
-
-   /**
-    * Gets the max entry in the map.
-    *
-    * @param <K>        the key type parameter
-    * @param <V>        the value type parameter
-    * @param map        the map
-    * @param comparator the value comparator to use to compare items
-    * @return Optional max entry
-    */
-   public static <K, V> Optional<Map.Entry<K, V>> maxEntry(Map<K, V> map, Comparator<? super V> comparator) {
-      return map.entrySet()
-                .parallelStream()
-                .max((e1, e2) -> comparator.compare(e1.getValue(), e2.getValue()));
-   }
-
-   /**
-    * Gets the max entry in the map.
-    *
-    * @param <K>        the key type parameter
-    * @param <V>        the value type parameter
-    * @param map        the map
-    * @return Optional max entry
-    */
-   public static <K, V extends Comparable> Optional<Map.Entry<K, V>> maxEntry(Map<K, V> map) {
-      return maxEntry(map, Sorting.natural());
-   }
-
-   /**
-    * Returns the key of the entry with maximum value
-    *
-    * @param <K> the key type parameter
-    * @param <V> the value type parameter
-    * @param map the map
-    * @return the key with max value
-    */
-   public static <K, V extends Comparable> K maxKeyByValue(Map<K, V> map) {
-      return maxEntry(map).map(Map.Entry::getKey).orElse(null);
-   }
-
-   /**
-    * Gets the min entry in the map.
-    *
-    * @param <K>        the key type parameter
-    * @param <V>        the value type parameter
-    * @param map        the map
-    * @param comparator the value comparator to use to compare items
-    * @return Optional min entry
-    */
-   public static <K, V> Optional<Map.Entry<K, V>> minEntry(Map<K, V> map, Comparator<? super V> comparator) {
-      return map.entrySet()
-                .parallelStream()
-                .min((e1, e2) -> comparator.compare(e1.getValue(), e2.getValue()));
-   }
-
-   /**
-    * Gets the min entry in the map.
-    *
-    * @param <K>        the key type parameter
-    * @param <V>        the value type parameter
-    * @param map        the map
-    * @return Optional min entry
-    */
-   public static <K, V extends Comparable> Optional<Map.Entry<K, V>> minEntry(Map<K, V> map) {
-      return minEntry(map, Sorting.natural());
-   }
-
-   /**
-    * Returns the key of the entry with minimum value
-    *
-    * @param <K> the key type parameter
-    * @param <V> the value type parameter
-    * @param map the map
-    * @return the key with min value
-    */
-   public static <K, V extends Comparable<? super V>> K minKeyByValue(Map<K, V> map) {
-      return minEntry(map).map(Map.Entry::getKey).orElse(null);
-   }
-
-
 
    /**
     * Puts all given entries into the given map
@@ -215,12 +125,60 @@ public final class Maps {
     * @param entries the entries to add
     */
    @SafeVarargs
-   public static <K, V> void putAll(Map<K, V> map, Map.Entry<? extends K, ? extends V>... entries) {
+   public static <K, V> Map<K, V> putAll(Map<K, V> map, Map.Entry<? extends K, ? extends V>... entries) {
       for (Map.Entry<? extends K, ? extends V> entry : entries) {
          map.put(entry.getKey(), entry.getValue());
       }
+      return map;
    }
 
+   /**
+    * Sorts the entries in the map
+    *
+    * @param <K>        the key type parameter
+    * @param <V>        the value type parameter
+    * @param map        the map to sort
+    * @param comparator The comparator to use when comparing entries.
+    * @return the list of sorted map entries
+    */
+   public static <K, V> List<Map.Entry<K, V>> sortEntries(Map<K, V> map, Comparator<Map.Entry<K, V>> comparator) {
+      return map.entrySet()
+                .parallelStream()
+                .sorted(comparator)
+                .collect(Collectors.toList());
+   }
+
+   /**
+    * Sorts the entries in the map by key
+    *
+    * @param <K>       the key type parameter
+    * @param <V>       the value type parameter
+    * @param map       the map to sort
+    * @param ascending True sort in ascending order, False in descending order
+    * @return the list of sorted map entries
+    */
+   public static <K extends Comparable<? super K>, V> List<Map.Entry<K, V>> sortEntriesByKey(Map<K, V> map, boolean ascending) {
+      final Comparator<Map.Entry<K, V>> comparator = ascending
+                                                     ? Map.Entry.comparingByKey()
+                                                     : Map.Entry.<K, V>comparingByKey().reversed();
+      return sortEntries(map, comparator);
+   }
+
+   /**
+    * Sorts the entries in the map by value
+    *
+    * @param <K>       the key type parameter
+    * @param <V>       the value type parameter
+    * @param map       the map to sort
+    * @param ascending True sort in ascending order, False in descending order
+    * @return the list of sorted map entries
+    */
+   public static <K, V extends Comparable<? super V>> List<Map.Entry<K, V>> sortEntriesByValue(Map<K, V> map, boolean ascending) {
+      final Comparator<Map.Entry<K, V>> comparator = ascending
+                                                     ? Map.Entry.comparingByValue()
+                                                     : Map.Entry.<K, V>comparingByValue().reversed();
+      return sortEntries(map, comparator);
+   }
 
    /**
     * Creates a <code>TreeMap</code> from entries
@@ -233,61 +191,6 @@ public final class Maps {
    @SafeVarargs
    public static <K, V> Map<K, V> sortedMapOf(Map.Entry<? extends K, ? extends V>... objects) {
       return mapOf(TreeMap::new, objects);
-   }
-
-   /**
-    * Map  Builder.
-    *
-    * @param <K> the key type parameter
-    * @param <V> the value type parameter
-    */
-   public static class Builder<K, V> {
-      private final List<Map.Entry<K, V>> entries = new ArrayList<>();
-
-      /**
-       * Builds a <code>HashMap</code> of added entries.
-       *
-       * @return the map
-       */
-      public Map<K, V> build() {
-         return build(HashMap::new);
-      }
-
-      /**
-       * Builds a map using the given supplier to generate a new map
-       *
-       * @param mapSupplier the map supplier
-       * @return the map
-       */
-      public Map<K, V> build(Supplier<? extends Map<K, V>> mapSupplier) {
-         Map<K, V> map = mapSupplier.get();
-         entries.forEach(entry -> map.put(entry.getKey(), entry.getValue()));
-         return map;
-      }
-
-      /**
-       * Puts the given key value in the map
-       *
-       * @param key   the key
-       * @param value the value
-       * @return the builder
-       */
-      public Builder<K, V> put(K key, V value) {
-         entries.add($(key, value));
-         return this;
-      }
-
-      /**
-       * Puts all entries of the given map in the map to be built
-       *
-       * @param other the other
-       * @return the builder
-       */
-      public Builder<K, V> putAll(Map<? extends K, ? extends V> other) {
-         other.forEach(this::put);
-         return this;
-      }
-
    }
 
 }//END OF Maps
