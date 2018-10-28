@@ -155,7 +155,21 @@ public final class Validation {
     * @return the object
     */
    public static String notNullOrBlank(String string, String message) {
+      return notNullOrBlank(string, () -> message);
+   }
+
+   /**
+    * Throws a <code>IllegalArgumentException</code> if the given string is null or blank.
+    *
+    * @param string   the string to check
+    * @param supplier the message supplier to use in the <code>IllegalArgumentException</code>
+    * @return the object
+    */
+   public static String notNullOrBlank(String string, Supplier<String> supplier) {
       if (Strings.isNullOrBlank(string)) {
+         String message = supplier == null
+                          ? null
+                          : supplier.get();
          if (message != null) {
             throw new IllegalArgumentException(message);
          } else {

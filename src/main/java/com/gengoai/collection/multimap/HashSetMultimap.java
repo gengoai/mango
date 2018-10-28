@@ -13,6 +13,9 @@ import java.util.HashSet;
 public class HashSetMultimap<K, V> extends SetMultimap<K, V> implements Serializable {
    private static final long serialVersionUID = 1L;
 
+   /**
+    * Instantiates a new Hash set multimap.
+    */
    public HashSetMultimap() {
       super(HashSet::new);
    }

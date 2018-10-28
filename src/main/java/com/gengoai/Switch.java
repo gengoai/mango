@@ -48,7 +48,7 @@ import static com.gengoai.Validation.notNull;
  *                    .caseStmt(c -> c.getNumWheels() == 8,  c -> 2.0 )
  *                    .caseStmt(c -> c.getNumWheels() > 8,  c -> 100.0 )
  *                    .build();
- * }*
+ * }**
  * In addition to <code>caseStmt</code>, <code>instanceOf</code> can be used a short hand to check if an object is
  * an instance of a given class and if so cast it to the given class and apply the given function.
  * </pre>
@@ -65,7 +65,7 @@ import static com.gengoai.Validation.notNull;
  *        $case(c -> c.getNumWheels() > 8, c -> 100.0);
  *        $default(c -> 1000);
  *    }};
- * }**
+ * }***
  * </pre>
  *
  * @param <T> the type parameter being switched on
@@ -164,7 +164,7 @@ public class Switch<T, R> implements SerializableFunction<T, R> {
 
 
    /**
-    * Case.
+    * Simple case statement that checks if the object is equal to the given value and if so returns the given result.
     *
     * @param value  the value
     * @param result the result

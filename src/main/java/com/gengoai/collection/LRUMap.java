@@ -56,7 +56,7 @@ public final class LRUMap<K, V> extends LinkedHashMap<K, V> {
     * <code>Integer.MAX_VALUE</code>.
     */
    public LRUMap() {
-      this.maxSize = Integer.MAX_VALUE;
+      this(Integer.MAX_VALUE);
    }
 
    /**
@@ -65,9 +65,8 @@ public final class LRUMap<K, V> extends LinkedHashMap<K, V> {
     * @param maxSize the max size
     */
    public LRUMap(int maxSize) {
-      if (maxSize <= 0) {
-         throw new IllegalArgumentException("maxSize must be greater than 0.");
-      }
+      super(maxSize == Integer.MAX_VALUE ? 16 : maxSize, 0.75f, true);
+      Validation.checkArgument(maxSize > 0, "maxSize must be greater than 0.");
       this.maxSize = maxSize;
    }
 

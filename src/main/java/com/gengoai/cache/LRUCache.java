@@ -49,6 +49,7 @@ public class LRUCache<K, V> implements Cache<K, V> {
 
    @Override
    public void put(K key, V value) {
+      cache.replace(key, value);
       cache.put(key, value);
    }
 
@@ -60,5 +61,12 @@ public class LRUCache<K, V> implements Cache<K, V> {
    @Override
    public long size() {
       return cache.size();
+   }
+
+   @Override
+   public String toString() {
+      return "LRUCache{" +
+                "size=" + size() +
+                '}';
    }
 }//END OF LRUCache

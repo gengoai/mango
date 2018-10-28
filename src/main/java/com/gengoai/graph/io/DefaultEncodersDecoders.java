@@ -23,9 +23,6 @@ package com.gengoai.graph.io;
 
 import com.gengoai.conversion.Converter;
 import com.gengoai.graph.Vertex;
-import com.gengoai.io.resource.Resource;
-import com.gengoai.io.resource.StringResource;
-import com.gengoai.io.serialization.JsonSerializer;
 
 import java.util.Collections;
 
@@ -95,44 +92,6 @@ public interface DefaultEncodersDecoders {
       };
    }
 
-
-   /**
-    * Encodes the vertex using json and sets the resulting json string as the label.
-    *
-    * @param <V> the vertex type
-    * @return the vertex encoder
-    */
-   static <V> VertexEncoder<V> jsonVertexEncoder() {
-      return vertex -> {
-         JsonSerializer serializer = new JsonSerializer();
-         Resource stringResource = new StringResource();
-         try {
-            serializer.serialize(vertex, stringResource);
-            return Vertex.builder().label(stringResource.readToString()).build();
-         } catch (Exception e) {
-            throw new RuntimeException(e);
-         }
-      };
-   }
-
-   /**
-    * Json vertex decoder which treats the label as json and converts the json into the vertex type.
-    *
-    * @param <V>         the vertex type
-    * @param vertexClass the vertex class
-    * @return the vertex decoder
-    */
-   static <V> VertexDecoder<V> jsonVertexDecoder(final Class<V> vertexClass) {
-      return vertex -> {
-         JsonSerializer serializer = new JsonSerializer();
-         Resource stringResource = new StringResource(vertex.getLabel());
-         try {
-            return serializer.deserialize(stringResource, vertexClass);
-         } catch (Exception e) {
-            throw new RuntimeException(e);
-         }
-      };
-   }
 
 
 }//END OF DefaultEncodersDecoders

@@ -22,15 +22,17 @@
 package com.gengoai.graph;
 
 
-import com.gengoai.Validation;
+import com.gengoai.collection.HashBasedTable;
 import com.gengoai.collection.Iterators;
 import com.gengoai.collection.Sets;
-import com.gengoai.collection.HashBasedTable;
 import com.gengoai.collection.Table;
 import com.gengoai.conversion.Cast;
 
 import java.io.Serializable;
 import java.util.*;
+
+import static com.gengoai.Validation.checkArgument;
+import static com.gengoai.Validation.notNull;
 
 /**
  * The type Adjacency matrix.
@@ -60,7 +62,7 @@ public class AdjacencyMatrix<V> implements Graph<V>, Serializable {
     * @return the adjacency list
     */
    public static <V> AdjacencyMatrix<V> undirected() {
-      return new AdjacencyMatrix<>(new UndirectedEdgeFactory<V>());
+      return new AdjacencyMatrix<>(new UndirectedEdgeFactory<>());
    }
 
    /**
@@ -69,7 +71,7 @@ public class AdjacencyMatrix<V> implements Graph<V>, Serializable {
     * @param edgeFactory the edge factory
     */
    public AdjacencyMatrix(EdgeFactory<V> edgeFactory) {
-      this(Validation.notNull(edgeFactory), new LinkedHashSet<>(), new HashBasedTable<>());
+      this(notNull(edgeFactory), new LinkedHashSet<>(), new HashBasedTable<>());
    }
 
    /**
@@ -79,9 +81,9 @@ public class AdjacencyMatrix<V> implements Graph<V>, Serializable {
     * @param matrix      the matrix to use to back the map
     */
    public AdjacencyMatrix(EdgeFactory<V> edgeFactory, Set<V> vertices, Table<V, V, Edge<V>> matrix) {
-      this.edgeFactory = Validation.notNull(edgeFactory);
-      this.matrix = Validation.notNull(matrix);
-      this.vertices = Validation.notNull(vertices);
+      this.edgeFactory = notNull(edgeFactory);
+      this.matrix = notNull(matrix);
+      this.vertices = notNull(vertices);
    }
 
    /**
@@ -98,7 +100,7 @@ public class AdjacencyMatrix<V> implements Graph<V>, Serializable {
 
    @Override
    public boolean addVertex(V vertex) {
-      return vertices.add(Validation.notNull(vertex));
+      return vertices.add(notNull(vertex));
    }
 
    @Override
@@ -129,8 +131,8 @@ public class AdjacencyMatrix<V> implements Graph<V>, Serializable {
 
    @Override
    public Edge<V> addEdge(V fromVertex, V toVertex, double weight) {
-      Validation.notNull(containsVertex(fromVertex), "Vertex must exist in the graph.");
-      Validation.notNull(containsVertex(toVertex), "Vertex must exist in the graph.");
+      checkArgument(containsVertex(fromVertex), "Source vertex must exist in the graph");
+      checkArgument(containsVertex(toVertex), "Destination vertex must exist in the graph");
       Edge<V> edge = createEdge(fromVertex, toVertex, weight);
       addEdge(edge);
       return edge;
@@ -147,7 +149,7 @@ public class AdjacencyMatrix<V> implements Graph<V>, Serializable {
 
    @Override
    public boolean removeEdge(Edge<V> edge) {
-      Validation.notNull(edge);
+      notNull(edge);
       return removeEdge(edge.getFirstVertex(), edge.getSecondVertex()) != null;
    }
 
@@ -234,10 +236,10 @@ public class AdjacencyMatrix<V> implements Graph<V>, Serializable {
 
    @Override
    public void addEdge(Edge<V> edge) {
-      Validation.notNull(edge);
-      Validation.notNull(containsVertex(edge.getFirstVertex()), "Vertex must exist in the graph.");
-      Validation.notNull(containsVertex(edge.getSecondVertex()), "Vertex must exist in the graph.");
-      Validation.checkArgument(!containsEdge(edge), "Edge already exists");
+      notNull(edge);
+      checkArgument(containsVertex(edge.vertex1), "Source vertex must exist in the graph");
+      checkArgument(containsVertex(edge.vertex2), "Destination vertex must exist in the graph");
+      checkArgument(!containsEdge(edge), "Edge already exists");
       V fromVertex = edge.getFirstVertex();
       V toVertex = edge.getSecondVertex();
       matrix.put(fromVertex, toVertex, edge);
@@ -260,5 +262,20 @@ public class AdjacencyMatrix<V> implements Graph<V>, Serializable {
    @Override
    public String toString() {
       return "AdjacencyMatrix{numVertices=" + numberOfVertices() + ", numEdges=" + numberOfEdges() + "}";
+   }
+
+   @Override
+   public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof AdjacencyMatrix)) return false;
+      AdjacencyMatrix<?> that = (AdjacencyMatrix<?>) o;
+      return Objects.equals(edgeFactory.getClass(), that.edgeFactory.getClass())
+                && Objects.equals(vertices, that.vertices) &&
+                Objects.equals(matrix, that.matrix);
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(vertices, matrix);
    }
 }//END OF AdjacencyMatrix

@@ -5,6 +5,10 @@ import com.gengoai.function.SerializableSupplier;
 import java.util.*;
 
 /**
+ * The type Forwarding set.
+ *
+ * @param <K> the type parameter
+ * @param <E> the type parameter
  * @author David B. Bracewell
  */
 class ForwardingSet<K, E> extends AbstractSet<E> implements ForwardingCollection<E> {
@@ -12,6 +16,13 @@ class ForwardingSet<K, E> extends AbstractSet<E> implements ForwardingCollection
    private final Map<K, Set<E>> map;
    private final SerializableSupplier<Set<E>> setSupplier;
 
+   /**
+    * Instantiates a new Forwarding set.
+    *
+    * @param key         the key
+    * @param map         the map
+    * @param setSupplier the set supplier
+    */
    public ForwardingSet(K key, Map<K, Set<E>> map, SerializableSupplier<Set<E>> setSupplier) {
       this.key = key;
       this.map = map;

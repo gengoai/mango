@@ -21,7 +21,7 @@ public class Stopwatch implements Serializable {
    private long elapsedTime = 0L;
    private boolean isRunning = false;
    /**
-    * The Name.
+    * The Name of the stopwatch
     */
    public final String name;
 

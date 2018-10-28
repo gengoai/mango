@@ -6,13 +6,29 @@ import java.util.Collections;
 import java.util.Iterator;
 
 /**
+ * The interface Forwarding collection.
+ *
+ * @param <E> the type parameter
  * @author David B. Bracewell
  */
 interface ForwardingCollection<E> extends Collection<E>, Serializable {
+   /**
+    * Delegate collection.
+    *
+    * @return the collection
+    */
    Collection<E> delegate();
 
+   /**
+    * Create if needed collection.
+    *
+    * @return the collection
+    */
    Collection<E> createIfNeeded();
 
+   /**
+    * Remove if needed.
+    */
    void removeIfNeeded();
 
    @Override

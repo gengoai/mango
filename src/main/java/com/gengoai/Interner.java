@@ -22,14 +22,18 @@
 package com.gengoai;
 
 import com.gengoai.collection.Streams;
+import com.gengoai.json.JsonEntry;
+import com.gengoai.json.JsonSerializable;
 
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 
 import static com.gengoai.Validation.notNull;
+import static com.gengoai.reflection.Types.getOrObject;
 
 /**
  * <p>Mimics {@link String#intern()} with any object using heap memory. Uses weak references so that objects no longer
@@ -38,7 +42,7 @@ import static com.gengoai.Validation.notNull;
  * @param <E> the type parameter
  * @author David B. Bracewell
  */
-public final class Interner<E> implements Serializable {
+public final class Interner<E> implements Serializable, JsonSerializable {
    private static final long serialVersionUID = 1L;
    private volatile WeakHashMap<E, E> map = new WeakHashMap<>();
 
@@ -91,6 +95,25 @@ public final class Interner<E> implements Serializable {
    @Override
    public String toString() {
       return "Interner{size=" + size() + "}";
+   }
+
+   @Override
+   public JsonEntry toJson() {
+      return JsonEntry.array(map.keySet());
+   }
+
+   /**
+    * Static method for creating an <code>Interner</code> from a {@link JsonEntry}.
+    *
+    * @param <K>    the type parameter
+    * @param entry  the entry
+    * @param params the params
+    * @return the interner
+    */
+   public static <K> Interner<K> fromJson(JsonEntry entry, Type... params) {
+      Interner<K> interner = new Interner<>();
+      interner.internAll(entry.getAsArray(getOrObject(0, params)));
+      return interner;
    }
 
 }//END OF Interner

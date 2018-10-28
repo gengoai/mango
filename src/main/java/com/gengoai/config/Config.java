@@ -66,7 +66,7 @@ public final class Config implements Serializable, JsonSerializable {
    private static final String BEAN_PROPERTY = "@{";
    private static final Pattern BEAN_SUBSTITUTION = Pattern.compile(Pattern.quote(BEAN_PROPERTY) + "(.+?)\\}");
    private static final String DEFAULT_CONFIG_FILE_NAME = "default.conf";
-   private static final Pattern STRING_SUBSTITUTION = Pattern.compile("\\$\\{(.+?)\\}");
+   private static final Pattern STRING_SUBSTITUTION = Pattern.compile("\\$\\{(.+?)}");
    private static final String SYSTEM_PROPERTY = "system.";
    private static final Logger log = Logger.getLogger(Config.class);
    private static final long serialVersionUID = 6875819132224789761L;
@@ -583,9 +583,7 @@ public final class Config implements Serializable, JsonSerializable {
          parser.getSetEntries()
                .forEach(entry -> getInstance().setterFunction.setProperty(entry.getKey(),
                                                                           entry.getValue(),
-                                                                          "CommandLine"
-                                                                         )
-                       );
+                                                                          "CommandLine"));
       }
    }
 
@@ -596,10 +594,6 @@ public final class Config implements Serializable, JsonSerializable {
     * @param value the value of the property
     */
    public static void setProperty(String name, String value) {
-//      if (value == null) {
-//         getInstance().properties.remove(name);
-//         return;
-//      }
       getInstance().properties.put(name, value);
       if (name.toLowerCase().endsWith(".level")) {
          String className = name.substring(0, name.length() - ".level".length());

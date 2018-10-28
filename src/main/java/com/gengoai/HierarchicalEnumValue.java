@@ -24,12 +24,9 @@ package com.gengoai;
 import com.gengoai.config.Config;
 import com.gengoai.config.Preloader;
 import com.gengoai.conversion.Cast;
-import com.gengoai.reflection.Reflect;
-import com.gengoai.reflection.ReflectionException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * <p>A enum like object that can have elements created at runtime as needed and which have a parent associated with
@@ -192,19 +189,7 @@ public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> ext
     * @return the parent via the configuration property or null
     */
    protected T getParentFromConfig() {
-      //TODO: Move this to a converter
-      String parentName = Config.get(canonicalName(), "parent").asString(null);
-      if (parentName != null && DynamicEnum.isDefined(Cast.as(getClass()), parentName)) {
-         return DynamicEnum.valueOf(Cast.as(getClass()), parentName);
-      } else if (parentName != null) {
-         try {
-            parentName = parentName.replaceFirst(Pattern.quote(getClass().getCanonicalName()), "");
-            DynamicEnum.register(Cast.as(Reflect.onClass(getClass()).invoke("create", parentName).get()));
-         } catch (ReflectionException e) {
-            return null;
-         }
-      }
-      return null;
+      return Cast.as(Config.get(canonicalName(), "parent").as(getClass(), null));
    }
 
 

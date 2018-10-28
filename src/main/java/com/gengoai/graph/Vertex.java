@@ -31,6 +31,8 @@ import java.util.Objects;
 import static com.gengoai.Validation.notNull;
 
 /**
+ * The type Vertex.
+ *
  * @author David B. Bracewell
  */
 public class Vertex implements Serializable {
@@ -38,31 +40,45 @@ public class Vertex implements Serializable {
    private final String label;
    private final Map<String, String> properties;
 
-   public Vertex(String label, Map<String, String> properties) {
+
+   private Vertex(String label, Map<String, String> properties) {
       Validation.notNullOrBlank(label, "label cannot be null");
       this.label = label;
       this.properties = notNull(properties);
    }
 
+
+   /**
+    * Builder vertex builder.
+    *
+    * @return the vertex builder
+    */
    public static VertexBuilder builder() {
       return new VertexBuilder();
    }
 
-   protected boolean canEqual(Object other) {
-      return other instanceof Vertex;
-   }
 
+   /**
+    * Gets label.
+    *
+    * @return the label
+    */
    public String getLabel() {
       return this.label;
    }
 
+   /**
+    * Gets properties.
+    *
+    * @return the properties
+    */
    public Map<String, String> getProperties() {
       return this.properties;
    }
 
    @Override
    public int hashCode() {
-      return Objects.hash(label, properties);
+      return Objects.hash(label);
    }
 
    @Override
@@ -70,43 +86,78 @@ public class Vertex implements Serializable {
       if (this == obj) {return true;}
       if (obj == null || getClass() != obj.getClass()) {return false;}
       final Vertex other = (Vertex) obj;
-      return Objects.equals(this.label, other.label)
-                && Objects.equals(this.properties, other.properties);
+      return Objects.equals(this.label, other.label);
    }
 
+   @Override
    public String toString() {
       return "Vertex(label=" + this.label + ", properties=" + this.properties + ")";
    }
 
+   /**
+    * The type Vertex builder.
+    */
    public static class VertexBuilder {
       private String label;
       private Map<String, String> properties = new HashMap<>();
 
+      /**
+       * Instantiates a new Vertex builder.
+       */
       VertexBuilder() {
       }
 
+      /**
+       * Build vertex.
+       *
+       * @return the vertex
+       */
       public Vertex build() {
          return new Vertex(label, new HashMap<>(properties));
       }
 
+      /**
+       * Clear properties vertex builder.
+       *
+       * @return the vertex builder
+       */
       public VertexBuilder clearProperties() {
          this.properties.clear();
          return this;
       }
 
+      /**
+       * Label vertex builder.
+       *
+       * @param label the label
+       * @return the vertex builder
+       */
       public VertexBuilder label(String label) {
          this.label = label;
          return this;
       }
 
+      /**
+       * Properties vertex builder.
+       *
+       * @param properties the properties
+       * @return the vertex builder
+       */
       public VertexBuilder properties(Map<? extends String, ? extends String> properties) {
          this.properties.clear();
          this.properties.putAll(properties);
          return this;
       }
 
+      /**
+       * Property vertex builder.
+       *
+       * @param propertyKey   the property key
+       * @param propertyValue the property value
+       * @return the vertex builder
+       */
       public VertexBuilder property(String propertyKey, String propertyValue) {
-         this.properties.putIfAbsent(propertyKey, propertyValue);
+         this.properties.put(propertyKey, propertyValue);
          return this;
       }
 

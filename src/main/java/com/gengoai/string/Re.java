@@ -195,10 +195,23 @@ public final class Re {
       return chars(false, chars);
    }
 
+   /**
+    * Named group string.
+    *
+    * @param groupName the group name
+    * @param regex     the regex
+    * @return the string
+    */
    public static String namedGroup(String groupName, String... regex) {
       return String.format("(?<%s> %s)", groupName, String.join("", regex));
    }
 
+   /**
+    * Non matching group string.
+    *
+    * @param regex the regex
+    * @return the string
+    */
    public static String nonMatchingGroup(String... regex) {
       return String.format("(?:%s)", String.join("", regex));
    }
@@ -243,6 +256,12 @@ public final class Re {
       return String.format("(?<= %s)", String.join("", regex));
    }
 
+   /**
+    * Q string.
+    *
+    * @param regex the regex
+    * @return the string
+    */
    public static String q(String... regex) {
       return String.format("\\Q%s\\E", String.join("", regex));
    }
@@ -267,6 +286,5 @@ public final class Re {
    public static Pattern compile(String... patterns) {
       return Pattern.compile(String.join("", patterns));
    }
-
 
 }//END OF Regex

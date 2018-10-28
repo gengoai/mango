@@ -7,13 +7,24 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * The type Forwarding list.
+ *
+ * @param <K> the type parameter
+ * @param <E> the type parameter
  * @author David B. Bracewell
  */
-public class ForwardingList<K, E> extends AbstractList<E> implements ForwardingCollection<E> {
+class ForwardingList<K, E> extends AbstractList<E> implements ForwardingCollection<E> {
    private final K key;
    private final Map<K, List<E>> map;
    private final SerializableSupplier<List<E>> listSupplier;
 
+   /**
+    * Instantiates a new Forwarding list.
+    *
+    * @param key          the key
+    * @param map          the map
+    * @param listSupplier the list supplier
+    */
    public ForwardingList(K key, Map<K, List<E>> map, SerializableSupplier<List<E>> listSupplier) {
       this.key = key;
       this.map = map;

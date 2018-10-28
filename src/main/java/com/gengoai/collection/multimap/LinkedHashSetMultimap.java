@@ -13,6 +13,9 @@ import java.util.LinkedHashSet;
 public class LinkedHashSetMultimap<K, V> extends SetMultimap<K, V> implements Serializable {
    private static final long serialVersionUID = 1L;
 
+   /**
+    * Instantiates a new Linked hash set multimap.
+    */
    public LinkedHashSetMultimap() {
       super(LinkedHashSet::new);
    }

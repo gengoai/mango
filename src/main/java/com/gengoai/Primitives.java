@@ -19,7 +19,7 @@ import static com.gengoai.Validation.notNull;
 public final class Primitives {
 
    private static final Switch<Class<?>, Object> defaultValues = new Switch<Class<?>, Object>() {{
-      $case(Boolean.class, true);
+      $case(Boolean.class, false);
       $case(Byte.class, (byte) 0);
       $case(Character.class, (char) 0);
       $case(Double.class, 0d);
@@ -54,11 +54,11 @@ public final class Primitives {
    }
 
    /**
-    * Default value t.
+    * Gets the default value of the given class (primitive and boxed versions all other classes will result in null)
     *
     * @param <T>   the type parameter
     * @param clazz the clazz
-    * @return the t
+    * @return the default value (null for non-primitives and their boxed types)
     */
    public static <T> T defaultValue(Class<T> clazz) {
       return Cast.as(defaultValues.apply(wrap(notNull(clazz))));

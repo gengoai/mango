@@ -58,8 +58,8 @@ public class GraphML<V> implements GraphReader<V>, GraphWriter<V> {
    /**
     * Instantiates a new GraphML reader and writer.
     */
-   public GraphML() {
-      this(null, null, null, null);
+   public GraphML(Class<V> vClass) {
+      this(null, DefaultEncodersDecoders.defaultVertexDecoder(vClass), null, null);
    }
 
    /**

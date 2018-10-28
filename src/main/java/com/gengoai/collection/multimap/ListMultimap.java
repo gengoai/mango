@@ -16,6 +16,11 @@ public abstract class ListMultimap<K, V> extends BaseMultimap<K, V, List<V>> {
    private static final long serialVersionUID = 1L;
    private final SerializableSupplier<List<V>> listSupplier;
 
+   /**
+    * Instantiates a new List multimap.
+    *
+    * @param listSupplier the list supplier
+    */
    protected ListMultimap(SerializableSupplier<List<V>> listSupplier) {
       this.listSupplier = listSupplier;
    }

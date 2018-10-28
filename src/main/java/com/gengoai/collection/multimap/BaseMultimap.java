@@ -13,10 +13,14 @@ import java.util.Objects;
  *
  * @param <K> the key type parameter
  * @param <V> the value type parameter
+ * @param <C> the type parameter
  * @author David B. Bracewell
  */
 public abstract class BaseMultimap<K, V, C extends Collection<V>> implements Multimap<K, V>, Serializable {
    private static final long serialVersionUID = 1L;
+   /**
+    * The Map.
+    */
    protected final Map<K, C> map = new HashMap<>();
 
    @Override

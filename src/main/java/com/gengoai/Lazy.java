@@ -26,7 +26,7 @@ import static com.gengoai.Validation.notNull;
  */
 public final class Lazy<T> implements Serializable {
    private static final long serialVersionUID = 1L;
-   private volatile T object;
+   private volatile transient T object;
    private volatile SerializableSupplier<? extends T> supplier;
 
    /**

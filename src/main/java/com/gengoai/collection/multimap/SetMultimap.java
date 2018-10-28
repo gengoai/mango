@@ -16,6 +16,11 @@ public abstract class SetMultimap<K, V> extends BaseMultimap<K, V, Set<V>> {
    private static final long serialVersionUID = 1L;
    private final SerializableSupplier<Set<V>> setSupplier;
 
+   /**
+    * Instantiates a new Set multimap.
+    *
+    * @param setSupplier the set supplier
+    */
    protected SetMultimap(SerializableSupplier<Set<V>> setSupplier) {
       this.setSupplier = setSupplier;
    }

@@ -21,11 +21,10 @@
 
 package com.gengoai.graph;
 
-import com.gengoai.graph.AdjacencyMatrix;
-import com.gengoai.graph.EdgeMergeFunctions;
-import com.gengoai.graph.Graph;
 import com.gengoai.graph.io.DefaultEncodersDecoders;
+import com.gengoai.graph.io.GraphJson;
 import com.gengoai.graph.io.GraphML;
+import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.io.resource.StringResource;
 import org.junit.Before;
@@ -39,63 +38,82 @@ import static org.junit.Assert.*;
 public class GraphUtilsTest {
 
 
-  Graph<String> d1;
-  Graph<String> d2;
+   Graph<String> d1;
+   Graph<String> d2;
 
-  @Before
-  public void setUp() throws Exception {
-    d1 = AdjacencyMatrix.directed();
-    d1.addVertex("A");
-    d1.addVertex("B");
-    d1.addVertex("C");
-    d1.addEdge("A", "B");
-    d1.addEdge("A", "C");
-    d1.addEdge("C", "B");
+   @Before
+   public void setUp() throws Exception {
+      d1 = AdjacencyMatrix.directed();
+      d1.addVertex("A");
+      d1.addVertex("B");
+      d1.addVertex("C");
+      d1.addEdge("A", "B");
+      d1.addEdge("A", "C");
+      d1.addEdge("C", "B");
 
-    d2 = AdjacencyMatrix.directed();
-    d2.addVertex("A");
-    d2.addVertex("B");
-    d2.addVertex("C");
-    d2.addVertex("D");
-    d2.addEdge("A", "B", 20.0d);
-    d2.addEdge("A", "D");
-    d2.addEdge("B", "C");
-  }
+      d2 = AdjacencyMatrix.directed();
+      d2.addVertex("A");
+      d2.addVertex("B");
+      d2.addVertex("C");
+      d2.addVertex("D");
+      d2.addEdge("A", "B", 20.0d);
+      d2.addEdge("A", "D");
+      d2.addEdge("B", "C");
+   }
 
-  @Test
-  public void testMergeNonEmpty() throws Exception {
-    d1.merge(d2, EdgeMergeFunctions.<String>keepOriginal());
-    assertEquals(4, d1.numberOfVertices());
-    assertEquals(1d, d1.getWeight("A", "B"), 0d);
-    assertTrue(d1.containsEdge("C", "B"));
-    assertTrue(d1.containsEdge("B", "C"));
-
-    GraphML<String> graphViz = new GraphML<>();
-    graphViz.setVertexEncoder(DefaultEncodersDecoders.jsonVertexEncoder());
-    graphViz.setVertexDecoder(DefaultEncodersDecoders.jsonVertexDecoder(String.class));
-    Resource r = new StringResource();
-    graphViz.write(d1, r);
+   @Test
+   public void json() throws Exception {
+      GraphJson<String> gJson = new GraphJson<>(String.class);
+      Resource r = Resources.fromString();
+      gJson.write(d1, r);
+      Graph<String> d3 = gJson.read(r);
+      assertEquals(d1, d3);
+   }
 
 
-    graphViz.setVertexDecoder(DefaultEncodersDecoders.defaultVertexDecoder(String.class));
-    Graph<String> g2 = graphViz.read(r);
-  }
+   @Test
+   public void graphML() throws Exception {
+      GraphML<String> gJson = new GraphML<>(String.class);
+      Resource r = Resources.fromString();
+      gJson.write(d1, r);
+      Graph<String> d3 = gJson.read(r);
+      assertEquals(d1, d3);
+   }
 
-  @Test
-  public void testMergeFromEmpty() throws Exception {
-    Graph<String> d3 = AdjacencyMatrix.directed();
-    d1.merge(d3);
-    assertEquals(3, d1.numberOfVertices());
-  }
+   @Test
+   public void testMergeNonEmpty() throws Exception {
+      d1.merge(d2, EdgeMergeFunctions.<String>keepOriginal());
+      assertEquals(4, d1.numberOfVertices());
+      assertEquals(1d, d1.getWeight("A", "B"), 0d);
+      assertTrue(d1.containsEdge("C", "B"));
+      assertTrue(d1.containsEdge("B", "C"));
 
-  @Test
-  public void testMergeToEmpty() throws Exception {
-    Graph<String> d3 = AdjacencyMatrix.directed();
-    d3.merge(d1);
-    assertFalse(d3.isEmpty());
-    assertTrue(d3.containsEdge("A", "B"));
-    assertEquals(3, d3.numberOfVertices());
-  }
+      GraphML<String> graphViz = new GraphML<>(String.class);
+      graphViz.setVertexEncoder(DefaultEncodersDecoders.defaultVertexEncoder());
+      graphViz.setVertexDecoder(DefaultEncodersDecoders.defaultVertexDecoder(String.class));
+      Resource r = new StringResource();
+      graphViz.write(d1, r);
+
+
+      graphViz.setVertexDecoder(DefaultEncodersDecoders.defaultVertexDecoder(String.class));
+      Graph<String> g2 = graphViz.read(r);
+   }
+
+   @Test
+   public void testMergeFromEmpty() throws Exception {
+      Graph<String> d3 = AdjacencyMatrix.directed();
+      d1.merge(d3);
+      assertEquals(3, d1.numberOfVertices());
+   }
+
+   @Test
+   public void testMergeToEmpty() throws Exception {
+      Graph<String> d3 = AdjacencyMatrix.directed();
+      d3.merge(d1);
+      assertFalse(d3.isEmpty());
+      assertTrue(d3.containsEdge("A", "B"));
+      assertEquals(3, d3.numberOfVertices());
+   }
 
 
 }//END OF GraphUtilsTest

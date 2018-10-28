@@ -22,6 +22,7 @@
 package com.gengoai;
 
 import com.gengoai.collection.Lists;
+import com.gengoai.json.JsonEntry;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -60,5 +61,10 @@ public class InternerTest {
       assertEquals(4, result.size());
    }
 
-
+   @Test
+   public void json() {
+      JsonEntry entry = interner.toJson();
+      Interner<String> des = Interner.fromJson(entry, String.class);
+      assertEquals(interner, des);
+   }
 }

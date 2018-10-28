@@ -10,23 +10,29 @@ import com.gengoai.reflection.Types;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 import static com.gengoai.Validation.checkArgument;
 import static com.gengoai.reflection.Types.asClass;
 
 /**
- * The interface Parameters.
+ * <p>Object representation of named parameters. Assuming, we have defined an enum <Code>MyFunctionParams</Code> that
+ * is to be used by <code>myFunction</code>:</p>
+ * <pre>
+ * {@code
+ *    myFunction(params(HEIGHT, 20,
+ *                      WIDTH, 100,
+ *                      DEPTH, 40));
+ * }
+ * </pre>
+ * <p>The elements of the <Code>MyFunctionParams</Code> enum define the default values for the parameters allowing the
+ * parameters to be optional. This class is an alternative to the builder pattern.</p>
  *
  * @param <K> the type parameter
  * @author David B. Bracewell
  */
-public final class Parameters<K extends Enum<K> & ValueTypeInformation> implements Iterable<K>, Copyable<Parameters<K>>, JsonSerializable, Serializable {
+public final class NamedParameters<K extends Enum<K> & NamedParameters.Value> implements Iterable<K>, Copyable<NamedParameters<K>>, JsonSerializable, Serializable {
    private static final long serialVersionUID = 1L;
-   private final Class<K> keyClass;
    private final EnumMap<K, Object> parameters;
 
    /**
@@ -39,9 +45,9 @@ public final class Parameters<K extends Enum<K> & ValueTypeInformation> implemen
     *              being names and odd entries values.
     * @return the parameters
     */
-   public static <K extends Enum<K> & ValueTypeInformation> Parameters<K> params(K key, Object value, Object... other) {
+   public static <K extends Enum<K> & Value> NamedParameters<K> params(K key, Object value, Object... other) {
       final Class<K> keyClass = key.getDeclaringClass();
-      Parameters<K> toReturn = new Parameters<>(keyClass);
+      NamedParameters<K> toReturn = new NamedParameters<>(keyClass);
       toReturn.set(key, value);
       checkArgument(other.length % 2 == 0, "Must have an even number of arguments");
       for (int i = 0; i < other.length; i += 2) {
@@ -50,14 +56,17 @@ public final class Parameters<K extends Enum<K> & ValueTypeInformation> implemen
       return toReturn;
    }
 
-   private Parameters(Class<K> keyClass) {
-      this.keyClass = keyClass;
+   private NamedParameters(Class<K> keyClass) {
       this.parameters = new EnumMap<>(keyClass);
    }
 
+   private NamedParameters(EnumMap<K, Object> map) {
+      this.parameters = map;
+   }
+
    @Override
-   public Parameters<K> copy() {
-      return new Parameters<>(keyClass).setAll(parameters);
+   public NamedParameters<K> copy() {
+      return new NamedParameters<>(parameters.clone());
    }
 
    /**
@@ -192,13 +201,14 @@ public final class Parameters<K extends Enum<K> & ValueTypeInformation> implemen
     * @param value the parameter value
     * @return This set of parameters
     */
-   public Parameters<K> set(K name, Object value) {
+   public NamedParameters<K> set(K name, Object value) {
       if (value == null) {
          parameters.remove(name);
          return this;
       }
-      checkArgument(Types.isAssignable(name.getValueType(), value.getClass()),
-                    () -> "Illegal Argument: " + value.getClass() + " is not of type " + name.getValueType());
+      checkArgument(
+         Types.isAssignable(Primitives.wrap(asClass(name.getValueType())), Primitives.wrap(value.getClass())),
+         () -> "Illegal Argument: " + value.getClass() + " is not of type " + name.getValueType());
       parameters.put(name, value);
       return this;
    }
@@ -209,18 +219,9 @@ public final class Parameters<K extends Enum<K> & ValueTypeInformation> implemen
     * @param values the parameter names and their values to set
     * @return This set of parameters
     */
-   public Parameters<K> setAll(Map<K, Object> values) {
+   public NamedParameters<K> setAll(Map<K, Object> values) {
       values.forEach(this::set);
       return this;
-   }
-
-   /**
-    * Gets class information for the parameter key
-    *
-    * @return the key class
-    */
-   public Class<K> getKeyClass() {
-      return keyClass;
    }
 
    @Override
@@ -238,9 +239,9 @@ public final class Parameters<K extends Enum<K> & ValueTypeInformation> implemen
     * @param types the parameter types
     * @return the parameter set
     */
-   public static <K extends Enum<K> & ValueTypeInformation> Parameters<K> fromJson(JsonEntry entry, Type... types) {
+   public static <K extends Enum<K> & Value> NamedParameters<K> fromJson(JsonEntry entry, Type... types) {
       Class<K> keyClass = Cast.as(asClass(types[0]));
-      Parameters<K> parameters = new Parameters<>(keyClass);
+      NamedParameters<K> parameters = new NamedParameters<>(keyClass);
       entry.propertyIterator()
            .forEachRemaining(e -> {
               K key = Enum.valueOf(keyClass, e.getKey());
@@ -254,4 +255,44 @@ public final class Parameters<K extends Enum<K> & ValueTypeInformation> implemen
    public String toString() {
       return asMap().toString();
    }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(parameters);
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {return true;}
+      if (obj == null || getClass() != obj.getClass()) {return false;}
+      final NamedParameters other = (NamedParameters) obj;
+      return Objects.equals(this.parameters, other.parameters);
+   }
+
+   /**
+    * Interface for use with {@link NamedParameters} for defining the default value and value types of named
+    * parameters.
+    *
+    * @author David B. Bracewell
+    */
+   public interface Value {
+
+
+      /**
+       * Gets value type.
+       *
+       * @return the value type
+       */
+      Type getValueType();
+
+      /**
+       * Default value for the parameter
+       *
+       * @return the default value (null by default)
+       */
+      default Object defaultValue() {
+         return null;
+      }
+
+   }//END OF ParameterName
 }//END OF Parameters
