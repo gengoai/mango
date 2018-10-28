@@ -12,9 +12,8 @@ import java.util.function.Consumer;
 
 /**
  * <p> Abstract base class for a swing based applications. Child classes should define their UI via the {@link
- * #setup()}
- * method and should define a <code>main</code> method that calls {@link #run(String[])}. An example application is
- * listed below.</p>
+ * #setup()} method and should define a <code>main</code> method that calls {@link #run(String[])}. An example
+ * application is listed below.</p>
  * <pre>
  * {@code
  *    public class MyApplication extends SwingApplication {
@@ -92,7 +91,7 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
     * @param consumer the consumer
     * @return the mouse adapter
     */
-   public static MouseAdapter mousePressed( Consumer<MouseEvent> consumer) {
+   public static MouseAdapter mousePressed(Consumer<MouseEvent> consumer) {
       return new MouseAdapter() {
          @Override
          public void mousePressed(MouseEvent e) {
@@ -108,7 +107,7 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
     * @param consumer the consumer
     * @return the mouse adapter
     */
-   public static MouseAdapter mouseReleased( Consumer<MouseEvent> consumer) {
+   public static MouseAdapter mouseReleased(Consumer<MouseEvent> consumer) {
       return new MouseAdapter() {
          @Override
          public void mouseReleased(MouseEvent e) {
@@ -124,7 +123,7 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
     * @param consumer the consumer
     * @return the popup menu listener
     */
-   public static PopupMenuListener popupMenuWillBecomeInvisible( Consumer<PopupMenuEvent> consumer) {
+   public static PopupMenuListener popupMenuWillBecomeInvisible(Consumer<PopupMenuEvent> consumer) {
       return new PopupMenuListener() {
          @Override
          public void popupMenuCanceled(PopupMenuEvent e) {
@@ -149,7 +148,7 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
     * @param consumer the consumer
     * @return the popup menu listener
     */
-   public static PopupMenuListener popupMenuWillBecomeVisible( Consumer<PopupMenuEvent> consumer) {
+   public static PopupMenuListener popupMenuWillBecomeVisible(Consumer<PopupMenuEvent> consumer) {
       return new PopupMenuListener() {
          @Override
          public void popupMenuCanceled(PopupMenuEvent e) {
