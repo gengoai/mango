@@ -24,22 +24,25 @@ package com.gengoai.graph.io;
 
 import com.gengoai.graph.Vertex;
 
+import java.io.Serializable;
+
 /**
  * <p>Decodes a {@link Vertex} object into a given type.</p>
  *
  * @param <V> the vertex type
  * @author David B. Bracewell
  */
-public interface VertexDecoder<V> {
+@FunctionalInterface
+public interface VertexDecoder<V> extends Serializable {
 
 
-  /**
-   * Decodes a {@link Vertex} object into a given type.
-   *
-   * @param vertex the vertex to decode
-   * @return the vertex of type <code>V</code>
-   */
-  V decode(Vertex vertex);
+   /**
+    * Decodes a {@link Vertex} object into a given type.
+    *
+    * @param vertex the vertex to decode
+    * @return the vertex of type <code>V</code>
+    */
+   V decode(Vertex vertex);
 
 
 }//END OF VertexDecoder

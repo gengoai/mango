@@ -21,6 +21,7 @@
 
 package com.gengoai.collection;
 
+import com.gengoai.conversion.Cast;
 import com.gengoai.function.SerializableFunction;
 
 import java.util.*;
@@ -262,9 +263,8 @@ public final class Lists {
     * @return the new linked list containing the given elements
     */
    @SafeVarargs
-   @SuppressWarnings("varargs")
-   public static <T> List<T> linkedListOf(T... elements) {
-      return createList(LinkedList::new, elements);
+   public static <T> LinkedList<T> linkedListOf(T... elements) {
+      return Cast.as(createList(LinkedList::new, elements));
    }
 
    /**

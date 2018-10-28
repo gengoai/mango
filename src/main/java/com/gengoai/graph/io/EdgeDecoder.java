@@ -24,6 +24,7 @@ package com.gengoai.graph.io;
 
 import com.gengoai.graph.Edge;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -32,15 +33,16 @@ import java.util.Map;
  * @param <V> the type of the vertex
  * @author David B. Bracewell
  */
-public interface EdgeDecoder<V> {
+@FunctionalInterface
+public interface EdgeDecoder<V> extends Serializable {
 
-  /**
-   * Decodes the properties in the <code>Map</code> adding them to the edge as necessary.
-   *
-   * @param edge       the edge
-   * @param properties the properties
-   * @return the edge with the decoded properties
-   */
-  Edge<V> decode(Edge<V> edge, Map<String, String> properties);
+   /**
+    * Decodes the properties in the <code>Map</code> adding them to the edge as necessary.
+    *
+    * @param edge       the edge
+    * @param properties the properties
+    * @return the edge with the decoded properties
+    */
+   Edge<V> decode(Edge<V> edge, Map<String, String> properties);
 
 }//END OF EdgeDecoder

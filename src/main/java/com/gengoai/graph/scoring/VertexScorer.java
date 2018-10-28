@@ -35,20 +35,20 @@ import java.util.Map;
  */
 public interface VertexScorer<V> {
 
-  /**
-   * Ranks the vertices based on the score
-   *
-   * @param g The graph
-   * @return A sorted list of vertex - double pairs
-   */
-  public List<Map.Entry<V, Double>> rank(Graph<V> g);
+   /**
+    * Ranks the vertices based on the score
+    *
+    * @param g The graph
+    * @return A sorted list of vertex - double pairs
+    */
+   List<Map.Entry<V, Double>> rank(Graph<V> g);
 
-  /**
-   * Scores the vertices in the graph
-   *
-   * @param g The graph
-   * @return A counter with vertex as key and score as value
-   */
-  public Counter<V> score(Graph<V> g);
+   /**
+    * Scores the vertices in the graph
+    *
+    * @param g The graph
+    * @return A counter with vertex as key and score as value
+    */
+   Counter<V> score(Graph<V> g);
 
 }//END OF VertexRanker

@@ -19,18 +19,19 @@
  * under the License.
  */
 
-package com.gengoai.graph.search;
+package com.gengoai.graph.algorithms;
 
 
 import com.gengoai.graph.Edge;
+import com.gengoai.graph.Graph;
 
 import java.util.List;
 
 /**
  * @author David B. Bracewell
  */
-public interface GraphSearch<V> {
+public interface GraphSearch {
 
-  List<Edge<V>> search(V startingPoint, V endingPoint);
+   <V> List<Edge<V>> search(Graph<V> graph, V startingPoint, V endingPoint);
 
 }//END OF GraphSearch

@@ -24,6 +24,7 @@ package com.gengoai.graph.io;
 
 import com.gengoai.graph.Edge;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -34,7 +35,7 @@ import java.util.Map;
  * @author David B. Bracewell
  */
 @FunctionalInterface
-public interface EdgeEncoder<V> {
+public interface EdgeEncoder<V> extends Serializable {
 
 
   /**

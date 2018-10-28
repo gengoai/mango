@@ -24,6 +24,8 @@ package com.gengoai.graph.io;
 
 import com.gengoai.graph.Vertex;
 
+import java.io.Serializable;
+
 /**
  * <p>Encodes a vertex into a specialized <code>Vertex</code> object which contains a label and set of properties.</p>
  *
@@ -31,7 +33,7 @@ import com.gengoai.graph.Vertex;
  * @author David B. Bracewell
  */
 @FunctionalInterface
-public interface VertexEncoder<V> {
+public interface VertexEncoder<V> extends Serializable {
 
   /**
    * ncodes a vertex into a specialized <code>Vertex</code> object which contains a label and set of properties.
