@@ -33,54 +33,54 @@ import java.util.*;
  */
 public class StronglyConnectedComponents<V> implements Clusterer<V> {
 
-  private int index;
-  private Stack<V> vertexStack;
-  private Map<V, Integer> vertexIndex;
-  private Map<V, Integer> vertexLowLink;
-  private Graph<V> graph;
-  private List<Set<V>> clusters;
+   private int index;
+   private Stack<V> vertexStack;
+   private Map<V, Integer> vertexIndex;
+   private Map<V, Integer> vertexLowLink;
+   private Graph<V> graph;
+   private List<Set<V>> clusters;
 
-  @Override
-  public List<Set<V>> cluster(Graph<V> g) {
-    Validation.notNull(g);
-    graph = g;
-    index = 0;
-    vertexStack = new Stack<>();
-    vertexIndex = new HashMap<>();
-    vertexLowLink = new HashMap<>();
-    clusters = new ArrayList<>();
-    g.vertices().stream().filter(v -> !vertexIndex.containsKey(v)).forEach(this::strongConnect);
-    return clusters;
-  }
+   @Override
+   public List<Set<V>> cluster(Graph<V> g) {
+      Validation.notNull(g);
+      graph = g;
+      index = 0;
+      vertexStack = new Stack<>();
+      vertexIndex = new HashMap<>();
+      vertexLowLink = new HashMap<>();
+      clusters = new ArrayList<>();
+      g.vertices().stream().filter(v -> !vertexIndex.containsKey(v)).forEach(this::strongConnect);
+      return clusters;
+   }
 
-  private void strongConnect(V vertex) {
-    vertexIndex.put(vertex, index);
-    vertexLowLink.put(vertex, index);
+   private void strongConnect(V vertex) {
+      vertexIndex.put(vertex, index);
+      vertexLowLink.put(vertex, index);
 
-    this.index++;
-    vertexStack.push(vertex);
+      this.index++;
+      vertexStack.push(vertex);
 
-    for (V v2 : graph.getSuccessors(vertex)) {
-      if (!vertexIndex.containsKey(v2)) {
-        strongConnect(v2);
-        vertexLowLink.put(vertex, Math.min(vertexLowLink.get(vertex), vertexLowLink.get(v2)));
-      } else {
-        vertexLowLink.put(vertex, Math.min(vertexLowLink.get(vertex), vertexLowLink.get(v2)));
+      for (V v2 : graph.getSuccessors(vertex)) {
+         if (!vertexIndex.containsKey(v2)) {
+            strongConnect(v2);
+            vertexLowLink.put(vertex, Math.min(vertexLowLink.get(vertex), vertexLowLink.get(v2)));
+         } else {
+            vertexLowLink.put(vertex, Math.min(vertexLowLink.get(vertex), vertexLowLink.get(v2)));
+         }
       }
-    }
 
-    if (vertexIndex.get(vertex).intValue() == vertexLowLink.get(vertex).intValue()) {
-      Set<V> cluster = new HashSet<>();
-      V w;
-      do {
-        w = vertexStack.pop();
-        cluster.add(w);
-      } while (!w.equals(vertex) && vertexStack.size() > 0);
-      if (!cluster.isEmpty()) {
-        clusters.add(cluster);
+      if (vertexIndex.get(vertex).intValue() == vertexLowLink.get(vertex).intValue()) {
+         Set<V> cluster = new HashSet<>();
+         V w;
+         do {
+            w = vertexStack.pop();
+            cluster.add(w);
+         } while (!w.equals(vertex) && vertexStack.size() > 0);
+         if (!cluster.isEmpty()) {
+            clusters.add(cluster);
+         }
       }
-    }
-  }
+   }
 
 
 }//END OF ConnectedComponents

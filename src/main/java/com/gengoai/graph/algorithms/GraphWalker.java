@@ -21,21 +21,21 @@
 
 package com.gengoai.graph.algorithms;
 
-import java.util.Iterator;
-
 /**
- * The interface Vertex traversal.
- * @param <V>  the type parameter
+ * The interface Vertex walker.
+ *
+ * @param <V> the type parameter
  * @author David B. Bracewell
  */
-public interface VertexTraversal<V> {
+public interface GraphWalker<V> {
 
-  /**
-   * Starts traversing a graph at the given vertex
-   *
-   * @param startingVertex The starting vertex
-   * @return An iterator to traverse the graph from the starting vertex
-   */
-  Iterator<V> iterator(V startingVertex);
+   /**
+    * Walk v.
+    *
+    * @param startingVertex the starting vertex
+    * @param numberOfSteps  the number of steps
+    * @return the v
+    */
+   V walk(V startingVertex, int numberOfSteps);
 
-}//END OF VertexTraversal
+}//END OF Walker

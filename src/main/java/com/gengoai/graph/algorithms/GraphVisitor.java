@@ -1,14 +1,12 @@
 package com.gengoai.graph.algorithms;
 
-import com.gengoai.graph.Graph;
-
 import java.util.Iterator;
 
 /**
  * @author David B. Bracewell
  */
-public interface GraphVisitor {
+public interface GraphVisitor<V> {
 
-   <V> Iterator<V> iterator(Graph<V> graph, V startingPoint);
+   Iterator<V> iterator(V startingPoint);
 
 }//END OF Visitor

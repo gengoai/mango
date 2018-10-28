@@ -35,16 +35,15 @@ import java.util.Random;
 /**
  * @author David B. Bracewell
  */
-public class RandomWalk<V> implements VertexTraversal<V>, VertexWalker<V>, Serializable {
+public class RandomWalk<V> implements GraphVisitor<V>, GraphWalker<V>, Serializable {
 
    private static final long serialVersionUID = -6167223778955711361L;
    private final boolean isWeighted;
    private final Graph<V> graph;
 
    /**
-    * Default Constructor
-    *testPath(source);
-      }
+    * Default Constructor testPath(source);
+    *
     * @param graph The graph we will visit
     */
    public RandomWalk(Graph<V> graph) {

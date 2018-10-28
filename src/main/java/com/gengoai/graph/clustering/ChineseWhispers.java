@@ -33,8 +33,7 @@ import java.util.*;
 
 /**
  * <p>
- * Implementation of the Chinese Whispers graph clustering algorithm as outlined
- * in
+ * Implementation of the Chinese Whispers graph clustering algorithm as outlined in
  * <ul>
  * <li>Biemann, Chris. "Chinese whispers: an efficient graph clustering algorithm and its application to natural
  * language processing problems." Proceedings of the First Workshop on Graph Based Methods for Natural Language
@@ -63,8 +62,7 @@ public class ChineseWhispers<V> implements Clusterer<V> {
     * Initialization constructor
     *
     * @param maxIterations  The maximum number of iterations to run the clustering
-    * @param acceptanceRate The rate used to determine if a label change should
-    *                       be accepted
+    * @param acceptanceRate The rate used to determine if a label change should be accepted
     * @param newClusterRate the new cluster rate
     */
    public ChineseWhispers(int maxIterations, double acceptanceRate, double newClusterRate) {

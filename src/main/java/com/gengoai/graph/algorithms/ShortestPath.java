@@ -34,28 +34,28 @@ import java.util.List;
  */
 public interface ShortestPath<V> {
 
-  /**
-   * Distance double.
-   *
-   * @param from the from
-   * @param to   the to
-   * @return the double
-   */
-  default double distance(V from, V to) {
-    List<Edge<V>> path = path(from, to);
-    if (path == null || path.isEmpty()) {
-      return Double.POSITIVE_INFINITY;
-    }
-    return path.size() - 1;
-  }
+   /**
+    * Distance double.
+    *
+    * @param from the from
+    * @param to   the to
+    * @return the double
+    */
+   default double distance(V from, V to) {
+      List<Edge<V>> path = path(from, to);
+      if (path == null || path.isEmpty()) {
+         return Double.POSITIVE_INFINITY;
+      }
+      return path.size() - 1;
+   }
 
-  /**
-   * Path list.
-   *
-   * @param from the from
-   * @param to   the to
-   * @return the list
-   */
-  List<Edge<V>> path(V from, V to);
+   /**
+    * Path list.
+    *
+    * @param from the from
+    * @param to   the to
+    * @return the list
+    */
+   List<Edge<V>> path(V from, V to);
 
 }//END OF ShortestPath
