@@ -43,7 +43,8 @@ public class RandomWalk<V> implements VertexTraversal<V>, VertexWalker<V>, Seria
 
    /**
     * Default Constructor
-    *
+    *testPath(source);
+      }
     * @param graph The graph we will visit
     */
    public RandomWalk(Graph<V> graph) {

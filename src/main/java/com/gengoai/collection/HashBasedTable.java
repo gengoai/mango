@@ -1,10 +1,10 @@
-package com.gengoai.collection.table;
+package com.gengoai.collection;
 
-import com.gengoai.collection.IteratorSet;
-import com.gengoai.collection.Iterators;
 import com.gengoai.conversion.Cast;
+import com.gengoai.json.JsonEntry;
 
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -22,6 +22,10 @@ import static com.gengoai.tuple.Tuples.$;
 public class HashBasedTable<R, C, V> implements Table<R, C, V>, Serializable {
 
    private final Map<R, Map<C, V>> map = new HashMap<>();
+
+   public static <R, C, V> Table<R, C, V> fromJson(JsonEntry entry, Type... params) {
+      return Table.fromJson(new HashBasedTable<>(), entry, params);
+   }
 
    @Override
    public V get(R row, C column) {

@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
  *
  * @author David B. Bracewell
  */
-public final class Regex {
+public final class Re {
 
    /**
     * An unescaped period representing match anything.
@@ -138,7 +138,7 @@ public final class Regex {
     */
    public static final String ZERO_OR_MORE_WHITESPACE = WHITESPACE + "*";
 
-   private Regex() {
+   private Re() {
       throw new IllegalAccessError();
    }
 
@@ -199,6 +199,10 @@ public final class Regex {
       return String.format("(?<%s> %s)", groupName, String.join("", regex));
    }
 
+   public static String nonMatchingGroup(String... regex) {
+      return String.format("(?:%s)", String.join("", regex));
+   }
+
    /**
     * Non-consuming negative lookahead
     *
@@ -250,7 +254,7 @@ public final class Regex {
     * @param patterns the patterns
     * @return the pattern
     */
-   public static Pattern re(int flags, String... patterns) {
+   public static Pattern compile(int flags, String... patterns) {
       return Pattern.compile(String.join("", patterns), flags);
    }
 
@@ -260,7 +264,7 @@ public final class Regex {
     * @param patterns the patterns
     * @return the pattern
     */
-   public static Pattern re(String... patterns) {
+   public static Pattern compile(String... patterns) {
       return Pattern.compile(String.join("", patterns));
    }
 

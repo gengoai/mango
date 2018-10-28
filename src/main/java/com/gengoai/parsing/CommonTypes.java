@@ -21,68 +21,54 @@
 
 package com.gengoai.parsing;
 
-import com.gengoai.Re;
-import com.gengoai.Regex;
-
-
 /**
  * A enum of common Parser Token Types.
  *
  * @author David B. Bracewell
  */
 public enum CommonTypes implements ParserTokenType, HasLexicalPattern {
-  NUMBER(
-     Re.seq(
-        Re.NUMBER.plus(),
-        Re.nmGroup(Re.re(","), Re.NUMBER.nTimes(3)).star(),
-        Re.nmGroup(Re.quote("."), Re.NUMBER.plus()).star()
-           )
-  ),
-  WORD("\\p{L}+"),
-  OPENPARENS("\\("),
-  CLOSEPARENS("\\)"),
-  OPENBRACKET("\\["),
-  CLOSEBRACKET("\\]"),
-  OPENBRACE("\\{"),
-  CLOSEBRACE("\\}"),
-  PERIOD("\\."),
-  PLUS("\\+"),
-  MINUS("\\-"),
-  MULTIPLY("\\*"),
-  DIVIDE("/"),
-  EXCLAMATION("\\!"),
-  POUND("\\#"),
-  COMMA(","),
-  EQUALS("="),
-  DOUBLEQUOTE("\""),
-  AMPERSAND("\\&"),
-  DOLLAR("\\$"),
-  AT("@"),
-  CARROT("\\^"),
-  COLON(":"),
-  SEMICOLON(";"),
-  QUESTION("\\?"),
-  BACKSLASH("\\\\"),
-  FORWARDSLASH("/"),
-  SINGLEQUOTE("'"),
-  NEWLINE("\r?\n"),
-  WHITESPACE("\\p{Zs}"),
-  TILDE("\\~"),
-  PIPE("\\|");
+   NUMBER("\\d+(?:,\\d{3})*(?:\\.\\d+)?"),
+   WORD("\\p{L}+"),
+   OPENPARENS("\\("),
+   CLOSEPARENS("\\)"),
+   OPENBRACKET("\\["),
+   CLOSEBRACKET("\\]"),
+   OPENBRACE("\\{"),
+   CLOSEBRACE("\\}"),
+   PERIOD("\\."),
+   PLUS("\\+"),
+   MINUS("\\-"),
+   MULTIPLY("\\*"),
+   DIVIDE("/"),
+   EXCLAMATION("\\!"),
+   POUND("\\#"),
+   COMMA(","),
+   EQUALS("="),
+   DOUBLEQUOTE("\""),
+   AMPERSAND("\\&"),
+   DOLLAR("\\$"),
+   AT("@"),
+   CARROT("\\^"),
+   COLON(":"),
+   SEMICOLON(";"),
+   QUESTION("\\?"),
+   BACKSLASH("\\\\"),
+   FORWARDSLASH("/"),
+   SINGLEQUOTE("'"),
+   NEWLINE("\r?\n"),
+   WHITESPACE("\\p{Zs}"),
+   TILDE("\\~"),
+   PIPE("\\|");
 
-  private final String pattern;
+   private final String pattern;
 
-  CommonTypes(Regex pattern) {
-    this.pattern = pattern.toString();
-  }
+   CommonTypes(String pattern) {
+      this.pattern = pattern;
+   }
 
-  CommonTypes(String pattern) {
-    this.pattern = pattern;
-  }
-
-  @Override
-  public String lexicalPattern() {
-    return pattern;
-  }
+   @Override
+   public String lexicalPattern() {
+      return pattern;
+   }
 
 }//END OF CommonTypes

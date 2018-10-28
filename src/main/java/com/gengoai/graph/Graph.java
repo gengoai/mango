@@ -22,15 +22,23 @@
 package com.gengoai.graph;
 
 
+import com.gengoai.collection.Index;
+import com.gengoai.collection.Indexes;
 import com.gengoai.collection.Sets;
 import com.gengoai.collection.Streams;
 import com.gengoai.collection.counter.Counter;
 import com.gengoai.collection.counter.Counters;
 import com.gengoai.conversion.Cast;
+import com.gengoai.conversion.Converter;
+import com.gengoai.json.JsonEntry;
+import com.gengoai.json.JsonSerializable;
 
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Stream;
+
+import static com.gengoai.reflection.Types.getOrObject;
 
 /**
  * <p>Interface defining a graph data structure.</p>
@@ -38,7 +46,39 @@ import java.util.stream.Stream;
  * @param <V> the vertex type
  * @author David B. Bracewell
  */
-public interface Graph<V> extends Iterable<V> {
+public interface Graph<V> extends Iterable<V>, JsonSerializable {
+
+
+   static <V> Graph<V> fromJson(JsonEntry entry, Type... params) throws Exception {
+      Index<V> vertexIndex = Indexes.indexOf(entry.getProperty("v").getAsArray(getOrObject(0, params)));
+      EdgeFactory<V> factory = Cast.as(Converter.convert(entry.getProperty("edgeFactory"), EdgeFactory.class));
+      Graph<V> g = new AdjacencyMatrix<>(factory);
+      entry.getProperty("e").elementIterator().forEachRemaining(edge -> {
+         V v1 = vertexIndex.get(Integer.parseInt(edge.getStringProperty("vertex1").substring(1)));
+         V v2 = vertexIndex.get(Integer.parseInt(edge.getStringProperty("vertex2").substring(1)));
+         g.addVertex(v1);
+         g.addVertex(v2);
+         g.addEdge(factory.createEdge(v1, v2, edge));
+      });
+      return g;
+   }
+
+   @Override
+   default JsonEntry toJson() {
+      JsonEntry graphJson = JsonEntry.object()
+                                     .addProperty("edgeFactory", getEdgeFactory().getClass().getName());
+      Index<V> vertexIndex = Indexes.indexOf(vertices());
+      graphJson.addProperty("v", vertexIndex);
+      JsonEntry edges = JsonEntry.array();
+      for (Edge<V> edge : edges()) {
+         JsonEntry jsonE = JsonEntry.from(edge);
+         jsonE.addProperty("vertex1", "@" + vertexIndex.getId(edge.vertex1));
+         jsonE.addProperty("vertex2", "@" + vertexIndex.getId(edge.vertex2));
+         edges.addValue(jsonE);
+      }
+      graphJson.addProperty("e", edges);
+      return graphJson;
+   }
 
    /**
     * Adds a vertex to the graph

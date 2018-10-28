@@ -21,6 +21,9 @@
 
 package com.gengoai.graph;
 
+import com.gengoai.json.JsonEntry;
+import com.gengoai.json.JsonSerializable;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -29,7 +32,7 @@ import java.util.Objects;
  *
  * @author David B. Bracewell
  */
-public abstract class Edge<V> implements Serializable {
+public abstract class Edge<V> implements Serializable, JsonSerializable {
 
    private static final long serialVersionUID = -6040455464153202892L;
 
@@ -165,6 +168,12 @@ public abstract class Edge<V> implements Serializable {
       }
 
       @Override
+      public JsonEntry toJson() {
+         return JsonEntry.object()
+                         .addProperty("weight", weight);
+      }
+
+      @Override
       public double getWeight() {
          return weight;
       }
@@ -220,6 +229,11 @@ public abstract class Edge<V> implements Serializable {
 
       private double weight;
 
+      @Override
+      public JsonEntry toJson() {
+         return JsonEntry.object()
+                         .addProperty("weight", weight);
+      }
 
       protected UndirectedEdge(V vertex1, V vertex2, double weight) {
          super(vertex1, vertex2);

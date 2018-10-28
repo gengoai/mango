@@ -21,23 +21,32 @@
 
 package com.gengoai.graph;
 
+import com.gengoai.json.JsonEntry;
+
 import java.io.Serializable;
 
 /**
  * The type Undirected edge factory.
+ *
  * @author David B. Bracewell
  */
 public class UndirectedEdgeFactory<V> implements EdgeFactory<V>, Serializable {
-  private static final long serialVersionUID = 5428309979947800172L;
+   private static final long serialVersionUID = 5428309979947800172L;
 
-  @Override
-  public Edge.UndirectedEdge<V> createEdge(V from, V to, double weight) {
-    return Edge.undirectedEdge(from, to, weight);
-  }
+   @Override
+   public Edge.UndirectedEdge<V> createEdge(V from, V to, double weight) {
+      return Edge.undirectedEdge(from, to, weight);
+   }
 
-  @Override
-  public boolean isDirected() {
-    return false;
-  }
+   @Override
+   public boolean isDirected() {
+      return false;
+   }
 
+   @Override
+   public Edge<V> createEdge(V from, V to, JsonEntry entry) {
+      return Edge.undirectedEdge(from,
+                                 to,
+                                 entry.getDoubleProperty("weight"));
+   }
 }//END OF UndirectedEdgeFactory

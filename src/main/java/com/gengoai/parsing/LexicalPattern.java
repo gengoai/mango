@@ -1,6 +1,5 @@
 package com.gengoai.parsing;
 
-import com.gengoai.Regex;
 import com.gengoai.Validation;
 import com.gengoai.string.CharMatcher;
 
@@ -74,15 +73,6 @@ public abstract class LexicalPattern implements Serializable {
       return new RegexPattern(Pattern.compile(pattern));
    }
 
-   /**
-    * Creates a pattern that checks for a regular expression match
-    *
-    * @param pattern the regular expression pattern
-    * @return the lexical pattern
-    */
-   public static LexicalPattern regex(Regex pattern) {
-      return new RegexPattern(notNull(pattern).toPattern());
-   }
 
    /**
     * Creates a literal pattern from the given string where a match exists when the entire literal string is found.

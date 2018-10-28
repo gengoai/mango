@@ -21,7 +21,6 @@
 
 package com.gengoai.parsing;
 
-import com.gengoai.Regex;
 import com.gengoai.Validation;
 import com.gengoai.conversion.Cast;
 import com.gengoai.io.resource.Resource;
@@ -161,18 +160,6 @@ public class RegularExpressionLexer implements Lexer, Serializable {
        */
       public Builder add(ParserTokenType type, String pattern) {
          lexicalItems.add(Tuple2.of(type, pattern));
-         return this;
-      }
-
-      /**
-       * Adds a pattern to capture a given type
-       *
-       * @param type    The token type
-       * @param pattern The pattern that captures the given token type (Overrides the pattern on the TokenType)
-       * @return The LexerBuilder
-       */
-      public Builder add(ParserTokenType type, Regex pattern) {
-         lexicalItems.add(Tuple2.of(type, pattern.toString()));
          return this;
       }
 

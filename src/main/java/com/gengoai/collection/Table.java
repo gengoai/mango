@@ -1,8 +1,14 @@
-package com.gengoai.collection.table;
+package com.gengoai.collection;
 
+import com.gengoai.json.JsonEntry;
+import com.gengoai.json.JsonSerializable;
+
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+
+import static com.gengoai.reflection.Types.getOrObject;
 
 /**
  * A table is a two dimensional structure that associates a value with two keys (i.e. a row and column key). A table
@@ -14,7 +20,47 @@ import java.util.Set;
  * @param <V> the value type parameter
  * @author David B. Bracewell
  */
-public interface Table<R, C, V> {
+public interface Table<R, C, V> extends JsonSerializable {
+
+   static <R, C, V> Table<R, C, V> fromJson(Table<R, C, V> table, JsonEntry entry, Type... params) {
+      Type row = getOrObject(0, params);
+      Type col = getOrObject(1, params);
+      Type cell = getOrObject(2, params);
+      Index<R> rowIndex = Indexes.indexOf(entry.getProperty("rowKeys").getAsArray(row));
+      Index<C> colIndex = Indexes.indexOf(entry.getProperty("colKeys").getAsArray(col));
+      entry.getProperty("cells").propertyIterator().forEachRemaining(rowEntry -> {
+         R rowV = rowIndex.get(Integer.parseInt(rowEntry.getKey()));
+         rowEntry.getValue().propertyIterator().forEachRemaining(colEntry -> {
+            C colV = colIndex.get(Integer.parseInt(colEntry.getKey()));
+            table.put(rowV, colV, colEntry.getValue().getAs(cell));
+         });
+      });
+      return table;
+   }
+
+   static <R, C, V> Table<R, C, V> fromJson(JsonEntry entry, Type... params) {
+      return fromJson(new HashBasedTable<>(), entry, params);
+   }
+
+   @Override
+   default JsonEntry toJson() {
+      JsonEntry table = JsonEntry.object();
+      Index<R> rowIndex = Indexes.indexOf(rowKeySet());
+      Index<C> colIndex = Indexes.indexOf(columnKeySet());
+      table.addProperty("rowKeys", rowIndex);
+      table.addProperty("colKeys", colIndex);
+      JsonEntry cells = JsonEntry.object();
+      rowKeySet().forEach(row -> {
+         JsonEntry rowObj = JsonEntry.object();
+         row(row).forEach((c, v) -> {
+            int ci = colIndex.getId(c);
+            rowObj.addProperty(Integer.toString(ci), v);
+         });
+         cells.addProperty(Integer.toString(rowIndex.getId(row)), rowObj);
+      });
+      table.addProperty("cells", cells);
+      return table;
+   }
 
    /**
     * Gets the value of the cell for the given row and column or null if not available.

@@ -21,6 +21,8 @@
 
 package com.gengoai.graph;
 
+import com.gengoai.json.JsonEntry;
+
 import java.io.Serializable;
 
 /**
@@ -30,22 +32,25 @@ import java.io.Serializable;
  */
 public interface EdgeFactory<V> extends Serializable {
 
-  /**
-   * Create edge.
-   *
-   * @param from   the from
-   * @param to     the to
-   * @param weight the weight
-   * @return the t
-   */
-  Edge<V> createEdge(V from, V to, double weight);
+   /**
+    * Create edge.
+    *
+    * @param from   the from
+    * @param to     the to
+    * @param weight the weight
+    * @return the t
+    */
+   Edge<V> createEdge(V from, V to, double weight);
 
-  /**
-   * Indicates whether the factor produces directed or undirected edges.
-   *
-   * @return True if the edges constructed in this factory are directed, False indicates undirected
-   */
-  boolean isDirected();
+   /**
+    * Indicates whether the factor produces directed or undirected edges.
+    *
+    * @return True if the edges constructed in this factory are directed, False indicates undirected
+    */
+   boolean isDirected();
+
+
+   Edge<V> createEdge(V from, V to, JsonEntry entry);
 
 
 }//END OF EdgeFactory

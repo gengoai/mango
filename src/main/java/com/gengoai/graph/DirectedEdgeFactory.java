@@ -21,6 +21,8 @@
 
 package com.gengoai.graph;
 
+import com.gengoai.json.JsonEntry;
+
 import java.io.Serializable;
 
 /**
@@ -29,16 +31,23 @@ import java.io.Serializable;
  * @author David B. Bracewell
  */
 public class DirectedEdgeFactory<V> implements EdgeFactory<V>, Serializable {
-  private static final long serialVersionUID = 5428309979947800172L;
+   private static final long serialVersionUID = 5428309979947800172L;
 
-  @Override
-  public Edge.DirectedEdge<V> createEdge(V from, V to, double weight) {
-    return Edge.directedEdge(from, to, weight);
-  }
+   @Override
+   public Edge.DirectedEdge<V> createEdge(V from, V to, double weight) {
+      return Edge.directedEdge(from, to, weight);
+   }
 
-  @Override
-  public boolean isDirected() {
-    return true;
-  }
+   @Override
+   public boolean isDirected() {
+      return true;
+   }
+
+   @Override
+   public Edge<V> createEdge(V from, V to, JsonEntry entry) {
+      return Edge.directedEdge(from,
+                               to,
+                               entry.getDoubleProperty("weight"));
+   }
 
 }//END OF DirectedEdgeFactory

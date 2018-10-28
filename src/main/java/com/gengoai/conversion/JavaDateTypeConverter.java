@@ -1,6 +1,6 @@
 package com.gengoai.conversion;
 
-import com.gengoai.string.Regex;
+import com.gengoai.string.Re;
 import com.gengoai.string.Strings;
 import org.kohsuke.MetaInfServices;
 
@@ -33,7 +33,7 @@ public class JavaDateTypeConverter implements TypeConverter {
 
       String string = Converter.convert(object, String.class);
       if (string != null) {
-         string = Strings.trim(string.replaceAll(Regex.MULTIPLE_WHITESPACE, " "));
+         string = Strings.trim(string.replaceAll(Re.MULTIPLE_WHITESPACE, " "));
 
          for (DateFormat format : new DateFormat[]{
             SimpleDateFormat.getDateTimeInstance(),

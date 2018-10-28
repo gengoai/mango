@@ -2,6 +2,7 @@ package com.gengoai.collection.table;
 
 import com.gengoai.collection.Maps;
 import com.gengoai.collection.Sets;
+import com.gengoai.collection.Table;
 import org.junit.Test;
 
 import java.util.Collections;
