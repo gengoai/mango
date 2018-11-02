@@ -26,8 +26,9 @@ import com.gengoai.json.JsonEntry;
 import java.io.Serializable;
 
 /**
- * The interface Edge factory.
+ * Interface for creating new edges.
  *
+ * @param <V> the type parameter
  * @author David B. Bracewell
  */
 public interface EdgeFactory<V> extends Serializable {
@@ -50,7 +51,18 @@ public interface EdgeFactory<V> extends Serializable {
    boolean isDirected();
 
 
+   /**
+    * Create edge edge.
+    *
+    * @param from  the from
+    * @param to    the to
+    * @param entry the entry
+    * @return the edge
+    */
    Edge<V> createEdge(V from, V to, JsonEntry entry);
+
+
+   Class<? extends Edge> getEdgeClass();
 
 
 }//END OF EdgeFactory

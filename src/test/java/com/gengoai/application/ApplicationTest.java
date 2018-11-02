@@ -40,7 +40,6 @@ package com.gengoai.application;/*
  * under the License.
  */
 
-import com.gengoai.cli.Option;
 import com.gengoai.config.Config;
 import org.junit.Assert;
 import org.junit.Test;

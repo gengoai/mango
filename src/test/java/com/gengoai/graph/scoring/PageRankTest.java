@@ -21,14 +21,12 @@
 
 package com.gengoai.graph.scoring;
 
-import com.gengoai.graph.AdjacencyMatrix;
-import com.gengoai.graph.Graph;
 import com.gengoai.collection.counter.Counter;
-import com.gengoai.graph.scoring.PageRank;
+import com.gengoai.graph.Graph;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * @author David B. Bracewell
@@ -40,7 +38,7 @@ public class PageRankTest {
 
   @Before
   public void setUp() throws Exception {
-    directed = AdjacencyMatrix.directed();
+    directed = Graph.directed();
     directed.addVertex("A");
     directed.addVertex("B");
     directed.addVertex("C");
@@ -50,7 +48,7 @@ public class PageRankTest {
     directed.addEdge("C", "A");
 
 
-    undirected = AdjacencyMatrix.undirected();
+    undirected = Graph.undirected();
     undirected.addVertex("A");
     undirected.addVertex("B");
     undirected.addVertex("C");

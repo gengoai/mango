@@ -19,7 +19,7 @@
  * under the License.
  */
 
-package com.gengoai.cli;
+package com.gengoai.application;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

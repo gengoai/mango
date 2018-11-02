@@ -19,7 +19,7 @@
  * under the License.
  */
 
-package com.gengoai.cli;
+package com.gengoai.application;
 
 /**
  * Exceptions occurring in the {@link CommandLineParser}

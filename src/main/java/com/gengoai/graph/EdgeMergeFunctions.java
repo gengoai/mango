@@ -28,67 +28,67 @@ package com.gengoai.graph;
  */
 public final class EdgeMergeFunctions {
 
-  /**
-   * A merge functions that keeps the original edge and ignores the duplicate.
-   *
-   * @param <V> The vertex type
-   * @return An EdgeMergeFunction
-   */
-  public static <V> EdgeMergeFunction<V> keepOriginal() {
-    return (originalEdge, duplicateEdge, factory) -> originalEdge;
-  }
+   /**
+    * A merge functions that keeps the original edge and ignores the duplicate.
+    *
+    * @param <V> The vertex type
+    * @return An EdgeMergeFunction
+    */
+   public static <V> EdgeMergeFunction<V> keepOriginal() {
+      return (originalEdge, duplicateEdge, factory) -> originalEdge;
+   }
 
 
-  /**
-   * A merge functions that keeps the duplicate edge and ignores the original.
-   *
-   * @param <V> The vertex type
-   * @return An EdgeMergeFunction
-   */
-  public static <V> EdgeMergeFunction<V> keepDuplicate() {
-    return (originalEdge, duplicateEdge, factory) -> duplicateEdge;
-  }
+   /**
+    * A merge functions that keeps the duplicate edge and ignores the original.
+    *
+    * @param <V> The vertex type
+    * @return An EdgeMergeFunction
+    */
+   public static <V> EdgeMergeFunction<V> keepDuplicate() {
+      return (originalEdge, duplicateEdge, factory) -> duplicateEdge;
+   }
 
-  /**
-   * A merge functions that creates a new edge whose weight is the average of the two edges.
-   *
-   * @param <V> The vertex type
-   * @return An EdgeMergeFunction
-   */
-  public static <V> EdgeMergeFunction<V> averageWeight() {
-    return (originalEdge, duplicateEdge, factory) -> factory.createEdge(
-        originalEdge.getFirstVertex(),
-        originalEdge.getSecondVertex(),
-        (originalEdge.getWeight() + duplicateEdge.getWeight()) / 2d
-    );
-  }
+   /**
+    * A merge functions that creates a new edge whose weight is the average of the two edges.
+    *
+    * @param <V> The vertex type
+    * @return An EdgeMergeFunction
+    */
+   public static <V> EdgeMergeFunction<V> averageWeight() {
+      return (originalEdge, duplicateEdge, factory) -> factory.createEdge(
+         originalEdge.getFirstVertex(),
+         originalEdge.getSecondVertex(),
+         (originalEdge.getWeight() + duplicateEdge.getWeight()) / 2d
+                                                                         );
+   }
 
-  /**
-   * A merge functions that creates a new edge whose weight is the minimum of the two edges.
-   *
-   * @param <V> The vertex type
-   * @return An EdgeMergeFunction
-   */
-  public static <V> EdgeMergeFunction<V> minWeight() {
-    return (originalEdge, duplicateEdge, factory) -> factory.createEdge(
-        originalEdge.getFirstVertex(),
-        originalEdge.getSecondVertex(),
-        Math.min(originalEdge.getWeight(), duplicateEdge.getWeight())
-    );
-  }
+   /**
+    * A merge functions that creates a new edge whose weight is the minimum of the two edges.
+    *
+    * @param <V> The vertex type
+    * @return An EdgeMergeFunction
+    */
+   public static <V> EdgeMergeFunction<V> minWeight() {
+      return (originalEdge, duplicateEdge, factory) -> factory.createEdge(
+         originalEdge.getFirstVertex(),
+         originalEdge.getSecondVertex(),
+         Math.min(originalEdge.getWeight(), duplicateEdge.getWeight())
+                                                                         );
+   }
 
-  /**
-   * A merge functions that creates a new edge whose weight is the maximum of the two edges.
-   *
-   * @param <V> The vertex type
-   * @return An EdgeMergeFunction
-   */
-  public static <V> EdgeMergeFunction<V> maxWeight() {
-    return (originalEdge, duplicateEdge, factory) -> factory.createEdge(
-        originalEdge.getFirstVertex(),
-        originalEdge.getSecondVertex(),
-        Math.max(originalEdge.getWeight(), duplicateEdge.getWeight())
-    );
-  }
+   /**
+    * A merge functions that creates a new edge whose weight is the maximum of the two edges.
+    *
+    * @param <V> The vertex type
+    * @return An EdgeMergeFunction
+    */
+   public static <V> EdgeMergeFunction<V> maxWeight() {
+      return (originalEdge, duplicateEdge, factory) -> factory.createEdge(
+         originalEdge.getFirstVertex(),
+         originalEdge.getSecondVertex(),
+         Math.max(originalEdge.getWeight(), duplicateEdge.getWeight())
+                                                                         );
+   }
 
 }//END OF EdgeMergeFunctions

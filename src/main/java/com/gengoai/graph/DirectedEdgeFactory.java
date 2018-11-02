@@ -34,7 +34,7 @@ public class DirectedEdgeFactory<V> implements EdgeFactory<V>, Serializable {
    private static final long serialVersionUID = 5428309979947800172L;
 
    @Override
-   public Edge.DirectedEdge<V> createEdge(V from, V to, double weight) {
+   public DirectedEdge<V> createEdge(V from, V to, double weight) {
       return Edge.directedEdge(from, to, weight);
    }
 
@@ -48,6 +48,11 @@ public class DirectedEdgeFactory<V> implements EdgeFactory<V>, Serializable {
       return Edge.directedEdge(from,
                                to,
                                entry.getDoubleProperty("weight"));
+   }
+
+   @Override
+   public Class<? extends Edge> getEdgeClass() {
+      return DirectedEdge.class;
    }
 
 }//END OF DirectedEdgeFactory

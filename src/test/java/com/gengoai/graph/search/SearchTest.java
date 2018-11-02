@@ -1,6 +1,5 @@
 package com.gengoai.graph.search;
 
-import com.gengoai.graph.AdjacencyMatrix;
 import com.gengoai.graph.Edge;
 import com.gengoai.graph.Graph;
 import com.gengoai.graph.algorithms.BreadthFirstSearch;
@@ -20,7 +19,7 @@ public class SearchTest {
 
    @Test
    public void test() {
-      Graph<String> g = AdjacencyMatrix.directed();
+      Graph<String> g = Graph.directed();
       g.addVertices(arrayListOf("A", "B", "C", "D", "E"));
       g.addEdge("A", "C");
       g.addEdge("C", "E");

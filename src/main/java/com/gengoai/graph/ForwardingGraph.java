@@ -33,187 +33,187 @@ import java.util.Set;
  * @author David B. Bracewell
  */
 public abstract class ForwardingGraph<V> implements Graph<V>, Serializable {
-  private static final long serialVersionUID = 8903009720469942081L;
+   private static final long serialVersionUID = 8903009720469942081L;
 
-  /**
-   * Returns the graph that all calls are delegated to
-   *
-   * @return The graph to delegate calls to
-   */
-  protected abstract Graph<V> delegate();
+   /**
+    * Returns the graph that all calls are delegated to
+    *
+    * @return The graph to delegate calls to
+    */
+   protected abstract Graph<V> delegate();
 
-  @Override
-  public boolean addVertex(V vertex) {
-    return delegate().addVertex(vertex);
-  }
+   @Override
+   public boolean addVertex(V vertex) {
+      return delegate().addVertex(vertex);
+   }
 
-  @Override
-  public boolean removeVertex(V vertex) {
-    return delegate().removeVertex(vertex);
-  }
+   @Override
+   public boolean removeVertex(V vertex) {
+      return delegate().removeVertex(vertex);
+   }
 
-  @Override
-  public int numberOfVertices() {
-    return delegate().numberOfVertices();
-  }
+   @Override
+   public int numberOfVertices() {
+      return delegate().numberOfVertices();
+   }
 
-  @Override
-  public int numberOfEdges() {
-    return delegate().numberOfEdges();
-  }
+   @Override
+   public int numberOfEdges() {
+      return delegate().numberOfEdges();
+   }
 
-  @Override
-  public Edge<V> addEdge(V fromVertex, V toVertex) {
-    return delegate().addEdge(fromVertex, toVertex);
-  }
+   @Override
+   public Edge<V> addEdge(V fromVertex, V toVertex) {
+      return delegate().addEdge(fromVertex, toVertex);
+   }
 
-  @Override
-  public Edge<V> addEdge(V fromVertex, V toVertex, double weight) {
-    return delegate().addEdge(fromVertex, toVertex, weight);
-  }
+   @Override
+   public Edge<V> addEdge(V fromVertex, V toVertex, double weight) {
+      return delegate().addEdge(fromVertex, toVertex, weight);
+   }
 
-  @Override
-  public Edge<V> removeEdge(V fromVertex, V toVertex) {
-    return delegate().removeEdge(fromVertex, toVertex);
-  }
+   @Override
+   public Edge<V> removeEdge(V fromVertex, V toVertex) {
+      return delegate().removeEdge(fromVertex, toVertex);
+   }
 
-  @Override
-  public boolean removeEdge(Edge<V> edge) {
-    return delegate().removeEdge(edge);
-  }
+   @Override
+   public boolean removeEdge(Edge<V> edge) {
+      return delegate().removeEdge(edge);
+   }
 
-  @Override
-  public boolean containsVertex(V vertex) {
-    return delegate().containsVertex(vertex);
-  }
+   @Override
+   public boolean containsVertex(V vertex) {
+      return delegate().containsVertex(vertex);
+   }
 
-  @Override
-  public boolean containsEdge(V fromVertex, V toVertex) {
-    return delegate().containsEdge(fromVertex, toVertex);
-  }
+   @Override
+   public boolean containsEdge(V fromVertex, V toVertex) {
+      return delegate().containsEdge(fromVertex, toVertex);
+   }
 
-  @Override
-  public boolean containsEdge(Edge<V> edge) {
-    return delegate().containsEdge(edge);
-  }
+   @Override
+   public boolean containsEdge(Edge<V> edge) {
+      return delegate().containsEdge(edge);
+   }
 
-  @Override
-  public Set<? extends Edge<V>> getOutEdges(V vertex) {
-    return delegate().getOutEdges(vertex);
-  }
+   @Override
+   public Set<? extends Edge<V>> getOutEdges(V vertex) {
+      return delegate().getOutEdges(vertex);
+   }
 
-  @Override
-  public Set<? extends Edge<V>> getInEdges(V vertex) {
-    return delegate().getInEdges(vertex);
-  }
+   @Override
+   public Set<? extends Edge<V>> getInEdges(V vertex) {
+      return delegate().getInEdges(vertex);
+   }
 
-  @Override
-  public Set<? extends Edge<V>> getEdges(V vertex) {
-    return delegate().getEdges(vertex);
-  }
+   @Override
+   public Set<? extends Edge<V>> getEdges(V vertex) {
+      return delegate().getEdges(vertex);
+   }
 
-  @Override
-  public Set<V> getSuccessors(V vertex) {
-    return delegate().getSuccessors(vertex);
-  }
+   @Override
+   public Set<V> getSuccessors(V vertex) {
+      return delegate().getSuccessors(vertex);
+   }
 
-  @Override
-  public Counter<V> getSuccessorWeights(V vertex) {
-    return delegate().getSuccessorWeights(vertex);
-  }
+   @Override
+   public Counter<V> getSuccessorWeights(V vertex) {
+      return delegate().getSuccessorWeights(vertex);
+   }
 
-  @Override
-  public Counter<V> getPredecessorsWeights(V vertex) {
-    return delegate().getPredecessorsWeights(vertex);
-  }
+   @Override
+   public Counter<V> getPredecessorsWeights(V vertex) {
+      return delegate().getPredecessorsWeights(vertex);
+   }
 
-  @Override
-  public Counter<V> getWeights(V vertex) {
-    return delegate().getWeights(vertex);
-  }
+   @Override
+   public Counter<V> getWeights(V vertex) {
+      return delegate().getWeights(vertex);
+   }
 
-  @Override
-  public Set<V> getPredecessors(V vertex) {
-    return delegate().getPredecessors(vertex);
-  }
+   @Override
+   public Set<V> getPredecessors(V vertex) {
+      return delegate().getPredecessors(vertex);
+   }
 
-  @Override
-  public Set<V> getNeighbors(V vertex) {
-    return delegate().getNeighbors(vertex);
-  }
+   @Override
+   public Set<V> getNeighbors(V vertex) {
+      return delegate().getNeighbors(vertex);
+   }
 
-  @Override
-  public boolean isDirected() {
-    return delegate().isDirected();
-  }
+   @Override
+   public boolean isDirected() {
+      return delegate().isDirected();
+   }
 
-  @Override
-  public Set<V> vertices() {
-    return delegate().vertices();
-  }
+   @Override
+   public Set<V> vertices() {
+      return delegate().vertices();
+   }
 
-  @Override
-  public Set<? extends Edge<V>> edges() {
-    return delegate().edges();
-  }
+   @Override
+   public Set<? extends Edge<V>> edges() {
+      return delegate().edges();
+   }
 
-  @Override
-  public int outDegree(V vertex) {
-    return delegate().outDegree(vertex);
-  }
+   @Override
+   public int outDegree(V vertex) {
+      return delegate().outDegree(vertex);
+   }
 
-  @Override
-  public int inDegree(V vertex) {
-    return delegate().inDegree(vertex);
-  }
+   @Override
+   public int inDegree(V vertex) {
+      return delegate().inDegree(vertex);
+   }
 
-  @Override
-  public int degree(V vertex) {
-    return delegate().degree(vertex);
-  }
+   @Override
+   public int degree(V vertex) {
+      return delegate().degree(vertex);
+   }
 
-  @Override
-  public Edge<V> getEdge(V v1, V v2) {
-    return delegate().getEdge(v1, v2);
-  }
+   @Override
+   public Edge<V> getEdge(V v1, V v2) {
+      return delegate().getEdge(v1, v2);
+   }
 
-  @Override
-  public double getWeight(V v1, V v2) {
-    return delegate().getWeight(v1, v2);
-  }
+   @Override
+   public double getWeight(V v1, V v2) {
+      return delegate().getWeight(v1, v2);
+   }
 
-  @Override
-  public Iterator<V> iterator() {
-    return delegate().iterator();
-  }
+   @Override
+   public Iterator<V> iterator() {
+      return delegate().iterator();
+   }
 
-  @Override
-  public void addVertices(Collection<V> vertices) {
-    delegate().addVertices(vertices);
-  }
+   @Override
+   public void addVertices(Collection<V> vertices) {
+      delegate().addVertices(vertices);
+   }
 
-  @Override
-  public void addEdge(Edge<V> edge) {
-    delegate().addEdge(edge);
-  }
+   @Override
+   public void addEdge(Edge<V> edge) {
+      delegate().addEdge(edge);
+   }
 
-  @Override
-  public void addEdges(Collection<? extends Edge<V>> edges) {
-    delegate().addEdges(edges);
-  }
+   @Override
+   public void addEdges(Collection<? extends Edge<V>> edges) {
+      delegate().addEdges(edges);
+   }
 
-  @Override
-  public void merge(Graph<V> other) {
-    delegate().merge(other);
-  }
+   @Override
+   public void merge(Graph<V> other) {
+      delegate().merge(other);
+   }
 
-  @Override
-  public void merge(Graph<V> other, EdgeMergeFunction<V> mergeFunction) {
-    delegate().merge(other, mergeFunction);
-  }
+   @Override
+   public void merge(Graph<V> other, EdgeMergeFunction<V> mergeFunction) {
+      delegate().merge(other, mergeFunction);
+   }
 
-  @Override
-  public boolean isEmpty() {
-    return delegate().isEmpty();
-  }
+   @Override
+   public boolean isEmpty() {
+      return delegate().isEmpty();
+   }
 }//END OF ForwardingGraph

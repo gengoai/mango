@@ -19,7 +19,7 @@
  * under the License.
  */
 
-package com.gengoai.cli;
+package com.gengoai.application;
 
 import com.gengoai.collection.Iterables;
 import com.gengoai.conversion.Cast;

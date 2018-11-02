@@ -25,7 +25,6 @@ import com.gengoai.collection.Index;
 import com.gengoai.collection.Indexes;
 import com.gengoai.collection.multimap.Multimap;
 import com.gengoai.conversion.Cast;
-import com.gengoai.graph.AdjacencyMatrix;
 import com.gengoai.graph.Edge;
 import com.gengoai.graph.Graph;
 import com.gengoai.graph.Vertex;
@@ -98,10 +97,10 @@ public class GraphML<V> implements GraphReader<V>, GraphWriter<V> {
 
             switch (gt.getEdgedefault()) {
                case DIRECTED:
-                  graph = AdjacencyMatrix.directed();
+                  graph = Graph.directed();
                   break;
                default:
-                  graph = AdjacencyMatrix.undirected();
+                  graph = Graph.undirected();
                   break;
             }
 

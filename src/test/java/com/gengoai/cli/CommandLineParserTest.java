@@ -21,6 +21,8 @@
 
 package com.gengoai.cli;
 
+import com.gengoai.application.CommandLineParser;
+import com.gengoai.application.NamedOption;
 import org.junit.Before;
 import org.junit.Test;
 

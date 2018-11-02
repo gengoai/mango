@@ -35,11 +35,12 @@ import static com.gengoai.Validation.checkArgument;
 import static com.gengoai.Validation.notNull;
 
 /**
- * The type Adjacency matrix.
+ * Default graph implementation that uses a {@link Table} to store edges and keeps track of the vertices in a {@link
+ * Set}. By default a {@link LinkedHashSet} is used so that the order of the vertices is the same as when added.
  *
  * @author David B. Bracewell
  */
-public class AdjacencyMatrix<V> implements Graph<V>, Serializable {
+public class DefaultGraphImpl<V> implements Graph<V>, Serializable {
 
    private static final long serialVersionUID = 2648221581604458992L;
    private final EdgeFactory<V> edgeFactory;
@@ -52,7 +53,7 @@ public class AdjacencyMatrix<V> implements Graph<V>, Serializable {
     *
     * @param edgeFactory the edge factory
     */
-   public AdjacencyMatrix(EdgeFactory<V> edgeFactory) {
+   public DefaultGraphImpl(EdgeFactory<V> edgeFactory) {
       this(notNull(edgeFactory), new LinkedHashSet<>(), new HashBasedTable<>());
    }
 
@@ -62,29 +63,12 @@ public class AdjacencyMatrix<V> implements Graph<V>, Serializable {
     * @param edgeFactory the edge factory
     * @param matrix      the matrix to use to back the map
     */
-   public AdjacencyMatrix(EdgeFactory<V> edgeFactory, Set<V> vertices, Table<V, V, Edge<V>> matrix) {
+   private DefaultGraphImpl(EdgeFactory<V> edgeFactory, Set<V> vertices, Table<V, V, Edge<V>> matrix) {
       this.edgeFactory = notNull(edgeFactory);
       this.matrix = notNull(matrix);
       this.vertices = notNull(vertices);
    }
 
-   /**
-    * Directed adjacency list.
-    *
-    * @return the adjacency list
-    */
-   public static <V> AdjacencyMatrix<V> directed() {
-      return new AdjacencyMatrix<>(new DirectedEdgeFactory<V>());
-   }
-
-   /**
-    * Undirected adjacency list.
-    *
-    * @return the adjacency list
-    */
-   public static <V> AdjacencyMatrix<V> undirected() {
-      return new AdjacencyMatrix<>(new UndirectedEdgeFactory<>());
-   }
 
    @Override
    public Edge<V> addEdge(V fromVertex, V toVertex) {
@@ -106,6 +90,8 @@ public class AdjacencyMatrix<V> implements Graph<V>, Serializable {
       checkArgument(containsVertex(edge.vertex1), "Source vertex must exist in the graph");
       checkArgument(containsVertex(edge.vertex2), "Destination vertex must exist in the graph");
       checkArgument(!containsEdge(edge), "Edge already exists");
+      checkArgument(edgeFactory.getEdgeClass().isAssignableFrom(edge.getClass()),
+                    () -> "Graph only supports " + edgeFactory.getEdgeClass().getName() + " edges.");
       V fromVertex = edge.getFirstVertex();
       V toVertex = edge.getSecondVertex();
       matrix.put(fromVertex, toVertex, edge);
@@ -162,8 +148,8 @@ public class AdjacencyMatrix<V> implements Graph<V>, Serializable {
    @Override
    public boolean equals(Object o) {
       if (this == o) return true;
-      if (!(o instanceof AdjacencyMatrix)) return false;
-      AdjacencyMatrix<?> that = (AdjacencyMatrix<?>) o;
+      if (!(o instanceof DefaultGraphImpl)) return false;
+      DefaultGraphImpl<?> that = (DefaultGraphImpl<?>) o;
       return Objects.equals(edgeFactory.getClass(), that.edgeFactory.getClass())
                 && Objects.equals(vertices, that.vertices) &&
                 Objects.equals(matrix, that.matrix);
@@ -268,7 +254,7 @@ public class AdjacencyMatrix<V> implements Graph<V>, Serializable {
 
    @Override
    public String toString() {
-      return "AdjacencyMatrix{numVertices=" + numberOfVertices() + ", numEdges=" + numberOfEdges() + "}";
+      return "Graph{numVertices=" + numberOfVertices() + ", numEdges=" + numberOfEdges() + "}";
    }
 
    @Override

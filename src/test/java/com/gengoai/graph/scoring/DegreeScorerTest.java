@@ -21,10 +21,8 @@
 
 package com.gengoai.graph.scoring;
 
-import com.gengoai.graph.AdjacencyMatrix;
-import com.gengoai.graph.Graph;
 import com.gengoai.collection.counter.Counter;
-import com.gengoai.graph.scoring.DegreeScorer;
+import com.gengoai.graph.Graph;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -40,7 +38,7 @@ public class DegreeScorerTest {
 
    @Before
    public void setUp() throws Exception {
-      directed = AdjacencyMatrix.directed();
+      directed = Graph.directed();
       directed.addVertex("A");
       directed.addVertex("B");
       directed.addVertex("C");
@@ -52,7 +50,7 @@ public class DegreeScorerTest {
       directed.addEdge("D", "A");
 
 
-      undirected = AdjacencyMatrix.undirected();
+      undirected = Graph.undirected();
       undirected.addVertex("A");
       undirected.addVertex("B");
       undirected.addVertex("C");

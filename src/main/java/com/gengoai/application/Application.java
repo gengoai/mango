@@ -21,8 +21,6 @@
 
 package com.gengoai.application;
 
-import com.gengoai.cli.CommandLineParser;
-import com.gengoai.cli.Option;
 import com.gengoai.config.Config;
 import com.gengoai.io.Resources;
 import com.gengoai.logging.Loggable;

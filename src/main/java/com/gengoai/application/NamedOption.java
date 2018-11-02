@@ -19,7 +19,7 @@
  * under the License.
  */
 
-package com.gengoai.cli;
+package com.gengoai.application;
 
 import com.gengoai.Validation;
 import com.gengoai.config.Config;

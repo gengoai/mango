@@ -43,7 +43,7 @@ public class GraphUtilsTest {
 
    @Before
    public void setUp() throws Exception {
-      d1 = AdjacencyMatrix.directed();
+      d1 = Graph.directed();
       d1.addVertex("A");
       d1.addVertex("B");
       d1.addVertex("C");
@@ -51,7 +51,7 @@ public class GraphUtilsTest {
       d1.addEdge("A", "C");
       d1.addEdge("C", "B");
 
-      d2 = AdjacencyMatrix.directed();
+      d2 = Graph.directed();
       d2.addVertex("A");
       d2.addVertex("B");
       d2.addVertex("C");
@@ -101,14 +101,14 @@ public class GraphUtilsTest {
 
    @Test
    public void testMergeFromEmpty() throws Exception {
-      Graph<String> d3 = AdjacencyMatrix.directed();
+      Graph<String> d3 = Graph.directed();
       d1.merge(d3);
       assertEquals(3, d1.numberOfVertices());
    }
 
    @Test
    public void testMergeToEmpty() throws Exception {
-      Graph<String> d3 = AdjacencyMatrix.directed();
+      Graph<String> d3 = Graph.directed();
       d3.merge(d1);
       assertFalse(d3.isEmpty());
       assertTrue(d3.containsEdge("A", "B"));
