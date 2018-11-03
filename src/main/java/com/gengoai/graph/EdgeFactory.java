@@ -34,12 +34,12 @@ import java.io.Serializable;
 public interface EdgeFactory<V> extends Serializable {
 
    /**
-    * Create edge.
+    * Creates an edge between the from and to vertices with the given weight
     *
     * @param from   the from
     * @param to     the to
     * @param weight the weight
-    * @return the t
+    * @return the edge
     */
    Edge<V> createEdge(V from, V to, double weight);
 
@@ -52,7 +52,8 @@ public interface EdgeFactory<V> extends Serializable {
 
 
    /**
-    * Create edge edge.
+    * Creates an edge between the from and to vertices filling in any given edge properties (e.g. weight) using the
+    * {@link JsonEntry}. This method is used for deserializing a graph from json.
     *
     * @param from  the from
     * @param to    the to
@@ -62,6 +63,11 @@ public interface EdgeFactory<V> extends Serializable {
    Edge<V> createEdge(V from, V to, JsonEntry entry);
 
 
+   /**
+    * Gets the type of edge this factory generates (used to validate edges being added to the graph).
+    *
+    * @return the edge class
+    */
    Class<? extends Edge> getEdgeClass();
 
 

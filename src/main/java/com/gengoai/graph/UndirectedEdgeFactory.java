@@ -26,7 +26,7 @@ import com.gengoai.json.JsonEntry;
 import java.io.Serializable;
 
 /**
- * The type Undirected edge factory.
+ * Factory for creating undirected edges.
  *
  * @author David B. Bracewell
  */

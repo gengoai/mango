@@ -41,13 +41,7 @@ public interface ShortestPath<V> {
     * @param target the target vertex
     * @return the distance from source to target (Positive Infinity if no path exists).
     */
-   default double distance(V source, V target) {
-      List<Edge<V>> path = path(source, target);
-      if (path == null || path.isEmpty()) {
-         return Double.POSITIVE_INFINITY;
-      }
-      return path.size() - 1;
-   }
+   double distance(V source, V target);
 
    /**
     * The shortest path (list of edges) from the source to target vertex.

@@ -5,7 +5,7 @@ import com.gengoai.json.JsonEntry;
 import java.util.Objects;
 
 /**
- * An directed weighted edge implementation.
+ * A directed weighted edge implementation.
  *
  * @param <V> The type of vertex
  */
@@ -68,4 +68,4 @@ public class DirectedEdge<V> extends Edge<V> {
    public String toString() {
       return "DirectedEdge{ " + vertex1 + " -> " + vertex2 + (isWeighted() ? " : " + getWeight() : "") + "}";
    }
-}
+}//END OF DirectedEdge

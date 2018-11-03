@@ -26,7 +26,7 @@ import com.gengoai.json.JsonSerializable;
 import java.io.Serializable;
 
 /**
- * <p>Defines an edge in a graph</p>
+ * <p>Defines an edge in a graph, which minimally is made up of two vertices (source and target in directed edges).</p>
  *
  * @author David B. Bracewell
  */

@@ -29,7 +29,7 @@ package com.gengoai.graph;
 public final class EdgeMergeFunctions {
 
    /**
-    * A merge functions that keeps the original edge and ignores the duplicate.
+    * A merge function that keeps the original edge and ignores the duplicate.
     *
     * @param <V> The vertex type
     * @return An EdgeMergeFunction
@@ -40,7 +40,7 @@ public final class EdgeMergeFunctions {
 
 
    /**
-    * A merge functions that keeps the duplicate edge and ignores the original.
+    * A merge function that keeps the duplicate edge and ignores the original.
     *
     * @param <V> The vertex type
     * @return An EdgeMergeFunction
@@ -50,7 +50,7 @@ public final class EdgeMergeFunctions {
    }
 
    /**
-    * A merge functions that creates a new edge whose weight is the average of the two edges.
+    * A merge function that creates a new edge whose weight is the average of the two edges.
     *
     * @param <V> The vertex type
     * @return An EdgeMergeFunction
@@ -64,7 +64,7 @@ public final class EdgeMergeFunctions {
    }
 
    /**
-    * A merge functions that creates a new edge whose weight is the minimum of the two edges.
+    * A merge function that creates a new edge whose weight is the minimum of the two edges.
     *
     * @param <V> The vertex type
     * @return An EdgeMergeFunction
@@ -78,7 +78,7 @@ public final class EdgeMergeFunctions {
    }
 
    /**
-    * A merge functions that creates a new edge whose weight is the maximum of the two edges.
+    * A merge function that creates a new edge whose weight is the maximum of the two edges.
     *
     * @param <V> The vertex type
     * @return An EdgeMergeFunction

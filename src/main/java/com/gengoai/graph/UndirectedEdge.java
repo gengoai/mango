@@ -70,4 +70,4 @@ public class UndirectedEdge<V> extends Edge<V> {
    public String toString() {
       return "UndirectedEdge{ " + vertex1 + " - " + vertex2 + (isWeighted() ? " : " + getWeight() : "") + "}";
    }
-}
+}// END OF UndirectedEdge

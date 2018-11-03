@@ -26,7 +26,7 @@ import com.gengoai.json.JsonEntry;
 import java.io.Serializable;
 
 /**
- * The type Directed edge factory.
+ * Edge factory for {@link DirectedEdge}s
  *
  * @author David B. Bracewell
  */

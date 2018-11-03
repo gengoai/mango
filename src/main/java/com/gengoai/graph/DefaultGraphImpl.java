@@ -79,7 +79,7 @@ public class DefaultGraphImpl<V> implements Graph<V>, Serializable {
    public Edge<V> addEdge(V fromVertex, V toVertex, double weight) {
       checkArgument(containsVertex(fromVertex), "Source vertex must exist in the graph");
       checkArgument(containsVertex(toVertex), "Destination vertex must exist in the graph");
-      Edge<V> edge = createEdge(fromVertex, toVertex, weight);
+      Edge<V> edge = edgeFactory.createEdge(fromVertex, toVertex, weight);
       addEdge(edge);
       return edge;
    }
@@ -120,17 +120,6 @@ public class DefaultGraphImpl<V> implements Graph<V>, Serializable {
       return vertices.contains(vertex);
    }
 
-   /**
-    * Create edge.
-    *
-    * @param v1     the v 1
-    * @param v2     the v 2
-    * @param weight the weight
-    * @return the edge
-    */
-   protected final Edge<V> createEdge(V v1, V v2, double weight) {
-      return Cast.as(edgeFactory.createEdge(v1, v2, weight));
-   }
 
    @Override
    public int degree(V vertex) {
