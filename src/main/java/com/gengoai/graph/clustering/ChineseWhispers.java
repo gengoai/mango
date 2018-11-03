@@ -116,7 +116,7 @@ public class ChineseWhispers<V> implements Clusterer<V> {
             Counter<Integer> labelCntr = Counters.newCounter();
             double maxScore = Double.NEGATIVE_INFINITY;
             int maxV = -1;
-            for (V v2 : g.getNeighbors(v1)) {
+            for (V v2 : g.getSuccessors(v1)) {
                Integer cOfV2 = classMap.get(v2);
                Edge<V> edge = g.getEdge(v1, v2);
                labelCntr.increment(cOfV2, edge.isWeighted() ? edge.getWeight() : 1.0d);

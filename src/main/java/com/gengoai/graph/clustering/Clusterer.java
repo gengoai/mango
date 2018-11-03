@@ -28,18 +28,18 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Common interface for methods that cluster a graph
+ * Common interface for methods that cluster the vertices of a graph
  *
  * @param <V> the vertex type
  */
 public interface Clusterer<V> {
 
-  /**
-   * Clusters a graph and returns a list of clusters (sets).
-   *
-   * @param g the graph
-   * @return the clusters
-   */
-  List<Set<V>> cluster(Graph<V> g);
+   /**
+    * Clusters the vertices of the given graph and returns a list of clusters (sets).
+    *
+    * @param g the graph
+    * @return the clusters
+    */
+   List<Set<V>> cluster(Graph<V> g);
 
 }//END OF Clusterer

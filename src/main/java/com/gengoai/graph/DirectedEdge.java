@@ -57,8 +57,8 @@ public class DirectedEdge<V> extends Edge<V> {
       if (obj == this) {
          return true;
       }
-      if (obj instanceof com.gengoai.graph.DirectedEdge) {
-         com.gengoai.graph.DirectedEdge otherEdge = (com.gengoai.graph.DirectedEdge) obj;
+      if (obj instanceof DirectedEdge) {
+         DirectedEdge otherEdge = (DirectedEdge) obj;
          return (Objects.equals(vertex1, otherEdge.vertex1) && Objects.equals(vertex2, otherEdge.vertex2));
       }
       return false;

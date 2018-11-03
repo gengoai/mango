@@ -26,7 +26,7 @@ import com.gengoai.collection.multimap.ListMultimap;
 import com.gengoai.graph.Edge;
 
 /**
- * The interface Single source shortest path.
+ * A shortest path interface that calculates the path for a single vertex to all other vertices in the graph.
  *
  * @param <V> the type parameter
  * @author David B. Bracewell
@@ -35,18 +35,18 @@ public interface SingleSourceShortestPath<V> {
 
 
    /**
-    * Single source shortest distance.
+    * The distance between the source vertex and all other vertices in the graph
     *
-    * @param source the source
-    * @return the counter
+    * @param source the source vertex
+    * @return Counter of target vertices and their distances.
     */
    Counter<V> singleSourceShortestDistance(V source);
 
    /**
-    * Single source shortest path.
+    * The path (list of edges) between the source vertex and all other vertices in the graph
     *
-    * @param source the source
-    * @return the array list multimap
+    * @param source the source vertex
+    * @return ListMultimap of target vertices and paths from source to target.
     */
    ListMultimap<V, Edge<V>> singleSourceShortestPath(V source);
 

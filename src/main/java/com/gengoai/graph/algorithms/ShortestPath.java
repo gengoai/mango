@@ -27,22 +27,22 @@ import com.gengoai.graph.Edge;
 import java.util.List;
 
 /**
- * The interface Shortest path.
+ * Calculates the shortest path between two vertices.
  *
- * @param <V> the type parameter
+ * @param <V> the vertex type parameter
  * @author David B. Bracewell
  */
 public interface ShortestPath<V> {
 
    /**
-    * Distance double.
+    * The distance between the two vertices.
     *
-    * @param from the from
-    * @param to   the to
-    * @return the double
+    * @param source the starting (source) vertex
+    * @param target the target vertex
+    * @return the distance from source to target (Positive Infinity if no path exists).
     */
-   default double distance(V from, V to) {
-      List<Edge<V>> path = path(from, to);
+   default double distance(V source, V target) {
+      List<Edge<V>> path = path(source, target);
       if (path == null || path.isEmpty()) {
          return Double.POSITIVE_INFINITY;
       }
@@ -50,12 +50,12 @@ public interface ShortestPath<V> {
    }
 
    /**
-    * Path list.
+    * The shortest path (list of edges) from the source to target vertex.
     *
-    * @param from the from
-    * @param to   the to
-    * @return the list
+    * @param source the starting (source) vertex
+    * @param target the target vertex
+    * @return List of edges from source to target representing the shortest path.
     */
-   List<Edge<V>> path(V from, V to);
+   List<Edge<V>> path(V source, V target);
 
 }//END OF ShortestPath

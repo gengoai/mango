@@ -34,9 +34,10 @@ import com.gengoai.tuple.Tuple2;
 import java.util.*;
 
 /**
- * The type Dijkstra shortest path.
+ * <p>Implementation of <a href="https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm">Dijkstra's algorithm</a> for
+ * finding the shortest paths between vertices in a graph. </p>
  *
- * @param <V> the type parameter
+ * @param <V> the Vertex type parameter
  * @author David B. Bracewell
  */
 public class DijkstraShortestPath<V> implements SingleSourceShortestPath<V>, ShortestPath<V> {
@@ -48,7 +49,7 @@ public class DijkstraShortestPath<V> implements SingleSourceShortestPath<V>, Sho
    /**
     * Instantiates a new Dijkstra shortest path.
     *
-    * @param graph the graph
+    * @param graph the graph to calculate paths over
     */
    public DijkstraShortestPath(Graph<V> graph) {
       this(graph, false);
@@ -57,8 +58,8 @@ public class DijkstraShortestPath<V> implements SingleSourceShortestPath<V>, Sho
    /**
     * Instantiates a new Dijkstra shortest path.
     *
-    * @param graph           the graph
-    * @param treatUndirected the treat undirected
+    * @param graph           the graph to calculate paths over
+    * @param treatUndirected True treat the graph as undirected (even if it is directed).
     */
    public DijkstraShortestPath(Graph<V> graph, boolean treatUndirected) {
       this.graph = graph;
@@ -164,17 +165,17 @@ public class DijkstraShortestPath<V> implements SingleSourceShortestPath<V>, Sho
    }
 
    @Override
-   public double distance(V from, V to) {
-      Validation.checkArgument(graph.containsVertex(from), "Vertex must be in the graph.");
-      Validation.checkArgument(graph.containsVertex(to), "Vertex must be in the graph.");
-      return singleSourceShortestDistance(from).get(to);
+   public double distance(V source, V target) {
+      Validation.checkArgument(graph.containsVertex(source), "Vertex must be in the graph.");
+      Validation.checkArgument(graph.containsVertex(target), "Vertex must be in the graph.");
+      return singleSourceShortestDistance(source).get(target);
    }
 
    @Override
-   public List<Edge<V>> path(V from, V to) {
-      Validation.checkArgument(graph.containsVertex(from), "Vertex must be in the graph.");
-      Validation.checkArgument(graph.containsVertex(to), "Vertex must be in the graph.");
-      return Collections.unmodifiableList(singleSourceShortestPath(from).get(to));
+   public List<Edge<V>> path(V source, V target) {
+      Validation.checkArgument(graph.containsVertex(source), "Vertex must be in the graph.");
+      Validation.checkArgument(graph.containsVertex(target), "Vertex must be in the graph.");
+      return Collections.unmodifiableList(singleSourceShortestPath(source).get(target));
    }
 
    /**

@@ -30,6 +30,8 @@ import com.gengoai.io.resource.StringResource;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
+
 import static org.junit.Assert.*;
 
 /**
@@ -59,6 +61,18 @@ public class GraphUtilsTest {
       d2.addEdge("A", "B", 20.0d);
       d2.addEdge("A", "D");
       d2.addEdge("B", "C");
+   }
+
+   @Test
+   public void testUndirected() {
+      Graph<String> g = Graph.undirected();
+      g.addVertices(Arrays.asList("A", "B", "C"));
+      g.addEdge("A", "B");
+      g.addEdge("C", "B", 2.0);
+      assertTrue(g.containsEdge("B", "A"));
+      assertTrue(g.containsEdge("B", "C"));
+      assertEquals(1.0, g.getWeight("A", "B"), 0);
+      assertEquals(2.0, g.getWeight("C", "B"), 0);
    }
 
    @Test

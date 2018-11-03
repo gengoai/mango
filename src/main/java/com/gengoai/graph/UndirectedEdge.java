@@ -58,8 +58,8 @@ public class UndirectedEdge<V> extends Edge<V> {
       if (obj == this) {
          return true;
       }
-      if (obj instanceof com.gengoai.graph.UndirectedEdge) {
-         com.gengoai.graph.UndirectedEdge otherEdge = (com.gengoai.graph.UndirectedEdge) obj;
+      if (obj instanceof UndirectedEdge) {
+         UndirectedEdge otherEdge = (UndirectedEdge) obj;
          return (Objects.equals(vertex1, otherEdge.vertex1) && Objects.equals(vertex2, otherEdge.vertex2)) ||
                    (Objects.equals(vertex1, otherEdge.vertex2) && Objects.equals(vertex2, otherEdge.vertex1));
       }

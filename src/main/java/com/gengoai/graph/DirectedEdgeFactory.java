@@ -44,7 +44,7 @@ public class DirectedEdgeFactory<V> implements EdgeFactory<V>, Serializable {
    }
 
    @Override
-   public Edge<V> createEdge(V from, V to, JsonEntry entry) {
+   public DirectedEdge<V> createEdge(V from, V to, JsonEntry entry) {
       return Edge.directedEdge(from,
                                to,
                                entry.getDoubleProperty("weight"));

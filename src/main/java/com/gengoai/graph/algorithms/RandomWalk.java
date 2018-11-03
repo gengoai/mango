@@ -33,9 +33,14 @@ import java.util.NoSuchElementException;
 import java.util.Random;
 
 /**
+ * <p>Performs a random walk over the vertices in the graph. If the graph is weighted, the next vertex is randomly
+ * selected proportional to the successor vertices' weight. If the graph is not weighted, the next vertex is uniformly
+ * randomly selected. </p>
+ *
+ * @param <V> the type parameter
  * @author David B. Bracewell
  */
-public class RandomWalk<V> implements GraphVisitor<V>, GraphWalker<V>, Serializable {
+public class RandomWalk<V> implements GraphVisitor<V>, Serializable {
 
    private static final long serialVersionUID = -6167223778955711361L;
    private final boolean isWeighted;
@@ -66,7 +71,13 @@ public class RandomWalk<V> implements GraphVisitor<V>, GraphWalker<V>, Serializa
       return new RandomWalkIterator<>(graph, Validation.notNull(startingVertex), isWeighted);
    }
 
-   @Override
+   /**
+    * Selecte a vertex by taking a given number of steps from the starting vertex
+    *
+    * @param startingVertex the starting vertex
+    * @param numberOfSteps  the number of steps
+    * @return the vertex ended upon after the given number of steps.
+    */
    public V walk(V startingVertex, int numberOfSteps) {
       Validation.notNull(startingVertex);
       Validation.checkArgument(numberOfSteps >= 0, "Number of steps must be >= 0.");
@@ -79,7 +90,7 @@ public class RandomWalk<V> implements GraphVisitor<V>, GraphWalker<V>, Serializa
       return next;
    }
 
-   protected static class RandomWalkIterator<V> implements Iterator<V> {
+   private static class RandomWalkIterator<V> implements Iterator<V> {
 
       private final Random random = new Random();
       private final Graph<V> graph;
@@ -87,6 +98,13 @@ public class RandomWalk<V> implements GraphVisitor<V>, GraphWalker<V>, Serializa
       private V currentVertex;
       private V last = null;
 
+      /**
+       * Instantiates a new Random walk iterator.
+       *
+       * @param graph         the graph
+       * @param currentVertex the current vertex
+       * @param weighted      the weighted
+       */
       public RandomWalkIterator(Graph<V> graph, V currentVertex, boolean weighted) {
          this.graph = graph;
          this.currentVertex = currentVertex;

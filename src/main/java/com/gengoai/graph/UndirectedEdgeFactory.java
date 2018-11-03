@@ -44,7 +44,7 @@ public class UndirectedEdgeFactory<V> implements EdgeFactory<V>, Serializable {
    }
 
    @Override
-   public Edge<V> createEdge(V from, V to, JsonEntry entry) {
+   public UndirectedEdge<V> createEdge(V from, V to, JsonEntry entry) {
       return Edge.undirectedEdge(from,
                                  to,
                                  entry.getDoubleProperty("weight"));

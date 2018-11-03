@@ -24,18 +24,21 @@ package com.gengoai.graph.clustering;
 import com.gengoai.Validation;
 import com.gengoai.graph.Graph;
 
+import java.io.Serializable;
 import java.util.*;
 
 /**
- * Strongly Connected components clustering
+ * Implementation of <a href="https://en.wikipedia.org/wiki/Strongly_connected_component"> Strongly Connected
+ * components</a>.
  *
  * @param <V> the vertex type
  */
-public class StronglyConnectedComponents<V> implements Clusterer<V> {
+public class StronglyConnectedComponents<V> implements Clusterer<V>, Serializable {
+   private static final long serialVersionUID = 1L;
 
    private int index;
    private Stack<V> vertexStack;
-   private Map<V, Integer> vertexIndex;
+   private Set<V> visited;
    private Map<V, Integer> vertexLowLink;
    private Graph<V> graph;
    private List<Set<V>> clusters;
@@ -46,39 +49,51 @@ public class StronglyConnectedComponents<V> implements Clusterer<V> {
       graph = g;
       index = 0;
       vertexStack = new Stack<>();
-      vertexIndex = new HashMap<>();
+      visited = new HashSet<>();
       vertexLowLink = new HashMap<>();
       clusters = new ArrayList<>();
-      g.vertices().stream().filter(v -> !vertexIndex.containsKey(v)).forEach(this::strongConnect);
+      for (V v : g.vertices()) {
+         if (!visited.contains(v)) {
+            strongConnect(v);
+         }
+      }
+
+      vertexLowLink = null;
+      graph = null;
+      vertexStack = null;
+
       return clusters;
    }
 
    private void strongConnect(V vertex) {
-      vertexIndex.put(vertex, index);
+      visited.add(vertex);
       vertexLowLink.put(vertex, index);
-
-      this.index++;
       vertexStack.push(vertex);
+      int min = index;
 
-      for (V v2 : graph.getSuccessors(vertex)) {
-         if (!vertexIndex.containsKey(v2)) {
-            strongConnect(v2);
-            vertexLowLink.put(vertex, Math.min(vertexLowLink.get(vertex), vertexLowLink.get(v2)));
-         } else {
-            vertexLowLink.put(vertex, Math.min(vertexLowLink.get(vertex), vertexLowLink.get(v2)));
+      index++;
+
+      for (V w : graph.getSuccessors(vertex)) {
+         if (!visited.contains(w)) {
+            strongConnect(w);
          }
+         min = Math.min(min, vertexLowLink.get(w));
       }
 
-      if (vertexIndex.get(vertex).intValue() == vertexLowLink.get(vertex).intValue()) {
-         Set<V> cluster = new HashSet<>();
-         V w;
-         do {
-            w = vertexStack.pop();
-            cluster.add(w);
-         } while (!w.equals(vertex) && vertexStack.size() > 0);
-         if (!cluster.isEmpty()) {
-            clusters.add(cluster);
-         }
+      if (min < vertexLowLink.get(vertex)) {
+         vertexLowLink.put(vertex, min);
+         return;
+      }
+
+      Set<V> cluster = new HashSet<>();
+      V w;
+      do {
+         w = vertexStack.pop();
+         cluster.add(w);
+      } while (!w.equals(vertex) && vertexStack.size() > 0);
+
+      if (!cluster.isEmpty()) {
+         clusters.add(cluster);
       }
    }
 

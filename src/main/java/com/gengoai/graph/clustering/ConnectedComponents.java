@@ -25,17 +25,20 @@ import com.gengoai.Validation;
 import com.gengoai.graph.Graph;
 import com.gengoai.graph.algorithms.BreadthFirstVisitor;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Connected components clustering
+ * Implementation of <a href="https://en.wikipedia.org/wiki/Connected_component_(graph_theory)">Connected
+ * components</a>.
  *
  * @param <V> the vertex type
  */
-public class ConnectedComponents<V> implements Clusterer<V> {
+public class ConnectedComponents<V> implements Clusterer<V>, Serializable {
+   private static final long serialVersionUID = 1L;
 
    @Override
    public List<Set<V>> cluster(Graph<V> g) {
