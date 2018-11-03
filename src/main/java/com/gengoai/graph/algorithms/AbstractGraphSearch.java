@@ -13,13 +13,7 @@ import static com.gengoai.collection.Lists.asArrayList;
 import static com.gengoai.collection.Sets.hashSetOf;
 import static com.gengoai.tuple.Tuples.$;
 
-/**
- * The type Abstract graph search.
- *
- * @param <V> the type parameter
- * @author David B. Bracewell
- */
-public abstract class AbstractGraphSearch<V> implements GraphSearch<V>, Serializable {
+abstract class AbstractGraphSearch<V> implements GraphSearch<V>, Serializable {
    private static final long serialVersionUID = 1L;
    private final Graph<V> graph;
 

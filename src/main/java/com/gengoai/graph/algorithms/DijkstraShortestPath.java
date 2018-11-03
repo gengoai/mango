@@ -40,7 +40,7 @@ import java.util.*;
  * @param <V> the Vertex type parameter
  * @author David B. Bracewell
  */
-public class DijkstraShortestPath<V> implements SingleSourceShortestPath<V>, ShortestPath<V> {
+public class DijkstraShortestPath<V> implements SingleSourceShortestPath<V>, ShortestPath<V>, GraphSearch<V> {
 
    private final Graph<V> graph;
    private final Map<V, ListMultimap<V, Edge<V>>> pathMap = new LRUMap<>(100);
@@ -66,6 +66,10 @@ public class DijkstraShortestPath<V> implements SingleSourceShortestPath<V>, Sho
       this.treatUndirected = treatUndirected;
    }
 
+   @Override
+   public List<Edge<V>> search(V startingPoint, V endingPoint) {
+      return path(startingPoint, endingPoint);
+   }
 
    @Override
    public Counter<V> singleSourceShortestDistance(V source) {

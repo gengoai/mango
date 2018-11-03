@@ -23,7 +23,7 @@ package com.gengoai.graph.clustering;
 
 import com.gengoai.Validation;
 import com.gengoai.graph.Graph;
-import com.gengoai.graph.algorithms.BreadthFirstVisitor;
+import com.gengoai.graph.algorithms.BreadthFirstTraversal;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ public class ConnectedComponents<V> implements Clusterer<V>, Serializable {
       Validation.notNull(g);
       List<Set<V>> rval = new ArrayList<>();
       Set<V> seen = new HashSet<>();
-      BreadthFirstVisitor<V> visitor = new BreadthFirstVisitor<>(g);
+      BreadthFirstTraversal<V> visitor = new BreadthFirstTraversal<>(g);
       for (V v : g.vertices()) {
          if (seen.contains(v)) continue;
          Set<V> cluster = new HashSet<>();

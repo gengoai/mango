@@ -5,12 +5,20 @@ import com.gengoai.graph.Graph;
 import java.util.Deque;
 
 /**
+ * <p>Traverses the graph in a depth first fashion.</p>
+ *
+ * @param <V> the type parameter
  * @author David B. Bracewell
  */
-public class DepthFirstVisitor<V> extends AbstractGraphVisitor<V> {
+public class DepthFirstTraversal<V> extends AbstractGraphTraversal<V> {
    private static final long serialVersionUID = 1L;
 
-   public DepthFirstVisitor(Graph<V> graph) {
+   /**
+    * Instantiates a new Depth first visitor.
+    *
+    * @param graph the graph to visit
+    */
+   public DepthFirstTraversal(Graph<V> graph) {
       super(graph);
    }
 

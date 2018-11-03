@@ -27,10 +27,20 @@ import com.gengoai.graph.Edge;
 import java.util.List;
 
 /**
+ * <p>Searches for a path between a given starting point and given ending point.</p>
+ *
+ * @param <V> the vertex type parameter
  * @author David B. Bracewell
  */
 public interface GraphSearch<V> {
 
+   /**
+    * Searches for a path from the given starting point to the given ending point
+    *
+    * @param startingPoint the starting point
+    * @param endingPoint   the ending point
+    * @return the path as a list of edges (empty list if no path exists)
+    */
    List<Edge<V>> search(V startingPoint, V endingPoint);
 
 }//END OF GraphSearch

@@ -40,7 +40,7 @@ import java.util.Random;
  * @param <V> the type parameter
  * @author David B. Bracewell
  */
-public class RandomWalk<V> implements GraphVisitor<V>, Serializable {
+public class RandomWalk<V> implements GraphTraversal<V>, Serializable {
 
    private static final long serialVersionUID = -6167223778955711361L;
    private final boolean isWeighted;

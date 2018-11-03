@@ -5,18 +5,26 @@ import com.gengoai.graph.Graph;
 import java.io.Serializable;
 import java.util.*;
 
+
 /**
- * @author David B. Bracewell
+ * Abstract traversal for depth first and breadth first traversals
+ *
+ * @param <V> the type parameter
  */
-public abstract class AbstractGraphVisitor<V> implements GraphVisitor<V>, Serializable {
+public abstract class AbstractGraphTraversal<V> implements GraphTraversal<V>, Serializable {
    private static final long serialVersionUID = 1L;
    private final Graph<V> graph;
 
-   public AbstractGraphVisitor(Graph<V> graph) {
+   /**
+    * Instantiates a new Abstract graph traversal.
+    *
+    * @param graph the graph
+    */
+   public AbstractGraphTraversal(Graph<V> graph) {
       this.graph = graph;
    }
 
-   public Graph<V> getGraph() {
+   protected Graph<V> getGraph() {
       return graph;
    }
 
@@ -25,14 +33,31 @@ public abstract class AbstractGraphVisitor<V> implements GraphVisitor<V>, Serial
       return new GenericIterator(startingPoint);
    }
 
+   /**
+    * Add.
+    *
+    * @param deque  the deque
+    * @param vertex the vertex
+    */
    protected abstract void add(Deque<V> deque, V vertex);
 
+   /**
+    * Next v v.
+    *
+    * @param deque the deque
+    * @return the v
+    */
    protected abstract V nextV(Deque<V> deque);
 
    private class GenericIterator implements Iterator<V> {
       private final Deque<V> deque = new LinkedList<>();
       private final Set<V> visited = new HashSet<>();
 
+      /**
+       * Instantiates a new Generic iterator.
+       *
+       * @param startingVertex the starting vertex
+       */
       protected GenericIterator(V startingVertex) {
          this.deque.offer(startingVertex);
       }
