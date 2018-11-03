@@ -1,15 +1,15 @@
 package com.gengoai.io;
 
-import com.gengoai.collection.Sets;
 import com.gengoai.function.SerializableFunction;
 import com.gengoai.json.Json;
 import com.gengoai.json.JsonWriter;
-import org.apache.mahout.math.map.OpenObjectLongHashMap;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import static com.gengoai.io.IndexedFile.indexFileFor;
@@ -23,7 +23,7 @@ public final class IndexedFileReader implements Serializable {
    private static final long serialVersionUID = 1L;
    private final File backingFile;
    private final boolean persistIndex;
-   private volatile OpenObjectLongHashMap<String> index = null;
+   private volatile Map<String, Long> index = null;
    private final SerializableFunction<String, String> lineToKey;
 
    /**
@@ -117,9 +117,9 @@ public final class IndexedFileReader implements Serializable {
     * @return the open object long hash map
     * @throws IOException the io exception
     */
-   public static OpenObjectLongHashMap<String> createIndex(File rawFile,
-                                                           SerializableFunction<String, String> lineToKey
-                                                          ) throws IOException {
+   public static Map<String, Long> createIndex(File rawFile,
+                                               SerializableFunction<String, String> lineToKey
+                                              ) throws IOException {
       return createIndex(rawFile, lineToKey, false);
    }
 
@@ -131,17 +131,13 @@ public final class IndexedFileReader implements Serializable {
 
    public Set<String> keySet() {
       ensureIndex();
-      return Sets.asHashSet(index.keys().iterator());
+      return index.keySet();
    }
 
 
-   public static OpenObjectLongHashMap<String> loadIndexFor(File rawFile) throws IOException {
+   public static Map<String, Long> loadIndexFor(File rawFile) throws IOException {
       File indexFile = indexFileFor(rawFile);
-      OpenObjectLongHashMap<String> index = new OpenObjectLongHashMap<>();
-      Json.parse(Resources.fromFile(indexFile))
-         .<Long>getAsMap(Long.class)
-         .forEach(index::put);
-      return index;
+      return Json.parse(Resources.fromFile(indexFile)).getAsMap(Long.class);
    }
 
    /**
@@ -153,11 +149,11 @@ public final class IndexedFileReader implements Serializable {
     * @return the open object long hash map
     * @throws IOException the io exception
     */
-   public static OpenObjectLongHashMap<String> createIndex(File rawFile,
-                                                           SerializableFunction<String, String> lineToKey,
-                                                           boolean saveIndex
-                                                          ) throws IOException {
-      OpenObjectLongHashMap<String> index = new OpenObjectLongHashMap<>();
+   public static Map<String, Long> createIndex(File rawFile,
+                                               SerializableFunction<String, String> lineToKey,
+                                               boolean saveIndex
+                                              ) throws IOException {
+      Map<String, Long> index = new HashMap<>();
       try (RandomAccessFile raf = new RandomAccessFile(rawFile, "rw")) {
          long lastOffset = 0;
          String line;

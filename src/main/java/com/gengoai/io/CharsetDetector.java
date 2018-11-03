@@ -22,8 +22,8 @@
 package com.gengoai.io;
 
 import com.gengoai.Validation;
+import org.mozilla.universalchardet.UniversalDetector;
 
-import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
 
 /**
@@ -46,10 +46,11 @@ public class CharsetDetector {
       Validation.checkArgument(length > 0);
       Validation.checkArgument(offset >= 0);
 
-      final com.ibm.icu.text.CharsetDetector detector = new com.ibm.icu.text.CharsetDetector();
+      final UniversalDetector detector = new UniversalDetector(null);
       try {
-         detector.setText(new ByteArrayInputStream(buffer, offset, length));
-         return Charset.forName(detector.detect().getName());
+         detector.handleData(buffer, offset, length);
+         detector.dataEnd();
+         return Charset.forName(detector.getDetectedCharset());
       } catch (Exception e) {
          return null;
       }

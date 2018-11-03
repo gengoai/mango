@@ -22,7 +22,6 @@
 package com.gengoai.collection;
 
 import com.gengoai.json.JsonEntry;
-import org.apache.mahout.math.map.OpenObjectIntHashMap;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
@@ -36,7 +35,7 @@ import java.util.*;
  */
 public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
    private static final long serialVersionUID = 1L;
-   private final OpenObjectIntHashMap<TYPE> map = new OpenObjectIntHashMap<>();
+   private final Map<TYPE, Integer> map = new HashMap<>();
    private final List<TYPE> list = new ArrayList<>();
 
    /**
@@ -92,7 +91,7 @@ public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
    @Override
    public Index<TYPE> copy() {
       HashMapIndex<TYPE> copy = new HashMapIndex<>();
-      this.map.forEachPair(copy.map::put);
+      this.map.forEach(copy.map::put);
       copy.list.addAll(this.list);
       return copy;
    }
