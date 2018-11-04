@@ -161,20 +161,20 @@ public class GraphViz<V> implements GraphWriter<V>, GraphRenderer<V> {
    }
 
    @Override
-   public void setVertexEncoder(VertexEncoder<V> serializer) {
-      if (serializer == null) {
+   public void setVertexEncoder(VertexEncoder<V> vertexEncoder) {
+      if (vertexEncoder == null) {
          this.vertexEncoder = DefaultEncodersDecoders.defaultVertexEncoder();
       } else {
-         this.vertexEncoder = serializer;
+         this.vertexEncoder = vertexEncoder;
       }
    }
 
    @Override
-   public void setEdgeEncoder(EdgeEncoder<V> serializer) {
-      if (serializer == null) {
+   public void setEdgeEncoder(EdgeEncoder<V> edgeEncoder) {
+      if (edgeEncoder == null) {
          this.edgeEncoder = DefaultEncodersDecoders.defaultEdgeEncoder();
       } else {
-         this.edgeEncoder = serializer;
+         this.edgeEncoder = edgeEncoder;
       }
    }
 

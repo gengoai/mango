@@ -23,7 +23,8 @@ package com.gengoai.graph;
 
 import com.gengoai.graph.io.DefaultEncodersDecoders;
 import com.gengoai.graph.io.GraphJson;
-import com.gengoai.graph.io.GraphML;
+import com.gengoai.graph.io.GraphMLReader;
+import com.gengoai.graph.io.GraphMLWriter;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.io.resource.StringResource;
@@ -84,16 +85,6 @@ public class GraphUtilsTest {
       assertEquals(d1, d3);
    }
 
-
-   @Test
-   public void graphML() throws Exception {
-      GraphML<String> gJson = new GraphML<>(String.class);
-      Resource r = Resources.fromString();
-      gJson.write(d1, r);
-      Graph<String> d3 = gJson.read(r);
-      assertEquals(d1, d3);
-   }
-
    @Test
    public void testMergeNonEmpty() throws Exception {
       d1.merge(d2, EdgeMergeFunctions.<String>keepOriginal());
@@ -102,15 +93,16 @@ public class GraphUtilsTest {
       assertTrue(d1.containsEdge("C", "B"));
       assertTrue(d1.containsEdge("B", "C"));
 
-      GraphML<String> graphViz = new GraphML<>(String.class);
-      graphViz.setVertexEncoder(DefaultEncodersDecoders.defaultVertexEncoder());
-      graphViz.setVertexDecoder(DefaultEncodersDecoders.defaultVertexDecoder(String.class));
+      GraphMLReader<String> graphMLReader = new GraphMLReader<>(String.class);
+      GraphMLWriter<String> graphMlWriter = new GraphMLWriter<>();
+      graphMlWriter.setVertexEncoder(DefaultEncodersDecoders.defaultVertexEncoder());
+      graphMLReader.setVertexDecoder(DefaultEncodersDecoders.defaultVertexDecoder(String.class));
       Resource r = new StringResource();
-      graphViz.write(d1, r);
+      graphMlWriter.write(d1, r);
 
 
-      graphViz.setVertexDecoder(DefaultEncodersDecoders.defaultVertexDecoder(String.class));
-      Graph<String> g2 = graphViz.read(r);
+      graphMLReader.setVertexDecoder(DefaultEncodersDecoders.defaultVertexDecoder(String.class));
+      Graph<String> g2 = graphMLReader.read(r);
    }
 
    @Test

@@ -28,33 +28,37 @@ import java.io.IOException;
 
 /**
  * <p>Common interface for reading graphs from resources.</p>
+ * <p>Readers first read in the graph constructing intermediate {@link com.gengoai.graph.Vertex} objects to represent
+ * vertices and their properties. {@link com.gengoai.graph.Vertex} objects are then decoded into an actual vertex using
+ * a supplied {@link VertexDecoder}. Similarly, edges are constructed using the graph's edge factory, but an {@link
+ * EdgeDecoder} is used to add additional properties stored in a map to the edge.</p>
  *
  * @param <V> the vertex type
  * @author David B. Bracewell
  */
 public interface GraphReader<V> {
 
-  /**
-   * Sets the vertex decoder.
-   *
-   * @param vertexDecoder the vertex decoder
-   */
-  void setVertexDecoder(VertexDecoder<V> vertexDecoder);
+   /**
+    * Sets the vertex decoder.
+    *
+    * @param vertexDecoder the vertex decoder
+    */
+   void setVertexDecoder(VertexDecoder<V> vertexDecoder);
 
-  /**
-   * Sets the edge decoder.
-   *
-   * @param edgeDecoder the edge decoder
-   */
-  void setEdgeDecoder(EdgeDecoder<V> edgeDecoder);
+   /**
+    * Sets the edge decoder.
+    *
+    * @param edgeDecoder the edge decoder
+    */
+   void setEdgeDecoder(EdgeDecoder<V> edgeDecoder);
 
-  /**
-   * Reads a graph in from a resource
-   *
-   * @param location the location of the graph
-   * @return A Graph constructed based on the resource
-   * @throws IOException Something went wrong reading
-   */
-  Graph<V> read(Resource location) throws IOException;
+   /**
+    * Reads a graph in from a resource
+    *
+    * @param location the location of the graph
+    * @return A Graph constructed based on the resource
+    * @throws IOException Something went wrong reading
+    */
+   Graph<V> read(Resource location) throws IOException;
 
 }//END OF GraphReader

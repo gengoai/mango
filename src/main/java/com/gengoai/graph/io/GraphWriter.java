@@ -29,7 +29,10 @@ import com.gengoai.io.resource.Resource;
 import java.io.IOException;
 
 /**
- * <p>The interface Graph writer.</p>
+ * <p>Common interface for writing graphs from resources.</p>
+ * <p>The vertices of the graph are first converted into an intermediate representation ({@link
+ * com.gengoai.graph.Vertex}), which defines a label and set of properties. Edges are translated into a property
+ * map.</p>
  *
  * @param <V> the vertex type
  */
@@ -37,14 +40,14 @@ public interface GraphWriter<V> {
 
 
    /**
-    * Sets vertex encoder.
+    * Sets the vertex encoder
     *
     * @param encoder the encoder
     */
    void setVertexEncoder(VertexEncoder<V> encoder);
 
    /**
-    * Sets edge encoder.
+    * Sets the edge encoder.
     *
     * @param encoder the encoder
     */
@@ -52,11 +55,11 @@ public interface GraphWriter<V> {
 
 
    /**
-    * Write void.
+    * Writes the given graph to the give location in this format, using the defined vertex and edge encoders.
     *
-    * @param graph    the graph
-    * @param location the location
-    * @throws IOException the iO exception
+    * @param graph    the graph to write
+    * @param location the location to write to
+    * @throws IOException Something went wrong writing the graph
     */
    default void write(Graph<V> graph, Resource location) throws IOException {
       write(graph, location, new ArrayListMultimap<>());
@@ -64,12 +67,12 @@ public interface GraphWriter<V> {
 
 
    /**
-    * Write graph.
+    * Writes the given graph to the give location in this format, using the defined vertex and edge encoders.
     *
-    * @param graph      the graph
-    * @param location   the location
-    * @param parameters the parameters
-    * @throws IOException the iO exception
+    * @param graph      the graph to write
+    * @param location   the location to write to
+    * @param parameters multimap of parameters used by the underling writer
+    * @throws IOException Something went wrong writing the graph
     */
    void write(Graph<V> graph, Resource location, Multimap<String, String> parameters) throws IOException;
 

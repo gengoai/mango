@@ -37,25 +37,25 @@ import java.io.IOException;
 public interface GraphRenderer<V> {
 
    /**
-    * Sets vertex encoder.
+    * Sets the vertex encoder
     *
-    * @param serializer the serializer
+    * @param vertexEncoder the encoder
     */
-   void setVertexEncoder(VertexEncoder<V> serializer);
+   void setVertexEncoder(VertexEncoder<V> vertexEncoder);
 
    /**
-    * Sets edge encoder.
+    * Sets the edge encoder.
     *
-    * @param serializer the serializer
+    * @param edgeEncoder the encoder
     */
-   void setEdgeEncoder(EdgeEncoder<V> serializer);
+   void setEdgeEncoder(EdgeEncoder<V> edgeEncoder);
 
    /**
-    * Renders a graph storing the rendering inthe given resource.
+    * Renders the given graph to the give location, using the defined vertex and edge encoders.
     *
-    * @param graph    the graph
-    * @param location the location
-    * @throws IOException the iO exception
+    * @param graph    the graph to render
+    * @param location the location to write the rendering to
+    * @throws IOException Something went wrong rendering the graph
     */
    default void render(Graph<V> graph, Resource location) throws IOException {
       render(graph, location, new ArrayListMultimap<>());
@@ -63,12 +63,12 @@ public interface GraphRenderer<V> {
 
 
    /**
-    * Renders a graph storing the rendering in the given resource.
+    * Renders the given graph to the give location, using the defined vertex and edge encoders.
     *
-    * @param graph      the graph
-    * @param location   the location
-    * @param parameters the parameters
-    * @throws IOException the iO exception
+    * @param graph      the graph to render
+    * @param location   the location to write the rendering to
+    * @param parameters multimap of parameters used by the underling render
+    * @throws IOException Something went wrong rendering the graph
     */
    void render(Graph<V> graph, Resource location, Multimap<String, String> parameters) throws IOException;
 
