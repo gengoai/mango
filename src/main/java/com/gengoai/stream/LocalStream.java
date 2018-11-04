@@ -262,7 +262,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
    public void saveAsTextFile(Resource location) {
       try (BufferedWriter writer = new BufferedWriter(location.writer())) {
          stream.forEach(Unchecked.consumer(o -> {
-                                              writer.write(Converter.convertSilently(o, String.class));
+                                              writer.write(Converter.convert(o, String.class));
                                               writer.newLine();
                                            }
                                           ));
@@ -291,7 +291,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
 
    @Override
    public <R extends Comparable<R>> MStream<T> sorted(boolean ascending, SerializableFunction<? super T, ? extends R> keyFunction) {
-      return new LocalStream<>(stream.sorted((t1, t2) -> keyFunction.apply(t1).compareTo(keyFunction.apply(t2))));
+      return new LocalStream<>(stream.sorted(Comparator.comparing(keyFunction::apply)));
    }
 
    @Override
@@ -314,8 +314,7 @@ public class LocalStream<T> implements MStream<T>, Serializable {
       if (other.isDistributed()) {
          return other.intersection(this);
       }
-      Collector<T, ?, Set<T>> collector = Collectors.toSet();
-      Set<T> set = other.collect(collector);
+      final Set<T> set = other.collect(Collectors.toSet());
       return filter(set::contains);
    }
 
@@ -347,6 +346,5 @@ public class LocalStream<T> implements MStream<T>, Serializable {
    public MStream<Iterable<T>> partition(long partitionSize) {
       return new LocalStream<>(Streams.asStream(Iterators.partition(iterator(), (int) partitionSize)));
    }
-
 
 }//END OF LocalStream

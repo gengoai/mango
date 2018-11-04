@@ -40,7 +40,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * <p>A tuple is a finite sequence of items.</p>
+ * <p>A tuple is a finite sequence of items. Mango provides specific implementations for degree 0-4 tuples, which all
+ * each element's type to be defined via generics. For tuples with degree 5 or more, a generic NTuple is provided.</p>
  *
  * @author David B. Bracewell
  */

@@ -8,7 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * The type N tuple.
+ * Generic Tuple of any degree. 
  *
  * @author David B. Bracewell
  */
