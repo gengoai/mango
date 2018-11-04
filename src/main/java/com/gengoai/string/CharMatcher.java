@@ -6,7 +6,9 @@ import com.gengoai.function.SerializablePredicate;
 import java.util.BitSet;
 
 /**
- * The interface Char matcher.
+ * <p>A <code>CharMatcher</code> is a {@link SerializablePredicate} for <code>Character</code>s testing if characters
+ * match a specific pattern. Additionally, methods exist to match against all, any, or no part of a
+ * <code>CharSequence</code>.</p>
  *
  * @author David B. Bracewell
  */
@@ -14,50 +16,66 @@ import java.util.BitSet;
 public interface CharMatcher extends SerializablePredicate<Character> {
 
    /**
-    * The constant Any.
+    * Matches any character
     */
    CharMatcher Any = character -> true;
    /**
-    * The constant Ascii.
+    * Matches any ascii character (int value <= 127)
     */
    CharMatcher Ascii = character -> character <= 127;
    /**
-    * The constant IsDigit.
+    * Matches digits defined using {@link Character#isDigit(char)}
     */
    CharMatcher Digit = Character::isDigit;
    /**
-    * The constant isIdeographic.
+    * Matches ideographic characters defined using {@link Character#isIdeographic(int)}
     */
    CharMatcher Ideographic = Character::isIdeographic;
    /**
-    * The constant isLetter.
+    * Matches letters defined using {@link Character#isLetter(char)}
     */
    CharMatcher Letter = Character::isLetter;
    /**
-    * The constant isLetterOrDigit.
+    * Matches letters or digits using {@link Character#isLetterOrDigit(char)}
     */
    CharMatcher LetterOrDigit = Character::isLetterOrDigit;
    /**
-    * The constant isLowerCase.
+    * Matches lower case using {@link Character#isLowerCase(char)}
     */
    CharMatcher LowerCase = Character::isLowerCase;
    /**
-    * The constant None.
+    * Matches nothing
     */
    CharMatcher None = character -> false;
    /**
-    * The constant isPunctuation.
+    * Matches punctuation.
     */
-   CharMatcher Punctuation = Strings::isPunctuation;
+   CharMatcher Punctuation = c -> {
+      switch (Character.getType((char) c)) {
+         case Character.CONNECTOR_PUNCTUATION:
+         case Character.DASH_PUNCTUATION:
+         case Character.END_PUNCTUATION:
+         case Character.FINAL_QUOTE_PUNCTUATION:
+         case Character.INITIAL_QUOTE_PUNCTUATION:
+         case Character.START_PUNCTUATION:
+         case Character.OTHER_PUNCTUATION:
+         case '=':
+            return true;
+      }
+      return false;
+   };
    /**
-    * The constant isUpperCase.
+    * Matches upper case using {@link Character#isUpperCase(char)}
     */
    CharMatcher UpperCase = Character::isUpperCase;
    /**
-    * The constant WhiteSpace.
+    * Matches whitespace using {@link Character#isWhitespace(char)}
     */
    CharMatcher WhiteSpace = Character::isWhitespace;
 
+   /**
+    * Matches breaking whitespace.
+    */
    CharMatcher BreakingWhiteSpace = character -> {
       //Taken from Guava
       switch (character) {
@@ -82,6 +100,12 @@ public interface CharMatcher extends SerializablePredicate<Character> {
    };
 
 
+   /**
+    * Matches against any character in the given sequence.s
+    *
+    * @param characters the characters
+    * @return the char matcher
+    */
    static CharMatcher anyOf(CharSequence characters) {
       final BitSet bitSet = characters.chars().collect(BitSet::new, BitSet::set, BitSet::or);
       return bitSet::get;
@@ -93,21 +117,21 @@ public interface CharMatcher extends SerializablePredicate<Character> {
    }
 
    /**
-    * Find in int.
+    * Finds the first character in the given sequence that matches.
     *
     * @param sequence the sequence
-    * @return the int
+    * @return the index of the first match or -1 if none
     */
    default int findIn(CharSequence sequence) {
       return findIn(sequence, 0);
    }
 
    /**
-    * Find in int.
+    * Finds the first character in the given sequence that matches.
     *
     * @param sequence the sequence
-    * @param offset   the offset
-    * @return the int
+    * @param offset   the starting position to search in the CharSequence
+    * @return the index of the first match or -1 if none
     */
    default int findIn(CharSequence sequence, int offset) {
       Validation.checkElementIndex(offset, sequence.length());
@@ -120,10 +144,10 @@ public interface CharMatcher extends SerializablePredicate<Character> {
    }
 
    /**
-    * Matches all of boolean.
+    * Checks if the entire CharSequence matches.
     *
     * @param sequence the sequence
-    * @return the boolean
+    * @return True if this matcher matches all of the given CharSequence
     */
    default boolean matchesAllOf(CharSequence sequence) {
       for (int i = 0; i < sequence.length(); i++) {
@@ -135,10 +159,10 @@ public interface CharMatcher extends SerializablePredicate<Character> {
    }
 
    /**
-    * Matches any of boolean.
+    * Checks if any of the CharSequence matches.
     *
     * @param sequence the sequence
-    * @return the boolean
+    * @return True if this matcher matches any of the given CharSequence
     */
    default boolean matchesAnyOf(CharSequence sequence) {
       for (int i = 0; i < sequence.length(); i++) {
@@ -150,10 +174,10 @@ public interface CharMatcher extends SerializablePredicate<Character> {
    }
 
    /**
-    * Matches none of boolean.
+    * Checks if none of the CharSequence matches.
     *
     * @param sequence the sequence
-    * @return the boolean
+    * @return True if this matcher matches none of the given CharSequence
     */
    default boolean matchesNoneOf(CharSequence sequence) {
       for (int i = 0; i < sequence.length(); i++) {
@@ -175,20 +199,20 @@ public interface CharMatcher extends SerializablePredicate<Character> {
    }
 
    /**
-    * Trim from string.
+    * Removes matches from the beginning and end of the string.
     *
     * @param sequence the sequence
-    * @return the string
+    * @return the trimmed string
     */
    default String trimFrom(CharSequence sequence) {
       return trimTrailingFrom(trimLeadingFrom(sequence));
    }
 
    /**
-    * Trim leading from string.
+    * Removes matches from the beginning of the string until a non-match is found.
     *
     * @param sequence the sequence
-    * @return the string
+    * @return the trimmed string
     */
    default String trimLeadingFrom(CharSequence sequence) {
       for (int first = 0; first < sequence.length(); first++) {
@@ -200,10 +224,10 @@ public interface CharMatcher extends SerializablePredicate<Character> {
    }
 
    /**
-    * Trim trailing from string.
+    * Trims matches from the end of the string until a non-match is found.
     *
     * @param sequence the sequence
-    * @return the string
+    * @return the trimmed string
     */
    default String trimTrailingFrom(CharSequence sequence) {
       for (int last = sequence.length() - 1; last >= 0; last--) {

@@ -3,12 +3,11 @@ package com.gengoai.string;
 import java.util.regex.Pattern;
 
 /**
- * The type Regex.
+ * <p>Commonly used Regex classes and constructs for building Patterns.</p>
  *
  * @author David B. Bracewell
  */
 public final class Re {
-
    /**
     * An unescaped period representing match anything.
     */
@@ -144,25 +143,28 @@ public final class Re {
 
 
    /**
-    * Chars string.
+    * Converts the given array of strings into a regex character class.
     *
-    * @param negated the negated
-    * @param chars   the chars
-    * @return the string
+    * @param negated True if the class should be negated.
+    * @param chars   the components of the character class
+    * @return the character class
     */
    public static String chars(boolean negated, String... chars) {
+      StringBuilder builder = new StringBuilder("[");
       if (negated) {
-         return "[^" + String.join("", chars) + "]";
+         builder.append("^");
       }
-      return "[" + String.join("", chars) + "]";
+      builder.append(String.join("", chars));
+      builder.append("]");
+      return builder.toString();
    }
 
    /**
-    * Chars string.
+    * Converts the given array of characters into a regex character class.
     *
-    * @param negated the negated
-    * @param chars   the chars
-    * @return the string
+    * @param negated True if the class should be negated.
+    * @param chars   the components of the character class
+    * @return the character class
     */
    public static String chars(boolean negated, char... chars) {
       StringBuilder out = new StringBuilder("[");
@@ -176,58 +178,58 @@ public final class Re {
    }
 
    /**
-    * Chars string.
+    * Converts the given array of strings into a regex character class.
     *
-    * @param chars the chars
-    * @return the string
+    * @param chars the components of the character class
+    * @return the character class
     */
    public static String chars(String... chars) {
       return chars(false, chars);
    }
 
    /**
-    * Chars string.
+    * Converts the given array of chars into a regex character class.
     *
-    * @param chars the chars
-    * @return the string
+    * @param chars the components of the character class
+    * @return the character class
     */
    public static String chars(char... chars) {
       return chars(false, chars);
    }
 
    /**
-    * Named group string.
+    * Defines the given regex as a named match group.
     *
     * @param groupName the group name
     * @param regex     the regex
-    * @return the string
+    * @return the named match group
     */
-   public static String namedGroup(String groupName, String... regex) {
-      return String.format("(?<%s> %s)", groupName, String.join("", regex));
+   public static String namedGroup(String groupName, String regex) {
+      return String.format("(?<%s> %s)", groupName, regex);
    }
 
    /**
-    * Non matching group string.
+    * Defines the given regex as a non-matching group
     *
     * @param regex the regex
-    * @return the string
+    * @return the non-matching group
     */
-   public static String nonMatchingGroup(String... regex) {
-      return String.format("(?:%s)", String.join("", regex));
+   public static String nonMatchingGroup(String regex) {
+      return String.format("(?:%s)", regex);
    }
 
    /**
-    * Non-consuming negative lookahead
+    * Defines a negative lookahead for the given regex.
     *
     * @param regex the regex
     * @return the regex
     */
-   public static String negLookahead(String... regex) {
-      return String.format("(?! %s)", String.join("", regex));
+   public static String negLookahead(String regex) {
+      return String.format("(?! %s)", regex);
    }
 
    /**
-    * Non-consuming negative lookbehind
+    * Defines a negative non-consuming lookahead for the given regex.
     *
     * @param regex the regex
     * @return the regex
@@ -237,7 +239,7 @@ public final class Re {
    }
 
    /**
-    * Non-consuming positive lookahead
+    * Defines a positive lookahead for the given regex.
     *
     * @param regex the regex
     * @return the regex
@@ -247,7 +249,7 @@ public final class Re {
    }
 
    /**
-    * Non-consuming positive lookbehind
+    * Defines a non-consuming positive lookahead for the given regex.
     *
     * @param regex the regex
     * @return the regex
@@ -256,18 +258,30 @@ public final class Re {
       return String.format("(?<= %s)", String.join("", regex));
    }
 
+
    /**
-    * Q string.
+    * Combines the given regex patterns into a sequence.
     *
     * @param regex the regex
     * @return the string
     */
-   public static String q(String... regex) {
-      return String.format("\\Q%s\\E", String.join("", regex));
+   public static String seq(String... regex) {
+      return String.join("", regex);
    }
 
    /**
-    * Re pattern.
+    * Combines the given regex patterns as alternations. Should be wrapped as a group.
+    *
+    * @param regex the regex
+    * @return the alternation
+    */
+   public static String alt(String... regex) {
+      return String.join("|", regex);
+   }
+
+
+   /**
+    * Compiles the given patterns, treating them as a sequence, with the given flags.
     *
     * @param flags    the flags
     * @param patterns the patterns
@@ -278,7 +292,7 @@ public final class Re {
    }
 
    /**
-    * Re pattern.
+    * Compiles the given patterns, treating them as a sequence.
     *
     * @param patterns the patterns
     * @return the pattern

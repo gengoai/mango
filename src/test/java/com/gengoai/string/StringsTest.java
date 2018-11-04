@@ -75,12 +75,6 @@ public class StringsTest {
 
    @Test
    public void testIsMethods() throws Exception {
-      assertTrue(Strings.isLetterOrDigit('a'));
-      assertTrue(Strings.isLetterOrDigit('1'));
-      assertTrue(Strings.isLetterOrDigit('あ'));
-      assertFalse(Strings.isLetterOrDigit('"'));
-      assertFalse(Strings.isLetterOrDigit(' '));
-
       assertTrue(Strings.isLowerCase("lower"));
       assertFalse(Strings.isLowerCase("あえおいう"));
       assertFalse(Strings.isLowerCase("UPPER"));
@@ -165,7 +159,7 @@ public class StringsTest {
       assertEquals("++++", Strings.repeat('+', 4));
       assertEquals("++++", Strings.repeat("+", 4));
       assertEquals("+=+=+=+=", Strings.repeat("+=", 4));
-      assertNull(Strings.repeat(null, -1));
+      assertEquals("null", Strings.repeat(null, 1));
    }
 
    @Test

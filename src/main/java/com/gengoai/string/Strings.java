@@ -23,6 +23,7 @@ package com.gengoai.string;
 
 import com.gengoai.Validation;
 import com.gengoai.collection.Streams;
+import com.gengoai.conversion.Converter;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVReader;
 
@@ -31,9 +32,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
- * String utility methods
+ * <p>Convenience methods for manipulating strings.</p>
  *
  * @author David B. Bracewell
  */
@@ -45,7 +47,7 @@ public final class Strings {
    public static final String EMPTY = "";
 
    /**
-    * The constant BLANK.
+    * Single blank string
     */
    public static final String BLANK = " ";
 
@@ -54,12 +56,11 @@ public final class Strings {
    }
 
 
-
    /**
-    * Null to empty string.
+    * Converts null values into an empty string
     *
-    * @param input the input
-    * @return the string
+    * @param input the input string
+    * @return the output string (empty if input null, input otherwise)
     */
    public static String nullToEmpty(String input) {
       return input == null ? EMPTY : input;
@@ -83,11 +84,11 @@ public final class Strings {
    }
 
    /**
-    * Center string.
+    * Centers an input string inside a string of given length
     *
-    * @param s      the s
-    * @param length the length
-    * @return the string
+    * @param s      the string to center
+    * @param length the length of the new string
+    * @return the centered string
     */
    public static String center(String s, int length) {
       if (s == null) {
@@ -136,10 +137,10 @@ public final class Strings {
    }
 
    /**
-    * First non null or blank string.
+    * Returns the first string in the given array that is not null or blank
     *
     * @param strings the strings
-    * @return the string
+    * @return the first non null or blank string (null if none)
     */
    public static String firstNonNullOrBlank(String... strings) {
       if (strings == null || strings.length == 0) {
@@ -214,16 +215,6 @@ public final class Strings {
    }
 
    /**
-    * Checks if character is in a unicode block that is letters or numbers
-    *
-    * @param c the character
-    * @return whether or not it is a letter or digit
-    */
-   public static boolean isLetterOrDigit(char c) {
-      return Character.isAlphabetic((int) c) || Character.isDigit((int) c);
-   }
-
-   /**
     * Determines if an entire string is lower case or not
     *
     * @param input The input string
@@ -274,27 +265,6 @@ public final class Strings {
    }
 
    /**
-    * Determines if a character represents a punctuation mark
-    *
-    * @param c The character
-    * @return True if it is punctuation false otherwise
-    */
-   public static boolean isPunctuation(char c) {
-      switch (Character.getType((int) c)) {
-         case Character.CONNECTOR_PUNCTUATION:
-         case Character.DASH_PUNCTUATION:
-         case Character.END_PUNCTUATION:
-         case Character.FINAL_QUOTE_PUNCTUATION:
-         case Character.INITIAL_QUOTE_PUNCTUATION:
-         case Character.START_PUNCTUATION:
-         case Character.OTHER_PUNCTUATION:
-         case '=':
-            return true;
-      }
-      return false;
-   }
-
-   /**
     * Determines if an entire string is upper case or not
     *
     * @param input The input string
@@ -305,7 +275,8 @@ public final class Strings {
    }
 
    /**
-    * Join string.
+    * Joins the items in the given iterable into a string separated using the given delimiter, with the given prefix at
+    * the beginning, and the given suffix at the end of the string.
     *
     * @param iterable  the iterable
     * @param delimiter the delimiter
@@ -314,22 +285,26 @@ public final class Strings {
     * @return the string
     */
    public static String join(Iterable<?> iterable, CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
-      return Streams.asStream(iterable).map(Object::toString).collect(Collectors.joining(delimiter, prefix, suffix));
+      return Streams.asStream(iterable)
+                    .map(obj -> Converter.convertSilently(obj, String.class))
+                    .collect(Collectors.joining(delimiter, prefix, suffix));
    }
 
    /**
-    * Join string.
+    * Joins the items in the given iterable into a string separated using the given delimiter.
     *
     * @param iterable  the iterable
     * @param delimiter the delimiter
     * @return the string
     */
    public static String join(Iterable<?> iterable, CharSequence delimiter) {
-      return Streams.asStream(iterable).map(Object::toString).collect(Collectors.joining(delimiter));
+      return Streams.asStream(iterable)
+                    .map(obj -> Converter.convertSilently(obj, String.class))
+                    .collect(Collectors.joining(delimiter));
    }
 
    /**
-    * Join string.
+    * Joins the items in the given array into a string separated using the given delimiter
     *
     * @param <T>       the type parameter
     * @param values    the values
@@ -337,11 +312,14 @@ public final class Strings {
     * @return the string
     */
    public static <T> String join(T[] values, CharSequence delimiter) {
-      return Streams.asStream(values).map(Object::toString).collect(Collectors.joining(delimiter));
+      return Streams.asStream(values)
+                    .map(obj -> Converter.convertSilently(obj, String.class))
+                    .collect(Collectors.joining(delimiter));
    }
 
    /**
-    * Join string.
+    * Joins the items in the given array into a string separated using the given delimiter, with the given prefix at the
+    * beginning, and the given suffix at the end of the string.
     *
     * @param <T>       the type parameter
     * @param values    the values
@@ -351,11 +329,13 @@ public final class Strings {
     * @return the string
     */
    public static <T> String join(T[] values, CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
-      return Streams.asStream(values).map(Object::toString).collect(Collectors.joining(delimiter, prefix, suffix));
+      return Streams.asStream(values)
+                    .map(obj -> Converter.convertSilently(obj, String.class))
+                    .collect(Collectors.joining(delimiter, prefix, suffix));
    }
 
    /**
-    * Left trim.
+    * Trims the left end of the string using {@link StringFunctions#LEFT_TRIM}.
     *
     * @param input the input
     * @return the string
@@ -368,7 +348,8 @@ public final class Strings {
    }
 
    /**
-    * Pad end string.
+    * Pads the end of the string to make the string into the desired length using the given padding character to make up
+    * the additional length.
     *
     * @param sequence         the sequence
     * @param desiredLength    the desired length
@@ -385,7 +366,8 @@ public final class Strings {
    }
 
    /**
-    * Pad start string.
+    * Pads the beginning of the string to make the string into the desired length using the given padding character to
+    * make up the additional length.
     *
     * @param sequence         the sequence
     * @param desiredLength    the desired length
@@ -476,40 +458,31 @@ public final class Strings {
    }
 
    /**
-    * Repeat string.
+    * Repeats the given string count times
     *
-    * @param s     the s
+    * @param s     the string to repeat
     * @param count the count
     * @return the string
     */
    public static String repeat(String s, int count) {
-      if (s == null) {
-         return null;
-      }
-      StringBuilder builder = new StringBuilder();
-      for (int i = 0; i < count; i++) {
-         builder.append(s);
-      }
-      return builder.toString();
+      return IntStream.range(0, count)
+                      .mapToObj(i -> s)
+                      .collect(Collectors.joining());
    }
 
    /**
-    * Repeat string.
+    * Repeats the given character count times
     *
-    * @param c     the c
+    * @param c     the character to repeat
     * @param count the count
     * @return the string
     */
    public static String repeat(char c, int count) {
-      StringBuilder builder = new StringBuilder();
-      for (int i = 0; i < count; i++) {
-         builder.append(c);
-      }
-      return builder.toString();
+      return repeat(Character.toString(c), count);
    }
 
    /**
-    * Right trim.
+    * Trims the right end of the string using {@link StringFunctions#RIGHT_TRIM}.
     *
     * @param input the input
     * @return the string
@@ -522,11 +495,11 @@ public final class Strings {
    }
 
    /**
-    * Safe equals.
+    * Safe equals of two strings taking null into consideration.
     *
-    * @param s1            the s 1
-    * @param s2            the s 2
-    * @param caseSensitive the case sensitive
+    * @param s1            the first string
+    * @param s2            the second string
+    * @param caseSensitive True if equals is case sensitive, False if case insensitive.
     * @return the boolean
     */
    public static boolean safeEquals(String s1, String s2, boolean caseSensitive) {
@@ -541,9 +514,10 @@ public final class Strings {
    }
 
    /**
-    * Properly splits a delimited separated string.
+    * Properly splits a delimited separated string using {@link CSV} assuming default values for the CSV object except
+    * for the delimiter.
     *
-    * @param input     The input
+    * @param input     The input string
     * @param separator The separator
     * @return A list of all the cells in the input
     */
@@ -624,7 +598,7 @@ public final class Strings {
    }
 
    /**
-    * Unescape string.
+    * Unescapes a string which is escaped with the given escaped character.
     *
     * @param input           the input
     * @param escapeCharacter the escape character

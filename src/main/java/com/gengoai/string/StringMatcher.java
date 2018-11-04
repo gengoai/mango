@@ -6,85 +6,86 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
- * The interface String matcher.
+ * <p>A <code>StringMatcher</code> is a {@link SerializablePredicate} for <code>CharSequence</code>s testing if
+ * CharSequences match a specific pattern.</p>
  *
  * @author David B. Bracewell
  */
 @FunctionalInterface
 public interface StringMatcher extends SerializablePredicate<CharSequence> {
    /**
-    * The constant NotNull.
+    * Matches CharSequences that are not null.
     */
    StringMatcher NotNull = Objects::nonNull;
    /**
-    * The constant HasPunctuation.
+    * Matches CharSequences containing punctuation.
     */
    StringMatcher HasPunctuation = NotNull.and(CharMatcher.Punctuation::matchesAnyOf);
    /**
-    * The constant HasUpperCase.
+    * Matches CharSequences containing upper case
     */
    StringMatcher HasUpperCase = NotNull.and(CharMatcher.UpperCase::matchesAnyOf);
    /**
-    * The constant HasLowerCase.
+    * Matches CharSequences containing lower case
     */
    StringMatcher HasLowerCase = NotNull.and(CharMatcher.LowerCase::matchesAnyOf);
    /**
-    * The constant HasLetter.
+    * Matches CharSequences containing letters
     */
    StringMatcher HasLetter = NotNull.and(CharMatcher.Letter::matchesAnyOf);
    /**
-    * The constant HasDigit.
+    * Matches CharSequences containing digits
     */
    StringMatcher HasDigit = NotNull.and(CharMatcher.Digit::matchesAnyOf);
    /**
-    * The constant HasLetterOrDigit.
+    * Matches CharSequences containing letter or digits
     */
    StringMatcher HasLetterOrDigit = NotNull.and(CharMatcher.LetterOrDigit::matchesAnyOf);
    /**
-    * The constant LetterOrWhitespace.
+    * Matches CharSequences containing all letter or whitespace
     */
    StringMatcher LetterOrWhitespace = NotNull.and(CharMatcher.Letter.or(CharMatcher.WhiteSpace)::matchesAllOf);
    /**
-    * The constant Null.
+    * Matches CharSequences are null
     */
    StringMatcher Null = Objects::isNull;
    /**
-    * The constant NullOrBlank.
+    * Matches CharSequences that are null or blank
     */
    StringMatcher NullOrBlank = Null.or(CharMatcher.WhiteSpace::matchesAllOf);
    /**
-    * The constant NotNullOrBlank.
+    * Matches CharSequences that are not null or blank
     */
    StringMatcher NotNullOrBlank = NullOrBlank.negate();
    /**
-    * The constant LowerCase.
+    * Matches CharSequences that are only lower case
     */
    StringMatcher LowerCase = NotNullOrBlank.and(CharMatcher.LowerCase::matchesAllOf);
    /**
-    * The constant Letter.
+    * Matches CharSequences that are only letters
     */
    StringMatcher Letter = NotNullOrBlank.and(CharMatcher.Letter::matchesAllOf);
    /**
-    * The constant LetterOrDigit.
+    * Matches CharSequences that are only letter or digits
     */
    StringMatcher LetterOrDigit = NotNullOrBlank.and(CharMatcher.LetterOrDigit::matchesAllOf);
    /**
-    * The constant Digit.
+    * Matches digit only CharSequences
     */
    StringMatcher Digit = NotNullOrBlank.and(CharMatcher.Digit::matchesAllOf);
    /**
-    * The constant Punctuation.
+    * Matches punctuation only CharSequences
     */
    StringMatcher Punctuation = NotNullOrBlank.and(CharMatcher.Punctuation::matchesAllOf);
    /**
-    * The constant UpperCase.
+    * Matches upper case only CharSequences
     */
    StringMatcher UpperCase = NotNullOrBlank.and(CharMatcher.UpperCase::matchesAllOf);
 
    /**
-    * Contains string matcher.
+    * String matcher that evaluates true if the CharSequence contains the given string to match.
     *
-    * @param match the match
+    * @param match the string to match
     * @return the string matcher
     */
    static StringMatcher contains(String match) {
@@ -92,10 +93,10 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
    }
 
    /**
-    * Contains string matcher.
+    * String matcher that evaluates true if the CharSequence contains the given string to match.
     *
-    * @param match         the match
-    * @param caseSensitive the case sensitive
+    * @param match         the string to match
+    * @param caseSensitive True case sensitive match, False case insensitive match.
     * @return the string matcher
     */
    static StringMatcher contains(String match, boolean caseSensitive) {
@@ -105,9 +106,9 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
    }
 
    /**
-    * Ends with string matcher.
+    * String matcher that evaluates true if the CharSequence ends with the given string to match.
     *
-    * @param match the match
+    * @param match the string to match
     * @return the string matcher
     */
    static StringMatcher endsWith(String match) {
@@ -115,10 +116,10 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
    }
 
    /**
-    * Ends with string matcher.
+    * String matcher that evaluates true if the CharSequence ends with the given string to match.
     *
-    * @param match         the match
-    * @param caseSensitive the case sensitive
+    * @param match         the string to match
+    * @param caseSensitive True case sensitive match, False case insensitive match.
     * @return the string matcher
     */
    static StringMatcher endsWith(String match, boolean caseSensitive) {
@@ -128,9 +129,9 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
    }
 
    /**
-    * Matches string matcher.
+    * String matcher that evaluates true if the CharSequence matches the given string to match.
     *
-    * @param match the match
+    * @param match the string to match
     * @return the string matcher
     */
    static StringMatcher matches(String match) {
@@ -138,10 +139,10 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
    }
 
    /**
-    * Matches string matcher.
+    * String matcher that evaluates true if the CharSequence matches the given string to match.
     *
-    * @param match         the match
-    * @param caseSensitive the case sensitive
+    * @param match         the string to match
+    * @param caseSensitive True case sensitive match, False case insensitive match.
     * @return the string matcher
     */
    static StringMatcher matches(String match, boolean caseSensitive) {
@@ -150,9 +151,9 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
    }
 
    /**
-    * Regex string matcher.
+    * String matcher that evaluates true if the CharSequence is matched using the given regex.
     *
-    * @param pattern the pattern
+    * @param pattern the pattern to match
     * @return the string matcher
     */
    static StringMatcher regex(Pattern pattern) {
@@ -160,9 +161,9 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
    }
 
    /**
-    * Regex string matcher.
+    * String matcher that evaluates true if the CharSequence is matched using the given regex.
     *
-    * @param pattern the pattern
+    * @param pattern the pattern to match
     * @return the string matcher
     */
    static StringMatcher regex(String pattern) {
@@ -170,9 +171,9 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
    }
 
    /**
-    * Starts with string matcher.
+    * String matcher that evaluates true if the CharSequence starts with the given string to match.
     *
-    * @param match the match
+    * @param match         the string to match
     * @return the string matcher
     */
    static StringMatcher startsWith(String match) {
@@ -180,10 +181,10 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
    }
 
    /**
-    * Starts with string matcher.
+    * String matcher that evaluates true if the CharSequence starts with the given string to match.
     *
-    * @param match         the match
-    * @param caseSensitive the case sensitive
+    * @param match         the string to match
+    * @param caseSensitive True case sensitive match, False case insensitive match.
     * @return the string matcher
     */
    static StringMatcher startsWith(String match, boolean caseSensitive) {

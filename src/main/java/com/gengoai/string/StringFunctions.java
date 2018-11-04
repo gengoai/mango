@@ -27,16 +27,18 @@ import java.text.Normalizer;
 import java.util.regex.Pattern;
 
 /**
+ * Commonly used string transforms as {@link SerializableFunction}
+ *
  * @author David B. Bracewell
  */
-public enum StringFunctions implements SerializableFunction<String, String> {
+public enum StringFunctions implements SerializableFunction<CharSequence, String> {
    /**
     * Transforms a string into upper case format
     */
    UPPER_CASE {
       @Override
-      public String apply(String input) {
-         return input == null ? null : input.toUpperCase();
+      public String apply(CharSequence input) {
+         return input == null ? null : input.toString().toUpperCase();
       }
    },
    /**
@@ -44,8 +46,8 @@ public enum StringFunctions implements SerializableFunction<String, String> {
     */
    LOWER_CASE {
       @Override
-      public String apply(String input) {
-         return input == null ? null : input.toLowerCase();
+      public String apply(CharSequence input) {
+         return input == null ? null : input.toString().toLowerCase();
       }
    },
    /**
@@ -53,14 +55,14 @@ public enum StringFunctions implements SerializableFunction<String, String> {
     */
    TITLE_CASE {
       @Override
-      public String apply(String input) {
+      public String apply(CharSequence input) {
          if (input == null) {
             return null;
          }
-         if (input.isEmpty()) {
-            return input;
+         if (input.toString().isEmpty()) {
+            return input.toString();
          }
-         char[] chars = input.toLowerCase().toCharArray();
+         char[] chars = input.toString().toLowerCase().toCharArray();
          chars[0] = Character.toUpperCase(chars[0]);
          for (int i = 1; i < input.length() - 1; i++) {
             if (Character.isWhitespace(chars[i - 1])) {
@@ -75,7 +77,7 @@ public enum StringFunctions implements SerializableFunction<String, String> {
     */
    REVERSE {
       @Override
-      public String apply(String input) {
+      public String apply(CharSequence input) {
          return input == null ? null : new StringBuilder(input).reverse().toString();
       }
    },
@@ -84,7 +86,7 @@ public enum StringFunctions implements SerializableFunction<String, String> {
     */
    TRIM {
       @Override
-      public String apply(String input) {
+      public String apply(CharSequence input) {
          return input == null ? null : CharMatcher.WhiteSpace.trimFrom(input);
       }
    },
@@ -93,7 +95,7 @@ public enum StringFunctions implements SerializableFunction<String, String> {
     */
    CANONICAL_NORMALIZATION {
       @Override
-      public String apply(String input) {
+      public String apply(CharSequence input) {
          return input == null ? null : Normalizer.normalize(input, Normalizer.Form.NFKC);
       }
    },
@@ -102,35 +104,44 @@ public enum StringFunctions implements SerializableFunction<String, String> {
     */
    DIACRITICS_NORMALIZATION {
       @Override
-      public String apply(String input) {
+      public String apply(CharSequence input) {
          return input == null ? null :
                 Normalizer.normalize(Normalizer.normalize(input, Normalizer.Form.NFD)
                                                .replaceAll("\\p{InCombiningDiacriticalMarks}+", ""),
                                      Normalizer.Form.NFC);
       }
    },
+   /**
+    * left trims strings of whitespace
+    */
    LEFT_TRIM {
       @Override
-      public String apply(String input) {
+      public String apply(CharSequence input) {
          if (input == null) {
             return null;
          }
          return CharMatcher.WhiteSpace.trimLeadingFrom(input);
       }
    },
+   /**
+    * Right trims strings of whitespace
+    */
    RIGHT_TRIM {
       @Override
-      public String apply(String input) {
+      public String apply(CharSequence input) {
          if (input == null) {
             return null;
          }
          return CharMatcher.WhiteSpace.trimTrailingFrom(input);
       }
    },
+   /**
+    * Converts nulls to empty strings
+    */
    NULL_TO_EMPTY {
       @Override
-      public String apply(String input) {
-         return input == null ? Strings.EMPTY : input;
+      public String apply(CharSequence input) {
+         return input == null ? Strings.EMPTY : input.toString();
       }
    };
 

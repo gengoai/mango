@@ -21,9 +21,7 @@
 
 package com.gengoai.string;
 
-import com.gengoai.Validation;
 import com.gengoai.conversion.Cast;
-import com.gengoai.conversion.Converter;
 import com.gengoai.io.CSV;
 
 import java.io.Serializable;
@@ -33,6 +31,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import static com.gengoai.Validation.checkArgument;
+
 /**
  * <p> Formats a series of items in Delimited Separated Value format. </p>
  *
@@ -40,14 +40,12 @@ import java.util.stream.Stream;
  */
 public class CSVFormatter implements Serializable {
    private static final long serialVersionUID = 1L;
-
-   final String comment;
-   final String delimiter;
-   final String doubleEscape;
-   final String doubleQuote;
-   final String escape;
-   final boolean keepEmptyCells;
-   final String quote;
+   private final String comment;
+   private final String delimiter;
+   private final String doubleEscape;
+   private final String doubleQuote;
+   private final String escape;
+   private final String quote;
 
    /**
     * Instantiates a new CSV formatter.
@@ -59,56 +57,16 @@ public class CSVFormatter implements Serializable {
       this.escape = Character.toString(csvFormat.getEscape());
       this.quote = Character.toString(csvFormat.getQuote());
       this.comment = Character.toString(csvFormat.getComment());
-      this.keepEmptyCells = csvFormat.isKeepEmptyCells();
       this.doubleEscape = escape + escape;
       this.doubleQuote = quote + quote;
    }
 
    /**
-    * Gets comment.
+    * Formats the items in the given <code>Stream</code>.
     *
-    * @return the comment
+    * @param stream the stream
+    * @return the string
     */
-   public String getComment() {
-      return comment;
-   }
-
-   /**
-    * Gets delimiter.
-    *
-    * @return the delimiter
-    */
-   public String getDelimiter() {
-      return delimiter;
-   }
-
-   /**
-    * Gets escape.
-    *
-    * @return the escape
-    */
-   public String getEscape() {
-      return escape;
-   }
-
-   /**
-    * Is keep empty cells.
-    *
-    * @return the boolean
-    */
-   public boolean isKeepEmptyCells() {
-      return keepEmptyCells;
-   }
-
-   /**
-    * Gets quote.
-    *
-    * @return the quote
-    */
-   public String getQuote() {
-      return quote;
-   }
-
    public String format(Stream<?> stream) {
       if (stream == null) {
          return Strings.EMPTY;
@@ -171,7 +129,9 @@ public class CSVFormatter implements Serializable {
       if (map == null) {
          return Strings.EMPTY;
       }
-      Validation.checkArgument(keyValueSeparator != ' ');
+      checkArgument(keyValueSeparator != ' ');
+      checkArgument(keyValueSeparator != delimiter.charAt(0),
+                    "Key-Value separator must differ from the field delimiter");
 
       StringBuilder rowString = new StringBuilder();
       for (Iterator<?> itr = map.entrySet().iterator(); itr.hasNext(); ) {
@@ -212,7 +172,7 @@ public class CSVFormatter implements Serializable {
    }
 
    /**
-    * Format string.
+    * Formats the items in an <code>Iterable</code>.
     *
     * @param iterable the iterable
     * @return the string
@@ -224,7 +184,6 @@ public class CSVFormatter implements Serializable {
       return format(iterable.iterator());
    }
 
-
    /**
     * Formats the items in an Array.
     *
@@ -235,11 +194,7 @@ public class CSVFormatter implements Serializable {
       if (array == null) {
          return Strings.EMPTY;
       }
-      if (array.length == 1 && array[0].getClass().isArray()) {
-         return format(Converter.convertSilently(array[0], Iterable.class));
-      }
       return format(Arrays.asList(array).iterator());
    }
-
 
 }//END OF CSVFormatter
