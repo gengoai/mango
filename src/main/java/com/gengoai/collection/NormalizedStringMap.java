@@ -31,8 +31,7 @@ import java.util.function.Supplier;
 
 /**
  * A string map that uses a <code>Collator</code> to normalize strings. All Strings are lower-cased when put into the
- * map. Once an item has been put in the map the
- * original case can not be restored. Does not support null key values.
+ * map. Once an item has been put in the map the original case can not be restored. Does not support null key values.
  *
  * @param <V> The value type
  * @author David B. Bracewell
@@ -84,8 +83,19 @@ public class NormalizedStringMap<V> implements Map<String, V>, Serializable {
       this.collator.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
    }
 
-   protected boolean canEqual(Object other) {
-      return other instanceof NormalizedStringMap;
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(collator, map);
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {return true;}
+      if (obj == null || getClass() != obj.getClass()) {return false;}
+      final NormalizedStringMap other = (NormalizedStringMap) obj;
+      return Objects.equals(this.collator, other.collator)
+                && Objects.equals(this.map, other.map);
    }
 
    @Override
@@ -94,7 +104,7 @@ public class NormalizedStringMap<V> implements Map<String, V>, Serializable {
    }
 
    private CollationKey collate(Object o) {
-      if (o == null || !(o instanceof String)) {
+      if (!(o instanceof String)) {
          return null;
       }
       return collator.getCollationKey(o.toString());
@@ -128,33 +138,9 @@ public class NormalizedStringMap<V> implements Map<String, V>, Serializable {
       };
    }
 
-   public boolean equals(Object o) {
-      if (o == this) return true;
-      if (!(o instanceof NormalizedStringMap)) return false;
-      final NormalizedStringMap other = (NormalizedStringMap) o;
-      if (!other.canEqual((Object) this)) return false;
-      final Object this$collator = this.collator;
-      final Object other$collator = other.collator;
-      if (this$collator == null ? other$collator != null : !this$collator.equals(other$collator)) return false;
-      final Object this$map = this.map;
-      final Object other$map = other.map;
-      if (this$map == null ? other$map != null : !this$map.equals(other$map)) return false;
-      return true;
-   }
-
    @Override
    public V get(Object arg0) {
       return map.get(collate(arg0));
-   }
-
-   public int hashCode() {
-      final int PRIME = 59;
-      int result = 1;
-      final Object $collator = this.collator;
-      result = result * PRIME + ($collator == null ? 43 : $collator.hashCode());
-      final Object $map = this.map;
-      result = result * PRIME + ($map == null ? 43 : $map.hashCode());
-      return result;
    }
 
    @Override
@@ -184,7 +170,7 @@ public class NormalizedStringMap<V> implements Map<String, V>, Serializable {
 
    @Override
    public void putAll(Map<? extends String, ? extends V> m) {
-      m.entrySet().forEach(entry -> put(entry.getKey(), entry.getValue()));
+      m.forEach(this::put);
    }
 
    @Override

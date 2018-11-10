@@ -35,7 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * <p>A reader and writer for the GraphML format</p>
+ * <p>A reader for the GraphML format</p>
  *
  * @param <V> the vertex type
  * @author David B. Bracewell

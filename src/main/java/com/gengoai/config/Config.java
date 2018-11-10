@@ -306,7 +306,11 @@ public final class Config implements Serializable, JsonSerializable {
     */
    public static List<String> getPropertiesMatching(Predicate<? super String> matcher) {
       if (matcher != null) {
-         return getInstance().properties.keySet().parallelStream().filter(matcher).collect(Collectors.toList());
+         return getInstance().properties
+                   .keySet()
+                   .parallelStream()
+                   .filter(matcher)
+                   .collect(Collectors.toList());
       }
       return Collections.emptyList();
    }

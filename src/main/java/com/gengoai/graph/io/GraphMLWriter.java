@@ -38,7 +38,7 @@ import java.util.Map;
 import static com.graphdrawing.graphml.xmlns.GraphEdgedefaultType.DIRECTED;
 
 /**
- * <p>A reader and writer for the GraphML format</p>
+ * <p>A  writer for the GraphML format</p>
  *
  * @param <V> the vertex type
  * @author David B. Bracewell
@@ -64,7 +64,7 @@ public class GraphMLWriter<V> implements GraphWriter<V> {
     */
    public GraphMLWriter(VertexEncoder<V> vertexEncoder,
                         EdgeEncoder<V> edgeEncoder
-                        ) {
+                       ) {
       setVertexEncoder(vertexEncoder);
       setEdgeEncoder(edgeEncoder);
    }
