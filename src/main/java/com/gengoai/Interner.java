@@ -46,6 +46,20 @@ public final class Interner<E> implements Serializable, JsonSerializable {
    private static final long serialVersionUID = 1L;
    private volatile WeakHashMap<E, E> map = new WeakHashMap<>();
 
+   /**
+    * Static method for creating an <code>Interner</code> from a {@link JsonEntry}.
+    *
+    * @param <K>    the type parameter
+    * @param entry  the entry
+    * @param params the params
+    * @return the interner
+    */
+   public static <K> Interner<K> fromJson(JsonEntry entry, Type... params) {
+      Interner<K> interner = new Interner<>();
+      interner.internAll(entry.getAsArray(getOrObject(0, params)));
+      return interner;
+   }
+
    @Override
    public boolean equals(Object obj) {
       if (this == obj) {return true;}
@@ -93,27 +107,13 @@ public final class Interner<E> implements Serializable, JsonSerializable {
    }
 
    @Override
-   public String toString() {
-      return "Interner{size=" + size() + "}";
-   }
-
-   @Override
    public JsonEntry toJson() {
       return JsonEntry.array(map.keySet());
    }
 
-   /**
-    * Static method for creating an <code>Interner</code> from a {@link JsonEntry}.
-    *
-    * @param <K>    the type parameter
-    * @param entry  the entry
-    * @param params the params
-    * @return the interner
-    */
-   public static <K> Interner<K> fromJson(JsonEntry entry, Type... params) {
-      Interner<K> interner = new Interner<>();
-      interner.internAll(entry.getAsArray(getOrObject(0, params)));
-      return interner;
+   @Override
+   public String toString() {
+      return "Interner{size=" + size() + "}";
    }
 
 }//END OF Interner
