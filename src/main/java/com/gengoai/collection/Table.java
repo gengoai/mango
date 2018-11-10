@@ -22,6 +22,17 @@ import static com.gengoai.reflection.Types.getOrObject;
  */
 public interface Table<R, C, V> extends JsonSerializable {
 
+   /**
+    * Static method for deserializing tables from Json.
+    *
+    * @param <R>    the row type parameter
+    * @param <C>    the column type parameter
+    * @param <V>    the value type parameter
+    * @param table  the table to fill
+    * @param entry  the json entry
+    * @param params the type parameters (row, column, value)
+    * @return the table
+    */
    static <R, C, V> Table<R, C, V> fromJson(Table<R, C, V> table, JsonEntry entry, Type... params) {
       Type row = getOrObject(0, params);
       Type col = getOrObject(1, params);
@@ -38,6 +49,16 @@ public interface Table<R, C, V> extends JsonSerializable {
       return table;
    }
 
+   /**
+    * Static method for deserializing tables from Json.
+    *
+    * @param <R>    the row type parameter
+    * @param <C>    the column type parameter
+    * @param <V>    the value type parameter
+    * @param entry  the json entry
+    * @param params the type parameters (row, column, value)
+    * @return the table
+    */
    static <R, C, V> Table<R, C, V> fromJson(JsonEntry entry, Type... params) {
       return fromJson(new HashBasedTable<>(), entry, params);
    }

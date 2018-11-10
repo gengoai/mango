@@ -3,7 +3,7 @@ package com.gengoai.concurrent;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * The type Atomic double.
+ * <p>Thread safe double container</p>
  *
  * @author David B. Bracewell
  */
@@ -47,7 +47,7 @@ public class AtomicDouble extends Number {
    }
 
    /**
-    * Get double.
+    * Gets the double value
     *
     * @return the double
     */
@@ -56,7 +56,7 @@ public class AtomicDouble extends Number {
    }
 
    /**
-    * Set.
+    * Sets to the given value.
     *
     * @param value the value
     */
@@ -65,21 +65,21 @@ public class AtomicDouble extends Number {
    }
 
    /**
-    * Gets and set.
+    * Atomically sets to the given value and returns the old value.
     *
-    * @param value the value
-    * @return the and set
+    * @param value the value to set
+    * @return the value before the update
     */
    public double getAndSet(double value) {
       return backing.getAndSet(Double.doubleToLongBits(value));
    }
 
    /**
-    * Weak compare and set boolean.
+    * Atomically sets the value to the given updated value if the current value == the expected value.
     *
-    * @param expect the expect
-    * @param update the update
-    * @return the boolean
+    * @param expect the expected value
+    * @param update the updated value
+    * @return True if updated, False if not
     */
    public final boolean weakCompareAndSet(double expect, double update) {
       return backing.weakCompareAndSet(Double.doubleToLongBits(expect),
@@ -87,20 +87,20 @@ public class AtomicDouble extends Number {
    }
 
    /**
-    * Add and get double.
+    * tomically adds the given value to the current value.
     *
     * @param value the value
-    * @return the double
+    * @return the updated value
     */
    public final double addAndGet(double value) {
       return backing.addAndGet(Double.doubleToLongBits(value));
    }
 
    /**
-    * Gets and add.
+    * Atomically adds the given value to the current value.
     *
     * @param value the value
-    * @return the and add
+    * @return the previous value
     */
    public final double getAndAdd(double value) {
       return backing.getAndAdd(Double.doubleToLongBits(value));
