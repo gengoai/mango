@@ -28,6 +28,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * <p> A resource that wraps a String. </p>
@@ -46,29 +47,17 @@ public class StringResource extends BaseResource implements NonTraversableResour
       this(null);
    }
 
-   protected boolean canEqual(Object other) {
-      return other instanceof StringResource;
-   }
-
-   public boolean equals(Object o) {
-      if (o == this) return true;
-      if (!(o instanceof StringResource)) return false;
-      final StringResource other = (StringResource) o;
-      if (!other.canEqual((Object) this)) return false;
-      if (!super.equals(o)) return false;
-      final Object this$resource = this.resource;
-      final Object other$resource = other.resource;
-      if (this$resource == null ? other$resource != null : !this$resource.equals(other$resource)) return false;
-      return true;
-   }
-
+   @Override
    public int hashCode() {
-      final int PRIME = 59;
-      int result = 1;
-      result = result * PRIME + super.hashCode();
-      final Object $resource = this.resource;
-      result = result * PRIME + ($resource == null ? 43 : $resource.hashCode());
-      return result;
+      return Objects.hash(resource);
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {return true;}
+      if (obj == null || getClass() != obj.getClass()) {return false;}
+      final StringResource other = (StringResource) obj;
+      return Objects.equals(this.resource.toString(), other.resource.toString());
    }
 
    @Override

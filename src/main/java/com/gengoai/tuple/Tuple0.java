@@ -56,7 +56,7 @@ public final class Tuple0 extends Tuple {
    }
 
    @Override
-   public Tuple mapValues(Function<Object, ? extends Object> function) {
+   public Tuple mapValues(Function<Object, ?> function) {
       return this;
    }
 

@@ -150,7 +150,7 @@ public class EdgeType {
      */
     public List<DataType> getData() {
         if (data == null) {
-            data = new ArrayList<DataType>();
+            data = new ArrayList<>();
         }
         return this.data;
     }

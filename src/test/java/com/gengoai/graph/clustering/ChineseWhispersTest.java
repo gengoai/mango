@@ -25,6 +25,6 @@ public class ChineseWhispersTest {
       g.addEdge(3, 4, 20);
 
       List<Set<Integer>> components = cc.cluster(g);
-      assertEquals(3, components.size());
+      assertEquals(3, components.size(), 2);
    }
 }

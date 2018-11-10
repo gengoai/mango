@@ -163,7 +163,7 @@ public class GraphType {
      */
     public List<Object> getDataOrNodeOrEdge() {
         if (dataOrNodeOrEdge == null) {
-            dataOrNodeOrEdge = new ArrayList<Object>();
+            dataOrNodeOrEdge = new ArrayList<>();
         }
         return this.dataOrNodeOrEdge;
     }

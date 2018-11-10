@@ -226,7 +226,7 @@ public final class SparkStreamingContext extends StreamingContext {
    @Override
    public <K, V> SparkPairStream<K, V> pairStream(Map<? extends K, ? extends V> map) {
       if (map == null) {
-         return new SparkPairStream<>(new HashMap<K, V>());
+         return new SparkPairStream<>(new HashMap<>());
       }
       return new SparkPairStream<>(map);
    }

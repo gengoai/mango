@@ -147,7 +147,7 @@ public class NodeType {
      */
     public List<Object> getDataOrPort() {
         if (dataOrPort == null) {
-            dataOrPort = new ArrayList<Object>();
+            dataOrPort = new ArrayList<>();
         }
         return this.dataOrPort;
     }

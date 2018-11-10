@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -50,6 +51,11 @@ public class URIResource extends BaseResource {
    }
 
    @Override
+   public Resource append(byte[] byteArray) throws IOException {
+      throw new UnsupportedOperationException();
+   }
+
+   @Override
    public Optional<File> asFile() {
       if (uri.getScheme().equalsIgnoreCase("file")) {
          return Optional.of(new File(uri.getPath()));
@@ -58,23 +64,39 @@ public class URIResource extends BaseResource {
    }
 
    @Override
-   public Resource append(byte[] byteArray) throws IOException {
-      throw new UnsupportedOperationException();
+   public Optional<URI> asURI() {
+      return Optional.of(uri);
    }
 
-   protected boolean canEqual(Object other) {
-      return other instanceof URIResource;
+   @Override
+   protected InputStream createInputStream() throws IOException {
+      try {
+         return super.createInputStream();
+      } catch (UnsupportedOperationException ue) {
+         return uri.toURL().openConnection().getInputStream();
+      }
    }
 
+   @Override
+   protected OutputStream createOutputStream() throws IOException {
+      try {
+         return super.createOutputStream();
+      } catch (UnsupportedOperationException ue) {
+         return uri.toURL().openConnection().getOutputStream();
+      }
+   }
+
+   @Override
+   public String descriptor() {
+      return uri.toString();
+   }
+
+   @Override
    public boolean equals(Object o) {
-      if (o == this) return true;
+      if (this == o) return true;
       if (!(o instanceof URIResource)) return false;
-      final URIResource other = (URIResource) o;
-      if (!other.canEqual((Object) this)) return false;
-      final Object this$uri = this.uri;
-      final Object other$uri = other.uri;
-      if (this$uri == null ? other$uri != null : !this$uri.equals(other$uri)) return false;
-      return true;
+      URIResource that = (URIResource) o;
+      return Objects.equals(uri, that.uri);
    }
 
    @Override
@@ -101,39 +123,8 @@ public class URIResource extends BaseResource {
    }
 
    @Override
-   public String descriptor() {
-      return uri.toString();
-   }
-
-   @Override
-   protected OutputStream createOutputStream() throws IOException {
-      try {
-         return super.createOutputStream();
-      } catch (UnsupportedOperationException ue) {
-         return uri.toURL().openConnection().getOutputStream();
-      }
-   }
-
-   @Override
-   protected InputStream createInputStream() throws IOException {
-      try {
-         return super.createInputStream();
-      } catch (UnsupportedOperationException ue) {
-         return uri.toURL().openConnection().getInputStream();
-      }
-   }
-
-   @Override
-   public Optional<URI> asURI() {
-      return Optional.of(uri);
-   }
-
    public int hashCode() {
-      final int PRIME = 59;
-      int result = 1;
-      final Object $uri = this.uri;
-      result = result * PRIME + ($uri == null ? 43 : $uri.hashCode());
-      return result;
+      return Objects.hash(uri);
    }
 
    @Override

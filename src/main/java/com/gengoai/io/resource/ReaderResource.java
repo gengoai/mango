@@ -24,6 +24,7 @@ package com.gengoai.io.resource;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Objects;
 
 /**
  * Resource that wraps a <code>Reader</code>
@@ -44,29 +45,17 @@ public class ReaderResource extends BaseResource implements ReadOnlyResource, No
       this.reader = reader;
    }
 
-   protected boolean canEqual(Object other) {
-      return other instanceof ReaderResource;
-   }
-
+   @Override
    public boolean equals(Object o) {
-      if (o == this) return true;
+      if (this == o) return true;
       if (!(o instanceof ReaderResource)) return false;
-      final ReaderResource other = (ReaderResource) o;
-      if (!other.canEqual((Object) this)) return false;
-      if (!super.equals(o)) return false;
-      final Object this$reader = this.reader;
-      final Object other$reader = other.reader;
-      if (this$reader == null ? other$reader != null : !this$reader.equals(other$reader)) return false;
-      return true;
+      ReaderResource that = (ReaderResource) o;
+      return Objects.equals(reader, that.reader);
    }
 
+   @Override
    public int hashCode() {
-      final int PRIME = 59;
-      int result = 1;
-      result = result * PRIME + super.hashCode();
-      final Object $reader = this.reader;
-      result = result * PRIME + ($reader == null ? 43 : $reader.hashCode());
-      return result;
+      return Objects.hash(reader);
    }
 
    @Override

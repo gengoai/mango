@@ -22,58 +22,92 @@
 package com.gengoai.collection.tree;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
+ * The type Trie match.
+ *
+ * @param <V> the type parameter
  * @author David B. Bracewell
  */
 public class TrieMatch<V> implements Serializable {
    private static final long serialVersionUID = 1L;
+   /**
+    * The Start.
+    */
    public final int start;
+   /**
+    * The End.
+    */
    public final int end;
+   /**
+    * The Value.
+    */
    public final V value;
 
+   /**
+    * Instantiates a new Trie match.
+    *
+    * @param start the start
+    * @param end   the end
+    * @param value the value
+    */
    public TrieMatch(int start, int end, V value) {
       this.end = end;
       this.start = start;
       this.value = value;
    }
 
+   @Override
    public boolean equals(Object o) {
-      if (o == this) return true;
+      if (this == o) return true;
       if (!(o instanceof TrieMatch)) return false;
-      final TrieMatch other = (TrieMatch) o;
-      if (this.getStart() != other.getStart()) return false;
-      if (this.getEnd() != other.getEnd()) return false;
-      final Object this$value = this.getValue();
-      final Object other$value = other.getValue();
-      if (this$value == null ? other$value != null : !this$value.equals(other$value)) return false;
-      return true;
+      TrieMatch<?> trieMatch = (TrieMatch<?>) o;
+      return start == trieMatch.start &&
+                end == trieMatch.end &&
+                Objects.equals(value, trieMatch.value);
    }
 
+   /**
+    * Gets end.
+    *
+    * @return the end
+    */
    public int getEnd() {
       return this.end;
    }
 
+   /**
+    * Gets match.
+    *
+    * @param content the content
+    * @return the match
+    */
    public String getMatch(String content) {
       return content.substring(start, end);
    }
 
+   /**
+    * Gets start.
+    *
+    * @return the start
+    */
    public int getStart() {
       return this.start;
    }
 
+   /**
+    * Gets value.
+    *
+    * @return the value
+    */
    public V getValue() {
       return this.value;
    }
 
+   @Override
    public int hashCode() {
-      final int PRIME = 59;
-      int result = 1;
-      result = result * PRIME + this.getStart();
-      result = result * PRIME + this.getEnd();
-      final Object $value = this.getValue();
-      result = result * PRIME + ($value == null ? 43 : $value.hashCode());
-      return result;
+      return Objects.hash(start, end, value);
    }
 
    public String toString() {

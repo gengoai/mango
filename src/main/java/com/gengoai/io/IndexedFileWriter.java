@@ -9,18 +9,22 @@ import java.io.RandomAccessFile;
 import static com.gengoai.io.IndexedFile.indexFileFor;
 
 /**
+ * <p>An Indexed File Writer writes lines to the output file indexed by a corresponding key. The index (keys -> file
+ * positions) is stored in another file in the same directory as the output file.</p>
+ *
  * @author David B. Bracewell
  */
 public final class IndexedFileWriter implements AutoCloseable {
    private final RandomAccessFile randomAccessFile;
-
-   public File getOutputFile() {
-      return outputFile;
-   }
-
    private final File outputFile;
    private final JsonWriter indexWriter;
 
+   /**
+    * Instantiates a new Indexed file writer.
+    *
+    * @param file the file
+    * @throws IOException the io exception
+    */
    public IndexedFileWriter(File file) throws IOException {
       this.outputFile = file;
       this.randomAccessFile = new RandomAccessFile(file, "rw");
@@ -28,7 +32,39 @@ public final class IndexedFileWriter implements AutoCloseable {
       this.indexWriter.beginDocument();
    }
 
+   @Override
+   public void close() throws IOException {
+      indexWriter.endDocument();
+      indexWriter.close();
+      randomAccessFile.close();
+   }
 
+   /**
+    * Gets the file that output is being written to
+    *
+    * @return the output file
+    */
+   public File getOutputFile() {
+      return outputFile;
+   }
+
+
+   /**
+    * Gets the index file being created
+    *
+    * @return the index file
+    */
+   public File getIndexFile() {
+      return indexFileFor(outputFile);
+   }
+
+   /**
+    * Writes a line to output, indexing it by the given key.
+    *
+    * @param key  the key to index on
+    * @param line the line to output
+    * @throws IOException something went wrong writing to the file
+    */
    public void write(String key, String line) throws IOException {
       long lastPosition = randomAccessFile.getFilePointer();
       if (!line.endsWith("\n")) {
@@ -36,12 +72,5 @@ public final class IndexedFileWriter implements AutoCloseable {
       }
       randomAccessFile.writeBytes(line);
       indexWriter.property(key, lastPosition);
-   }
-
-   @Override
-   public void close() throws IOException {
-      indexWriter.endDocument();
-      indexWriter.close();
-      randomAccessFile.close();
    }
 }//END OF IndexedFileWriter

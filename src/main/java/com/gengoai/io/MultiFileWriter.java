@@ -31,7 +31,7 @@ public class MultiFileWriter extends Writer implements Serializable, AutoCloseab
     */
    public MultiFileWriter(Resource baseDirectory, String filePrefix, int numberOfFiles) throws IOException {
       Validation.checkArgument(!baseDirectory.exists() || baseDirectory.isDirectory(),
-                                  "Resource base must not exist or be a directory");
+                               "Resource base must not exist or be a directory");
       Validation.checkArgument(numberOfFiles > 0, "Must specify at least one file");
       baseDirectory.mkdirs();
       this.writers = new Writer[numberOfFiles];

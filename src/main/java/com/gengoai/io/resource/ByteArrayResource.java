@@ -25,6 +25,7 @@ import com.gengoai.stream.MStream;
 import com.gengoai.stream.StreamingContext;
 
 import java.io.*;
+import java.util.Objects;
 
 /**
  * A Resource that wraps a byte array.
@@ -71,34 +72,22 @@ public class ByteArrayResource extends BaseResource implements NonTraversableRes
       return this;
    }
 
-   protected boolean canEqual(Object other) {
-      return other instanceof ByteArrayResource;
-   }
-
-   public boolean equals(Object o) {
-      if (o == this) return true;
-      if (!(o instanceof ByteArrayResource)) return false;
-      final ByteArrayResource other = (ByteArrayResource) o;
-      if (!other.canEqual((Object) this)) return false;
-      if (!super.equals(o)) return false;
-      final Object this$buffer = this.buffer;
-      final Object other$buffer = other.buffer;
-      if (this$buffer == null ? other$buffer != null : !this$buffer.equals(other$buffer)) return false;
-      return true;
-   }
-
    @Override
    public boolean exists() {
       return true;
    }
 
+   @Override
+   public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof ByteArrayResource)) return false;
+      ByteArrayResource that = (ByteArrayResource) o;
+      return Objects.equals(buffer, that.buffer);
+   }
+
+   @Override
    public int hashCode() {
-      final int PRIME = 59;
-      int result = 1;
-      result = result * PRIME + super.hashCode();
-      final Object $buffer = this.buffer;
-      result = result * PRIME + ($buffer == null ? 43 : $buffer.hashCode());
-      return result;
+      return Objects.hash(buffer);
    }
 
    @Override

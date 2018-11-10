@@ -400,9 +400,7 @@ public final class Config implements Serializable, JsonSerializable {
 
       // Store the command line arguments as a config settings.
       if (args != null) {
-         parser.getSetEntries().forEach(entry -> {
-            ConfigSettingFunction.INSTANCE.setProperty(entry.getKey(), entry.getValue(), "CommandLine");
-         });
+         parser.getSetEntries().forEach(entry -> ConfigSettingFunction.INSTANCE.setProperty(entry.getKey(), entry.getValue(), "CommandLine"));
       }
 
       if (parser.isSet(NamedOption.CONFIG)) {

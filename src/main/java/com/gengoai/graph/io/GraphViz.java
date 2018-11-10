@@ -47,7 +47,7 @@ import java.util.Map;
 public class GraphViz<V> implements GraphWriter<V>, GraphRenderer<V> {
 
    public static <V> GraphVizBuilder<V> builder() {
-      return new GraphVizBuilder<V>();
+      return new GraphVizBuilder<>();
    }
 
    public enum Format {
@@ -261,7 +261,7 @@ public class GraphViz<V> implements GraphWriter<V>, GraphRenderer<V> {
       }
 
       public GraphViz<V> build() {
-         return new GraphViz<V>(vertexEncoder, edgeEncoder, format);
+         return new GraphViz<>(vertexEncoder, edgeEncoder, format);
       }
 
       public GraphVizBuilder<V> edgeEncoder(EdgeEncoder<V> edgeEncoder) {

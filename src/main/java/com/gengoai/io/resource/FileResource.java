@@ -33,6 +33,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -92,48 +93,9 @@ public class FileResource extends BaseResource {
       }
    }
 
-   protected boolean canEqual(Object other) {
-      return other instanceof FileResource;
-   }
-
-
-   @Override
-   public String descriptor() {
-      return FileResourceProvider.PROTOCOL + ":" + file.getAbsolutePath();
-   }
-
-   public boolean equals(Object o) {
-      if (o == this) return true;
-      if (!(o instanceof FileResource)) return false;
-      final FileResource other = (FileResource) o;
-      if (!other.canEqual((Object) this)) return false;
-      final Object this$file = this.file;
-      final Object other$file = other.file;
-      if (this$file == null ? other$file != null : !this$file.equals(other$file)) return false;
-      return true;
-   }
-
-   public int hashCode() {
-      final int PRIME = 59;
-      int result = 1;
-      final Object $file = this.file;
-      result = result * PRIME + ($file == null ? 43 : $file.hashCode());
-      return result;
-   }
-
-   @Override
-   public String path() {
-      return file.getAbsolutePath();
-   }
-
    @Override
    public String baseName() {
       return file.getName();
-   }
-
-   @Override
-   public boolean canWrite() {
-      return (!file.isDirectory() && !file.exists()) || file.canWrite();
    }
 
    @Override
@@ -142,63 +104,8 @@ public class FileResource extends BaseResource {
    }
 
    @Override
-   public Resource getChild(String relativePath) {
-      if (relativePath == null) {
-         relativePath = Strings.EMPTY;
-      }
-      return new FileResource(new File(file, relativePath.trim()));
-   }
-
-   @Override
-   public boolean exists() {
-      return file.exists();
-   }
-
-   @Override
-   public boolean isDirectory() {
-      return file.isDirectory();
-   }
-
-   @Override
-   public MStream<String> lines() throws IOException {
-      return new LocalStream<>(lineStream());
-//      return new LocalStream<>(Files.lines(asPath().orElse(null)));
-   }
-
-   private Stream<String> lineStream() {
-      try {
-         BufferedReader reader = new BufferedReader(reader());
-         return reader.lines().onClose(() -> QuietIO.closeQuietly(reader));
-      } catch (IOException ioe) {
-         throw new UncheckedIOException(ioe);
-      }
-   }
-
-   @Override
-   public List<Resource> getChildren(Pattern pattern, boolean recursive) {
-      List<Resource> rval = new ArrayList<>();
-      File[] files = file.listFiles();
-      if (files != null) {
-         for (File f : files) {
-            if (pattern.matcher(f.getName()).find()) {
-               FileResource r = new FileResource(f);
-               rval.add(r);
-               if (recursive) {
-                  rval.addAll(r.getChildren(pattern, true));
-               }
-            }
-         }
-      }
-      return rval;
-   }
-
-   @Override
-   public Resource getParent() {
-      File p = file.getAbsoluteFile().getParentFile();
-      if (p == null) {
-         return EmptyResource.INSTANCE;
-      }
-      return new FileResource(p);
+   public boolean canWrite() {
+      return (!file.isDirectory() && !file.exists()) || file.canWrite();
    }
 
    @Override
@@ -236,20 +143,97 @@ public class FileResource extends BaseResource {
       return !file.exists();
    }
 
-
    @Override
    public Resource deleteOnExit() {
       if (file.isDirectory()) {
-         Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-               delete(true);
-            }
-         });
+         Runtime.getRuntime().addShutdownHook(new Thread(() -> delete(true)));
       } else {
          file.deleteOnExit();
       }
       return this;
+   }
+
+   @Override
+   public String descriptor() {
+      return FileResourceProvider.PROTOCOL + ":" + file.getAbsolutePath();
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {return true;}
+      if (obj == null || getClass() != obj.getClass()) {return false;}
+      final FileResource other = (FileResource) obj;
+      return Objects.equals(this.file, other.file);
+   }
+
+   @Override
+   public boolean exists() {
+      return file.exists();
+   }
+
+   @Override
+   public Resource getChild(String relativePath) {
+      if (relativePath == null) {
+         relativePath = Strings.EMPTY;
+      }
+      return new FileResource(new File(file, relativePath.trim()));
+   }
+
+   @Override
+   public List<Resource> getChildren(Pattern pattern, boolean recursive) {
+      List<Resource> rval = new ArrayList<>();
+      File[] files = file.listFiles();
+      if (files != null) {
+         for (File f : files) {
+            if (pattern.matcher(f.getName()).find()) {
+               FileResource r = new FileResource(f);
+               rval.add(r);
+               if (recursive) {
+                  rval.addAll(r.getChildren(pattern, true));
+               }
+            }
+         }
+      }
+      return rval;
+   }
+
+   @Override
+   public Resource getParent() {
+      File p = file.getAbsoluteFile().getParentFile();
+      if (p == null) {
+         return EmptyResource.INSTANCE;
+      }
+      return new FileResource(p);
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(file);
+   }
+
+   @Override
+   public boolean isDirectory() {
+      return file.isDirectory();
+   }
+
+   private Stream<String> lineStream() {
+      try {
+         BufferedReader reader = new BufferedReader(reader());
+         return reader.lines().onClose(() -> QuietIO.closeQuietly(reader));
+      } catch (IOException ioe) {
+         throw new UncheckedIOException(ioe);
+      }
+   }
+
+   @Override
+   public MStream<String> lines() throws IOException {
+      return new LocalStream<>(lineStream());
+//      return new LocalStream<>(Files.lines(asPath().orElse(null)));
+   }
+
+   @Override
+   public boolean mkdir() {
+      return file.mkdir();
    }
 
    @Override
@@ -258,8 +242,8 @@ public class FileResource extends BaseResource {
    }
 
    @Override
-   public boolean mkdir() {
-      return file.mkdir();
+   public String path() {
+      return file.getAbsolutePath();
    }
 
 }// END OF FileResource

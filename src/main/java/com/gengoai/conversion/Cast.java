@@ -76,7 +76,7 @@ public final class Cast {
     * @return the casted iterable or null if the given iterable is null
     */
    public static <T> Iterable<T> cast(Iterable<?> iterable) {
-      return iterable == null ? null : new CastingIterable<T>(iterable);
+      return iterable == null ? null : new CastingIterable<>(iterable);
    }
 
    /**
@@ -88,7 +88,7 @@ public final class Cast {
     * @return the casted set or null if the given set is null
     */
    public static <T> Set<T> cast(Set<?> set) {
-      return set == null ? null : new CastingSet<T>(set);
+      return set == null ? null : new CastingSet<>(set);
    }
 
    /**
@@ -100,7 +100,7 @@ public final class Cast {
     * @return the casted list or null if the given list is null
     */
    public static <T> List<T> cast(List<?> list) {
-      return list == null ? null : new CastingList<T>(list);
+      return list == null ? null : new CastingList<>(list);
    }
 
    /**
@@ -112,7 +112,7 @@ public final class Cast {
     * @return the casted iterator or null if the given iterator was null
     */
    public static <T> Iterator<T> cast(Iterator<?> iterator) {
-      return iterator == null ? null : new CastingIterator<T>(iterator);
+      return iterator == null ? null : new CastingIterator<>(iterator);
    }
 
    /**
@@ -124,7 +124,7 @@ public final class Cast {
     * @return the casted collection or null if the collection is null
     */
    public static <T> Collection<T> cast(Collection<?> collection) {
-      return collection == null ? null : new CastingCollection<T>(collection);
+      return collection == null ? null : new CastingCollection<>(collection);
    }
 
    /**
@@ -137,7 +137,7 @@ public final class Cast {
     * @return the casted map or null if the map is null
     */
    public static <K, V> Map<K, V> cast(Map<?, ?> map) {
-      return map == null ? null : new CastingMap<K, V>(map);
+      return map == null ? null : new CastingMap<>(map);
    }
 
    private static class CastingMap<K, V> extends AbstractMap<K, V> implements Serializable {

@@ -110,7 +110,9 @@ public class CSVWriter implements AutoCloseable {
                   Stream.concat(
                      header.stream()
                            .map(
-                              h -> row.containsKey(h) ? Converter.convertSilently(row.get(h), String.class) : Strings.EMPTY),
+                              h -> row.containsKey(h)
+                                   ? Converter.convertSilently(row.get(h), String.class)
+                                   : Strings.EMPTY),
                      row.keySet().stream()
                         .map(k -> Converter.convertSilently(k, String.class))
                         .filter(h -> !header.contains(h))
@@ -141,12 +143,14 @@ public class CSVWriter implements AutoCloseable {
             writer.write(formatter.format(Stream.concat(header.stream()
                                                               .map(
                                                                  h -> row.containsKey(h)
-                                                                      ? Converter.convertSilently(row.get(h), String.class)
+                                                                      ? Converter.convertSilently(row.get(h),
+                                                                                                  String.class)
                                                                       : Strings.EMPTY),
                                                         row.keySet().stream()
                                                            .map(k -> Converter.convertSilently(k, String.class))
                                                            .filter(h -> !header.contains(h))
-                                                           .map(h -> Converter.convertSilently(row.get(h), String.class))
+                                                           .map(
+                                                              h -> Converter.convertSilently(row.get(h), String.class))
                                                        )
                                                 .collect(Collectors.toList())
                                          )

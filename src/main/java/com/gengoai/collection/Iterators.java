@@ -94,7 +94,7 @@ public final class Iterators {
     * @return the flattened iterator
     */
    public static <T> Iterator<T> flatten(final Iterator<? extends Iterator<? extends T>> iterator) {
-      return new ConcatIterator<T>(iterator);
+      return new ConcatIterator<>(iterator);
    }
 
    /**

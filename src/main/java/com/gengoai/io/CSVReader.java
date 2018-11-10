@@ -279,9 +279,7 @@ public class CSVReader implements Closeable, AutoCloseable, Iterable<List<String
          while ((row = nextRow()) != null) {
             if (row.size() > 0) {
                Optional<R> r = converter.apply(row);
-               if (r.isPresent()) {
-                  rval.add(r.get());
-               }
+               r.ifPresent(rval::add);
             }
          }
       } finally {

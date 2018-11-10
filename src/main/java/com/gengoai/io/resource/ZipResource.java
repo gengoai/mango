@@ -11,6 +11,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /**
+ * The type Zip resource.
+ *
  * @author David B. Bracewell
  */
 public class ZipResource extends BaseResource implements ReadOnlyResource {
@@ -18,11 +20,17 @@ public class ZipResource extends BaseResource implements ReadOnlyResource {
    private ZipEntry entry;
    private ZipFile zipFile;
 
+   /**
+    * Instantiates a new Zip resource.
+    *
+    * @param zipFile the zip file
+    * @param entry   the entry
+    */
    public ZipResource(String zipFile, String entry) {
       try {
          this.zipFile = new ZipFile(zipFile);
       } catch (IOException e) {
-         e.printStackTrace();
+         throw new RuntimeException(e);
       }
       if (Strings.isNotNullOrBlank(entry)) {
          this.entry = this.zipFile.getEntry(entry);

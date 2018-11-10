@@ -4,6 +4,7 @@ import com.gengoai.Validation;
 import com.gengoai.string.CharMatcher;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -102,31 +103,22 @@ public abstract class LexicalPattern implements Serializable {
          this.literal = literal;
       }
 
-      protected boolean canEqual(Object other) {
-         return other instanceof LiteralPattern;
-      }
-
-      public boolean equals(Object o) {
-         if (o == this) return true;
-         if (!(o instanceof LiteralPattern)) return false;
-         final LiteralPattern other = (LiteralPattern) o;
-         if (!other.canEqual((Object) this)) return false;
-         final Object this$literal = this.getLiteral();
-         final Object other$literal = other.getLiteral();
-         if (this$literal == null ? other$literal != null : !this$literal.equals(other$literal)) return false;
-         return true;
-      }
 
       public String getLiteral() {
          return this.literal;
       }
 
+      @Override
       public int hashCode() {
-         final int PRIME = 59;
-         int result = 1;
-         final Object $literal = this.getLiteral();
-         result = result * PRIME + ($literal == null ? 43 : $literal.hashCode());
-         return result;
+         return Objects.hash(literal);
+      }
+
+      @Override
+      public boolean equals(Object obj) {
+         if (this == obj) {return true;}
+         if (obj == null || getClass() != obj.getClass()) {return false;}
+         final LiteralPattern other = (LiteralPattern) obj;
+         return Objects.equals(this.literal, other.literal);
       }
 
       @Override
@@ -156,31 +148,22 @@ public abstract class LexicalPattern implements Serializable {
          this.predicate = predicate;
       }
 
-      protected boolean canEqual(Object other) {
-         return other instanceof CharLiteralPattern;
-      }
-
-      public boolean equals(Object o) {
-         if (o == this) return true;
-         if (!(o instanceof CharLiteralPattern)) return false;
-         final CharLiteralPattern other = (CharLiteralPattern) o;
-         if (!other.canEqual((Object) this)) return false;
-         final Object this$predicate = this.getPredicate();
-         final Object other$predicate = other.getPredicate();
-         if (this$predicate == null ? other$predicate != null : !this$predicate.equals(other$predicate)) return false;
-         return true;
-      }
 
       public CharMatcher getPredicate() {
          return this.predicate;
       }
 
+      @Override
       public int hashCode() {
-         final int PRIME = 59;
-         int result = 1;
-         final Object $predicate = this.getPredicate();
-         result = result * PRIME + ($predicate == null ? 43 : $predicate.hashCode());
-         return result;
+         return Objects.hash(predicate);
+      }
+
+      @Override
+      public boolean equals(Object obj) {
+         if (this == obj) {return true;}
+         if (obj == null || getClass() != obj.getClass()) {return false;}
+         final CharLiteralPattern other = (CharLiteralPattern) obj;
+         return Objects.equals(this.predicate, other.predicate);
       }
 
       @Override
@@ -202,31 +185,22 @@ public abstract class LexicalPattern implements Serializable {
          this.pattern = pattern;
       }
 
-      protected boolean canEqual(Object other) {
-         return other instanceof CharPredicatePattern;
-      }
-
-      public boolean equals(Object o) {
-         if (o == this) return true;
-         if (!(o instanceof CharPredicatePattern)) return false;
-         final CharPredicatePattern other = (CharPredicatePattern) o;
-         if (!other.canEqual((Object) this)) return false;
-         final Object this$pattern = this.getPattern();
-         final Object other$pattern = other.getPattern();
-         if (this$pattern == null ? other$pattern != null : !this$pattern.equals(other$pattern)) return false;
-         return true;
-      }
 
       public CharMatcher getPattern() {
          return this.pattern;
       }
 
+      @Override
+      public boolean equals(Object o) {
+         if (this == o) return true;
+         if (!(o instanceof CharPredicatePattern)) return false;
+         CharPredicatePattern that = (CharPredicatePattern) o;
+         return Objects.equals(pattern, that.pattern);
+      }
+
+      @Override
       public int hashCode() {
-         final int PRIME = 59;
-         int result = 1;
-         final Object $pattern = this.getPattern();
-         result = result * PRIME + ($pattern == null ? 43 : $pattern.hashCode());
-         return result;
+         return Objects.hash(pattern);
       }
 
       @Override
@@ -248,36 +222,26 @@ public abstract class LexicalPattern implements Serializable {
       private static final long serialVersionUID = 1L;
       private final Pattern pattern;
 
-      @java.beans.ConstructorProperties({"pattern"})
       public RegexPattern(Pattern pattern) {
          this.pattern = pattern;
       }
 
-      protected boolean canEqual(Object other) {
-         return other instanceof RegexPattern;
-      }
-
-      public boolean equals(Object o) {
-         if (o == this) return true;
-         if (!(o instanceof RegexPattern)) return false;
-         final RegexPattern other = (RegexPattern) o;
-         if (!other.canEqual((Object) this)) return false;
-         final Object this$pattern = this.getPattern();
-         final Object other$pattern = other.getPattern();
-         if (this$pattern == null ? other$pattern != null : !this$pattern.equals(other$pattern)) return false;
-         return true;
-      }
 
       public Pattern getPattern() {
          return this.pattern;
       }
 
+      @Override
       public int hashCode() {
-         final int PRIME = 59;
-         int result = 1;
-         final Object $pattern = this.getPattern();
-         result = result * PRIME + ($pattern == null ? 43 : $pattern.hashCode());
-         return result;
+         return Objects.hash(pattern);
+      }
+
+      @Override
+      public boolean equals(Object obj) {
+         if (this == obj) {return true;}
+         if (obj == null || getClass() != obj.getClass()) {return false;}
+         final RegexPattern other = (RegexPattern) obj;
+         return Objects.equals(this.pattern, other.pattern);
       }
 
       @Override

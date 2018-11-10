@@ -94,7 +94,7 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
     * @return A new tuple of same degree whose values are the result of the mapping function applied to the this tuple's
     * elements.
     */
-   public Tuple mapValues(Function<Object, ? extends Object> function) {
+   public Tuple mapValues(Function<Object, ?> function) {
       return NTuple.of(Arrays.stream(array()).map(function).collect(Collectors.toList()));
    }
 

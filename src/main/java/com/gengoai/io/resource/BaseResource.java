@@ -45,102 +45,6 @@ public abstract class BaseResource implements Resource, Serializable {
    private boolean isCompressed = false;
 
    @Override
-   public final Charset getCharset() {
-      if (charset == null) {
-         return StandardCharsets.UTF_8;
-      }
-      return charset;
-   }
-
-   @Override
-   public final boolean isCompressed() {
-      return isCompressed;
-   }
-
-   @Override
-   public final Resource setIsCompressed(boolean isCompressed) {
-      this.isCompressed = isCompressed;
-      return this;
-   }
-
-   @Override
-   public final Resource setCharset(Charset charset) {
-      this.charset = charset;
-      return this;
-   }
-
-   @Override
-   public final Resource compressed() {
-      return setIsCompressed(true);
-   }
-
-   @Override
-   public final Resource uncompressed() {
-      return setIsCompressed(false);
-   }
-
-   @Override
-   public InputStream inputStream() throws IOException {
-      Validation.checkState(canRead(), "This is resource cannot be read from.");
-      PushbackInputStream is = new PushbackInputStream(createInputStream(), 2);
-      if (FileUtils.isCompressed(is)) {
-         setIsCompressed(true);
-         return new GZIPInputStream(is);
-      }
-      return is;
-   }
-
-   @Override
-   public OutputStream outputStream() throws IOException {
-      Validation.checkState(canWrite(), "This is resource cannot be written to.");
-      if (isCompressed) {
-         return new GZIPOutputStream(createOutputStream());
-      }
-      return createOutputStream();
-   }
-
-   /**
-    * Create output stream output stream.
-    *
-    * @return the output stream
-    * @throws IOException the io exception
-    */
-   protected OutputStream createOutputStream() throws IOException {
-      if (asFile().isPresent()) {
-         return new FileOutputStream(asFile().orElseThrow(NullPointerException::new));
-      }
-      throw new UnsupportedOperationException();
-   }
-
-   /**
-    * Create input stream input stream.
-    *
-    * @return the input stream
-    * @throws IOException the io exception
-    */
-   protected InputStream createInputStream() throws IOException {
-      if (asFile().isPresent()) {
-         return new FileInputStream(asFile().orElseThrow(NullPointerException::new));
-      }
-      throw new UnsupportedOperationException();
-   }
-
-   @Override
-   public boolean canRead() {
-      return true;
-   }
-
-   @Override
-   public boolean canWrite() {
-      return true;
-   }
-
-   @Override
-   public final String toString() {
-      return descriptor();
-   }
-
-   @Override
    public Optional<File> asFile() {
       return Optional.empty();
    }
@@ -156,8 +60,73 @@ public abstract class BaseResource implements Resource, Serializable {
    }
 
    @Override
+   public boolean canRead() {
+      return true;
+   }
+
+   @Override
+   public boolean canWrite() {
+      return true;
+   }
+
+   @Override
+   public final Resource compressed() {
+      return setIsCompressed(true);
+   }
+
+   /**
+    * Create input stream input stream.
+    *
+    * @return the input stream
+    * @throws IOException the io exception
+    */
+   protected InputStream createInputStream() throws IOException {
+      if (asFile().isPresent()) {
+         return new FileInputStream(asFile().orElseThrow(NullPointerException::new));
+      }
+      throw new UnsupportedOperationException();
+   }
+
+   /**
+    * Create output stream output stream.
+    *
+    * @return the output stream
+    * @throws IOException the io exception
+    */
+   protected OutputStream createOutputStream() throws IOException {
+      if (asFile().isPresent()) {
+         return new FileOutputStream(asFile().orElseThrow(NullPointerException::new));
+      }
+      throw new UnsupportedOperationException();
+   }
+
+   @Override
    public String descriptor() {
       return super.toString();
+   }
+
+   @Override
+   public final Charset getCharset() {
+      if (charset == null) {
+         return StandardCharsets.UTF_8;
+      }
+      return charset;
+   }
+
+   @Override
+   public InputStream inputStream() throws IOException {
+      Validation.checkState(canRead(), "This is resource cannot be read from.");
+      PushbackInputStream is = new PushbackInputStream(createInputStream(), 2);
+      if (FileUtils.isCompressed(is)) {
+         setIsCompressed(true);
+         return new GZIPInputStream(is);
+      }
+      return is;
+   }
+
+   @Override
+   public final boolean isCompressed() {
+      return isCompressed;
    }
 
    @Override
@@ -166,8 +135,39 @@ public abstract class BaseResource implements Resource, Serializable {
    }
 
    @Override
+   public OutputStream outputStream() throws IOException {
+      Validation.checkState(canWrite(), "This is resource cannot be written to.");
+      if (isCompressed) {
+         return new GZIPOutputStream(createOutputStream());
+      }
+      return createOutputStream();
+   }
+
+   @Override
    public String path() {
       return Strings.EMPTY;
+   }
+
+   @Override
+   public final Resource setCharset(Charset charset) {
+      this.charset = charset;
+      return this;
+   }
+
+   @Override
+   public final Resource setIsCompressed(boolean isCompressed) {
+      this.isCompressed = isCompressed;
+      return this;
+   }
+
+   @Override
+   public final String toString() {
+      return descriptor();
+   }
+
+   @Override
+   public final Resource uncompressed() {
+      return setIsCompressed(false);
    }
 
 }//END OF BaseResource

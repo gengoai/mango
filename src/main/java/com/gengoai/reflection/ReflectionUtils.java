@@ -259,11 +259,8 @@ public final class ReflectionUtils implements Loggable {
    public static Class<?> getClassForNameQuietly(String name) {
       try {
          return getClassForName(name);
-      } catch (Exception cnfe) {
+      } catch (Exception | Error cnfe) {
          log.finest(cnfe);
-         return null;
-      } catch (Error error) {
-         log.finest(error);
          return null;
       }
    }

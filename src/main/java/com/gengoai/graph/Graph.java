@@ -68,7 +68,7 @@ public interface Graph<V> extends Iterable<V>, JsonSerializable {
     * @return the graph
     */
    static <V> Graph<V> directed() {
-      return new DefaultGraphImpl<>(new DirectedEdgeFactory<V>());
+      return new DefaultGraphImpl<>(new DirectedEdgeFactory<>());
    }
 
    /**

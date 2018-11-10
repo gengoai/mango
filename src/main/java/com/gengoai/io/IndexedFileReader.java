@@ -1,76 +1,39 @@
 package com.gengoai.io;
 
-import com.gengoai.function.SerializableFunction;
-import com.gengoai.json.Json;
-import com.gengoai.json.JsonWriter;
+import com.gengoai.Validation;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
 import static com.gengoai.io.IndexedFile.indexFileFor;
 
 /**
- * The type Indexed file.
+ * <p>A specialized file reader that retrieves lines in a file given a key, which it looks up in an index.</p>
  *
  * @author David B. Bracewell
  */
 public final class IndexedFileReader implements Serializable {
    private static final long serialVersionUID = 1L;
    private final File backingFile;
-   private final boolean persistIndex;
    private volatile Map<String, Long> index = null;
-   private final SerializableFunction<String, String> lineToKey;
 
    /**
     * Instantiates a new Indexed file.
     *
     * @param backingFile the backing file
-    * @param lineToKey   the line to key
+    * @throws IllegalArgumentException If no index exists
     */
-   public IndexedFileReader(File backingFile, SerializableFunction<String, String> lineToKey) {
-      this(backingFile, true, lineToKey);
-   }
-
-   /**
-    * Instantiates a new Indexed file.
-    *
-    * @param backingFile  the backing file
-    * @param persistIndex the persist index
-    * @param lineToKey    the line to key
-    */
-   public IndexedFileReader(File backingFile, boolean persistIndex, SerializableFunction<String, String> lineToKey) {
+   public IndexedFileReader(File backingFile) {
       this.backingFile = backingFile;
-      this.persistIndex = persistIndex;
-      this.lineToKey = lineToKey;
+      Validation.checkArgument(indexFileFor(backingFile).exists(),
+                               () -> "No index file exists for " + backingFile);
    }
 
-
-   private void ensureIndex() {
-      if (index == null) {
-         synchronized (this) {
-            if (index == null) {
-               try {
-                  if (indexFileFor(backingFile).exists()) {
-                     index = loadIndexFor(backingFile);
-                  } else {
-                     try {
-                        index = createIndex(backingFile, lineToKey, persistIndex);
-                     } catch (IOException e2) {
-                        index = createIndex(backingFile, lineToKey, false);
-                     }
-                  }
-               } catch (IOException e) {
-                  throw new RuntimeException(e);
-               }
-            }
-         }
-      }
-   }
 
    private String readLineAt(long offset) throws IOException {
       try (RandomAccessFile raf = new RandomAccessFile(backingFile, "r")) {
@@ -79,24 +42,32 @@ public final class IndexedFileReader implements Serializable {
       }
    }
 
-
+   /**
+    * Gets index file.
+    *
+    * @return the index file
+    */
    public File getIndexFile() {
       return indexFileFor(backingFile);
    }
 
+   /**
+    * Gets backing file.
+    *
+    * @return the backing file
+    */
    public File getBackingFile() {
       return backingFile;
    }
 
    /**
-    * Get string.
+    * Reads the line from input associated with the given key
     *
     * @param key the key
-    * @return the string
-    * @throws IOException the io exception
+    * @return the line associated with the given key
+    * @throws IOException Something went wrong reading the file or the key is invalid
     */
    public String get(String key) throws IOException {
-      ensureIndex();
       if (index.containsKey(key)) {
          return readLineAt(index.get(key));
       }
@@ -104,82 +75,32 @@ public final class IndexedFileReader implements Serializable {
    }
 
 
+   /**
+    * Number of indexed keys
+    *
+    * @return number of keys in the index
+    */
    public int numberOfKeys() {
-      ensureIndex();
       return index.size();
    }
 
    /**
-    * Create index open object long hash map.
+    * Checks if a key is in the index or not
     *
-    * @param rawFile   the raw file
-    * @param lineToKey the line to key
-    * @return the open object long hash map
-    * @throws IOException the io exception
+    * @param key the key
+    * @return True - the key is in the index, False otherwise
     */
-   public static Map<String, Long> createIndex(File rawFile,
-                                               SerializableFunction<String, String> lineToKey
-                                              ) throws IOException {
-      return createIndex(rawFile, lineToKey, false);
-   }
-
-
    public boolean containsKey(String key) {
-      ensureIndex();
       return index.containsKey(key);
    }
 
-   public Set<String> keySet() {
-      ensureIndex();
-      return index.keySet();
-   }
-
-
-   public static Map<String, Long> loadIndexFor(File rawFile) throws IOException {
-      File indexFile = indexFileFor(rawFile);
-      return Json.parse(Resources.fromFile(indexFile)).getAsMap(Long.class);
-   }
-
    /**
-    * Create index open object long hash map.
+    * The set of keys in the index
     *
-    * @param rawFile   the raw file
-    * @param lineToKey the line to key
-    * @param saveIndex the save index
-    * @return the open object long hash map
-    * @throws IOException the io exception
+    * @return the set of keys
     */
-   public static Map<String, Long> createIndex(File rawFile,
-                                               SerializableFunction<String, String> lineToKey,
-                                               boolean saveIndex
-                                              ) throws IOException {
-      Map<String, Long> index = new HashMap<>();
-      try (RandomAccessFile raf = new RandomAccessFile(rawFile, "rw")) {
-         long lastOffset = 0;
-         String line;
-
-         JsonWriter indexWriter = null;
-         if (saveIndex) {
-            indexWriter = new JsonWriter(Resources.fromFile(indexFileFor(rawFile)).setIsCompressed(true));
-            indexWriter.beginDocument();
-         }
-
-         while ((line = raf.readLine()) != null) {
-            String key = lineToKey.apply(line);
-            index.put(key, lastOffset);
-            if (saveIndex) {
-               indexWriter.property(key, lastOffset);
-            }
-            lastOffset = raf.getFilePointer();
-         }
-
-         if (saveIndex) {
-            indexWriter.endDocument();
-            indexWriter.close();
-         }
-      }
-
-      return index;
+   public Set<String> keySet() {
+      return Collections.unmodifiableSet(index.keySet());
    }
 
 

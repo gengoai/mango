@@ -135,7 +135,7 @@ public class HyperedgeType {
      */
     public List<Object> getDataOrEndpoint() {
         if (dataOrEndpoint == null) {
-            dataOrEndpoint = new ArrayList<Object>();
+            dataOrEndpoint = new ArrayList<>();
         }
         return this.dataOrEndpoint;
     }

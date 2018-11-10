@@ -47,7 +47,7 @@ public class QuietIO {
       try {
          closeable.close();
       } catch (Exception e) {
-         logger.fine(e);
+         logger.warn(e);
       }
    }
 
@@ -58,7 +58,7 @@ public class QuietIO {
       try {
          closeable.close();
       } catch (Exception e) {
-         logger.fine(e);
+         logger.warn(e);
       }
    }
 

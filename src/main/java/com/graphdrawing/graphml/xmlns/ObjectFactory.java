@@ -174,7 +174,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "http://graphml.graphdrawing.org/xmlns", name = "default")
     public JAXBElement<DefaultType> createDefault(DefaultType value) {
-        return new JAXBElement<DefaultType>(_Default_QNAME, DefaultType.class, null, value);
+        return new JAXBElement<>(_Default_QNAME, DefaultType.class, null, value);
     }
 
     /**
@@ -183,7 +183,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "http://graphml.graphdrawing.org/xmlns", name = "edge")
     public JAXBElement<EdgeType> createEdge(EdgeType value) {
-        return new JAXBElement<EdgeType>(_Edge_QNAME, EdgeType.class, null, value);
+        return new JAXBElement<>(_Edge_QNAME, EdgeType.class, null, value);
     }
 
     /**
@@ -192,7 +192,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "http://graphml.graphdrawing.org/xmlns", name = "endpoint")
     public JAXBElement<EndpointType> createEndpoint(EndpointType value) {
-        return new JAXBElement<EndpointType>(_Endpoint_QNAME, EndpointType.class, null, value);
+        return new JAXBElement<>(_Endpoint_QNAME, EndpointType.class, null, value);
     }
 
     /**
@@ -201,7 +201,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "http://graphml.graphdrawing.org/xmlns", name = "node")
     public JAXBElement<NodeType> createNode(NodeType value) {
-        return new JAXBElement<NodeType>(_Node_QNAME, NodeType.class, null, value);
+        return new JAXBElement<>(_Node_QNAME, NodeType.class, null, value);
     }
 
     /**
@@ -210,7 +210,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "http://graphml.graphdrawing.org/xmlns", name = "data")
     public JAXBElement<DataType> createData(DataType value) {
-        return new JAXBElement<DataType>(_Data_QNAME, DataType.class, null, value);
+        return new JAXBElement<>(_Data_QNAME, DataType.class, null, value);
     }
 
     /**
@@ -219,7 +219,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "http://graphml.graphdrawing.org/xmlns", name = "port")
     public JAXBElement<PortType> createPort(PortType value) {
-        return new JAXBElement<PortType>(_Port_QNAME, PortType.class, null, value);
+        return new JAXBElement<>(_Port_QNAME, PortType.class, null, value);
     }
 
     /**
@@ -228,7 +228,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "http://graphml.graphdrawing.org/xmlns", name = "graphml")
     public JAXBElement<GraphmlType> createGraphml(GraphmlType value) {
-        return new JAXBElement<GraphmlType>(_Graphml_QNAME, GraphmlType.class, null, value);
+        return new JAXBElement<>(_Graphml_QNAME, GraphmlType.class, null, value);
     }
 
     /**
@@ -237,7 +237,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "http://graphml.graphdrawing.org/xmlns", name = "key")
     public JAXBElement<KeyType> createKey(KeyType value) {
-        return new JAXBElement<KeyType>(_Key_QNAME, KeyType.class, null, value);
+        return new JAXBElement<>(_Key_QNAME, KeyType.class, null, value);
     }
 
     /**
@@ -246,7 +246,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "http://graphml.graphdrawing.org/xmlns", name = "graph")
     public JAXBElement<GraphType> createGraph(GraphType value) {
-        return new JAXBElement<GraphType>(_Graph_QNAME, GraphType.class, null, value);
+        return new JAXBElement<>(_Graph_QNAME, GraphType.class, null, value);
     }
 
     /**
@@ -255,7 +255,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "http://graphml.graphdrawing.org/xmlns", name = "desc")
     public JAXBElement<String> createDesc(String value) {
-        return new JAXBElement<String>(_Desc_QNAME, String.class, null, value);
+        return new JAXBElement<>(_Desc_QNAME, String.class, null, value);
     }
 
     /**
@@ -264,7 +264,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "http://graphml.graphdrawing.org/xmlns", name = "locator")
     public JAXBElement<LocatorType> createLocator(LocatorType value) {
-        return new JAXBElement<LocatorType>(_Locator_QNAME, LocatorType.class, null, value);
+        return new JAXBElement<>(_Locator_QNAME, LocatorType.class, null, value);
     }
 
     /**
@@ -273,7 +273,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(namespace = "http://graphml.graphdrawing.org/xmlns", name = "hyperedge")
     public JAXBElement<HyperedgeType> createHyperedge(HyperedgeType value) {
-        return new JAXBElement<HyperedgeType>(_Hyperedge_QNAME, HyperedgeType.class, null, value);
+        return new JAXBElement<>(_Hyperedge_QNAME, HyperedgeType.class, null, value);
     }
 
 }

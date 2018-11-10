@@ -19,9 +19,6 @@
  * under the License.
  */
 
-/**
- *
- */
 package com.gengoai.logging;
 
 

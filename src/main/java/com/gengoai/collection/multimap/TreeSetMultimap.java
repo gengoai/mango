@@ -14,7 +14,6 @@ import java.util.TreeSet;
  */
 public class TreeSetMultimap<K, V> extends SetMultimap<K, V> {
    private static final long serialVersionUID = 1L;
-   private final SerializableComparator<V> comparator;
 
    /**
     * Instantiates a new TreeSetMultimap.
@@ -29,8 +28,7 @@ public class TreeSetMultimap<K, V> extends SetMultimap<K, V> {
     * @param comparator the comparator to use for comparing values
     */
    public TreeSetMultimap(SerializableComparator<V> comparator) {
-      super(TreeSet::new);
-      this.comparator = comparator;
+      super(() -> new TreeSet<>(comparator));
    }
 
 

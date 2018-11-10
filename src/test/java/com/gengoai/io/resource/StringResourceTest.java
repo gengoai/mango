@@ -47,7 +47,7 @@ public class StringResourceTest {
 
     r = new StringResource("a");
     Resource r2 = new StringResource("a");
-    assertNotEquals(r, r2);
+    assertEquals(r, r2);
 
   }
 
