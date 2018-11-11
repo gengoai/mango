@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * The type Span.
+ * <p>A Span represents a continuous segment with a start and end.</p>
  *
  * @author David B. Bracewell
  */

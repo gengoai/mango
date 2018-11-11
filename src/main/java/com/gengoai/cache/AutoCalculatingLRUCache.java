@@ -3,7 +3,7 @@ package com.gengoai.cache;
 import com.gengoai.function.SerializableFunction;
 
 /**
- * Auto calculating LRU cache that calculates values for keys when retrieved.
+ * Auto calculating LRU cache that calculates values for keys when retrieved using a {@link SerializableFunction}.
  *
  * @param <K> the type parameter
  * @param <V> the type parameter

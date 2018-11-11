@@ -42,6 +42,7 @@ import com.gengoai.reflection.ReflectionException;
 import com.gengoai.string.Strings;
 
 import java.io.*;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -54,7 +55,12 @@ import java.util.stream.Stream;
 
 /**
  * <p> A complete configuration class that allows for inheritance, multiline inputs, variable interpolation, and
- * scripting. </p> <p/> <p> <ul> <li>${var} will substitute the value of "var"</li> <p/> </ul> </p>
+ * scripting. </p>
+ * <p>
+ * <ul>
+ * <li>${var} will substitute the value of "var"</li>
+ * </ul>
+ * </p>
  *
  * @author David B. Bracewell
  */
@@ -89,28 +95,31 @@ public final class Config implements Serializable, JsonSerializable {
    }
 
    /**
-    * Find key string.
+    * Finds the best key for the given class and child path. If a language is specified, it should be the first argument
+    * of the path.
     *
     * @param root the root
     * @param path the path
-    * @return the string
+    * @return the best matching key or null
     */
    public static String findKey(Class<?> root, Object... path) {
       return findKey(root.getName(), path);
    }
 
    /**
-    * Find key string.
+    * Finds the best key for the given class and child path. If a language is specified, it should be the first argument
+    * of the path.
     *
     * @param root the root
     * @param path the path
-    * @return the string
+    * @return the best matching key or null
     */
    public static String findKey(String root, Object... path) {
       if (path == null || path.length == 0) {
          return hasProperty(root) ? root : null;
       }
       Language language = path[0] instanceof Language ? Cast.as(path[0]) : null;
+
       if (language == null) {
          String key = root + "." + Strings.join(path, ".");
          return hasProperty(key) ? key : null;
@@ -129,7 +138,9 @@ public final class Config implements Serializable, JsonSerializable {
                return key;
             }
          }
+         return null;
       }
+
       String components = Strings.join(Arrays.copyOfRange(path, 1, path.length), ".");
       for (String key : new String[]{
          root + "." + language + "." + components,
@@ -151,14 +162,16 @@ public final class Config implements Serializable, JsonSerializable {
    }
 
    /**
-    * From json config.
+    * Static method allowing the Config to be deserialized from Json
     *
-    * @param entry the entry
-    * @return the config
+    * @param entry  the Json entry
+    * @param params The type parameters (not used)
+    * @return the Config instance
     */
-   public static Config fromJson(JsonEntry entry) {
-      getInstance().properties.clear();
-      getInstance().properties.putAll(entry.getAsMap(String.class));
+   public static Config fromJson(JsonEntry entry, Type... params) {
+      clear();
+      getInstance().loaded.addAll(entry.getProperty("loaded").getAsArray(String.class));
+      getInstance().properties.putAll(entry.getProperty("properties").getAsMap(String.class));
       return getInstance();
    }
 
@@ -400,7 +413,8 @@ public final class Config implements Serializable, JsonSerializable {
 
       // Store the command line arguments as a config settings.
       if (args != null) {
-         parser.getSetEntries().forEach(entry -> ConfigSettingFunction.INSTANCE.setProperty(entry.getKey(), entry.getValue(), "CommandLine"));
+         parser.getSetEntries().forEach(
+            entry -> ConfigSettingFunction.INSTANCE.setProperty(entry.getKey(), entry.getValue(), "CommandLine"));
       }
 
       if (parser.isSet(NamedOption.CONFIG)) {
@@ -623,7 +637,9 @@ public final class Config implements Serializable, JsonSerializable {
 
    @Override
    public JsonEntry toJson() {
-      return JsonEntry.from(properties);
+      return JsonEntry.object()
+                      .addProperty("loaded", loaded)
+                      .addProperty("properties", properties);
    }
 
    private void writeObject(ObjectOutputStream out) throws IOException {

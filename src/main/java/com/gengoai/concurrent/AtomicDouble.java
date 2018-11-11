@@ -87,7 +87,7 @@ public class AtomicDouble extends Number {
    }
 
    /**
-    * tomically adds the given value to the current value.
+    * Atomically adds the given value to the current value.
     *
     * @param value the value
     * @return the updated value

@@ -25,7 +25,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * The type Trie match.
+ * <p>Represents a match in a Trie.</p>
  *
  * @param <V> the type parameter
  * @author David B. Bracewell
@@ -33,15 +33,15 @@ import java.util.Objects;
 public class TrieMatch<V> implements Serializable {
    private static final long serialVersionUID = 1L;
    /**
-    * The Start.
+    * The starting index.
     */
    public final int start;
    /**
-    * The End.
+    * The ending index.
     */
    public final int end;
    /**
-    * The Value.
+    * The value of the matched key
     */
    public final V value;
 
@@ -69,16 +69,7 @@ public class TrieMatch<V> implements Serializable {
    }
 
    /**
-    * Gets end.
-    *
-    * @return the end
-    */
-   public int getEnd() {
-      return this.end;
-   }
-
-   /**
-    * Gets match.
+    * Extracts the matched portion of a content.
     *
     * @param content the content
     * @return the match
@@ -87,30 +78,13 @@ public class TrieMatch<V> implements Serializable {
       return content.substring(start, end);
    }
 
-   /**
-    * Gets start.
-    *
-    * @return the start
-    */
-   public int getStart() {
-      return this.start;
-   }
-
-   /**
-    * Gets value.
-    *
-    * @return the value
-    */
-   public V getValue() {
-      return this.value;
-   }
-
    @Override
    public int hashCode() {
       return Objects.hash(start, end, value);
    }
 
    public String toString() {
-      return "TrieMatch(start=" + this.getStart() + ", end=" + this.getEnd() + ", value=" + this.getValue() + ")";
+      return "TrieMatch(start=" + this.start + ", end=" + this.end + ", value=" + this.value + ")";
    }
+
 }//END OF TrieMatch

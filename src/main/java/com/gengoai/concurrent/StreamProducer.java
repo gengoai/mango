@@ -24,7 +24,7 @@ package com.gengoai.concurrent;
 import java.util.stream.Stream;
 
 /**
- * <p>A producer implementation that produces items from a string</p>
+ * <p>A producer implementation that produces items from a stream</p>
  *
  * @param <V> the type of item being produced.
  * @author David B. Bracewell

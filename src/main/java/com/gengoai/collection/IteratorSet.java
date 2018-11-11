@@ -7,7 +7,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
- * The type Iterator set.
+ * <p>A Set implementation backed by an iterator.</p>
  *
  * @param <E> the type parameter
  * @author David B. Bracewell
@@ -25,8 +25,65 @@ public class IteratorSet<E> extends AbstractSet<E> {
       this.iteratorSupplier = iteratorSupplier;
    }
 
+   @Override
+   public void clear() {
+      for (Iterator<E> itr = iteratorSupplier.get(); itr.hasNext(); ) {
+         itr.next();
+         itr.remove();
+      }
+   }
+
+   @Override
    public Iterator<E> iterator() {
       return new RemovableIterator(Streams.asStream(iteratorSupplier.get()).distinct().iterator());
+   }
+
+   @Override
+   public boolean remove(Object o) {
+      boolean removed = false;
+      for (Iterator<E> itr = iteratorSupplier.get(); itr.hasNext(); ) {
+         E next = itr.next();
+         if (next.equals(o)) {
+            itr.remove();
+            removed = true;
+         }
+      }
+      return removed;
+   }
+
+   @Override
+   public boolean removeAll(Collection<?> c) {
+      return removeIf(c::contains);
+   }
+
+   @Override
+   public boolean removeIf(Predicate<? super E> filter) {
+      boolean removed = false;
+      for (Iterator<E> itr = iteratorSupplier.get(); itr.hasNext(); ) {
+         E next = itr.next();
+         if (filter.test(next)) {
+            itr.remove();
+            removed = true;
+         }
+      }
+      return removed;
+   }
+
+   public int size() {
+      return (int) Streams.asStream(iterator()).count();
+   }
+
+   @Override
+   public String toString() {
+      StringBuilder builder = new StringBuilder("[");
+      for (E e : this) {
+         builder.append(e).append(", ");
+      }
+      if (builder.length() > 1) {
+         builder.setLength(builder.length() - 2);
+      }
+      builder.append("]");
+      return builder.toString();
    }
 
    private class RemovableIterator implements Iterator<E> {
@@ -52,63 +109,6 @@ public class IteratorSet<E> extends AbstractSet<E> {
       @Override
       public void remove() {
          IteratorSet.this.remove(lastValue);
-      }
-   }
-
-
-   @Override
-   public boolean removeAll(Collection<?> c) {
-      return removeIf(c::contains);
-   }
-
-   @Override
-   public boolean removeIf(Predicate<? super E> filter) {
-      boolean removed = false;
-      for (Iterator<E> itr = iteratorSupplier.get(); itr.hasNext(); ) {
-         E next = itr.next();
-         if (filter.test(next)) {
-            itr.remove();
-            removed = true;
-         }
-      }
-      return removed;
-   }
-
-   @Override
-   public boolean remove(Object o) {
-      boolean removed = false;
-      for (Iterator<E> itr = iteratorSupplier.get(); itr.hasNext(); ) {
-         E next = itr.next();
-         if (next.equals(o)) {
-            itr.remove();
-            removed = true;
-         }
-      }
-      return removed;
-   }
-
-   @Override
-   public String toString() {
-      StringBuilder builder = new StringBuilder("[");
-      for (E e : this) {
-         builder.append(e).append(", ");
-      }
-      if (builder.length() > 1) {
-         builder.setLength(builder.length() - 2);
-      }
-      builder.append("]");
-      return builder.toString();
-   }
-
-   public int size() {
-      return (int) Streams.asStream(iterator()).count();
-   }
-
-   @Override
-   public void clear() {
-      for (Iterator<E> itr = iteratorSupplier.get(); itr.hasNext(); ) {
-         itr.next();
-         itr.remove();
       }
    }
 }//END OF IteratorSet

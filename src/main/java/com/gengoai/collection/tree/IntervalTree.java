@@ -9,22 +9,34 @@ import java.io.Serializable;
 import java.util.*;
 
 /**
- * The type Interval tree.
+ * <p>An Tree structure with fast lookups for elements falling within a given interval.</p>
  *
- * @param <T> the type parameter
+ * @param <T> the element type parameter
  * @author David B. Bracewell
  */
 @SuppressWarnings("unchecked")
 public class IntervalTree<T extends Span> implements Serializable, Collection<T> {
-   private static final Node<?> NULL = new Node<>(null, null, null, new Span(0, Integer.MAX_VALUE));
    private static final long serialVersionUID = 1L;
+
+   private static final Node<?> NULL = new Node<>(null, null, null, new Span(0, Integer.MAX_VALUE));
+
+   static {
+      NULL.left = Cast.as(NULL);
+      NULL.right = Cast.as(NULL);
+      NULL.parent = Cast.as(NULL);
+   }
+
    /**
     * The Root.
     */
    protected Node<T> root = Cast.as(NULL);
    private int size = 0;
 
-   private boolean isRed(Node node) {
+   private static boolean isNull(Node node) {
+      return node == null || node.isNull();
+   }
+
+   private static boolean isRed(Node node) {
       return !isNull(node) && node.isRed;
    }
 
@@ -137,6 +149,23 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
       root.setBlack();
    }
 
+   /**
+    * Gets the span that is next in the interval from the given span.
+    *
+    * @param T the span to get the ceiling for
+    * @return the next span
+    */
+   public T ceiling(T T) {
+      if (T == null) {
+         return null;
+      }
+      NodeIterator<T> iterator = new NodeIterator<>(root, T.end(), Integer.MAX_VALUE, true);
+      if (iterator.hasNext()) {
+         return iterator.next();
+      }
+      return null;
+   }
+
    @Override
    public void clear() {
       this.root = Cast.as(NULL);
@@ -178,13 +207,26 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
       return Cast.as(NULL);
    }
 
+   /**
+    * Gets the span that is previous in the interval from the given span.
+    *
+    * @param T the span to get the floor for
+    * @return the previous span
+    */
+   public T floor(T T) {
+      if (T == null) {
+         return null;
+      }
+      NodeIterator<T> iterator = new NodeIterator<>(root, -1, T.start(), false);
+      if (iterator.hasNext()) {
+         return iterator.next();
+      }
+      return null;
+   }
+
    @Override
    public boolean isEmpty() {
       return root == null || root.isNull();
-   }
-
-   private boolean isNull(Node node) {
-      return node == null || node.isNull();
    }
 
    @Override
@@ -193,10 +235,10 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
    }
 
    /**
-    * Gets all Ts that overlap the given span
+    * Gets all spans that overlap the given span
     *
     * @param span the span
-    * @return the list of overlapping T
+    * @return the list of overlapping spans
     */
    public List<T> overlapping(Span span) {
       if (span == null || root.isNull()) {
@@ -358,7 +400,7 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
    }
 
    @Override
-   public <T> T[] toArray(T[] array) {
+   public <E> E[] toArray(E[] array) {
       return toList().toArray(array);
    }
 
@@ -375,34 +417,34 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
    }
 
    /**
-    * The type Node.
+    * <p>Wraps the Span allowing for multiple items on the same span</p>
     *
     * @param <T> the type parameter
     */
    protected static class Node<T extends Span> implements Serializable {
       private static final long serialVersionUID = 1L;
       /**
-       * The Ts.
+       * The items on this interval
        */
       public final Set<T> items = new LinkedHashSet<>();
       /**
-       * The Is red.
+       * Is the node red?
        */
       public boolean isRed;
       /**
-       * The Span.
+       * The interval captured by the Node
        */
       public Span span;
       /**
-       * The Left.
+       * Left child
        */
       public Node<T> left;
       /**
-       * The Right.
+       * Right child
        */
       public Node<T> right;
       /**
-       * The Parent.
+       * Parent
        */
       public Node<T> parent;
       /**
@@ -497,7 +539,7 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
    }
 
    /**
-    * The type Node iterator.
+    * Iterator over Nodes returning the underlying spans.
     *
     * @param <T> the type parameter
     */
@@ -579,48 +621,6 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
          }
          return Ts.removeFirst();
       }
-   }
-
-   static {
-      NULL.left = Cast.as(NULL);
-      NULL.right = Cast.as(NULL);
-      NULL.parent = Cast.as(NULL);
-   }
-
-
-   /**
-    * Floor T.
-    *
-    * @param T the T
-    * @return the T
-    */
-   public T floor(T T) {
-      if (T == null) {
-         return null;
-      }
-      NodeIterator<T> iterator = new NodeIterator<>(root, -1, T.start(), false);
-      if (iterator.hasNext()) {
-         return iterator.next();
-      }
-      return null;
-   }
-
-
-   /**
-    * Ceiling T.
-    *
-    * @param T the T
-    * @return the T
-    */
-   public T ceiling(T T) {
-      if (T == null) {
-         return null;
-      }
-      NodeIterator<T> iterator = new NodeIterator<>(root, T.end(), Integer.MAX_VALUE, true);
-      if (iterator.hasNext()) {
-         return iterator.next();
-      }
-      return null;
    }
 
 

@@ -60,13 +60,13 @@ public class TrieTest {
       List<TrieMatch<String>> matches = trie.find(content, CharMatcher.WhiteSpace);
       assertEquals(3, matches.size());
 
-      assertEquals("run", matches.get(0).getValue());
+      assertEquals("run", matches.get(0).value);
       assertEquals("ran", matches.get(0).getMatch(content));
 
-      assertEquals("rand", matches.get(1).getValue());
+      assertEquals("rand", matches.get(1).value);
       assertEquals("rand", matches.get(1).getMatch(content));
 
-      assertEquals("is", matches.get(2).getValue());
+      assertEquals("is", matches.get(2).value);
       assertEquals("wasn't", matches.get(2).getMatch(content));
    }
 
