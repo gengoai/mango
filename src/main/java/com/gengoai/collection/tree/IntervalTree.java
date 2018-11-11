@@ -237,7 +237,7 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
             return true;
          }
 
-         Node x = Cast.as(NULL);
+         Node x;
          Node y = Cast.as(NULL);
 
          //Leaf Node
@@ -358,8 +358,8 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
    }
 
    @Override
-   public <T> T[] toArray(T[] a) {
-      return toList().toArray(a);
+   public <T> T[] toArray(T[] array) {
+      return toList().toArray(array);
    }
 
    private List<T> toList() {
