@@ -73,22 +73,19 @@ public final class ReflectionUtils implements Loggable {
     * @param string The string containing information about the object to create
     * @return An object or null if the object the string maps to cannot be determined.
     */
-   public static Object createObject(String string) {
+   public static Object createObject(String string) throws Exception {
       if (Strings.isNullOrBlank(string)) {
          return null;
       }
       if (ReflectionUtils.isClassName(string)) {
-         try {
-            Class<?> clazz = ReflectionUtils.getClassForNameQuietly(string);
-            if (ReflectionUtils.isSingleton(clazz)) {
-               return ReflectionUtils.getSingletonFor(clazz);
-            } else {
-               return BeanUtils.getBean(clazz);
-            }
-         } catch (Exception e) {
-            return null;
+         Class<?> clazz = ReflectionUtils.getClassForNameQuietly(string);
+         if (ReflectionUtils.isSingleton(clazz)) {
+            return ReflectionUtils.getSingletonFor(clazz);
+         } else {
+            return BeanUtils.getBean(clazz);
          }
       }
+
       int index = string.lastIndexOf(".");
       if (index != -1) {
          String field = string.substring(string.lastIndexOf('.') + 1);
@@ -112,15 +109,10 @@ public final class ReflectionUtils implements Loggable {
                }
             }
 
-            try {
-               return Reflect.onClass(clazz).create(field).get();
-            } catch (ReflectionException e) {
-               return null;
-            }
-
+            return Reflect.onClass(clazz).create(field).get();
          }
       }
-      return null;
+      throw new ReflectionException("Unable to create object");
    }
 
    /**

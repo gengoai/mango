@@ -64,13 +64,7 @@ public final class ClassDescriptor implements Serializable {
       if (this == o) return true;
       if (!(o instanceof ClassDescriptor)) return false;
       ClassDescriptor that = (ClassDescriptor) o;
-      return Objects.equals(methods, that.methods) &&
-                Objects.equals(declaredMethods, that.declaredMethods) &&
-                Objects.equals(fields, that.fields) &&
-                Objects.equals(declaredFields, that.declaredFields) &&
-                Objects.equals(constructors, that.constructors) &&
-                Objects.equals(declaredConstructors, that.declaredConstructors) &&
-                Objects.equals(clazz, that.clazz);
+      return Objects.equals(clazz, that.clazz);
    }
 
    /**
@@ -135,6 +129,6 @@ public final class ClassDescriptor implements Serializable {
 
    @Override
    public int hashCode() {
-      return Objects.hash(methods, declaredMethods, fields, declaredFields, constructors, declaredConstructors, clazz);
+      return Objects.hash(clazz);
    }
 }//END OF ClassDescriptor

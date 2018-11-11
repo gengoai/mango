@@ -6,7 +6,7 @@ import com.gengoai.json.Json;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonSerializable;
 import com.gengoai.reflection.BeanUtils;
-import com.gengoai.reflection.Reflect;
+import com.gengoai.reflection.ReflectionUtils;
 import com.gengoai.reflection.Types;
 
 import java.lang.reflect.Type;
@@ -178,8 +178,8 @@ public final class Converter {
 
       //Last chance
       try {
-         Class<?> clazz = convert(sourceObject, Class.class);
-         return Cast.as(BeanUtils.parameterizeObject(Reflect.onClass(clazz).allowPrivilegedAccess().create().get()));
+         return Cast.as(
+            BeanUtils.parameterizeObject(ReflectionUtils.createObject(convert(sourceObject, String.class))));
       } catch (Exception e) {
          e.printStackTrace();
          //ignore
