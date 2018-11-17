@@ -40,22 +40,21 @@ public final class IndexedFileWriter implements AutoCloseable {
    }
 
    /**
-    * Gets the file that output is being written to
-    *
-    * @return the output file
-    */
-   public File getOutputFile() {
-      return outputFile;
-   }
-
-
-   /**
     * Gets the index file being created
     *
     * @return the index file
     */
    public File getIndexFile() {
       return indexFileFor(outputFile);
+   }
+
+   /**
+    * Gets the file that output is being written to
+    *
+    * @return the output file
+    */
+   public File getOutputFile() {
+      return outputFile;
    }
 
    /**

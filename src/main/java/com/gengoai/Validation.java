@@ -2,7 +2,6 @@ package com.gengoai;
 
 import com.gengoai.string.Strings;
 
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -17,88 +16,179 @@ public final class Validation {
       throw new IllegalAccessError();
    }
 
-
    /**
-    * Checks that the evaluation is true. If evaluation is true, the given return value is returned, otherwise the
-    * exception supplier is used to generate a RuntimeException to throw.
+    * Throws a <code>IllegalArgumentException</code> if the given boolean evaluates to false.
     *
-    * @param <T>               the return type parameter
-    * @param evaluation        the evaluation test
-    * @param exceptionSupplier the supplier to use to generate exceptions (null will cause a default RuntimeException to
-    *                          be thrown)
-    * @param returnValue       the return value to return if the evaluation is true
-    * @return the return value
+    * @param evaluation the object to check
     */
-   public static <T> T validate(boolean evaluation, Supplier<RuntimeException> exceptionSupplier, T returnValue) {
-      if (evaluation) {
-         return returnValue;
+   public static void checkArgument(boolean evaluation) {
+      if (!evaluation) {
+         throw new IllegalArgumentException();
       }
-      throw exceptionSupplier == null ? new RuntimeException() : exceptionSupplier.get();
    }
 
    /**
-    * Checks that the evaluation is true. If evaluation is true, the given value is returned, otherwise the exception
-    * supplier is used to generate a RuntimeException to throw.
+    * Throws a <code>IllegalArgumentException</code> if the given boolean evaluates to false.
     *
-    * @param <T>               the return type parameter
-    * @param value             the value to test
-    * @param evaluator         the predicate to use to test the value
-    * @param exceptionSupplier the supplier to use to generate exceptions
-    * @param nullable          True the value is able to be null, False it cannot be null
-    * @return the given value
+    * @param evaluation the object to check
+    * @param message    the message to use in the <code>IllegalArgumentException</code>
     */
-   public static <T> T validate(T value, Predicate<T> evaluator, Supplier<RuntimeException> exceptionSupplier, boolean nullable) {
-      if ((value == null && nullable) || evaluator.test(value)) {
-         return value;
-      } else if (value == null) {
-         throw new NullPointerException();
+   public static void checkArgument(boolean evaluation, String message) {
+      if (!evaluation) {
+         if (message != null) {
+            throw new IllegalArgumentException(message);
+         } else {
+            throw new IllegalArgumentException();
+         }
       }
-      throw exceptionSupplier == null ? new RuntimeException() : exceptionSupplier.get();
    }
 
    /**
-    * Checks that the evaluation is true. If evaluation is true, the given value is returned, otherwise the exception
-    * supplier is used to generate a RuntimeException to throw.
+    * Check argument.
     *
-    * @param <T>               the return type parameter
-    * @param value             the value to test
-    * @param predicate         the predicate
-    * @param message           the message to use when creating the runtime exception
-    * @param exceptionSupplier the supplier to use to generate exceptions
-    * @param nullable          True the value is able to be null, False it cannot be null
-    * @return the given value
+    * @param evaluation the evaluation
+    * @param message    the message
     */
-   public static <T> T validate(T value, Predicate<T> predicate, String message, Function<String, RuntimeException> exceptionSupplier, boolean nullable) {
-      return validate(value, predicate, () -> exceptionSupplier.apply(message), nullable);
+   public static void checkArgument(boolean evaluation, Supplier<String> message) {
+      if (!evaluation) {
+         if (message != null) {
+            throw new IllegalArgumentException(message.get());
+         } else {
+            throw new IllegalArgumentException();
+         }
+      }
    }
 
    /**
-    * Checks that the evaluation is true. If evaluation is true, the given value is returned, otherwise the exception
-    * supplier is used to generate an IllegalArgumentException to throw.
+    * Checks that the given index is in the  range <code>[0, size)</code>
     *
-    * @param <T>       the return type parameter
-    * @param value     the value to test
-    * @param predicate the predicate
-    * @param message   the message to use when creating the runtime exception
-    * @param nullable  True the value is able to be null, False it cannot be null
-    * @return the given value
+    * @param index the index to validate
+    * @param size  the size of the array, list, etc.
+    * @return the index
+    * @throws IndexOutOfBoundsException if index is negative or greater than equal to size
+    * @throws IllegalArgumentException  if size is negative
     */
-   public static <T> T validateArg(T value, Predicate<T> predicate, String message, boolean nullable) {
-      return validate(value, predicate, message, IllegalArgumentException::new, nullable);
+   public static int checkElementIndex(int index, int size) {
+      return checkElementIndex(index, size, "index");
    }
 
    /**
-    * Checks that the evaluation is true. If evaluation is true, the given value is returned, otherwise the exception
-    * supplier is used to generate an IllegalArgumentException to throw.
+    * Check element index int.
     *
-    * @param <T>       the return type parameter
-    * @param value     the value to test
-    * @param predicate the predicate
-    * @param nullable  True the value is able to be null, False it cannot be null
-    * @return the given value
+    * @param index   the index
+    * @param size    the size
+    * @param message the message
+    * @return the int
     */
-   public static <T> T validateArg(T value, Predicate<T> predicate, boolean nullable) {
-      return validate(value, predicate, IllegalArgumentException::new, nullable);
+   public static int checkElementIndex(int index, int size, String message) {
+      return checkElementIndex(index, size, () -> message);
+   }
+
+   /**
+    * Checks that the given index is in the  range <code>[0, size)</code>
+    *
+    * @param index   the index to validate
+    * @param size    the size of the array, list, etc.
+    * @param message Message to prepend to the exception
+    * @return the index
+    * @throws IndexOutOfBoundsException if index is negative or greater than equal to size
+    * @throws IllegalArgumentException  if size is negative
+    */
+   public static int checkElementIndex(int index, int size, Supplier<String> message) {
+      if (size < 0) {
+         throw new IllegalArgumentException("Negative Size: " + size);
+      }
+      if (index < 0) {
+         throw new IndexOutOfBoundsException(
+            String.format("%s (%s) must be non negative", Strings.nullToEmpty(message.get()), index));
+      }
+      if (index > size) {
+         throw new IndexOutOfBoundsException(String.format("%s (%s) must be less than (%s)",
+                                                           Strings.nullToEmpty(message.get()), index, size));
+      }
+      return index;
+   }
+
+   /**
+    * Checks that the given index is in the  range <code>[0, size]</code>
+    *
+    * @param index   the index to validate
+    * @param size    the size of the array, list, etc.
+    * @param message Message to prepend to the exception
+    * @return the index
+    * @throws IndexOutOfBoundsException if index is negative or greater than size
+    * @throws IllegalArgumentException  if size is negative
+    */
+   public static int checkPositionIndex(int index, int size, String message) {
+      if (size < 0) {
+         throw new IllegalArgumentException("Negative Size: " + size);
+      }
+      if (index < 0) {
+         throw new IndexOutOfBoundsException(
+            String.format("%s (%s) must be non negative", Strings.nullToEmpty(message), index));
+      }
+      if (index > size) {
+         throw new IndexOutOfBoundsException(String.format("%s (%s) must be less than (%s)",
+                                                           Strings.nullToEmpty(message), index, size));
+      }
+      return index;
+   }
+
+   /**
+    * Checks that the given index is in the  range <code>[0, size]</code>
+    *
+    * @param index the index to validate
+    * @param size  the size of the array, list, etc.
+    * @return the index
+    * @throws IndexOutOfBoundsException if index is negative or greater than size
+    * @throws IllegalArgumentException  if size is negative
+    */
+   public static int checkPositionIndex(int index, int size) {
+      return checkPositionIndex(index, size, "index");
+   }
+
+   /**
+    * Throws a <code>IllegalStateException</code> if the given boolean evaluates to false.
+    *
+    * @param evaluation the object to check
+    */
+   public static void checkState(boolean evaluation) {
+      if (!evaluation) {
+         throw new IllegalStateException();
+      }
+   }
+
+   /**
+    * Throws a <code>IllegalStateException</code> if the given boolean evaluates to false.
+    *
+    * @param evaluation the object to check
+    * @param message    the message to use in the <code>IllegalStateException</code>
+    */
+   public static void checkState(boolean evaluation, String message) {
+      if (!evaluation) {
+         if (message != null) {
+            throw new IllegalStateException(message);
+         } else {
+            throw new IllegalStateException();
+         }
+      }
+   }
+
+   /**
+    * Check state.
+    *
+    * @param evaluation      the evaluation
+    * @param messageSupplier the message supplier
+    */
+   public static void checkState(boolean evaluation, Supplier<String> messageSupplier) {
+      if (!evaluation) {
+         String message = messageSupplier == null ? null : messageSupplier.get();
+         if (message != null) {
+            throw new IllegalStateException(message);
+         } else {
+            throw new IllegalStateException();
+         }
+      }
    }
 
    /**
@@ -180,159 +270,84 @@ public final class Validation {
    }
 
    /**
-    * Throws a <code>IllegalArgumentException</code> if the given boolean evaluates to false.
+    * Checks that the given evaluation or true and if it is not generates a {@link RuntimeException} using the given
+    * {@link Supplier} and throws it.
     *
-    * @param evaluation the object to check
+    * @param evaluation        the evaluation to test
+    * @param exceptionSupplier the supplier providing the exception to throw.
     */
-   public static void checkArgument(boolean evaluation) {
+   public static void validate(boolean evaluation, Supplier<RuntimeException> exceptionSupplier) {
       if (!evaluation) {
-         throw new IllegalArgumentException();
+         throw exceptionSupplier == null ? new RuntimeException() : exceptionSupplier.get();
       }
    }
 
    /**
-    * Throws a <code>IllegalArgumentException</code> if the given boolean evaluates to false.
+    * Checks that the evaluation is true. If evaluation is true, the given return value is returned, otherwise the
+    * exception {@link Supplier} is used to generate a {@link RuntimeException} to throw.
     *
-    * @param evaluation the object to check
-    * @param message    the message to use in the <code>IllegalArgumentException</code>
+    * @param <T>               the return type parameter
+    * @param evaluation        the evaluation test
+    * @param exceptionSupplier the supplier to use to generate exceptions (null will cause a default RuntimeException to
+    *                          be thrown)
+    * @param returnValue       the return value to return if the evaluation is true
+    * @return the return value
     */
-   public static void checkArgument(boolean evaluation, String message) {
-      if (!evaluation) {
-         if (message != null) {
-            throw new IllegalArgumentException(message);
-         } else {
-            throw new IllegalArgumentException();
-         }
+   public static <T> T validate(boolean evaluation, Supplier<RuntimeException> exceptionSupplier, T returnValue) {
+      if (evaluation) {
+         return returnValue;
       }
-   }
-
-   public static void checkArgument(boolean evaluation, Supplier<String> message) {
-      if (!evaluation) {
-         if (message != null) {
-            throw new IllegalArgumentException(message.get());
-         } else {
-            throw new IllegalArgumentException();
-         }
-      }
+      throw exceptionSupplier == null ? new RuntimeException() : exceptionSupplier.get();
    }
 
    /**
-    * Checks that the given index is in the  range <code>[0, size)</code>
+    * Uses the given {@link Predicate} to evaluate the given value. If evaluation is true, the given value is returned,
+    * otherwise the exception supplier is used to generate a {@link RuntimeException} to throw. When the value is null
+    * and it is not allowed to be nullable a {@link NullPointerException} wil be thrown.
     *
-    * @param index the index to validate
-    * @param size  the size of the array, list, etc.
-    * @return the index
-    * @throws IndexOutOfBoundsException if index is negative or greater than equal to size
-    * @throws IllegalArgumentException  if size is negative
+    * @param <T>               the return type parameter
+    * @param value             the value to test
+    * @param evaluator         the predicate to use to test the value
+    * @param exceptionSupplier the supplier to use to generate exceptions
+    * @param nullable          True the value is able to be null, False it cannot be null
+    * @return the given value
     */
-   public static int checkElementIndex(int index, int size) {
-      return checkElementIndex(index, size, "index");
-   }
-
-   public static int checkElementIndex(int index, int size, String message) {
-      return checkElementIndex(index, size, () -> message);
+   public static <T> T validate(T value, Predicate<T> evaluator, Supplier<RuntimeException> exceptionSupplier, boolean nullable) {
+      if ((value == null && nullable) || evaluator.test(value)) {
+         return value;
+      } else if (value == null) {
+         throw new NullPointerException();
+      }
+      throw exceptionSupplier == null ? new RuntimeException() : exceptionSupplier.get();
    }
 
    /**
-    * Checks that the given index is in the  range <code>[0, size)</code>
+    * Checks that the evaluation is true. If evaluation is true, the given value is returned, otherwise the exception
+    * supplier is used to generate an {@link IllegalArgumentException} to throw.
     *
-    * @param index   the index to validate
-    * @param size    the size of the array, list, etc.
-    * @param message Message to prepend to the exception
-    * @return the index
-    * @throws IndexOutOfBoundsException if index is negative or greater than equal to size
-    * @throws IllegalArgumentException  if size is negative
+    * @param <T>       the return type parameter
+    * @param value     the value to test
+    * @param predicate the predicate
+    * @param message   the message to use when creating the runtime exception
+    * @param nullable  True the value is able to be null, False it cannot be null
+    * @return the given value
     */
-   public static int checkElementIndex(int index, int size, Supplier<String> message) {
-      if (size < 0) {
-         throw new IllegalArgumentException("Negative Size: " + size);
-      }
-      if (index < 0) {
-         throw new IndexOutOfBoundsException(
-            String.format("%s (%s) must be non negative", Strings.nullToEmpty(message.get()), index));
-      }
-      if (index > size) {
-         throw new IndexOutOfBoundsException(String.format("%s (%s) must be less than (%s)",
-                                                           Strings.nullToEmpty(message.get()), index, size));
-      }
-      return index;
+   public static <T> T validateArg(T value, Predicate<T> predicate, String message, boolean nullable) {
+      return validate(value, predicate, () -> new IllegalArgumentException(message), nullable);
    }
 
    /**
-    * Checks that the given index is in the  range <code>[0, size]</code>
+    * Checks that the evaluation is true. If evaluation is true, the given value is returned, otherwise the exception
+    * supplier is used to generate an {@link IllegalArgumentException} to throw.
     *
-    * @param index   the index to validate
-    * @param size    the size of the array, list, etc.
-    * @param message Message to prepend to the exception
-    * @return the index
-    * @throws IndexOutOfBoundsException if index is negative or greater than size
-    * @throws IllegalArgumentException  if size is negative
+    * @param <T>       the return type parameter
+    * @param value     the value to test
+    * @param predicate the predicate
+    * @param nullable  True the value is able to be null, False it cannot be null
+    * @return the given value
     */
-   public static int checkPositionIndex(int index, int size, String message) {
-      if (size < 0) {
-         throw new IllegalArgumentException("Negative Size: " + size);
-      }
-      if (index < 0) {
-         throw new IndexOutOfBoundsException(
-            String.format("%s (%s) must be non negative", Strings.nullToEmpty(message), index));
-      }
-      if (index > size) {
-         throw new IndexOutOfBoundsException(String.format("%s (%s) must be less than (%s)",
-                                                           Strings.nullToEmpty(message), index, size));
-      }
-      return index;
-   }
-
-   /**
-    * Checks that the given index is in the  range <code>[0, size]</code>
-    *
-    * @param index the index to validate
-    * @param size  the size of the array, list, etc.
-    * @return the index
-    * @throws IndexOutOfBoundsException if index is negative or greater than size
-    * @throws IllegalArgumentException  if size is negative
-    */
-   public static int checkPositionIndex(int index, int size) {
-      return checkPositionIndex(index, size, "index");
-   }
-
-
-   /**
-    * Throws a <code>IllegalStateException</code> if the given boolean evaluates to false.
-    *
-    * @param evaluation the object to check
-    */
-   public static void checkState(boolean evaluation) {
-      if (!evaluation) {
-         throw new IllegalStateException();
-      }
-   }
-
-   /**
-    * Throws a <code>IllegalStateException</code> if the given boolean evaluates to false.
-    *
-    * @param evaluation the object to check
-    * @param message    the message to use in the <code>IllegalStateException</code>
-    */
-   public static void checkState(boolean evaluation, String message) {
-      if (!evaluation) {
-         if (message != null) {
-            throw new IllegalStateException(message);
-         } else {
-            throw new IllegalStateException();
-         }
-      }
-   }
-
-   public static void checkState(boolean evaluation, Supplier<String> messageSupplier) {
-      if (!evaluation) {
-         String message = messageSupplier == null ? null : messageSupplier.get();
-         if (message != null) {
-            throw new IllegalStateException(message);
-         } else {
-            throw new IllegalStateException();
-         }
-      }
+   public static <T> T validateArg(T value, Predicate<T> predicate, boolean nullable) {
+      return validate(value, predicate, IllegalArgumentException::new, nullable);
    }
 
 }//END OF Validation

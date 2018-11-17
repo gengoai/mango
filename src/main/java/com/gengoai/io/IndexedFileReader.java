@@ -60,6 +60,21 @@ public final class IndexedFileReader implements Serializable {
       return backingFile;
    }
 
+   private Map<String, Long> getIndex() {
+      if (index == null) {
+         synchronized (this) {
+            if (index == null) {
+               try {
+                  index = IndexedFile.loadIndexFor(backingFile);
+               } catch (IOException e) {
+                  throw new RuntimeException(e);
+               }
+            }
+         }
+      }
+      return index;
+   }
+
    /**
     * Reads the line from input associated with the given key
     *
@@ -68,8 +83,8 @@ public final class IndexedFileReader implements Serializable {
     * @throws IOException Something went wrong reading the file or the key is invalid
     */
    public String get(String key) throws IOException {
-      if (index.containsKey(key)) {
-         return readLineAt(index.get(key));
+      if (getIndex().containsKey(key)) {
+         return readLineAt(getIndex().get(key));
       }
       throw new IOException();
    }
@@ -81,7 +96,7 @@ public final class IndexedFileReader implements Serializable {
     * @return number of keys in the index
     */
    public int numberOfKeys() {
-      return index.size();
+      return getIndex().size();
    }
 
    /**
@@ -91,7 +106,7 @@ public final class IndexedFileReader implements Serializable {
     * @return True - the key is in the index, False otherwise
     */
    public boolean containsKey(String key) {
-      return index.containsKey(key);
+      return getIndex().containsKey(key);
    }
 
    /**
@@ -100,7 +115,7 @@ public final class IndexedFileReader implements Serializable {
     * @return the set of keys
     */
    public Set<String> keySet() {
-      return Collections.unmodifiableSet(index.keySet());
+      return Collections.unmodifiableSet(getIndex().keySet());
    }
 
 

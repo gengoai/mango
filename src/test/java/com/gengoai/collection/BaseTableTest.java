@@ -1,4 +1,4 @@
-package com.gengoai.collection.table;
+package com.gengoai.collection;
 
 import com.gengoai.collection.Maps;
 import com.gengoai.collection.Sets;

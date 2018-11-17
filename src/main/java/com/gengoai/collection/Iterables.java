@@ -280,16 +280,16 @@ public final class Iterables {
       }
 
       @Override
-      public Iterator<T> iterator() {
-         return Cast.cast(supplier.get());
-      }
-
-      @Override
       public boolean equals(Object o) {
          if (this == o) return true;
          if (!(o instanceof Iterable)) return false;
          Iterable<?> that = (Iterable<?>) o;
          return Objects.equals(supplier.get(), that);
+      }
+
+      @Override
+      public Iterator<T> iterator() {
+         return Cast.cast(supplier.get());
       }
 
       @Override

@@ -51,6 +51,11 @@ public class QuietIO {
       }
    }
 
+   /**
+    * Closes the <code>AutoCloseable</code>ignoring any exception
+    *
+    * @param closeable thing to close
+    */
    public static void closeQuietly(AutoCloseable closeable) {
       if (closeable == null) {
          return;

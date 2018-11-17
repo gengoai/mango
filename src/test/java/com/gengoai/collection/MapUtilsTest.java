@@ -19,42 +19,11 @@
  * under the License.
  */
 
-package com.gengoai.collection.map;
-
-import com.gengoai.collection.LRUMap;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
+package com.gengoai.collection;
 
 /**
  * @author David B. Bracewell
  */
-public class LRUMapTest {
+public class MapUtilsTest {
 
-  @Test
-  public void testCreate() throws Exception {
-    LRUMap<String, Double> map = LRUMap.create(3);
-    map.put("1", 2.0);
-    map.put("2", 2.0);
-    map.put("3", 2.0);
-
-    assertTrue(map.containsKey("1"));
-    assertTrue(map.containsKey("2"));
-    assertTrue(map.containsKey("3"));
-    assertEquals(map.get("1"), (Double) 2.0);
-    assertEquals(map.get("2"), (Double) 2.0);
-    assertEquals(map.get("3"), (Double) 2.0);
-
-
-    map.put("4", 2.0);
-    assertFalse(map.containsKey("1"));
-    assertEquals(map.get("4"), (Double) 2.0);
-
-    map = new LRUMap<>();
-    assertEquals(Integer.MAX_VALUE, map.maxSize());
-
-
-  }
-
-
-}
+}//END OF MapUtilsTest

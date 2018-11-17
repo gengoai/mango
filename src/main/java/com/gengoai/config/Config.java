@@ -66,7 +66,7 @@ import java.util.stream.Stream;
  */
 public final class Config implements Serializable, JsonSerializable {
    /**
-    * The constant CONF_EXTENSION.
+    * File extensions for config files.
     */
    public static final String CONF_EXTENSION = ".conf";
    private static final String BEAN_PROPERTY = "@{";
@@ -229,21 +229,15 @@ public final class Config implements Serializable, JsonSerializable {
    }
 
    private static Val getBean(String value) {
-      List<String> parts = Strings.split(value, ',');
-      List<Object> beans = new ArrayList<>();
-      for (String beanName : parts) {
-         Matcher m = BEAN_SUBSTITUTION.matcher(beanName);
-         if (m.find()) {
-            try {
-               beans.add(BeanUtils.getNamedBean(m.group(1), Object.class));
-            } catch (ReflectionException e) {
-               throw new RuntimeException(e);
-            }
-         } else {
-            beans.add(beanName);
+      Matcher m = BEAN_SUBSTITUTION.matcher(value);
+      if (m.find()) {
+         try {
+            return Val.of(BeanUtils.getNamedBean(m.group(1), Object.class));
+         } catch (ReflectionException e) {
+            throw new RuntimeException(e);
          }
       }
-      return beans.size() == 1 ? Val.of(beans.get(0)) : Val.of(beans);
+      return Val.NULL;
    }
 
    private static String getCallingClass() {

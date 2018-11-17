@@ -10,8 +10,7 @@ import com.gengoai.function.SerializablePredicate;
 import java.util.*;
 import java.util.stream.IntStream;
 
-import static com.gengoai.Validation.notNull;
-import static com.gengoai.Validation.validate;
+import static com.gengoai.Validation.*;
 import static com.gengoai.tuple.Tuples.$;
 
 /**
@@ -206,11 +205,10 @@ public final class Iterators {
                                                  final int partitionSize
                                                 ) {
       return new PartitionedIterator<>(notNull(iterator),
-                                       validate(partitionSize,
-                                                size -> size > 0,
-                                                "Partition size must be greater than zero.",
-                                                IllegalArgumentException::new,
-                                                false),
+                                       validateArg(partitionSize,
+                                                   size -> size > 0,
+                                                   "Partition size must be greater than zero.",
+                                                   false),
                                        false);
    }
 
@@ -229,11 +227,10 @@ public final class Iterators {
                                                  boolean pad
                                                 ) {
       return new PartitionedIterator<>(notNull(iterator),
-                                       validate(partitionSize,
-                                                size -> size > 0,
-                                                "Partition size must be greater than zero.",
-                                                IllegalArgumentException::new,
-                                                false),
+                                       validateArg(partitionSize,
+                                                   size -> size > 0,
+                                                   "Partition size must be greater than zero.",
+                                                   false),
                                        pad);
    }
 
@@ -398,7 +395,7 @@ public final class Iterators {
 
       @Override
       public void remove() {
-         validate(canRemove, IllegalStateException::new, true);
+         validate(canRemove, IllegalStateException::new);
          backing.remove();
       }
    }
@@ -456,7 +453,7 @@ public final class Iterators {
 
       @Override
       public E next() {
-         validate(advance(), NoSuchElementException::new, null);
+         validate(advance(), NoSuchElementException::new);
          return current.next();
       }
 
@@ -494,7 +491,7 @@ public final class Iterators {
 
       @Override
       public E next() {
-         validate(advance(), NoSuchElementException::new, null);
+         validate(advance(), NoSuchElementException::new);
          return current.next();
       }
 

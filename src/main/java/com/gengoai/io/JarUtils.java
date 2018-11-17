@@ -49,6 +49,27 @@ public class JarUtils {
    private static final List<Resource> classpathResources = new ArrayList<>();
 
    /**
+    * Gets classpath resources.
+    *
+    * @return A list of all resources on the classpath
+    */
+   public static List<Resource> getClasspathResources() {
+      synchronized (classpathResources) {
+         if (classpathResources.isEmpty()) {
+            for (String jar : SystemInfo.JAVA_CLASS_PATH.split(SystemInfo.PATH_SEPARATOR)) {
+               File file = new File(jar);
+               if (file.isDirectory()) {
+                  classpathResources.addAll(new FileResource(file).getChildren(true));
+               } else {
+                  classpathResources.addAll(getJarContents(Resources.fromFile(jar), v -> true));
+               }
+            }
+         }
+         return Collections.unmodifiableList(classpathResources);
+      }
+   }
+
+   /**
     * Gets the jar file that a class is stored in.
     *
     * @param clazz The class whose associated jar file is descried.
@@ -57,6 +78,15 @@ public class JarUtils {
    public static Resource getJar(Class<?> clazz) {
       URL fileURL = clazz.getProtectionDomain().getCodeSource().getLocation();
       return new FileResource(fileURL.getFile());
+   }
+
+   private static List<Resource> getJarContents(Resource resource, Predicate<? super String> stringMatcher) {
+      if (resource.isDirectory()) {
+         return getResourcesFromDirectory(resource, stringMatcher);
+      } else {
+         return getResourcesFromJar(resource, stringMatcher);
+      }
+
    }
 
    /**
@@ -99,36 +129,6 @@ public class JarUtils {
          QuietIO.closeQuietly(jf);
       }
       return resources;
-   }
-
-   private static List<Resource> getJarContents(Resource resource, Predicate<? super String> stringMatcher) {
-      if (resource.isDirectory()) {
-         return getResourcesFromDirectory(resource, stringMatcher);
-      } else {
-         return getResourcesFromJar(resource, stringMatcher);
-      }
-
-   }
-
-   /**
-    * Gets classpath resources.
-    *
-    * @return A list of all resources on the classpath
-    */
-   public static List<Resource> getClasspathResources() {
-      synchronized (classpathResources) {
-         if (classpathResources.isEmpty()) {
-            for (String jar : SystemInfo.JAVA_CLASS_PATH.split(SystemInfo.PATH_SEPARATOR)) {
-               File file = new File(jar);
-               if (file.isDirectory()) {
-                  classpathResources.addAll(new FileResource(file).getChildren(true));
-               } else {
-                  classpathResources.addAll(getJarContents(Resources.fromFile(jar), v -> true));
-               }
-            }
-         }
-         return Collections.unmodifiableList(classpathResources);
-      }
    }
 
 

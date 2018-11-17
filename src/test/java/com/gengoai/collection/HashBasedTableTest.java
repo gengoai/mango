@@ -1,6 +1,4 @@
-package com.gengoai.collection.table;
-
-import com.gengoai.collection.HashBasedTable;
+package com.gengoai.collection;
 
 /**
  * @author David B. Bracewell

@@ -40,7 +40,7 @@ import java.util.Set;
  *
  * @author David B. Bracewell
  */
-@SupportedAnnotationTypes("com.davidbracewell.annotation.Preload")
+@SupportedAnnotationTypes("com.gengoai.annotation.Preload")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @MetaInfServices(Processor.class)
 public class PreloadProcessor extends AbstractProcessor {

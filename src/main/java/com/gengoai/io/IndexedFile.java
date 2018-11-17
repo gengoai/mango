@@ -27,61 +27,6 @@ public final class IndexedFile {
    }
 
    /**
-    * Gets the File location of the index for the given file.
-    *
-    * @param file the file whose index we want
-    * @return the file containing the index
-    */
-   public static File indexFileFor(File file) {
-      return new File(file.getAbsolutePath() + INDEX_EXT);
-   }
-
-
-   /**
-    * Creates an {@link IndexedFileWriter} for the given resource
-    *
-    * @param resource the resource (file) to write to and for which an index will be created
-    * @return the indexed file writer
-    * @throws IOException Something went wrong opening the file
-    */
-   public static IndexedFileWriter writer(Resource resource) throws IOException {
-      return new IndexedFileWriter(resource.asFile().orElseThrow(IOException::new));
-   }
-
-   /**
-    * Creates an {@link IndexedFileWriter} for the given resource
-    *
-    * @param output the file to write to and for which an index will be created
-    * @return the indexed file writer
-    * @throws IOException Something went wrong opening the file
-    */
-   public static IndexedFileWriter writer(File output) throws IOException {
-      return new IndexedFileWriter(output);
-   }
-
-   /**
-    * Creates an {@link IndexedFileReader} for the given resource
-    *
-    * @param file the indexed resource to read
-    * @return the indexed file reader
-    * @throws IOException tSomething went wrong opening the file
-    */
-   public static IndexedFileReader reader(File file) throws IOException {
-      return new IndexedFileReader(file);
-   }
-
-   /**
-    * Creates an {@link IndexedFileReader} for the given resource
-    *
-    * @param file the indexed resource to read
-    * @return the indexed file reader
-    * @throws IOException tSomething went wrong opening the file
-    */
-   public static IndexedFileReader reader(Resource file) throws IOException {
-      return new IndexedFileReader(file.asFile().orElseThrow(IOException::new));
-   }
-
-   /**
     * Create index open object long hash map.
     *
     * @param rawFile   the raw file
@@ -137,17 +82,70 @@ public final class IndexedFile {
       return index;
    }
 
+   /**
+    * Gets the File location of the index for the given file.
+    *
+    * @param file the file whose index we want
+    * @return the file containing the index
+    */
+   public static File indexFileFor(File file) {
+      return new File(file.getAbsolutePath() + INDEX_EXT);
+   }
 
    /**
-    * Load index for map.
+    * Loads in the index associated with the the given file.
     *
-    * @param rawFile the raw file
-    * @return the map
-    * @throws IOException the io exception
+    * @param rawFile the raw file whose index we want to read
+    * @return the map of keys to file locations
+    * @throws IOException Something went wrong reading in the index file
     */
    public static Map<String, Long> loadIndexFor(File rawFile) throws IOException {
       File indexFile = indexFileFor(rawFile);
       return Json.parse(Resources.fromFile(indexFile)).getAsMap(Long.class);
+   }
+
+   /**
+    * Creates an {@link IndexedFileReader} for the given resource
+    *
+    * @param file the indexed resource to read
+    * @return the indexed file reader
+    * @throws IOException tSomething went wrong opening the file
+    */
+   public static IndexedFileReader reader(Resource file) throws IOException {
+      return new IndexedFileReader(file.asFile().orElseThrow(IOException::new));
+   }
+
+   /**
+    * Creates an {@link IndexedFileReader} for the given resource
+    *
+    * @param file the indexed resource to read
+    * @return the indexed file reader
+    * @throws IOException tSomething went wrong opening the file
+    */
+   public static IndexedFileReader reader(File file) throws IOException {
+      return new IndexedFileReader(file);
+   }
+
+   /**
+    * Creates an {@link IndexedFileWriter} for the given resource
+    *
+    * @param output the file to write to and for which an index will be created
+    * @return the indexed file writer
+    * @throws IOException Something went wrong opening the file
+    */
+   public static IndexedFileWriter writer(File output) throws IOException {
+      return new IndexedFileWriter(output);
+   }
+
+   /**
+    * Creates an {@link IndexedFileWriter} for the given resource
+    *
+    * @param resource the resource (file) to write to and for which an index will be created
+    * @return the indexed file writer
+    * @throws IOException Something went wrong opening the file
+    */
+   public static IndexedFileWriter writer(Resource resource) throws IOException {
+      return new IndexedFileWriter(resource.asFile().orElseThrow(IOException::new));
    }
 
 }//END OF IndexedFile
