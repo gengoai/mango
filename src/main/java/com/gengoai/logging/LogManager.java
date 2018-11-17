@@ -60,39 +60,6 @@ public final class LogManager {
    }
 
    /**
-    * Gets the log manager instance
-    *
-    * @return The log manager instance
-    */
-   public static LogManager getLogManager() {
-      return INSTANCE;
-   }
-
-
-   /**
-    * Sets the formatter to use for all handlers.
-    *
-    * @param formatter the formatter to use
-    */
-   public synchronized static void setFormatter(Formatter formatter) {
-      java.util.logging.Logger root = java.util.logging.LogManager.getLogManager().getLogger(Strings.EMPTY);
-      for (Handler h : root.getHandlers()) {
-         h.setFormatter(formatter);
-      }
-   }
-
-   /**
-    * Clears all handlers from the logger
-    */
-   public synchronized static void clearHandlers() {
-      java.util.logging.Logger root = java.util.logging.LogManager.getLogManager().getLogger(Strings.EMPTY);
-      Handler[] handlers = root.getHandlers();
-      for (Handler h : handlers) {
-         root.removeHandler(h);
-      }
-   }
-
-   /**
     * Adds a file handler that writes to the location specified in <code>com.gengoai.logging.dir</code> or if not
     * set <code>USER_HOME/logs/</code>. The filenames are in the form of <code>basename%g</code> where %g is the rotated
     * file number. Max file size is 100MB and 50 files will be used.
@@ -116,16 +83,45 @@ public final class LogManager {
    }
 
    /**
-    * Gets the logger for the given class.
-    *
-    * @param clazz The class whose logger we want
-    * @return A logger associated with the given class
+    * Clears all handlers from the logger
     */
-   public Logger getLogger(Class<?> clazz) {
-      if (clazz == null) {
-         return getGlobalLogger();
+   public synchronized static void clearHandlers() {
+      java.util.logging.Logger root = java.util.logging.LogManager.getLogManager().getLogger(Strings.EMPTY);
+      Handler[] handlers = root.getHandlers();
+      for (Handler h : handlers) {
+         root.removeHandler(h);
       }
-      return getLogger(clazz.getName());
+   }
+
+   /**
+    * Gets the log manager instance
+    *
+    * @return The log manager instance
+    */
+   public static LogManager getLogManager() {
+      return INSTANCE;
+   }
+
+   /**
+    * Sets the formatter to use for all handlers.
+    *
+    * @param formatter the formatter to use
+    */
+   public synchronized static void setFormatter(Formatter formatter) {
+      java.util.logging.Logger root = java.util.logging.LogManager.getLogManager().getLogger(Strings.EMPTY);
+      for (Handler h : root.getHandlers()) {
+         h.setFormatter(formatter);
+      }
+   }
+
+   /**
+    * Gets the global Logger
+    *
+    * @return The global logger
+    */
+   public Logger getGlobalLogger() {
+      return new Logger(java.util.logging.Logger
+                           .getLogger(java.util.logging.Logger.GLOBAL_LOGGER_NAME));
    }
 
    private Logger getLogger(String name) {
@@ -138,13 +134,16 @@ public final class LogManager {
    }
 
    /**
-    * Gets the global Logger
+    * Gets the logger for the given class.
     *
-    * @return The global logger
+    * @param clazz The class whose logger we want
+    * @return A logger associated with the given class
     */
-   public Logger getGlobalLogger() {
-      return new Logger(java.util.logging.Logger
-                           .getLogger(java.util.logging.Logger.GLOBAL_LOGGER_NAME));
+   public Logger getLogger(Class<?> clazz) {
+      if (clazz == null) {
+         return getGlobalLogger();
+      }
+      return getLogger(clazz.getName());
    }
 
    /**

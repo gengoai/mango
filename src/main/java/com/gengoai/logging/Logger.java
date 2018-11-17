@@ -38,25 +38,6 @@ import java.util.logging.LogRecord;
  */
 public final class Logger {
 
-   /**
-    * Gets the global Logger
-    *
-    * @return The global logger
-    */
-   public static Logger getGlobalLogger() {
-      return LogManager.getLogManager().getGlobalLogger();
-   }
-
-   /**
-    * Gets the logger for the given class.
-    *
-    * @param clazz The class whose logger we want
-    * @return A logger associated with the given class
-    */
-   public static Logger getLogger(Class<?> clazz) {
-      return LogManager.getLogManager().getLogger(clazz);
-   }
-
    // The underlying logger
    private java.util.logging.Logger logger;
 
@@ -76,34 +57,22 @@ public final class Logger {
    }
 
    /**
-    * @return The name of the logger
-    */
-   public String getName() {
-      return logger.getName();
-   }
-
-   /**
-    * Determines if a given level is loggable by this logger or not
+    * Gets the global Logger
     *
-    * @param level The level
-    * @return True if it will log, false otherwise
+    * @return The global logger
     */
-   public boolean isLoggable(Level level) {
-      return logger.isLoggable(level);
+   public static Logger getGlobalLogger() {
+      return LogManager.getLogManager().getGlobalLogger();
    }
 
    /**
-    * @return The level of the logger
+    * Gets the logger for the given class.
+    *
+    * @param clazz The class whose logger we want
+    * @return A logger associated with the given class
     */
-   public Level getLevel() {
-      return logger.getLevel();
-   }
-
-   /**
-    * @param level The level to set
-    */
-   public void setLevel(Level level) {
-      logger.setLevel(level);
+   public static Logger getLogger(Class<?> clazz) {
+      return LogManager.getLogManager().getLogger(clazz);
    }
 
    /**
@@ -164,6 +133,27 @@ public final class Logger {
    }
 
    /**
+    * @return The level of the logger
+    */
+   public Level getLevel() {
+      return logger.getLevel();
+   }
+
+   /**
+    * @param level The level to set
+    */
+   public void setLevel(Level level) {
+      logger.setLevel(level);
+   }
+
+   /**
+    * @return The name of the logger
+    */
+   public String getName() {
+      return logger.getName();
+   }
+
+   /**
     * Logs a message at {@link java.util.logging.Level#INFO}.
     *
     * @param message The message accompanying the log
@@ -180,6 +170,16 @@ public final class Logger {
     */
    public void info(Throwable t) {
       log(Level.INFO, Strings.EMPTY, t);
+   }
+
+   /**
+    * Determines if a given level is loggable by this logger or not
+    *
+    * @param level The level
+    * @return True if it will log, false otherwise
+    */
+   public boolean isLoggable(Level level) {
+      return logger.isLoggable(level);
    }
 
    /**

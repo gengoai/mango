@@ -66,6 +66,8 @@ public class LogFormatter extends Formatter {
       msg.append('[')
          .append(dateFormatter.format(date))
          .append("] [")
+         .append(arg0.getLoggerName())
+         .append("] [")
          .append(arg0.getLevel())
          .append("] ");
 
