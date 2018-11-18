@@ -41,11 +41,11 @@ import java.util.stream.Stream;
  * @author David B. Bracewell
  */
 public final class LocalStreamingContext extends StreamingContext {
-   private static final long serialVersionUID = 1L;
    /**
     * The singleton instance of the context
     */
    public static final LocalStreamingContext INSTANCE = new LocalStreamingContext();
+   private static final long serialVersionUID = 1L;
 
    @Override
    public void close() {
@@ -83,11 +83,6 @@ public final class LocalStreamingContext extends StreamingContext {
    @Override
    public <T> MStream<T> empty() {
       return new ReusableLocalStream<>(new ArrayList<>());
-   }
-
-   @Override
-   public <E> MAccumulator<E, Set<E>> setAccumulator(String name) {
-      return new LocalMSetAccumulator<>(name);
    }
 
    @Override
@@ -129,6 +124,11 @@ public final class LocalStreamingContext extends StreamingContext {
                                         .boxed()
                                         .parallel()
       );
+   }
+
+   @Override
+   public <E> MAccumulator<E, Set<E>> setAccumulator(String name) {
+      return new LocalMSetAccumulator<>(name);
    }
 
    @Override

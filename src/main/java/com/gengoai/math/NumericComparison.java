@@ -1,11 +1,13 @@
 package com.gengoai.math;
 
+import com.gengoai.function.SerializableBiFunction;
+
 /**
  * Methods for comparing numeric (double) values.
  *
  * @author David B. Bracewell
  */
-public enum NumericComparison {
+public enum NumericComparison implements SerializableBiFunction<Number, Number, Boolean> {
    /**
     * Is <code>beingCompared</code> greater than <code>comparedAgainst</code>
     */
@@ -61,6 +63,11 @@ public enum NumericComparison {
       }
    };
 
+   @Override
+   public Boolean apply(Number number, Number number2) {
+      return compare(number.doubleValue(), number2.doubleValue());
+   }
+
    /**
     * Compares two given numeric values
     *
@@ -69,5 +76,6 @@ public enum NumericComparison {
     * @return true if the inequality holds
     */
    public abstract boolean compare(double beingCompared, double comparedAgainst);
+
 
 }// END OF Inequality

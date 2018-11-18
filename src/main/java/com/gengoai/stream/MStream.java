@@ -167,6 +167,19 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
    <U> MPairStream<U, Iterable<T>> groupBy(SerializableFunction<? super T, ? extends U> function);
 
    /**
+    * Returns a new MStream containing the intersection of elements in this stream and the argument stream.
+    *
+    * @param other Stream to perform intersection with
+    * @return the new stream
+    */
+   MStream<T> intersection(MStream<T> other);
+
+   /**
+    * @return True if the stream is distributed
+    */
+   boolean isDistributed();
+
+   /**
     * Determines if the stream is empty or not
     *
     * @return True if empty, False otherwise
@@ -397,17 +410,11 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
    List<T> take(int n);
 
    /**
-    * @return True if the stream is distributed
+    * @return A distributed version of the stream
     */
-   boolean isDistributed();
-
-   /**
-    * Returns a new MStream containing the intersection of elements in this stream and the argument stream.
-    *
-    * @param other Stream to perform intersection with
-    * @return the new stream
-    */
-   MStream<T> intersection(MStream<T> other);
+   default SparkStream<T> toDistributedStream() {
+      return new SparkStream<>(this);
+   }
 
    /**
     * Unions this stream with another.
@@ -442,12 +449,5 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
     * @return the new pair stream
     */
    MPairStream<T, Long> zipWithIndex();
-
-   /**
-    * @return A distributed version of the stream
-    */
-   default SparkStream<T> toDistributedStream() {
-      return new SparkStream<>(this);
-   }
 
 }//END OF MStream

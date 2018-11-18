@@ -116,7 +116,7 @@ public final class Json {
 
    /**
     * Parses the json in the given resource creating an object of the given class type. This method is {@link
-    * JsonSerializable} aware and is useful for deserializing objects from json format.
+    * JsonSerializable}* aware and is useful for deserializing objects from json format.
     *
     * @param <T>      the class type parameter
     * @param resource the resource to read from
@@ -130,7 +130,7 @@ public final class Json {
 
    /**
     * Parses the json in the given json string creating an object of the given class type. This method is {@link
-    * JsonSerializable} aware and is useful for deserializing objects from json format.
+    * JsonSerializable}* aware and is useful for deserializing objects from json format.
     *
     * @param <T>   the class type parameter
     * @param json  the json to read
@@ -165,6 +165,15 @@ public final class Json {
       return parse(Resources.fromString(json));
    }
 
+   /**
+    * Parse the json in the given string returning the given type.
+    *
+    * @param <T>  the type parameter
+    * @param json the json
+    * @param type the type
+    * @return the parsed object
+    * @throws IOException Something went wrong parsing the json.
+    */
    public static <T> T parse(String json, Type type) throws IOException {
       return parse(Resources.fromString(json)).getAs(type);
    }
@@ -184,6 +193,15 @@ public final class Json {
    }
 
 
+   /**
+    * Parse t.
+    *
+    * @param <T>  the type parameter
+    * @param json the json
+    * @param type the type
+    * @return the t
+    * @throws IOException the io exception
+    */
    public static <T> T parse(Resource json, Type type) throws IOException {
       return parse(json).getAs(type);
    }
