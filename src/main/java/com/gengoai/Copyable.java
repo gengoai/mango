@@ -21,6 +21,10 @@
 
 package com.gengoai;
 
+import com.gengoai.io.resource.ByteArrayResource;
+
+import java.io.Serializable;
+
 /**
  * <p> The Copyable interface defines a method for returning a copy of an object. Individual implementations are left
  * to determine if the copy is deep or shallow. However, a preference is for deep copies.</p>
@@ -31,6 +35,14 @@ package com.gengoai;
  * @author David B. Bracewell
  */
 public interface Copyable<E> {
+
+   static <T extends Serializable> T deepCopy(T object) {
+      try {
+         return new ByteArrayResource().writeObject(object).readObject();
+      } catch (Exception e) {
+         throw new RuntimeException(e);
+      }
+   }
 
    /**
     * <p> Makes a copy of this object. </p>

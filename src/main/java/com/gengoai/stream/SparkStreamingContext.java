@@ -26,12 +26,13 @@ import com.gengoai.config.Config;
 import com.gengoai.conversion.Cast;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.stream.accumulator.*;
+import com.gengoai.string.StringMatcher;
 import com.gengoai.string.Strings;
-import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
+import org.apache.spark.sql.SparkSession;
 import org.apache.spark.util.CollectionAccumulator;
 import scala.Option;
 
@@ -64,6 +65,7 @@ public final class SparkStreamingContext extends StreamingContext {
    public static final String SPARK_MASTER = "spark.master";
 
    public static volatile JavaSparkContext context;
+   public static volatile SparkSession sparkSession;
 
    private volatile Broadcast<Config> configBroadcast;
 
@@ -98,6 +100,11 @@ public final class SparkStreamingContext extends StreamingContext {
       return contextOf(stream.getRDD().context());
    }
 
+   @Override
+   public boolean isDistributed() {
+      return true;
+   }
+
    private static SparkStreamingContext contextOf(SparkContext sparkContext) {
       if (context == null || context.sc().isStopped()) {
          synchronized (SparkStreamingContext.class) {
@@ -109,16 +116,29 @@ public final class SparkStreamingContext extends StreamingContext {
       return SparkStreamingContext.INSTANCE;
    }
 
+   private static SparkSession getSparkSession() {
+      final String sparkConfig = "spark.config.";
+      if (sparkSession == null || sparkSession.sparkContext().isStopped()) {
+         synchronized (SparkStreamingContext.class) {
+            if (sparkSession == null || sparkSession.sparkContext().isStopped()) {
+               SparkSession.Builder builder = SparkSession.builder()
+                                                          .master(Config.get(SPARK_MASTER).asString("local[*]"))
+                                                          .appName(Config.get(SPARK_APPNAME)
+                                                                         .asString(Strings.randomHexString(20)));
+               Config.getPropertiesMatching(StringMatcher.startsWith(sparkConfig))
+                     .forEach(s -> builder.config(s.substring(sparkConfig.length()), Config.get(s).asString()));
+               sparkSession = builder.getOrCreate();
+            }
+         }
+      }
+      return sparkSession;
+   }
+
    private static JavaSparkContext getSparkContext() {
       if (context == null || context.sc().isStopped()) {
          synchronized (SparkStreamingContext.class) {
             if (context == null || context.sc().isStopped()) {
-               SparkConf conf = new SparkConf()
-                                   .setAppName(Config.get(SPARK_APPNAME).asString(Strings.randomHexString(20)));
-               if (Config.hasProperty(SPARK_MASTER)) {
-                  conf = conf.setMaster(Config.get(SPARK_MASTER).asString("local[*]"));
-               }
-               context = new JavaSparkContext(conf);
+               context = new JavaSparkContext(getSparkSession().sparkContext());
             }
          }
       }
@@ -239,6 +259,11 @@ public final class SparkStreamingContext extends StreamingContext {
    @Override
    public SparkStream<Integer> range(int startInclusive, int endExclusive) {
       return new SparkStream<>(IntStream.range(startInclusive, endExclusive).boxed().collect(Collectors.toList()));
+   }
+
+
+   public SparkSession sparkSession() {
+      return getSparkSession();
    }
 
    /**

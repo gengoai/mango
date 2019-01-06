@@ -148,7 +148,7 @@ public class JsonEntry {
          return Cast.<JsonSerializable>as(v).toJson().getElement();
       } else if (v instanceof Map) {
          return mapToElement(Cast.<Map<?, ?>>as(v));
-      } else if (v instanceof Iterable) {
+      } else if (v instanceof Collection) {
          return iterableToElement(Cast.<Iterable<?>>as(v));
       } else if (v instanceof Iterator) {
          return iterableToElement(Iterables.asIterable(Cast.as(v)));

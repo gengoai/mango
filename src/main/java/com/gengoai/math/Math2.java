@@ -24,6 +24,7 @@ package com.gengoai.math;
 import com.gengoai.collection.Streams;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
@@ -46,6 +47,62 @@ public final class Math2 {
     * The constant LOG_2.
     */
    public static final double LOG_2 = Math.log(2);
+
+
+   /**
+    * Calculates the AUC (Area Under the Curve)
+    *
+    * @return the AUC
+    */
+   public static double auc(double[] x, double[] y) {
+      Arrays.sort(x);
+      Arrays.sort(y);
+
+      int n0 = x.length;
+      int n1 = y.length;
+
+      int i0 = 0, i1 = 0;
+      int rank = 1;
+      double sum = 0d;
+
+      while (i0 < n0 && i1 < n1) {
+         double v0 = x[i0];
+         double v1 = y[i1];
+
+         if (v0 < v1) {
+            i0++;
+            rank++;
+         } else if (v1 < v0) {
+            i1++;
+            sum += rank;
+            rank++;
+         } else {
+            int k0 = 0;
+            while (i0 < n0 && x[i0] == v0) {
+               k0++;
+               i0++;
+            }
+
+
+            int k1 = 0;
+            while (i1 < n1 && y[i1] == v0) {
+               k1++;
+               i1++;
+            }
+
+
+            sum += (rank + (k0 + k1 - 1) / 2.0) * k1;
+            rank += k0 + k1;
+         }
+      }
+
+      if (i1 < n1) {
+         sum += (rank + (n1 - i1 - 1) / 2.0) * (n1 - i1);
+      }
+
+
+      return (sum / n1 - (n1 + 1.0) / 2.0) / n0;
+   }
 
 
    /**

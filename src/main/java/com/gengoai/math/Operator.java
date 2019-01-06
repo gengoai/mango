@@ -43,6 +43,18 @@ public final class Operator {
    }
 
    /**
+    * Adds two int (useful as a method reference)
+    *
+    * @param v1 value 1
+    * @param v2 value 2
+    * @return the sum of value 1 and value 2
+    */
+   public static long add(long v1, long v2) {
+      return v1 + v2;
+   }
+
+
+   /**
     * Divides two float (useful as a method reference)
     *
     * @param v1 value 1

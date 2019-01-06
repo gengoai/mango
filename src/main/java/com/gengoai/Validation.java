@@ -102,7 +102,7 @@ public final class Validation {
          throw new IndexOutOfBoundsException(
             String.format("%s (%s) must be non negative", Strings.nullToEmpty(message.get()), index));
       }
-      if (index > size) {
+      if (index >= size) {
          throw new IndexOutOfBoundsException(String.format("%s (%s) must be less than (%s)",
                                                            Strings.nullToEmpty(message.get()), index, size));
       }

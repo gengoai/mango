@@ -92,6 +92,14 @@ public interface Table<R, C, V> extends JsonSerializable {
     */
    V get(R row, C column);
 
+
+   default V getOrDefault(R row, C column, V defaultValue){
+      if(contains(row,column)){
+         return get(row, column);
+      }
+      return defaultValue;
+   }
+
    /**
     * Sets the value of the cell at the given row and column
     *

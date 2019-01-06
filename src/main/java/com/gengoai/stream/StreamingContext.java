@@ -119,6 +119,16 @@ public abstract class StreamingContext implements Serializable, AutoCloseable {
       return doubleAccumulator(initialValue, null);
    }
 
+
+   /**
+    * Checks if context is a distributed context or not.
+    *
+    * @return True if distributed, False if not.
+    */
+   public boolean isDistributed() {
+      return false;
+   }
+
    /**
     * Creates a new double accumulator with the given initial value.
     *

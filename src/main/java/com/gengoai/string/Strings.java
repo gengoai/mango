@@ -56,6 +56,20 @@ public final class Strings {
    }
 
 
+   public static String blankToNull(String string) {
+      return Strings.isNullOrBlank(string) ? null : string;
+   }
+
+   public static String appendIfNotPresent(String string, String suffix) {
+      if (string == null) {
+         return null;
+      }
+      if (string.endsWith(suffix)) {
+         return string;
+      }
+      return string + suffix;
+   }
+
    /**
     * Converts null values into an empty string
     *

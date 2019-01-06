@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
@@ -90,6 +91,10 @@ public interface MultiCounter<K, V> extends JsonSerializable {
     */
    static <K, V> MultiCounter<K, V> fromJson(JsonEntry entry, Type... types) {
       return fromJson(MultiCounters.newMultiCounter(), entry, types);
+   }
+
+   default double setIfAbsent(K key1, V key2, BiFunction<K, V, Double> function) {
+      return get(key1).asMap().computeIfAbsent(key2, v -> function.apply(key1, v));
    }
 
    /**

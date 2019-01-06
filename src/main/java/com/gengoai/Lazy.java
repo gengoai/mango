@@ -2,8 +2,6 @@ package com.gengoai;
 
 import com.gengoai.function.SerializableSupplier;
 
-import java.io.Serializable;
-
 import static com.gengoai.Validation.notNull;
 
 /**
@@ -24,7 +22,7 @@ import static com.gengoai.Validation.notNull;
  * @param <T> the type parameter
  * @author David B. Bracewell
  */
-public final class Lazy<T> implements Serializable {
+public final class Lazy<T> implements SerializableSupplier<T> {
    private static final long serialVersionUID = 1L;
    private volatile transient T object;
    private volatile SerializableSupplier<? extends T> supplier;
@@ -38,11 +36,7 @@ public final class Lazy<T> implements Serializable {
       this.supplier = notNull(supplier);
    }
 
-   /**
-    * <p>Gets or creates the object as needed.</p>
-    *
-    * @return the object wrapped by Lazy
-    */
+   @Override
    public T get() {
       T value = object;
       if (value == null) {

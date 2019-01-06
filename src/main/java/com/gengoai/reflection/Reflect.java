@@ -32,7 +32,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -446,7 +445,7 @@ public final class Reflect {
             isAccessible = field.isAccessible();
             field.setAccessible(accessAll);
          } else {
-            throw new NoSuchElementException();
+            throw new ReflectionException(new NoSuchFieldException());
          }
          value = convertValueType(value, field.getType());
          field.set(object, value);
