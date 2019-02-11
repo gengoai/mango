@@ -24,17 +24,18 @@ package com.gengoai.collection;
 import com.gengoai.conversion.Cast;
 import com.gengoai.io.CharsetDetectingReader;
 import com.gengoai.io.QuietIO;
-import com.gengoai.tuple.Tuple2;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static com.gengoai.Validation.notNull;
+import static com.gengoai.tuple.Tuples.$;
 
 
 /**
@@ -170,8 +171,20 @@ public final class Streams {
     * @param stream1 the first stream * @param stream2 the second stream
     * @return the zipped stream
     */
-   public static <T, U> Stream<Map.Entry<T, U>> zip(final Stream<? extends T> stream1, final Stream<? extends U> stream2) {
-      return asStream(Iterators.zip(notNull(stream1).iterator(), notNull(stream2).iterator()));
+   public static <T, U> Stream<Map.Entry<T, U>> zip(final Stream<? extends T> stream1,
+                                                    final Stream<? extends U> stream2
+                                                   ) {
+      final Spliterator<? extends T> s1 = stream1.spliterator();
+      final Spliterator<? extends U> s2 = stream2.spliterator();
+      return StreamSupport.stream(
+         new Spliterators.AbstractSpliterator<Map.Entry<T, U>>(Long.min(s1.estimateSize(), s2.estimateSize()),
+                                                               s1.characteristics() & s2.characteristics()) {
+
+            @Override
+            public boolean tryAdvance(Consumer<? super Map.Entry<T, U>> consumer) {
+               return s1.tryAdvance(t -> s2.tryAdvance(u -> consumer.accept($(t, u))));
+            }
+         }, false);
    }
 
    /**
@@ -181,9 +194,17 @@ public final class Streams {
     * @param stream the stream
     * @return the stream
     */
-   public static <T> Stream<Map.Entry<T, Integer>> zipWithIndex(Stream<T> stream) {
-      final AtomicInteger integer = new AtomicInteger();
-      return notNull(stream).map(t -> new Tuple2<>(t, integer.getAndIncrement()));
+   public static <T> Stream<Map.Entry<T, Long>> zipWithIndex(Stream<T> stream) {
+      final Spliterator<T> backing = stream.spliterator();
+      return StreamSupport.stream(
+         new Spliterators.AbstractSpliterator<Map.Entry<T, Long>>(backing.estimateSize(), backing.characteristics()) {
+            final Spliterator<Long> indexer = LongStream.range(0, Long.MAX_VALUE).spliterator();
+
+            @Override
+            public boolean tryAdvance(Consumer<? super Map.Entry<T, Long>> consumer) {
+               return backing.tryAdvance(t -> indexer.tryAdvance(l -> consumer.accept($(t, l))));
+            }
+         }, false);
    }
 
    /**
@@ -233,6 +254,42 @@ public final class Streams {
    public static <T> Stream<T> difference(Collection<? extends T> c1, Collection<? extends T> c2) {
       notNull(c2);
       return Cast.as(notNull(c1).stream().filter(v -> !c2.contains(v)));
+   }
+
+
+   public static <T> Stream<Stream<T>>  partition(Stream<T> stream, long partitionSize) {
+      final Spliterator<T> backing = stream.spliterator();
+      final long expSize = backing.estimateSize() == Long.MAX_VALUE ? Long.MAX_VALUE
+                                                                    : backing.estimateSize() / partitionSize;
+      return StreamSupport.stream(new Spliterators.AbstractSpliterator<Stream<T>>(expSize, backing.characteristics()) {
+         private Stream.Builder<T> builder = Stream.builder();
+         private boolean firstPartition = true;
+
+         @Override
+         public boolean tryAdvance(Consumer<? super Stream<T>> consumer) {
+            boolean hasMore = true;
+            if (firstPartition) {
+               hasMore = backing.tryAdvance(builder::add);
+               firstPartition = false;
+            }
+            if (!hasMore) {
+               consumer.accept(builder.build());
+               return false;
+            }
+
+            for (long i = 1; i < partitionSize && hasMore; i++) {
+               hasMore = backing.tryAdvance(builder::add);
+            }
+            consumer.accept(builder.build());
+
+            if (hasMore) {
+               builder = Stream.builder();
+               hasMore = backing.tryAdvance(builder::add);
+            }
+
+            return hasMore;
+         }
+      }, false);
    }
 
 }//END OF Streams

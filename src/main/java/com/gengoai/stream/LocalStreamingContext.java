@@ -21,7 +21,7 @@
 
 package com.gengoai.stream;
 
-import com.gengoai.collection.Lists;
+import com.gengoai.collection.Streams;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.Unchecked;
 import com.gengoai.io.Resources;
@@ -82,7 +82,7 @@ public final class LocalStreamingContext extends StreamingContext {
 
    @Override
    public <T> MStream<T> empty() {
-      return new ReusableLocalStream<>(new ArrayList<>());
+      return new InMemoryPersistedLocalStream<>(new ArrayList<>());
    }
 
    @Override
@@ -110,7 +110,7 @@ public final class LocalStreamingContext extends StreamingContext {
       if (map == null) {
          return new LocalPairStream<>(Stream.empty());
       }
-      return new ReusableLocalPairStream<>(map);
+      return new LocalPairStream<>(map);
    }
 
    @Override
@@ -120,10 +120,9 @@ public final class LocalStreamingContext extends StreamingContext {
 
    @Override
    public MStream<Integer> range(int startInclusive, int endExclusive) {
-      return new LocalStream<>(IntStream.range(startInclusive, endExclusive)
+      return new LocalStream<>(()->IntStream.range(startInclusive, endExclusive)
                                         .boxed()
-                                        .parallel()
-      );
+                                        .parallel(), CacheStrategy.InMemory);
    }
 
    @Override
@@ -149,9 +148,9 @@ public final class LocalStreamingContext extends StreamingContext {
       if (iterable == null) {
          return empty();
       } else if (iterable instanceof Collection) {
-         return new ReusableLocalStream<>(Cast.<Collection<T>>as(iterable));
+         return new InMemoryPersistedLocalStream<>(Cast.<Collection<T>>as(iterable));
       }
-      return new ReusableLocalStream<>(Lists.asArrayList(iterable));
+      return new LocalStream<>(Streams.asStream(iterable));
    }
 
 

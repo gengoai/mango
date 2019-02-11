@@ -36,6 +36,13 @@ import java.io.Serializable;
  */
 public interface Copyable<E> {
 
+   /**
+    * Deep copies an object using serialization.
+    *
+    * @param <T>    the serializable type parameter
+    * @param object the object to copy
+    * @return the copied object
+    */
    static <T extends Serializable> T deepCopy(T object) {
       try {
          return new ByteArrayResource().writeObject(object).readObject();

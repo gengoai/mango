@@ -22,7 +22,6 @@
 package com.gengoai.stream;
 
 import com.gengoai.collection.Sorting;
-import com.gengoai.collection.Streams;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.*;
 import com.gengoai.io.Resources;
@@ -151,13 +150,6 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
    StreamingContext getContext();
 
    /**
-    * Gets the handler that is called when the stream is closed.
-    *
-    * @return the on close handler
-    */
-   SerializableRunnable getOnCloseHandler();
-
-   /**
     * Groups the items in the stream using the given function that maps objects to key values
     *
     * @param <U>      the key type parameter
@@ -186,14 +178,6 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
     */
    boolean isEmpty();
 
-   /**
-    * Can this stream be consumed more the once?
-    *
-    * @return True the stream can be reused multiple times, False the stream can only be used once
-    */
-   default boolean isReusable() {
-      return false;
-   }
 
    /**
     * Gets an iterator for the stream
@@ -207,9 +191,7 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
     *
     * @return the java stream
     */
-   default Stream<T> javaStream() {
-      return Streams.asStream(iterator());
-   }
+   Stream<T> javaStream();
 
    /**
     * Limits the stream to the first <code>number</code> items.
@@ -286,7 +268,7 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
     *
     * @param closeHandler the handler to run when the stream is closed.
     */
-   void onClose(SerializableRunnable closeHandler);
+   MStream<T> onClose(SerializableRunnable closeHandler);
 
    /**
     * Ensures that the stream is parallel or distributed.
@@ -301,7 +283,9 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
     * @param partitionSize the desired number of objects in each partition
     * @return the new stream
     */
-   MStream<Iterable<T>> partition(long partitionSize);
+   MStream<Stream<T>> partition(long partitionSize);
+
+   MStream<T> persist(StorageLevel storageLevel);
 
    /**
     * Performs a reduction on the elements of this stream using the given binary operator.
@@ -352,7 +336,7 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
     * @return the new stream
     */
    default MStream<T> shuffle() {
-      return shuffle(new Random());
+      return shuffle(new Random(0));
    }
 
    /**
@@ -372,17 +356,6 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
    MStream<T> skip(long n);
 
    /**
-    * Sorts the items in the stream in ascending or descending order. Requires items to implement the
-    * <code>Comparable</code> interface.
-    *
-    * @param ascending determines if the items should be sorted in ascending (true) or descending (false) order
-    * @return the new stream
-    */
-   default MStream<T> sorted(boolean ascending) {
-      return sorted(ascending, Cast::as);
-   }
-
-   /**
     * Sorts the items in the stream in ascending or descending order using the given keyFunction to determine how to
     * compare.
     *
@@ -391,15 +364,18 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
     * @param keyFunction function to use to convert the items in the stream to something that is comparable.
     * @return the new stream
     */
-   <R extends Comparable<R>> MStream<T> sorted(boolean ascending, SerializableFunction<? super T, ? extends R> keyFunction);
+   <R extends Comparable<R>> MStream<T> sortBy(boolean ascending, SerializableFunction<? super T, ? extends R> keyFunction);
 
    /**
-    * Splits the stream into <code>n</code> equal sized iterables.
+    * Sorts the items in the stream in ascending or descending order. Requires items to implement the
+    * <code>Comparable</code> interface.
     *
-    * @param n the number of iterables to split the stream into
+    * @param ascending determines if the items should be sorted in ascending (true) or descending (false) order
     * @return the new stream
     */
-   MStream<Iterable<T>> split(int n);
+   default MStream<T> sorted(boolean ascending) {
+      return sortBy(ascending, Cast::as);
+   }
 
    /**
     * Takes the first <code>n</code> items from the stream.
@@ -408,6 +384,7 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
     * @return a list of the first n items
     */
    List<T> take(int n);
+
 
    /**
     * @return A distributed version of the stream

@@ -527,22 +527,5 @@ public final class Iterators {
       }
    }
 
-   private static class FlattenedIterator<E> implements Iterator<E> {
-      private final Iterator<Collection<? extends E>> itr;
-
-      private FlattenedIterator(Iterator<Collection<? extends E>> itr) {
-         this.itr = itr;
-      }
-
-      @Override
-      public boolean hasNext() {
-         return false;
-      }
-
-      @Override
-      public E next() {
-         return null;
-      }
-   }
 
 }//END OF Iterators

@@ -55,6 +55,33 @@ public class Tuple2<K, V> extends Tuple implements Map.Entry<K, V> {
       this.v2 = v2;
    }
 
+   /**
+    * Of tuple 2.
+    *
+    * @param <K>   the type parameter
+    * @param <V>   the type parameter
+    * @param key   the key
+    * @param value the value
+    * @return the tuple 2
+    */
+   public static <K, V> Tuple2<K, V> of(K key, V value) {
+      return new Tuple2<>(key, value);
+   }
+
+   @Override
+   public <T> Tuple3<T, K, V> appendLeft(T object) {
+      return Tuple3.of(object, v1, v2);
+   }
+
+   @Override
+   public <T> Tuple3<K, V, T> appendRight(T object) {
+      return Tuple3.of(v1, v2, object);
+   }
+
+   @Override
+   public Object[] array() {
+      return new Object[]{v1, v2};
+   }
 
    @Override
    public Tuple2<K, V> copy() {
@@ -67,8 +94,15 @@ public class Tuple2<K, V> extends Tuple implements Map.Entry<K, V> {
    }
 
    @Override
-   public Object[] array() {
-      return new Object[]{v1, v2};
+   public <T> T get(int i) {
+      switch (i) {
+         case 0:
+            return Cast.as(v1);
+         case 1:
+            return Cast.as(v2);
+         default:
+            throw new ArrayIndexOutOfBoundsException(i);
+      }
    }
 
    @Override
@@ -94,29 +128,6 @@ public class Tuple2<K, V> extends Tuple implements Map.Entry<K, V> {
       throw new UnsupportedOperationException();
    }
 
-   /**
-    * Of tuple 2.
-    *
-    * @param <K>   the type parameter
-    * @param <V>   the type parameter
-    * @param key   the key
-    * @param value the value
-    * @return the tuple 2
-    */
-   public static <K, V> Tuple2<K, V> of(K key, V value) {
-      return new Tuple2<>(key, value);
-   }
-
-   @Override
-   public <T> Tuple3<T, K, V> appendLeft(T object) {
-      return Tuple3.of(object, v1, v2);
-   }
-
-   @Override
-   public <T> Tuple3<K, V, T> appendRight(T object) {
-      return Tuple3.of(v1, v2, object);
-   }
-
    @Override
    public Tuple1<V> shiftLeft() {
       return Tuple1.of(v2);
@@ -131,19 +142,6 @@ public class Tuple2<K, V> extends Tuple implements Map.Entry<K, V> {
    public String toString() {
       return "(" + v1 + ", " + v2 + ")";
    }
-
-   @Override
-   public <T> T get(int i) {
-      switch (i) {
-         case 0:
-            return Cast.as(v1);
-         case 1:
-            return Cast.as(v2);
-         default:
-            throw new ArrayIndexOutOfBoundsException(i);
-      }
-   }
-
 
 
 }//END OF Tuple2

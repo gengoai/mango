@@ -68,7 +68,7 @@ public class SparkStream<T> implements MStream<T>, Serializable {
          int slices = Math.max(1, collection.size() / Config.get("spark.partitions").asIntegerValue(100));
          this.rdd = SparkStreamingContext.INSTANCE.sparkContext().parallelize(collection, slices);
       }
-      this.onClose = mStream.getOnCloseHandler();
+//      this.onClose = mStream.getOnCloseHandler();
    }
 
    @Override
@@ -193,10 +193,6 @@ public class SparkStream<T> implements MStream<T>, Serializable {
       return SparkStreamingContext.contextOf(this);
    }
 
-   @Override
-   public SerializableRunnable getOnCloseHandler() {
-      return onClose;
-   }
 
    /**
     * Gets the wrapped rdd.
@@ -221,13 +217,13 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public boolean isReusable() {
-      return true;
+   public Iterator<T> iterator() {
+      return rdd.toLocalIterator();
    }
 
    @Override
-   public Iterator<T> iterator() {
-      return rdd.toLocalIterator();
+   public Stream<T> javaStream() {
+      return Streams.asStream(rdd.toLocalIterator());
    }
 
    @Override
@@ -289,8 +285,22 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public void onClose(SerializableRunnable closeHandler) {
+   public MStream<T> onClose(SerializableRunnable closeHandler) {
       this.onClose = closeHandler;
+      return this;
+   }
+
+   @Override
+   public MStream<T> persist(StorageLevel storageLevel) {
+      switch (storageLevel) {
+         case InMemory:
+            return new SparkStream<>(rdd.persist(org.apache.spark.storage.StorageLevel.MEMORY_ONLY()));
+         case OnDisk:
+            return new SparkStream<>(rdd.persist(org.apache.spark.storage.StorageLevel.DISK_ONLY()));
+         case OffHeap:
+            return new SparkStream<>(rdd.persist(org.apache.spark.storage.StorageLevel.OFF_HEAP()));
+      }
+      throw new IllegalArgumentException();
    }
 
    @Override
@@ -299,12 +309,13 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public MStream<Iterable<T>> partition(long partitionSize) {
+   public MStream<Stream<T>> partition(long partitionSize) {
       Validation.checkArgument(partitionSize > 0, "Number of partitions must be greater than zero.");
       return zipWithIndex().mapToPair((k, v) -> Tuples.$(pindex(v, partitionSize, Long.MAX_VALUE), k))
                            .groupByKey()
                            .sortByKey(true)
-                           .values();
+                           .values()
+                           .map(Streams::asStream);
    }
 
    private long pindex(double rawIndex, long partitionSize, long numPartitions) {
@@ -381,22 +392,13 @@ public class SparkStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
-   public <R extends Comparable<R>> MStream<T> sorted(boolean ascending, SerializableFunction<? super T, ? extends R> keyFunction) {
+   public <R extends Comparable<R>> MStream<T> sortBy(boolean ascending, SerializableFunction<? super T, ? extends R> keyFunction) {
       return new SparkStream<>(rdd.sortBy(t -> {
          Configurator.INSTANCE.configure(configBroadcast.value());
          return keyFunction.apply(t);
       }, ascending, rdd.partitions().size()));
    }
 
-   @Override
-   public MStream<Iterable<T>> split(int n) {
-      Validation.checkArgument(n > 0, "N must be greater than zero.");
-      final long pSize = count() / n;
-      return zipWithIndex().mapToPair((k, v) -> Tuples.$(pindex(v, pSize, n), k))
-                           .groupByKey()
-                           .sortByKey(true)
-                           .values();
-   }
 
    @Override
    public List<T> take(int n) {
@@ -419,12 +421,8 @@ public class SparkStream<T> implements MStream<T>, Serializable {
 
    @Override
    public SparkStream<T> union(MStream<T> other) {
-      if (other.isReusable() && other.isEmpty()) {
-         return this;
-      } else if (isReusable() && this.isEmpty()) {
-         return new SparkStream<>(other);
-      } else if (other instanceof SparkStream) {
-         return new SparkStream<>(rdd.union(Cast.<SparkStream<T>>as(other).rdd));
+      if (isEmpty()) {
+         return other.toDistributedStream();
       }
       SparkStream<T> stream = new SparkStream<>(other);
       return new SparkStream<>(rdd.union(stream.rdd));

@@ -27,9 +27,8 @@ import com.gengoai.function.*;
 import com.gengoai.tuple.Tuple2;
 import com.gengoai.tuple.Tuples;
 
-import java.io.Serializable;
-import java.util.*;
-import java.util.Map.Entry;
+import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,10 +39,22 @@ import java.util.stream.Stream;
  * @param <U> the value type parameter
  * @author David B. Bracewell
  */
-class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
+class LocalPairStream<T, U> extends BaseJavaPairStream<T, U> {
    private static final long serialVersionUID = 1L;
-   private final Stream<Entry<T, U>> stream;
-   private SerializableRunnable onClose;
+   private final CacheStrategy cacheStrategy;
+   private SerializableSupplier<Stream<Map.Entry<T, U>>> streamSupplier;
+
+
+   public LocalPairStream(Stream<Map.Entry<? extends T, ? extends U>> stream) {
+      this(() -> stream, CacheStrategy.InMemory);
+   }
+
+   public LocalPairStream(SerializableSupplier<Stream<? extends Map.Entry<? extends T, ? extends U>>> streamSupplier,
+                          CacheStrategy cacheStrategy
+                         ) {
+      this.cacheStrategy = cacheStrategy;
+      this.streamSupplier = Cast.as(streamSupplier);
+   }
 
    /**
     * Instantiates a new Local pair stream.
@@ -51,108 +62,62 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
     * @param map the map
     */
    public LocalPairStream(Map<? extends T, ? extends U> map) {
-      this(map.entrySet().stream().map(e -> Tuples.$(e.getKey(), e.getValue())).collect(Collectors.toList()).stream());
-   }
-
-   /**
-    * Instantiates a new Local pair stream.
-    *
-    * @param stream the stream
-    */
-   public LocalPairStream(Stream<? extends Entry<? extends T, ? extends U>> stream) {
-      this.stream = stream.map(Cast::as);
+      this(() -> map.entrySet().stream(), CacheStrategy.InMemory);
    }
 
    @Override
    public MPairStream<T, U> cache() {
-      return new ReusableLocalPairStream<>(collectAsMap());
+      return Cast.as(cacheStrategy.cachePairStream(Cast.as(javaStream())));
    }
 
    @Override
    public void close() throws Exception {
-      stream.close();
-   }
-
-   @Override
-   public List<Entry<T, U>> collectAsList() {
-      return stream.collect(Collectors.toList());
-   }
-
-   @Override
-   public Map<T, U> collectAsMap() {
-      return stream.collect(HashMap::new, (map, e) -> map.put(e.getKey(), e.getValue()), HashMap::putAll);
-   }
-
-   @Override
-   public long count() {
-      return stream.count();
+      streamSupplier.get().close();
    }
 
    @Override
    public MPairStream<T, U> filter(SerializableBiPredicate<? super T, ? super U> predicate) {
-      return new LocalPairStream<>(stream.filter(e -> predicate.test(e.getKey(), e.getValue())));
+      return new LocalPairStream<>(() -> streamSupplier.get().filter(e -> predicate.test(e.getKey(), e.getValue())),
+                                   cacheStrategy);
    }
 
    @Override
    public MPairStream<T, U> filterByKey(SerializablePredicate<T> predicate) {
-      return new LocalPairStream<>(stream.filter(e -> predicate.test(e.getKey())));
+      return new LocalPairStream<>(() -> streamSupplier.get().filter(e -> predicate.test(e.getKey())), cacheStrategy);
    }
 
    @Override
    public MPairStream<T, U> filterByValue(SerializablePredicate<U> predicate) {
-      return new LocalPairStream<>(stream.filter(e -> predicate.test(e.getValue())));
+      return new LocalPairStream<>(() -> streamSupplier.get().filter(e -> predicate.test(e.getValue())), cacheStrategy);
    }
 
    @Override
-   public void forEach(SerializableBiConsumer<? super T, ? super U> consumer) {
-      stream.forEach(e -> {
-         if (e == null) {
-            consumer.accept(null, null);
-         } else {
-            consumer.accept(e.getKey(), e.getValue());
-         }
-      });
-   }
-
-   @Override
-   public void forEachLocal(SerializableBiConsumer<? super T, ? super U> consumer) {
-      stream.sequential().forEach(e -> {
-         if (e == null) {
-            consumer.accept(null, null);
-         } else {
-            consumer.accept(e.getKey(), e.getValue());
-         }
-      });
-   }
-
-   @Override
-   public StreamingContext getContext() {
-      return LocalStreamingContext.INSTANCE;
-   }
-
-   @Override
-   public SerializableRunnable getOnCloseHandler() {
-      return onClose;
+   public <R, V> MPairStream<R, V> flatMapToPair(SerializableBiFunction<? super T, ? super U, Stream<Map.Entry<? extends R, ? extends V>>> function) {
+      return new LocalPairStream<>(() -> streamSupplier.get().flatMap(e -> function.apply(e.getKey(), e.getValue())),
+                                   cacheStrategy);
    }
 
    @Override
    public MPairStream<T, Iterable<U>> groupByKey() {
-      return new LocalPairStream<>(stream.collect(Collectors.groupingBy(Entry::getKey)).entrySet()
-                                         .stream()
-                                         .map(e -> Tuples.$(e.getKey(), e.getValue().stream()
-                                                                         .map(Entry::getValue)
-                                                                         .collect(
-                                                                     Collectors.toList()))));
+      return new LocalPairStream<>(() -> streamSupplier.get()
+                                                       .collect(Collectors.groupingBy(Map.Entry::getKey))
+                                                       .entrySet()
+                                                       .stream()
+                                                       .map(e -> Tuples.$(e.getKey(), e.getValue().stream()
+                                                                                       .map(Map.Entry::getValue)
+                                                                                       .collect(
+                                                                                          Collectors.toList()))),
+                                   cacheStrategy);
 
    }
 
    @Override
-   public boolean isEmpty() {
-      return stream.count() == 0;
+   public Stream<Map.Entry<T, U>> javaStream() {
+      return streamSupplier.get();
    }
 
    @Override
-   public <V> MPairStream<T, Entry<U, V>> join(MPairStream<? extends T, ? extends V> other) {
+   public <V> MPairStream<T, Map.Entry<U, V>> join(MPairStream<? extends T, ? extends V> other) {
       Map<T, Iterable<V>> rhs = Cast.as(other.groupByKey().collectAsMap());
       return flatMapToPair((k, v) -> {
          if (rhs.containsKey(k)) {
@@ -164,11 +129,11 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
 
    @Override
    public MStream<T> keys() {
-      return new LocalStream<>(stream.map(Entry::getKey));
+      return new LocalStream<>(() -> javaStream().map(Map.Entry::getKey), cacheStrategy);
    }
 
    @Override
-   public <V> MPairStream<T, Entry<U, V>> leftOuterJoin(MPairStream<? extends T, ? extends V> other) {
+   public <V> MPairStream<T, Map.Entry<U, V>> leftOuterJoin(MPairStream<? extends T, ? extends V> other) {
       Map<T, Iterable<V>> rhs = Cast.as(other.groupByKey().collectAsMap());
       return flatMapToPair((k, v) -> {
          if (rhs.containsKey(k)) {
@@ -181,38 +146,30 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
 
    @Override
    public <R> MStream<R> map(SerializableBiFunction<? super T, ? super U, ? extends R> function) {
-      return new LocalStream<>(stream.map(e -> function.apply(e.getKey(), e.getValue())));
+      return new LocalStream<>(() -> streamSupplier.get().map(e -> function.apply(e.getKey(), e.getValue())),
+                               cacheStrategy);
    }
 
    @Override
    public MDoubleStream mapToDouble(SerializableToDoubleBiFunction<? super T, ? super U> function) {
-      return new LocalDoubleStream(stream.mapToDouble(e -> function.applyAsDouble(e.getKey(), e.getValue())));
+      return new LocalDoubleStream(
+         streamSupplier.get().mapToDouble(e -> function.applyAsDouble(e.getKey(), e.getValue())));
    }
 
    @Override
-   public <R, V> MPairStream<R, V> mapToPair(SerializableBiFunction<? super T, ? super U, ? extends Entry<? extends R, ? extends V>> function) {
-      return new LocalPairStream<>(stream.map(entry -> Cast.as(function.apply(entry.getKey(), entry.getValue()))));
+   public <R, V> MPairStream<R, V> mapToPair(SerializableBiFunction<? super T, ? super U, ? extends Map.Entry<? extends R, ? extends V>> function) {
+      return new LocalPairStream<>(() -> streamSupplier.get().map(e -> function.apply(e.getKey(), e.getValue())),
+                                   cacheStrategy);
    }
 
    @Override
-   public Optional<Entry<T, U>> max(SerializableComparator<Entry<T, U>> comparator) {
-      return stream.max(comparator);
-   }
-
-   @Override
-   public Optional<Entry<T, U>> min(SerializableComparator<Entry<T, U>> comparator) {
-      return stream.min(comparator);
-   }
-
-   @Override
-   public void onClose(SerializableRunnable closeHandler) {
-      this.onClose = closeHandler;
-      stream.onClose(closeHandler);
+   public MPairStream<T, U> onClose(SerializableRunnable closeHandler) {
+      return new LocalPairStream<>(() -> streamSupplier.get().onClose(closeHandler), cacheStrategy);
    }
 
    @Override
    public MPairStream<T, U> parallel() {
-      return new LocalPairStream<>(stream.parallel());
+      return new LocalPairStream<>(() -> streamSupplier.get().parallel(), cacheStrategy);
    }
 
    @Override
@@ -221,17 +178,7 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public MPairStream<T, U> repartition(int partitions) {
-      return this;
-   }
-
-   @Override
-   public <R, V> MPairStream<R, V> flatMapToPair(SerializableBiFunction<? super T, ? super U, Stream<Entry<? extends R, ? extends V>>> function) {
-      return new LocalPairStream<>(stream.flatMap(e -> function.apply(e.getKey(), e.getValue())));
-   }
-
-   @Override
-   public <V> MPairStream<T, Entry<U, V>> rightOuterJoin(MPairStream<? extends T, ? extends V> other) {
+   public <V> MPairStream<T, Map.Entry<U, V>> rightOuterJoin(MPairStream<? extends T, ? extends V> other) {
       Map<T, Iterable<U>> lhs = Cast.as(groupByKey().collectAsMap());
       return other.flatMapToPair((k, v) -> {
          if (lhs.containsKey(k)) {
@@ -243,27 +190,35 @@ class LocalPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
+   public MPairStream<T, U> sample(boolean withReplacement, long number) {
+      return new LocalPairStream<>(() -> new LocalStream<>(streamSupplier.get()).sample(withReplacement, (int) number)
+                                                                                .javaStream(),
+                                   cacheStrategy);
+   }
+
+   @Override
    public MPairStream<T, U> shuffle(Random random) {
-      return new LocalPairStream<>(stream.sorted(new RandomComparator<>(random)));
+      return new LocalPairStream<>(() -> new LocalStream<>(streamSupplier.get()).shuffle(random).javaStream(),
+                                   cacheStrategy);
    }
 
    @Override
    public MPairStream<T, U> sortByKey(SerializableComparator<T> comparator) {
-      return new LocalPairStream<>(stream.sorted((o1, o2) -> comparator.compare(o1.getKey(), o2.getKey())));
+      return new LocalPairStream<>(
+         () -> streamSupplier.get().sorted((o1, o2) -> comparator.compare(o1.getKey(), o2.getKey())), cacheStrategy);
    }
 
    @Override
    public MPairStream<T, U> union(MPairStream<? extends T, ? extends U> other) {
-      if (other.isReusable() && other.isEmpty()) {
-         return this;
+      if (other.isDistributed()) {
+         return Cast.as(other.union(Cast.as(this)));
       }
-      Stream<Entry<T, U>> oStream = Cast.as(other.collectAsList().stream());
-      return new LocalPairStream<>(Stream.concat(stream, oStream));
+      return new LocalPairStream<>(() -> Stream.concat(streamSupplier.get(), other.javaStream()), cacheStrategy);
    }
 
    @Override
    public MStream<U> values() {
-      return new LocalStream<>(stream.map(Entry::getValue));
+      return new LocalStream<>(() -> javaStream().map(Map.Entry::getValue), cacheStrategy);
    }
 
 }//END OF LocalPairStream

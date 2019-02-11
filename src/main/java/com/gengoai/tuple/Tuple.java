@@ -31,10 +31,7 @@ import com.gengoai.string.Strings;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -213,6 +210,9 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
       } else if (obj instanceof Tuple) {
          Tuple tuple = Cast.as(obj);
          return degree() == tuple.degree() && Arrays.equals(array(), tuple.array());
+      } else if( obj instanceof Map.Entry && degree() == 2){
+         Map.Entry e = Cast.as(obj);
+         return Objects.equals(e.getKey(), get(0)) && Objects.equals(e.getValue(), get(1));
       }
       return false;
    }

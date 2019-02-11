@@ -1,5 +1,7 @@
 package com.gengoai.stream;
 
+import com.gengoai.collection.Iterators;
+import com.gengoai.collection.Streams;
 import com.gengoai.config.Config;
 import com.gengoai.config.Configurator;
 import com.gengoai.conversion.Cast;
@@ -13,6 +15,8 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Stream;
 
+import static com.gengoai.tuple.Tuples.$;
+
 /**
  * A MPairStream implementation backed by a JavaPairRDD.
  *
@@ -23,8 +27,8 @@ import java.util.stream.Stream;
 public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    private static final long serialVersionUID = 1L;
    private final JavaPairRDD<T, U> rdd;
-   private SerializableRunnable onClose;
    private volatile Broadcast<Config> configBroadcast;
+   private SerializableRunnable onClose;
 
    /**
     * Instantiates a new Spark pair stream.
@@ -153,10 +157,6 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
       return SparkStreamingContext.contextOf(this);
    }
 
-   @Override
-   public SerializableRunnable getOnCloseHandler() {
-      return onClose;
-   }
 
    /**
     * Gets rdd.
@@ -251,8 +251,9 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public void onClose(SerializableRunnable closeHandler) {
+   public MPairStream<T, U> onClose(SerializableRunnable closeHandler) {
       this.onClose = closeHandler;
+      return this;
    }
 
    @Override
@@ -278,6 +279,16 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
       return new SparkPairStream<>(rdd.rightOuterJoin(toPairRDD(stream))
                                       .mapToPair(t -> Cast.as(
                                          new scala.Tuple2<>(t._1(), Tuple2.of(t._2()._1().or(null), t._2()._2())))));
+   }
+
+   @Override
+   public MPairStream<T, U> sample(boolean withReplacement, long number) {
+      return new SparkPairStream<>(rdd.sample(withReplacement, (double) number / count()));
+   }
+
+   @Override
+   public Stream<Map.Entry<T, U>> javaStream() {
+      return Streams.asStream(Iterators.transform(rdd.toLocalIterator(), t -> $(t._1, t._2)));
    }
 
    @Override
@@ -308,15 +319,31 @@ public class SparkPairStream<T, U> implements MPairStream<T, U>, Serializable {
    }
 
    @Override
-   public MStream<U> values() {
-      return new SparkStream<>(rdd.values());
-   }
-
-
-   @Override
    public void updateConfig() {
       SparkStreamingContext.INSTANCE.updateConfig();
       this.configBroadcast = SparkStreamingContext.INSTANCE.getConfigBroadcast();
    }
 
+   @Override
+   public MStream<U> values() {
+      return new SparkStream<>(rdd.values());
+   }
+
+   @Override
+   public boolean isDistributed() {
+      return true;
+   }
+
+   @Override
+   public MPairStream<T, U> persist(StorageLevel storageLevel) {
+      switch (storageLevel) {
+         case InMemory:
+            return new SparkPairStream<>(rdd.persist(org.apache.spark.storage.StorageLevel.MEMORY_ONLY()));
+         case OnDisk:
+            return new SparkPairStream<>(rdd.persist(org.apache.spark.storage.StorageLevel.DISK_ONLY()));
+         case OffHeap:
+            return new SparkPairStream<>(rdd.persist(org.apache.spark.storage.StorageLevel.OFF_HEAP()));
+      }
+      throw new IllegalArgumentException();
+   }
 }// END OF SparkPairStream

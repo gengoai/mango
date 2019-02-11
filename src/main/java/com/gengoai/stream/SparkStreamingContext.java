@@ -49,12 +49,10 @@ import java.util.stream.Stream;
  * @author David B. Bracewell
  */
 public final class SparkStreamingContext extends StreamingContext {
-   private static final long serialVersionUID = 1L;
    /**
     * The singleton instance of the context
     */
    public static final SparkStreamingContext INSTANCE = new SparkStreamingContext();
-
    /**
     * The config property name containing the spark application name
     */
@@ -63,7 +61,7 @@ public final class SparkStreamingContext extends StreamingContext {
     * The config property name specifying the spark master address
     */
    public static final String SPARK_MASTER = "spark.master";
-
+   private static final long serialVersionUID = 1L;
    public static volatile JavaSparkContext context;
    public static volatile SparkSession sparkSession;
 
@@ -100,11 +98,6 @@ public final class SparkStreamingContext extends StreamingContext {
       return contextOf(stream.getRDD().context());
    }
 
-   @Override
-   public boolean isDistributed() {
-      return true;
-   }
-
    private static SparkStreamingContext contextOf(SparkContext sparkContext) {
       if (context == null || context.sc().isStopped()) {
          synchronized (SparkStreamingContext.class) {
@@ -114,6 +107,17 @@ public final class SparkStreamingContext extends StreamingContext {
          }
       }
       return SparkStreamingContext.INSTANCE;
+   }
+
+   private static JavaSparkContext getSparkContext() {
+      if (context == null || context.sc().isStopped()) {
+         synchronized (SparkStreamingContext.class) {
+            if (context == null || context.sc().isStopped()) {
+               context = new JavaSparkContext(getSparkSession().sparkContext());
+            }
+         }
+      }
+      return context;
    }
 
    private static SparkSession getSparkSession() {
@@ -132,17 +136,6 @@ public final class SparkStreamingContext extends StreamingContext {
          }
       }
       return sparkSession;
-   }
-
-   private static JavaSparkContext getSparkContext() {
-      if (context == null || context.sc().isStopped()) {
-         synchronized (SparkStreamingContext.class) {
-            if (context == null || context.sc().isStopped()) {
-               context = new JavaSparkContext(getSparkSession().sparkContext());
-            }
-         }
-      }
-      return context;
    }
 
    /**
@@ -191,13 +184,6 @@ public final class SparkStreamingContext extends StreamingContext {
       return new SparkStream<>(sparkContext().emptyRDD());
    }
 
-   @Override
-   public <E> MAccumulator<E, Set<E>> setAccumulator(String name) {
-      SparkMAccumulator<E, Set<E>> setAccumulator = new SparkMAccumulator<>(new LocalMSetAccumulator<>(name));
-      setAccumulator.register();
-      return setAccumulator;
-   }
-
    /**
     * Gets the broadcasted version of the Config object
     *
@@ -212,6 +198,11 @@ public final class SparkStreamingContext extends StreamingContext {
          }
       }
       return configBroadcast;
+   }
+
+   @Override
+   public boolean isDistributed() {
+      return true;
    }
 
    @Override
@@ -261,9 +252,11 @@ public final class SparkStreamingContext extends StreamingContext {
       return new SparkStream<>(IntStream.range(startInclusive, endExclusive).boxed().collect(Collectors.toList()));
    }
 
-
-   public SparkSession sparkSession() {
-      return getSparkSession();
+   @Override
+   public <E> MAccumulator<E, Set<E>> setAccumulator(String name) {
+      SparkMAccumulator<E, Set<E>> setAccumulator = new SparkMAccumulator<>(new LocalMSetAccumulator<>(name));
+      setAccumulator.register();
+      return setAccumulator;
    }
 
    /**
@@ -273,6 +266,10 @@ public final class SparkStreamingContext extends StreamingContext {
     */
    public JavaSparkContext sparkContext() {
       return getSparkContext();
+   }
+
+   public SparkSession sparkSession() {
+      return getSparkSession();
    }
 
    @Override

@@ -137,7 +137,7 @@ public abstract class BaseMPairStreamTest {
       AtomicBoolean closed = new AtomicBoolean(false);
       stream.cache();
       stream.repartition(10);
-      stream.onClose(() -> {
+      stream = stream.onClose(() -> {
          closed.set(true);
       });
       stream.close();

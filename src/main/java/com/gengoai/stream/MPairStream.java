@@ -94,6 +94,16 @@ public interface MPairStream<T, U> extends AutoCloseable {
    MPairStream<T, U> filterByValue(SerializablePredicate<U> predicate);
 
    /**
+    * Maps the key-value pairs to one or more new key-value pairs
+    *
+    * @param <R>      the new key type parameter
+    * @param <V>      the new value type parameter
+    * @param function the function to map key-value pairs
+    * @return the new pair stream
+    */
+   <R, V> MPairStream<R, V> flatMapToPair(SerializableBiFunction<? super T, ? super U, Stream<Map.Entry<? extends R, ? extends V>>> function);
+
+   /**
     * Performs an operation on each item in the stream
     *
     * @param consumer the consumer action to perform
@@ -115,18 +125,17 @@ public interface MPairStream<T, U> extends AutoCloseable {
    StreamingContext getContext();
 
    /**
-    * Gets the handler that is called when the stream is closed.
-    *
-    * @return the on close handler
-    */
-   SerializableRunnable getOnCloseHandler();
-
-   /**
     * Group bys the items in the stream by the key
     *
     * @return the new stream
     */
    MPairStream<T, Iterable<U>> groupByKey();
+
+   default boolean isDistributed() {
+      return false;
+   }
+
+   MPairStream<T, U> persist(StorageLevel storageLevel);
 
    /**
     * Determines if the stream is empty or not
@@ -134,6 +143,17 @@ public interface MPairStream<T, U> extends AutoCloseable {
     * @return True if empty, False otherwise
     */
    boolean isEmpty();
+
+   /**
+    * Can this stream be consumed more the once?
+    *
+    * @return True the stream can be reused multiple times, False the stream can only be used once
+    */
+   default boolean isReusable() {
+      return false;
+   }
+
+   Stream<Map.Entry<T, U>> javaStream();
 
    /**
     * Performs an inner join between this stream and another using the key to match.
@@ -188,16 +208,6 @@ public interface MPairStream<T, U> extends AutoCloseable {
    <R, V> MPairStream<R, V> mapToPair(SerializableBiFunction<? super T, ? super U, ? extends Map.Entry<? extends R, ? extends V>> function);
 
    /**
-    * Maps the key-value pairs to one or more new key-value pairs
-    *
-    * @param <R>      the new key type parameter
-    * @param <V>      the new value type parameter
-    * @param function the function to map key-value pairs
-    * @return the new pair stream
-    */
-   <R, V> MPairStream<R, V> flatMapToPair(SerializableBiFunction<? super T, ? super U, Stream<Map.Entry<? extends R, ? extends V>>> function);
-
-   /**
     * Returns the max item in the stream using the given comparator to compare items.
     *
     * @param comparator the comparator to use to compare values in the stream
@@ -220,7 +230,7 @@ public interface MPairStream<T, U> extends AutoCloseable {
     * @param comparator the comparator to use to compare keys in the stream
     * @return the optional containing the entry with max key
     */
-   default Optional<Map.Entry<T, U>> maxByKey( SerializableComparator<? super T> comparator) {
+   default Optional<Map.Entry<T, U>> maxByKey(SerializableComparator<? super T> comparator) {
       return min((t1, t2) -> comparator.compare(t1.getKey(), t2.getKey()));
    }
 
@@ -239,7 +249,7 @@ public interface MPairStream<T, U> extends AutoCloseable {
     * @param comparator the comparator to use to compare value in the stream
     * @return the optional containing the entry with max value
     */
-   default Optional<Map.Entry<T, U>> maxByValue( SerializableComparator<? super U> comparator) {
+   default Optional<Map.Entry<T, U>> maxByValue(SerializableComparator<? super U> comparator) {
       return min((t1, t2) -> comparator.compare(t1.getValue(), t2.getValue()));
    }
 
@@ -265,7 +275,7 @@ public interface MPairStream<T, U> extends AutoCloseable {
     * @param comparator the comparator to use to compare keys in the stream
     * @return the optional containing the entry with min key
     */
-   default Optional<Map.Entry<T, U>> minByKey( SerializableComparator<? super T> comparator) {
+   default Optional<Map.Entry<T, U>> minByKey(SerializableComparator<? super T> comparator) {
       return min((t1, t2) -> comparator.compare(t1.getKey(), t2.getKey()));
    }
 
@@ -284,7 +294,7 @@ public interface MPairStream<T, U> extends AutoCloseable {
     * @param comparator the comparator to use to compare value in the stream
     * @return the optional containing the entry with min value
     */
-   default Optional<Map.Entry<T, U>> minByValue( SerializableComparator<? super U> comparator) {
+   default Optional<Map.Entry<T, U>> minByValue(SerializableComparator<? super U> comparator) {
       return min((t1, t2) -> comparator.compare(t1.getValue(), t2.getValue()));
    }
 
@@ -294,7 +304,7 @@ public interface MPairStream<T, U> extends AutoCloseable {
     *
     * @param closeHandler the handler to run when the stream is closed.
     */
-   void onClose(SerializableRunnable closeHandler);
+   MPairStream<T,U> onClose(SerializableRunnable closeHandler);
 
    /**
     * Ensures that the stream is parallel or distributed.
@@ -328,6 +338,16 @@ public interface MPairStream<T, U> extends AutoCloseable {
     * @return the new stream
     */
    <V> MPairStream<T, Map.Entry<U, V>> rightOuterJoin(MPairStream<? extends T, ? extends V> stream);
+
+   /**
+    * Randomly samples <code>number</code> items from the stream.
+    *
+    * @param withReplacement true allow a single item to be represented in the sample multiple times, false allow a
+    *                        single item to only be picked once.
+    * @param number          the number of items desired in the sample
+    * @return the new stream
+    */
+   MPairStream<T, U> sample(boolean withReplacement, long number);
 
    /**
     * Shuffles the items in the stream.
@@ -377,26 +397,17 @@ public interface MPairStream<T, U> extends AutoCloseable {
    MPairStream<T, U> union(MPairStream<? extends T, ? extends U> other);
 
    /**
-    * Returns a stream of values
-    *
-    * @return the new stream of values
-    */
-   MStream<U> values();
-
-   /**
-    * Can this stream be consumed more the once?
-    *
-    * @return True the stream can be reused multiple times, False the stream can only be used once
-    */
-   default boolean isReusable(){
-      return false;
-   }
-
-   /**
     * Updates the config instance used for this String
     */
    default void updateConfig() {
 
    }
+
+   /**
+    * Returns a stream of values
+    *
+    * @return the new stream of values
+    */
+   MStream<U> values();
 
 }//END OF MPairStream

@@ -7,11 +7,11 @@ import org.junit.Test;
 
 import java.io.InputStream;
 import java.io.Reader;
-import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.gengoai.tuple.Tuples.$;
 import static org.junit.Assert.*;
 
 /**
@@ -72,9 +72,9 @@ public class StreamsTest {
 
    @Test
    public void zip() throws Exception {
-      Assert.assertEquals(Lists.arrayListOf(new AbstractMap.SimpleEntry<>("A", 1),
-                                            new AbstractMap.SimpleEntry<>("B", 2),
-                                            new AbstractMap.SimpleEntry<>("C", 3)
+      Assert.assertEquals(Lists.arrayListOf($("A", 1),
+                                            $("B", 2),
+                                            $("C", 3)
                                            ),
                           Streams.zip(Stream.of("A", "B", "C"), Stream.of(1, 2, 3, 4)).collect(Collectors.toList())
                          );
@@ -83,9 +83,9 @@ public class StreamsTest {
 
    @Test
    public void zipWithIndex() throws Exception {
-      Assert.assertEquals(Lists.arrayListOf(new AbstractMap.SimpleEntry<>("A", 0),
-                                            new AbstractMap.SimpleEntry<>("B", 1),
-                                            new AbstractMap.SimpleEntry<>("C", 2)
+      Assert.assertEquals(Lists.arrayListOf($("A", 0L),
+                                            $("B", 1L),
+                                            $("C", 2L)
                                            ),
                           Streams.zipWithIndex(Stream.of("A", "B", "C")).collect(Collectors.toList())
                          );

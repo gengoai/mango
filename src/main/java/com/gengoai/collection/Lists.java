@@ -323,6 +323,16 @@ public final class Lists {
       return Streams.union(collection1, collection2).collect(Collectors.toList());
    }
 
+
+   public static <E> List<E> sampleWithReplacement(List<? extends E> list, int N) {
+      Random random = new Random();
+      List<E> sample = new ArrayList<>();
+      while (sample.size() < N) {
+         sample.add(list.get(random.nextInt(list.size())));
+      }
+      return sample;
+   }
+
    private static class TransformedList<I, O> extends AbstractList<O> {
       private final List<I> backing;
       private final SerializableFunction<? super I, ? extends O> converter;

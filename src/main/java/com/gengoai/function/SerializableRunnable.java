@@ -7,4 +7,13 @@ import java.io.Serializable;
  */
 @FunctionalInterface
 public interface SerializableRunnable extends Runnable, Serializable {
+
+
+   static SerializableRunnable chain(SerializableRunnable r1, SerializableRunnable r2) {
+      return () -> {
+         r1.run();
+         r2.run();
+      };
+   }
+
 }
