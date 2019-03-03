@@ -123,8 +123,9 @@ public final class Reflect {
             }
          }
 
-         if (constructor.isVarArgs()) {
-            Object object = constructor.newInstance(Array.newInstance(constructor.getParameterTypes()[0].getComponentType(), 0));
+         if (constructor.isVarArgs() && constructor.getParameterTypes()[0].isArray()) {
+            Object object = constructor.newInstance(
+               Array.newInstance(constructor.getParameterTypes()[0].getComponentType(), 0));
             return new Reflect(object, object.getClass(), allowPrivilegedAccess);
          }
 
@@ -238,8 +239,7 @@ public final class Reflect {
       } catch (NoSuchMethodException e) {
          Constructor[] constructors = accessAll ? clazz.getDeclaredConstructors() : clazz.getConstructors();
          for (Constructor<?> constructor : constructors) {
-            Class[] clazzs = constructor.getParameterTypes();
-            if (constructor.isVarArgs()) {
+            if (constructor.isVarArgs() || constructor.getParameterCount() == 0) {
                return constructor;
             }
          }
