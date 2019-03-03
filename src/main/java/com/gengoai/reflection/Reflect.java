@@ -27,10 +27,7 @@ import com.gengoai.conversion.Converter;
 import com.gengoai.conversion.Val;
 import com.gengoai.string.Strings;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -125,6 +122,13 @@ public final class Reflect {
                args[i] = convertValueType(args[i], parameterTypes[i]);
             }
          }
+
+         if (constructor.isVarArgs()) {
+            Object object = constructor.newInstance(Array.newInstance(constructor.getParameterTypes()[0].getComponentType(), 0));
+            return new Reflect(object, object.getClass(), allowPrivilegedAccess);
+         }
+
+
          Object object = constructor.newInstance(args);
          return new Reflect(object, object.getClass(), allowPrivilegedAccess);
       } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
@@ -222,17 +226,25 @@ public final class Reflect {
     */
    public Reflect create() throws ReflectionException {
       try {
-         return on(clazz.getConstructor(), accessAll);
+         return on(findConstructor(), accessAll);
       } catch (NoSuchMethodException e) {
-         if (accessAll) {
-            try {
-               return on(clazz.getDeclaredConstructor(), accessAll);
-            } catch (NoSuchMethodException e2) {
-               throw new ReflectionException(e2);
-            }
-         }
          throw new ReflectionException(e);
       }
+   }
+
+   private Constructor<?> findConstructor() throws NoSuchMethodException {
+      try {
+         return clazz.getConstructor();
+      } catch (NoSuchMethodException e) {
+         Constructor[] constructors = accessAll ? clazz.getDeclaredConstructors() : clazz.getConstructors();
+         for (Constructor<?> constructor : constructors) {
+            Class[] clazzs = constructor.getParameterTypes();
+            if (constructor.isVarArgs()) {
+               return constructor;
+            }
+         }
+      }
+      throw new NoSuchMethodException();
    }
 
    /**

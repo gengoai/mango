@@ -1,5 +1,7 @@
 package com.gengoai.collection;
 
+import java.util.function.BiFunction;
+
 /**
  * <p>Convenience methods for creating object and primitive arrays.</p>
  *
@@ -129,6 +131,34 @@ public final class Arrays2 {
     */
    public static long[] arrayOfLong(long... values){
       return values;
+   }
+
+   /**
+    * Binary search int.
+    *
+    * @param <A>        the type parameter
+    * @param <B>        the type parameter
+    * @param array      the array
+    * @param key        the key
+    * @param comparator the comparator
+    * @return the int
+    */
+   public static <A, B> int binarySearch(A[] array, B key, BiFunction<A, B, Integer> comparator) {
+      int low = 0;
+      int high = array.length - 1;
+
+      while (low <= high) {
+         int mid = (low + high) >>> 1;
+         A midVal = array[mid];
+         int cmp = comparator.apply(midVal, key);
+         if (cmp < 0)
+            low = mid + 1;
+         else if (cmp > 0)
+            high = mid - 1;
+         else
+            return mid; // key found
+      }
+      return -(low + 1);  // key not found.
    }
 
 }//END OF Arrays2
