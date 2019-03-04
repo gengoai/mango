@@ -23,6 +23,7 @@
 package com.gengoai;
 
 import com.gengoai.conversion.Cast;
+import com.gengoai.conversion.Converter;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -209,6 +210,9 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
       }
 
       public T value() {
+         if (Number.class.isAssignableFrom(param.type)) {
+            return Converter.convertSilently(value, param.type);
+         }
          return value;
       }
    }

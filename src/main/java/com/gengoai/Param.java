@@ -133,6 +133,9 @@ public class Param<T> implements Serializable {
     * @param value the value
     */
    public void checkValue(Object value) {
+      if (Number.class.isAssignableFrom(type) && value instanceof Number) {
+         return;
+      }
       if (!type.isInstance(value)) {
          throw new IllegalArgumentException(
             "Invalid value: " + value + ", expecting " + type.getSimpleName()
