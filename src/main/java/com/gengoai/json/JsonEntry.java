@@ -348,6 +348,17 @@ public class JsonEntry {
       return new ElementList(element.getAsJsonArray());
    }
 
+   public double[] getAsDoubleArray() {
+      checkState(element.isJsonArray(), "Entry (" + element.getClass().getName() + ") is not an array.");
+      double[] out = new double[element.getAsJsonArray().size()];
+      int i = 0;
+      for (JsonElement jsonElement : element.getAsJsonArray()) {
+         out[i] = jsonElement.getAsDouble();
+         i++;
+      }
+      return out;
+   }
+
    /**
     * Converts the entry into a list of elements checking if the underlying entry is a json array.
     *
