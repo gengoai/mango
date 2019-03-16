@@ -359,6 +359,28 @@ public class JsonEntry {
       return out;
    }
 
+   public int[] getAsIntArray() {
+      checkState(element.isJsonArray(), "Entry (" + element.getClass().getName() + ") is not an array.");
+      int[] out = new int[element.getAsJsonArray().size()];
+      int i = 0;
+      for (JsonElement jsonElement : element.getAsJsonArray()) {
+         out[i] = jsonElement.getAsInt();
+         i++;
+      }
+      return out;
+   }
+
+   public boolean[] getAsBooleanArray() {
+      checkState(element.isJsonArray(), "Entry (" + element.getClass().getName() + ") is not an array.");
+      boolean[] out = new boolean[element.getAsJsonArray().size()];
+      int i = 0;
+      for (JsonElement jsonElement : element.getAsJsonArray()) {
+         out[i] = jsonElement.getAsBoolean();
+         i++;
+      }
+      return out;
+   }
+
    /**
     * Converts the entry into a list of elements checking if the underlying entry is a json array.
     *
