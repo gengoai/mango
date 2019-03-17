@@ -43,24 +43,24 @@ import java.util.concurrent.ConcurrentSkipListMap;
 public class BeanUtils {
    private static final ConcurrentSkipListMap<String, Object> SINGLETONS = new ConcurrentSkipListMap<>();
 
-   private static void doParametrization(BeanMap beanMap, String className) {
+   private static void doParametrization(String targetName, BeanMap beanMap, String className) {
       beanMap.getSetters()
              .stream()
-             .filter(propertyName -> Config.hasProperty(className, propertyName))
+             .filter(propertyName -> Config.hasProperty(targetName, propertyName))
              .forEach(propertyName -> {
-                String property = className + "." + propertyName;
+                String property = targetName + "." + propertyName;
                 Object val;
                 if (Config.isBean(property)) {
                    val = Config.get(property);
                 } else {
-                   Type type = Object.class;
+                   Type type = beanMap.getType(propertyName);
                    if (Config.hasProperty(property + ".@type")) {
                       type = Types.parse(Config.get(property + ".@type").asString());
                    }
                    try {
-                      val = Json.parse(Config.get(className, propertyName).asString()).getAs(type);
-                   } catch (IOException e) {
-                      throw new RuntimeException(e);
+                      val = Json.parse(Config.get(targetName, propertyName).asString()).getAs(type);
+                   } catch (Exception e) {
+                      val = Config.get(targetName, propertyName).as(type);
                    }
                 }
                 beanMap.put(propertyName, val);
@@ -105,10 +105,20 @@ public class BeanUtils {
       if (Config.hasProperty(name + ".@constructor")) {
          try {
             JsonEntry cons = Json.parse(Config.get(name + ".@constructor").asString());
-            for (Map.Entry<String, JsonEntry> e : Iterables.asIterable(cons.propertyIterator())) {
-               Type type = Types.parse(e.getKey());
-               values.add(e.getValue().getAs(type));
-               paramTypes.add(Types.asClass(type));
+            if (cons.isArray()) {
+               cons.elementIterator().forEachRemaining(j -> {
+                  Map.Entry<String, JsonEntry> e = j.propertyIterator().next();
+                  Type type = Types.parse(e.getKey());
+                  values.add(e.getValue().getAs(type));
+                  paramTypes.add(Types.asClass(type));
+
+               });
+            } else {
+               for (Map.Entry<String, JsonEntry> e : Iterables.asIterable(cons.propertyIterator())) {
+                  Type type = Types.parse(e.getKey());
+                  values.add(e.getValue().getAs(type));
+                  paramTypes.add(Types.asClass(type));
+               }
             }
          } catch (IOException e) {
             throw new RuntimeException(e);
@@ -124,6 +134,7 @@ public class BeanUtils {
       }
 
       bean = parameterizeObject(bean);
+      bean = parameterizeObject(name, bean);
       if (isSingleton) {
          SINGLETONS.putIfAbsent(name, bean);
          bean = SINGLETONS.get(name);
@@ -139,6 +150,17 @@ public class BeanUtils {
     * @return The object
     */
    public static <T> T parameterizeObject(T object) {
+      return parameterizeObject(object.getClass().getName(), object);
+   }
+
+   /**
+    * Sets properties on an object using the values defined in the Config. Will set properties defined in the Config for
+    * all of this object's super classes as well.
+    *
+    * @param object The object to parameterize
+    * @return The object
+    */
+   public static <T> T parameterizeObject(String configPrefix, T object) {
       if (object == null) {
          return null;
       }
@@ -146,9 +168,10 @@ public class BeanUtils {
       List<Class<?>> list = ReflectionUtils.getAncestorClasses(object);
       Collections.reverse(list);
       for (Class<?> clazz : list) {
-         doParametrization(beanMap, clazz.getName());
+         doParametrization(configPrefix, beanMap, clazz.getName());
       }
       return object;
    }
+
 
 }// END OF CLASS BeanUtils

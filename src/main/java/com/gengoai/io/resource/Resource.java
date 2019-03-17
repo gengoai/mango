@@ -26,10 +26,14 @@ import com.gengoai.function.SerializableConsumer;
 import com.gengoai.function.Unchecked;
 import com.gengoai.io.CharsetDetectingReader;
 import com.gengoai.io.FileUtils;
+import com.gengoai.io.Resources;
+import com.gengoai.json.JsonEntry;
+import com.gengoai.json.JsonSerializable;
 import com.gengoai.stream.LocalStream;
 import com.gengoai.stream.MStream;
 
 import java.io.*;
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -50,13 +54,23 @@ import static com.gengoai.reflection.Types.asClass;
  *
  * @author David Bracewell
  */
-public interface Resource {
+public interface Resource extends JsonSerializable {
 
    /**
     * The constant ALL_FILE_PATTERN.
     */
    Pattern ALL_FILE_PATTERN = Pattern.compile(".*");
 
+
+   @Override
+   default JsonEntry toJson() {
+      return JsonEntry.from(descriptor());
+   }
+
+
+   static Resource fromJson(JsonEntry entry, Type... types) {
+      return Resources.from(entry.getAsString());
+   }
 
    /**
     * Copies the contents of this resource to another

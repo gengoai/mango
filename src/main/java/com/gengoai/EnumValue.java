@@ -23,6 +23,8 @@ package com.gengoai;
 
 import com.gengoai.config.Preloader;
 import com.gengoai.conversion.Cast;
+import com.gengoai.json.JsonEntry;
+import com.gengoai.json.JsonSerializable;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
@@ -62,10 +64,15 @@ import static com.gengoai.Validation.notNullOrBlank;
  *
  * @author David B. Bracewell
  */
-public abstract class EnumValue implements Tag, Serializable, Cloneable {
+public abstract class EnumValue implements Tag, Serializable, Cloneable, JsonSerializable {
    private static final long serialVersionUID = 1L;
    private final String name;
    private final String fullName;
+
+   @Override
+   public JsonEntry toJson() {
+      return JsonEntry.from(canonicalName());
+   }
 
    /**
     * Instantiates a new enum value.
