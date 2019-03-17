@@ -63,10 +63,14 @@ public class LogFormatter extends Formatter {
 
       Date date = new Date();
       date.setTime(arg0.getMillis());
+      int idx = className.lastIndexOf('.');
+      if (idx > 0) {
+         className = className.substring(idx);
+      }
       msg.append('[')
          .append(dateFormatter.format(date))
          .append("] [")
-         .append(arg0.getLoggerName())
+         .append(className)
          .append("] [")
          .append(arg0.getLevel())
          .append("] ");
