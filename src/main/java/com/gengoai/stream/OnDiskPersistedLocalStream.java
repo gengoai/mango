@@ -43,6 +43,9 @@ import java.util.stream.Stream;
  * @author David B. Bracewell
  */
 public class OnDiskPersistedLocalStream<T> extends LazyLocalStream<T> {
+   /**
+    * The constant DATA_MAP_NAME.
+    */
    public static final String DATA_MAP_NAME = "data";
    private final MVMap<Long, T> map;
    private final MVStore store;
@@ -51,6 +54,11 @@ public class OnDiskPersistedLocalStream<T> extends LazyLocalStream<T> {
    private SerializableRunnable onClose;
 
 
+   /**
+    * Instantiates a new On disk persisted local stream.
+    *
+    * @param db the db
+    */
    public OnDiskPersistedLocalStream(File db) {
       this.dbFile = db;
       this.store = new MVStore.Builder()
@@ -127,6 +135,11 @@ public class OnDiskPersistedLocalStream<T> extends LazyLocalStream<T> {
       return isParallel ? stream.parallel() : stream;
    }
 
+   /**
+    * Last id long.
+    *
+    * @return the long
+    */
    public long lastId() {
       return map.lastKey();
    }
