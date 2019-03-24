@@ -64,12 +64,13 @@ public interface Resource extends JsonSerializable {
 
    @Override
    default JsonEntry toJson() {
-      return JsonEntry.from(descriptor());
+      return JsonEntry.object()
+                      .addProperty("descriptor", descriptor());
    }
 
 
    static Resource fromJson(JsonEntry entry, Type... types) {
-      return Resources.from(entry.getAsString());
+      return Resources.from(entry.getStringProperty("descriptor"));
    }
 
    /**
