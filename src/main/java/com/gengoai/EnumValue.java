@@ -25,11 +25,11 @@ import com.gengoai.config.Preloader;
 import com.gengoai.conversion.Cast;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonSerializable;
+import com.gengoai.string.CharMatcher;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 
-import static com.gengoai.Validation.checkArgument;
 import static com.gengoai.Validation.notNullOrBlank;
 
 /**
@@ -82,14 +82,20 @@ public abstract class EnumValue implements Tag, Serializable, Cloneable, JsonSer
    protected EnumValue(String name) {
       notNullOrBlank(name, () -> "[" + name + " ] is invalid.");
       this.name = normalize(name);
-      checkArgument(!name.contains(".") && name.length() > 0, name + " is invalid.");
+      checkName(name);
       this.fullName = getClass().getCanonicalName() + "." + this.name;
+   }
+
+   private void checkName(String name){
+      if( !CharMatcher.LetterOrDigit.or(CharMatcher.anyOf(".")).matchesAllOf(name) ){
+         throw new IllegalArgumentException(name + " is invalid");
+      }
    }
 
    protected EnumValue(String cannonicalName, String name) {
       notNullOrBlank(name, () -> "[" + name + " ] is invalid.");
       this.name = normalize(name);
-      checkArgument(!name.contains(".") && name.length() > 0, name + " is invalid.");
+      checkName(name);
       this.fullName = cannonicalName + "." + this.name;
    }
 
