@@ -158,7 +158,7 @@ public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> ext
       if (idx < 0) {
          return registry().ROOT;
       }
-      return registry().valueOf(name().substring(0, idx));
+      return registry().make(name().substring(0, idx));
    }
 
    /**

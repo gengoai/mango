@@ -77,16 +77,6 @@ public class Registry<T extends EnumValue> implements Serializable {
    }
 
    /**
-    * Value of t.
-    *
-    * @param name the name
-    * @return the t
-    */
-   public T valueOf(String name) {
-      return registry.get(normalize(name));
-   }
-
-   /**
     * Normalize string.
     *
     * @param name the name

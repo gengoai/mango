@@ -46,16 +46,6 @@ public final class RanksEnum extends HierarchicalEnumValue<RanksEnum> implements
       return registry.values();
    }
 
-   /**
-    * <p>Returns the constant of RanksEnum with the specified name.The normalized version of the specified name will
-    * be matched allowing for case and space variations.</p>
-    *
-    * @return The constant of RanksEnum with the specified name
-    * @throws IllegalArgumentException if the specified name is not a member of RanksEnum.
-    */
-   public static RanksEnum valueOf(String name) {
-      return registry.valueOf(name);
-   }
 
 
 }// END OF RanksEnum

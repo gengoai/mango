@@ -46,16 +46,6 @@ public final class NamesEnum extends EnumValue<NamesEnum> implements Comparable<
       return Collections.unmodifiableSet(values);
    }
 
-   /**
-    * <p>Returns the constant of NamesEnum with the specified name.The normalized version of the specified name will
-    * be matched allowing for case and space variations.</p>
-    *
-    * @return The constant of NamesEnum with the specified name
-    * @throws IllegalArgumentException if the specified name is not a member of NamesEnum.
-    */
-   public static NamesEnum valueOf(String name) {
-      return registry.valueOf(name);
-   }
 
    @Override
    public int compareTo(NamesEnum o) {

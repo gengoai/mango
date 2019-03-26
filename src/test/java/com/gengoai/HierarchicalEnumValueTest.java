@@ -78,7 +78,7 @@ public class HierarchicalEnumValueTest {
 
    @Test
    public void valueOf() throws Exception {
-      assertEquals(CAPTAIN, RanksEnum.valueOf("captain"));
+      assertEquals(CAPTAIN, RanksEnum.create("captain"));
    }
 
    @Test

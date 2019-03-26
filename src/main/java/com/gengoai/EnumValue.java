@@ -22,8 +22,12 @@
 
 package com.gengoai;
 
+import com.gengoai.application.CommandLineParser;
+import com.gengoai.application.NamedOption;
 import com.gengoai.config.Preloader;
 import com.gengoai.conversion.Cast;
+import com.gengoai.io.Resources;
+import com.gengoai.io.resource.Resource;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonSerializable;
 import com.gengoai.reflection.Reflect;
@@ -114,6 +118,49 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
       }
    }
 
+   public static void main(String[] args) throws Exception {
+      CommandLineParser parser = new CommandLineParser();
+      parser.addOption(NamedOption.builder()
+                                  .type(String.class)
+                                  .name("className")
+                                  .description("The class name.")
+                                  .alias("c")
+                                  .required(true)
+                                  .build());
+      parser.addOption(NamedOption.builder()
+                                  .type(String.class)
+                                  .name("packageName")
+                                  .description("The package name to write the class to.")
+                                  .alias("p")
+                                  .required(true)
+                                  .build());
+      parser.addOption(NamedOption.builder()
+                                  .type(Resource.class)
+                                  .description("The src directory to write class to.")
+                                  .name("src")
+                                  .alias("o")
+                                  .required(true)
+                                  .build());
+      parser.parse(args);
+      Resource template = Resources.fromClasspath("com/gengoai/TemplateEnumValue.java");
+      String className = parser.get("className");
+      String packageName = parser.get("packageName");
+      if (packageName.endsWith(";")) {
+         packageName = packageName.substring(0, packageName.length() - 1);
+      }
+      String str = template.readToString();
+      str = str.replaceAll("\\$\\{TEMPLATE}", className);
+      str = "package " + packageName + ";\n\n" + str;
+      Resource out = parser.get("src");
+      out = out.getChild(packageName.replace('.', '/'));
+      out.mkdirs();
+      out = out.getChild(className + ".java");
+      if (out.exists()) {
+         throw new IllegalStateException(out.path() + " already exists, please delete first!");
+      }
+      out.write(str);
+   }
+
    /**
     * <p>Retrieves the canonical name of the enum value, which is the canonical name of the enum class and the
     * specified name of the enum value.</p>
@@ -131,18 +178,14 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
    }
 
    @Override
+   public int compareTo(T o) {
+      return canonicalName().compareTo(o.canonicalName());
+   }
+
+   @Override
    public final boolean equals(Object obj) {
       return obj instanceof EnumValue && canonicalName().equals(
          Cast.<EnumValue>as(obj).canonicalName());
-   }
-
-   /**
-    * Gets the label associated with the Enum value
-    *
-    * @return the label
-    */
-   public String label() {
-      return name;
    }
 
    @Override
@@ -155,19 +198,22 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
       return this.equals(value);
    }
 
+   /**
+    * Gets the label associated with the Enum value
+    *
+    * @return the label
+    */
+   public String label() {
+      return name;
+   }
+
    @Override
    public String name() {
       return name;
    }
 
-   @Override
-   public JsonEntry toJson() {
-      return JsonEntry.from(canonicalName());
-   }
-
-   @Override
-   public final String toString() {
-      return name;
+   private Object readResolve() throws ObjectStreamException {
+      return registry().make(name());
    }
 
    /**
@@ -177,13 +223,14 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
     */
    protected abstract Registry<T> registry();
 
-   private Object readResolve() throws ObjectStreamException {
-      return registry().make(name());
+   @Override
+   public JsonEntry toJson() {
+      return JsonEntry.from(canonicalName());
    }
 
    @Override
-   public int compareTo(T o) {
-      return canonicalName().compareTo(o.canonicalName());
+   public final String toString() {
+      return name;
    }
 
 }//END OF EnumValue

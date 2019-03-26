@@ -75,8 +75,4 @@ public class HierarchicalRegistry<T extends HierarchicalEnumValue> extends Regis
    }
 
 
-   @Override
-   public T valueOf(String name) {
-      return super.valueOf(ensureParent(ROOT, name));
-   }
 }//END OF HierarchicalRegistry

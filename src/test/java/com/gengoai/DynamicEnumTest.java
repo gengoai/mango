@@ -63,7 +63,7 @@ public class DynamicEnumTest {
       bytes.writeObject(WITH_SPACE);
       NamesEnum isItWhiteSpace = bytes.readObject();
       assertTrue(WITH_SPACE == isItWhiteSpace);
-      assertTrue(WITH_SPACE == NamesEnum.valueOf("with space"));
+      assertTrue(WITH_SPACE == NamesEnum.create("with space"));
    }
 
 
