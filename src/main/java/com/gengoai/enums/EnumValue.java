@@ -34,6 +34,8 @@ import java.io.Serializable;
 import java.lang.reflect.Type;
 
 /**
+ * The type Enum value.
+ *
  * @author David B. Bracewell
  */
 public class EnumValue implements Tag, Serializable, Cloneable, JsonSerializable {
@@ -41,6 +43,23 @@ public class EnumValue implements Tag, Serializable, Cloneable, JsonSerializable
    private final String fullName;
    private final String name;
 
+   /**
+    * Instantiates a new enum value.
+    *
+    * @param name the name of the enum value
+    */
+   protected EnumValue(String name) {
+      this.name = name;
+      this.fullName = getClass().getCanonicalName() + "." + this.name;
+   }
+
+   /**
+    * From json enum value.
+    *
+    * @param entry the entry
+    * @param types the types
+    * @return the enum value
+    */
    public static EnumValue fromJson(JsonEntry entry, Type... types) {
       String name = null;
       if (entry.isArray()) {
@@ -50,7 +69,9 @@ public class EnumValue implements Tag, Serializable, Cloneable, JsonSerializable
          name = entry.getAsString();
       }
       Class<?> clazz = null;
-      if (types != null && types.length > 1) {
+      if (types != null && types.length == 1 && types[0] != EnumValue.class && types[0] != HierarchicalEnumValue.class) {
+         clazz = Types.asClass(types[0]);
+      } else if (types != null && types.length > 1 && types[1] != EnumValue.class && types[1] != HierarchicalEnumValue.class) {
          clazz = Types.asClass(types[1]);
       } else {
          clazz = ReflectionUtils.getClassForNameQuietly(name.substring(0, name.lastIndexOf('.')));
@@ -62,16 +83,6 @@ public class EnumValue implements Tag, Serializable, Cloneable, JsonSerializable
       } catch (Exception e) {
          throw new RuntimeException(e);
       }
-   }
-
-   /**
-    * Instantiates a new enum value.
-    *
-    * @param name the name of the enum value
-    */
-   protected EnumValue(String name) {
-      this.name = name;
-      this.fullName = getClass().getCanonicalName() + "." + this.name;
    }
 
    /**
@@ -94,6 +105,15 @@ public class EnumValue implements Tag, Serializable, Cloneable, JsonSerializable
    public final boolean equals(Object obj) {
       return obj instanceof EnumValue && canonicalName().equals(
          Cast.<EnumValue>as(obj).canonicalName());
+   }
+
+   /**
+    * Gets the label associated with the Enum value
+    *
+    * @return the label
+    */
+   public String label() {
+      return name;
    }
 
    @Override

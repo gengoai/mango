@@ -42,14 +42,19 @@ import static com.gengoai.Validation.notNullOrBlank;
 public class Registry<T extends EnumValue> implements Serializable {
    private static final long serialVersionUID = 1L;
    private final Map<String, T> registry = new ConcurrentHashMap<>();
-   private final String cannonicalName;
+   private final String canonicalName;
 
+   /**
+    * Instantiates a new Registry.
+    *
+    * @param owner the owner
+    */
    public Registry(Class<T> owner) {
-      this.cannonicalName = owner.getCanonicalName();
+      this.canonicalName = owner.getCanonicalName();
    }
 
-   private void checkName(String name) {
-      if (!CharMatcher.LetterOrDigit.or(CharMatcher.anyOf("$_")).matchesAllOf(name)) {
+   protected void checkName(String name) {
+      if (!CharMatcher.LetterOrDigit.or(CharMatcher.anyOf("_")).matchesAllOf(name)) {
          throw new IllegalArgumentException(name + " is invalid");
       }
    }
@@ -62,14 +67,20 @@ public class Registry<T extends EnumValue> implements Serializable {
     * @return the t
     */
    public T make(String name, Function<String, T> maker) {
-      if (name.startsWith(cannonicalName)) {
-         name = name.substring(cannonicalName.length() + 1);
+      if (name.startsWith(canonicalName)) {
+         name = name.substring(canonicalName.length() + 1);
       }
       String norm = normalize(name);
       checkName(norm);
       return registry.computeIfAbsent(norm, maker);
    }
 
+   /**
+    * Value of t.
+    *
+    * @param name the name
+    * @return the t
+    */
    public T valueOf(String name) {
       return registry.get(normalize(name));
    }
