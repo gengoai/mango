@@ -1,7 +1,7 @@
 package com.gengoai.conversion;
 
-import com.gengoai.DynamicEnum;
 import com.gengoai.EnumValue;
+import com.gengoai.Registry;
 import org.junit.Test;
 
 import static com.gengoai.collection.Arrays2.arrayOf;
@@ -12,20 +12,26 @@ import static org.junit.Assert.*;
  */
 public class DynamicEnumTypeConverterTest {
 
-   public static class TestEnum extends EnumValue {
+   public static class TestEnum extends EnumValue<TestEnum> {
+      final static Registry<TestEnum> registry = new Registry<>(TestEnum::new, TestEnum.class);
 
       protected TestEnum(String name) {
          super(name);
       }
 
       public static TestEnum create(String name) {
-         return DynamicEnum.register(new TestEnum(name));
+         return registry.make(name);
       }
 
+
+      @Override
+      protected Registry<TestEnum> registry() {
+         return registry;
+      }
    }
 
-   static final TestEnum e1 = new TestEnum("e1");
-   static final TestEnum e2 = new TestEnum("e2");
+   static final TestEnum e1 = TestEnum.create("e1");
+   static final TestEnum e2 = TestEnum.create("e2");
 
    @Test
    public void convert() throws TypeConversionException {

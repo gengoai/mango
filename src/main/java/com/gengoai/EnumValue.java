@@ -17,6 +17,7 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ *
  */
 
 package com.gengoai;
@@ -25,12 +26,13 @@ import com.gengoai.config.Preloader;
 import com.gengoai.conversion.Cast;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonSerializable;
-import com.gengoai.string.CharMatcher;
+import com.gengoai.reflection.Reflect;
+import com.gengoai.reflection.ReflectionUtils;
+import com.gengoai.reflection.Types;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
-
-import static com.gengoai.Validation.notNullOrBlank;
+import java.lang.reflect.Type;
 
 /**
  * <p>A enum like object that can have elements created at runtime as needed. Elements are singleton objects and can
@@ -64,15 +66,10 @@ import static com.gengoai.Validation.notNullOrBlank;
  *
  * @author David B. Bracewell
  */
-public abstract class EnumValue implements Tag, Serializable, Cloneable, JsonSerializable {
+public abstract class EnumValue<T extends EnumValue> implements Tag, Serializable, Cloneable, JsonSerializable, Comparable<T> {
    private static final long serialVersionUID = 1L;
-   private final String name;
    private final String fullName;
-
-   @Override
-   public JsonEntry toJson() {
-      return JsonEntry.from(canonicalName());
-   }
+   private final String name;
 
    /**
     * Instantiates a new enum value.
@@ -80,54 +77,41 @@ public abstract class EnumValue implements Tag, Serializable, Cloneable, JsonSer
     * @param name the name of the enum value
     */
    protected EnumValue(String name) {
-      notNullOrBlank(name, () -> "[" + name + " ] is invalid.");
-      this.name = normalize(name);
-      checkName(name);
+      this.name = name;
       this.fullName = getClass().getCanonicalName() + "." + this.name;
    }
 
-   private void checkName(String name){
-      if( !CharMatcher.LetterOrDigit.or(CharMatcher.anyOf(".")).matchesAllOf(name) ){
-         throw new IllegalArgumentException(name + " is invalid");
-      }
-   }
-
-   protected EnumValue(String cannonicalName, String name) {
-      notNullOrBlank(name, () -> "[" + name + " ] is invalid.");
-      this.name = normalize(name);
-      checkName(name);
-      this.fullName = cannonicalName + "." + this.name;
-   }
 
    /**
-    * <p>Normalizes a string to be uppercase and use and underscore in place of whitespace.</p>
+    * Static method for deserializing an enum value from JSON
     *
-    * @param name the name to be normalized
-    * @return the normalized version of the name
-    * @throws NullPointerException if the name is null
+    * @param entry the JSON entry
+    * @param types the types
+    * @return the enum value
     */
-   static String normalize(String name) {
-      notNullOrBlank(name, "Name cannot be null or blank");
-      StringBuilder toReturn = new StringBuilder();
-      boolean previousSpace = false;
-      for (char c : name.toCharArray()) {
-         if (Character.isWhitespace(c)) {
-            if (!previousSpace) {
-               toReturn.append('_');
-            }
-            previousSpace = true;
-         } else {
-            previousSpace = false;
-            toReturn.append(Character.toUpperCase(c));
-         }
+   public static EnumValue fromJson(JsonEntry entry, Type... types) {
+      String name = null;
+      if (entry.isArray()) {
+         name = entry.elementIterator().next().getAsString();
       }
-      return toReturn.toString();
-   }
-
-
-   @Override
-   public String name() {
-      return name;
+      if (entry.isString()) {
+         name = entry.getAsString();
+      }
+      Class<?> clazz = null;
+      if (types != null && types.length == 1 && types[0] != EnumValue.class && types[0] != HierarchicalEnumValue.class) {
+         clazz = Types.asClass(types[0]);
+      } else if (types != null && types.length > 1 && types[1] != EnumValue.class && types[1] != HierarchicalEnumValue.class) {
+         clazz = Types.asClass(types[1]);
+      } else {
+         clazz = ReflectionUtils.getClassForNameQuietly(name.substring(0, name.lastIndexOf('.')));
+      }
+      try {
+         return Cast.as(Reflect.onClass(clazz)
+                               .getMethod("make")
+                               .invoke(null, name));
+      } catch (Exception e) {
+         throw new RuntimeException(e);
+      }
    }
 
    /**
@@ -141,24 +125,24 @@ public abstract class EnumValue implements Tag, Serializable, Cloneable, JsonSer
    }
 
    @Override
-   public final String toString() {
-      return name;
+   protected final Object clone() throws CloneNotSupportedException {
+      super.clone();
+      return this;
    }
 
    @Override
-   public boolean isInstance(Tag value) {
-      return this.equals(value);
+   public final boolean equals(Object obj) {
+      return obj instanceof EnumValue && canonicalName().equals(
+         Cast.<EnumValue>as(obj).canonicalName());
    }
 
    /**
-    * <p>Resolves the deserialized object by calling {@link DynamicEnum#register(EnumValue)} ensuring that only one
-    * reference exists for this enum value.</p>
+    * Gets the label associated with the Enum value
     *
-    * @return the new or existing enum value
-    * @throws ObjectStreamException if there is an error in the object stream
+    * @return the label
     */
-   protected final Object readResolve() throws ObjectStreamException {
-      return DynamicEnum.register(this);
+   public String label() {
+      return name;
    }
 
    @Override
@@ -167,14 +151,39 @@ public abstract class EnumValue implements Tag, Serializable, Cloneable, JsonSer
    }
 
    @Override
-   public final boolean equals(Object obj) {
-      return obj instanceof EnumValue && canonicalName().equals(Cast.<EnumValue>as(obj).canonicalName());
+   public boolean isInstance(Tag value) {
+      return this.equals(value);
    }
 
    @Override
-   protected final Object clone() throws CloneNotSupportedException {
-      throw new CloneNotSupportedException();
+   public String name() {
+      return name;
    }
 
+   @Override
+   public JsonEntry toJson() {
+      return JsonEntry.from(canonicalName());
+   }
+
+   @Override
+   public final String toString() {
+      return name;
+   }
+
+   /**
+    * Gets the registry used by this value
+    *
+    * @return the registry
+    */
+   protected abstract Registry<T> registry();
+
+   private Object readResolve() throws ObjectStreamException {
+      return registry().make(name());
+   }
+
+   @Override
+   public int compareTo(T o) {
+      return canonicalName().compareTo(o.canonicalName());
+   }
 
 }//END OF EnumValue

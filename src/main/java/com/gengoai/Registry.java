@@ -20,8 +20,9 @@
  *
  */
 
-package com.gengoai.enums;
+package com.gengoai;
 
+import com.gengoai.function.SerializableFunction;
 import com.gengoai.string.CharMatcher;
 
 import java.io.Serializable;
@@ -29,7 +30,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 
 import static com.gengoai.Validation.notNullOrBlank;
 
@@ -41,15 +41,17 @@ import static com.gengoai.Validation.notNullOrBlank;
  */
 public class Registry<T extends EnumValue> implements Serializable {
    private static final long serialVersionUID = 1L;
-   private final Map<String, T> registry = new ConcurrentHashMap<>();
-   private final String canonicalName;
+   protected final Map<String, T> registry = new ConcurrentHashMap<>();
+   protected final SerializableFunction<String, T> newInstance;
+   protected final String canonicalName;
 
    /**
     * Instantiates a new Registry.
     *
     * @param owner the owner
     */
-   public Registry(Class<T> owner) {
+   public Registry(SerializableFunction<String, T> newInstance, Class<T> owner) {
+      this.newInstance = newInstance;
       this.canonicalName = owner.getCanonicalName();
    }
 
@@ -62,17 +64,16 @@ public class Registry<T extends EnumValue> implements Serializable {
    /**
     * Make t.
     *
-    * @param name  the name
-    * @param maker the maker
+    * @param name the name
     * @return the t
     */
-   public T make(String name, Function<String, T> maker) {
+   public T make(String name) {
       if (name.startsWith(canonicalName)) {
          name = name.substring(canonicalName.length() + 1);
       }
       String norm = normalize(name);
       checkName(norm);
-      return registry.computeIfAbsent(norm, maker);
+      return registry.computeIfAbsent(norm, newInstance);
    }
 
    /**

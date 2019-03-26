@@ -1,29 +1,24 @@
 package com.gengoai;
 
-import com.gengoai.collection.Sets;
-
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author David B. Bracewell
  */
 public final class RanksEnum extends HierarchicalEnumValue<RanksEnum> implements Comparable<RanksEnum> {
    private static final long serialVersionUID = 1L;
-   private static final Set<RanksEnum> values = Sets.newConcurrentHashSet();
+   private static final HierarchicalRegistry<RanksEnum> registry = new HierarchicalRegistry<>(RanksEnum::new,
+                                                                                              RanksEnum.class,
+                                                                                              "RanksEnum_Root");
+   public static final RanksEnum ROOT = registry.ROOT;
 
-   public static final RanksEnum ROOT = RanksEnum.create("RanksEnum_Root");
-
-   @Override
-   protected RanksEnum getSingleRoot() {
-      return ROOT;
+   private RanksEnum(String name) {
+      super(name);
    }
 
-   private RanksEnum(String name, RanksEnum parent) {
-      super(name, parent);
+   @Override
+   protected HierarchicalRegistry<RanksEnum> registry() {
+      return registry;
    }
 
    /**
@@ -33,22 +28,14 @@ public final class RanksEnum extends HierarchicalEnumValue<RanksEnum> implements
     * @return The instance of RanksEnum corresponding th the give name.
     */
    public static RanksEnum create(String name) {
-      return create(name, null);
+      return registry.make(name);
    }
 
-   /**
-    * <p>Creates a new or retrieves an existing instance of RanksEnum with the given name.</p>
-    *
-    * @param name   the specified name of the RanksEnum
-    * @param parent the parent element of the enum;
-    * @return The instance of RanksEnum corresponding th the give name.
-    */
-   public static RanksEnum create(String name, RanksEnum parent) {
-      RanksEnum toReturn = DynamicEnum.register(new RanksEnum(name, parent));
-      toReturn.setParentIfAbsent(parent);
-      values.add(toReturn);
-      return toReturn;
+
+   public static RanksEnum create(RanksEnum parent, String name) {
+      return registry.make(parent, name);
    }
+
 
    /**
     * <p>Retrieves all currently known values of RanksEnum.</p>
@@ -56,7 +43,7 @@ public final class RanksEnum extends HierarchicalEnumValue<RanksEnum> implements
     * @return An unmodifiable collection of currently known values for RanksEnum.
     */
    public static Collection<RanksEnum> values() {
-      return Collections.unmodifiableSet(values);
+      return registry.values();
    }
 
    /**
@@ -67,18 +54,9 @@ public final class RanksEnum extends HierarchicalEnumValue<RanksEnum> implements
     * @throws IllegalArgumentException if the specified name is not a member of RanksEnum.
     */
    public static RanksEnum valueOf(String name) {
-      return DynamicEnum.valueOf(RanksEnum.class, name);
+      return registry.valueOf(name);
    }
 
-   @Override
-   public List<RanksEnum> getChildren() {
-      return values().stream().filter(v -> this != v && v.getParent() == this).collect(Collectors.toList());
-   }
-
-   @Override
-   public int compareTo(RanksEnum o) {
-      return canonicalName().compareTo(o.canonicalName());
-   }
 
 }// END OF RanksEnum
 

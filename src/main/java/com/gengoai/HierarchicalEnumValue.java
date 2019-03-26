@@ -17,16 +17,15 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ *
  */
 
 package com.gengoai;
 
-import com.gengoai.config.Config;
 import com.gengoai.config.Preloader;
-import com.gengoai.conversion.Cast;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>A enum like object that can have elements created at runtime as needed and which have a parent associated with
@@ -85,129 +84,104 @@ import java.util.List;
  *
  * @author David B. Bracewell
  */
-public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> extends EnumValue {
-   private static final long serialVersionUID = 1L;
-   private volatile T parent = null;
-
-
-   protected boolean setParentIfAbsent(T newParent) {
-      if (newParent == null || this == getSingleRoot()) {
-         return false;
-      }
-      T oldParent = getParent();
-      if (oldParent == null || oldParent == getSingleRoot()) {
-         this.parent = newParent;
-         return true;
-      }
-      if (oldParent != newParent) {
-         throw new IllegalArgumentException(
-            "Attempting to reassign " + name() + "'s parent from " + oldParent + " to " + newParent);
-      }
-      return false;
-   }
-
-   protected abstract T getSingleRoot();
-
+public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> extends EnumValue<T> {
+   public static final char SEPARATOR = '$';
+   private final int depth;
 
    /**
-    * Instantiates a new Hierarchical enum value.
+    * Instantiates a new enum value.
     *
-    * @param name   the specified name of the element
-    * @param parent the parent of element (possibly null)
+    * @param name the name of the enum value
     */
-   protected HierarchicalEnumValue(String name, T parent) {
+   protected HierarchicalEnumValue(String name) {
       super(name);
-      this.parent = parent;
+      this.depth = (int) name().chars().filter(i -> i == SEPARATOR).count();
    }
 
-   protected HierarchicalEnumValue(String canonicalName, String name, T parent) {
-      super(canonicalName, name);
-      this.parent = parent;
-   }
 
    /**
-    * <p>Determines if this element is the root.</p>
+    * Gets the child enum values for this value
     *
-    * @return True if it is the root, False otherwise
+    * @return the list of child enum values
     */
-   public final boolean isRoot() {
-      return this == getSingleRoot();
-   }
-
-   /**
-    * <p>Gets the immediate children of this element or an empty list if none.</p>
-    *
-    * @return the immediate children of this element.
-    */
-   public abstract List<T> getChildren();
-
-   /**
-    * <p>Determines if this element is a leaf, i.e. has no children.</p>
-    *
-    * @return True if it is a leaf, False otherwise
-    */
-   public final boolean isLeaf() {
-      return getChildren().isEmpty();
+   public List<T> children() {
+      final String target = name() + SEPARATOR;
+      return registry().values()
+                       .parallelStream()
+                       .filter(v -> v.depth() == (depth() + 1) && v.name().startsWith(target))
+                       .collect(Collectors.toList());
    }
 
    /**
-    * <p>Gets the parent of this element. It first checks if a parent has been explicitly set and if not will attempt
-    * to determine the parent using the configuration property <code>canonical.name.parent</code> where the canonical
-    * name is determined using {@link #canonicalName()}.</p>
+    * The depth of the enum value in the hierarchy
     *
-    * @return the parent of this element as an Optional
+    * @return the depth
     */
-   public final T getParent() {
-      if (parent == null) {
-         synchronized (this) {
-            if (parent == null) {
-               T ev = getParentFromConfig();
-               if (ev != null && ev != getSingleRoot()) {
-                  parent = Cast.as(ev);
-               }
-            }
-         }
-      }
-      return parent == null ? getSingleRoot() : parent;
+   public int depth() {
+      return depth;
    }
 
    @Override
    public final boolean isInstance(Tag value) {
-      HierarchicalEnumValue<T> hev = this;
-      while (hev != null && hev != getSingleRoot()) {
-         if (hev.equals(value)) {
-            return true;
-         }
-         hev = Cast.as(hev.getParent());
+      return value.name().equals(name()) ||
+                name().startsWith(value.name() + SEPARATOR);
+   }
+
+   /**
+    * Checks if this enum value is a leaf
+    *
+    * @return True if a leaf, False otherwise
+    */
+   public boolean isLeaf() {
+      return children().isEmpty();
+   }
+
+   @Override
+   public String label() {
+      int index = name().lastIndexOf(SEPARATOR);
+      if (index > 0) {
+         return name().substring(index + 1);
       }
-      return false;
+      return name();
    }
 
    /**
-    * Determines the parent via a configuration setting.
+    * Gets the parent of this enum value (NULL if it is a root)
     *
-    * @return the parent via the configuration property or null
+    * @return the parent or null if it is a root
     */
-   protected T getParentFromConfig() {
-      return Cast.as(Config.get(canonicalName(), "parent").as(getClass(), null));
+   public T parent() {
+      if (this == registry().ROOT) {
+         return null;
+      }
+      int idx = name().lastIndexOf(SEPARATOR);
+      if (idx < 0) {
+         return registry().ROOT;
+      }
+      return registry().valueOf(name().substring(0, idx));
+   }
+
+   /**
+    * Checks if this enum value is a root
+    *
+    * @return True if a root, False otherwise
+    */
+   public boolean isRoot() {
+      return parent() == null;
    }
 
 
    /**
-    * <p>Gets the path from this element's parent to a root, i.e. its ancestors in the tree.</p>
+    * Generates an array of string representing the path of this enum value in the hierarchy
     *
-    * @return the list of ancestors with this element's parent in position 0 or an empty list if this element is a root.
+    * @return the path
     */
-   public final List<T> getAncestors() {
-      List<T> path = new ArrayList<>();
-      HierarchicalEnumValue<T> hev = Cast.as(this);
-      do {
-         hev = Cast.as(hev.getParent());
-         if (hev != null && hev != getSingleRoot()) {
-            path.add(Cast.as(hev));
-         }
-      } while (hev != null && hev != getSingleRoot());
-      return path;
+   public String[] path() {
+      return name().split(Character.toString(SEPARATOR));
    }
 
-}//END OF HierarchicalEnumValue
+
+   @Override
+   protected abstract HierarchicalRegistry<T> registry();
+
+}//END OF HierarchicalEnum

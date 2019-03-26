@@ -2,6 +2,7 @@ package com.gengoai;
 
 import com.gengoai.collection.Sets;
 
+import java.io.ObjectStreamException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
@@ -9,15 +10,19 @@ import java.util.Set;
 /**
  * The type NamesEnum.
  */
-public final class NamesEnum extends EnumValue implements Comparable<NamesEnum> {
+public final class NamesEnum extends EnumValue<NamesEnum> implements Comparable<NamesEnum> {
    private static final long serialVersionUID = 1L;
    private static final Set<NamesEnum> values = Sets.newConcurrentHashSet();
-
-
+   private static final Registry<NamesEnum> registry = new Registry<>(NamesEnum::new, NamesEnum.class);
 
 
    private NamesEnum(String name) {
       super(name);
+   }
+
+   @Override
+   protected Registry<NamesEnum> registry() {
+      return registry;
    }
 
    /**
@@ -26,7 +31,7 @@ public final class NamesEnum extends EnumValue implements Comparable<NamesEnum> 
     * @return The instance of NamesEnum corresponding th the give name.
     */
    public static NamesEnum create(String name) {
-      NamesEnum toReturn = DynamicEnum.register(new NamesEnum(name));
+      NamesEnum toReturn = registry.make(name);
       values.add(toReturn);
       return toReturn;
    }
@@ -49,12 +54,17 @@ public final class NamesEnum extends EnumValue implements Comparable<NamesEnum> 
     * @throws IllegalArgumentException if the specified name is not a member of NamesEnum.
     */
    public static NamesEnum valueOf(String name) {
-      return DynamicEnum.valueOf(NamesEnum.class, name);
+      return registry.valueOf(name);
    }
 
    @Override
    public int compareTo(NamesEnum o) {
       return this.canonicalName().compareTo(o.canonicalName());
    }
+
+   private Object readResolve() throws ObjectStreamException {
+      return create(name());
+   }
+
 
 }//END OF NamesEnum

@@ -20,11 +20,12 @@
  *
  */
 
-package com.gengoai.enums;
+package com.gengoai;
 
+import com.gengoai.function.SerializableFunction;
 import com.gengoai.string.CharMatcher;
 
-import java.util.function.Function;
+import static com.gengoai.HierarchicalEnumValue.SEPARATOR;
 
 /**
  * @author David B. Bracewell
@@ -37,19 +38,45 @@ public class HierarchicalRegistry<T extends HierarchicalEnumValue> extends Regis
     *
     * @param owner the owner
     */
-   public HierarchicalRegistry(Class<T> owner, String rootName, Function<String, T> creator) {
-      super(owner);
-      this.ROOT = make(rootName, creator);
+   public HierarchicalRegistry(SerializableFunction<String, T> newInstance, Class<T> owner, String rootName) {
+      super(newInstance, owner);
+      this.ROOT = make(rootName);
    }
 
-   public HierarchicalRegistry(Class<T> owner) {
-      super(owner);
+
+   protected String ensureParent(T parent, String name) {
+      if (parent == null) {
+         return name;
+      }
+      if (name.startsWith(canonicalName)) {
+         name = name.substring(canonicalName.length() + 1);
+      }
+      return name.startsWith(parent.name()) ? name : parent + Character.toString(SEPARATOR) + name;
+   }
+
+   public HierarchicalRegistry(SerializableFunction<String, T> newInstance, Class<T> owner) {
+      super(newInstance, owner);
       this.ROOT = null;
+   }
+
+   @Override
+   public T make(String name) {
+      return super.make(ensureParent(ROOT, name));
+   }
+
+   public T make(T parent, String name) {
+      return make(ensureParent(parent, name));
    }
 
    protected void checkName(String name) {
       if (!CharMatcher.LetterOrDigit.or(CharMatcher.anyOf("_$")).matchesAllOf(name)) {
          throw new IllegalArgumentException(name + " is invalid");
       }
+   }
+
+
+   @Override
+   public T valueOf(String name) {
+      return super.valueOf(ensureParent(ROOT, name));
    }
 }//END OF HierarchicalRegistry

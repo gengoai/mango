@@ -21,7 +21,6 @@
 
 package com.gengoai;
 
-import com.gengoai.collection.Lists;
 import com.gengoai.config.Config;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,18 +32,15 @@ import static org.junit.Assert.*;
  */
 public class HierarchicalEnumValueTest {
 
-   public static final RanksEnum PRESIDENT = RanksEnum.create("PRESIDENT", RanksEnum.ROOT);
-   public static final RanksEnum GENERAL = RanksEnum.create("GENERAL", PRESIDENT);
-   public static final RanksEnum COLONEL = RanksEnum.create("COLONEL", GENERAL);
-   public static final RanksEnum MAJOR = RanksEnum.create("MAJOR");
+   public static final RanksEnum PRESIDENT = RanksEnum.create("PRESIDENT");
+   public static final RanksEnum GENERAL = RanksEnum.create(PRESIDENT, "GENERAL");
+   public static final RanksEnum COLONEL = RanksEnum.create(GENERAL, "COLONEL");
+   public static final RanksEnum MAJOR = RanksEnum.create(COLONEL, "MAJOR");
    public static final RanksEnum CAPTAIN = RanksEnum.create("CAPTAIN");
 
    @Before
    public void setUp() throws Exception {
       Config.initializeTest();
-      Config.setProperty(MAJOR.canonicalName() + ".parent", COLONEL.canonicalName());
-      Config.setProperty(CAPTAIN.canonicalName() + ".parent", "ADMIRAL");
-      Config.setProperty(RanksEnum.class.getCanonicalName() + ".ADMIRAL", "PRESIDENT");
    }
 
    @Test
@@ -56,9 +52,9 @@ public class HierarchicalEnumValueTest {
 
    @Test
    public void getChildren() throws Exception {
-      assertTrue(PRESIDENT.getChildren().contains(GENERAL)); //ADMIRAL isn't defined yet.
-      assertTrue(COLONEL.getChildren().contains(MAJOR));
-      assertTrue(MAJOR.getChildren().isEmpty());
+      assertTrue(PRESIDENT.children().contains(GENERAL)); //ADMIRAL isn't defined yet.
+      assertTrue(COLONEL.children().contains(MAJOR));
+      assertTrue(MAJOR.children().isEmpty());
    }
 
    @Test
@@ -71,7 +67,8 @@ public class HierarchicalEnumValueTest {
    @Test
    public void getParent() throws Exception {
       //Dynamically create ADMIRAL from Config and set parent of Captain
-      assertEquals("ADMIRAL", CAPTAIN.getParent().name());
+      assertEquals(RanksEnum.ROOT.name(), CAPTAIN.parent().name());
+      assertEquals(GENERAL, COLONEL.parent());
    }
 
    @Test
@@ -91,10 +88,10 @@ public class HierarchicalEnumValueTest {
       assertFalse(MAJOR.isInstance(CAPTAIN));
       assertFalse(COLONEL.isInstance(CAPTAIN, MAJOR));
    }
-
-   @Test
-   public void getAncestors() throws Exception {
-      assertEquals(Lists.arrayListOf(GENERAL, PRESIDENT), COLONEL.getAncestors());
-   }
+//
+//   @Test
+//   public void getAncestors() throws Exception {
+//      assertEquals(Lists.arrayListOf(GENERAL, PRESIDENT), COLONEL.getAncestors());
+//   }
 
 }
