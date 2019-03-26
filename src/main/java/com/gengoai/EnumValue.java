@@ -141,8 +141,17 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
                                   .alias("o")
                                   .required(true)
                                   .build());
+      parser.addOption(NamedOption.builder()
+                                  .type(boolean.class)
+                                  .defaultValue(false)
+                                  .name("t")
+                                  .description("True - create a hierarchical enum")
+                                  .build());
       parser.parse(args);
-      Resource template = Resources.fromClasspath("com/gengoai/TemplateEnumValue.java");
+      Resource template = parser.get("t")
+                          ? Resources.fromClasspath("com/gengoai/TemplateHierarchicalEnumValue.java")
+                          : Resources.fromClasspath("com/gengoai/TemplateEnumValue.java");
+
       String className = parser.get("className");
       String packageName = parser.get("packageName");
       if (packageName.endsWith(";")) {
