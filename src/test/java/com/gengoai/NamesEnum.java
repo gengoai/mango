@@ -2,7 +2,6 @@ package com.gengoai;
 
 import com.gengoai.collection.Sets;
 
-import java.io.ObjectStreamException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
@@ -10,7 +9,7 @@ import java.util.Set;
 /**
  * The type NamesEnum.
  */
-public final class NamesEnum extends EnumValue<NamesEnum> implements Comparable<NamesEnum> {
+public final class NamesEnum extends EnumValue<NamesEnum> {
    private static final long serialVersionUID = 1L;
    private static final Set<NamesEnum> values = Sets.newConcurrentHashSet();
    private static final Registry<NamesEnum> registry = new Registry<>(NamesEnum::new, NamesEnum.class);
@@ -30,7 +29,7 @@ public final class NamesEnum extends EnumValue<NamesEnum> implements Comparable<
     *
     * @return The instance of NamesEnum corresponding th the give name.
     */
-   public static NamesEnum create(String name) {
+   public static NamesEnum make(String name) {
       NamesEnum toReturn = registry.make(name);
       values.add(toReturn);
       return toReturn;
@@ -46,15 +45,6 @@ public final class NamesEnum extends EnumValue<NamesEnum> implements Comparable<
       return Collections.unmodifiableSet(values);
    }
 
-
-   @Override
-   public int compareTo(NamesEnum o) {
-      return this.canonicalName().compareTo(o.canonicalName());
-   }
-
-   private Object readResolve() throws ObjectStreamException {
-      return create(name());
-   }
 
 
 }//END OF NamesEnum

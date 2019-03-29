@@ -21,13 +21,14 @@ package com.gengoai;/*
 
 import com.gengoai.io.resource.ByteArrayResource;
 import com.gengoai.io.resource.Resource;
+import com.gengoai.json.Json;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 public class DynamicEnumTest {
 
-   public static final NamesEnum WITH_SPACE = NamesEnum.create("WITH spAce");
+   public static final NamesEnum WITH_SPACE = NamesEnum.make("WITH spAce");
 
    @Test
    public void testName() throws Exception {
@@ -37,33 +38,33 @@ public class DynamicEnumTest {
 
    @Test(expected = IllegalArgumentException.class)
    public void testBadPeriod() throws Exception {
-      NamesEnum.create(".");
+      NamesEnum.make(".");
    }
 
    @Test(expected = IllegalArgumentException.class)
    public void testBadEmpty() throws Exception {
-      NamesEnum.create("");
+      NamesEnum.make("");
    }
 
    @Test(expected = IllegalArgumentException.class)
    public void testBadBlank() throws Exception {
-      NamesEnum.create("   ");
+      NamesEnum.make("   ");
    }
 
    @Test
    public void testIsInstance() throws Exception {
       assertTrue(WITH_SPACE.isInstance(WITH_SPACE));
-      assertFalse(WITH_SPACE.isInstance(NamesEnum.create("NOT A SPACE")));
+      assertFalse(WITH_SPACE.isInstance(NamesEnum.make("NOT A SPACE")));
    }
 
    @Test
    public void testReferenceEquality() throws Exception {
-      assertTrue(WITH_SPACE == NamesEnum.create("with space"));
+      assertTrue(WITH_SPACE == NamesEnum.make("with space"));
       Resource bytes = new ByteArrayResource();
       bytes.writeObject(WITH_SPACE);
       NamesEnum isItWhiteSpace = bytes.readObject();
       assertTrue(WITH_SPACE == isItWhiteSpace);
-      assertTrue(WITH_SPACE == NamesEnum.create("with space"));
+      assertTrue(WITH_SPACE == NamesEnum.make("with space"));
    }
 
 
@@ -74,7 +75,15 @@ public class DynamicEnumTest {
 
    @Test
    public void testCompare() throws Exception {
-      assertTrue(WITH_SPACE.compareTo(NamesEnum.create("ZEBRA")) < 0);
+      assertTrue(WITH_SPACE.compareTo(NamesEnum.make("ZEBRA")) < 0);
+   }
+
+   @Test
+   public void testJson() throws Exception {
+      NamesEnum name = NamesEnum.make("name");
+      String json = Json.dumps(name);
+      NamesEnum nameDes = Json.parse(json, NamesEnum.class);
+      assertEquals(name, nameDes);
    }
 
 }
