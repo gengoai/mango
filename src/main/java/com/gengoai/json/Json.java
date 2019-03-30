@@ -6,9 +6,11 @@ import com.gengoai.io.resource.ClasspathResource;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionUtils;
+import com.gengoai.reflection.Types;
 import com.google.gson.*;
 
 import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.List;
@@ -45,7 +47,7 @@ public final class Json {
                      boolean isHier = Boolean.parseBoolean(parts[1]);
                      Object adapter;
                      try {
-                        adapter = Reflect.onClass(parts[2]).create().get();
+                        adapter = Reflect.onClass(parts[2]).allowPrivilegedAccess().create().get();
                      } catch (Exception e) {
                         throw new IllegalArgumentException(e);
                      }
@@ -64,7 +66,35 @@ public final class Json {
 
       builder.registerTypeHierarchyAdapter(JsonEntry.class, new JsonEntryMarshaller());
       builder.registerTypeHierarchyAdapter(Enum.class, new EnumMarshaller());
+      builder.registerTypeHierarchyAdapter(Type.class, new TypeMarshallar());
       MAPPER = builder.create();
+   }
+
+   protected static class TypeMarshallar extends JsonMarshaller<Type> {
+
+      @Override
+      protected Type deserialize(JsonEntry entry, Type type) {
+         try {
+            return entry.isObject()
+                   ? Types.parameterizedType(entry.getProperty("rawType").getAs(Type.class),
+                                             entry.getProperty("parameters")
+                                                  .getAsArray(Type.class)
+                                                  .toArray(new Type[1]))
+                   : ReflectionUtils.getClassForName(entry.getAsString());
+         } catch (Exception e) {
+            throw new RuntimeException(e);
+         }
+      }
+
+      @Override
+      protected JsonEntry serialize(Type type, Type type2) {
+         if (type instanceof ParameterizedType) {
+            return JsonEntry.object()
+                            .addProperty("rawType", Types.asClass(type))
+                            .addProperty("parameters", Types.parameterizedType(type));
+         }
+         return JsonEntry.from(type.getTypeName());
+      }
    }
 
    protected static class EnumMarshaller extends JsonMarshaller<Enum> {
