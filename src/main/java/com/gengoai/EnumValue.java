@@ -22,17 +22,22 @@
 
 package com.gengoai;
 
-import com.gengoai.annotation.JsonMarshaller;
+import com.gengoai.annotation.JsonAdapter;
 import com.gengoai.application.CommandLineParser;
 import com.gengoai.application.NamedOption;
 import com.gengoai.config.Preloader;
 import com.gengoai.conversion.Cast;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
+import com.gengoai.json.JsonEntry;
+import com.gengoai.json.JsonMarshaller;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionUtils;
 import com.gengoai.reflection.Types;
-import com.google.gson.*;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
@@ -59,7 +64,7 @@ import java.lang.reflect.Type;
  *
  *    //Can retrieve all instances in an unmodifiable set using the values method
  *    Set<MyEnum> allColors = MyEnum.values();
- * }
+ * }*
  * </pre>
  *
  *
@@ -68,19 +73,26 @@ import java.lang.reflect.Type;
  * use Mango's {@link Preloader} to load during application startup.
  * </p>
  *
+ * @param <T> the type parameter
  * @author David B. Bracewell
  */
-@JsonMarshaller(EnumValue.Marshaller.class)
+@JsonAdapter(EnumValue.Marshaller.class)
 public abstract class EnumValue<T extends EnumValue> implements Tag, Serializable, Cloneable, Comparable<T> {
    private static final long serialVersionUID = 1L;
    private final String fullName;
    private final String name;
 
 
-   public static class Marshaller implements JsonDeserializer<EnumValue>, JsonSerializer<EnumValue> {
+   /**
+    * Json Marshaller for EnumValues and sub-classes
+    */
+   public static class Marshaller extends JsonMarshaller<EnumValue> {
 
       @Override
-      public EnumValue deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+      public EnumValue deserialize(JsonEntry jsonElement,
+                                   Type type,
+                                   JsonDeserializationContext jsonDeserializationContext
+                                  ) {
          String name = jsonElement.getAsString();
          if (type == EnumValue.class) {
             type = ReflectionUtils.getClassForNameQuietly(name.substring(0, name.lastIndexOf('.')));
@@ -111,6 +123,12 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
    }
 
 
+   /**
+    * The entry point of application.
+    *
+    * @param args the input arguments
+    * @throws Exception the exception
+    */
    public static void main(String[] args) throws Exception {
       CommandLineParser parser = new CommandLineParser();
       parser.addOption(NamedOption.builder()
