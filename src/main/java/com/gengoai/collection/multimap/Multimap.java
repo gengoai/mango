@@ -1,8 +1,15 @@
 package com.gengoai.collection.multimap;
 
+import com.gengoai.annotation.JsonAdapter;
 import com.gengoai.collection.Collect;
 import com.gengoai.collection.Iterables;
+import com.gengoai.json.JsonEntry;
+import com.gengoai.json.JsonMarshaller;
+import com.gengoai.reflection.Reflect;
+import com.gengoai.reflection.ReflectionException;
+import com.gengoai.reflection.Types;
 
+import java.lang.reflect.Type;
 import java.util.*;
 
 /**
@@ -13,7 +20,46 @@ import java.util.*;
  * @param <V> the value type parameter
  * @author David B. Bracewell
  */
+@JsonAdapter(Multimap.MultimapMarshaller.class)
 public interface Multimap<K, V> {
+
+   class MultimapMarshaller<K, V> extends JsonMarshaller<Multimap<K, V>> {
+
+      @Override
+      protected Multimap<K, V> deserialize(JsonEntry entry, Type type) {
+         Type[] params = Types.getActualTypeArguments(type);
+         Type keyType = Types.getOrObject(0, params);
+         Type valueType = Types.getOrObject(1, params);
+
+         Class<?> mClass = Types.asClass(type);
+         if (mClass == Multimap.class) {
+            mClass = ArrayListMultimap.class;
+         }
+         final Multimap<K, V> map;
+         try {
+            map = Reflect.onClass(mClass).create().get();
+         } catch (ReflectionException e) {
+            throw new RuntimeException(e);
+         }
+         entry.elementIterator()
+              .forEachRemaining(obj -> {
+                 K key = obj.getProperty("key").getAs(keyType);
+                 obj.getProperty("values")
+                    .elementIterator()
+                    .forEachRemaining(v -> map.put(key, v.getAs(valueType)));
+              });
+         return map;
+      }
+
+      @Override
+      protected JsonEntry serialize(Multimap<K, V> map, Type type) {
+         JsonEntry out = JsonEntry.array();
+         map.keySet().forEach(key -> out.addValue(JsonEntry.object()
+                                                           .addProperty("key", key)
+                                                           .addProperty("values", map.get(key))));
+         return out;
+      }
+   }
 
    /**
     * A map representation of the multimap where the values are represented in a Collection.

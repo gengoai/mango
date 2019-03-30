@@ -1,11 +1,16 @@
 package com.gengoai.collection.tree;
 
+import com.gengoai.annotation.JsonAdapter;
 import com.gengoai.collection.Iterables;
 import com.gengoai.collection.Lists;
 import com.gengoai.collection.Streams;
 import com.gengoai.conversion.Cast;
+import com.gengoai.json.JsonEntry;
+import com.gengoai.json.JsonMarshaller;
+import com.gengoai.reflection.Types;
 
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.util.*;
 
 /**
@@ -15,15 +20,33 @@ import java.util.*;
  * @author David B. Bracewell
  */
 @SuppressWarnings("unchecked")
+@JsonAdapter(IntervalTree.IntervalTreeMarshaller.class)
 public class IntervalTree<T extends Span> implements Serializable, Collection<T> {
    private static final long serialVersionUID = 1L;
-
    private static final Node<?> NULL = new Node<>(null, null, null, new Span(0, Integer.MAX_VALUE));
 
    static {
       NULL.left = Cast.as(NULL);
       NULL.right = Cast.as(NULL);
       NULL.parent = Cast.as(NULL);
+   }
+
+
+   public static class IntervalTreeMarshaller<T extends Span> extends JsonMarshaller<IntervalTree<T>> {
+
+      @Override
+      protected IntervalTree<T> deserialize(JsonEntry entry, Type type) {
+         IntervalTree<T> tree = new IntervalTree<>();
+         Type tType = Types.getOrObject(0, Types.getActualTypeArguments(type));
+         entry.elementIterator()
+              .forEachRemaining(e -> tree.add(e.getAs(tType)));
+         return tree;
+      }
+
+      @Override
+      protected JsonEntry serialize(IntervalTree<T> ts, Type type) {
+         return JsonEntry.array(ts);
+      }
    }
 
    /**
