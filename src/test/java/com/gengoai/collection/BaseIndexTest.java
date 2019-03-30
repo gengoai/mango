@@ -22,6 +22,7 @@
 package com.gengoai.collection;
 
 import com.gengoai.json.JsonEntry;
+import com.gengoai.reflection.Types;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -50,13 +51,11 @@ public abstract class BaseIndexTest {
    }
 
 
-   public abstract Index<String> fromJson(JsonEntry entry);
-
    @Test
    public void testJson() throws Exception {
       Index<String> index = getIndex();
-      JsonEntry entry = index.toJson();
-      Index<String> fromJson = fromJson(entry);
+      JsonEntry entry = JsonEntry.from(index);
+      Index<String> fromJson = entry.getAs(Types.parameterizedType(index.getClass(), String.class));
       assertEquals(index, fromJson);
    }
 

@@ -1,6 +1,7 @@
 package com.gengoai;
 
 import com.gengoai.json.JsonEntry;
+import com.gengoai.reflection.Types;
 import org.junit.Test;
 
 import java.lang.reflect.Type;
@@ -84,10 +85,8 @@ public class NamedParametersTest {
    public void json() {
       NamedParameters<P> n = NamedParameters.params(P.ARG1, 20,
                                                     P.ARG2, "ALPHABET");
-      JsonEntry e = n.toJson();
-
-      NamedParameters<P> nDes = NamedParameters.fromJson(e, P.class);
-
+      JsonEntry e = JsonEntry.from(n);
+      NamedParameters<P> nDes = e.getAs(Types.parameterizedType(NamedParameters.class, P.class));
       assertEquals(n, nDes);
    }
 }

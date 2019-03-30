@@ -1,7 +1,5 @@
 package com.gengoai.graph;
 
-import com.gengoai.json.JsonEntry;
-
 import java.util.Objects;
 
 /**
@@ -18,11 +16,11 @@ public class DirectedEdge<V> extends Edge<V> {
       this.weight = weight;
    }
 
-   @Override
-   public JsonEntry toJson() {
-      return JsonEntry.object()
-                      .addProperty("weight", weight);
-   }
+//   @Override
+//   public JsonEntry toJson() {
+//      return JsonEntry.object()
+//                      .addProperty("weight", weight);
+//   }
 
    @Override
    public double getWeight() {

@@ -1,10 +1,8 @@
 package com.gengoai.collection;
 
 import com.gengoai.conversion.Cast;
-import com.gengoai.json.JsonEntry;
 
 import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -23,19 +21,19 @@ public class HashBasedTable<R, C, V> implements Table<R, C, V>, Serializable {
 
    private final Map<R, Map<C, V>> map = new HashMap<>();
 
-   /**
-    * Static method for deserializing a HashBasedTable from  json
-    *
-    * @param <R>    the row type parameter
-    * @param <C>    the column type parameter
-    * @param <V>    the value type parameter
-    * @param entry  the json entry
-    * @param params the params (row, column, value)
-    * @return the table
-    */
-   public static <R, C, V> Table<R, C, V> fromJson(JsonEntry entry, Type... params) {
-      return Table.fromJson(new HashBasedTable<>(), entry, params);
-   }
+//   /**
+//    * Static method for deserializing a HashBasedTable from  json
+//    *
+//    * @param <R>    the row type parameter
+//    * @param <C>    the column type parameter
+//    * @param <V>    the value type parameter
+//    * @param entry  the json entry
+//    * @param params the params (row, column, value)
+//    * @return the table
+//    */
+//   public static <R, C, V> Table<R, C, V> fromJson(JsonEntry entry, Type... params) {
+//      return Table.fromJson(new HashBasedTable<>(), entry, params);
+//   }
 
    @Override
    public void clear() {

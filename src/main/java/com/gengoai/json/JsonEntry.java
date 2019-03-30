@@ -1,35 +1,30 @@
 package com.gengoai.json;
 
-import com.gengoai.EnumValue;
-import com.gengoai.Primitives;
-import com.gengoai.collection.*;
+import com.gengoai.collection.Iterators;
+import com.gengoai.collection.Lists;
+import com.gengoai.collection.Sets;
+import com.gengoai.collection.Streams;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Converter;
-import com.gengoai.conversion.TypeConversionException;
 import com.gengoai.conversion.Val;
-import com.gengoai.reflection.Reflect;
-import com.gengoai.reflection.ReflectionException;
-import com.gengoai.reflection.ReflectionUtils;
 import com.google.gson.*;
 
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import static com.gengoai.Validation.checkState;
 import static com.gengoai.json.Json.MAPPER;
-import static com.gengoai.reflection.Types.*;
 import static com.gengoai.tuple.Tuples.$;
 
 /**
  * <p>A convenience wrapper around <code>JsonElement</code> allowing a single interface for objects, arrays, and
- * primitives that understands {@link JsonSerializable} objects</p>
+ * primitives</p>
  */
 public class JsonEntry {
    private final JsonElement element;
+
 
    private JsonEntry(JsonElement element) {
       this.element = element;
@@ -46,28 +41,6 @@ public class JsonEntry {
       JsonEntry entry = new JsonEntry(new JsonArray());
       items.forEach(entry::addValue);
       return entry;
-   }
-
-   public Object get() {
-      if (isString()) {
-         return getAsString();
-      }
-      if (isNumber()) {
-         return getAsNumber();
-      }
-      if (isBoolean()) {
-         return getAsBoolean();
-      }
-      if (isNull()) {
-         return getAsNumber();
-      }
-      if (isObject()) {
-         return getAsMap();
-      }
-      if (isArray()) {
-         return getAsArray();
-      }
-      return getAs(Object.class);
    }
 
    /**
@@ -87,8 +60,7 @@ public class JsonEntry {
    }
 
    /**
-    * Creates an entry from the given object. This method is {@link JsonSerializable} aware and will also correctly
-    * handle serializable values in maps, arrays, and collections.
+    * Creates an entry from the given object.
     *
     * @param v the value to create the entry from.
     * @return the json entry
@@ -134,38 +106,6 @@ public class JsonEntry {
    private static JsonElement toElement(Object v) {
       if (v == null) {
          return JsonNull.INSTANCE;
-      } else if (v instanceof JsonEntry) {
-         return Cast.<JsonEntry>as(v).element;
-      } else if (v instanceof Boolean) {
-         return new JsonPrimitive((Boolean) v);
-      } else if (v instanceof Number) {
-         return new JsonPrimitive((Number) v);
-      } else if (v instanceof Character) {
-         return new JsonPrimitive((Character) v);
-      } else if (v instanceof Class<?>) {
-         return new JsonPrimitive(((Class<?>) v).getCanonicalName());
-      } else if (v instanceof JsonSerializable) {
-         return Cast.<JsonSerializable>as(v).toJson().getElement();
-      } else if (v instanceof Map) {
-         return mapToElement(Cast.<Map<?, ?>>as(v));
-      } else if (v instanceof Collection) {
-         return iterableToElement(Cast.<Iterable<?>>as(v));
-      } else if (v instanceof Iterator) {
-         return iterableToElement(Iterables.asIterable(Cast.as(v)));
-      } else if (v.getClass().isArray() && v.getClass().getComponentType().isPrimitive()) {
-         return MAPPER.toJsonTree(v);
-      } else if (v.getClass().isArray()) {
-         return iterableToElement(Arrays.asList((Object[]) v));
-      } else if (v instanceof ParameterizedType) {
-         ParameterizedType pt = Cast.as(v);
-         return JsonEntry.object()
-                         .addProperty("rawType", pt.getRawType())
-                         .addProperty("actualTypeArguments", pt.getActualTypeArguments())
-                   .element;
-      } else if (v instanceof Enum) {
-         return new JsonPrimitive(((Enum) v).getDeclaringClass().getName() + "." + Cast.<Enum>as(v).name());
-      } else if (v instanceof EnumValue) {
-         return new JsonPrimitive(Cast.<EnumValue>as(v).canonicalName());
       }
       return MAPPER.toJsonTree(v);
    }
@@ -179,7 +119,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry's element is not a json object
     */
    public JsonEntry addProperty(String name, Object value) {
-      checkState(element.isJsonObject(), "Entry (" + element.getClass().getName() + ") is not an object.");
       element.getAsJsonObject().add(name, toElement(value));
       return this;
    }
@@ -203,8 +142,11 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry's element is not a json array
     */
    public Iterator<JsonEntry> elementIterator() {
-      checkState(element.isJsonArray(), "Entry (" + element.getClass().getName() + ") is not an array.");
       return Iterators.transform(element.getAsJsonArray().iterator(), JsonEntry::new);
+   }
+
+   public Stream<JsonEntry> elementStream() {
+      return Streams.asStream(elementIterator());
    }
 
    @Override
@@ -235,105 +177,40 @@ public class JsonEntry {
       propertyIterator().forEachRemaining(e -> consumer.accept(e.getKey(), e.getValue()));
    }
 
-   public <T> T getAs(ParameterizedType pt) {
-      if (pt == null) {
-         return getAsVal().cast();
-      }
-      Class<?> rawType = asClass(pt.getRawType());
-      Class<?> c1Type = pt.getActualTypeArguments().length > 0 ? Cast.as(pt.getActualTypeArguments()[0]) : Object.class;
-      if (JsonSerializable.class.isAssignableFrom(rawType)) {
-         try {
-            return Cast.as(Reflect.onClass(rawType)
-                                  .allowPrivilegedAccess()
-                                  .invoke("fromJson", this, pt.getActualTypeArguments())
-                                  .get());
-         } catch (ReflectionException e) {
-            throw new RuntimeException(e.getCause());
-         }
-      } else if (isCollection(rawType)) {
-         return Cast.as(getAsArray(c1Type, Collect.newCollection(Cast.as(rawType))));
-      } else if (isIterable(rawType)) {
-         return Cast.as(getAsArray(c1Type));
-      } else if (isIterator(rawType)) {
-         return Cast.as(getAsArray(c1Type).iterator());
-      } else if (rawType.isArray()) {
-         return Cast.as(Converter.convertSilently(getAsArray(c1Type), rawType, c1Type));
-      } else if (Map.class.isAssignableFrom(rawType)) {
-         Class<?> c2Type = Cast.as(pt.getActualTypeArguments()[1]);
-         return Cast.as(Converter.convertSilently(getAsMap(c2Type), rawType, c1Type, c2Type));
-      } else {
-         try {
-            return Converter.convert(get(), pt);
-         } catch (TypeConversionException e) {
-            //ignore
-         }
-      }
-      return getAs(rawType);
-   }
+//   public <T> T getAs(ParameterizedType pt) {
+//      return MAPPER.fromJson(element, pt);
+//   }
 
-
-   public Stream<JsonEntry> elementStream() {
-      return Streams.asStream(elementIterator());
+   public Object get() {
+      if (isString()) {
+         return getAsString();
+      }
+      if (isNumber()) {
+         return getAsNumber();
+      }
+      if (isBoolean()) {
+         return getAsBoolean();
+      }
+      if (isNull()) {
+         return getAsNumber();
+      }
+      if (isObject()) {
+         return getAsMap();
+      }
+      if (isArray()) {
+         return getAsArray();
+      }
+      return getAs(Object.class);
    }
 
    /**
-    * Gets the value of this entry as the given class. This method is {@link JsonSerializable} aware and will look for a
-    * static <code>fromJson(JsonEntry)</code> method on the class if it is a subclass.
+    * Gets the value of this entry as the given class.
     *
     * @param <T>  the type parameter
     * @param type the type information for the type to be generated
     * @return the value
     */
    public <T> T getAs(Type type) {
-      if (type == null) {
-         return getAsVal().cast();
-      }
-
-      if (type instanceof ParameterizedType) {
-         return getAs((ParameterizedType) type);
-      }
-
-      if (isAssignable(ParameterizedType.class, type)
-             || (isAssignable(Type.class, type) && hasProperty("rawType"))) {
-         Type rawType = getProperty("rawType").getAs(Type.class);
-         Type[] parameterTypes = getProperty("actualTypeArguments").elementStream()
-                                                                   .map(e -> e.getAs(Type.class))
-                                                                   .toArray(Type[]::new);
-         return Cast.as(parameterizedType(rawType, parameterTypes));
-      }
-
-      if (isAssignable(Type.class, type)) {
-         try {
-            return Cast.as(ReflectionUtils.getClassForName(getAsString()));
-         } catch (Exception e) {
-            throw new RuntimeException(e);
-         }
-      }
-
-      if (isAssignable(JsonSerializable.class, type)) {
-         try {
-            return Cast.as(Reflect.onClass(asClass(type))
-                                  .allowPrivilegedAccess()
-                                  .invoke("fromJson", this, new Type[]{})
-                                  .get());
-         } catch (ReflectionException e) {
-            throw new RuntimeException(e.getCause());
-         }
-      }
-
-      Class<T> wrapped = Primitives.wrap(asClass(type));
-      if (wrapped == String.class) {
-         return Cast.as(getAsString());
-      }
-
-      if (isAssignable(Number.class, wrapped)) {
-         try {
-            return Converter.convert(getAsNumber(), wrapped);
-         } catch (TypeConversionException e) {
-            throw new RuntimeException(e);
-         }
-      }
-
       return MAPPER.fromJson(element, type);
    }
 
@@ -344,41 +221,7 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry's element is not a json array
     */
    public List<JsonEntry> getAsArray() {
-      checkState(element.isJsonArray(), "Entry (" + element.getClass().getName() + ") is not an array.");
       return new ElementList(element.getAsJsonArray());
-   }
-
-   public double[] getAsDoubleArray() {
-      checkState(element.isJsonArray(), "Entry (" + element.getClass().getName() + ") is not an array.");
-      double[] out = new double[element.getAsJsonArray().size()];
-      int i = 0;
-      for (JsonElement jsonElement : element.getAsJsonArray()) {
-         out[i] = jsonElement.getAsDouble();
-         i++;
-      }
-      return out;
-   }
-
-   public int[] getAsIntArray() {
-      checkState(element.isJsonArray(), "Entry (" + element.getClass().getName() + ") is not an array.");
-      int[] out = new int[element.getAsJsonArray().size()];
-      int i = 0;
-      for (JsonElement jsonElement : element.getAsJsonArray()) {
-         out[i] = jsonElement.getAsInt();
-         i++;
-      }
-      return out;
-   }
-
-   public boolean[] getAsBooleanArray() {
-      checkState(element.isJsonArray(), "Entry (" + element.getClass().getName() + ") is not an array.");
-      boolean[] out = new boolean[element.getAsJsonArray().size()];
-      int i = 0;
-      for (JsonElement jsonElement : element.getAsJsonArray()) {
-         out[i] = jsonElement.getAsBoolean();
-         i++;
-      }
-      return out;
    }
 
    /**
@@ -390,7 +233,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry's element is not a json array
     */
    public <T> List<T> getAsArray(Type clazz) {
-      checkState(element.isJsonArray(), () -> "Entry (" + element.getClass().getName() + ") is not an array.");
       return Lists.transform(getAsArray(), entry -> entry.getAs(clazz));
    }
 
@@ -399,7 +241,6 @@ public class JsonEntry {
    }
 
    public <T, E extends Collection<T>> E getAsArray(Type clazz, E collection) {
-      checkState(element.isJsonArray(), () -> "Entry (" + element.getClass().getName() + ") is not an array.");
       elementIterator().forEachRemaining(je -> collection.add(je.getAs(clazz)));
       return collection;
    }
@@ -411,8 +252,17 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry's element is not a json primitive
     */
    public boolean getAsBoolean() {
-      checkState(element.isJsonPrimitive(), "Entry (" + element.getClass().getName() + ") is not a primitive.");
       return element.getAsBoolean();
+   }
+
+   public boolean[] getAsBooleanArray() {
+      boolean[] out = new boolean[element.getAsJsonArray().size()];
+      int i = 0;
+      for (JsonElement jsonElement : element.getAsJsonArray()) {
+         out[i] = jsonElement.getAsBoolean();
+         i++;
+      }
+      return out;
    }
 
    /**
@@ -422,7 +272,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry's element is not a json primitive
     */
    public byte getAsByte() {
-      checkState(element.isJsonPrimitive(), "Entry (" + element.getClass().getName() + ") is not a primitive.");
       return element.getAsByte();
    }
 
@@ -433,7 +282,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry's element is not a json primitive
     */
    public Character getAsCharacter() {
-      checkState(element.isJsonPrimitive(), "Entry (" + element.getClass().getName() + ") is not a primitive.");
       return element.getAsCharacter();
    }
 
@@ -444,8 +292,17 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry's element is not a json primitive
     */
    public double getAsDouble() {
-      checkState(element.isJsonPrimitive(), "Entry (" + element.getClass().getName() + ") is not a primitive.");
       return element.getAsDouble();
+   }
+
+   public double[] getAsDoubleArray() {
+      double[] out = new double[element.getAsJsonArray().size()];
+      int i = 0;
+      for (JsonElement jsonElement : element.getAsJsonArray()) {
+         out[i] = jsonElement.getAsDouble();
+         i++;
+      }
+      return out;
    }
 
    /**
@@ -455,7 +312,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry's element is not a json primitive
     */
    public float getAsFloat() {
-      checkState(element.isJsonPrimitive(), "Entry (" + element.getClass().getName() + ") is not a primitive.");
       return element.getAsFloat();
    }
 
@@ -466,8 +322,17 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry's element is not a json primitive
     */
    public int getAsInt() {
-      checkState(element.isJsonPrimitive(), "Entry (" + element.getClass().getName() + ") is not a primitive.");
       return element.getAsInt();
+   }
+
+   public int[] getAsIntArray() {
+      int[] out = new int[element.getAsJsonArray().size()];
+      int i = 0;
+      for (JsonElement jsonElement : element.getAsJsonArray()) {
+         out[i] = jsonElement.getAsInt();
+         i++;
+      }
+      return out;
    }
 
    /**
@@ -477,7 +342,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry's element is not a json primitive
     */
    public long getAsLong() {
-      checkState(element.isJsonPrimitive(), "Entry (" + element.getClass().getName() + ") is not a primitive.");
       return element.getAsLong();
    }
 
@@ -489,7 +353,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry's element is not a json object
     */
    public Map<String, JsonEntry> getAsMap() {
-      checkState(element.isJsonObject(), "Entry (" + element.getClass().getName() + ") is not an object.");
       return new ElementMap(element.getAsJsonObject());
    }
 
@@ -503,7 +366,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry's element is not a json object
     */
    public <T> Map<String, T> getAsMap(Type clazz) {
-      checkState(element.isJsonObject(), "Entry (" + element.getClass().getName() + ") is not an object.");
       Map<String, T> map = new HashMap<>();
       propertyIterator().forEachRemaining(e -> map.put(e.getKey(), e.getValue().getAs(clazz)));
       return map;
@@ -516,7 +378,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry's element is not a json primitive
     */
    public Number getAsNumber() {
-      checkState(element.isJsonPrimitive(), "Entry (" + element.getClass().getName() + ") is not a primitive.");
       return element.getAsNumber();
    }
 
@@ -527,7 +388,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry's element is not a json primitive
     */
    public short getAsShort() {
-      checkState(element.isJsonPrimitive(), "Entry (" + element.getClass().getName() + ") is not a primitive.");
       return element.getAsShort();
    }
 
@@ -586,7 +446,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry is not a json object
     */
    public boolean getBooleanProperty(String propertyName, boolean defaultValue) {
-      checkState(element.isJsonObject(), "Entry (" + element.getClass().getName() + ") is not an object.");
       if (element.getAsJsonObject().has(propertyName)) {
          return element.getAsJsonObject().get(propertyName).getAsBoolean();
       }
@@ -613,7 +472,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry is not a json object
     */
    public Character getCharacterProperty(String propertyName, Character defaultValue) {
-      checkState(element.isJsonObject(), "Entry (" + element.getClass().getName() + ") is not an object.");
       if (element.getAsJsonObject().has(propertyName)) {
          return element.getAsJsonObject().get(propertyName).getAsCharacter();
       }
@@ -641,7 +499,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry is not a json object
     */
    public double getDoubleProperty(String propertyName, double defaultValue) {
-      checkState(element.isJsonObject(), "Entry (" + element.getClass().getName() + ") is not an object.");
       if (element.getAsJsonObject().has(propertyName)) {
          return element.getAsJsonObject().get(propertyName).getAsDouble();
       }
@@ -678,7 +535,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry is not a json object
     */
    public float getFloatProperty(String propertyName, float defaultValue) {
-      checkState(element.isJsonObject(), "Entry (" + element.getClass().getName() + ") is not an object.");
       if (element.getAsJsonObject().has(propertyName)) {
          return element.getAsJsonObject().get(propertyName).getAsFloat();
       }
@@ -706,7 +562,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry is not a json object
     */
    public int getIntProperty(String propertyName, int defaultValue) {
-      checkState(element.isJsonObject(), "Entry (" + element.getClass().getName() + ") is not an object.");
       if (element.getAsJsonObject().has(propertyName)) {
          return element.getAsJsonObject().get(propertyName).getAsInt();
       }
@@ -734,7 +589,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry is not a json object
     */
    public long getLongProperty(String propertyName, long defaultValue) {
-      checkState(element.isJsonObject(), "Entry (" + element.getClass().getName() + ") is not an object.");
       if (element.getAsJsonObject().has(propertyName)) {
          return element.getAsJsonObject().get(propertyName).getAsLong();
       }
@@ -762,7 +616,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry is not a json object
     */
    public Number getNumberProperty(String propertyName, Number defaultValue) {
-      checkState(element.isJsonObject(), "Entry (" + element.getClass().getName() + ") is not an object.");
       if (element.getAsJsonObject().has(propertyName)) {
          return element.getAsJsonObject().get(propertyName).getAsNumber();
       }
@@ -778,7 +631,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry is not a json object
     */
    public JsonEntry getProperty(String propertyName) {
-      checkState(element.isJsonObject(), "Entry (" + element.getClass().getName() + ") is not an object.");
       return new JsonEntry(element.getAsJsonObject().get(propertyName));
    }
 
@@ -791,7 +643,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry is not a json object
     */
    public JsonEntry getProperty(String propertyName, Object defaultValue) {
-      checkState(element.isJsonObject(), "Entry (" + element.getClass().getName() + ") is not an object.");
       if (element.getAsJsonObject().has(propertyName)) {
          return new JsonEntry(element.getAsJsonObject().get(propertyName));
       }
@@ -808,7 +659,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry is not a json object
     */
    public <T> T getProperty(String propertyName, Class<T> clazz) {
-      checkState(element.isJsonObject(), "Entry (" + element.getClass().getName() + ") is not an object.");
       return new JsonEntry(element.getAsJsonObject().get(propertyName)).getAs(clazz);
    }
 
@@ -823,7 +673,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry is not a json object
     */
    public <T> T getProperty(String propertyName, Class<T> clazz, T defaultValue) {
-      checkState(element.isJsonObject(), "Entry (" + element.getClass().getName() + ") is not an object.");
       if (element.getAsJsonObject().has(propertyName)) {
          return new JsonEntry(element.getAsJsonObject().get(propertyName)).getAs(clazz);
       }
@@ -850,7 +699,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry is not a json object
     */
    public String getStringProperty(String propertyName, String defaultValue) {
-      checkState(element.isJsonObject(), "Entry (" + element.getClass().getName() + ") is not an object.");
       if (element.getAsJsonObject().has(propertyName)) {
          return element.getAsJsonObject().get(propertyName).getAsString();
       }
@@ -865,7 +713,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry is not a json object
     */
    public Val getValProperty(String propertyName) {
-      checkState(element.isJsonObject(), "Entry (" + element.getClass().getName() + ") is not an object.");
       if (element.getAsJsonObject().has(propertyName)) {
          return new JsonEntry(element.getAsJsonObject().get(propertyName)).getAsVal();
       }
@@ -881,7 +728,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry is not a json object
     */
    public Val getValProperty(String propertyName, Object defaultValue) {
-      checkState(element.isJsonObject(), "Entry (" + element.getClass().getName() + ") is not an object.");
       if (element.getAsJsonObject().has(propertyName)) {
          return new JsonEntry(element.getAsJsonObject().get(propertyName)).getAsVal();
       }
@@ -916,12 +762,30 @@ public class JsonEntry {
    }
 
    /**
+    * Is boolean boolean.
+    *
+    * @return the boolean
+    */
+   public boolean isBoolean() {
+      return isPrimitive() && element.getAsJsonPrimitive().isBoolean();
+   }
+
+   /**
     * Checks if this entry is a json null value
     *
     * @return true if a json null value, false otherwise
     */
    public boolean isNull() {
       return element.isJsonNull();
+   }
+
+   /**
+    * Is number boolean.
+    *
+    * @return the boolean
+    */
+   public boolean isNumber() {
+      return isPrimitive() && element.getAsJsonPrimitive().isNumber();
    }
 
    /**
@@ -951,25 +815,6 @@ public class JsonEntry {
       return isPrimitive() && element.getAsJsonPrimitive().isString();
    }
 
-
-   /**
-    * Is number boolean.
-    *
-    * @return the boolean
-    */
-   public boolean isNumber() {
-      return isPrimitive() && element.getAsJsonPrimitive().isNumber();
-   }
-
-   /**
-    * Is boolean boolean.
-    *
-    * @return the boolean
-    */
-   public boolean isBoolean() {
-      return isPrimitive() && element.getAsJsonPrimitive().isBoolean();
-   }
-
    /**
     * Gets the keys (property names).
     *
@@ -993,6 +838,17 @@ public class JsonEntry {
                                     e -> $(e.getKey(), new JsonEntry(e.getValue())));
       }
       return Collections.emptyIterator();
+   }
+
+   public int size() {
+      if (element.isJsonObject()) {
+         return element.getAsJsonObject().size();
+      } else if (element.isJsonArray()) {
+         return element.getAsJsonArray().size();
+      } else if (element.isJsonNull()) {
+         return 0;
+      }
+      return 1;
    }
 
    @Override

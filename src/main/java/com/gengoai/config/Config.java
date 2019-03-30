@@ -33,7 +33,6 @@ import com.gengoai.io.Resources;
 import com.gengoai.io.resource.ClasspathResource;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.json.JsonSerializable;
 import com.gengoai.logging.LogManager;
 import com.gengoai.logging.Logger;
 import com.gengoai.parsing.ParseException;
@@ -64,7 +63,7 @@ import java.util.stream.Stream;
  *
  * @author David B. Bracewell
  */
-public final class Config implements Serializable, JsonSerializable {
+public final class Config implements Serializable {
    /**
     * File extensions for config files.
     */
@@ -629,7 +628,6 @@ public final class Config implements Serializable, JsonSerializable {
       getInstance().loaded.addAll(Cast.<Set<String>>as(in.readObject()));
    }
 
-   @Override
    public JsonEntry toJson() {
       return JsonEntry.object()
                       .addProperty("loaded", loaded)

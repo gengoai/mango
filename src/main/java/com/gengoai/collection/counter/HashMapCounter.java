@@ -21,9 +21,6 @@
 
 package com.gengoai.collection.counter;
 
-import com.gengoai.json.JsonEntry;
-
-import java.lang.reflect.Type;
 import java.util.HashMap;
 
 /**
@@ -47,16 +44,16 @@ public class HashMapCounter<T> extends BaseMapCounter<T> {
       return new HashMapCounter<>();
    }
 
-   /**
-    * Static method for deserializing a <code>HashMapCounter</code> from json.
-    *
-    * @param <T>   the key type parameter
-    * @param entry the json entry
-    * @param types the key type parameter information
-    * @return the counter
-    */
-   static <T> Counter<T> fromJson(JsonEntry entry, Type... types) {
-      return Counter.fromJson(new HashMapCounter<>(), entry, types);
-   }
+//   /**
+//    * Static method for deserializing a <code>HashMapCounter</code> from json.
+//    *
+//    * @param <T>   the key type parameter
+//    * @param entry the json entry
+//    * @param types the key type parameter information
+//    * @return the counter
+//    */
+//   static <T> Counter<T> fromJson(JsonEntry entry, Type... types) {
+//      return Counter.fromJson(new HashMapCounter<>(), entry, types);
+//   }
 
 }//END OF HashMapCounter

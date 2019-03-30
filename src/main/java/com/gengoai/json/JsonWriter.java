@@ -250,8 +250,6 @@ public final class JsonWriter implements AutoCloseable, Closeable {
          writer.nullValue();
       } else if (value instanceof JsonElement) {
          write(Cast.as(value));
-      } else if (value instanceof JsonSerializable) {
-         write(Cast.<JsonSerializable>as(value).toJson());
       } else if (value instanceof Double) {
          writer.value(Cast.<Double>as(value));
       } else if (value instanceof Long) {

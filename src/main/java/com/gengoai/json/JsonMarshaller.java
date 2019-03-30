@@ -31,11 +31,17 @@ import java.lang.reflect.Type;
  */
 public abstract class JsonMarshaller<T> implements JsonSerializer<T>, JsonDeserializer<T> {
 
-   protected abstract T deserialize(JsonEntry entry, Type typeOfT, JsonDeserializationContext jsonDeserializationContext);
+   protected abstract T deserialize(JsonEntry entry, Type type);
+
+   protected abstract JsonEntry serialize(T t, Type type);
 
    @Override
    public final T deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-      return deserialize(JsonEntry.from(jsonElement), type, jsonDeserializationContext);
+      return deserialize(JsonEntry.from(jsonElement), type);
    }
 
+   @Override
+   public final JsonElement serialize(T t, Type type, JsonSerializationContext jsonSerializationContext) {
+      return serialize(t, type).getElement();
+   }
 }//END OF JsonMarshaller

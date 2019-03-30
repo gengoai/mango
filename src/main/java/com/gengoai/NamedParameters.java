@@ -1,11 +1,12 @@
 package com.gengoai;
 
+import com.gengoai.annotation.JsonAdapter;
 import com.gengoai.collection.Iterators;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Converter;
 import com.gengoai.conversion.TypeConversionException;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.json.JsonSerializable;
+import com.gengoai.json.JsonMarshaller;
 import com.gengoai.reflection.Types;
 
 import java.io.Serializable;
@@ -31,7 +32,8 @@ import static com.gengoai.reflection.Types.asClass;
  * @param <K> the type parameter
  * @author David B. Bracewell
  */
-public final class NamedParameters<K extends Enum<K> & NamedParameters.Value> implements Iterable<K>, Copyable<NamedParameters<K>>, JsonSerializable, Serializable {
+@JsonAdapter(NamedParameters.NamedParameterMarshaller.class)
+public final class NamedParameters<K extends Enum<K> & NamedParameters.Value> implements Iterable<K>, Copyable<NamedParameters<K>>, Serializable {
    private static final long serialVersionUID = 1L;
    private final EnumMap<K, Object> parameters;
 
@@ -224,32 +226,56 @@ public final class NamedParameters<K extends Enum<K> & NamedParameters.Value> im
       return this;
    }
 
-   @Override
-   public JsonEntry toJson() {
-      JsonEntry object = JsonEntry.object();
-      asMap().forEach((k, v) -> object.addProperty(k.toString(), v));
-      return object;
+//   @Override
+//   public JsonEntry toJson() {
+//      JsonEntry object = JsonEntry.object();
+//      asMap().forEach((k, v) -> object.addProperty(k.toString(), v));
+//      return object;
+//   }
+
+
+   public static class NamedParameterMarshaller<K extends Enum<K> & Value> extends JsonMarshaller<NamedParameters<K>> {
+
+      @Override
+      protected NamedParameters<K> deserialize(JsonEntry entry, Type type) {
+         Class<K> keyClass = Cast.as(Types.getActualTypeArguments(type)[0]);
+         NamedParameters<K> parameters = new NamedParameters<>(keyClass);
+         entry.propertyIterator()
+              .forEachRemaining(e -> {
+                 K key = Enum.valueOf(keyClass, e.getKey());
+                 Object value = e.getValue().getAs(key.getValueType());
+                 parameters.set(key, value);
+              });
+         return Cast.as(parameters);
+      }
+
+      @Override
+      protected JsonEntry serialize(NamedParameters<K> ks, Type type) {
+         JsonEntry object = JsonEntry.object();
+         ks.asMap().forEach((k, v) -> object.addProperty(k.toString(), v));
+         return object;
+      }
    }
 
-   /**
-    * Static method to construct a parameter set from a json entry and key class.
-    *
-    * @param <K>   the key type parameter
-    * @param entry the json entry to parse
-    * @param types the parameter types
-    * @return the parameter set
-    */
-   public static <K extends Enum<K> & Value> NamedParameters<K> fromJson(JsonEntry entry, Type... types) {
-      Class<K> keyClass = Cast.as(asClass(types[0]));
-      NamedParameters<K> parameters = new NamedParameters<>(keyClass);
-      entry.propertyIterator()
-           .forEachRemaining(e -> {
-              K key = Enum.valueOf(keyClass, e.getKey());
-              Object value = e.getValue().getAs(key.getValueType());
-              parameters.set(key, value);
-           });
-      return Cast.as(parameters);
-   }
+//   /**
+//    * Static method to construct a parameter set from a json entry and key class.
+//    *
+//    * @param <K>   the key type parameter
+//    * @param entry the json entry to parse
+//    * @param types the parameter types
+//    * @return the parameter set
+//    */
+//   public static <K extends Enum<K> & Value> NamedParameters<K> fromJson(JsonEntry entry, Type... types) {
+//      Class<K> keyClass = Cast.as(asClass(types[0]));
+//      NamedParameters<K> parameters = new NamedParameters<>(keyClass);
+//      entry.propertyIterator()
+//           .forEachRemaining(e -> {
+//              K key = Enum.valueOf(keyClass, e.getKey());
+//              Object value = e.getValue().getAs(key.getValueType());
+//              parameters.set(key, value);
+//           });
+//      return Cast.as(parameters);
+//   }
 
    @Override
    public String toString() {

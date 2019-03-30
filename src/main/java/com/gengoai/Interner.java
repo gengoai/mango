@@ -21,9 +21,11 @@
 
 package com.gengoai;
 
+import com.gengoai.annotation.JsonAdapter;
 import com.gengoai.collection.Streams;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.json.JsonSerializable;
+import com.gengoai.json.JsonMarshaller;
+import com.gengoai.reflection.Types;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
@@ -33,7 +35,6 @@ import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 
 import static com.gengoai.Validation.notNull;
-import static com.gengoai.reflection.Types.getOrObject;
 
 /**
  * <p>Mimics {@link String#intern()} with any object using heap memory. Uses weak references so that objects no longer
@@ -42,22 +43,26 @@ import static com.gengoai.reflection.Types.getOrObject;
  * @param <E> the type parameter
  * @author David B. Bracewell
  */
-public final class Interner<E> implements Serializable, JsonSerializable {
+@JsonAdapter(Interner.InternerMarshaller.class)
+public final class Interner<E> implements Serializable {
    private static final long serialVersionUID = 1L;
    private volatile WeakHashMap<E, E> map = new WeakHashMap<>();
 
-   /**
-    * Static method for creating an <code>Interner</code> from a {@link JsonEntry}.
-    *
-    * @param <K>    the type parameter
-    * @param entry  the entry
-    * @param params the params
-    * @return the interner
-    */
-   public static <K> Interner<K> fromJson(JsonEntry entry, Type... params) {
-      Interner<K> interner = new Interner<>();
-      interner.internAll(entry.getAsArray(getOrObject(0, params)));
-      return interner;
+   public static class InternerMarshaller extends JsonMarshaller<Interner> {
+
+      @Override
+      protected Interner deserialize(JsonEntry entry, Type type) {
+         Type[] parameters = Types.getActualTypeArguments(type);
+         Interner<?> interner = new Interner<>();
+         entry.elementIterator()
+              .forEachRemaining(e -> interner.intern(e.getAs(Types.getOrObject(0, parameters))));
+         return interner;
+      }
+
+      @Override
+      protected JsonEntry serialize(Interner interner, Type type) {
+         return JsonEntry.array(interner.map.keySet());
+      }
    }
 
    @Override
@@ -104,11 +109,6 @@ public final class Interner<E> implements Serializable, JsonSerializable {
     */
    public int size() {
       return map.size();
-   }
-
-   @Override
-   public JsonEntry toJson() {
-      return JsonEntry.array(map.keySet());
    }
 
    @Override

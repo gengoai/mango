@@ -23,15 +23,17 @@ package com.gengoai.collection.counter;
 
 
 import com.gengoai.Copyable;
-import com.gengoai.collection.Index;
-import com.gengoai.collection.Indexes;
+import com.gengoai.annotation.JsonAdapter;
 import com.gengoai.conversion.Converter;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVWriter;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.json.JsonSerializable;
+import com.gengoai.json.JsonMarshaller;
 import com.gengoai.math.Math2;
+import com.gengoai.reflection.Reflect;
+import com.gengoai.reflection.ReflectionException;
+import com.gengoai.reflection.Types;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -48,40 +50,40 @@ import static com.gengoai.reflection.Types.getOrObject;
  * @param <T> Component type being counted.
  * @author David B. Bracewell
  */
-public interface Counter<T> extends Copyable<Counter<T>>, JsonSerializable {
+@JsonAdapter(Counter.CounterMarshaller.class)
+public interface Counter<T> extends Copyable<Counter<T>> {
 
-   /**
-    * Common methodology to deserialize a counter from json
-    *
-    * @param <T>     the key type parameter
-    * @param counter The counter to fill
-    * @param entry   the json entry
-    * @param types   the key type parameter information
-    * @return the counter
-    */
-   static <T> Counter<T> fromJson(Counter<T> counter, JsonEntry entry, Type... types) {
-      Type keyType = getOrObject(0, types);
-      Index<T> keys = Indexes.indexOf(entry.getProperty("keys").getAsArray(keyType));
-      int index = 0;
-      for (Iterator<JsonEntry> iterator = entry.getProperty("values").elementIterator(); iterator.hasNext(); ) {
-         counter.set(keys.get(index), iterator.next().getAsDouble());
-         index++;
+   class CounterMarshaller<T> extends JsonMarshaller<Counter<T>> {
+
+      @Override
+      protected Counter<T> deserialize(JsonEntry entry, Type type) {
+         Class<?> cntrClass = Types.asClass(type);
+         if (cntrClass == Counter.class) {
+            cntrClass = HashMapCounter.class;
+         }
+         final Counter<T> counter;
+         try {
+            counter = Reflect.onClass(cntrClass).create().get();
+         } catch (ReflectionException e) {
+            throw new RuntimeException(e);
+         }
+         Type keyType = getOrObject(0, Types.getActualTypeArguments(type));
+         entry.elementIterator()
+              .forEachRemaining(a -> {
+                 List<JsonEntry> av = a.getAsArray();
+                 counter.increment(av.get(0).getAs(keyType), av.get(1).getAsDouble());
+              });
+         return counter;
       }
-      return counter;
+
+      @Override
+      protected JsonEntry serialize(Counter<T> counter, Type type) {
+         JsonEntry entry = JsonEntry.array();
+         counter.forEach((k, v) -> entry.addValue(JsonEntry.array(k, v)));
+         return entry;
+      }
    }
 
-   /**
-    * Static method for deserializing a <code>Counter</code> from json. By default a {@link HashMapCounter} is
-    * returned.
-    *
-    * @param <T>   the key type parameter
-    * @param entry the json entry
-    * @param types the key type parameter information
-    * @return the counter
-    */
-   static <T> Counter<T> fromJson(JsonEntry entry, Type... types) {
-      return Counter.fromJson(new HashMapCounter<>(), entry, types);
-   }
 
    /**
     * Constructs a new counter made up of counts that are adjusted using the supplied function.
@@ -478,17 +480,6 @@ public interface Counter<T> extends Copyable<Counter<T>>, JsonSerializable {
     */
    double sum();
 
-   default JsonEntry toJson() {
-      JsonEntry entry = JsonEntry.object();
-      final Index<T> keys = Indexes.indexOf(items());
-      entry.addProperty("keys", keys.asList());
-      JsonEntry values = JsonEntry.array();
-      for (int i = 0; i < keys.size(); i++) {
-         values.addValue(get(keys.get(i)));
-      }
-      entry.addProperty("values", values);
-      return entry;
-   }
 
    /**
     * Creates a new counter containing the N items with highest values

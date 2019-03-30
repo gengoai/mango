@@ -21,8 +21,6 @@
 
 package com.gengoai.graph;
 
-import com.gengoai.json.JsonSerializable;
-
 import java.io.Serializable;
 
 /**
@@ -30,7 +28,7 @@ import java.io.Serializable;
  *
  * @author David B. Bracewell
  */
-public abstract class Edge<V> implements Serializable, JsonSerializable {
+public abstract class Edge<V> implements Serializable {
 
    private static final long serialVersionUID = -6040455464153202892L;
 

@@ -22,8 +22,12 @@
 package com.gengoai.collection;
 
 import com.gengoai.Copyable;
+import com.gengoai.annotation.JsonAdapter;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.json.JsonSerializable;
+import com.gengoai.json.JsonMarshaller;
+import com.gengoai.reflection.Reflect;
+import com.gengoai.reflection.ReflectionException;
+import com.gengoai.reflection.Types;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -35,18 +39,32 @@ import java.util.stream.Stream;
  * @param <E> the type parameter
  * @author David B. Bracewell
  */
-public interface Index<E> extends Iterable<E>, Copyable<Index<E>>, JsonSerializable {
+@JsonAdapter(Index.IndexMarshaller.class)
+public interface Index<E> extends Iterable<E>, Copyable<Index<E>> {
 
-   /**
-    * From json index.
-    *
-    * @param <T>   the type parameter
-    * @param entry the entry
-    * @param types the types
-    * @return the index
-    */
-   static <T> Index<T> fromJson(JsonEntry entry, Type... types) {
-      return Indexes.fromJson(new HashMapIndex<>(), entry, types);
+   class IndexMarshaller extends JsonMarshaller<Index> {
+
+      @Override
+      protected Index deserialize(JsonEntry entry, Type type) {
+         Class<?> indexType = Types.asClass(type);
+         if (indexType == Index.class) {
+            indexType = HashMapIndex.class;
+         }
+         try {
+            Type eType = Types.getOrObject(0, Types.getActualTypeArguments(type));
+            Index<?> index = Reflect.onClass(indexType).create().get();
+            entry.elementIterator()
+                 .forEachRemaining(e -> index.add(e.getAs(eType)));
+            return index;
+         } catch (ReflectionException e) {
+            throw new RuntimeException(e);
+         }
+      }
+
+      @Override
+      protected JsonEntry serialize(Index index, Type type) {
+         return JsonEntry.array(index);
+      }
    }
 
 
@@ -115,12 +133,6 @@ public interface Index<E> extends Iterable<E>, Copyable<Index<E>>, JsonSerializa
     * @return The number of items in the index
     */
    int size();
-
-
-   @Override
-   default JsonEntry toJson() {
-      return JsonEntry.array(this);
-   }
 
 
    /**

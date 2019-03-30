@@ -5,8 +5,7 @@ import com.gengoai.io.resource.ClasspathResource;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionUtils;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -62,9 +61,22 @@ public final class Json {
          }
       }
 
+      builder.registerTypeHierarchyAdapter(JsonEntry.class, new JsonEntryMarshaller());
       MAPPER = builder.create();
    }
 
+   protected static class JsonEntryMarshaller implements JsonSerializer<JsonEntry>, JsonDeserializer<JsonEntry> {
+
+      @Override
+      public JsonEntry deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+         return JsonEntry.from(jsonElement);
+      }
+
+      @Override
+      public JsonElement serialize(JsonEntry entry, Type type, JsonSerializationContext jsonSerializationContext) {
+         return entry.getElement();
+      }
+   }
 
    private Json() {
       throw new IllegalAccessError();

@@ -32,9 +32,4 @@ public class HashMapIndexTest extends BaseIndexTest {
       super(HashMapIndex::new);
    }
 
-   @Override
-   public Index<String> fromJson(JsonEntry entry) {
-      return HashMapIndex.fromJson(entry, String.class);
-   }
-
 }//END OF HashMapIndexTest

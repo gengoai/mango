@@ -26,8 +26,10 @@ import com.gengoai.Validation;
 import com.gengoai.collection.Sorting;
 import com.gengoai.conversion.Cast;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.json.JsonSerializable;
+import com.gengoai.json.JsonMarshaller;
+import com.gengoai.reflection.Types;
 import com.gengoai.string.Strings;
+import com.google.gson.annotations.JsonAdapter;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
@@ -42,8 +44,30 @@ import java.util.stream.Stream;
  *
  * @author David B. Bracewell
  */
-public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copyable<Tuple>, Serializable, JsonSerializable {
+@JsonAdapter(Tuple.TupleMarshaller.class)
+public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copyable<Tuple>, Serializable {
    private static final long serialVersionUID = 1L;
+
+   public static class TupleMarshaller extends JsonMarshaller<Tuple> {
+
+      @Override
+      protected Tuple deserialize(JsonEntry entry, Type typeOfT) {
+         List<Object> elements = new ArrayList<>();
+         int index = 0;
+         Type[] types = Types.getActualTypeArguments(typeOfT);
+         for (Iterator<JsonEntry> itr = entry.elementIterator(); itr.hasNext(); ) {
+            Type type = Types.getOrObject(index, types);
+            elements.add(itr.next().getAs(type));
+            index++;
+         }
+         return new NTuple(elements.toArray());
+      }
+
+      @Override
+      public JsonEntry serialize(Tuple objects, Type type) {
+         return JsonEntry.array(objects.array());
+      }
+   }
 
    /**
     * The number of items in the tuple
@@ -210,7 +234,7 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
       } else if (obj instanceof Tuple) {
          Tuple tuple = Cast.as(obj);
          return degree() == tuple.degree() && Arrays.equals(array(), tuple.array());
-      } else if( obj instanceof Map.Entry && degree() == 2){
+      } else if (obj instanceof Map.Entry && degree() == 2) {
          Map.Entry e = Cast.as(obj);
          return Objects.equals(e.getKey(), get(0)) && Objects.equals(e.getValue(), get(1));
       }
@@ -227,28 +251,5 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
       return Strings.join(array(), ", ", "(", ")");
    }
 
-
-   @Override
-   public JsonEntry toJson() {
-      return JsonEntry.array(array());
-   }
-
-   /**
-    * From json tuple.
-    *
-    * @param entry the entry
-    * @param types the types
-    * @return the tuple
-    */
-   public static Tuple fromJson(JsonEntry entry, Type... types) {
-      List<Object> elements = new ArrayList<>();
-      int index = 0;
-      for (Iterator<JsonEntry> itr = entry.elementIterator(); itr.hasNext(); ) {
-         Type type = types.length > index ? types[index] : Object.class;
-         elements.add(itr.next().getAs(type));
-         index++;
-      }
-      return new NTuple(elements.toArray());
-   }
 
 }//END OF Tuple

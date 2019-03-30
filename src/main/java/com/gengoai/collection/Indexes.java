@@ -22,13 +22,8 @@
 package com.gengoai.collection;
 
 
-import com.gengoai.json.JsonEntry;
-
-import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.stream.Stream;
-
-import static com.gengoai.reflection.Types.getOrObject;
 
 /**
  * Common methods for reading counters from structured files, creating synchronized and unmodifiable wrappers.
@@ -79,18 +74,5 @@ public final class Indexes {
       return index;
    }
 
-   /**
-    * From json index.
-    *
-    * @param <T>   the type parameter
-    * @param entry the entry
-    * @param types the types
-    * @return the index
-    */
-   public static <T> Index<T> fromJson(Index<T> index, JsonEntry entry, Type... types) {
-      Type eType = getOrObject(0, types);
-      entry.elementIterator().forEachRemaining(e -> index.add(e.getAs(eType)));
-      return index;
-   }
 
 }//END OF Indexes

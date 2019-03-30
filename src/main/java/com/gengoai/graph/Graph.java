@@ -22,6 +22,7 @@
 package com.gengoai.graph;
 
 
+import com.gengoai.annotation.JsonAdapter;
 import com.gengoai.collection.Index;
 import com.gengoai.collection.Indexes;
 import com.gengoai.collection.Sets;
@@ -32,7 +33,8 @@ import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Converter;
 import com.gengoai.conversion.TypeConversionException;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.json.JsonSerializable;
+import com.gengoai.json.JsonMarshaller;
+import com.gengoai.reflection.Types;
 
 import java.lang.reflect.Type;
 import java.util.Collection;
@@ -47,7 +49,49 @@ import static com.gengoai.reflection.Types.getOrObject;
  * @param <V> the vertex type
  * @author David B. Bracewell
  */
-public interface Graph<V> extends Iterable<V>, JsonSerializable {
+@JsonAdapter(Graph.GraphMarshaller.class)
+public interface Graph<V> extends Iterable<V> {
+
+   class GraphMarshaller<V> extends JsonMarshaller<Graph<V>> {
+
+      @Override
+      protected Graph<V> deserialize(JsonEntry entry, Type type) {
+         Type[] params = Types.getActualTypeArguments(type);
+         Index<V> vertexIndex = Indexes.indexOf(entry.getProperty("v").getAsArray(getOrObject(0, params)));
+         EdgeFactory<V> factory;
+         try {
+            factory = Cast.as(Converter.convert(entry.getProperty("edgeFactory"), EdgeFactory.class));
+         } catch (TypeConversionException e) {
+            throw new RuntimeException(e);
+         }
+         Graph<V> g = new DefaultGraphImpl<>(factory);
+         entry.getProperty("e").elementIterator().forEachRemaining(edge -> {
+            V v1 = vertexIndex.get(Integer.parseInt(edge.getStringProperty("vertex1").substring(1)));
+            V v2 = vertexIndex.get(Integer.parseInt(edge.getStringProperty("vertex2").substring(1)));
+            g.addVertex(v1);
+            g.addVertex(v2);
+            g.addEdge(factory.createEdge(v1, v2, edge));
+         });
+         return g;
+      }
+
+      @Override
+      protected JsonEntry serialize(Graph<V> vs, Type type) {
+         JsonEntry graphJson = JsonEntry.object()
+                                        .addProperty("edgeFactory", vs.getEdgeFactory().getClass().getName());
+         Index<V> vertexIndex = Indexes.indexOf(vs.vertices());
+         graphJson.addProperty("v", vertexIndex);
+         JsonEntry edges = JsonEntry.array();
+         for (Edge<V> edge : vs.edges()) {
+            JsonEntry jsonE = JsonEntry.from(edge);
+            jsonE.addProperty("vertex1", "@" + vertexIndex.getId(edge.vertex1));
+            jsonE.addProperty("vertex2", "@" + vertexIndex.getId(edge.vertex2));
+            edges.addValue(jsonE);
+         }
+         graphJson.addProperty("e", edges);
+         return graphJson;
+      }
+   }
 
 
    /**
@@ -71,32 +115,6 @@ public interface Graph<V> extends Iterable<V>, JsonSerializable {
       return new DefaultGraphImpl<>(new DirectedEdgeFactory<>());
    }
 
-   /**
-    * Static method for deserializing a Graph from json using the {@link DefaultGraphImpl}
-    *
-    * @param <V>    the vertex type parameter
-    * @param entry  the json entry
-    * @param params the generic parameters (V)
-    * @return the graph
-    */
-   static <V> Graph<V> fromJson(JsonEntry entry, Type... params) {
-      Index<V> vertexIndex = Indexes.indexOf(entry.getProperty("v").getAsArray(getOrObject(0, params)));
-      EdgeFactory<V> factory;
-      try {
-         factory = Cast.as(Converter.convert(entry.getProperty("edgeFactory"), EdgeFactory.class));
-      } catch (TypeConversionException e) {
-         throw new RuntimeException(e);
-      }
-      Graph<V> g = new DefaultGraphImpl<>(factory);
-      entry.getProperty("e").elementIterator().forEachRemaining(edge -> {
-         V v1 = vertexIndex.get(Integer.parseInt(edge.getStringProperty("vertex1").substring(1)));
-         V v2 = vertexIndex.get(Integer.parseInt(edge.getStringProperty("vertex2").substring(1)));
-         g.addVertex(v1);
-         g.addVertex(v2);
-         g.addEdge(factory.createEdge(v1, v2, edge));
-      });
-      return g;
-   }
 
    /**
     * Creates a graph with vertices <code>V</code> and edges defined by {@link UndirectedEdgeFactory}.
@@ -447,23 +465,6 @@ public interface Graph<V> extends Iterable<V>, JsonSerializable {
     */
    default Stream<V> stream() {
       return Streams.asStream(this);
-   }
-
-   @Override
-   default JsonEntry toJson() {
-      JsonEntry graphJson = JsonEntry.object()
-                                     .addProperty("edgeFactory", getEdgeFactory().getClass().getName());
-      Index<V> vertexIndex = Indexes.indexOf(vertices());
-      graphJson.addProperty("v", vertexIndex);
-      JsonEntry edges = JsonEntry.array();
-      for (Edge<V> edge : edges()) {
-         JsonEntry jsonE = JsonEntry.from(edge);
-         jsonE.addProperty("vertex1", "@" + vertexIndex.getId(edge.vertex1));
-         jsonE.addProperty("vertex2", "@" + vertexIndex.getId(edge.vertex2));
-         edges.addValue(jsonE);
-      }
-      graphJson.addProperty("e", edges);
-      return graphJson;
    }
 
    /**

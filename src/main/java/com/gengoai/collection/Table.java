@@ -1,7 +1,12 @@
 package com.gengoai.collection;
 
+import com.gengoai.annotation.JsonAdapter;
+import com.gengoai.conversion.Cast;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.json.JsonSerializable;
+import com.gengoai.json.JsonMarshaller;
+import com.gengoai.reflection.Reflect;
+import com.gengoai.reflection.ReflectionException;
+import com.gengoai.reflection.Types;
 
 import java.lang.reflect.Type;
 import java.util.Collection;
@@ -20,67 +25,56 @@ import static com.gengoai.reflection.Types.getOrObject;
  * @param <V> the value type parameter
  * @author David B. Bracewell
  */
-public interface Table<R, C, V> extends JsonSerializable {
+@JsonAdapter(Table.TableMarshaller.class)
+public interface Table<R, C, V> {
 
-   /**
-    * Static method for deserializing tables from Json.
-    *
-    * @param <R>    the row type parameter
-    * @param <C>    the column type parameter
-    * @param <V>    the value type parameter
-    * @param table  the table to fill
-    * @param entry  the json entry
-    * @param params the type parameters (row, column, value)
-    * @return the table
-    */
-   static <R, C, V> Table<R, C, V> fromJson(Table<R, C, V> table, JsonEntry entry, Type... params) {
-      Type row = getOrObject(0, params);
-      Type col = getOrObject(1, params);
-      Type cell = getOrObject(2, params);
-      Index<R> rowIndex = Indexes.indexOf(entry.getProperty("rowKeys").getAsArray(row));
-      Index<C> colIndex = Indexes.indexOf(entry.getProperty("colKeys").getAsArray(col));
-      entry.getProperty("cells").propertyIterator().forEachRemaining(rowEntry -> {
-         R rowV = rowIndex.get(Integer.parseInt(rowEntry.getKey()));
-         rowEntry.getValue().propertyIterator().forEachRemaining(colEntry -> {
-            C colV = colIndex.get(Integer.parseInt(colEntry.getKey()));
-            table.put(rowV, colV, colEntry.getValue().getAs(cell));
+   class TableMarshaller extends JsonMarshaller<Table<?, ?, ?>> {
+
+      @Override
+      protected Table<?, ?, ?> deserialize(JsonEntry entry, Type type) {
+         Type[] params = Types.getActualTypeArguments(type);
+         final Table<?, ?, ?> table;
+         try {
+            table = Reflect.onClass(Types.asClass(type))
+                           .create().get();
+         } catch (ReflectionException e) {
+            throw new RuntimeException(e);
+         }
+         Type row = getOrObject(0, params);
+         Type col = getOrObject(1, params);
+         Type cell = getOrObject(2, params);
+         Index<Object> rowIndex = Indexes.indexOf(entry.getProperty("rowKeys").getAsArray(row));
+         Index<Object> colIndex = Indexes.indexOf(entry.getProperty("colKeys").getAsArray(col));
+         entry.getProperty("cells").propertyIterator().forEachRemaining(rowEntry -> {
+            Object rowV = rowIndex.get(Integer.parseInt(rowEntry.getKey()));
+            rowEntry.getValue().propertyIterator().forEachRemaining(colEntry -> {
+               Object colV = colIndex.get(Integer.parseInt(colEntry.getKey()));
+               table.put(Cast.as(rowV),
+                         Cast.as(colV), colEntry.getValue().getAs(cell));
+            });
          });
-      });
-      return table;
-   }
+         return table;
+      }
 
-   /**
-    * Static method for deserializing tables from Json.
-    *
-    * @param <R>    the row type parameter
-    * @param <C>    the column type parameter
-    * @param <V>    the value type parameter
-    * @param entry  the json entry
-    * @param params the type parameters (row, column, value)
-    * @return the table
-    */
-   static <R, C, V> Table<R, C, V> fromJson(JsonEntry entry, Type... params) {
-      return fromJson(new HashBasedTable<>(), entry, params);
-   }
-
-   @Override
-   default JsonEntry toJson() {
-      JsonEntry table = JsonEntry.object();
-      Index<R> rowIndex = Indexes.indexOf(rowKeySet());
-      Index<C> colIndex = Indexes.indexOf(columnKeySet());
-      table.addProperty("rowKeys", rowIndex);
-      table.addProperty("colKeys", colIndex);
-      JsonEntry cells = JsonEntry.object();
-      rowKeySet().forEach(row -> {
-         JsonEntry rowObj = JsonEntry.object();
-         row(row).forEach((c, v) -> {
-            int ci = colIndex.getId(c);
-            rowObj.addProperty(Integer.toString(ci), v);
+      @Override
+      protected JsonEntry serialize(Table<?, ?, ?> table, Type type) {
+         JsonEntry entry = JsonEntry.object();
+         Index<?> rowIndex = Indexes.indexOf(table.rowKeySet());
+         Index<?> colIndex = Indexes.indexOf(table.columnKeySet());
+         entry.addProperty("rowKeys", rowIndex);
+         entry.addProperty("colKeys", colIndex);
+         JsonEntry cells = JsonEntry.object();
+         table.rowKeySet().forEach(row -> {
+            JsonEntry rowObj = JsonEntry.object();
+            table.row(Cast.as(row)).forEach((c, v) -> {
+               int ci = colIndex.getId(Cast.as(c));
+               rowObj.addProperty(Integer.toString(ci), v);
+            });
+            cells.addProperty(Integer.toString(rowIndex.getId(Cast.as(row))), rowObj);
          });
-         cells.addProperty(Integer.toString(rowIndex.getId(row)), rowObj);
-      });
-      table.addProperty("cells", cells);
-      return table;
+         entry.addProperty("cells", cells);
+         return entry;
+      }
    }
 
    /**
@@ -93,8 +87,8 @@ public interface Table<R, C, V> extends JsonSerializable {
    V get(R row, C column);
 
 
-   default V getOrDefault(R row, C column, V defaultValue){
-      if(contains(row,column)){
+   default V getOrDefault(R row, C column, V defaultValue) {
+      if (contains(row, column)) {
          return get(row, column);
       }
       return defaultValue;

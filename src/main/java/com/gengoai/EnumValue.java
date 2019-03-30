@@ -34,10 +34,6 @@ import com.gengoai.json.JsonMarshaller;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionUtils;
 import com.gengoai.reflection.Types;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
@@ -90,8 +86,7 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
 
       @Override
       public EnumValue deserialize(JsonEntry jsonElement,
-                                   Type type,
-                                   JsonDeserializationContext jsonDeserializationContext
+                                   Type type
                                   ) {
          String name = jsonElement.getAsString();
          if (type == EnumValue.class) {
@@ -107,8 +102,8 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
       }
 
       @Override
-      public JsonElement serialize(EnumValue enumValue, Type type, JsonSerializationContext jsonSerializationContext) {
-         return new JsonPrimitive(enumValue.canonicalName());
+      public JsonEntry serialize(EnumValue enumValue, Type type) {
+         return JsonEntry.from(enumValue.canonicalName());
       }
    }
 
@@ -232,7 +227,7 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
       return name;
    }
 
-   private Object readResolve() throws ObjectStreamException {
+   protected Object readResolve() throws ObjectStreamException {
       return registry().make(name());
    }
 

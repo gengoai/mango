@@ -81,6 +81,7 @@ public class GraphUtilsTest {
       GraphJson<String> gJson = new GraphJson<>(String.class);
       Resource r = Resources.fromString();
       gJson.write(d1, r);
+      System.out.println(r.readToString());
       Graph<String> d3 = gJson.read(r);
       assertEquals(d1, d3);
    }

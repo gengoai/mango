@@ -22,11 +22,8 @@
 package com.gengoai.graph;
 
 import com.gengoai.Validation;
-import com.gengoai.json.JsonEntry;
-import com.gengoai.json.JsonSerializable;
 
 import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -39,7 +36,7 @@ import static com.gengoai.Validation.notNull;
  *
  * @author David B. Bracewell
  */
-public class Vertex implements Serializable, JsonSerializable {
+public class Vertex implements Serializable {
    private static final long serialVersionUID = 1L;
    private final String label;
    private final Map<String, String> properties;
@@ -52,25 +49,25 @@ public class Vertex implements Serializable, JsonSerializable {
    }
 
 
-   /**
-    * Static method for deserializing Vertex objects from {@link JsonEntry}s
-    *
-    * @param entry  the json entry
-    * @param params the type parameters
-    * @return the vertex
-    */
-   public static Vertex fromJson(JsonEntry entry, Type... params) {
-      return new Vertex(entry.getStringProperty("label"),
-                        entry.getProperty("properties").getAsMap(String.class));
-   }
-
-
-   @Override
-   public JsonEntry toJson() {
-      return JsonEntry.object()
-                      .addProperty("label", label)
-                      .addProperty("properties", properties);
-   }
+//   /**
+//    * Static method for deserializing Vertex objects from {@link JsonEntry}s
+//    *
+//    * @param entry  the json entry
+//    * @param params the type parameters
+//    * @return the vertex
+//    */
+//   public static Vertex fromJson(JsonEntry entry, Type... params) {
+//      return new Vertex(entry.getStringProperty("label"),
+//                        entry.getProperty("properties").getAsMap(String.class));
+//   }
+//
+//
+//   @Override
+//   public JsonEntry toJson() {
+//      return JsonEntry.object()
+//                      .addProperty("label", label)
+//                      .addProperty("properties", properties);
+//   }
 
    /**
     * Builder vertex builder.

@@ -1,7 +1,5 @@
 package com.gengoai.graph;
 
-import com.gengoai.json.JsonEntry;
-
 import java.util.Objects;
 
 /**
@@ -14,11 +12,11 @@ public class UndirectedEdge<V> extends Edge<V> {
 
    private double weight;
 
-   @Override
-   public JsonEntry toJson() {
-      return JsonEntry.object()
-                      .addProperty("weight", weight);
-   }
+//   @Override
+//   public JsonEntry toJson() {
+//      return JsonEntry.object()
+//                      .addProperty("weight", weight);
+//   }
 
    protected UndirectedEdge(V vertex1, V vertex2, double weight) {
       super(vertex1, vertex2);

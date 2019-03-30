@@ -28,9 +28,10 @@ import com.gengoai.io.CharsetDetectingReader;
 import com.gengoai.io.FileUtils;
 import com.gengoai.io.Resources;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.json.JsonSerializable;
+import com.gengoai.json.JsonMarshaller;
 import com.gengoai.stream.LocalStream;
 import com.gengoai.stream.MStream;
+import com.google.gson.annotations.JsonAdapter;
 
 import java.io.*;
 import java.lang.reflect.Type;
@@ -54,24 +55,27 @@ import static com.gengoai.reflection.Types.asClass;
  *
  * @author David Bracewell
  */
-public interface Resource extends JsonSerializable {
+@JsonAdapter(Resource.ResourceMarshaller.class)
+public interface Resource {
+
+   class ResourceMarshaller extends JsonMarshaller<Resource> {
+
+      @Override
+      protected Resource deserialize(JsonEntry entry, Type typeOfT) {
+         return Resources.from(entry.getAsString());
+      }
+
+      @Override
+      public JsonEntry serialize(Resource resource, Type type) {
+         return JsonEntry.from(resource.descriptor());
+      }
+   }
 
    /**
     * The constant ALL_FILE_PATTERN.
     */
    Pattern ALL_FILE_PATTERN = Pattern.compile(".*");
 
-
-   @Override
-   default JsonEntry toJson() {
-      return JsonEntry.object()
-                      .addProperty("descriptor", descriptor());
-   }
-
-
-   static Resource fromJson(JsonEntry entry, Type... types) {
-      return Resources.from(entry.getStringProperty("descriptor"));
-   }
 
    /**
     * Copies the contents of this resource to another
@@ -418,7 +422,7 @@ public interface Resource extends JsonSerializable {
    OutputStream outputStream() throws IOException;
 
    /**
-    * Gets path in the same mannar as {@link File#path}
+    * Gets path in the same mannar as {@link File#getPath()}
     *
     * @return The full path to the resource including name
     */

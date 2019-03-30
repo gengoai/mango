@@ -28,7 +28,6 @@ import com.gengoai.io.CSV;
 import com.gengoai.io.CSVWriter;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.json.JsonSerializable;
 import com.gengoai.math.Math2;
 import com.gengoai.tuple.Tuple3;
 
@@ -50,7 +49,7 @@ import java.util.stream.Collectors;
  * @param <V> component type of the second key in the pair
  * @author David B. Bracewell
  */
-public interface MultiCounter<K, V> extends JsonSerializable {
+public interface MultiCounter<K, V> {
 
    /**
     * Common methodology for deserializing a MultiCounter from json
@@ -463,7 +462,6 @@ public interface MultiCounter<K, V> extends JsonSerializable {
       return Math2.summaryStatistics(values()).getSum();
    }
 
-   @Override
    default JsonEntry toJson() {
       JsonEntry entry = JsonEntry.object();
       final Index<K> firstKeys = Indexes.indexOf(firstKeys());
