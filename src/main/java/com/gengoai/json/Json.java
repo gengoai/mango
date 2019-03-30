@@ -1,12 +1,19 @@
 package com.gengoai.json;
 
 import com.gengoai.io.Resources;
+import com.gengoai.io.resource.ClasspathResource;
 import com.gengoai.io.resource.Resource;
+import com.gengoai.reflection.Reflect;
+import com.gengoai.reflection.ReflectionUtils;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * <p>Convenience methods for serializing and deserializing objects to and from json and creating json reader and
@@ -15,6 +22,49 @@ import java.util.Map;
  * @author David B. Bracewell
  */
 public final class Json {
+   public static final Gson MAPPER;
+
+   static {
+      GsonBuilder builder = new GsonBuilder();
+      Set<String> processed = new HashSet<>();
+      for (ClassLoader classLoader : new ClassLoader[]{
+         Thread.currentThread().getContextClassLoader(),
+         Json.class.getClassLoader()
+      }) {
+         Resource r = new ClasspathResource("META-INF/marshallers.json", classLoader);
+         if (r.exists()) {
+            try {
+               for (String line : r.readLines()) {
+                  if (processed.contains(line)) {
+                     continue;
+                  }
+                  processed.add(line);
+                  String[] parts = line.split("\t");
+                  if (parts.length == 3) {
+                     Class<?> type = ReflectionUtils.getClassForNameQuietly(parts[0]);
+                     boolean isHier = Boolean.parseBoolean(parts[1]);
+                     Object adapter;
+                     try {
+                        adapter = Reflect.onClass(parts[2]).create().get();
+                     } catch (Exception e) {
+                        throw new IllegalArgumentException(e);
+                     }
+                     if (isHier) {
+                        builder.registerTypeHierarchyAdapter(type, adapter);
+                     } else {
+                        builder.registerTypeAdapter(type, adapter);
+                     }
+                  }
+               }
+            } catch (IOException e) {
+               e.printStackTrace();
+            }
+         }
+      }
+
+      MAPPER = builder.create();
+   }
+
 
    private Json() {
       throw new IllegalAccessError();

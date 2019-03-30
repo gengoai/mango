@@ -20,6 +20,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static com.gengoai.Validation.checkState;
+import static com.gengoai.json.Json.MAPPER;
 import static com.gengoai.reflection.Types.*;
 import static com.gengoai.tuple.Tuples.$;
 
@@ -28,7 +29,6 @@ import static com.gengoai.tuple.Tuples.$;
  * primitives that understands {@link JsonSerializable} objects</p>
  */
 public class JsonEntry {
-   private static final Gson gson = new Gson();
    private final JsonElement element;
 
    private JsonEntry(JsonElement element) {
@@ -153,7 +153,7 @@ public class JsonEntry {
       } else if (v instanceof Iterator) {
          return iterableToElement(Iterables.asIterable(Cast.as(v)));
       } else if (v.getClass().isArray() && v.getClass().getComponentType().isPrimitive()) {
-         return gson.toJsonTree(v);
+         return MAPPER.toJsonTree(v);
       } else if (v.getClass().isArray()) {
          return iterableToElement(Arrays.asList((Object[]) v));
       } else if (v instanceof ParameterizedType) {
@@ -167,7 +167,7 @@ public class JsonEntry {
       } else if (v instanceof EnumValue) {
          return new JsonPrimitive(Cast.<EnumValue>as(v).canonicalName());
       }
-      return gson.toJsonTree(v);
+      return MAPPER.toJsonTree(v);
    }
 
    /**
@@ -334,7 +334,7 @@ public class JsonEntry {
          }
       }
 
-      return gson.fromJson(element, type);
+      return MAPPER.fromJson(element, type);
    }
 
    /**

@@ -22,7 +22,7 @@
 
 package com.gengoai;
 
-import com.gengoai.annotations.JsonMarshaller;
+import com.gengoai.annotation.JsonMarshaller;
 import com.gengoai.application.CommandLineParser;
 import com.gengoai.application.NamedOption;
 import com.gengoai.config.Preloader;
@@ -34,6 +34,7 @@ import com.gengoai.json.JsonSerializable;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionUtils;
 import com.gengoai.reflection.Types;
+import com.google.gson.*;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
@@ -79,8 +80,17 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
 
 
 
-   public static class Marshaller {
+   public static class Marshaller implements JsonDeserializer<EnumValue>, JsonSerializer<EnumValue> {
 
+      @Override
+      public EnumValue deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+         return null;
+      }
+
+      @Override
+      public JsonElement serialize(EnumValue enumValue, Type type, JsonSerializationContext jsonSerializationContext) {
+         return null;
+      }
    }
 
    /**
