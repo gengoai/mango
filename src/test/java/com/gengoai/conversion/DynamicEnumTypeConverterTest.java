@@ -19,7 +19,7 @@ public class DynamicEnumTypeConverterTest {
          super(name);
       }
 
-      public static TestEnum create(String name) {
+      public static TestEnum make(String name) {
          return registry.make(name);
       }
 
@@ -30,8 +30,8 @@ public class DynamicEnumTypeConverterTest {
       }
    }
 
-   static final TestEnum e1 = TestEnum.create("e1");
-   static final TestEnum e2 = TestEnum.create("e2");
+   static final TestEnum e1 = TestEnum.make("e1");
+   static final TestEnum e2 = TestEnum.make("e2");
 
    @Test
    public void convert() throws TypeConversionException {

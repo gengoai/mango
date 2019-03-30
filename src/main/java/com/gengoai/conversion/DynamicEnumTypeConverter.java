@@ -41,6 +41,8 @@ public class DynamicEnumTypeConverter implements TypeConverter {
             enumName = asString.substring(lastDot + 1);
          }
 
+
+
          if (enumClass == null) {
             //Didn't find it in the name, so check in the parameters
             enumClass = asClass(getOrObject(0, parameters));
@@ -55,7 +57,7 @@ public class DynamicEnumTypeConverter implements TypeConverter {
          }
 
          try {
-            return Reflect.onClass(enumClass).invoke("create", enumName).get();
+            return Reflect.onClass(enumClass).invoke("make", enumName).get();
          } catch (ReflectionException e) {
             throw new TypeConversionException(source, parameterizedType(EnumValue.class, enumClass), e);
          }

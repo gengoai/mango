@@ -22,6 +22,7 @@
 
 package com.gengoai;
 
+import com.gengoai.annotations.JsonMarshaller;
 import com.gengoai.application.CommandLineParser;
 import com.gengoai.application.NamedOption;
 import com.gengoai.config.Preloader;
@@ -70,10 +71,17 @@ import java.lang.reflect.Type;
  *
  * @author David B. Bracewell
  */
+@JsonMarshaller(EnumValue.Marshaller.class)
 public abstract class EnumValue<T extends EnumValue> implements Tag, Serializable, Cloneable, JsonSerializable, Comparable<T> {
    private static final long serialVersionUID = 1L;
    private final String fullName;
    private final String name;
+
+
+
+   public static class Marshaller {
+
+   }
 
    /**
     * Instantiates a new enum value.

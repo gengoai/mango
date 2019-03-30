@@ -6,9 +6,11 @@ import com.gengoai.json.Json;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonSerializable;
 import com.gengoai.reflection.BeanUtils;
+import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionUtils;
 import com.gengoai.reflection.Types;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -181,11 +183,24 @@ public final class Converter {
          return Cast.as(
             BeanUtils.parameterizeObject(ReflectionUtils.createObject(convert(sourceObject, String.class))));
       } catch (Exception e) {
-         e.printStackTrace();
          //ignore
       }
 
-      throw new TypeConversionException(sourceObject, destType);
+      Constructor<?> constructor = Reflect.onClass(asClass(destType))
+                                          .allowPrivilegedAccess()
+                                          .getConstructors()
+                                          .stream()
+                                          .filter(
+                                             c -> c.getParameterCount() == 1 && c.getParameterTypes()[0] == sourceObject
+                                                                                                               .getClass())
+                                          .findFirst()
+                                          .orElseThrow(() -> new TypeConversionException(sourceObject, destType));
+
+      try {
+         return Cast.as(constructor.newInstance(sourceObject));
+      } catch (Exception e) {
+         throw new TypeConversionException(sourceObject, destType);
+      }
    }
 
 }//END OF Converter
