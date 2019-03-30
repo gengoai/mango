@@ -22,6 +22,9 @@ package com.gengoai;/*
 import com.gengoai.io.resource.ByteArrayResource;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.json.Json;
+import com.gengoai.json.JsonEntry;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -82,8 +85,13 @@ public class DynamicEnumTest {
    public void testJson() throws Exception {
       NamesEnum name = NamesEnum.make("name");
       String json = Json.dumps(name);
-      NamesEnum nameDes = Json.parse(json, NamesEnum.class);
+      NamesEnum nameDes = Json.parse(json, EnumValue.class);
       assertEquals(name, nameDes);
+
+      JsonEntry e = JsonEntry.array("A");
+      System.out.println(e.getAsString());
+      JsonElement element = new JsonObject();
+
    }
 
 }

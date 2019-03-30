@@ -29,8 +29,6 @@ import com.gengoai.config.Preloader;
 import com.gengoai.conversion.Cast;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
-import com.gengoai.json.JsonEntry;
-import com.gengoai.json.JsonSerializable;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionUtils;
 import com.gengoai.reflection.Types;
@@ -73,23 +71,32 @@ import java.lang.reflect.Type;
  * @author David B. Bracewell
  */
 @JsonMarshaller(EnumValue.Marshaller.class)
-public abstract class EnumValue<T extends EnumValue> implements Tag, Serializable, Cloneable, JsonSerializable, Comparable<T> {
+public abstract class EnumValue<T extends EnumValue> implements Tag, Serializable, Cloneable, Comparable<T> {
    private static final long serialVersionUID = 1L;
    private final String fullName;
    private final String name;
-
 
 
    public static class Marshaller implements JsonDeserializer<EnumValue>, JsonSerializer<EnumValue> {
 
       @Override
       public EnumValue deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-         return null;
+         String name = jsonElement.getAsString();
+         if (type == EnumValue.class) {
+            type = ReflectionUtils.getClassForNameQuietly(name.substring(0, name.lastIndexOf('.')));
+         }
+         try {
+            return Cast.as(Reflect.onClass(Types.asClass(type))
+                                  .getMethod("make")
+                                  .invoke(null, name));
+         } catch (Exception e) {
+            throw new RuntimeException(e);
+         }
       }
 
       @Override
       public JsonElement serialize(EnumValue enumValue, Type type, JsonSerializationContext jsonSerializationContext) {
-         return null;
+         return new JsonPrimitive(enumValue.canonicalName());
       }
    }
 
@@ -103,38 +110,6 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
       this.fullName = getClass().getCanonicalName() + "." + this.name;
    }
 
-
-   /**
-    * Static method for deserializing an enum value from JSON
-    *
-    * @param entry the JSON entry
-    * @param types the types
-    * @return the enum value
-    */
-   public static EnumValue fromJson(JsonEntry entry, Type... types) {
-      String name = null;
-      if (entry.isArray()) {
-         name = entry.elementIterator().next().getAsString();
-      }
-      if (entry.isString()) {
-         name = entry.getAsString();
-      }
-      Class<?> clazz = null;
-      if (types != null && types.length == 1 && types[0] != EnumValue.class && types[0] != HierarchicalEnumValue.class) {
-         clazz = Types.asClass(types[0]);
-      } else if (types != null && types.length > 1 && types[1] != EnumValue.class && types[1] != HierarchicalEnumValue.class) {
-         clazz = Types.asClass(types[1]);
-      } else {
-         clazz = ReflectionUtils.getClassForNameQuietly(name.substring(0, name.lastIndexOf('.')));
-      }
-      try {
-         return Cast.as(Reflect.onClass(clazz)
-                               .getMethod("make")
-                               .invoke(null, name));
-      } catch (Exception e) {
-         throw new RuntimeException(e);
-      }
-   }
 
    public static void main(String[] args) throws Exception {
       CommandLineParser parser = new CommandLineParser();
@@ -249,11 +224,6 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
     * @return the registry
     */
    protected abstract Registry<T> registry();
-
-   @Override
-   public JsonEntry toJson() {
-      return JsonEntry.from(canonicalName());
-   }
 
    @Override
    public final String toString() {

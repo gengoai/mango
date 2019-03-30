@@ -538,7 +538,6 @@ public class JsonEntry {
     * @throws IllegalStateException if the entry's element is not a json primitive
     */
    public String getAsString() {
-      checkState(element.isJsonPrimitive(), "Entry (" + element.getClass().getName() + ") is not a primitive.");
       return element.getAsString();
    }
 
