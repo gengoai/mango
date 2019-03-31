@@ -7,8 +7,12 @@ import com.gengoai.collection.Streams;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Converter;
 import com.gengoai.conversion.Val;
+import com.gengoai.string.Strings;
 import com.google.gson.*;
+import com.google.gson.stream.JsonWriter;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -30,6 +34,26 @@ public class JsonEntry {
       this.element = element;
    }
 
+
+   public String pprint() {
+      return pprint(3);
+   }
+
+   public String pprint(int indent) {
+      StringWriter sw = new StringWriter();
+      try (JsonWriter jw = MAPPER.newJsonWriter(sw)) {
+         jw.setIndent(Strings.repeat(' ', indent));
+         MAPPER.toJson(element, jw);
+      } catch (Exception e) {
+         //ignore
+      }
+      try {
+         sw.close();
+         return sw.getBuffer().toString();
+      } catch (IOException e) {
+         return null;
+      }
+   }
 
    /**
     * Array json entry.

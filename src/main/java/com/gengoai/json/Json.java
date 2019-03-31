@@ -1,6 +1,5 @@
 package com.gengoai.json;
 
-import com.gengoai.conversion.Cast;
 import com.gengoai.io.JarUtils;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
@@ -97,23 +96,14 @@ public final class Json {
    protected static class EnumMarshaller extends JsonMarshaller<Enum> {
 
       @Override
-      @SuppressWarnings("unchecked")
       protected Enum deserialize(JsonEntry entry, Type type) {
-         String name = entry.getAsString();
-         int idx = name.lastIndexOf('.');
-         final Class<? extends Enum> clazz;
-         try {
-            clazz = Cast.as(
-               ReflectionUtils.getClassForName(name.substring(0, idx)));
-         } catch (Exception e) {
-            throw new RuntimeException(e);
-         }
-         return Enum.valueOf(clazz, name.substring(idx + 1));
+         Class<Enum> c = Types.asClass(type);
+         return Enum.valueOf(c, entry.getAsString());
       }
 
       @Override
       protected JsonEntry serialize(Enum anEnum, Type type) {
-         return JsonEntry.from(anEnum.getDeclaringClass().getName() + "." + anEnum.name());
+         return JsonEntry.from(anEnum.name());
       }
    }
 

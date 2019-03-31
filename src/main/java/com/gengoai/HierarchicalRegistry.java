@@ -45,7 +45,7 @@ public class HierarchicalRegistry<T extends HierarchicalEnumValue> extends Regis
 
 
    protected String ensureParent(T parent, String name) {
-      if (parent == null) {
+      if (parent == null || parent == ROOT) {
          return name;
       }
       if (name.startsWith(canonicalName)) {

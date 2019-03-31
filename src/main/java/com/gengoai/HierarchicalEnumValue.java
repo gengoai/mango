@@ -123,8 +123,10 @@ public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> ext
 
    @Override
    public final boolean isInstance(Tag value) {
-      return value.name().equals(name()) ||
-                name().startsWith(value.name() + SEPARATOR);
+      return value != null
+                && (value == registry().ROOT
+                       || value.name().equals(name())
+                       || name().startsWith(value.name() + SEPARATOR));
    }
 
    /**
