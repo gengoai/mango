@@ -44,7 +44,15 @@ public class ZipResource extends BaseResource implements ReadOnlyResource {
 
    @Override
    public boolean exists() {
-      return zipFile != null;
+      try {
+         if( zipFile == null || entry == null){
+            return false;
+         }
+         createInputStream();
+         return true;
+      } catch (IOException | ExceptionInInitializerError e) {
+         return false;
+      }
    }
 
    @Override

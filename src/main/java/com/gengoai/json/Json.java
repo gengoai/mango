@@ -1,8 +1,8 @@
 package com.gengoai.json;
 
 import com.gengoai.conversion.Cast;
+import com.gengoai.io.JarUtils;
 import com.gengoai.io.Resources;
-import com.gengoai.io.resource.ClasspathResource;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionUtils;
@@ -29,11 +29,8 @@ public final class Json {
    static {
       GsonBuilder builder = new GsonBuilder();
       Set<String> processed = new HashSet<>();
-      for (ClassLoader classLoader : new ClassLoader[]{
-         Thread.currentThread().getContextClassLoader(),
-         Json.class.getClassLoader()
-      }) {
-         Resource r = new ClasspathResource("META-INF/marshallers.json", classLoader);
+      for (Resource classpathResource : JarUtils.getClassPathJars()) {
+         Resource r = classpathResource.getChild("META-INF/marshallers.json");
          if (r.exists()) {
             try {
                for (String line : r.readLines()) {
@@ -51,7 +48,6 @@ public final class Json {
                      } catch (Exception e) {
                         throw new IllegalArgumentException(e);
                      }
-                     System.out.println(type + " :" + adapter.getClass());
                      if (isHier) {
                         builder.registerTypeHierarchyAdapter(type, adapter);
                      } else {
@@ -161,8 +157,7 @@ public final class Json {
    }
 
    /**
-    * Dumps the given object to the given output location in json format. This method is {@link JsonSerializable}
-    * aware.
+    * Dumps the given object to the given output location in json format.
     *
     * @param object   the object to dump
     * @param resource the resource to write the dumped object in json format to.
@@ -184,7 +179,7 @@ public final class Json {
    }
 
    /**
-    * Dumps the given object to a string in json format. This method is {@link JsonSerializable} aware.
+    * Dumps the given object to a string in json format.
     *
     * @param object the object to dump
     * @return the object as a json string
@@ -233,8 +228,7 @@ public final class Json {
 
 
    /**
-    * Parses the json in the given resource creating an object of the given class type. This method is {@link
-    * JsonSerializable}* aware and is useful for deserializing objects from json format.
+    * Parses the json in the given resource creating an object of the given class type.
     *
     * @param <T>      the class type parameter
     * @param resource the resource to read from
@@ -247,8 +241,7 @@ public final class Json {
    }
 
    /**
-    * Parses the json in the given json string creating an object of the given class type. This method is {@link
-    * JsonSerializable}* aware and is useful for deserializing objects from json format.
+    * Parses the json in the given json string creating an object of the given class type.
     *
     * @param <T>   the class type parameter
     * @param json  the json to read

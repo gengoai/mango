@@ -26,6 +26,7 @@ import com.gengoai.Validation;
 import com.gengoai.io.resource.ClasspathResource;
 import com.gengoai.io.resource.FileResource;
 import com.gengoai.io.resource.Resource;
+import com.gengoai.io.resource.ZipResource;
 
 import java.io.File;
 import java.io.IOException;
@@ -67,6 +68,20 @@ public class JarUtils {
          }
          return Collections.unmodifiableList(classpathResources);
       }
+   }
+
+   public static List<Resource> getClassPathJars() {
+      List<Resource> jars = new ArrayList<>();
+      for (String jar : SystemInfo.JAVA_CLASS_PATH.split(SystemInfo.PATH_SEPARATOR)) {
+         File file = new File(jar);
+         if (file.isDirectory()) {
+            jars.add(new FileResource(jar));
+         } else {
+            jars.add(new ZipResource(jar, null));
+         }
+
+      }
+      return jars;
    }
 
    /**

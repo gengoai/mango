@@ -133,7 +133,7 @@ public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> ext
     * @return True if a leaf, False otherwise
     */
    public boolean isLeaf() {
-      return children().isEmpty();
+      return this != registry().ROOT && children().isEmpty();
    }
 
    @Override
