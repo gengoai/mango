@@ -7,6 +7,7 @@ import com.gengoai.collection.Streams;
 import com.gengoai.conversion.Cast;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonMarshaller;
+import com.gengoai.reflection.ReflectionUtils;
 import com.gengoai.reflection.Types;
 
 import java.io.Serializable;
@@ -36,7 +37,7 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
 
       @Override
       protected IntervalTree<T> deserialize(JsonEntry entry, Type type) {
-         IntervalTree<T> tree = new IntervalTree<>();
+         IntervalTree<T> tree = ReflectionUtils.newInstance(type);
          Type tType = Types.getOrObject(0, Types.getActualTypeArguments(type));
          entry.elementIterator()
               .forEachRemaining(e -> tree.add(e.getAs(tType)));

@@ -31,6 +31,7 @@ import com.gengoai.string.Strings;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Predicate;
 
@@ -63,6 +64,15 @@ public final class ReflectionUtils implements Loggable {
          }
       }
       return null;
+   }
+
+   public static <T> T newInstance(Type type) {
+      try {
+         return Reflect.onClass(Types.asClass(type))
+                       .create().get();
+      } catch (ReflectionException e) {
+         throw new RuntimeException(e);
+      }
    }
 
    /**

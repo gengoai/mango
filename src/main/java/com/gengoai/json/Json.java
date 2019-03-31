@@ -51,6 +51,7 @@ public final class Json {
                      } catch (Exception e) {
                         throw new IllegalArgumentException(e);
                      }
+                     System.out.println(type + " :" + adapter.getClass());
                      if (isHier) {
                         builder.registerTypeHierarchyAdapter(type, adapter);
                      } else {
