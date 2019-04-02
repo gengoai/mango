@@ -96,6 +96,7 @@ public final class Json {
    protected static class EnumMarshaller extends JsonMarshaller<Enum> {
 
       @Override
+      @SuppressWarnings("unchecked")
       protected Enum deserialize(JsonEntry entry, Type type) {
          Class<Enum> c = Types.asClass(type);
          return Enum.valueOf(c, entry.getAsString());
