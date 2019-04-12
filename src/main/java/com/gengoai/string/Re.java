@@ -141,6 +141,15 @@ public final class Re {
       throw new IllegalAccessError();
    }
 
+   /**
+    * Combines the given regex patterns as alternations. Should be wrapped as a group.
+    *
+    * @param regex the regex
+    * @return the alternation
+    */
+   public static String alt(String... regex) {
+      return String.join("|", regex);
+   }
 
    /**
     * Converts the given array of strings into a regex character class.
@@ -198,6 +207,35 @@ public final class Re {
    }
 
    /**
+    * Compiles the given patterns, treating them as a sequence, with the given flags.
+    *
+    * @param flags    the flags
+    * @param patterns the patterns
+    * @return the pattern
+    */
+   public static Pattern compile(int flags, String... patterns) {
+      return Pattern.compile(String.join("", patterns), flags);
+   }
+
+   /**
+    * Compiles the given patterns, treating them as a sequence.
+    *
+    * @param patterns the patterns
+    * @return the pattern
+    */
+   public static Pattern compile(String... patterns) {
+      return Pattern.compile(String.join("", patterns));
+   }
+
+   public static String n(String pattern, int n) {
+      return "(?:" + pattern + "){" + n + "}";
+   }
+
+   public static String n(String pattern, int low, int high) {
+      return "(?:" + pattern + "){" + low + "," + high + "}";
+   }
+
+   /**
     * Defines the given regex as a named match group.
     *
     * @param groupName the group name
@@ -206,16 +244,6 @@ public final class Re {
     */
    public static String namedGroup(String groupName, String regex) {
       return String.format("(?<%s> %s)", groupName, regex);
-   }
-
-   /**
-    * Defines the given regex as a non-matching group
-    *
-    * @param regex the regex
-    * @return the non-matching group
-    */
-   public static String nonMatchingGroup(String regex) {
-      return String.format("(?:%s)", regex);
    }
 
    /**
@@ -239,6 +267,20 @@ public final class Re {
    }
 
    /**
+    * Defines the given regex as a non-matching group
+    *
+    * @param regex the regex
+    * @return the non-matching group
+    */
+   public static String nonMatchingGroup(String regex) {
+      return String.format("(?:%s)", regex);
+   }
+
+   public static String oneOrMore(String pattern) {
+      return "(?:" + pattern + ")+";
+   }
+
+   /**
     * Defines a positive lookahead for the given regex.
     *
     * @param regex the regex
@@ -258,6 +300,9 @@ public final class Re {
       return String.format("(?<= %s)", String.join("", regex));
    }
 
+   public static String q(String pattern){
+      return Pattern.quote(pattern);
+   }
 
    /**
     * Combines the given regex patterns into a sequence.
@@ -269,36 +314,12 @@ public final class Re {
       return String.join("", regex);
    }
 
-   /**
-    * Combines the given regex patterns as alternations. Should be wrapped as a group.
-    *
-    * @param regex the regex
-    * @return the alternation
-    */
-   public static String alt(String... regex) {
-      return String.join("|", regex);
+   public static String zeroOrMore(String... sequence) {
+      return "(?:" + seq(sequence) + ")*";
    }
 
-
-   /**
-    * Compiles the given patterns, treating them as a sequence, with the given flags.
-    *
-    * @param flags    the flags
-    * @param patterns the patterns
-    * @return the pattern
-    */
-   public static Pattern compile(int flags, String... patterns) {
-      return Pattern.compile(String.join("", patterns), flags);
-   }
-
-   /**
-    * Compiles the given patterns, treating them as a sequence.
-    *
-    * @param patterns the patterns
-    * @return the pattern
-    */
-   public static Pattern compile(String... patterns) {
-      return Pattern.compile(String.join("", patterns));
+   public static String zeroOrOne(String pattern) {
+      return "(?:" + pattern + ")?";
    }
 
 }//END OF Regex
