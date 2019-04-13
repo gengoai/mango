@@ -61,7 +61,7 @@ public class HierarchicalRegistry<T extends HierarchicalEnumValue> extends Regis
 
    @Override
    public T make(String name) {
-      return super.make(ensureParent(null, name));
+      return super.make(name);
    }
 
    public T make(T parent, String name) {

@@ -2,11 +2,13 @@ package com.gengoai.conversion;
 
 import com.gengoai.EnumValue;
 import com.gengoai.Primitives;
+import com.gengoai.json.Json;
 import com.gengoai.reflection.BeanUtils;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionUtils;
 import com.gengoai.reflection.Types;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -163,18 +165,6 @@ public final class Converter {
          return Cast.as(sourceObject);
       }
 
-//      if (isAssignable(JsonSerializable.class, rawClass)) {
-//         try {
-//            if (sourceObject instanceof CharSequence) {
-//               return Json.parse(sourceObject.toString()).getAs(destType);
-//            } else if (sourceObject instanceof JsonEntry) {
-//               Cast.<JsonEntry>as(sourceObject).getAs(destType);
-//            }
-//         } catch (Exception e) {
-//            throw new TypeConversionException(sourceObject, destType, e);
-//         }
-//      }
-
       //Last chance
       try {
          return Cast.as(
@@ -196,8 +186,17 @@ public final class Converter {
       try {
          return Cast.as(constructor.newInstance(sourceObject));
       } catch (Exception e) {
-         throw new TypeConversionException(sourceObject, destType);
+         //ignore
       }
+
+      if (sourceObject instanceof CharSequence) {
+         try {
+            return Json.parse(sourceObject.toString(), destType);
+         } catch (IOException e) {
+            //ignore
+         }
+      }
+      throw new TypeConversionException(sourceObject, destType);
    }
 
 }//END OF Converter

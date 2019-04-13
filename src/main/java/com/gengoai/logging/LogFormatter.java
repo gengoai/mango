@@ -32,7 +32,6 @@ import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Formatter;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 
@@ -65,7 +64,7 @@ public class LogFormatter extends Formatter {
       date.setTime(arg0.getMillis());
       int idx = className.lastIndexOf('.');
       if (idx > 0) {
-         className = className.substring(idx);
+         className = className.substring(idx+1);
       }
       msg.append('[')
          .append(dateFormatter.format(date))
@@ -75,14 +74,14 @@ public class LogFormatter extends Formatter {
          .append(arg0.getLevel())
          .append("] ");
 
-      if (arg0.getLevel() == Level.WARNING || arg0.getLevel() == Level.SEVERE) {
-         msg.append("[").append(className);
-         if (lineNumber >= 0) {
-            msg.append(':')
-               .append(lineNumber);
-         }
-         msg.append("] ");
-      }
+//      if (arg0.getLevel() == Level.WARNING || arg0.getLevel() == Level.SEVERE) {
+//         msg.append("[");
+//         if (lineNumber >= 0) {
+//            msg.append(':')
+//               .append(lineNumber);
+//         }
+//         msg.append("] ");
+//      }
       msg.append(MessageFormat.format(arg0.getMessage(), arg0.getParameters()));
 
       if (thrown != null) {
