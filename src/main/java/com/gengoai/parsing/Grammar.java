@@ -89,6 +89,17 @@ public class Grammar implements Serializable {
    }
 
    /**
+    * Registers a prefix handler
+    *
+    * @param type    The token type that causes the prefix handler to parse
+    * @param handler The prefix handler
+    * @return This grammar (for fluent pattern)
+    */
+   public Grammar register(TokenDef type, PrefixHandler handler) {
+      return register(type.getTag(), handler);
+   }
+
+   /**
     * Registers a token type as being ignored, i.e. the grammar will skip it when seen.
     *
     * @param type the token type to ignore
@@ -96,6 +107,16 @@ public class Grammar implements Serializable {
     */
    public Grammar registerSkip(ParserTokenType type) {
       return register(type, new PrefixSkipHandler());
+   }
+
+   /**
+    * Registers a token type as being ignored, i.e. the grammar will skip it when seen.
+    *
+    * @param type the token type to ignore
+    * @return This grammar (for fluent pattern)
+    */
+   public Grammar registerSkip(TokenDef type) {
+      return register(type.getTag(), new PrefixSkipHandler());
    }
 
    /**
@@ -108,6 +129,17 @@ public class Grammar implements Serializable {
    public Grammar register(ParserTokenType type, InfixHandler handler) {
       infixHandlers.put(type, handler);
       return this;
+   }
+
+   /**
+    * Registers an infix handler
+    *
+    * @param type    The token type that causes the infix handler to parse
+    * @param handler The infix handler
+    * @return This grammar (for fluent pattern)
+    */
+   public Grammar register(TokenDef type, InfixHandler handler) {
+      return register(type.getTag(), handler);
    }
 
    /**

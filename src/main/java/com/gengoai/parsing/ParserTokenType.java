@@ -21,31 +21,57 @@
 
 package com.gengoai.parsing;
 
+import com.gengoai.Tag;
+import com.gengoai.Validation;
+
+import java.io.Serializable;
+import java.util.Arrays;
+
 /**
  * Defines a type associated with a token.
  *
  * @author David B. Bracewell
  */
-public interface ParserTokenType {
+public final class ParserTokenType implements Tag, Serializable {
+   private static final long serialVersionUID = 1L;
+   private final String name;
 
-   default boolean isInstance(ParserTokenType tokenType) {
-      return this == tokenType;
+   /**
+    * Instantiates a new Parser token type.
+    *
+    * @param name the name
+    */
+   public ParserTokenType(String name) {
+      Validation.notNullOrBlank(name);
+      this.name = name.toUpperCase().trim();
    }
 
    /**
-    * Determines if this type is the same type as the given one
+    * Token type parser token type.
     *
-    * @return True if this is the same type as the given
+    * @param name the name
+    * @return the parser token type
     */
-   default boolean isInstance(ParserTokenType... other) {
-      if (other != null) {
-         for (ParserTokenType o : other) {
-            if (isInstance(o)) {
-               return true;
-            }
-         }
-      }
-      return false;
+   public static ParserTokenType tokenType(String name) {
+      return new ParserTokenType(name);
+   }
+
+   @Override
+   public boolean isInstance(Tag tokenType) {
+      return tokenType instanceof ParserTokenType && name().equals(tokenType.name());
+   }
+
+   public boolean isInstance(TokenDef tokenDef) {
+      return tokenDef != null && isInstance(tokenDef.getTag());
+   }
+
+   public boolean isInstance(TokenDef... tokenDefs) {
+      return Arrays.stream(tokenDefs).anyMatch(this::isInstance);
+   }
+
+   @Override
+   public String name() {
+      return name;
    }
 
 }//END OF TokenType

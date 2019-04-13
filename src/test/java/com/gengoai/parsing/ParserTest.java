@@ -28,6 +28,9 @@ import com.gengoai.parsing.expressions.MethodCallExpression;
 import com.gengoai.parsing.handlers.*;
 import org.junit.Test;
 
+import java.util.Arrays;
+
+import static com.gengoai.parsing.TokenDef.define;
 import static org.junit.Assert.*;
 
 /**
@@ -37,19 +40,17 @@ public class ParserTest {
 
    @Test
    public void test() throws Exception {
-      RegularExpressionLexer lexer = RegularExpressionLexer.builder()
-                                                           .add(CommonTypes.EQUALS)
-                                                           .add(CommonTypes.POUND)
-                                                           .add(CommonTypes.WHITESPACE)
-                                                           .add(CommonTypes.PERIOD)
-                                                           .add(CommonTypes.OPENPARENS)
-                                                           .add(CommonTypes.CLOSEPARENS)
-                                                           .add(CommonTypes.NUMBER)
-                                                           .add(CommonTypes.PLUS)
-                                                           .add(CommonTypes.COMMA)
-                                                           .add(CommonTypes.NEWLINE)
-                                                           .add(CommonTypes.WORD, "[a-zA-z]\\w*")
-                                                           .build();
+      RegexLexer lexer = RegexLexer.create(Arrays.asList(CommonTypes.EQUALS,
+                                                         CommonTypes.POUND,
+                                                         CommonTypes.WHITESPACE,
+                                                         CommonTypes.PERIOD,
+                                                         CommonTypes.OPENPARENS,
+                                                         CommonTypes.CLOSEPARENS,
+                                                         CommonTypes.NUMBER,
+                                                         CommonTypes.PLUS,
+                                                         CommonTypes.COMMA,
+                                                         CommonTypes.NEWLINE,
+                                                         define(CommonTypes.WORD, "[a-zA-z]\\w*")));
 
       Parser parser2 = new Parser(new TestGrammar(), lexer);
 
@@ -91,14 +92,15 @@ public class ParserTest {
 
       public TestGrammar() {
          super(true);
-         register(CommonTypes.POUND, new CommentHandler(CommonTypes.NEWLINE));
-         register(CommonTypes.OPENPARENS, new GroupHandler(CommonTypes.CLOSEPARENS));
+         register(CommonTypes.POUND, new CommentHandler(CommonTypes.NEWLINE.getTag()));
+         register(CommonTypes.OPENPARENS, new GroupHandler(CommonTypes.CLOSEPARENS.getTag()));
          register(CommonTypes.WORD, new ValueHandler());
          register(CommonTypes.NUMBER, new ValueHandler());
          register(CommonTypes.PLUS, new BinaryOperatorHandler(3, true));
-         register(CommonTypes.OPENPARENS, new MethodCallHandler(8, CommonTypes.CLOSEPARENS, CommonTypes.COMMA));
+         register(CommonTypes.OPENPARENS,
+                  new MethodCallHandler(8, CommonTypes.CLOSEPARENS.getTag(), CommonTypes.COMMA.getTag()));
          register(CommonTypes.EQUALS, new AssignmentHandler(10));
-         register(CommonTypes.POUND, new CommentHandler(CommonTypes.NEWLINE));
+         register(CommonTypes.POUND, new CommentHandler(CommonTypes.NEWLINE.getTag()));
       }
 
    }

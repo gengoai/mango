@@ -20,28 +20,24 @@ import com.gengoai.parsing.*;
 
 
 %{
-public enum ConfigTokenType implements ParserTokenType {
-    IMPORT,
-    COMMENT,
-    NULL,
-    BOOLEAN,
-    STRING,
-    APPEND_PROPERTY,
-    EQUAL_PROPERTY,
-    BEGIN_OBJECT,
-    END_OBJECT,
-    KEY,
-    MAP,
-    BEGIN_ARRAY,
-    END_ARRAY,
-    VALUE_SEPARATOR,
-    KEY_VALUE_SEPARATOR,
-    BEAN;
+public static final class ConfigTokenType  {
+    public static final ParserTokenType IMPORT = ParserTokenType.tokenType("IMPORT");
+    public static final ParserTokenType COMMENT = ParserTokenType.tokenType("COMMENT");
+    public static final ParserTokenType NULL = ParserTokenType.tokenType("NULL");
+    public static final ParserTokenType BOOLEAN = ParserTokenType.tokenType("BOOLEAN");
+    public static final ParserTokenType STRING = ParserTokenType.tokenType("STRING");
+    public static final ParserTokenType APPEND_PROPERTY = ParserTokenType.tokenType("APPEND_PROPERTY");
+    public static final ParserTokenType EQUAL_PROPERTY = ParserTokenType.tokenType("EQUAL_PROPERTY");
+    public static final ParserTokenType BEGIN_OBJECT = ParserTokenType.tokenType("BEGIN_OBJECT");
+    public static final ParserTokenType END_OBJECT = ParserTokenType.tokenType("END_OBJECT");
+    public static final ParserTokenType KEY = ParserTokenType.tokenType("KEY");
+    public static final ParserTokenType MAP = ParserTokenType.tokenType("MAP");
+    public static final ParserTokenType BEGIN_ARRAY = ParserTokenType.tokenType("BEGIN_ARRAY");
+    public static final ParserTokenType END_ARRAY = ParserTokenType.tokenType("END_ARRAY");
+    public static final ParserTokenType VALUE_SEPARATOR = ParserTokenType.tokenType("VALUE_SEPARATOR");
+    public static final ParserTokenType KEY_VALUE_SEPARATOR = ParserTokenType.tokenType("KEY_VALUE_SEPARATOR");
+    public static final ParserTokenType BEAN = ParserTokenType.tokenType("BEAN");
 
-    @Override
-    public boolean isInstance(ParserTokenType tokenType) {
-      return tokenType == this;
-    }
 }
 %}
 

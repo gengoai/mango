@@ -44,19 +44,17 @@ public class EvaluatorTest {
                                   .register(CommonTypes.DIVIDE, new BinaryOperatorHandler(20, false))
                                   .register(CommonTypes.NUMBER, new ValueHandler())
                                   .register(CommonTypes.EXCLAMATION, new PostfixOperatorHandler(30))
-                                  .register(CommonTypes.OPENPARENS, new GroupHandler(CommonTypes.CLOSEPARENS));
+                                  .register(CommonTypes.OPENPARENS, new GroupHandler(CommonTypes.CLOSEPARENS.getTag()));
 
-   Lexer lexer = RegularExpressionLexer.builder()
-                                       .add(CommonTypes.WHITESPACE)
-                                       .add(CommonTypes.NUMBER)
-                                       .add(CommonTypes.PLUS)
-                                       .add(CommonTypes.MINUS)
-                                       .add(CommonTypes.MULTIPLY)
-                                       .add(CommonTypes.DIVIDE)
-                                       .add(CommonTypes.OPENPARENS)
-                                       .add(CommonTypes.CLOSEPARENS)
-                                       .add(CommonTypes.EXCLAMATION)
-                                       .build();
+   Lexer lexer = new RegexLexer(CommonTypes.WHITESPACE,
+                                CommonTypes.NUMBER,
+                                CommonTypes.PLUS,
+                                CommonTypes.MINUS,
+                                CommonTypes.MULTIPLY,
+                                CommonTypes.DIVIDE,
+                                CommonTypes.OPENPARENS,
+                                CommonTypes.CLOSEPARENS,
+                                CommonTypes.EXCLAMATION);
 
    Evaluator<Double> mathEvaluator = new Evaluator<Double>() {
       private static final long serialVersionUID = 1L;

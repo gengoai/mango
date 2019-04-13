@@ -22,10 +22,7 @@
 package com.gengoai.parsing.handlers;
 
 
-import com.gengoai.parsing.ExpressionIterator;
-import com.gengoai.parsing.ParseException;
-import com.gengoai.parsing.ParserToken;
-import com.gengoai.parsing.ParserTokenType;
+import com.gengoai.parsing.*;
 import com.gengoai.parsing.expressions.Expression;
 import com.gengoai.parsing.expressions.StringValueExpression;
 
@@ -46,6 +43,15 @@ public class GroupHandler extends PrefixHandler {
     */
    public GroupHandler(ParserTokenType closeGroupType) {
       this.closeGroupType = closeGroupType;
+   }
+
+   /**
+    * Default Constructor
+    *
+    * @param closeGroupType The token type that indicates the end of the group
+    */
+   public GroupHandler(TokenDef closeGroupType) {
+      this.closeGroupType = closeGroupType.getTag();
    }
 
    @Override

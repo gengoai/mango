@@ -21,6 +21,10 @@
 
 package com.gengoai.parsing;
 
+import com.gengoai.Tag;
+
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -39,15 +43,18 @@ public final class ParserToken {
     */
    public final ParserTokenType type;
 
-   /**
-    * Static method for constructing tokens
-    *
-    * @param text The text of the token
-    * @param type The type of the token
-    */
+   public final String[] variables;
+
    public ParserToken(String text, ParserTokenType type) {
       this.text = text;
       this.type = type;
+      this.variables = new String[0];
+   }
+
+   public ParserToken(String text, ParserTokenType type, List<String> variables) {
+      this.text = text;
+      this.type = type;
+      this.variables = variables.toArray(new String[0]);
    }
 
    @Override
@@ -88,11 +95,12 @@ public final class ParserToken {
     * @param types the types
     * @return the boolean
     */
-   public boolean isInstance(ParserTokenType... types) {
+   public boolean isInstance(Tag... types) {
       return type.isInstance(types);
    }
 
    public String toString() {
-      return "ParserToken(text=" + this.getText() + ", type=" + this.getType() + ")";
+      return "ParserToken(text=" + this.getText() + ", type=" + this.getType() + ", variables=" + Arrays.toString(
+         variables) + ")";
    }
 }//END OF ParseToken
