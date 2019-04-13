@@ -22,49 +22,44 @@
 
 package com.gengoai.parsing;
 
-import com.gengoai.Tag;
+import java.io.Serializable;
 
 /**
- * The type Token def.
- *
  * @author David B. Bracewell
  */
-public interface TokenDef extends ParserTokenType {
-
-   ParserTokenType getTag();
-
-   String getPattern();
+final class TokenDefImpl implements TokenDef, Serializable {
+   private static final long serialVersionUID = 1L;
+   private final String pattern;
+   private final ParserTokenType tag;
 
    /**
-    * Define token def.
+    * Instantiates a new Token def.
     *
     * @param tag     the tag
     * @param pattern the pattern
-    * @return the token def
     */
-   static TokenDef define(ParserTokenType tag, String pattern) {
-      return new TokenDefImpl(tag, pattern);
+   public TokenDefImpl(ParserTokenType tag, String pattern) {
+      this.tag = tag;
+      this.pattern = pattern;
+   }
+
+
+   /**
+    * Gets pattern.
+    *
+    * @return the pattern
+    */
+   public String getPattern() {
+      return pattern;
    }
 
    /**
-    * Define token def.
+    * Gets tag.
     *
-    * @param tag     the tag
-    * @param pattern the pattern
-    * @return the token def
+    * @return the tag
     */
-   static TokenDef define(TokenDef tag, String pattern) {
-      return new TokenDefImpl(tag, pattern);
+   public ParserTokenType getTag() {
+      return tag;
    }
 
-
-   @Override
-   default boolean isInstance(Tag tag) {
-      return getTag().isInstance(tag);
-   }
-
-   @Override
-   default String name() {
-      return getTag().name();
-   }
-}//END OF TokenDef
+}//END OF TokenDefImpl

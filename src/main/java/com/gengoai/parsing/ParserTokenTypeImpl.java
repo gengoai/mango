@@ -17,26 +17,62 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ *
  */
 
 package com.gengoai.parsing;
 
 import com.gengoai.Tag;
+import com.gengoai.Validation;
+
+import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * Defines a type associated with a token.
  *
  * @author David B. Bracewell
  */
-public interface ParserTokenType extends Tag {
+public final class ParserTokenTypeImpl implements ParserTokenType, Serializable {
+   private static final long serialVersionUID = 1L;
+   private final String name;
+
+   /**
+    * Instantiates a new Parser token type.
+    *
+    * @param name the name
+    */
+   public ParserTokenTypeImpl(String name) {
+      Validation.notNullOrBlank(name);
+      this.name = name.toUpperCase().trim();
+   }
+
    /**
     * Token type parser token type.
     *
     * @param name the name
     * @return the parser token type
     */
-   static ParserTokenType tokenType(String name) {
+   public static ParserTokenTypeImpl tokenType(String name) {
       return new ParserTokenTypeImpl(name);
+   }
+
+   @Override
+   public boolean isInstance(Tag tokenType) {
+      return tokenType instanceof ParserTokenTypeImpl && name().equals(tokenType.name());
+   }
+
+   public boolean isInstance(TokenDef tokenDef) {
+      return tokenDef != null && isInstance(tokenDef.getTag());
+   }
+
+   public boolean isInstance(TokenDef... tokenDefs) {
+      return Arrays.stream(tokenDefs).anyMatch(this::isInstance);
+   }
+
+   @Override
+   public String name() {
+      return name;
    }
 
 }//END OF TokenType

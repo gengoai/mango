@@ -28,8 +28,6 @@ import com.gengoai.parsing.expressions.MethodCallExpression;
 import com.gengoai.parsing.handlers.*;
 import org.junit.Test;
 
-import java.util.Arrays;
-
 import static com.gengoai.parsing.TokenDef.define;
 import static org.junit.Assert.*;
 
@@ -40,17 +38,17 @@ public class ParserTest {
 
    @Test
    public void test() throws Exception {
-      RegexLexer lexer = RegexLexer.create(Arrays.asList(CommonTypes.EQUALS,
-                                                         CommonTypes.POUND,
-                                                         CommonTypes.WHITESPACE,
-                                                         CommonTypes.PERIOD,
-                                                         CommonTypes.OPENPARENS,
-                                                         CommonTypes.CLOSEPARENS,
-                                                         CommonTypes.NUMBER,
-                                                         CommonTypes.PLUS,
-                                                         CommonTypes.COMMA,
-                                                         CommonTypes.NEWLINE,
-                                                         define(CommonTypes.WORD, "[a-zA-z]\\w*")));
+      RegexLexer lexer = new RegexLexer(CommonTypes.EQUALS,
+                                        CommonTypes.POUND,
+                                        CommonTypes.WHITESPACE,
+                                        CommonTypes.PERIOD,
+                                        CommonTypes.OPENPARENS,
+                                        CommonTypes.CLOSEPARENS,
+                                        CommonTypes.NUMBER,
+                                        CommonTypes.PLUS,
+                                        CommonTypes.COMMA,
+                                        CommonTypes.NEWLINE,
+                                        define(CommonTypes.WORD, "[a-zA-z]\\w*"));
 
       Parser parser2 = new Parser(new TestGrammar(), lexer);
 

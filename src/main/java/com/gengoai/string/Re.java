@@ -142,13 +142,12 @@ public final class Re {
    }
 
    /**
-    * Combines the given regex patterns as alternations. Should be wrapped as a group.
+    * Any string.
     *
-    * @param regex the regex
-    * @return the alternation
+    * @return the string
     */
-   public static String alt(String... regex) {
-      return String.join("|", regex);
+   public static String any() {
+      return ".";
    }
 
    /**
@@ -227,12 +226,78 @@ public final class Re {
       return Pattern.compile(String.join("", patterns));
    }
 
-   public static String n(String pattern, int n) {
-      return "(?:" + pattern + "){" + n + "}";
+   /**
+    * E string.
+    *
+    * @param character the character
+    * @return the string
+    */
+   public static String e(char character) {
+      return "\\" + character;
    }
 
-   public static String n(String pattern, int low, int high) {
-      return "(?:" + pattern + "){" + low + "," + high + "}";
+   /**
+    * Greedy one or more string.
+    *
+    * @param sequence the sequence
+    * @return the string
+    */
+   public static String greedyOneOrMore(String... sequence) {
+      return String.format("%s+?", String.join("", sequence));
+   }
+
+   /**
+    * Greedy zero or more string.
+    *
+    * @param sequence the sequence
+    * @return the string
+    */
+   public static String greedyZeroOrMore(String... sequence) {
+      return String.format("%s*?", String.join("", sequence));
+   }
+
+   /**
+    * Group string.
+    *
+    * @param sequence the sequence
+    * @return the string
+    */
+   public static String group(String... sequence) {
+      return String.format("(%s)", String.join("", sequence));
+   }
+
+   /**
+    * Min string.
+    *
+    * @param min      the min
+    * @param sequence the sequence
+    * @return the string
+    */
+   public static String min(int min, String... sequence) {
+      return String.format("(?:%s){%d}", String.join("", sequence), min);
+   }
+
+   /**
+    * Max string.
+    *
+    * @param max      the max
+    * @param sequence the sequence
+    * @return the string
+    */
+   public static String max(int max, String... sequence) {
+      return String.format("(?:%s){,%d}", String.join("", sequence), max);
+   }
+
+   /**
+    * Range string.
+    *
+    * @param min      the min
+    * @param max      the max
+    * @param sequence the sequence
+    * @return the string
+    */
+   public static String range(int min, int max, String... sequence) {
+      return String.format("(?:%s){%d,%d}", String.join("", sequence), min, max);
    }
 
    /**
@@ -242,8 +307,8 @@ public final class Re {
     * @param regex     the regex
     * @return the named match group
     */
-   public static String namedGroup(String groupName, String regex) {
-      return String.format("(?<%s> %s)", groupName, regex);
+   public static String namedGroup(String groupName, String... regex) {
+      return String.format("(?<%s>%s)", groupName, String.join("", regex));
    }
 
    /**
@@ -252,8 +317,8 @@ public final class Re {
     * @param regex the regex
     * @return the regex
     */
-   public static String negLookahead(String regex) {
-      return String.format("(?! %s)", regex);
+   public static String negLookahead(String... regex) {
+      return String.format("(?!%s)", String.join("", regex));
    }
 
    /**
@@ -263,7 +328,7 @@ public final class Re {
     * @return the regex
     */
    public static String negLookbehind(String... regex) {
-      return String.format("(?<! %s)", String.join("", regex));
+      return String.format("(?<!%s)", String.join("", regex));
    }
 
    /**
@@ -272,12 +337,28 @@ public final class Re {
     * @param regex the regex
     * @return the non-matching group
     */
-   public static String nonMatchingGroup(String regex) {
-      return String.format("(?:%s)", regex);
+   public static String nonMatchingGroup(String... regex) {
+      return String.format("(?:%s)", String.join("", regex));
    }
 
-   public static String oneOrMore(String pattern) {
-      return "(?:" + pattern + ")+";
+   /**
+    * One or more string.
+    *
+    * @param sequence the sequence
+    * @return the string
+    */
+   public static String oneOrMore(String... sequence) {
+      return String.format("(?:%s)+", String.join("", sequence));
+   }
+
+   /**
+    * Combines the given regex patterns as alternations. Should be wrapped as a group.
+    *
+    * @param sequence the regex
+    * @return the alternation
+    */
+   public static String or(String... sequence) {
+      return String.format("(?:%s)", String.join("|", sequence));
    }
 
    /**
@@ -287,7 +368,7 @@ public final class Re {
     * @return the regex
     */
    public static String posLookahead(String... regex) {
-      return String.format("(?= %s)", String.join("", regex));
+      return String.format("(?=%s)", String.join("", regex));
    }
 
    /**
@@ -297,29 +378,49 @@ public final class Re {
     * @return the regex
     */
    public static String posLookbehind(String... regex) {
-      return String.format("(?<= %s)", String.join("", regex));
+      return String.format("(?<=%s)", String.join("", regex));
    }
 
-   public static String q(String pattern){
+   /**
+    * Q string.
+    *
+    * @param pattern the pattern
+    * @return the string
+    */
+   public static String q(String pattern) {
       return Pattern.quote(pattern);
    }
 
    /**
     * Combines the given regex patterns into a sequence.
     *
-    * @param regex the regex
+    * @param sequence the regex
     * @return the string
     */
-   public static String seq(String... regex) {
-      return String.join("", regex);
+   public static String re(String... sequence) {
+      return String.format("(?:%s)", String.join("", sequence));
    }
 
+   /**
+    * Zero or more string.
+    *
+    * @param sequence the sequence
+    * @return the string
+    */
    public static String zeroOrMore(String... sequence) {
-      return "(?:" + seq(sequence) + ")*";
+      return String.format("(?:%s)*", String.join("", sequence));
    }
 
-   public static String zeroOrOne(String pattern) {
-      return "(?:" + pattern + ")?";
+   /**
+    * Zero or one string.
+    *
+    * @param sequence the sequence
+    * @return the string
+    */
+   public static String zeroOrOne(String... sequence) {
+      return String.format("(?:%s)?", String.join("", sequence));
    }
+
+
 
 }//END OF Regex

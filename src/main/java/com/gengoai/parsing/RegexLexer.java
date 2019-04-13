@@ -22,17 +22,17 @@
 
 package com.gengoai.parsing;
 
-import com.gengoai.conversion.Cast;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.string.Strings;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static com.gengoai.parsing.TokenDef.define;
 
 /**
  * The type Regex lexer.
@@ -47,13 +47,6 @@ public class RegexLexer implements Lexer, Serializable {
    private final String[] groups;
    private final Pattern regex;
 
-
-   public static <T extends ParserTokenType & HasLexicalPattern> RegexLexer create(Collection<?> definitions) {
-      return new RegexLexer(definitions.stream()
-                                       .map(Cast::<T>as)
-                                       .map(t -> define(t, t.lexicalPattern()))
-                                       .toArray(TokenDef[]::new));
-   }
 
    /**
     * Instantiates a new Regex lexer.
