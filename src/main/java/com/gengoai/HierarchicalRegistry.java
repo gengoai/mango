@@ -28,15 +28,23 @@ import com.gengoai.string.CharMatcher;
 import static com.gengoai.HierarchicalEnumValue.SEPARATOR;
 
 /**
+ * <p>Registry for hierarchical enum values</p>
+ *
+ * @param <T> the type parameter
  * @author David B. Bracewell
  */
-public class HierarchicalRegistry<T extends HierarchicalEnumValue> extends Registry<T> {
+public final class HierarchicalRegistry<T extends HierarchicalEnumValue> extends Registry<T> {
+   /**
+    * The Root.
+    */
    public final T ROOT;
 
    /**
     * Instantiates a new Registry.
     *
-    * @param owner the owner
+    * @param newInstance the new instance
+    * @param owner       the owner
+    * @param rootName    the root name
     */
    public HierarchicalRegistry(SerializableFunction<String, T> newInstance, Class<T> owner, String rootName) {
       super(newInstance, owner);
@@ -44,6 +52,30 @@ public class HierarchicalRegistry<T extends HierarchicalEnumValue> extends Regis
    }
 
 
+   /**
+    * Instantiates a new Hierarchical registry.
+    *
+    * @param newInstance the new instance
+    * @param owner       the owner
+    */
+   public HierarchicalRegistry(SerializableFunction<String, T> newInstance, Class<T> owner) {
+      super(newInstance, owner);
+      this.ROOT = null;
+   }
+
+   protected void checkName(String name) {
+      if (!CharMatcher.LetterOrDigit.or(CharMatcher.anyOf("_$")).matchesAllOf(name)) {
+         throw new IllegalArgumentException(name + " is invalid");
+      }
+   }
+
+   /**
+    * Ensures that the non-root parent is prepended onto the enum value name
+    *
+    * @param parent the parent
+    * @param name   the name
+    * @return the string
+    */
    protected String ensureParent(T parent, String name) {
       if (parent == null || parent == ROOT) {
          return name;
@@ -54,24 +86,20 @@ public class HierarchicalRegistry<T extends HierarchicalEnumValue> extends Regis
       return name.startsWith(parent.name()) ? name : parent + Character.toString(SEPARATOR) + name;
    }
 
-   public HierarchicalRegistry(SerializableFunction<String, T> newInstance, Class<T> owner) {
-      super(newInstance, owner);
-      this.ROOT = null;
+   /**
+    * Generates an enum value with the given parent.
+    *
+    * @param parent the parent
+    * @param name   the name of the enum value
+    * @return the enum value
+    */
+   public T make(T parent, String name) {
+      return make(ensureParent(parent, name));
    }
 
    @Override
    public T make(String name) {
       return super.make(name);
-   }
-
-   public T make(T parent, String name) {
-      return make(ensureParent(parent, name));
-   }
-
-   protected void checkName(String name) {
-      if (!CharMatcher.LetterOrDigit.or(CharMatcher.anyOf("_$")).matchesAllOf(name)) {
-         throw new IllegalArgumentException(name + " is invalid");
-      }
    }
 
 

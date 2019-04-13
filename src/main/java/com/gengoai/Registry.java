@@ -34,27 +34,36 @@ import java.util.concurrent.ConcurrentHashMap;
 import static com.gengoai.Validation.notNullOrBlank;
 
 /**
- * The type Registry.
+ * <p>Registry for storing instances EnumValues</p>
  *
  * @param <T> the type parameter
  * @author David B. Bracewell
  */
 public class Registry<T extends EnumValue> implements Serializable {
    private static final long serialVersionUID = 1L;
-   protected final Map<String, T> registry = new ConcurrentHashMap<>();
-   protected final SerializableFunction<String, T> newInstance;
+   /**
+    * The Canonical name.
+    */
    protected final String canonicalName;
+   private final SerializableFunction<String, T> newInstance;
+   private final Map<String, T> registry = new ConcurrentHashMap<>();
 
    /**
     * Instantiates a new Registry.
     *
-    * @param owner the owner
+    * @param newInstance the new instance
+    * @param owner       the owner
     */
    public Registry(SerializableFunction<String, T> newInstance, Class<T> owner) {
       this.newInstance = newInstance;
       this.canonicalName = owner.getCanonicalName();
    }
 
+   /**
+    * Checks the name to make sure it is valid.
+    *
+    * @param name the name
+    */
    protected void checkName(String name) {
       if (!CharMatcher.LetterOrDigit.or(CharMatcher.anyOf("_")).matchesAllOf(name)) {
          throw new IllegalArgumentException(name + " is invalid");
@@ -62,10 +71,10 @@ public class Registry<T extends EnumValue> implements Serializable {
    }
 
    /**
-    * Make t.
+    * Creates an enum value for the given name
     *
     * @param name the name
-    * @return the t
+    * @return the enum value
     */
    public T make(String name) {
       if (name.startsWith(canonicalName)) {
@@ -77,12 +86,12 @@ public class Registry<T extends EnumValue> implements Serializable {
    }
 
    /**
-    * Normalize string.
+    * Normalizes the name
     *
     * @param name the name
-    * @return the string
+    * @return the normalized name
     */
-   String normalize(String name) {
+   protected String normalize(String name) {
       notNullOrBlank(name, "Name cannot be null or blank");
       StringBuilder toReturn = new StringBuilder();
       boolean previousSpace = false;
@@ -101,12 +110,28 @@ public class Registry<T extends EnumValue> implements Serializable {
    }
 
    /**
-    * Values collection.
+    * Gets all know enum values as a collection
     *
     * @return the collection
     */
    public Collection<T> values() {
       return Collections.unmodifiableCollection(registry.values());
    }
+
+
+   /**
+    * Returns the enum value for a given name throwing an exception if it does not exist.
+    *
+    * @param name the name
+    * @return the enum value
+    */
+   public T valueOf(String name) {
+      String norm = normalize(name);
+      if (registry.containsKey(norm)) {
+         return registry.get(norm);
+      }
+      throw new IllegalArgumentException(name + " is an unknown value");
+   }
+
 
 }//END OF Registry
