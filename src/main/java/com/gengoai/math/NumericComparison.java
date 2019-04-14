@@ -78,4 +78,22 @@ public enum NumericComparison implements SerializableBiFunction<Number, Number, 
    public abstract boolean compare(double beingCompared, double comparedAgainst);
 
 
+   public String asString() {
+      switch (this) {
+         case EQ:
+            return "=";
+         case GT:
+            return ">";
+         case GTE:
+            return ">=";
+         case LT:
+            return "<";
+         case LTE:
+            return "<=";
+         case NE:
+            return "!=";
+      }
+      throw new IllegalArgumentException();
+   }
+
 }// END OF Inequality
