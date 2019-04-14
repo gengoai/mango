@@ -63,21 +63,6 @@ public abstract class Evaluator<O> extends Switch<Expression, O> {
             function);
    }
 
-   /**
-    * Adds a switch statement where the condition is that the expression is of type <code>expressionClass</code> and the
-    * expressions's token type is an instance of <code>type</code>. When the condition is met the expression is cast as
-    * the given expression class and the given function is applied.
-    *
-    * @param <E>             the type of expression
-    * @param expressionClass the expression class
-    * @param type            the token type
-    * @param function        the function to apply when the condition is met.
-    */
-   protected final <E extends Expression> void $(Class<E> expressionClass, TokenDef type, CheckedFunction<E, ? extends O> function) {
-      $case(e -> e.match(expressionClass, type.getTag()),
-            e -> Cast.as(e, expressionClass),
-            function);
-   }
 
 
    /**

@@ -22,8 +22,6 @@
 
 package com.gengoai.parsing;
 
-import com.gengoai.Tag;
-
 /**
  * The type Token def.
  *
@@ -55,12 +53,6 @@ public interface TokenDef extends ParserTokenType {
     */
    static TokenDef define(TokenDef tag, String pattern) {
       return new TokenDefImpl(tag, pattern);
-   }
-
-
-   @Override
-   default boolean isInstance(Tag tag) {
-      return getTag().isInstance(tag);
    }
 
    @Override

@@ -22,18 +22,17 @@
 
 package com.gengoai.parsing;
 
-import com.gengoai.Tag;
 import com.gengoai.Validation;
 
 import java.io.Serializable;
-import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Defines a type associated with a token.
  *
  * @author David B. Bracewell
  */
-public final class ParserTokenTypeImpl implements ParserTokenType, Serializable {
+final class ParserTokenTypeImpl implements ParserTokenType, Serializable {
    private static final long serialVersionUID = 1L;
    private final String name;
 
@@ -47,32 +46,26 @@ public final class ParserTokenTypeImpl implements ParserTokenType, Serializable 
       this.name = name.toUpperCase().trim();
    }
 
-   /**
-    * Token type parser token type.
-    *
-    * @param name the name
-    * @return the parser token type
-    */
-   public static ParserTokenTypeImpl tokenType(String name) {
-      return new ParserTokenTypeImpl(name);
-   }
-
-   @Override
-   public boolean isInstance(Tag tokenType) {
-      return tokenType instanceof ParserTokenTypeImpl && name().equals(tokenType.name());
-   }
-
-   public boolean isInstance(TokenDef tokenDef) {
-      return tokenDef != null && isInstance(tokenDef.getTag());
-   }
-
-   public boolean isInstance(TokenDef... tokenDefs) {
-      return Arrays.stream(tokenDefs).anyMatch(this::isInstance);
-   }
-
    @Override
    public String name() {
       return name;
    }
 
+   @Override
+   public String toString(){
+      return name;
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(name);
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {return true;}
+      if (obj == null || getClass() != obj.getClass()) {return false;}
+      final ParserTokenTypeImpl other = (ParserTokenTypeImpl) obj;
+      return Objects.equals(this.name, other.name);
+   }
 }//END OF TokenType

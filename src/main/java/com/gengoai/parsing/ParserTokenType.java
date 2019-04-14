@@ -39,4 +39,9 @@ public interface ParserTokenType extends Tag {
       return new ParserTokenTypeImpl(name);
    }
 
+   @Override
+   default boolean isInstance(Tag tag) {
+      return tag instanceof ParserTokenType && name().equals(tag.name());
+   }
+
 }//END OF TokenType
