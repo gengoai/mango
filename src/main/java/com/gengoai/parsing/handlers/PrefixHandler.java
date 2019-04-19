@@ -26,6 +26,8 @@ import com.gengoai.parsing.ParseException;
 import com.gengoai.parsing.ParserToken;
 import com.gengoai.parsing.expressions.Expression;
 
+import java.io.Serializable;
+
 /**
  * <p>Abstract base class for prefix handlers.</p>
  *
@@ -48,6 +50,24 @@ public abstract class PrefixHandler implements ParserHandler {
    @Override
    public int precedence() {
       return 0;
+   }
+
+
+   @FunctionalInterface
+   public interface PrefixHandlerFunction extends Serializable {
+
+      Expression apply(ExpressionIterator expressionIterator, ParserToken token) throws ParseException;
+   }
+
+   public static PrefixHandler prefixHandler(PrefixHandlerFunction function) {
+      return new PrefixHandler() {
+         private static final long serialVersionUID = 1L;
+
+         @Override
+         public Expression parse(ExpressionIterator expressionIterator, ParserToken token) throws ParseException {
+            return function.apply(expressionIterator, token);
+         }
+      };
    }
 
 
