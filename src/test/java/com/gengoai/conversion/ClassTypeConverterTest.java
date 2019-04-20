@@ -5,7 +5,7 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static com.gengoai.reflection.Types.parameterizedType;
+import static com.gengoai.reflection.TypeUtils.parameterizedType;
 import static org.junit.Assert.*;
 
 /**

@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.*;
 
-import static com.gengoai.reflection.Types.*;
+import static com.gengoai.reflection.TypeUtils.*;
 import static java.util.Collections.singletonList;
 
 /**

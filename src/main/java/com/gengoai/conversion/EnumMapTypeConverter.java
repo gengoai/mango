@@ -7,8 +7,8 @@ import java.util.EnumMap;
 import java.util.Map;
 
 import static com.gengoai.collection.Arrays2.arrayOf;
-import static com.gengoai.reflection.Types.getOrObject;
-import static com.gengoai.reflection.Types.isAssignable;
+import static com.gengoai.reflection.TypeUtils.getOrObject;
+import static com.gengoai.reflection.TypeUtils.isAssignable;
 
 /**
  * Converts objects into EnumMap

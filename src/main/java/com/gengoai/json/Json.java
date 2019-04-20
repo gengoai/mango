@@ -5,7 +5,7 @@ import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionUtils;
-import com.gengoai.reflection.Types;
+import com.gengoai.reflection.TypeUtils;
 import com.google.gson.*;
 
 import java.io.IOException;
@@ -72,8 +72,8 @@ public final class Json {
       protected Type deserialize(JsonEntry entry, Type type) {
          try {
             return entry.isObject()
-                   ? Types.parameterizedType(entry.getProperty("rawType").getAs(Type.class),
-                                             entry.getProperty("parameters")
+                   ? TypeUtils.parameterizedType(entry.getProperty("rawType").getAs(Type.class),
+                                                 entry.getProperty("parameters")
                                                   .getAsArray(Type.class)
                                                   .toArray(new Type[1]))
                    : ReflectionUtils.getClassForName(entry.getAsString());
@@ -86,8 +86,8 @@ public final class Json {
       protected JsonEntry serialize(Type type, Type type2) {
          if (type instanceof ParameterizedType) {
             return JsonEntry.object()
-                            .addProperty("rawType", Types.asClass(type))
-                            .addProperty("parameters", Types.parameterizedType(type));
+                            .addProperty("rawType", TypeUtils.asClass(type))
+                            .addProperty("parameters", TypeUtils.parameterizedType(type));
          }
          return JsonEntry.from(type.getTypeName());
       }
@@ -98,7 +98,7 @@ public final class Json {
       @Override
       @SuppressWarnings("unchecked")
       protected Enum deserialize(JsonEntry entry, Type type) {
-         Class<Enum> c = Types.asClass(type);
+         Class<Enum> c = TypeUtils.asClass(type);
          return Enum.valueOf(c, entry.getAsString());
       }
 

@@ -8,7 +8,7 @@ import com.gengoai.json.Json;
 import java.io.IOException;
 import java.lang.reflect.Type;
 
-import static com.gengoai.reflection.Types.parameterizedType;
+import static com.gengoai.reflection.TypeUtils.parameterizedType;
 
 /**
  * @author David B. Bracewell

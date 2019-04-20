@@ -33,7 +33,7 @@ import com.gengoai.json.JsonMarshaller;
 import com.gengoai.math.Math2;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
-import com.gengoai.reflection.Types;
+import com.gengoai.reflection.TypeUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -42,7 +42,7 @@ import java.util.*;
 import java.util.function.*;
 import java.util.stream.Collectors;
 
-import static com.gengoai.reflection.Types.getOrObject;
+import static com.gengoai.reflection.TypeUtils.getOrObject;
 
 /**
  * <p>A specialized object to double map that allows basic statistics over the objects and their values.</p>
@@ -57,7 +57,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
 
       @Override
       protected Counter<T> deserialize(JsonEntry entry, Type type) {
-         Class<?> cntrClass = Types.asClass(type);
+         Class<?> cntrClass = TypeUtils.asClass(type);
          if (cntrClass == Counter.class) {
             cntrClass = HashMapCounter.class;
          }
@@ -67,7 +67,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
          } catch (ReflectionException e) {
             throw new RuntimeException(e);
          }
-         Type keyType = getOrObject(0, Types.getActualTypeArguments(type));
+         Type keyType = getOrObject(0, TypeUtils.getActualTypeArguments(type));
          entry.elementIterator()
               .forEachRemaining(a -> {
                  List<JsonEntry> av = a.getAsArray();

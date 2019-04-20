@@ -55,7 +55,7 @@ public class BeanUtils {
                 } else {
                    Type type = beanMap.getType(propertyName);
                    if (Config.hasProperty(property + ".@type")) {
-                      type = Types.parse(Config.get(property + ".@type").asString());
+                      type = TypeUtils.parse(Config.get(property + ".@type").asString());
                    }
                    try {
                       val = Json.parse(Config.get(targetName, propertyName).asString()).getAs(type);
@@ -108,16 +108,16 @@ public class BeanUtils {
             if (cons.isArray()) {
                cons.elementIterator().forEachRemaining(j -> {
                   Map.Entry<String, JsonEntry> e = j.propertyIterator().next();
-                  Type type = Types.parse(e.getKey());
+                  Type type = TypeUtils.parse(e.getKey());
                   values.add(e.getValue().getAs(type));
-                  paramTypes.add(Types.asClass(type));
+                  paramTypes.add(TypeUtils.asClass(type));
 
                });
             } else {
                for (Map.Entry<String, JsonEntry> e : Iterables.asIterable(cons.propertyIterator())) {
-                  Type type = Types.parse(e.getKey());
+                  Type type = TypeUtils.parse(e.getKey());
                   values.add(e.getValue().getAs(type));
-                  paramTypes.add(Types.asClass(type));
+                  paramTypes.add(TypeUtils.asClass(type));
                }
             }
          } catch (IOException e) {

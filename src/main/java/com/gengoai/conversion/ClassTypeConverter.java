@@ -2,18 +2,18 @@ package com.gengoai.conversion;
 
 import com.gengoai.json.JsonEntry;
 import com.gengoai.reflection.ReflectionUtils;
-import com.gengoai.reflection.Types;
+import com.gengoai.reflection.TypeUtils;
 import org.kohsuke.MetaInfServices;
 
 import java.lang.reflect.Type;
 
 import static com.gengoai.collection.Arrays2.arrayOf;
-import static com.gengoai.reflection.Types.asClass;
+import static com.gengoai.reflection.TypeUtils.asClass;
 
 /**
  * Converts object into Class values. Conversion is possible for the following types:
  * <ul>
- * <li>Type: All types are attempted to convert to classes using {@link Types#asClass(Type)}</li>
+ * <li>Type: All types are attempted to convert to classes using {@link TypeUtils#asClass(Type)}</li>
  * <li>{@link JsonEntry} and CharSequence: Converted to strings and treated as class names</li>
  * <li>Other: <code>Object.getClass()</code></li>
  * </ul>
@@ -38,7 +38,7 @@ public class ClassTypeConverter implements TypeConverter {
          }
 
          try {
-            return Types.asClass(Types.parse(object.toString()));
+            return TypeUtils.asClass(TypeUtils.parse(object.toString()));
          } catch (Exception e) {
             //Ignore to return String.class
          }

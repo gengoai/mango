@@ -1,6 +1,6 @@
 package com.gengoai.conversion;
 
-import com.gengoai.reflection.Types;
+import com.gengoai.reflection.TypeUtils;
 import org.kohsuke.MetaInfServices;
 
 import java.lang.reflect.Array;
@@ -8,7 +8,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 import static com.gengoai.collection.Arrays2.arrayOf;
-import static com.gengoai.reflection.Types.getOrObject;
+import static com.gengoai.reflection.TypeUtils.getOrObject;
 
 /**
  * Type Converter to convert objects into Arrays. Uses {@link CollectionTypeConverter} to convert the object into a
@@ -24,7 +24,7 @@ public class ArrayTypeConverter implements TypeConverter {
       Type componentType = getOrObject(0, parameters);
       //Convert the source to a list and create an array from it.
       List<?> list = Converter.convert(source, List.class, parameters);
-      Object array = Array.newInstance(Types.asClass(componentType), list.size());
+      Object array = Array.newInstance(TypeUtils.asClass(componentType), list.size());
       for (int i = 0; i < list.size(); i++) {
          Array.set(array, i, list.get(i));
       }

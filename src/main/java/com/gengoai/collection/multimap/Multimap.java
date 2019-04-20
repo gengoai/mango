@@ -7,7 +7,7 @@ import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonMarshaller;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
-import com.gengoai.reflection.Types;
+import com.gengoai.reflection.TypeUtils;
 
 import java.lang.reflect.Type;
 import java.util.*;
@@ -27,11 +27,11 @@ public interface Multimap<K, V> {
 
       @Override
       protected Multimap<K, V> deserialize(JsonEntry entry, Type type) {
-         Type[] params = Types.getActualTypeArguments(type);
-         Type keyType = Types.getOrObject(0, params);
-         Type valueType = Types.getOrObject(1, params);
+         Type[] params = TypeUtils.getActualTypeArguments(type);
+         Type keyType = TypeUtils.getOrObject(0, params);
+         Type valueType = TypeUtils.getOrObject(1, params);
 
-         Class<?> mClass = Types.asClass(type);
+         Class<?> mClass = TypeUtils.asClass(type);
          if (mClass == Multimap.class) {
             mClass = ArrayListMultimap.class;
          }

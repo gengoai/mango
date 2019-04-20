@@ -27,7 +27,7 @@ import com.gengoai.collection.Sorting;
 import com.gengoai.conversion.Cast;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonMarshaller;
-import com.gengoai.reflection.Types;
+import com.gengoai.reflection.TypeUtils;
 import com.gengoai.string.Strings;
 import com.google.gson.annotations.JsonAdapter;
 
@@ -54,9 +54,9 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
       protected Tuple deserialize(JsonEntry entry, Type typeOfT) {
          List<Object> elements = new ArrayList<>();
          int index = 0;
-         Type[] types = Types.getActualTypeArguments(typeOfT);
+         Type[] types = TypeUtils.getActualTypeArguments(typeOfT);
          for (Iterator<JsonEntry> itr = entry.elementIterator(); itr.hasNext(); ) {
-            Type type = Types.getOrObject(index, types);
+            Type type = TypeUtils.getOrObject(index, types);
             elements.add(itr.next().getAs(type));
             index++;
          }

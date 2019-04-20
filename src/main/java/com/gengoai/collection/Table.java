@@ -6,14 +6,14 @@ import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonMarshaller;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
-import com.gengoai.reflection.Types;
+import com.gengoai.reflection.TypeUtils;
 
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import static com.gengoai.reflection.Types.getOrObject;
+import static com.gengoai.reflection.TypeUtils.getOrObject;
 
 /**
  * A table is a two dimensional structure that associates a value with two keys (i.e. a row and column key). A table
@@ -32,10 +32,10 @@ public interface Table<R, C, V> {
 
       @Override
       protected Table<?, ?, ?> deserialize(JsonEntry entry, Type type) {
-         Type[] params = Types.getActualTypeArguments(type);
+         Type[] params = TypeUtils.getActualTypeArguments(type);
          final Table<?, ?, ?> table;
          try {
-            table = Reflect.onClass(Types.asClass(type))
+            table = Reflect.onClass(TypeUtils.asClass(type))
                            .create().get();
          } catch (ReflectionException e) {
             throw new RuntimeException(e);

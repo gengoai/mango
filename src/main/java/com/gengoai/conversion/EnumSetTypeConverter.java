@@ -7,7 +7,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import static com.gengoai.collection.Arrays2.arrayOf;
-import static com.gengoai.reflection.Types.parameterizedType;
+import static com.gengoai.reflection.TypeUtils.parameterizedType;
 
 /**
  * Converts objects into EnumSets.

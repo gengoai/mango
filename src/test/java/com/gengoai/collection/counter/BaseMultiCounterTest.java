@@ -32,7 +32,7 @@ import org.junit.Test;
 
 import java.util.*;
 
-import static com.gengoai.reflection.Types.parameterizedType;
+import static com.gengoai.reflection.TypeUtils.parameterizedType;
 import static com.gengoai.tuple.Tuples.$;
 import static org.junit.Assert.*;
 

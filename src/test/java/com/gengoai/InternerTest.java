@@ -23,7 +23,7 @@ package com.gengoai;
 
 import com.gengoai.collection.Lists;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.reflection.Types;
+import com.gengoai.reflection.TypeUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -65,7 +65,7 @@ public class InternerTest {
    @Test
    public void json() {
       JsonEntry entry = JsonEntry.from(interner);
-      Interner<String> des = entry.getAs(Types.parameterizedType(Interner.class, String.class));
+      Interner<String> des = entry.getAs(TypeUtils.parameterizedType(Interner.class, String.class));
       assertEquals(interner, des);
    }
 }

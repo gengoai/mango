@@ -46,7 +46,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 import static com.gengoai.Validation.checkState;
-import static com.gengoai.reflection.Types.asClass;
+import static com.gengoai.reflection.TypeUtils.asClass;
 
 /**
  * <p> Information about a resource, which abstracts away the specific details on working with the resource. Gives the

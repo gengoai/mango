@@ -25,7 +25,7 @@ import com.gengoai.annotation.JsonAdapter;
 import com.gengoai.collection.Streams;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonMarshaller;
-import com.gengoai.reflection.Types;
+import com.gengoai.reflection.TypeUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
@@ -52,10 +52,10 @@ public final class Interner<E> implements Serializable {
 
       @Override
       protected Interner deserialize(JsonEntry entry, Type type) {
-         Type[] parameters = Types.getActualTypeArguments(type);
+         Type[] parameters = TypeUtils.getActualTypeArguments(type);
          Interner<?> interner = new Interner<>();
          entry.elementIterator()
-              .forEachRemaining(e -> interner.intern(e.getAs(Types.getOrObject(0, parameters))));
+              .forEachRemaining(e -> interner.intern(e.getAs(TypeUtils.getOrObject(0, parameters))));
          return interner;
       }
 

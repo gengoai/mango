@@ -18,9 +18,9 @@ import java.util.List;
  *
  * @author David B. Bracewell
  */
-public final class Types {
+public final class TypeUtils {
 
-   private Types() {
+   private TypeUtils() {
       throw new IllegalAccessError();
    }
 
@@ -205,7 +205,7 @@ public final class Types {
       Type[] pTypes = null;
       if (tStart > 0) {
          pTypes = Arrays.stream(s.substring(tStart + 1, tEnd).split("[, ]+"))
-                        .map(Types::parse)
+                        .map(TypeUtils::parse)
                         .toArray(Type[]::new);
       }
       return pTypes == null ? rawType : parameterizedType(rawType, pTypes);

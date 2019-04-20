@@ -68,7 +68,7 @@ public final class ReflectionUtils implements Loggable {
 
    public static <T> T newInstance(Type type) {
       try {
-         return Reflect.onClass(Types.asClass(type))
+         return Reflect.onClass(TypeUtils.asClass(type))
                        .create().get();
       } catch (ReflectionException e) {
          throw new RuntimeException(e);

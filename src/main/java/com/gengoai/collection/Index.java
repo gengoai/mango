@@ -27,7 +27,7 @@ import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonMarshaller;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
-import com.gengoai.reflection.Types;
+import com.gengoai.reflection.TypeUtils;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -46,12 +46,12 @@ public interface Index<E> extends Iterable<E>, Copyable<Index<E>> {
 
       @Override
       protected Index deserialize(JsonEntry entry, Type type) {
-         Class<?> indexType = Types.asClass(type);
+         Class<?> indexType = TypeUtils.asClass(type);
          if (indexType == Index.class) {
             indexType = HashMapIndex.class;
          }
          try {
-            Type eType = Types.getOrObject(0, Types.getActualTypeArguments(type));
+            Type eType = TypeUtils.getOrObject(0, TypeUtils.getActualTypeArguments(type));
             Index<?> index = Reflect.onClass(indexType).create().get();
             entry.elementIterator()
                  .forEachRemaining(e -> index.add(e.getAs(eType)));

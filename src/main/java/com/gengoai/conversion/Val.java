@@ -27,7 +27,7 @@ import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.*;
 
-import static com.gengoai.reflection.Types.parameterizedType;
+import static com.gengoai.reflection.TypeUtils.parameterizedType;
 
 /**
  * Wraps an object allowing conversion into other formats.

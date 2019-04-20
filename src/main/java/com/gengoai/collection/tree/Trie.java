@@ -6,7 +6,7 @@ import com.gengoai.collection.Maps;
 import com.gengoai.conversion.Cast;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonMarshaller;
-import com.gengoai.reflection.Types;
+import com.gengoai.reflection.TypeUtils;
 import com.gengoai.string.CharMatcher;
 import com.gengoai.string.Strings;
 
@@ -39,7 +39,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
       @Override
       protected Trie<T> deserialize(JsonEntry entry, Type type) {
          Trie<T> trie = new Trie<>();
-         Type typeOfT = Types.getOrObject(0, Types.getActualTypeArguments(type));
+         Type typeOfT = TypeUtils.getOrObject(0, TypeUtils.getActualTypeArguments(type));
          entry.propertyIterator()
               .forEachRemaining(e -> trie.put(e.getKey(), e.getValue().getAs(typeOfT)));
          return trie;

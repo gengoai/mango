@@ -11,7 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import static com.gengoai.reflection.Types.parameterizedType;
+import static com.gengoai.reflection.TypeUtils.parameterizedType;
 
 /**
  * Base Map type converter. Handles Maps, JsonEntries, CharSequences, and other objects that can be iterated over.

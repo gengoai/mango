@@ -34,14 +34,14 @@ import com.gengoai.conversion.Converter;
 import com.gengoai.conversion.TypeConversionException;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonMarshaller;
-import com.gengoai.reflection.Types;
+import com.gengoai.reflection.TypeUtils;
 
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static com.gengoai.reflection.Types.getOrObject;
+import static com.gengoai.reflection.TypeUtils.getOrObject;
 
 /**
  * <p>Interface defining a graph data structure.</p>
@@ -56,7 +56,7 @@ public interface Graph<V> extends Iterable<V> {
 
       @Override
       protected Graph<V> deserialize(JsonEntry entry, Type type) {
-         Type[] params = Types.getActualTypeArguments(type);
+         Type[] params = TypeUtils.getActualTypeArguments(type);
          Index<V> vertexIndex = Indexes.indexOf(entry.getProperty("v").getAsArray(getOrObject(0, params)));
          EdgeFactory<V> factory;
          try {

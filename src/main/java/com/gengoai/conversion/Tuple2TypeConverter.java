@@ -1,6 +1,6 @@
 package com.gengoai.conversion;
 
-import com.gengoai.reflection.Types;
+import com.gengoai.reflection.TypeUtils;
 import com.gengoai.tuple.Tuple2;
 import org.kohsuke.MetaInfServices;
 
@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 import static com.gengoai.collection.Arrays2.arrayOf;
-import static com.gengoai.reflection.Types.getOrObject;
-import static com.gengoai.reflection.Types.parameterizedType;
+import static com.gengoai.reflection.TypeUtils.getOrObject;
+import static com.gengoai.reflection.TypeUtils.parameterizedType;
 import static com.gengoai.tuple.Tuples.$;
 
 /**
@@ -29,7 +29,7 @@ public class Tuple2TypeConverter implements TypeConverter {
    }
 
    protected List<?> createList(Object source, Type... parameters) throws TypeConversionException {
-      if (Types.asClass(getOrObject(0, parameters)).isArray()) {
+      if (TypeUtils.asClass(getOrObject(0, parameters)).isArray()) {
          return Converter.convert(source, List.class, Object[].class);
       }
       return Converter.convert(source, List.class);
