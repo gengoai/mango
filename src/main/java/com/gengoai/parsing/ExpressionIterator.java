@@ -53,6 +53,28 @@ public final class ExpressionIterator {
       return next(0);
    }
 
+   /**
+    * Parses the token stream to get the next expression
+    *
+    * @return the next expression in the parse
+    * @throws ParseException Something went wrong parsing
+    */
+   public <T extends Expression> T next(Class<T> clazz) throws ParseException {
+      Expression toReturn = next(0);
+      if (toReturn == null) {
+         throw new ParseException("Error: expecting " + clazz.getName() + ", but found end of stream");
+      }
+      return toReturn.as(clazz);
+   }
+
+   public ParserToken consumeToken(ParserTokenType type) throws ParseException {
+      return tokenStream.consume(type);
+   }
+
+   public boolean isNextToken(ParserTokenType type) throws ParseException {
+      return tokenStream.isLookAheadType(0, type);
+   }
+
    private void doSkip() {
       //Consume things that will be skipped
       while (grammar.skip(tokenStream.lookAhead(0))) {
