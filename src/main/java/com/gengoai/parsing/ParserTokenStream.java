@@ -104,6 +104,11 @@ public class ParserTokenStream {
       return token == null ? null : token.type;
    }
 
+   public boolean isLookAheadType(int distance, ParserTokenType expected) {
+      ParserToken token = lookAhead(distance);
+      return token != null && token.type.isInstance(expected);
+   }
+
    /**
     * Determines if the token at the front of the stream is a match for a given type without consuming the token.
     *

@@ -59,7 +59,7 @@ public abstract class PrefixHandler implements ParserHandler {
       Expression apply(ExpressionIterator expressionIterator, ParserToken token) throws ParseException;
    }
 
-   public static PrefixHandler prefixHandler(PrefixHandlerFunction function) {
+   public static PrefixHandler prefix(PrefixHandlerFunction function) {
       return new PrefixHandler() {
          private static final long serialVersionUID = 1L;
 
