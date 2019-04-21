@@ -135,9 +135,9 @@ public class GraphViz<V> implements GraphWriter<V>, GraphRenderer<V> {
 
 
       Runtime rt = Runtime.getRuntime();
-      String[] args = {DOT, "-T" + format.getExtension(), tempLoc.asFile()
-                                                                 .get().getAbsolutePath(), "-o", location.asFile()
-                                                                                                         .get().getAbsolutePath()};
+      String[] args = {DOT, "-T" + format.getExtension(),
+         tempLoc.asFile().get().getAbsolutePath(),
+         "-o", location.asFile().get().getAbsolutePath()};
       Process p = rt.exec(args);
 
       try {
