@@ -35,6 +35,15 @@ public class JsonEntry {
    }
 
 
+   public JsonEntry mergeObject(JsonEntry entry) {
+      if (entry.isObject()) {
+         entry.propertyIterator()
+              .forEachRemaining(e -> this.addProperty(e.getKey(), e.getValue()));
+         return this;
+      }
+      throw new IllegalArgumentException("Object expected");
+   }
+
    public String pprint() {
       return pprint(3);
    }
