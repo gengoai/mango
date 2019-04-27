@@ -31,7 +31,7 @@ public final class Converter {
                    .forEachRemaining(tc -> {
                       for (Class aClass : tc.getConversionType()) {
                          if (converterMap.containsKey(aClass)) {
-                            throw new IllegalStateException("Attempting to define multiple converters for: " + aClass);
+                            throw new IllegalStateException("Attempting to define multiple converters for: " + aClass + " (" + tc.getClass() +")");
                          }
                          converterMap.put(aClass, tc);
                       }
