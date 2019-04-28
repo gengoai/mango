@@ -21,6 +21,8 @@
 
 package com.gengoai.function;
 
+import com.gengoai.conversion.Cast;
+
 import java.util.function.LongFunction;
 
 /**
@@ -677,6 +679,16 @@ public interface Unchecked {
             return checked.apply(t);
          } catch (Throwable e) {
             throw new RuntimeException(e);
+         }
+      };
+   }
+
+   static <T, R> SerializableFunction<T, R> functionThrowException(CheckedFunction<T, R> checked) {
+      return (t) -> {
+         try {
+            return checked.apply(t);
+         } catch (Throwable e) {
+            throw Cast.<RuntimeException>as(e);
          }
       };
    }

@@ -24,6 +24,7 @@ package com.gengoai;
 
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Converter;
+import com.gengoai.json.JsonEntry;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -150,6 +151,9 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
    public <T> V set(String param, T value) {
       if (map.containsKey(param)) {
          Parameter<?> parameter = map.get(param);
+         if (value instanceof JsonEntry) {
+            value = Cast.<JsonEntry>as(value).getAs(parameter.param.type);
+         }
          parameter.param.checkValue(value);
          parameter.value = Cast.as(value);
          return Cast.as(this);

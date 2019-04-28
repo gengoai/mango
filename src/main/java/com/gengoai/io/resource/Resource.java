@@ -496,7 +496,7 @@ public interface Resource {
     * @throws IOException the io exception
     */
    default Reader reader() throws IOException {
-      checkState(canRead(), "This resource cannot be read from.");
+      checkState(canRead(), () -> descriptor() + " cannot be read from.");
       return new CharsetDetectingReader(inputStream(), getCharset());
    }
 
