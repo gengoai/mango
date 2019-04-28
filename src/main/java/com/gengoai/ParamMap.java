@@ -22,11 +22,17 @@
 
 package com.gengoai;
 
+import com.gengoai.annotation.JsonAdapter;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Converter;
 import com.gengoai.json.JsonEntry;
+import com.gengoai.json.JsonMarshaller;
+import com.gengoai.reflection.Reflect;
+import com.gengoai.reflection.ReflectionException;
+import com.gengoai.reflection.TypeUtils;
 
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -38,9 +44,37 @@ import java.util.stream.Collectors;
  * @param <V> the type parameter
  * @author David B. Bracewell
  */
+@JsonAdapter(ParamMap.Marshaller.class)
 public class ParamMap<V extends ParamMap> implements Serializable, Copyable<ParamMap<V>> {
    private static final long serialVersionUID = 1L;
    private final Map<String, Parameter<?>> map = new HashMap<>();
+
+   public static class Marshaller extends JsonMarshaller<ParamMap<?>> {
+
+      @Override
+      protected ParamMap<?> deserialize(JsonEntry entry, Type type) {
+         try {
+            ParamMap<?> map = Reflect.onClass(TypeUtils.asClass(type)).create().get();
+            entry.propertyIterator().forEachRemaining(e -> {
+               String key = e.getKey();
+               if (!key.equals("@type") && map.map.containsKey(key)) {
+                  ParamMap.Parameter param = map.map.get(key);
+                  param.set(e.getValue().getAs(param.param.type));
+               }
+            });
+            return map;
+         } catch (ReflectionException e) {
+            throw new RuntimeException(e);
+         }
+      }
+
+      @Override
+      protected JsonEntry serialize(ParamMap<?> paramMap, Type type) {
+         JsonEntry object = JsonEntry.object();
+         paramMap.map.forEach((k, v) -> object.addProperty(k, v.value));
+         return object;
+      }
+   }
 
    @Override
    public ParamMap<V> copy() {
