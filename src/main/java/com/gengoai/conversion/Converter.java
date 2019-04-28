@@ -31,7 +31,8 @@ public final class Converter {
                    .forEachRemaining(tc -> {
                       for (Class aClass : tc.getConversionType()) {
                          if (converterMap.containsKey(aClass)) {
-                            throw new IllegalStateException("Attempting to define multiple converters for: " + aClass + " (" + tc.getClass() +")");
+                            throw new IllegalStateException(
+                               "Attempting to define multiple converters for: " + aClass + " (" + tc.getClass() + ")");
                          }
                          converterMap.put(aClass, tc);
                       }
@@ -137,7 +138,8 @@ public final class Converter {
 
       //First check if we have a converter defined
       if (converterMap.containsKey(rawClass)) {
-         return Cast.as(converterMap.get(rawClass).convert(sourceObject, TypeUtils.getActualTypeArguments(destType)));
+         return Cast.as(
+            converterMap.get(rawClass).convert(sourceObject, TypeUtils.getActualTypeArguments(destType)));
       }
 
       //General Enum processing

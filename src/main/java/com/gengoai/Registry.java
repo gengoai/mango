@@ -133,5 +133,9 @@ public class Registry<T extends EnumValue> implements Serializable {
       throw new IllegalArgumentException(name + " is an unknown value");
    }
 
+   public boolean contains(String name) {
+      return registry.containsKey(normalize(name));
+   }
+
 
 }//END OF Registry
