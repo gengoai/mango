@@ -253,6 +253,11 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
          }
          return value;
       }
+
+      @Override
+      public String toString() {
+         return "Parameter{name=" + param.name + ", value=" + value + "}";
+      }
    }
 
 
