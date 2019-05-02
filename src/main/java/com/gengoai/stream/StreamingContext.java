@@ -424,6 +424,8 @@ public abstract class StreamingContext implements Serializable, AutoCloseable {
     */
    public abstract MStream<String> textFile(Resource location);
 
+   public abstract MStream<String> textFile(Resource location, boolean wholeFile);
+
    /**
     * Updates the config object used by this stream (important for distributed environments).
     */

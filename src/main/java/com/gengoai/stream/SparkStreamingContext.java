@@ -325,4 +325,12 @@ public final class SparkStreamingContext extends StreamingContext {
    }
 
 
+   @Override
+   public MStream<String> textFile(Resource location, boolean wholeFile) {
+      if (wholeFile) {
+         return new SparkStream<>(getSparkContext().wholeTextFiles(location.path()).values());
+      }
+      return textFile(location);
+   }
+
 }//END OF SparkStreamingContext

@@ -120,9 +120,9 @@ public final class LocalStreamingContext extends StreamingContext {
 
    @Override
    public MStream<Integer> range(int startInclusive, int endExclusive) {
-      return new LocalStream<>(()->IntStream.range(startInclusive, endExclusive)
-                                        .boxed()
-                                        .parallel(), CacheStrategy.InMemory);
+      return new LocalStream<>(() -> IntStream.range(startInclusive, endExclusive)
+                                              .boxed()
+                                              .parallel(), CacheStrategy.InMemory);
    }
 
    @Override
@@ -178,6 +178,18 @@ public final class LocalStreamingContext extends StreamingContext {
       } catch (IOException e) {
          throw new RuntimeException(e);
       }
+   }
+
+   @Override
+   public MStream<String> textFile(Resource location, boolean wholeFile) {
+      if (wholeFile) {
+         try {
+            return new InMemoryPersistedLocalStream<>(Collections.singleton(location.readToString()));
+         } catch (IOException e) {
+            throw new RuntimeException(e);
+         }
+      }
+      return textFile(location);
    }
 
 
