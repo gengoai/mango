@@ -182,14 +182,22 @@ public final class LocalStreamingContext extends StreamingContext {
 
    @Override
    public MStream<String> textFile(Resource location, boolean wholeFile) {
-      if (wholeFile) {
-         try {
-            return new InMemoryPersistedLocalStream<>(Collections.singleton(location.readToString()));
-         } catch (IOException e) {
-            throw new RuntimeException(e);
-         }
+      if (!wholeFile) {
+         return textFile(location);
       }
-      return textFile(location);
+      if (location == null) {
+         return empty();
+      }
+      if (location.isDirectory()) {
+         return new LocalStream<>(location.getChildren(true).stream()
+                                          .filter(r -> !r.isDirectory())
+                                          .flatMap(Unchecked.function(r -> Stream.of(r.readToString()))));
+      }
+      try {
+         return new InMemoryPersistedLocalStream<>(Collections.singleton(location.readToString()));
+      } catch (IOException e) {
+         throw new RuntimeException(e);
+      }
    }
 
 

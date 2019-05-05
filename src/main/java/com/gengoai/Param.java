@@ -22,7 +22,10 @@
 
 package com.gengoai;
 
+import com.gengoai.reflection.TypeUtils;
+
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.util.Objects;
 
 /**
@@ -52,6 +55,17 @@ public class Param<T> implements Serializable {
    public Param(String name, Class<T> type) {
       this.name = name;
       this.type = type;
+   }
+
+   /**
+    * Instantiates a new Param.
+    *
+    * @param name the name
+    * @param type the type
+    */
+   public Param(String name, Type type) {
+      this.name = name;
+      this.type = TypeUtils.asClass(type);
    }
 
    /**
