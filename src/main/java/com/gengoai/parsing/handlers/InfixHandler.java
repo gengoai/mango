@@ -70,7 +70,7 @@ public abstract class InfixHandler implements ParserHandler {
       Expression apply(ExpressionIterator expressionIterator, Expression left, ParserToken token) throws ParseException;
    }
 
-   public static InfixHandler infixHandler(final int precedence, final InfixHAndlerFunction function) {
+   public static InfixHandler infix(final int precedence, final InfixHAndlerFunction function) {
       return new InfixHandler(precedence) {
          private static final long serialVersionUID = 1L;
 
