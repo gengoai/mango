@@ -24,6 +24,8 @@ package com.gengoai.stream;
 import com.gengoai.collection.Iterables;
 import com.gengoai.config.Config;
 import com.gengoai.conversion.Cast;
+import com.gengoai.function.Unchecked;
+import com.gengoai.io.FileUtils;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.stream.accumulator.*;
 import com.gengoai.tuple.Tuple2;
@@ -33,6 +35,8 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
+
+import static com.gengoai.collection.Lists.asArrayList;
 
 /**
  * <p>Provides methods for creating <code>MStreams</code> and <code>MAccumulators</code> within a given context, i.e.
@@ -433,5 +437,17 @@ public abstract class StreamingContext implements Serializable, AutoCloseable {
 
    }
 
+
+   public MStream<String> textFile(Resource location, String pattern) {
+      if (!location.isDirectory() && FileUtils.createFilePattern(pattern).matcher(location.baseName()).find()) {
+         return textFile(location);
+      }
+      return stream(asArrayList(location.childIterator(pattern, true)))
+                .filter(r -> !r.isDirectory())
+                .filter(r -> r.asFile()
+                              .map(file -> !file.isHidden())
+                              .orElse(true))
+                .flatMap(Unchecked.function(r -> r.readLines().stream()));
+   }
 
 }//END OF StreamingContext

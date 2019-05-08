@@ -11,8 +11,7 @@ import com.gengoai.string.Strings;
 import com.google.gson.*;
 import com.google.gson.stream.JsonWriter;
 
-import java.io.IOException;
-import java.io.StringWriter;
+import java.io.*;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -26,8 +25,16 @@ import static com.gengoai.tuple.Tuples.$;
  * <p>A convenience wrapper around <code>JsonElement</code> allowing a single interface for objects, arrays, and
  * primitives</p>
  */
-public class JsonEntry {
-   private final JsonElement element;
+public class JsonEntry implements Serializable {
+   private JsonElement element;
+
+   protected void writeObject(ObjectOutputStream oos) throws IOException {
+      oos.writeUTF(element.toString());
+   }
+
+   protected void readObject(ObjectInputStream ois) throws IOException {
+      element = Json.parse(ois.readUTF()).element;
+   }
 
 
    private JsonEntry(JsonElement element) {

@@ -41,7 +41,8 @@ import java.util.zip.GZIPOutputStream;
 public abstract class BaseResource implements Resource, Serializable {
    private static final long serialVersionUID = 1L;
 
-   private Charset charset = StandardCharsets.UTF_8;
+
+   private String charset = StandardCharsets.UTF_8.name();
    private boolean isCompressed = false;
 
    @Override
@@ -110,7 +111,7 @@ public abstract class BaseResource implements Resource, Serializable {
       if (charset == null) {
          return StandardCharsets.UTF_8;
       }
-      return charset;
+      return Charset.forName(charset);
    }
 
    @Override
@@ -150,7 +151,7 @@ public abstract class BaseResource implements Resource, Serializable {
 
    @Override
    public final Resource setCharset(Charset charset) {
-      this.charset = charset;
+      this.charset = charset.name();
       return this;
    }
 
