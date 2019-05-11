@@ -64,6 +64,7 @@ public class OnDiskPersistedLocalStream<T> extends LazyLocalStream<T> {
       this.store = new MVStore.Builder()
                       .fileName(db.getAbsolutePath())
                       .readOnly()
+                      .compress()
                       .open();
       this.map = this.store.openMap(DATA_MAP_NAME);
    }
