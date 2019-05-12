@@ -22,6 +22,7 @@
 
 package com.gengoai.persistence;
 
+import com.gengoai.io.Resources;
 import com.gengoai.stream.MPairStream;
 import com.gengoai.stream.MStream;
 import com.gengoai.stream.StreamingContext;
@@ -29,6 +30,7 @@ import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 
 import java.io.File;
+import java.io.Serializable;
 
 import static com.gengoai.tuple.Tuples.$;
 
@@ -135,4 +137,6 @@ public class MVObjectStore<K, V> implements ObjectStore<K, V> {
    public void commit() {
       map().getStore().commit();
    }
+
+
 }//END OF MVObjectStore

@@ -22,6 +22,7 @@
 
 package com.gengoai.persistence;
 
+import com.gengoai.function.SerializableConsumer;
 import com.gengoai.stream.MStream;
 
 import java.io.Serializable;
@@ -32,7 +33,14 @@ import java.io.Serializable;
  * @param <E> the type parameter
  * @author David B. Bracewell
  */
-public interface PersistentCollection<E> extends AutoCloseable, Serializable {
+public interface PersistentCollection<E> extends AutoCloseable, Serializable, Iterable<E> {
+
+   /**
+    * Name string.
+    *
+    * @return the string
+    */
+   String name();
 
    /**
     * Adds an element to the collection.
@@ -50,6 +58,23 @@ public interface PersistentCollection<E> extends AutoCloseable, Serializable {
    void update(long index, E element);
 
    /**
+    * Updates the element at the given index
+    *
+    * @param index   the index
+    * @param updater The update function
+    */
+   void update(long index, SerializableConsumer<? super E> updater);
+
+
+   /**
+    * Find m stream.
+    *
+    * @param filter the filter
+    * @return the m stream
+    */
+   MStream<E> find(Filter filter);
+
+   /**
     * Removes the element at the given index
     *
     * @param index the index
@@ -61,6 +86,7 @@ public interface PersistentCollection<E> extends AutoCloseable, Serializable {
     * Removes the given element from the collection.
     *
     * @param element the element
+    * @return the boolean
     */
    boolean remove(E element);
 

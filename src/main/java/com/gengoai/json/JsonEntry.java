@@ -28,11 +28,11 @@ import static com.gengoai.tuple.Tuples.$;
 public class JsonEntry implements Serializable {
    private JsonElement element;
 
-   protected void writeObject(ObjectOutputStream oos) throws IOException {
+   private void writeObject(ObjectOutputStream oos) throws IOException {
       oos.writeUTF(element.toString());
    }
 
-   protected void readObject(ObjectInputStream ois) throws IOException {
+   private void readObject(ObjectInputStream ois) throws IOException {
       element = Json.parse(ois.readUTF()).element;
    }
 

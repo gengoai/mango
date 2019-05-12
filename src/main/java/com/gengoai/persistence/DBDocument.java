@@ -27,6 +27,7 @@ import com.gengoai.annotation.JsonAdapter;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonMarshaller;
 
+import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.Objects;
 
@@ -34,9 +35,11 @@ import java.util.Objects;
  * @author David B. Bracewell
  */
 @JsonAdapter(value = DBDocument.Marshaller.class, isHierarchical = false)
-public final class DBDocument {
+public final class DBDocument implements Serializable {
+   private static final long serialVersionUID = 1L;
    public static final String ID_FIELD = "@id";
    public static final String LAST_MODIFIED = "@modified";
+   public static final String VALUE = "@value";
 
    private final JsonEntry doc;
 
@@ -47,27 +50,22 @@ public final class DBDocument {
    }
 
 
-   public DBDocument(Object object) {
+   public DBDocument(long id, Object object) {
       this();
       JsonEntry entry = JsonEntry.from(object);
       if (entry.isObject()) {
          entry.propertyIterator()
               .forEachRemaining(e -> this.put(e.getKey(), e.getValue()));
+      } else {
+         put(VALUE, entry);
       }
-      throw new IllegalArgumentException("Cannot assimilate " + object.getClass());
+      doc.addProperty(ID_FIELD, id);
    }
 
    private DBDocument(JsonEntry entry) {
       this.doc = entry;
    }
 
-   public static void main(String[] args) throws Exception {
-      DBDocument document = new DBDocument().put("name", "David")
-                                            .put("age", 21);
-      System.out.println(document);
-      System.out.println(Filter.eq("name", "David", String.class)
-                               .accept(document.doc));
-   }
 
    @Override
    public boolean equals(Object obj) {
@@ -79,6 +77,20 @@ public final class DBDocument {
 
    public <T> T get(final String key, Type type) {
       return doc.getProperty(key).getAs(type);
+   }
+
+   public <T> T getAs(Class<T> clazz) {
+      if (doc.hasProperty(VALUE)) {
+         return doc.getProperty(VALUE).getAs(clazz);
+      }
+      return doc.getAs(clazz);
+   }
+
+   public <T> T getAs(Type type) {
+      if (doc.hasProperty(VALUE)) {
+         return doc.getProperty(VALUE).getAs(type);
+      }
+      return doc.getAs(type);
    }
 
    @Override
@@ -112,5 +124,6 @@ public final class DBDocument {
          return dbDocument.doc;
       }
    }
+
 
 }//END OF DBDocument

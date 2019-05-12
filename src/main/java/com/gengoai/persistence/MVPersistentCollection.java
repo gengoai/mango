@@ -22,9 +22,16 @@
 
 package com.gengoai.persistence;
 
+import com.gengoai.function.SerializableConsumer;
 import com.gengoai.stream.MStream;
+import com.gengoai.stream.StreamingContext;
+import org.h2.mvstore.MVMap;
+import org.h2.mvstore.MVStore;
 
 import java.io.File;
+import java.io.Serializable;
+import java.lang.reflect.Type;
+import java.util.Iterator;
 
 /**
  * The type Mv persistent collection.
@@ -32,89 +39,182 @@ import java.io.File;
  * @param <E> the type parameter
  * @author David B. Bracewell
  */
-public class MVPersistentCollection<E> implements PersistentCollection<E> {
-   private final MVObjectStore<Long, E> objectStore;
+public class MVPersistentCollection<E> implements PersistentCollection<E>, Serializable {
+   private static final long serialVersionUID = 1L;
+   private final File dbLocation;
+   private final Type eType;
+   private final String name;
+   private volatile transient MVMap<Long, DBDocument> map;
 
-   /**
-    * Instantiates a new Mv persistent collection.
-    *
-    * @param dbFile the db file
-    */
-   public MVPersistentCollection(File dbFile) {
-      this.objectStore = new MVObjectStore<>(dbFile);
+   public MVPersistentCollection(String name, File dbLocation, Type eType) {
+      this.name = name;
+      this.dbLocation = dbLocation;
+      this.eType = eType;
    }
 
    @Override
    public void add(E element) {
-      Long i = objectStore.lastKey() == null ? 0L : objectStore.lastKey() + 1;
-      objectStore.put(i, element);
+      DBDocument document = new DBDocument(nextKey(), element);
+      map().put(document.get("@id", Long.class), document);
    }
 
    @Override
    public void close() throws Exception {
-      objectStore.close();
+      if (map != null) {
+         map.getStore().close();
+      }
    }
 
    @Override
    public void commit() {
-      objectStore.commit();
+      if (map != null) {
+         map.getStore().commit();
+      }
    }
 
    @Override
    public boolean contains(E element) {
-      return objectStore.containsValue(element);
+      return map().containsValue(element);
+   }
+
+   @Override
+   public MStream<E> find(Filter filter) {
+      return null;
    }
 
    @Override
    public E get(long index) {
-      return objectStore.get(index);
+      DBDocument document = map().get(index);
+      if (document == null) {
+         return null;
+      }
+      return document.getAs(eType);
+   }
+
+   @Override
+   public Iterator<E> iterator() {
+      return stream().iterator();
+   }
+
+   private MVMap<Long, DBDocument> map() {
+      if (map == null) {
+         synchronized (this) {
+            if (map == null) {
+               map = new MVStore.Builder()
+                        .fileName(dbLocation.getAbsolutePath())
+                        .compress()
+                        .open()
+                        .openMap(name);
+            }
+         }
+      }
+      return map;
+   }
+
+   @Override
+   public String name() {
+      return name;
+   }
+
+   private long nextKey() {
+      return map().lastKey() == null ? 0L : map().lastKey() + 1;
    }
 
    @Override
    public E remove(long index) {
-      if (objectStore.containsKey(index)) {
-         E toReturn = objectStore.delete(index);
-         long last = objectStore.lastKey();
-         for (long i = index + 1; i <= last; i++) {
-            objectStore.put(index - 1, objectStore.get(index));
-         }
-         objectStore.delete(last);
-         return toReturn;
-      } else {
-         throw new IndexOutOfBoundsException();
-      }
+      DBDocument document = map().get(index);
+      map().remove(index);
+      return document == null ? null : document.getAs(eType);
    }
 
    @Override
    public boolean remove(E element) {
-      long index = objectStore.entries()
-                              .filter((l, v) -> v.equals(element))
-                              .keys()
-                              .first()
-                              .orElse(-1L);
-      if (index >= 0) {
-         remove(index);
-         return true;
-      }
-      return false;
+      return map().values().remove(element);
    }
 
    @Override
    public long size() {
-      return objectStore.size();
+      return map().size();
    }
 
    @Override
    public MStream<E> stream() {
-      return objectStore.values();
+      return StreamingContext.local().stream(map().values().stream().map(doc -> doc.getAs(eType)));
    }
 
    @Override
    public void update(long index, E element) {
-      if (objectStore.containsKey(index)) {
-         objectStore.put(index, element);
+      if (map().containsKey(index)) {
+         map().put(index, new DBDocument(index, element));
       } else {
          throw new IndexOutOfBoundsException();
+      }
+   }
+
+   @Override
+   public void update(long index, SerializableConsumer<? super E> updater) {
+      DBDocument document = map().get(index);
+      if (document == null) {
+         throw new IndexOutOfBoundsException();
+      }
+      E object = document.getAs(eType);
+      updater.accept(object);
+      map().put(index, new DBDocument(index, object));
+   }
+
+
+   public static class Person implements Serializable {
+      private int age;
+      private String name;
+
+      public Person(String name, int age) {
+         this.name = name;
+         this.age = age;
+      }
+
+      public int getAge() {
+         return age;
+      }
+
+      public void setAge(int age) {
+         this.age = age;
+      }
+
+      public String getName() {
+         return name;
+      }
+
+      public void setName(String name) {
+         this.name = name;
+      }
+
+      @Override
+      public String toString() {
+         return "Person{" +
+                   "name='" + name + '\'' +
+                   ", age=" + age +
+                   '}';
+      }
+   }
+
+
+   public static void main(String[] args) throws Exception {
+      try (MVPersistentCollection<Person> people = new MVPersistentCollection<>(
+         "people", new File("/home/ik/people.db"), Person.class
+      )) {
+
+
+         System.out.println(people.size());
+         people.add(new Person("Joe", 42));
+         people.add(new Person("Peanut", 41));
+         people.add(new Person("Marc", 40));
+         people.add(new Person("David", 41));
+         System.out.println(people.size());
+
+         people.update(0, p -> p.setAge(100));
+         for (Person person : people) {
+            System.out.println(person);
+         }
       }
    }
 }//END OF MVPersistentCollection
