@@ -22,7 +22,6 @@
 
 package com.gengoai.persistence;
 
-import com.gengoai.Validation;
 import com.gengoai.annotation.JsonAdapter;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonMarshaller;
@@ -36,19 +35,15 @@ import java.util.Objects;
  */
 @JsonAdapter(value = DBDocument.Marshaller.class, isHierarchical = false)
 public final class DBDocument implements Serializable {
-   private static final long serialVersionUID = 1L;
    public static final String ID_FIELD = "@id";
    public static final String LAST_MODIFIED = "@modified";
    public static final String VALUE = "@value";
-
+   private static final long serialVersionUID = 1L;
    private final JsonEntry doc;
 
    public DBDocument() {
       this.doc = JsonEntry.object();
-      this.doc.addProperty(ID_FIELD, UniqueId.nextId());
-      this.doc.addProperty(LAST_MODIFIED, System.currentTimeMillis());
    }
-
 
    public DBDocument(long id, Object object) {
       this();
@@ -62,10 +57,14 @@ public final class DBDocument implements Serializable {
       doc.addProperty(ID_FIELD, id);
    }
 
+
    private DBDocument(JsonEntry entry) {
       this.doc = entry;
    }
 
+   public static DBDocument create() {
+      return new DBDocument();
+   }
 
    @Override
    public boolean equals(Object obj) {
@@ -93,16 +92,49 @@ public final class DBDocument implements Serializable {
       return doc.getAs(type);
    }
 
+   public long getId() {
+      return doc.getLongProperty(ID_FIELD, -1);
+   }
+
+   public void setId(long id) {
+      doc.addProperty(ID_FIELD, id);
+   }
+
+   public long getLastModified() {
+      return doc.getLongProperty(LAST_MODIFIED, -1);
+   }
+
    @Override
    public int hashCode() {
       return Objects.hash(doc);
    }
 
+   public void markModified() {
+      doc.addProperty(LAST_MODIFIED, System.currentTimeMillis());
+   }
+
+   public void merge(DBDocument document) {
+      document.doc
+         .propertyIterator()
+         .forEachRemaining(e -> {
+            String key = e.getKey();
+            JsonEntry value = e.getValue();
+            if (!key.equals(ID_FIELD) && !key.equals(LAST_MODIFIED)) {
+               doc.addProperty(key, value);
+            }
+         });
+
+   }
+
+   public boolean contains(String field) {
+      return doc.hasProperty(field);
+   }
+
+   public JsonEntry get(String field) {
+      return doc.getProperty(field);
+   }
+
    public DBDocument put(final String key, Object value) {
-      Validation.checkArgument(!ID_FIELD.equals(key),
-                               () -> "Error attempting to override the ID field");
-      Validation.checkArgument(!LAST_MODIFIED.equals(key),
-                               () -> "Error attempting to override the LAST MODIFIED field");
       doc.addProperty(key, value);
       return this;
    }
