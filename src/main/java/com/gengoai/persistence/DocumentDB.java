@@ -22,29 +22,97 @@
 
 package com.gengoai.persistence;
 
+import com.gengoai.Validation;
 import com.gengoai.function.SerializableConsumer;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author David B. Bracewell
  */
-public interface DocumentDB extends Serializable, Iterable<DBDocument>, AutoCloseable {
+public abstract class DocumentDB implements Serializable, Iterable<DBDocument>, AutoCloseable {
 
-   void add(DBDocument document);
+   public final void add(DBDocument document) {
+      Validation.notNull(document);
+      if (document.getId() < 0) {
+         document.setId(nextUniqueId());
+      } else if (containsId(document.getId())) {
+         throw new IllegalArgumentException(
+            "Attempting to add a document with an ID already contained in the DB. Try update instead.");
+      }
+      document.markModified();
+      insertDocument(document);
+      updateIndexes(document, true);
+   }
 
-   default void update(DBDocument document) {
+   public abstract void commit();
+
+   protected abstract boolean containsId(long id);
+
+   public abstract void createIndex(String fieldName, IndexType indexType);
+
+   protected abstract DBDocument delete(long id);
+
+   public abstract void dropIndex(String fieldName);
+
+   public abstract DBDocument get(long id);
+
+   public abstract List<Index> indexes();
+
+   protected abstract void insertDocument(DBDocument document);
+
+   protected abstract long nextUniqueId();
+
+   public final DBDocument remove(long id) {
+      if (containsId(id)) {
+         DBDocument document = delete(id);
+         updateIndexes(document, false);
+         return document;
+      }
+      return null;
+   }
+
+   public final void update(DBDocument document) {
       update(document, false);
    }
 
-   void update(DBDocument document, boolean upsert);
+   public final void update(DBDocument document, boolean upsert) {
+      if (document.getId() < 0) {
+         if (upsert) {
+            add(document);
+            return;
+         }
+      }
+      if (!containsId(document.getId())) {
+         throw new IllegalArgumentException(
+            "Attempting to update a document that does not exist in the DB. Try add or upsert instead.");
+      }
+      DBDocument orig = get(document.getId());
+      orig.merge(document);
+      orig.markModified();
+      updateDocument(orig);
+      updateIndexes(document, false);
+      updateIndexes(document, true);
+   }
 
-   void update(long id, SerializableConsumer<DBDocument> updater);
+   public final void update(long id, SerializableConsumer<DBDocument> updater) {
+      if (!containsId(id)) {
+         throw new IllegalArgumentException(
+            "Attempting to update a document that does not exist in the DB. Try add or upsert instead.");
+      }
+      DBDocument orig = get(id);
+      updater.accept(orig);
+      orig.markModified();
+      updateDocument(orig);
+      updateIndexes(orig, false);
+      updateIndexes(orig, true);
+   }
 
-   DBDocument remove(long id);
+   protected abstract void updateDocument(DBDocument document);
 
-   void commit();
+   protected abstract void updateIndexes(DBDocument document, boolean add);
 
-   void addIndex(String fieldName);
+   public abstract List<DBDocument> get(String fieldName, Object value);
 
 }//END OF DocumentDB
