@@ -22,20 +22,14 @@
 
 package com.gengoai.persistence;
 
-import com.gengoai.json.JsonEntry;
-
 import java.io.Serializable;
-import java.lang.reflect.Type;
+import java.util.stream.Stream;
 
 /**
  * @author David B. Bracewell
  */
 public interface Filter extends Serializable {
 
-   boolean accept(JsonEntry entry);
-
-   static <T> Filter eq(String field, T value, Type tType) {
-      return e -> e.hasProperty(field) && e.getProperty(field).getAs(tType).equals(value);
-   }
+   Stream<DBDocument> apply(DocumentDB db);
 
 }//END OF Filter

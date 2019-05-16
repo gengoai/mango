@@ -27,6 +27,7 @@ import com.gengoai.function.SerializableConsumer;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author David B. Bracewell
@@ -46,6 +47,10 @@ public abstract class DocumentDB implements Serializable, Iterable<DBDocument>, 
       updateIndexes(document, true);
    }
 
+   public abstract boolean isClosed();
+
+   public abstract long size();
+
    public abstract void commit();
 
    protected abstract boolean containsId(long id);
@@ -58,11 +63,23 @@ public abstract class DocumentDB implements Serializable, Iterable<DBDocument>, 
 
    public abstract DBDocument get(long id);
 
+   public abstract boolean hasIndex(String fieldName);
+
    public abstract List<Index> indexes();
 
    protected abstract void insertDocument(DBDocument document);
 
    protected abstract long nextUniqueId();
+
+   protected abstract Index getIndex(String field);
+
+   public Stream<DBDocument> query(Filter filter) {
+      return filter.apply(this);
+   }
+
+   public abstract void drop();
+
+   public abstract Stream<DBDocument> stream();
 
    public final DBDocument remove(long id) {
       if (containsId(id)) {
@@ -71,6 +88,14 @@ public abstract class DocumentDB implements Serializable, Iterable<DBDocument>, 
          return document;
       }
       return null;
+   }
+
+   public final void update(Filter filter, DBDocument document) {
+      filter.apply(this)
+            .forEach(d -> {
+               document.setId(d.getId());
+               update(document, false);
+            });
    }
 
    public final void update(DBDocument document) {
@@ -89,11 +114,11 @@ public abstract class DocumentDB implements Serializable, Iterable<DBDocument>, 
             "Attempting to update a document that does not exist in the DB. Try add or upsert instead.");
       }
       DBDocument orig = get(document.getId());
+      updateIndexes(orig, false);
       orig.merge(document);
       orig.markModified();
       updateDocument(orig);
-      updateIndexes(document, false);
-      updateIndexes(document, true);
+      updateIndexes(orig, true);
    }
 
    public final void update(long id, SerializableConsumer<DBDocument> updater) {
@@ -102,17 +127,15 @@ public abstract class DocumentDB implements Serializable, Iterable<DBDocument>, 
             "Attempting to update a document that does not exist in the DB. Try add or upsert instead.");
       }
       DBDocument orig = get(id);
+      updateIndexes(orig, false);
       updater.accept(orig);
       orig.markModified();
       updateDocument(orig);
-      updateIndexes(orig, false);
       updateIndexes(orig, true);
    }
 
    protected abstract void updateDocument(DBDocument document);
 
    protected abstract void updateIndexes(DBDocument document, boolean add);
-
-   public abstract List<DBDocument> get(String fieldName, Object value);
 
 }//END OF DocumentDB

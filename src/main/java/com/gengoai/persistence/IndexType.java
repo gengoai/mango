@@ -27,9 +27,6 @@ package com.gengoai.persistence;
  */
 public enum IndexType {
    Unique,
-   NonUnique,
-   FullText,
-   Range;
-
+   NonUnique
 
 }//END OF IndexType

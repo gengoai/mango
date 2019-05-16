@@ -23,9 +23,13 @@
 package com.gengoai.persistence;
 
 import com.gengoai.annotation.JsonAdapter;
+import com.gengoai.json.Json;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonMarshaller;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.Objects;
@@ -39,7 +43,12 @@ public final class DBDocument implements Serializable {
    public static final String LAST_MODIFIED = "@modified";
    public static final String VALUE = "@value";
    private static final long serialVersionUID = 1L;
-   private final JsonEntry doc;
+   private transient JsonEntry doc;
+
+
+   public static DBDocument from(Object o) {
+      return new DBDocument(JsonEntry.from(o));
+   }
 
    public DBDocument() {
       this.doc = JsonEntry.object();
@@ -66,6 +75,10 @@ public final class DBDocument implements Serializable {
       return new DBDocument();
    }
 
+   public boolean contains(String field) {
+      return doc.hasProperty(field);
+   }
+
    @Override
    public boolean equals(Object obj) {
       if (this == obj) {return true;}
@@ -74,22 +87,30 @@ public final class DBDocument implements Serializable {
       return Objects.equals(this.doc, other.doc);
    }
 
-   public <T> T get(final String key, Type type) {
-      return doc.getProperty(key).getAs(type);
+   public JsonEntry get(String field) {
+      return doc.getProperty(field);
    }
 
-   public <T> T getAs(Class<T> clazz) {
-      if (doc.hasProperty(VALUE)) {
-         return doc.getProperty(VALUE).getAs(clazz);
+   public Object getAsObject(String field) {
+      if (contains(field)) {
+         JsonEntry e = get(field);
+         if (e.isBoolean()) {
+            return e.getAsBoolean();
+         }
+         if (e.isNumber()) {
+            return e.getAsNumber();
+         }
+         if (e.isString()) {
+            return e.getAsString();
+         }
+         if (e.isObject()) {
+            return e;
+         }
+         if (e.isArray()) {
+            return e.getAsArray();
+         }
       }
-      return doc.getAs(clazz);
-   }
-
-   public <T> T getAs(Type type) {
-      if (doc.hasProperty(VALUE)) {
-         return doc.getProperty(VALUE).getAs(type);
-      }
-      return doc.getAs(type);
+      return null;
    }
 
    public long getId() {
@@ -126,14 +147,6 @@ public final class DBDocument implements Serializable {
 
    }
 
-   public boolean contains(String field) {
-      return doc.hasProperty(field);
-   }
-
-   public JsonEntry get(String field) {
-      return doc.getProperty(field);
-   }
-
    public DBDocument put(final String key, Object value) {
       doc.addProperty(key, value);
       return this;
@@ -157,5 +170,13 @@ public final class DBDocument implements Serializable {
       }
    }
 
+
+   private void writeObject(ObjectOutputStream out) throws IOException {
+      out.writeUTF(doc.toString());
+   }
+
+   private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
+      this.doc = Json.parse(ois.readUTF());
+   }
 
 }//END OF DBDocument

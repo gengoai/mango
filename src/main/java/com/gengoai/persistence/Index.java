@@ -22,7 +22,10 @@
 
 package com.gengoai.persistence;
 
+import com.gengoai.json.JsonEntry;
+
 import java.io.Serializable;
+import java.util.stream.LongStream;
 
 /**
  * The type Index.
@@ -46,6 +49,8 @@ public abstract class Index implements Serializable {
       this.indexName = indexName;
       this.indexType = indexType;
    }
+
+   public abstract void drop();
 
    /**
     * Gets field name.
@@ -73,5 +78,64 @@ public abstract class Index implements Serializable {
    public final IndexType getIndexType() {
       return indexType;
    }
+
+   public abstract LongStream lookup(Object value);
+
+   public abstract LongStream range(Object lower, Object upper);
+
+   protected void validate(Object value, long id) {
+      if (indexType == IndexType.Unique) {
+         if (lookup(value).filter(ii -> ii != id).count() > 0) {
+            throw new IllegalStateException("Unique Key Violation: " + getFieldName() + " = " + value);
+         }
+      }
+   }
+
+   public final void add(DBDocument document) {
+      if (document.contains(getFieldName())) {
+         add(document.get(getFieldName()), document.getId());
+      }
+   }
+
+   private void add(Object value, long docId) {
+      validate(value, docId);
+      indexValue(value, docId);
+   }
+
+
+   protected abstract void indexValue(Object value, long docId);
+
+   public final void add(JsonEntry value, long docId) {
+      if (value.isArray()) {
+         value.elementIterator().forEachRemaining(e -> add(e, docId));
+      } else if (value.isNumber()) {
+         add(value.getAsNumber(), docId);
+      } else if (value.isBoolean()) {
+         add(value.getAsBoolean(), docId);
+      } else {
+         add(value.getAsString(), docId);
+      }
+   }
+
+
+   public void remove(DBDocument document) {
+      if (document.contains(getFieldName())) {
+         remove(document.get(getFieldName()), document.getId());
+      }
+   }
+
+   protected void remove(JsonEntry value, long docId) {
+      if (value.isArray()) {
+         value.elementIterator().forEachRemaining(e -> remove(e, docId));
+      } else if (value.isNumber()) {
+         remove(value.getAsNumber(), docId);
+      } else if (value.isBoolean()) {
+         remove(value.getAsBoolean(), docId);
+      } else {
+         remove(value.getAsString(), docId);
+      }
+   }
+
+   protected abstract void remove(Object value, long docId);
 
 }//END OF Index

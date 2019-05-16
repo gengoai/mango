@@ -22,133 +22,210 @@
 
 package com.gengoai.persistence.mv;
 
+import com.gengoai.Language;
+import com.gengoai.Validation;
 import com.gengoai.collection.Iterators;
-import com.gengoai.json.JsonEntry;
+import com.gengoai.collection.Lists;
+import com.gengoai.function.Unchecked;
 import com.gengoai.persistence.DBDocument;
 import com.gengoai.persistence.DocumentDB;
 import com.gengoai.persistence.Index;
 import com.gengoai.persistence.IndexType;
+import org.h2.mvstore.MVMap;
+import org.h2.mvstore.MVStore;
 
 import java.io.File;
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * @author David B. Bracewell
  */
 public class MVDocumentDB extends DocumentDB {
+   public static final String DATA_MAP = "DATA";
+   public static final String INDEX_MAP = "INDEXES";
+   public static final String METADATA = "METADATA";
    private static final long serialVersionUID = 1L;
-   private final LazyMVMap<Long, DBDocument> data;
-   private final LazyMVMap<String, String> indexes;
+   private MVStore store;
+   private MVMap<Long, DBDocument> data;
+   private MVMap<String, IndexType> indexTypes;
+   private Map<String, MVIndex> indexes;
+   private Map<String, String> metadata;
+   private Language language = null;
+   private boolean readOnly;
    private final File dbLocation;
 
-   protected MVDocumentDB(File dbLocation) {
-      this.data = new LazyMVMap<>(dbLocation, "DB");
-      this.indexes = new LazyMVMap<>(dbLocation, "@indexes");
-      this.dbLocation = dbLocation;
+   public MVDocumentDB(File dbLocation) {
+      this(dbLocation, false, null);
    }
 
+   public MVDocumentDB(File dbLocation, boolean readOnly, Language language) {
+      this.dbLocation = dbLocation;
+      this.language = language;
+      this.readOnly = readOnly;
+   }
 
-   public static void main(String[] args) throws Exception {
-      MVDocumentDB db = new MVDocumentDB(new File("/home/ik/people.db"));
-      db.createIndex("NAME", IndexType.Unique);
-      db.add(DBDocument.create()
-                       .put("NAME", "David")
-                       .put("AGE", 34));
-      db.add(DBDocument.create()
-                       .put("NAME", "Darth")
-                       .put("AGE", 43));
-      db.add(DBDocument.create()
-                       .put("NAME", "Jiajun")
-                       .put("AGE", 31));
-      db.add(DBDocument.create()
-                       .put("NAME", "Jerome")
-                       .put("AGE", 34));
-      db.commit();
+   private void open() {
+      if (store == null || store.isClosed()) {
+         synchronized (this) {
+            if (store == null || store.isClosed()) {
+               MVStore.Builder builder = new MVStore.Builder()
+                                            .fileName(dbLocation.getAbsolutePath())
+                                            .compress();
+               if (readOnly) {
+                  builder = builder.readOnly();
+               }
+               this.store = builder.open();
+               this.metadata = store.openMap(METADATA);
+               if (language == null) {
+                  this.language = Language.fromString(
+                     metadata.getOrDefault("Language", Language.fromLocale(Locale.getDefault()).name()));
+               } else {
+                  this.language = Language.fromLocale(Locale.getDefault());
+               }
 
-      db.createIndex("NAME", IndexType.Unique);
-      db.createIndex("NAME", IndexType.Unique);
+               if (!readOnly) {
+                  metadata.put("Language", this.language.name());
+               }
 
+               this.data = store.openMap(DATA_MAP);
+               this.indexTypes = store.openMap(INDEX_MAP);
+               this.indexes = new HashMap<>();
+               indexTypes.forEach(
+                  Unchecked.biConsumer((field, type) -> indexes.put(field, new MVIndex(field, type, store))));
+            }
+         }
+      }
+   }
 
-      System.out.println(db.get("AGE", 34));
-      System.out.println(db.get("NAME", "Darth"));
-      System.out.println(db.get("NAME", "Jiajun"));
+   @Override
+   public void drop() {
+      open();
+      data.clear();
+      indexes.values().forEach(Index::drop);
+      indexes.clear();
+      indexTypes.clear();
    }
 
    @Override
    public void close() throws Exception {
+      open();
       data.getStore().close();
    }
 
    @Override
+   public long size() {
+      open();
+      return data.sizeAsLong();
+   }
+
+   @Override
+   public void commit() {
+      open();
+      data.getStore().commit();
+   }
+
+   @Override
+   protected boolean containsId(long id) {
+      open();
+      return data.containsKey(id);
+   }
+
+   @Override
+   public void createIndex(String fieldName, IndexType indexType) {
+      open();
+      if (!indexes.containsKey(fieldName)) {
+         MVIndex index = new MVIndex(fieldName, indexType, store);
+         indexes.put(fieldName, index);
+         indexTypes.put(fieldName, indexType);
+         data.values().forEach(index::add);
+      }
+   }
+
+   @Override
+   protected DBDocument delete(long id) {
+      open();
+      return data.remove(id);
+   }
+
+   @Override
+   public void dropIndex(String fieldName) {
+      open();
+      Validation.checkArgument(indexes.containsKey(fieldName), "Index does not exist for field: " + fieldName);
+      indexTypes.remove(fieldName);
+      indexes.remove(fieldName).drop();
+   }
+
+   @Override
+   public DBDocument get(long id) {
+      open();
+      return data.get(id);
+   }
+
+   @Override
+   public boolean hasIndex(String fieldName) {
+      open();
+      return indexes.containsKey(fieldName);
+   }
+
+
+   @Override
+   public List<Index> indexes() {
+      open();
+      return Lists.asArrayList(indexes.values());
+   }
+
+   @Override
    protected void insertDocument(DBDocument document) {
+      open();
       data.put(document.getId(), document);
    }
 
    @Override
    public Iterator<DBDocument> iterator() {
+      open();
       return Iterators.unmodifiableIterator(data.values().iterator());
    }
 
    @Override
+   public boolean isClosed() {
+      open();
+      return store.isClosed();
+   }
+
+   @Override
+   protected long nextUniqueId() {
+      open();
+      return data.lastKey() == null ? 0 : data.lastKey() + 1;
+   }
+
+   @Override
+   protected Index getIndex(String field) {
+      open();
+      return indexes.get(field);
+   }
+
+   @Override
+   public Stream<DBDocument> stream() {
+      open();
+      return data.values().stream();
+   }
+
+   @Override
    protected void updateDocument(DBDocument document) {
+      open();
       data.put(document.getId(), document);
    }
 
    @Override
    protected void updateIndexes(DBDocument document, boolean add) {
-
-   }
-
-   @Override
-   protected boolean containsId(long id) {
-      return data.containsKey(id);
-   }
-
-   @Override
-   protected long nextUniqueId() {
-      return data.lastKey() == null ? 0 : data.lastKey() + 1;
-   }
-
-   @Override
-   public void commit() {
-      data.getStore().commit();
-   }
-
-   @Override
-   public void createIndex(String fieldName, IndexType indexType) {
-      if (indexes.containsKey(fieldName)) {
-         throw new IllegalArgumentException("Index already exists: " + fieldName + " = " + indexes.get(fieldName));
+      open();
+      for (MVIndex index : indexes.values()) {
+         if (add) {
+            index.add(document);
+         } else {
+            index.remove(document);
+         }
       }
-   }
-
-   @Override
-   public void dropIndex(String fieldName) {
-
-   }
-
-   @Override
-   public List<Index> indexes() {
-      return null;
-   }
-
-   @Override
-   protected DBDocument delete(long id) {
-      return data.remove(id);
-   }
-
-   @Override
-   public DBDocument get(long id) {
-      return data.get(id);
-   }
-
-   @Override
-   public List<DBDocument> get(String fieldName, Object value) {
-      JsonEntry je = JsonEntry.from(value);
-      return data.values()
-                 .stream()
-                 .filter(doc -> doc.contains(fieldName) && doc.get(fieldName).equals(je))
-                 .collect(Collectors.toList());
    }
 }//END OF MVDocumentStore

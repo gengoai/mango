@@ -22,10 +22,7 @@
 
 package com.gengoai.persistence.mv;
 
-import com.gengoai.Validation;
 import com.gengoai.collection.Sorting;
-import com.gengoai.json.JsonEntry;
-import com.gengoai.persistence.DBDocument;
 import com.gengoai.persistence.Index;
 import com.gengoai.persistence.IndexType;
 import org.h2.mvstore.MVMap;
@@ -50,76 +47,43 @@ class MVIndex extends Index {
       this.index = store.openMap(getIndexName());
    }
 
+   @Override
+   public void drop() {
+      this.index.getStore().removeMap(this.index);
+   }
 
-   private void add(Object value, long docId) {
+   @Override
+   protected void indexValue(Object value, long docId) {
       Set<Long> ids = index.computeIfAbsent(value, v -> new HashSet<>());
-      if (getIndexType() == IndexType.Unique) {
-         Validation.checkArgument(ids.isEmpty() || (ids.size() == 1 && ids.contains(docId)),
-                                  () -> "Unique Field Violation: " + getFieldName() + " = " + value);
-      }
       ids.add(docId);
       index.put(value, ids);
    }
 
-   public void add(DBDocument document) {
-      if (document.contains(getFieldName())) {
-         add(document.get(getFieldName()), document.getId());
-      }
-   }
-
-   public void add(JsonEntry value, long docId) {
-      if (value.isArray()) {
-         value.elementIterator().forEachRemaining(e -> add(e, docId));
-      } else if (value.isNumber()) {
-         add(value.getAsNumber(), docId);
-      } else if (value.isBoolean()) {
-         add(value.getAsBoolean(), docId);
-      } else {
-         add(value.getAsString(), docId);
-      }
-   }
-
+   @Override
    public LongStream lookup(Object value) {
       return index.getOrDefault(value, Collections.emptySet())
                   .stream()
                   .mapToLong(l -> l);
    }
 
-   public Set<Long> range(Object lower, Object upper) {
+   @Override
+   public LongStream range(Object lower, Object upper) {
       Set<Long> toReturn = new HashSet<>();
       for (Iterator<Object> itr = index.keyIterator(lower); itr.hasNext(); ) {
          Object next = itr.next();
          if (Sorting.compare(next, upper) >= 0) {
-            System.out.println(next);
             break;
          }
          toReturn.addAll(index.get(next));
       }
-      return toReturn;
+      return toReturn.stream().mapToLong(l -> l);
    }
 
-   private void remove(Object value, long docId) {
+   @Override
+   protected void remove(Object value, long docId) {
       Set<Long> ids = index.computeIfAbsent(value, v -> new HashSet<>());
       ids.remove(docId);
       index.put(value, ids);
-   }
-
-   public void remove(DBDocument document) {
-      if (document.contains(getFieldName())) {
-         remove(document.get(getFieldName()), document.getId());
-      }
-   }
-
-   protected void remove(JsonEntry value, long docId) {
-      if (value.isArray()) {
-         value.elementIterator().forEachRemaining(e -> remove(e, docId));
-      } else if (value.isNumber()) {
-         remove(value.getAsNumber(), docId);
-      } else if (value.isBoolean()) {
-         remove(value.getAsBoolean(), docId);
-      } else {
-         remove(value.getAsString(), docId);
-      }
    }
 
 }//END OF MVIndex
