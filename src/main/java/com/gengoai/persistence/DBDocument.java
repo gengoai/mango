@@ -46,10 +46,6 @@ public final class DBDocument implements Serializable {
    private transient JsonEntry doc;
 
 
-   public static DBDocument from(Object o) {
-      return new DBDocument(JsonEntry.from(o));
-   }
-
    public DBDocument() {
       this.doc = JsonEntry.object();
    }
@@ -66,13 +62,16 @@ public final class DBDocument implements Serializable {
       doc.addProperty(ID_FIELD, id);
    }
 
-
    private DBDocument(JsonEntry entry) {
       this.doc = entry;
    }
 
    public static DBDocument create() {
       return new DBDocument();
+   }
+
+   public static DBDocument from(Object o) {
+      return new DBDocument(JsonEntry.from(o));
    }
 
    public boolean contains(String field) {
@@ -111,6 +110,14 @@ public final class DBDocument implements Serializable {
          }
       }
       return null;
+   }
+
+   public static DBDocument fromJson(String json) {
+      try {
+         return new DBDocument(Json.parse(json));
+      } catch (IOException e) {
+         throw new RuntimeException(e);
+      }
    }
 
    public long getId() {
@@ -152,9 +159,21 @@ public final class DBDocument implements Serializable {
       return this;
    }
 
+   private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
+      ois.defaultReadObject();
+      this.doc = Json.parse(ois.readUTF());
+   }
+
    @Override
    public String toString() {
       return doc.toString();
+   }
+
+   private void writeObject(ObjectOutputStream out) throws IOException {
+      out.defaultWriteObject();
+      String json = doc.toString();
+      System.out.println(json);
+      out.writeUTF(json);
    }
 
    static class Marshaller extends JsonMarshaller<DBDocument> {
@@ -168,15 +187,6 @@ public final class DBDocument implements Serializable {
       protected JsonEntry serialize(DBDocument dbDocument, Type type) {
          return dbDocument.doc;
       }
-   }
-
-
-   private void writeObject(ObjectOutputStream out) throws IOException {
-      out.writeUTF(doc.toString());
-   }
-
-   private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
-      this.doc = Json.parse(ois.readUTF());
    }
 
 }//END OF DBDocument

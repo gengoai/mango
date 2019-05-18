@@ -47,7 +47,7 @@ public class MVDocumentDB extends DocumentDB {
    public static final String METADATA = "METADATA";
    private static final long serialVersionUID = 1L;
    private MVStore store;
-   private MVMap<Long, DBDocument> data;
+   private MVMap<Long, String> data;
    private MVMap<String, IndexType> indexTypes;
    private Map<String, MVIndex> indexes;
    private Map<String, String> metadata;
@@ -138,14 +138,15 @@ public class MVDocumentDB extends DocumentDB {
          MVIndex index = new MVIndex(fieldName, indexType, store);
          indexes.put(fieldName, index);
          indexTypes.put(fieldName, indexType);
-         data.values().forEach(index::add);
+         data.values().forEach(json -> index.add(DBDocument.fromJson(json)));
       }
    }
 
    @Override
    protected DBDocument delete(long id) {
       open();
-      return data.remove(id);
+      String json = data.remove(id);
+      return json == null ? null : DBDocument.fromJson(json);
    }
 
    @Override
@@ -159,7 +160,8 @@ public class MVDocumentDB extends DocumentDB {
    @Override
    public DBDocument get(long id) {
       open();
-      return data.get(id);
+      String json = data.get(id);
+      return json == null ? null : DBDocument.fromJson(json);
    }
 
    @Override
@@ -178,13 +180,13 @@ public class MVDocumentDB extends DocumentDB {
    @Override
    protected void insertDocument(DBDocument document) {
       open();
-      data.put(document.getId(), document);
+      data.put(document.getId(), document.toString());
    }
 
    @Override
    public Iterator<DBDocument> iterator() {
       open();
-      return Iterators.unmodifiableIterator(data.values().iterator());
+      return Iterators.unmodifiableIterator(Iterators.transform(data.values().iterator(), DBDocument::fromJson));
    }
 
    @Override
@@ -208,13 +210,13 @@ public class MVDocumentDB extends DocumentDB {
    @Override
    public Stream<DBDocument> stream() {
       open();
-      return data.values().stream();
+      return data.values().stream().map(DBDocument::fromJson);
    }
 
    @Override
    protected void updateDocument(DBDocument document) {
       open();
-      data.put(document.getId(), document);
+      data.put(document.getId(), document.toString());
    }
 
    @Override
