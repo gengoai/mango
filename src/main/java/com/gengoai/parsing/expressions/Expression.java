@@ -24,12 +24,14 @@ package com.gengoai.parsing.expressions;
 import com.gengoai.parsing.ParseException;
 import com.gengoai.parsing.ParserTokenType;
 
+import java.io.Serializable;
+
 /**
  * <p>Represents a single expression from a parse.</p>
  *
  * @author David B. Bracewell
  */
-public abstract class Expression {
+public abstract class Expression implements Serializable {
 
    private final ParserTokenType type;
 
