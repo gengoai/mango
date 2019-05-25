@@ -113,7 +113,7 @@ public class ApplicationTest {
             new String[]{"--name=John", "--age=", "35", "--map", "{\"ALPHA\":23}", "--action", "update", "-abc"},
             getAllArguments()
                           );
-         assertArrayEquals(new String[]{"--action", "update"}, getNonSpecifiedArguments());
+         assertArrayEquals(new String[]{"--action", "update"}, getPositionalArgs());
       }
    }
 

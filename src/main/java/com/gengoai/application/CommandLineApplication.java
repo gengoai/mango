@@ -52,9 +52,9 @@ public abstract class CommandLineApplication implements Application, Serializabl
    private static final long serialVersionUID = 1L;
 
    public final String applicationName;
-   private String[] nonNamedArguments;
    private String[] allArgs;
    private String packageName;
+   private String[] positionalArgs;
 
    protected CommandLineApplication() {
       this(null, null);
@@ -102,13 +102,13 @@ public abstract class CommandLineApplication implements Application, Serializabl
    }
 
    @Override
-   public final String[] getNonSpecifiedArguments() {
-      return nonNamedArguments;
+   public final String[] getPositionalArgs() {
+      return positionalArgs;
    }
 
    @Override
-   public void setNonSpecifiedArguments(String[] nonSpecifiedArguments) {
-      this.nonNamedArguments = nonSpecifiedArguments;
+   public void setPositionalArgs(String[] nonSpecifiedArguments) {
+      this.positionalArgs = nonSpecifiedArguments;
    }
 
    /**

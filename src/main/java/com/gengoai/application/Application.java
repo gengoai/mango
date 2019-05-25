@@ -49,14 +49,14 @@ public interface Application extends Runnable, Serializable, Loggable {
     *
     * @return Arguments not specified in the command line parser
     */
-   String[] getNonSpecifiedArguments();
+   String[] getPositionalArgs();
 
    /**
     * <p>Sets the command line arguments that were not specified as part of the command line parser</p>
     *
     * @param nonSpecifiedArguments the non-specified arguments
     */
-   void setNonSpecifiedArguments(String[] nonSpecifiedArguments);
+   void setPositionalArgs(String[] nonSpecifiedArguments);
 
    /**
     * <p>Get all arguments passed to the application.</p>
@@ -110,7 +110,7 @@ public interface Application extends Runnable, Serializable, Loggable {
       }
 
       CommandLineParser parser = new CommandLineParser(this, cliDesc.toString());
-      setNonSpecifiedArguments(Config.initialize(getName(), args, parser));
+      setPositionalArgs(Config.initialize(getName(), args, parser));
       if (getConfigPackageName() != null) {
          Config.loadConfig(Resources.fromClasspath(getConfigPackageName().replace(".", "/") + "/default.conf"));
          Config.setAllCommandLine(parser);

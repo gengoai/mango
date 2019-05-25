@@ -188,12 +188,12 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
    }
 
    @Override
-   public String[] getNonSpecifiedArguments() {
+   public String[] getPositionalArgs() {
       return nonNamedArguments;
    }
 
    @Override
-   public void setNonSpecifiedArguments(String[] nonSpecifiedArguments) {
+   public void setPositionalArgs(String[] nonSpecifiedArguments) {
       this.nonNamedArguments = nonSpecifiedArguments;
    }
 

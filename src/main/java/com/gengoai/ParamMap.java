@@ -98,6 +98,10 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
       throw new IllegalArgumentException("Unknown Parameter: " + param.name);
    }
 
+   public <T> Param<T> getParameter(String name) {
+      return Cast.as(map.get(name).param);
+   }
+
    /**
     * Get t.
     *
