@@ -147,7 +147,25 @@ public class JsonEntry implements Serializable {
       if (v == null) {
          return JsonNull.INSTANCE;
       }
-      return MAPPER.toJsonTree(v);
+      JsonElement e = MAPPER.toJsonTree(v);
+      if (e.isJsonNull()) {
+         if (v instanceof Iterable) {
+            JsonArray array = new JsonArray();
+            for (Object o : Cast.<Iterable>as(v)) {
+               array.add(toElement(o));
+            }
+            return array;
+         }
+         if (v instanceof Iterator) {
+            JsonArray array = new JsonArray();
+            for (Iterator it = Cast.as(v); it.hasNext(); ) {
+               Object o = it.next();
+               array.add(toElement(o));
+            }
+            return array;
+         }
+      }
+      return e;
    }
 
    /**

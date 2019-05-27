@@ -103,7 +103,7 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
 
       @Override
       public JsonEntry serialize(EnumValue enumValue, Type type) {
-         return JsonEntry.from(enumValue.canonicalName());
+         return JsonEntry.from(enumValue.name());
       }
    }
 

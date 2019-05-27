@@ -74,8 +74,8 @@ public final class Json {
             return entry.isObject()
                    ? TypeUtils.parameterizedType(entry.getProperty("rawType").getAs(Type.class),
                                                  entry.getProperty("parameters")
-                                                  .getAsArray(Type.class)
-                                                  .toArray(new Type[1]))
+                                                      .getAsArray(Type.class)
+                                                      .toArray(new Type[1]))
                    : ReflectionUtils.getClassForName(entry.getAsString());
          } catch (Exception e) {
             throw new RuntimeException(e);
@@ -156,7 +156,23 @@ public final class Json {
     * @throws IOException Something went wrong writing to the given resource
     */
    public static Resource dump(Object object, Resource resource) throws IOException {
+      return dump(object, resource, 0);
+   }
+
+   /**
+    * Dumps the given object to the given output location in json format.
+    *
+    * @param object       the object to dump
+    * @param resource     the resource to write the dumped object in json format to.
+    * @param indentLength The amount of space to indent
+    * @return the resource
+    * @throws IOException Something went wrong writing to the given resource
+    */
+   public static Resource dump(Object object, Resource resource, int indentLength) throws IOException {
       try (JsonWriter writer = new JsonWriter(resource)) {
+         if (indentLength > 0) {
+            writer.spaceIndent(indentLength);
+         }
          JsonEntry objJson = JsonEntry.from(object);
          if (objJson.isPrimitive()) {
             writer.beginDocument(true);

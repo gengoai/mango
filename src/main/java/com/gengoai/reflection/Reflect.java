@@ -29,6 +29,7 @@ import com.gengoai.string.Strings;
 
 import java.lang.reflect.*;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -361,7 +362,10 @@ public final class Reflect {
       if (Strings.isNullOrBlank(name)) {
          return null;
       }
-      return getMethods().stream().filter(method -> method.getName().equals(name)).findFirst().orElse(null);
+      return getMethods().stream()
+                         .filter(method -> method.getName().equals(name))
+                         .min(Comparator.comparingInt(Method::getParameterCount))
+                         .orElse(null);
    }
 
    /**
