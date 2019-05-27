@@ -499,7 +499,8 @@ public final class Config implements Serializable {
     */
    public static void loadConfig(Resource resource) {
       if (resource == null || !resource.exists()) {
-         throw new RuntimeException("Unable to Load Config: " + resource);
+         //throw new RuntimeException("Unable to Load Config: " + resource);
+         return;
       }
       if (resource.path() != null && getInstance().loaded.contains(resource.path())) {
          return; //Only load once!
