@@ -82,7 +82,7 @@ public class Span implements Serializable, Comparable<Span> {
     * @return True if the two texts are in the same document and this text encloses the other, False otherwise
     */
    public boolean encloses(Span other) {
-      return other != null && other.start() >= this.start() && other.end() < this.end();
+      return other != null && other.start() >= this.start() && other.end() <= this.end();
    }
 
    @Override
