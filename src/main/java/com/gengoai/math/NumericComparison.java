@@ -50,7 +50,21 @@ public enum NumericComparison implements SerializableBiFunction<Number, Number, 
    EQ {
       @Override
       public boolean compare(double beingCompared, double comparedAgainst) {
-         return beingCompared == comparedAgainst;
+         return Double.compare(beingCompared,comparedAgainst) == 0;
+//         System.out.println(" >> " + beingCompared + " = " + comparedAgainst);
+//         if (Double.isFinite(beingCompared) && Double.isFinite(comparedAgainst)) {
+//            return beingCompared == comparedAgainst;
+//         }
+//         if (Double.isFinite(beingCompared)) {
+//            if (Double.isNaN(comparedAgainst)) {
+//               return Double.isNaN(beingCompared);
+//            }
+//            return beingCompared == comparedAgainst;
+//         }
+//         if (Double.isNaN(beingCompared)) {
+//            return Double.isNaN(comparedAgainst);
+//         }
+//         return beingCompared == comparedAgainst;
       }
    },
    /**
