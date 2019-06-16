@@ -191,7 +191,7 @@ public final class LocalStreamingContext extends StreamingContext {
       if (location.isDirectory()) {
          return new LocalStream<>(location.getChildren(true).stream()
                                           .filter(r -> !r.isDirectory())
-                                          .flatMap(Unchecked.function(r -> Stream.of(r.readToString()))));
+                                          .map(Unchecked.function(Resource::readToString)));
       }
       try {
          return new InMemoryPersistedLocalStream<>(Collections.singleton(location.readToString()));

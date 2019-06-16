@@ -33,112 +33,116 @@ import com.gengoai.conversion.Cast;
  * @author David B. Bracewell
  */
 public class Tuple4<A, B, C, D> extends Tuple {
-  private static final long serialVersionUID = 1L;
-  /**
-   * the first value
-   */
-  public final A v1;
-  /**
-   * The second value
-   */
-  public final B v2;
-  /**
-   * The third value
-   */
-  public final C v3;
-  /**
-   * The fourth value
-   */
-  public final D v4;
+   private static final long serialVersionUID = 1L;
+   /**
+    * the first value
+    */
+   public final A v1;
+   /**
+    * The second value
+    */
+   public final B v2;
+   /**
+    * The third value
+    */
+   public final C v3;
+   /**
+    * The fourth value
+    */
+   public final D v4;
 
-  /**
-   * Instantiates a new Tuple 4.
-   *
-   * @param a the first value
-   * @param b the second value
-   * @param c the third value
-   * @param d the fourth value
-   */
-  public Tuple4(A a, B b, C c, D d) {
-    this.v1 = a;
-    this.v2 = b;
-    this.v3 = c;
-    this.v4 = d;
-  }
+   /**
+    * Instantiates a new Tuple 4.
+    *
+    * @param a the first value
+    * @param b the second value
+    * @param c the third value
+    * @param d the fourth value
+    */
+   public Tuple4(A a, B b, C c, D d) {
+      this.v1 = a;
+      this.v2 = b;
+      this.v3 = c;
+      this.v4 = d;
+   }
 
-  /**
-   * Of tuple 4.
-   *
-   * @param <A> the type parameter
-   * @param <B> the type parameter
-   * @param <C> the type parameter
-   * @param <D> the type parameter
-   * @param a   the a
-   * @param b   the b
-   * @param c   the c
-   * @param d   the d
-   * @return the tuple 4
-   */
-  public static <A, B, C, D> Tuple4<A, B, C, D> of(A a, B b, C c, D d) {
-    return new Tuple4<>(a, b, c, d);
-  }
+   /**
+    * Of tuple 4.
+    *
+    * @param <A> the type parameter
+    * @param <B> the type parameter
+    * @param <C> the type parameter
+    * @param <D> the type parameter
+    * @param a   the a
+    * @param b   the b
+    * @param c   the c
+    * @param d   the d
+    * @return the tuple 4
+    */
+   public static <A, B, C, D> Tuple4<A, B, C, D> of(A a, B b, C c, D d) {
+      return new Tuple4<>(a, b, c, d);
+   }
 
-  @Override
-  public Tuple4<A, B, C, D> copy() {
-    return new Tuple4<>(this.v1, this.v2, this.v3, this.v4);
-  }
+   @Override
+   public Tuple4<A, B, C, D> copy() {
+      return new Tuple4<>(this.v1, this.v2, this.v3, this.v4);
+   }
 
-  @Override
-  public int degree() {
-    return 4;
-  }
+   @Override
+   public int degree() {
+      return 4;
+   }
 
-  @Override
-  public Object[] array() {
-    return new Object[]{v1, v2, v3, v4};
-  }
+   @Override
+   public Object[] array() {
+      return new Object[]{v1, v2, v3, v4};
+   }
 
-  @Override
-  public <T> T get(int i) {
-    switch (i){
-      case 0: return Cast.as(v1);
-      case 1: return Cast.as(v2);
-      case 2: return Cast.as(v3);
-      case 3: return Cast.as(v4);
-      default:
-        throw new ArrayIndexOutOfBoundsException();
-    }
-  }
+   @Override
+   public <T> T get(int i) {
+      switch (i) {
+         case 0:
+            return Cast.as(v1);
+         case 1:
+            return Cast.as(v2);
+         case 2:
+            return Cast.as(v3);
+         case 3:
+            return Cast.as(v4);
+         default:
+            throw new ArrayIndexOutOfBoundsException();
+      }
+   }
 
-  public A getV1() {
-    return this.v1;
-  }
+   public A getV1() {
+      return this.v1;
+   }
 
-  public B getV2() {
-    return this.v2;
-  }
+   public B getV2() {
+      return this.v2;
+   }
 
-  public C getV3() {
-    return this.v3;
-  }
+   public C getV3() {
+      return this.v3;
+   }
 
-  public D getV4() {
-    return this.v4;
-  }
+   public D getV4() {
+      return this.v4;
+   }
 
-  @Override
-  public String toString() {
-    return "(" + v1 + ", " + v2 + "," + v3 + "," + v4 + ")";
-  }
+   @Override
+   public String toString() {
+      return "(" + v1 + ", " + v2 + "," + v3 + "," + v4 + ")";
+   }
 
-  @Override
-  public Tuple3<B, C, D> shiftLeft() {
-    return Tuple3.of(v2, v3, v4);
-  }
+   @Override
+   public Tuple3<B, C, D> shiftLeft() {
+      return Tuple3.of(v2, v3, v4);
+   }
 
-  @Override
-  public Tuple3<A, B, C> shiftRight() {
-    return Tuple3.of(v1, v2, v3);
-  }
+   @Override
+   public Tuple3<A, B, C> shiftRight() {
+      return Tuple3.of(v1, v2, v3);
+   }
 
 }//END OF Tuple2

@@ -86,9 +86,9 @@ public class InMemoryPersistedLocalStream<T> extends LazyLocalStream<T> {
    @Override
    public Stream<T> javaStream() {
       if (parallel) {
-         return backingCollection.parallelStream().onClose(onClose);
+         return backingCollection.parallelStream();
       }
-      return backingCollection.stream().onClose(onClose);
+      return backingCollection.stream();
    }
 
    @Override

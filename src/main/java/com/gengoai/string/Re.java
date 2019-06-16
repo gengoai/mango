@@ -124,6 +124,11 @@ public final class Re {
                                                  FORM_FEED,
                                                  CARRIAGE_RETURN,
                                                  TAB);
+   public static final String NON_WHITESPACE = chars(true, UNICODE_WHITESPACE,
+                                                     LINE_FEED,
+                                                     FORM_FEED,
+                                                     CARRIAGE_RETURN,
+                                                     TAB);
    /**
     * The constant MULTIPLE_WHITESPACE.
     */
@@ -420,7 +425,6 @@ public final class Re {
    public static String zeroOrOne(String... sequence) {
       return String.format("(?:%s)?", String.join("", sequence));
    }
-
 
 
 }//END OF Regex
