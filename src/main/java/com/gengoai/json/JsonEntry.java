@@ -235,9 +235,6 @@ public class JsonEntry implements Serializable {
       propertyIterator().forEachRemaining(e -> consumer.accept(e.getKey(), e.getValue()));
    }
 
-//   public <T> T getAs(ParameterizedType pt) {
-//      return MAPPER.fromJson(element, pt);
-//   }
 
    public Object get() {
       if (isString()) {
