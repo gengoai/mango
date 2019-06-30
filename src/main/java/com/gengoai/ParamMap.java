@@ -35,6 +35,7 @@ import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -74,6 +75,10 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
          paramMap.map.forEach((k, v) -> object.addProperty(k, v.value));
          return object;
       }
+   }
+
+   public Set<String> parameterNames() {
+      return map.keySet();
    }
 
    @Override
