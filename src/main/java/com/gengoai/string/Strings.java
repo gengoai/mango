@@ -87,14 +87,14 @@ public final class Strings {
     * @param length The length of the abbreviation
     * @return The abbreviated string
     */
-   public static String abbreviate(String input, int length) {
+   public static String abbreviate(CharSequence input, int length) {
       if (input == null) {
          return null;
       }
       if (input.length() <= length) {
-         return input;
+         return input.toString();
       }
-      return input.substring(0, length) + "...";
+      return input.subSequence(0, length) + "...";
    }
 
    /**

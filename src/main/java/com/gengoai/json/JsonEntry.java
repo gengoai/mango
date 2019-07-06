@@ -678,6 +678,16 @@ public class JsonEntry implements Serializable {
    }
 
 
+   public Optional<JsonEntry> getOptionalProperty(String propertyName) {
+      if (hasProperty(propertyName)) {
+         JsonEntry e = getProperty(propertyName);
+         if (!e.isNull()) {
+            return Optional.of(e);
+         }
+      }
+      return Optional.empty();
+   }
+
    /**
     * Gets the value of the given property name as a JsonEntry
     *
