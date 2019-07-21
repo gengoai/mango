@@ -34,7 +34,7 @@ import com.gengoai.parsing.expressions.PrefixOperatorExpression;
  *
  * @author David B. Bracewell
  */
-public class PrefixOperatorHandler extends PrefixHandler {
+public class PrefixOperatorHandler implements PrefixHandler {
    private static final long serialVersionUID = 1L;
 
    @Override

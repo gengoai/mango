@@ -26,7 +26,6 @@ import com.gengoai.parsing.expressions.BinaryOperatorExpression;
 import com.gengoai.parsing.expressions.PostfixOperatorExpression;
 import com.gengoai.parsing.expressions.StringValueExpression;
 import com.gengoai.parsing.handlers.BinaryOperatorHandler;
-import com.gengoai.parsing.handlers.GroupHandler;
 import com.gengoai.parsing.handlers.PostfixOperatorHandler;
 import com.gengoai.parsing.handlers.ValueHandler;
 import org.junit.Test;
@@ -43,8 +42,7 @@ public class EvaluatorTest {
                                   .register(CommonTypes.MULTIPLY, new BinaryOperatorHandler(20, false))
                                   .register(CommonTypes.DIVIDE, new BinaryOperatorHandler(20, false))
                                   .register(CommonTypes.NUMBER, new ValueHandler())
-                                  .register(CommonTypes.EXCLAMATION, new PostfixOperatorHandler(30))
-                                  .register(CommonTypes.OPENPARENS, new GroupHandler(CommonTypes.CLOSEPARENS.getTag()));
+                                  .register(CommonTypes.EXCLAMATION, new PostfixOperatorHandler(30));
 
    Lexer lexer = new RegexLexer(CommonTypes.WHITESPACE,
                                 CommonTypes.NUMBER,
@@ -52,8 +50,6 @@ public class EvaluatorTest {
                                 CommonTypes.MINUS,
                                 CommonTypes.MULTIPLY,
                                 CommonTypes.DIVIDE,
-                                CommonTypes.OPENPARENS,
-                                CommonTypes.CLOSEPARENS,
                                 CommonTypes.EXCLAMATION);
 
    Evaluator<Double> mathEvaluator = new Evaluator<Double>() {
@@ -74,15 +70,13 @@ public class EvaluatorTest {
 
    @Test
    public void postfix() throws Exception {
-      assertEquals(50, parser.evaluate("(2 + 3)!", mathEvaluator), 0);
       assertEquals(60, parser.evaluate("2 * 3!", mathEvaluator), 0);
    }
 
    @Test
    public void order() throws Exception {
       assertEquals(8, parser.evaluate("2+3 * 2", mathEvaluator), 0);
-      assertEquals(10, parser.evaluate("(2 + 3) * 2", mathEvaluator), 0);
-      assertEquals(5, parser.evaluate("(2 + 3) * 2 / 2", mathEvaluator), 0);
+      assertEquals(5, parser.evaluate("2 + 3 * 2 / 2", mathEvaluator), 0);
    }
 
    @Test(expected = ParseException.class)

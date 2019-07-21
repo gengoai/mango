@@ -13,7 +13,8 @@ import static com.gengoai.Validation.notNull;
  *
  * @author David B. Bracewell
  */
-public class ValidatingPrefixHandler extends PrefixHandler {
+public class ValidatingPrefixHandler implements PrefixHandler {
+   private static final long serialVersionUID = 1L;
    private ExpressionValidator validator;
    private PrefixHandler backing;
 

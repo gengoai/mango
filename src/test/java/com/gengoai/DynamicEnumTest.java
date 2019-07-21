@@ -82,7 +82,7 @@ public class DynamicEnumTest {
    public void testJson() throws Exception {
       NamesEnum name = NamesEnum.make("name");
       String json = Json.dumps(name);
-      NamesEnum nameDes = Json.parse(json, EnumValue.class);
+      NamesEnum nameDes = Json.parse(json, NamesEnum.class);
       assertEquals(name, nameDes);
    }
 

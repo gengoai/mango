@@ -17,40 +17,39 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ *
  */
 
-package com.gengoai.parsing.expressions;
+package com.gengoai.config;
 
-
-import com.gengoai.parsing.ParserTokenType;
+import com.gengoai.parsing.ParserToken;
+import com.gengoai.parsing.expressions.ValueExpression;
 
 /**
- * A comment expression.
+ * A {@link ValueExpression} representing a Key in a key value pair
  *
  * @author David B. Bracewell
  */
-public class CommentExpression extends Expression {
+public class KeyValueExpression extends ValueExpression<String> {
+   /**
+    * The Key.
+    */
+   public final String key;
 
-  /**
-   * The value of the comment
-   */
-  public final String comment;
-
-  /**
-   * Default Constructor
-   *
-   * @param type    The type of token that dominates the expression
-   * @param comment The comment text
-   */
-  public CommentExpression(ParserTokenType type, String comment) {
-    super(type);
-    this.comment = comment;
-  }
-
-  @Override
-  public String toString() {
-    return comment;
-  }
+   /**
+    * Instantiates a new Key value expression.
+    *
+    * @param token the token
+    */
+   public KeyValueExpression(ParserToken token) {
+      super(token.type);
+      this.key = token.text;
+   }
 
 
-}//END OF CommentExpression
+   @Override
+   public String getValue() {
+      return key;
+   }
+
+}//END OF KeyValueExpression

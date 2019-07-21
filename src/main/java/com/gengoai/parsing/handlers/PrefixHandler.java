@@ -33,8 +33,7 @@ import java.io.Serializable;
  *
  * @author David B. Bracewell
  */
-public abstract class PrefixHandler implements ParserHandler {
-   private static final long serialVersionUID = 1L;
+public interface PrefixHandler extends ParserHandler, Serializable {
 
    /**
     * Constructs an expression from the current token and the parser.
@@ -44,31 +43,12 @@ public abstract class PrefixHandler implements ParserHandler {
     * @return An expression representing the parse
     * @throws ParseException An error occurred parsing
     */
-   public abstract Expression parse(ExpressionIterator expressionIterator, ParserToken token) throws ParseException;
+   Expression parse(ExpressionIterator expressionIterator, ParserToken token) throws ParseException;
 
 
    @Override
-   public int precedence() {
+   default int precedence() {
       return 0;
    }
-
-
-   @FunctionalInterface
-   public interface PrefixHandlerFunction extends Serializable {
-
-      Expression apply(ExpressionIterator expressionIterator, ParserToken token) throws ParseException;
-   }
-
-   public static PrefixHandler prefix(PrefixHandlerFunction function) {
-      return new PrefixHandler() {
-         private static final long serialVersionUID = 1L;
-
-         @Override
-         public Expression parse(ExpressionIterator expressionIterator, ParserToken token) throws ParseException {
-            return function.apply(expressionIterator, token);
-         }
-      };
-   }
-
 
 }//END OF PrefixHandler

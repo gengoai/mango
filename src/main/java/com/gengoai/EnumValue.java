@@ -90,7 +90,10 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
                                   ) {
          String name = jsonElement.getAsString();
          if (type == EnumValue.class) {
-            type = ReflectionUtils.getClassForNameQuietly(name.substring(0, name.lastIndexOf('.')));
+            int lastIndex = name.lastIndexOf('.');
+            if (lastIndex >= 0) {
+               type = ReflectionUtils.getClassForNameQuietly(name.substring(0, lastIndex));
+            }
          }
          try {
             return Cast.as(Reflect.onClass(TypeUtils.asClass(type))

@@ -27,8 +27,6 @@ import com.gengoai.parsing.ParserToken;
 import com.gengoai.parsing.expressions.Expression;
 import com.gengoai.parsing.expressions.PostfixOperatorExpression;
 
-import java.io.Serializable;
-
 /**
  * <p>Captures {@link PostfixOperatorExpression}s where the current token is the operator and the previous expression is
  * what is
@@ -49,26 +47,12 @@ public class PostfixOperatorHandler extends InfixHandler {
    }
 
 
-   public interface PostFixOperatorFunction extends Serializable {
-
-      Expression apply(ExpressionIterator expressionIterator, Expression left, ParserToken token) throws ParseException;
-   }
 
    @Override
    public Expression parse(ExpressionIterator expressionIterator, Expression left, ParserToken token) throws ParseException {
       return new PostfixOperatorExpression(token, left);
    }
 
-
-   public static PostfixOperatorHandler postfix(int precedence, PostFixOperatorFunction function) {
-      return new PostfixOperatorHandler(precedence) {
-
-         @Override
-         public Expression parse(ExpressionIterator expressionIterator, Expression left, ParserToken token) throws ParseException {
-            return function.apply(expressionIterator, left, token);
-         }
-      };
-   }
 
 
 }//END OF PostfixOperatorHandler

@@ -17,43 +17,37 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ *
  */
 
-package com.gengoai.parsing.handlers;
-
+package com.gengoai.config;
 
 import com.gengoai.parsing.ExpressionIterator;
 import com.gengoai.parsing.ParseException;
 import com.gengoai.parsing.ParserToken;
-import com.gengoai.parsing.expressions.AssignmentExpression;
+import com.gengoai.parsing.ParserTokenType;
+import com.gengoai.parsing.expressions.BinaryOperatorExpression;
 import com.gengoai.parsing.expressions.Expression;
+import com.gengoai.parsing.handlers.InfixHandler;
+import com.gengoai.parsing.validation.ExpressionValidator;
 
 /**
- * <p>Creates {@link AssignmentExpression}s where the object in the left expressions is being assigned the value of the
- * right expression using the given assignment operator.</p>
- *
  * @author David B. Bracewell
  */
-public class AssignmentHandler extends InfixHandler {
-   private static final long serialVersionUID = 1L;
+public class MapInfixHandler extends InfixHandler {
+   private final MapPrefixHandler prefixHandler;
 
-   /**
-    * Default constructor
-    *
-    * @param precedence The precedence of the handler
-    */
-   public AssignmentHandler(int precedence) {
+   public MapInfixHandler(int precedence,
+                          ParserTokenType endOfMap,
+                          ParserTokenType separator,
+                          ExpressionValidator keyValueValidator
+                         ) {
       super(precedence);
+      prefixHandler = new MapPrefixHandler(endOfMap, separator, keyValueValidator);
    }
 
    @Override
    public Expression parse(ExpressionIterator expressionIterator, Expression left, ParserToken token) throws ParseException {
-      Expression right = expressionIterator.next(precedence() - 1);
-      if (right == null) {
-         throw new ParseException(
-            "Assignment operator expects an expression on the right hand side of the operator, but found nothing");
-      }
-      return new AssignmentExpression(left.toString(), token, right);
+      return new BinaryOperatorExpression(left, token, prefixHandler.parse(expressionIterator, token));
    }
-
-}//END OF AssignmentHandler
+}//END OF MapHandler

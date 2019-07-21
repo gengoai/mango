@@ -17,49 +17,55 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ *
  */
 
-package com.gengoai.parsing.handlers;
+package com.gengoai.config;
 
 import com.gengoai.parsing.ExpressionIterator;
 import com.gengoai.parsing.ParseException;
 import com.gengoai.parsing.ParserToken;
 import com.gengoai.parsing.ParserTokenType;
-import com.gengoai.parsing.expressions.CommentExpression;
 import com.gengoai.parsing.expressions.Expression;
+import com.gengoai.parsing.handlers.PrefixHandler;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
- * <p>Creates a comment expression where the everything from the comment token to the end of line (specified via the
- * <code>endOfLine</code> token type) is found.</p>
+ * A handler to process an array of items with an optional separator between items.
  *
  * @author David B. Bracewell
  */
-public class CommentHandler extends PrefixHandler {
+public class ArrayHandler implements PrefixHandler {
    private static final long serialVersionUID = 1L;
-   private final ParserTokenType endOfLine;
+   private final ParserTokenType endOfArray;
+   private final ParserTokenType separator;
 
    /**
-    * Instantiates a new Comment handler.
+    * Instantiates a new Array handler.
     *
-    * @param endOfLine the token type represent the end of line (where the comment stops).
+    * @param endOfArray the end of array token type
+    * @param separator  the separator token type (Optional)
     */
-   public CommentHandler(ParserTokenType endOfLine) {
-      this.endOfLine = endOfLine;
+   public ArrayHandler(ParserTokenType endOfArray, ParserTokenType separator) {
+      this.endOfArray = endOfArray;
+      this.separator = separator;
    }
 
    @Override
    public Expression parse(ExpressionIterator expressionIterator, ParserToken token) throws ParseException {
-      List<ParserToken> tokens = expressionIterator.tokenStream().consumeUntil(endOfLine);
-      if (expressionIterator.tokenStream().lookAheadType(0) != null) {
-         expressionIterator.tokenStream().consume(endOfLine);
+      List<Expression> subExpressions = new ArrayList<>();
+      while (!expressionIterator.tokenStream().lookAheadType(0).isInstance(endOfArray)) {
+         Expression exp = expressionIterator.next();
+         subExpressions.add(exp);
+         if (!expressionIterator.tokenStream().lookAheadType(0).isInstance(endOfArray)) {
+            if (separator != null) {
+               expressionIterator.tokenStream().consume(separator);
+            }
+         }
       }
-      return new CommentExpression(token.type,
-                                   token.text + tokens.stream()
-                                                      .map(ParserToken::getText)
-                                                      .collect(Collectors.joining("")));
+      expressionIterator.tokenStream().consume(endOfArray);
+      return new ArrayExpression(token.type, subExpressions);
    }
-
-}//END OF CommentHandler
+}//END OF ArrayHandler

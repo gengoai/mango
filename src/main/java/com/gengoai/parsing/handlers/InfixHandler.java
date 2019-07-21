@@ -27,8 +27,6 @@ import com.gengoai.parsing.ParseException;
 import com.gengoai.parsing.ParserToken;
 import com.gengoai.parsing.expressions.Expression;
 
-import java.io.Serializable;
-
 /**
  * <p>Abstract based handler for infix operations.</p>
  *
@@ -64,21 +62,6 @@ public abstract class InfixHandler implements ParserHandler {
    public abstract Expression parse(ExpressionIterator expressionIterator, Expression left, ParserToken token) throws ParseException;
 
 
-   @FunctionalInterface
-   public interface InfixHAndlerFunction extends Serializable {
 
-      Expression apply(ExpressionIterator expressionIterator, Expression left, ParserToken token) throws ParseException;
-   }
-
-   public static InfixHandler infix(final int precedence, final InfixHAndlerFunction function) {
-      return new InfixHandler(precedence) {
-         private static final long serialVersionUID = 1L;
-
-         @Override
-         public Expression parse(ExpressionIterator expressionIterator, Expression left, ParserToken token) throws ParseException {
-            return function.apply(expressionIterator, left, token);
-         }
-      };
-   }
 
 } //END OF InfixHandler

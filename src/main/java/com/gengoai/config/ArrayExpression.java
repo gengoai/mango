@@ -17,49 +17,35 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ *
  */
 
-package com.gengoai.parsing.expressions;
+package com.gengoai.config;
 
 import com.gengoai.parsing.ParserTokenType;
+import com.gengoai.parsing.expressions.Expression;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
- * An <code>Expression</code> representing a method call and its arguments
- *
  * @author David B. Bracewell
  */
+public class ArrayExpression extends Expression {
+   public final List<Expression> expressions;
 
-public class MethodCallExpression extends Expression {
+   /**
+    * Default Constructor
+    *
+    * @param type The type of token that dominates the expression
+    */
+   public ArrayExpression(ParserTokenType type, List<Expression> expressions) {
+      super(type);
+      this.expressions = expressions;
+   }
 
-  /**
-   * The method name
-   */
-  public final String methodName;
+   @Override
+   public String toString() {
+      return expressions.toString();
+   }
 
-  /**
-   * Expressions representing the arguments to the method call
-   */
-  public final List<Expression> arguments;
-
-  /**
-   * Default Constructor
-   *
-   * @param methodName The method name
-   * @param arguments  The arguments to the method
-   * @param type       The type of the method
-   */
-  public MethodCallExpression(String methodName, List<Expression> arguments, ParserTokenType type) {
-    super(type);
-    this.methodName = methodName;
-    this.arguments = Collections.unmodifiableList(arguments);
-  }
-
-  @Override
-  public String toString() {
-    return "(" + methodName + arguments + ")";
-  }
-
-}//END OF MethodCallExpression
+}//END OF ArrayExpression

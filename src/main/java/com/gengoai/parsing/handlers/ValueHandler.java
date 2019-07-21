@@ -35,7 +35,7 @@ import com.gengoai.parsing.expressions.ValueExpression;
  *
  * @author David B. Bracewell
  */
-public class ValueHandler extends PrefixHandler {
+public class ValueHandler implements PrefixHandler {
    private static final long serialVersionUID = 1L;
    private final SerializableFunction<ParserToken, ValueExpression> expressionSupplier;
 
