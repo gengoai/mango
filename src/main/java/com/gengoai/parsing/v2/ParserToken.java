@@ -31,11 +31,11 @@ import java.util.Objects;
  * @author David B. Bracewell
  */
 public class ParserToken {
+   private final int end;
+   private final int start;
    private final String text;
    private final Tag type;
    private final String[] variables;
-   private final int start;
-   private final int end;
 
    public ParserToken(Tag type, String text, int start, int end) {
       this(type, text, start, end, new String[0]);

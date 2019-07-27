@@ -22,37 +22,15 @@
 
 package com.gengoai.parsing.v2;
 
-import com.gengoai.StringTag;
-import com.gengoai.Tag;
-import com.gengoai.string.Strings;
-
 import java.io.Serializable;
 
 /**
  * @author David B. Bracewell
  */
-public interface TokenStream extends Serializable {
-   Tag EOF = new StringTag("~~~EOF~~~");
-   ParserToken EOF_TOKEN = new ParserToken(EOF, Strings.EMPTY, -1, -1);
+public interface ParserHandler extends Serializable {
 
-   ParserToken token();
-
-   ParserToken consume();
-
-   ParserToken peek();
-
-   default ParserToken consume(Tag target) {
-      ParserToken token = consume();
-      if (!token.isInstance(target)) {
-         throw new IllegalArgumentException(
-            "Parsing Error: consumed token of type " + token.getType() + ", but was expecting " + target);
-      }
-      return token;
+   default int precedence() {
+      return 0;
    }
 
-
-   default boolean hasNext() {
-      return !peek().isInstance(EOF);
-   }
-
-}//END OF TokenStream
+}//END OF ParserHandler

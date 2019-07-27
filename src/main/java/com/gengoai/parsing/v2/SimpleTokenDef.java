@@ -29,21 +29,27 @@ import com.gengoai.Tag;
  */
 class SimpleTokenDef implements TokenDef {
    private static final long serialVersionUID = 1L;
-   private final Tag tag;
+   private final String tag;
    private final String pattern;
 
-   SimpleTokenDef(Tag tag, String pattern) {
+   SimpleTokenDef(String tag, String pattern) {
       this.tag = tag;
       this.pattern = pattern;
    }
 
-   @Override
-   public Tag getTag() {
-      return tag;
-   }
 
    @Override
    public String getPattern() {
       return pattern;
+   }
+
+   @Override
+   public boolean isInstance(Tag tag) {
+      return this.tag.equals(tag.name());
+   }
+
+   @Override
+   public String name() {
+      return tag;
    }
 }//END OF SimpleTokenDef

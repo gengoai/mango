@@ -29,13 +29,11 @@ import java.io.Serializable;
 /**
  * @author David B. Bracewell
  */
-public interface TokenDef extends Serializable {
-
-   Tag getTag();
+public interface TokenDef extends Tag, Serializable {
 
    String getPattern();
 
-   static TokenDef token(Tag tag, String pattern) {
+   static TokenDef token(String tag, String pattern) {
       return new SimpleTokenDef(tag, pattern);
    }
 

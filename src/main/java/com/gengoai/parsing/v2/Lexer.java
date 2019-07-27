@@ -22,23 +22,15 @@
 
 package com.gengoai.parsing.v2;
 
-import com.gengoai.StringTag;
-import com.gengoai.Tag;
 import com.gengoai.io.resource.Resource;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * @author David B. Bracewell
  */
 public interface Lexer extends Serializable {
-   Tag EOF = new StringTag("~~~EOF~~~");
 
    TokenStream lex(String input);
 
@@ -47,66 +39,7 @@ public interface Lexer extends Serializable {
    }
 
    static Lexer create(TokenDef... tokens) {
-      return new Lexer() {
-         private static final long serialVersionUID = 1L;
-         final Pattern regex = Pattern.compile(Arrays.stream(tokens)
-                                                     .map(e -> String.format("(?<%s>%s)",
-                                                                             e.getTag().name(),
-                                                                             e.getPattern()))
-                                                     .collect(Collectors.joining("|")),
-                                               Pattern.MULTILINE | Pattern.DOTALL);
-
-         @Override
-         public TokenStream lex(Resource resource) throws IOException {
-            return new TokenStream() {
-               private ParserToken current = null;
-               private ParserToken next = null;
-               int lastEnd = 0;
-
-
-               @Override
-               public ParserToken token() {
-                  return current;
-               }
-
-               @Override
-               public ParserToken consume() {
-                  return null;
-               }
-
-               @Override
-               public ParserToken peek() {
-                  return null;
-               }
-
-               private ParserToken next() {
-                  ParserToken next = null;
-                  int endOffset = lastEnd;
-                  int startOffset = 0;
-                  for (int i = 0; i < groups.length; i++) {
-                     String group = groups[i];
-                     if (matcher.group(group) != null) {
-                        endOffset = matcher.end(group);
-                        startOffset = matcher.start(group);
-                        if (vars[i] != null) {
-                           List<String> varValues = new ArrayList<>();
-                           for (int j = 0; j < vars[i].length; j++) {
-                              varValues.add(matcher.group(vars[i][j]));
-                           }
-                           token = new ParserToken(matcher.group(group), tags[i], varValues);
-                        } else {
-                           token = new ParserToken(matcher.group(group), tags[i]);
-                        }
-                        break;
-                     }
-                  }
-               }
-
-            };
-         }
-
-
-      };
+      return new RegexLexer(tokens);
    }
 
 

@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
 /**
  * @author David B. Bracewell
  */
-public class RegexLexer implements Lexer {
+class RegexLexer implements Lexer {
    private static final long serialVersionUID = 1L;
    private static final Pattern VARIABLE_PLACEHOLDER = Pattern.compile("\\(\\?<>");
 
@@ -70,7 +70,7 @@ public class RegexLexer implements Lexer {
                 .append(p)
                 .append(")");
       }
-      this.regex = Pattern.compile("(" + pattern.toString() + ")", Pattern.MULTILINE | Pattern.DOTALL);
+      this.regex = Pattern.compile("(?:" + pattern.toString().substring(1) + ")", Pattern.MULTILINE | Pattern.DOTALL);
    }
 
    @Override
@@ -99,13 +99,28 @@ public class RegexLexer implements Lexer {
 
          @Override
          public ParserToken peek() {
-            return null;
+            if (next == null) {
+               next = next();
+            }
+            return next;
          }
 
          private ParserToken next() {
             ParserToken token = null;
+
+            if (lastEnd >= input.length()) {
+               return EOF_TOKEN;
+            }
+
             int endOffset = lastEnd;
             int startOffset = 0;
+
+            if (!matcher.find(lastEnd)) {
+               if (Strings.isNullOrBlank(input.substring(endOffset))) {
+                  validate(input, endOffset, input.length());
+               }
+            }
+
             for (int i = 0; i < groups.length; i++) {
                String group = groups[i];
                if (matcher.group(group) != null) {
@@ -116,13 +131,13 @@ public class RegexLexer implements Lexer {
                      for (int j = 0; j < vars[i].length; j++) {
                         varValues.add(matcher.group(vars[i][j]));
                      }
-                     token = new ParserToken(definitions[0].getTag(),
+                     token = new ParserToken(definitions[i],
                                              matcher.group(group),
                                              startOffset,
                                              endOffset,
                                              varValues.toArray(new String[0]));
                   } else {
-                     token = new ParserToken(definitions[0].getTag(),
+                     token = new ParserToken(definitions[i],
                                              matcher.group(group),
                                              startOffset,
                                              endOffset);
@@ -130,19 +145,30 @@ public class RegexLexer implements Lexer {
                   break;
                }
             }
+
             if (token == null) {
-               throw new IllegalStateException("Error in parsing {" + input + "}");
+               throw new IllegalStateException(
+                  "Parsing Error: Unmatched token starting at {" + input.substring(lastEnd) + "}");
             }
+
             if (startOffset > 0) {
-               String s = input.substring(lastEnd, startOffset);
-               if (Strings.isNotNullOrBlank(s)) {
-                  throw new IllegalStateException("Error in parsing {" + input + "} unparsed region: " + s);
-               }
+               validate(input, lastEnd, startOffset);
             }
+
             lastEnd = endOffset;
             return token;
          }
 
       };
+
+
    }
+
+   private static void validate(String input, int startOffset, int endOffSet) {
+      String s = input.substring(startOffset, endOffSet);
+      if (Strings.isNotNullOrBlank(s)) {
+         throw new IllegalStateException("Parsing Error: Unmatched region '" + s + "'");
+      }
+   }
+
 }//END OF RegexLexer

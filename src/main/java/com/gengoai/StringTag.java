@@ -100,4 +100,8 @@ public class StringTag implements Tag, Serializable {
       return tag;
    }
 
+   public static Tag tag(String name) {
+      return new StringTag(name);
+   }
+
 }//END OF StringTag

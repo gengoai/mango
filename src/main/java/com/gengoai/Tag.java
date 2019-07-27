@@ -38,7 +38,9 @@ public interface Tag {
     * @param tag The given tag
     * @return True if this tag is an instance of the given tag
     */
-   boolean isInstance(Tag tag);
+   default boolean isInstance(Tag tag) {
+      return getClass().isInstance(tag) && name().equals(tag.name());
+   }
 
    /**
     * Determines if this tag is an instance of any of the given tags.
