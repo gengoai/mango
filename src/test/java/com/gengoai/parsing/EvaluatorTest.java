@@ -69,6 +69,11 @@ public class EvaluatorTest {
 
 
    @Test
+   public void test() throws Exception{
+      System.out.println(parser.evaluate("23 + 4 * 2 - 1", mathEvaluator));
+   }
+
+   @Test
    public void postfix() throws Exception {
       assertEquals(60, parser.evaluate("2 * 3!", mathEvaluator), 0);
    }

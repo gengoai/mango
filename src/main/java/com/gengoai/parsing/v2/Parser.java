@@ -44,8 +44,8 @@ public class Parser implements TokenStream, Serializable {
       return parseExpression(0);
    }
 
-   public Expression parseExpression(Expression leftHandExpression) {
-      return parseExpression(grammar.precedenceOf(leftHandExpression.getType()));
+   public Expression parseExpression(ParserToken precedence) {
+      return parseExpression(grammar.precedenceOf(precedence));
    }
 
    public Expression parseExpression(int precedence) {
@@ -70,7 +70,6 @@ public class Parser implements TokenStream, Serializable {
    }
 
    private void skip() {
-      //Consume things that will be skipped
       while (grammar.isIgnored(tokenStream.peek())) {
          tokenStream.consume();
       }
@@ -128,28 +127,27 @@ public class Parser implements TokenStream, Serializable {
 
    public static class MathGrammar extends Grammar {
       {
-         registerPrefix(MathTypes.NUMBER, (p, t) -> new NumericExpression(t));
-         registerPostfix(MathTypes.ADD, (p, t, l) -> {
-            Expression right = p.parseExpression(l);
-            System.out.println(right.as(NumericExpression.class).number);
+         prefix(MathTypes.NUMBER, (p, t) -> new NumericExpression(t));
+         postfix(MathTypes.ADD, (p, t, l) -> {
+            Expression right = p.parseExpression(t);
             return new NumericExpression(
                l.as(NumericExpression.class).number + right.as(NumericExpression.class).number
             );
          });
-         registerPostfix(MathTypes.SUBTRACT, (p, t, l) -> {
+         postfix(MathTypes.SUBTRACT, (p, t, l) -> {
             Expression right = p.parseExpression(t);
             return new NumericExpression(
                l.as(NumericExpression.class).number - right.as(NumericExpression.class).number
             );
          });
-         registerPostfix(MathTypes.MULTIPLY, (p, t, l) -> {
-            Expression right = p.parseExpression(l);
+         postfix(MathTypes.MULTIPLY, (p, t, l) -> {
+            Expression right = p.parseExpression(t);
             return new NumericExpression(
                l.as(NumericExpression.class).number * right.as(NumericExpression.class).number
             );
          }, 2);
-         registerPostfix(MathTypes.DIVIDE, (p, t, l) -> {
-            Expression right = p.parseExpression(l);
+         postfix(MathTypes.DIVIDE, (p, t, l) -> {
+            Expression right = p.parseExpression(t);
             return new NumericExpression(
                l.as(NumericExpression.class).number / right.as(NumericExpression.class).number
             );
@@ -159,7 +157,8 @@ public class Parser implements TokenStream, Serializable {
 
    public static void main(String[] args) throws Exception {
       final Lexer lexer = Lexer.create(MathTypes.values());
-      Parser p = new Parser(new MathGrammar(), lexer.lex("23 + 4 * 2 - 1"));
+
+      Parser p = new Parser(new MathGrammar(), lexer.lex("23 + 4 * 2 - 1 + 5 * 2 / 2"));
       NumericExpression ne = p.parseExpression().as(NumericExpression.class);
       System.out.println(ne.number);
    }

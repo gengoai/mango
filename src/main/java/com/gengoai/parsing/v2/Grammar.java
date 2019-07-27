@@ -38,27 +38,27 @@ public abstract class Grammar implements Serializable {
    private final Set<Tag> skipTags = new HashSet<>();
 
 
-   protected void registerPrefix(Tag type, PrefixHandler handler) {
-      register(type, handler, 0);
+   protected void prefix(Tag type, PrefixHandler handler) {
+      handler(type, handler, 0);
    }
 
-   protected void registerPrefix(Tag type, PrefixHandler handler, int precedence) {
-      register(type, (ParserHandler) handler, precedence);
+   protected void prefix(Tag type, PrefixHandler handler, int precedence) {
+      handler(type, handler, precedence);
    }
 
-   protected void registerPostfix(Tag type, PostfixHandler handler) {
-      register(type, handler, 1);
+   protected void postfix(Tag type, PostfixHandler handler) {
+      handler(type, handler, 1);
    }
 
-   protected void registerPostfix(Tag type, PostfixHandler handler, int precedence) {
-      register(type, (ParserHandler) handler, precedence);
+   protected void postfix(Tag type, PostfixHandler handler, int precedence) {
+      handler(type, handler, precedence);
    }
 
-   protected void register(Tag type, ParserHandler handler) {
-      register(type, handler, 0);
+   protected void handler(Tag type, ParserHandler handler) {
+      handler(type, handler, 0);
    }
 
-   protected void register(Tag type, ParserHandler handler, int precedence) {
+   protected void handler(Tag type, ParserHandler handler, int precedence) {
       if (handler instanceof PostfixHandler) {
          postfixHandlerMap.put(type, Cast.as(handler));
          precedenceMap.put(type, Math.max(precedence, 1));
