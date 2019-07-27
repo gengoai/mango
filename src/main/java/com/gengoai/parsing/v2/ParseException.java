@@ -25,9 +25,32 @@ package com.gengoai.parsing.v2;
 /**
  * @author David B. Bracewell
  */
-@FunctionalInterface
-public interface PostfixHandler extends ParserHandler {
+public class ParseException extends Exception {
 
-   Expression handle(Parser parser, ParserToken token, Expression left) throws ParseException;
+  private static final long serialVersionUID = 8886050550104037264L;
 
-}//END OF PostfixHandler
+  /**
+   * Default constructor
+   */
+  public ParseException() {
+  }
+
+  /**
+   * Message Constructor
+   *
+   * @param message Error message
+   */
+  public ParseException(String message) {
+    super(message);
+  }
+
+  /**
+   * Wrapping Constructor
+   *
+   * @param caught The throwable we are rethrowing
+   */
+  public ParseException(Throwable caught) {
+    super(caught);
+  }
+
+}//END OF ParseException

@@ -24,6 +24,8 @@ package com.gengoai.parsing.v2;
 
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author David B. Bracewell
@@ -39,16 +41,60 @@ public class Parser implements TokenStream, Serializable {
       this.tokenStream = tokenStream;
    }
 
+   @Override
+   public ParserToken consume() {
+      return tokenStream.consume();
+   }
 
-   public Expression parseExpression() {
+   /**
+    * <p>Parses the given resource and evaluates it with the given evaluator. Requires that the parse result in a
+    * single expression.</p>
+    *
+    * @param <O>       the return type of the evaluator
+    * @param evaluator the evaluator to use for transforming expressions
+    * @return the single return values from the evaluator
+    */
+   public <O> O evaluate(Evaluator<? extends O> evaluator) throws ParseException {
+      try {
+         return evaluator.eval(parseExpression());
+      } catch (ParseException e) {
+         throw e;
+      } catch (Exception e2) {
+         throw new ParseException(e2);
+      }
+   }
+
+   public <O> List<O> evaluateAll(Evaluator<? extends O> evaluator) throws ParseException {
+      List<O> evaluationResults = new ArrayList<>();
+      while (tokenStream.hasNext()) {
+         try {
+            evaluationResults.add(evaluator.eval(parseExpression()));
+         } catch (ParseException e) {
+            throw e;
+         } catch (Exception e2) {
+            throw new ParseException(e2);
+         }
+      }
+      return evaluationResults;
+   }
+
+   public List<Expression> parseAllExpressions() throws ParseException {
+      List<Expression> expressions = new ArrayList<>();
+      while (tokenStream.hasNext()) {
+         expressions.add(parseExpression());
+      }
+      return expressions;
+   }
+
+   public Expression parseExpression() throws ParseException {
       return parseExpression(0);
    }
 
-   public Expression parseExpression(ParserToken precedence) {
+   public Expression parseExpression(ParserToken precedence) throws ParseException {
       return parseExpression(grammar.precedenceOf(precedence));
    }
 
-   public Expression parseExpression(int precedence) {
+   public Expression parseExpression(int precedence) throws ParseException {
       ParserToken token = consume();
       Expression left = grammar.getPrefixHandler(token)
                                .orElseThrow(() -> new IllegalStateException("Parsing Error: Unable to parse '" +
@@ -69,98 +115,20 @@ public class Parser implements TokenStream, Serializable {
       return left;
    }
 
+   @Override
+   public ParserToken peek() {
+      return tokenStream.peek();
+   }
+
    private void skip() {
       while (grammar.isIgnored(tokenStream.peek())) {
          tokenStream.consume();
       }
    }
 
-
    @Override
    public ParserToken token() {
       return tokenStream.token();
-   }
-
-   @Override
-   public ParserToken consume() {
-      return tokenStream.consume();
-   }
-
-   @Override
-   public ParserToken peek() {
-      return tokenStream.peek();
-   }
-
-
-   public static enum MathTypes implements TokenDef {
-      NUMBER("\\d+"),
-      ADD("\\+"),
-      SUBTRACT("\\-"),
-      MULTIPLY("\\*"),
-      DIVIDE("\\/");
-
-      private final String pattern;
-
-      MathTypes(String pattern) {
-         this.pattern = pattern;
-      }
-
-      @Override
-      public String getPattern() {
-         return pattern;
-      }
-   }
-
-   private static class NumericExpression extends Expression {
-      public final double number;
-
-      public NumericExpression(double number) {
-         super(MathTypes.NUMBER);
-         this.number = number;
-      }
-
-      public NumericExpression(ParserToken token) {
-         super(token.getType());
-         this.number = Double.parseDouble(token.getText());
-      }
-   }
-
-   public static class MathGrammar extends Grammar {
-      {
-         prefix(MathTypes.NUMBER, (p, t) -> new NumericExpression(t));
-         postfix(MathTypes.ADD, (p, t, l) -> {
-            Expression right = p.parseExpression(t);
-            return new NumericExpression(
-               l.as(NumericExpression.class).number + right.as(NumericExpression.class).number
-            );
-         });
-         postfix(MathTypes.SUBTRACT, (p, t, l) -> {
-            Expression right = p.parseExpression(t);
-            return new NumericExpression(
-               l.as(NumericExpression.class).number - right.as(NumericExpression.class).number
-            );
-         });
-         postfix(MathTypes.MULTIPLY, (p, t, l) -> {
-            Expression right = p.parseExpression(t);
-            return new NumericExpression(
-               l.as(NumericExpression.class).number * right.as(NumericExpression.class).number
-            );
-         }, 2);
-         postfix(MathTypes.DIVIDE, (p, t, l) -> {
-            Expression right = p.parseExpression(t);
-            return new NumericExpression(
-               l.as(NumericExpression.class).number / right.as(NumericExpression.class).number
-            );
-         }, 2);
-      }
-   }
-
-   public static void main(String[] args) throws Exception {
-      final Lexer lexer = Lexer.create(MathTypes.values());
-
-      Parser p = new Parser(new MathGrammar(), lexer.lex("23 + 4 * 2 - 1 + 5 * 2 / 2"));
-      NumericExpression ne = p.parseExpression().as(NumericExpression.class);
-      System.out.println(ne.number);
    }
 
 

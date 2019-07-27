@@ -75,37 +75,14 @@ class RegexLexer implements Lexer {
 
    @Override
    public TokenStream lex(String input) {
-      return new TokenStream() {
+      return new AbstractTokenStream() {
+         private static final long serialVersionUID = 1L;
          private final Matcher matcher = regex.matcher(input);
-         private ParserToken current;
-         private ParserToken next;
          private int lastEnd;
 
-         @Override
-         public ParserToken token() {
-            return current;
-         }
 
          @Override
-         public ParserToken consume() {
-            if (next != null) {
-               current = next;
-               next = null;
-            } else {
-               current = next();
-            }
-            return current;
-         }
-
-         @Override
-         public ParserToken peek() {
-            if (next == null) {
-               next = next();
-            }
-            return next;
-         }
-
-         private ParserToken next() {
+         protected ParserToken next() {
             ParserToken token = null;
 
             if (lastEnd >= input.length()) {

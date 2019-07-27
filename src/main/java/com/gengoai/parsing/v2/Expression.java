@@ -26,6 +26,8 @@ import com.gengoai.Tag;
 import com.gengoai.conversion.Cast;
 
 import java.io.Serializable;
+import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * @author David B. Bracewell
@@ -48,8 +50,33 @@ public class Expression implements Serializable {
       throw new IllegalStateException("Parse Exception: Attempting to convert an expression of type '" +
                                          getClass().getSimpleName() +
                                          "' to expression of type '" +
-                                         tClass.getSimpleName()
-      );
+                                         tClass.getSimpleName());
+   }
+
+
+   public <T extends Expression, O> Optional<O> when(Class<T> tClass, Function<T, O> function) {
+      if (tClass.isInstance(this)) {
+         return Optional.ofNullable(function.apply(Cast.as(this)));
+      }
+      return Optional.empty();
+   }
+
+   public <T extends Expression, O> O apply(Class<T> tClass, Function<T, O> function) {
+      if (tClass.isInstance(this)) {
+         return function.apply(Cast.as(this));
+      }
+      throw new IllegalStateException("Parse Exception: Attempting to convert an expression of type '" +
+                                         getClass().getSimpleName() +
+                                         "' to expression of type '" +
+                                         tClass.getSimpleName());
+   }
+
+   public boolean matches(Class<? extends Expression> tClass, Tag type) {
+      return tClass.isInstance(this) && type.isInstance(type);
+   }
+
+   public boolean isInstance(Class<? extends Expression> tClass) {
+      return tClass.isInstance(this);
    }
 
 }//END OF Expression

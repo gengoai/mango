@@ -23,6 +23,7 @@
 package com.gengoai.parsing.v2;
 
 import com.gengoai.Tag;
+import com.gengoai.conversion.Cast;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -73,6 +74,10 @@ public class ParserToken {
 
    public Tag getType() {
       return type;
+   }
+
+   public <T extends Tag> T getType(Class<T> tClass) {
+      return Cast.as(type, tClass);
    }
 
    public String getVariable(int index) {

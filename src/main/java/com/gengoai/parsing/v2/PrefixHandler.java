@@ -28,6 +28,6 @@ package com.gengoai.parsing.v2;
 @FunctionalInterface
 public interface PrefixHandler extends ParserHandler {
 
-   Expression handle(Parser parser, ParserToken token);
+   Expression handle(Parser parser, ParserToken token) throws ParseException;
 
 }//END OF PrefixHandler
