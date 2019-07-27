@@ -21,8 +21,10 @@
 
 package com.gengoai.parsing;
 
+import com.gengoai.conversion.Cast;
 import com.gengoai.parsing.expressions.Expression;
 import com.gengoai.parsing.handlers.InfixHandler;
+import com.gengoai.parsing.handlers.ParserHandler;
 import com.gengoai.parsing.handlers.PrefixHandler;
 import com.gengoai.parsing.handlers.PrefixSkipHandler;
 
@@ -44,8 +46,8 @@ import java.util.Map;
  */
 public class Grammar implements Serializable {
    private static final long serialVersionUID = 1L;
-   private final Map<ParserTokenType, PrefixHandler> prefixHandlers = new HashMap<>();
    private final Map<ParserTokenType, InfixHandler> infixHandlers = new HashMap<>();
+   private final Map<ParserTokenType, PrefixHandler> prefixHandlers = new HashMap<>();
    private final PrefixHandler prefixSkipHandler;
 
 
@@ -67,79 +69,24 @@ public class Grammar implements Serializable {
       this.prefixSkipHandler = skipNonRegisteredTokenTypes ? new PrefixSkipHandler() : null;
    }
 
-
-   public PrefixHandler getPrefixHandler(ParserTokenType type) {
-      return prefixHandlers.get(type);
-   }
-
+   /**
+    * Gets infix handler.
+    *
+    * @param type the type
+    * @return the infix handler
+    */
    public InfixHandler getInfixHandler(ParserTokenType type) {
       return infixHandlers.get(type);
    }
 
    /**
-    * Registers a prefix handler
+    * Gets prefix handler.
     *
-    * @param type    The token type that causes the prefix handler to parse
-    * @param handler The prefix handler
-    * @return This grammar (for fluent pattern)
+    * @param type the type
+    * @return the prefix handler
     */
-   public Grammar register(ParserTokenType type, PrefixHandler handler) {
-      prefixHandlers.put(type, handler);
-      return this;
-   }
-
-   /**
-    * Registers a prefix handler
-    *
-    * @param type    The token type that causes the prefix handler to parse
-    * @param handler The prefix handler
-    * @return This grammar (for fluent pattern)
-    */
-   public Grammar register(TokenDef type, PrefixHandler handler) {
-      return register(type.getTag(), handler);
-   }
-
-   /**
-    * Registers a token type as being ignored, i.e. the grammar will skip it when seen.
-    *
-    * @param type the token type to ignore
-    * @return This grammar (for fluent pattern)
-    */
-   public Grammar registerSkip(ParserTokenType type) {
-      return register(type, new PrefixSkipHandler());
-   }
-
-   /**
-    * Registers a token type as being ignored, i.e. the grammar will skip it when seen.
-    *
-    * @param type the token type to ignore
-    * @return This grammar (for fluent pattern)
-    */
-   public Grammar registerSkip(TokenDef type) {
-      return register(type.getTag(), new PrefixSkipHandler());
-   }
-
-   /**
-    * Registers an infix handler
-    *
-    * @param type    The token type that causes the infix handler to parse
-    * @param handler The infix handler
-    * @return This grammar (for fluent pattern)
-    */
-   public Grammar register(ParserTokenType type, InfixHandler handler) {
-      infixHandlers.put(type, handler);
-      return this;
-   }
-
-   /**
-    * Registers an infix handler
-    *
-    * @param type    The token type that causes the infix handler to parse
-    * @param handler The infix handler
-    * @return This grammar (for fluent pattern)
-    */
-   public Grammar register(TokenDef type, InfixHandler handler) {
-      return register(type.getTag(), handler);
+   public PrefixHandler getPrefixHandler(ParserTokenType type) {
+      return prefixHandlers.get(type);
    }
 
    /**
@@ -151,7 +98,6 @@ public class Grammar implements Serializable {
    public boolean isInfix(ParserToken token) {
       return token != null && infixHandlers.containsKey(token.type);
    }
-
 
    /**
     * Determines if the token can be parsed with a prefix handler
@@ -206,6 +152,53 @@ public class Grammar implements Serializable {
          return infixHandlers.get(token.type).precedence();
       }
       return 0;
+   }
+
+   /**
+    * Register grammar.
+    *
+    * @param type    the type
+    * @param handler the handler
+    * @return the grammar
+    */
+   public Grammar register(ParserTokenType type, ParserHandler handler) {
+      if (handler instanceof PrefixHandler) {
+         prefixHandlers.put(type, Cast.as(handler));
+      } else {
+         infixHandlers.put(type, Cast.as(handler));
+      }
+      return this;
+   }
+
+   /**
+    * Register grammar.
+    *
+    * @param type    the type
+    * @param handler the handler
+    * @return the grammar
+    */
+   public Grammar register(TokenDef type, ParserHandler handler) {
+      return register(type.getTag(), handler);
+   }
+
+   /**
+    * Registers a token type as being ignored, i.e. the grammar will skip it when seen.
+    *
+    * @param type the token type to ignore
+    * @return This grammar (for fluent pattern)
+    */
+   public Grammar registerSkip(ParserTokenType type) {
+      return register(type, new PrefixSkipHandler());
+   }
+
+   /**
+    * Registers a token type as being ignored, i.e. the grammar will skip it when seen.
+    *
+    * @param type the token type to ignore
+    * @return This grammar (for fluent pattern)
+    */
+   public Grammar registerSkip(TokenDef type) {
+      return register(type.getTag(), new PrefixSkipHandler());
    }
 
    /**

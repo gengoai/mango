@@ -48,25 +48,25 @@ number = -?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?
 
 %%
 
-"@type" { return new ParserToken(yytext(), ConfigTokenType.KEY);}
-"@constructor" { return new ParserToken(yytext(), ConfigTokenType.KEY);}
-"@import" { return new ParserToken(yytext(), ConfigTokenType.IMPORT);}
-"true"|"false" { return  new ParserToken(yytext(), ConfigTokenType.BOOLEAN);}
-"null" { return new ParserToken(null,ConfigTokenType.NULL);}
-{comment} { return new ParserToken(yytext(), ConfigTokenType.COMMENT); }
-"," { return new ParserToken(yytext(), ConfigTokenType.VALUE_SEPARATOR); }
+"@type" { return new ParserToken(yytext(), ConfigTokenType.KEY,yychar);}
+"@constructor" { return new ParserToken(yytext(), ConfigTokenType.KEY,yychar);}
+"@import" { return new ParserToken(yytext(), ConfigTokenType.IMPORT,yychar);}
+"true"|"false" { return  new ParserToken(yytext(), ConfigTokenType.BOOLEAN,yychar);}
+"null" { return new ParserToken(null,ConfigTokenType.NULL,yychar);}
+{comment} { return new ParserToken(yytext(), ConfigTokenType.COMMENT,yychar); }
+"," { return new ParserToken(yytext(), ConfigTokenType.VALUE_SEPARATOR,yychar); }
 // {map_operator} { return new ParserToken(yytext(), ConfigTokenType.MAP);}
-"[" { return new ParserToken(yytext(), ConfigTokenType.BEGIN_ARRAY); }
-"]" { return new ParserToken(yytext(), ConfigTokenType.END_ARRAY); }
-"@{"{safestring}"}" { return new ParserToken(yytext(), ConfigTokenType.BEAN); }
-"{" { return new ParserToken(yytext(), ConfigTokenType.BEGIN_OBJECT);}
-"}" { return new ParserToken(yytext(), ConfigTokenType.END_OBJECT);}
-":" { return new ParserToken(yytext(), ConfigTokenType.KEY_VALUE_SEPARATOR);}
-"=" { return new ParserToken(yytext(), ConfigTokenType.EQUAL_PROPERTY);}
-"+=" { return new ParserToken(yytext(), ConfigTokenType.APPEND_PROPERTY);}
-\"{string}\" { return new ParserToken(yytext().substring(1,yytext().length()-1), ConfigTokenType.STRING);}
-{safestring} { return new ParserToken(yytext(), ConfigTokenType.KEY);}
-{number} { return new ParserToken(yytext(), ConfigTokenType.STRING);}
+"[" { return new ParserToken(yytext(), ConfigTokenType.BEGIN_ARRAY,yychar); }
+"]" { return new ParserToken(yytext(), ConfigTokenType.END_ARRAY,yychar); }
+"@{"{safestring}"}" { return new ParserToken(yytext(), ConfigTokenType.BEAN,yychar); }
+"{" { return new ParserToken(yytext(), ConfigTokenType.BEGIN_OBJECT,yychar);}
+"}" { return new ParserToken(yytext(), ConfigTokenType.END_OBJECT,yychar);}
+":" { return new ParserToken(yytext(), ConfigTokenType.KEY_VALUE_SEPARATOR,yychar);}
+"=" { return new ParserToken(yytext(), ConfigTokenType.EQUAL_PROPERTY,yychar);}
+"+=" { return new ParserToken(yytext(), ConfigTokenType.APPEND_PROPERTY,yychar);}
+\"{string}\" { return new ParserToken(yytext().substring(1,yytext().length()-1), ConfigTokenType.STRING,yychar);}
+{safestring} { return new ParserToken(yytext(), ConfigTokenType.KEY,yychar);}
+{number} { return new ParserToken(yytext(), ConfigTokenType.STRING,yychar);}
 
 [ \t\r\n\f] { /* ignore white space. */ }
 . { throw new com.gengoai.parsing.ParseException("Illegal character: "+yytext()+"\" at line: " + yyline + " char offset: " + yychar + " state: " + yystate()); }

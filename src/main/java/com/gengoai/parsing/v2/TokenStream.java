@@ -29,18 +29,47 @@ import com.gengoai.string.Strings;
 import java.io.Serializable;
 
 /**
+ * The interface Token stream.
+ *
  * @author David B. Bracewell
  */
 public interface TokenStream extends Serializable {
+   /**
+    * The constant EOF.
+    */
    Tag EOF = new StringTag("~~~EOF~~~");
+   /**
+    * The constant EOF_TOKEN.
+    */
    ParserToken EOF_TOKEN = new ParserToken(EOF, Strings.EMPTY, -1, -1);
 
+   /**
+    * Token parser token.
+    *
+    * @return the parser token
+    */
    ParserToken token();
 
+   /**
+    * Consume parser token.
+    *
+    * @return the parser token
+    */
    ParserToken consume();
 
+   /**
+    * Peek parser token.
+    *
+    * @return the parser token
+    */
    ParserToken peek();
 
+   /**
+    * Consume parser token.
+    *
+    * @param target the target
+    * @return the parser token
+    */
    default ParserToken consume(Tag target) {
       ParserToken token = consume();
       if (!token.isInstance(target)) {
@@ -51,6 +80,11 @@ public interface TokenStream extends Serializable {
    }
 
 
+   /**
+    * Has next boolean.
+    *
+    * @return the boolean
+    */
    default boolean hasNext() {
       return !peek().isInstance(EOF);
    }

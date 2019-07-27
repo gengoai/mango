@@ -20,43 +20,14 @@
  *
  */
 
-package com.gengoai.parsing;
+package com.gengoai.parsing.v2;
 
 /**
- * The type Token def.
- *
  * @author David B. Bracewell
  */
-public interface TokenDef extends ParserTokenType {
+@FunctionalInterface
+public interface PostfixHandler extends ParserHandler{
 
-   /**
-    * Define token def.
-    *
-    * @param tag     the tag
-    * @param pattern the pattern
-    * @return the token def
-    */
-   static TokenDef define(ParserTokenType tag, String pattern) {
-      return new TokenDefImpl(tag, pattern);
-   }
+   Expression handle(Parser parser, ParserToken token, Expression left);
 
-   /**
-    * Define token def.
-    *
-    * @param tag     the tag
-    * @param pattern the pattern
-    * @return the token def
-    */
-   static TokenDef define(TokenDef tag, String pattern) {
-      return new TokenDefImpl(tag, pattern);
-   }
-
-   String getPattern();
-
-   ParserTokenType getTag();
-
-   @Override
-   default String name() {
-      return getTag().name();
-   }
-}//END OF TokenDef
+}//END OF PostfixHandler

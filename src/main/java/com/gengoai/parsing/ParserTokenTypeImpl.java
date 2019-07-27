@@ -52,7 +52,7 @@ final class ParserTokenTypeImpl implements ParserTokenType, Serializable {
    }
 
    @Override
-   public String toString(){
+   public String toString() {
       return name;
    }
 

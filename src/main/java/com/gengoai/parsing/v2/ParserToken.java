@@ -59,6 +59,14 @@ public class ParserToken {
                 Arrays.equals(variables, that.variables);
    }
 
+   public int getEnd() {
+      return end;
+   }
+
+   public int getStart() {
+      return start;
+   }
+
    public String getText() {
       return text;
    }

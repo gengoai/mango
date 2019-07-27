@@ -20,43 +20,36 @@
  *
  */
 
-package com.gengoai.parsing;
+package com.gengoai.parsing.v2;
+
+import com.gengoai.Tag;
+import com.gengoai.conversion.Cast;
+
+import java.io.Serializable;
 
 /**
- * The type Token def.
- *
  * @author David B. Bracewell
  */
-public interface TokenDef extends ParserTokenType {
+public class Expression implements Serializable {
+   private final Tag type;
 
-   /**
-    * Define token def.
-    *
-    * @param tag     the tag
-    * @param pattern the pattern
-    * @return the token def
-    */
-   static TokenDef define(ParserTokenType tag, String pattern) {
-      return new TokenDefImpl(tag, pattern);
+   public Expression(Tag type) {
+      this.type = type;
    }
 
-   /**
-    * Define token def.
-    *
-    * @param tag     the tag
-    * @param pattern the pattern
-    * @return the token def
-    */
-   static TokenDef define(TokenDef tag, String pattern) {
-      return new TokenDefImpl(tag, pattern);
+   public Tag getType() {
+      return type;
    }
 
-   String getPattern();
-
-   ParserTokenType getTag();
-
-   @Override
-   default String name() {
-      return getTag().name();
+   public <T extends Expression> T as(Class<T> tClass) {
+      if (tClass.isInstance(this)) {
+         return Cast.as(this);
+      }
+      throw new IllegalStateException("Parse Exception: Attempting to convert an expression of type '" +
+                                         getClass().getSimpleName() +
+                                         "' to expression of type '" +
+                                         tClass.getSimpleName()
+      );
    }
-}//END OF TokenDef
+
+}//END OF Expression

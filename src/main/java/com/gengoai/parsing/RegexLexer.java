@@ -143,20 +143,22 @@ public class RegexLexer implements Lexer, Serializable {
                   for (int j = 0; j < vars[i].length; j++) {
                      varValues.add(matcher.group(vars[i][j]));
                   }
-                  token = new ParserToken(matcher.group(group), tags[i], varValues);
+                  token = new ParserToken(matcher.group(group), tags[i], startOffset, varValues);
                } else {
-                  token = new ParserToken(matcher.group(group), tags[i]);
+                  token = new ParserToken(matcher.group(group), tags[i], startOffset);
                }
                break;
             }
          }
          if (token == null) {
-            throw new IllegalStateException("Error in parsing {" + input + "}");
+            throw new IllegalStateException(String.format("Parsing Error: start=%s, content='%s'", startOffset,
+                                                          Strings.abbreviate(input.substring(startOffset), 10)));
          }
          if (startOffset > 0) {
             String s = input.substring(lastEnd, startOffset);
             if (Strings.isNotNullOrBlank(s)) {
-               throw new IllegalStateException("Error in parsing {" + input + "} unparsed region: " + s);
+               throw new IllegalStateException(String.format("Parsing Error: start=%s, content='%s'", startOffset,
+                                                             Strings.abbreviate(input.substring(startOffset), 10)));
             }
          }
          lastEnd = endOffset;

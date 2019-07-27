@@ -111,7 +111,8 @@ public class Parser implements Serializable {
       ExpressionIterator iterator = parse(resource);
       Expression expression = iterator.next();
       if (iterator.hasNext()) {
-         throw new ParseException("Did not fully parse token stream");
+         ParserToken token = iterator.tokenStream().consume();
+         throw new ParseException(String.format("Error Parsing: More expressions present nextToken='%s'", token));
       }
       try {
          return evaluator.eval(expression);
