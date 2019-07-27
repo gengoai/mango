@@ -33,14 +33,15 @@ import java.util.function.Function;
  * @author David B. Bracewell
  */
 public class Expression implements Serializable {
+   private static final long serialVersionUID = 1L;
    private final Tag type;
 
    public Expression(Tag type) {
       this.type = type;
    }
 
-   public Tag getType() {
-      return type;
+   public <T extends Expression, O> O apply(Class<T> tClass, Function<T, O> function) {
+      return function.apply(as(tClass));
    }
 
    public <T extends Expression> T as(Class<T> tClass) {
@@ -49,34 +50,27 @@ public class Expression implements Serializable {
       }
       throw new IllegalStateException("Parse Exception: Attempting to convert an expression of type '" +
                                          getClass().getSimpleName() +
-                                         "' to expression of type '" +
+                                         "' to an expression of type '" +
                                          tClass.getSimpleName());
    }
 
-
-   public <T extends Expression, O> Optional<O> when(Class<T> tClass, Function<T, O> function) {
-      if (tClass.isInstance(this)) {
-         return Optional.ofNullable(function.apply(Cast.as(this)));
-      }
-      return Optional.empty();
+   public Tag getType() {
+      return type;
    }
 
-   public <T extends Expression, O> O apply(Class<T> tClass, Function<T, O> function) {
-      if (tClass.isInstance(this)) {
-         return function.apply(Cast.as(this));
-      }
-      throw new IllegalStateException("Parse Exception: Attempting to convert an expression of type '" +
-                                         getClass().getSimpleName() +
-                                         "' to expression of type '" +
-                                         tClass.getSimpleName());
+   public boolean isInstance(Class<? extends Expression> tClass) {
+      return tClass.isInstance(this);
    }
 
    public boolean matches(Class<? extends Expression> tClass, Tag type) {
       return tClass.isInstance(this) && type.isInstance(type);
    }
 
-   public boolean isInstance(Class<? extends Expression> tClass) {
-      return tClass.isInstance(this);
+   public <T extends Expression, O> Optional<O> when(Class<T> tClass, Function<T, O> function) {
+      if (tClass.isInstance(this)) {
+         return Optional.ofNullable(function.apply(Cast.as(this)));
+      }
+      return Optional.empty();
    }
 
 }//END OF Expression

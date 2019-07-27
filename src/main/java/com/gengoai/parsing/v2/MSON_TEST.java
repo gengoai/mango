@@ -22,9 +22,10 @@
 
 package com.gengoai.parsing.v2;
 
-import com.gengoai.Tag;
 import com.gengoai.config.ConfigScanner;
 import com.gengoai.io.Resources;
+import com.gengoai.parsing.v2.expressions.BinaryOperatorExpression;
+import com.gengoai.parsing.v2.expressions.ValueExpression;
 
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -55,68 +56,12 @@ public class MSON_TEST {
       };
    };
 
-   private static class ValueExpression<V> extends Expression {
-      private static final long serialVersionUID = 1L;
-      private final V value;
-
-      public ValueExpression(Tag type, V value) {
-         super(type);
-         this.value = value;
-      }
-
-      public V getValue() {
-         return value;
-      }
-
-      @Override
-      public String toString() {
-         return "ValueExpression{" +
-                   "value=" + value +
-                   '}';
-      }
-   }
-
-   private static class StringValueExpression extends ValueExpression<String> {
-
-      public static final PrefixHandler HANDLER = (parser, token) -> new StringValueExpression(token);
-
-      public StringValueExpression(ParserToken token) {
-         super(token.getType(), token.getText());
-      }
-   }
-
-   private static class BoolValueExpression extends ValueExpression<Boolean> {
-      public static final PrefixHandler HANDLER = (parser, token) -> new BoolValueExpression(token);
-
-      public BoolValueExpression(ParserToken token) {
-         super(token.getType(), Boolean.parseBoolean(token.getText()));
-      }
-   }
-
-   private static class KeyValueExpression extends Expression {
-      private final String key;
-      private final Object value;
-
-      private KeyValueExpression(Tag tag, String key, Object value) {
-         super(tag);
-         this.key = key;
-         this.value = value;
-      }
-
-      @Override
-      public String toString() {
-         return "KeyValueExpression{" +
-                   "key='" + key + '\'' +
-                   ", value=" + value +
-                   '}';
-      }
-   }
 
    private static final Grammar MSON_GRAMMAR = new Grammar() {
       {
-         prefix(ConfigScanner.ConfigTokenType.STRING, StringValueExpression.HANDLER);
-         prefix(ConfigScanner.ConfigTokenType.KEY, StringValueExpression.HANDLER);
-         prefix(ConfigScanner.ConfigTokenType.BOOLEAN, BoolValueExpression.HANDLER);
+         prefix(ConfigScanner.ConfigTokenType.STRING, ValueExpression.STRING_HANDLER);
+         prefix(ConfigScanner.ConfigTokenType.KEY, ValueExpression.STRING_HANDLER);
+         prefix(ConfigScanner.ConfigTokenType.BOOLEAN, ValueExpression.NUMERIC_HANDLER);
 
 //         prefix(ConfigScanner.ConfigTokenType.BEGIN_OBJECT,
 //                (parser, token) -> {
@@ -150,11 +95,7 @@ public class MSON_TEST {
          postfix(ConfigScanner.ConfigTokenType.EQUAL_PROPERTY,
                  (parser, token, left) -> {
                     Expression right = parser.parseExpression(token);
-                    return new KeyValueExpression(token.getType(),
-                                                  left.as(StringValueExpression.class)
-                                                      .getValue(),
-                                                  right.as(ValueExpression.class)
-                                                       .getValue());
+                    return new BinaryOperatorExpression(token, left, right);
                  }, 5);
       }
    };
