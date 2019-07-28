@@ -24,7 +24,9 @@ package com.gengoai.parsing.v2.expressions;
 
 import com.gengoai.Tag;
 import com.gengoai.conversion.Val;
+import com.gengoai.function.SerializableFunction;
 import com.gengoai.parsing.v2.Expression;
+import com.gengoai.parsing.v2.ParserToken;
 import com.gengoai.parsing.v2.PrefixHandler;
 
 import java.util.Objects;
@@ -63,12 +65,21 @@ public class ValueExpression extends Expression {
 
    @Override
    public String toString() {
-      return value.toString();
+      return "ValueExpression{" +
+                "type='" + getType() +
+                "', value=" + value +
+                '}';
    }
 
+
+   public static PrefixHandler handler(final SerializableFunction<ParserToken, Object> converter) {
+      return (p, t) -> new ValueExpression(t.getType(), converter.apply(t));
+   }
+   public static final PrefixHandler NULL_HANDLER = (p, t) -> new ValueExpression(t.getType(), null);
    public static final PrefixHandler STRING_HANDLER = (p, t) -> new ValueExpression(t.getType(), t.getText());
    public static final PrefixHandler NUMERIC_HANDLER = (p, t) -> new ValueExpression(t.getType(),
                                                                                      parseDouble(t.getText()));
    public static final PrefixHandler BOOLEAN_HANDLER = (p, t) -> new ValueExpression(t.getType(),
                                                                                      parseBoolean(t.getText()));
+
 }//END OF ValueExpression

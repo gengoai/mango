@@ -23,13 +23,14 @@
 package com.gengoai.parsing.v2;
 
 import com.gengoai.config.ConfigScanner;
+import com.gengoai.config.ConfigScanner.ConfigTokenType;
 import com.gengoai.io.Resources;
 import com.gengoai.parsing.v2.expressions.BinaryOperatorExpression;
+import com.gengoai.parsing.v2.expressions.ListExpression;
+import com.gengoai.parsing.v2.expressions.PrefixOperatorExpression;
 import com.gengoai.parsing.v2.expressions.ValueExpression;
 
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.gengoai.parsing.v2.ParserGenerator.parserGenerator;
 
@@ -59,54 +60,66 @@ public class MSON_TEST {
 
    private static final Grammar MSON_GRAMMAR = new Grammar() {
       {
-         prefix(ConfigScanner.ConfigTokenType.STRING, ValueExpression.STRING_HANDLER);
-         prefix(ConfigScanner.ConfigTokenType.KEY, ValueExpression.STRING_HANDLER);
-         prefix(ConfigScanner.ConfigTokenType.BOOLEAN, ValueExpression.NUMERIC_HANDLER);
-
-//         prefix(ConfigScanner.ConfigTokenType.BEGIN_OBJECT,
-//                (parser, token) -> {
-//                   List<Expression> objExpressions = new ArrayList<>();
-//                   while (!parser.peek().isInstance(TokenStream.EOF,
-//                                                    ConfigScanner.ConfigTokenType.END_OBJECT)) {
-//                      objExpressions.add(parser.parseExpression(token));
-//                   }
-//                   if (parser.peek().isInstance(TokenStream.EOF)) {
-//                      throw new ParseException("Parsing Error: Premature EOF");
-//                   }
-//                   parser.consume(ConfigScanner.ConfigTokenType.END_OBJECT);
-//                   System.out.println("\tObject: " + objExpressions);
-//                   return new StringValueExpression(token);
-//                });
-
-         postfix(ConfigScanner.ConfigTokenType.BEGIN_OBJECT,
-                 (parser, token, left) -> {
-                    List<Expression> objExpressions = new ArrayList<>();
-                    while (!parser.peek().isInstance(TokenStream.EOF,
-                                                     ConfigScanner.ConfigTokenType.END_OBJECT)) {
-                       objExpressions.add(parser.parseExpression());
-                    }
-                    if (parser.peek().isInstance(TokenStream.EOF)) {
-                       throw new ParseException("Parsing Error: Premature EOF");
-                    }
-                    parser.consume(ConfigScanner.ConfigTokenType.END_OBJECT);
-                    return left;
-                 }, 1);
-
-         postfix(ConfigScanner.ConfigTokenType.EQUAL_PROPERTY,
-                 (parser, token, left) -> {
-                    Expression right = parser.parseExpression(token);
-                    return new BinaryOperatorExpression(token, left, right);
-                 }, 5);
+         prefix(ConfigTokenType.STRING, ValueExpression.STRING_HANDLER);
+         prefix(ConfigTokenType.KEY, ValueExpression.STRING_HANDLER);
+         prefix(ConfigTokenType.BEAN, ValueExpression.STRING_HANDLER);
+         prefix(ConfigTokenType.BOOLEAN, ValueExpression.BOOLEAN_HANDLER);
+         prefix(ConfigTokenType.NULL, ValueExpression.NULL_HANDLER);
+         prefix(ConfigTokenType.VALUE_SEPARATOR, ValueExpression.STRING_HANDLER);
+         postfix(ConfigTokenType.BEGIN_OBJECT,
+                 (parser, token, left) -> new BinaryOperatorExpression(token, left, new ListExpression(token.getType(),
+                                                                                                       parser.parseExpressionList(
+                                                                                                          ConfigTokenType.END_OBJECT,
+                                                                                                          null))), 1);
+         prefix(ConfigTokenType.BEGIN_OBJECT, ListExpression.handler(ConfigTokenType.BEGIN_OBJECT,
+                                                                     ConfigTokenType.END_OBJECT,
+                                                                     ConfigTokenType.VALUE_SEPARATOR));
+         postfix(ConfigTokenType.EQUAL_PROPERTY, BinaryOperatorExpression.HANDLER, 5);
+         postfix(ConfigTokenType.APPEND_PROPERTY, BinaryOperatorExpression.HANDLER, 5);
+         postfix(ConfigTokenType.KEY_VALUE_SEPARATOR, BinaryOperatorExpression.HANDLER, 5);
+         prefix(ConfigTokenType.IMPORT, PrefixOperatorExpression.HANDLER);
+         prefix(ConfigTokenType.BEGIN_ARRAY, ListExpression.handler(ConfigTokenType.BEGIN_ARRAY,
+                                                                    ConfigTokenType.END_ARRAY,
+                                                                    ConfigTokenType.VALUE_SEPARATOR));
       }
+
    };
 
+
+   private static final Evaluator<Boolean> MSON_EVAL = new Evaluator<Boolean>() {
+      {
+         $(BinaryOperatorExpression.class,
+           ConfigTokenType.EQUAL_PROPERTY,
+           boe -> {
+              eval(boe.getKey());
+              System.out.print(" = ");
+              eval(boe.getValue());
+              System.out.println();
+              return true;
+           });
+
+         $(ValueExpression.class, v -> {
+            System.out.print(v.value);
+            return true;
+         });
+
+         $(ListExpression.class,
+           ConfigTokenType.BEGIN_OBJECT,
+           l -> {
+              for (int i = 0; i < l.numberOfExpressions(); i++) {
+                 System.out.print("\t");
+                 eval(l.get(i));
+                 System.out.print(", ");
+              }
+              return true;
+           });
+      }
+   };
 
    public static void main(String[] args) throws Exception {
       ParserGenerator pg = parserGenerator(MSON_GRAMMAR, MSON_LEXER);
       Parser p = pg.parse(Resources.from("/home/ik/prj/mango/src/test/resources/com/gengoai/other.conf"));
-      while (p.hasNext()) {
-         System.out.println(p.parseExpression());
-      }
+      p.evaluateAll(MSON_EVAL);
    }
 
 

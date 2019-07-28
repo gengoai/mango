@@ -22,47 +22,27 @@
 
 package com.gengoai.parsing.v2.expressions;
 
+import com.gengoai.Tag;
 import com.gengoai.parsing.v2.Expression;
-import com.gengoai.parsing.v2.ParserToken;
-import com.gengoai.parsing.v2.PostfixHandler;
+import com.gengoai.parsing.v2.PrefixHandler;
 
 /**
  * @author David B. Bracewell
  */
-public class BinaryOperatorExpression extends Expression {
+public class PrefixOperatorExpression extends Expression {
    private static final long serialVersionUID = 1L;
-   private final Expression key;
    private final Expression value;
-   private final String operator;
 
-   public BinaryOperatorExpression(ParserToken token, Expression key, Expression right) {
-      super(token.getType());
-      this.operator = token.getText();
-      this.key = key;
-      this.value = right;
+   public PrefixOperatorExpression(Tag type, Expression value) {
+      super(type);
+      this.value = value;
    }
 
-   public Expression getKey() {
-      return key;
-   }
-
-   public String getOperator() {
-      return operator;
-   }
 
    public Expression getValue() {
       return value;
    }
 
-   @Override
-   public String toString() {
-      return "BinaryOperatorExpression{" +
-                "key=" + key +
-                ", value=" + value +
-                ", operator='" + operator + '\'' +
-                '}';
-   }
+   public static PrefixHandler HANDLER = (p, t) -> new PrefixOperatorExpression(t.getType(), p.parseExpression(t));
 
-   public static PostfixHandler HANDLER = (p, t, l) -> new BinaryOperatorExpression(t, l, p.parseExpression(t));
-
-}//END OF BinaryOperatorExpression
+}//END OF PrefixOperatorExpression

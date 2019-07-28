@@ -22,47 +22,49 @@
 
 package com.gengoai.parsing.v2.expressions;
 
+import com.gengoai.Tag;
 import com.gengoai.parsing.v2.Expression;
-import com.gengoai.parsing.v2.ParserToken;
-import com.gengoai.parsing.v2.PostfixHandler;
+import com.gengoai.parsing.v2.PrefixHandler;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author David B. Bracewell
  */
-public class BinaryOperatorExpression extends Expression {
+public class ListExpression extends Expression implements Iterable<Expression> {
    private static final long serialVersionUID = 1L;
-   private final Expression key;
-   private final Expression value;
-   private final String operator;
+   private final List<Expression> expressions;
 
-   public BinaryOperatorExpression(ParserToken token, Expression key, Expression right) {
-      super(token.getType());
-      this.operator = token.getText();
-      this.key = key;
-      this.value = right;
+   public ListExpression(Tag type, Collection<Expression> expressions) {
+      super(type);
+      this.expressions = new ArrayList<>(expressions);
    }
 
-   public Expression getKey() {
-      return key;
+   @Override
+   public Iterator<Expression> iterator() {
+      return expressions.iterator();
    }
 
-   public String getOperator() {
-      return operator;
+   public int numberOfExpressions() {
+      return expressions.size();
    }
 
-   public Expression getValue() {
-      return value;
+   public Expression get(int index) {
+      return expressions.get(index);
+   }
+
+   public static PrefixHandler handler(Tag operator, Tag endOfList, Tag separator) {
+      return (p, t) -> new ListExpression(operator, p.parseExpressionList(endOfList, separator));
    }
 
    @Override
    public String toString() {
-      return "BinaryOperatorExpression{" +
-                "key=" + key +
-                ", value=" + value +
-                ", operator='" + operator + '\'' +
+      return "ListExpression{" +
+                "type='" + getType() +
+                "', expressions=" + expressions +
                 '}';
    }
-
-   public static PostfixHandler HANDLER = (p, t, l) -> new BinaryOperatorExpression(t, l, p.parseExpression(t));
-
-}//END OF BinaryOperatorExpression
+}//END OF ListExpression

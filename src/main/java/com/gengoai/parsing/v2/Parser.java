@@ -23,6 +23,8 @@
 package com.gengoai.parsing.v2;
 
 
+import com.gengoai.Tag;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,6 +86,23 @@ public class Parser implements TokenStream, Serializable {
          expressions.add(parseExpression());
       }
       return expressions;
+   }
+
+   public List<Expression> parseExpressionList(Tag endOfList, Tag separator) throws ParseException {
+      List<Expression> objExpressions = new ArrayList<>();
+      boolean isFirst = true;
+      while (!peek().isInstance(TokenStream.EOF, endOfList)) {
+         if (!isFirst && separator != null) {
+            consume(separator);
+         }
+         isFirst = false;
+         objExpressions.add(parseExpression());
+      }
+      if (peek().isInstance(TokenStream.EOF)) {
+         throw new ParseException("Parsing Error: Premature EOF");
+      }
+      consume(endOfList);
+      return objExpressions;
    }
 
    public Expression parseExpression() throws ParseException {
