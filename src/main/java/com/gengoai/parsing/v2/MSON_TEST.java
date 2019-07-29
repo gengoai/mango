@@ -31,6 +31,7 @@ import com.gengoai.parsing.v2.expressions.PrefixOperatorExpression;
 import com.gengoai.parsing.v2.expressions.ValueExpression;
 
 import java.io.StringReader;
+import java.util.LinkedList;
 
 import static com.gengoai.parsing.v2.ParserGenerator.parserGenerator;
 
@@ -86,26 +87,33 @@ public class MSON_TEST {
    };
 
 
-   private static final Evaluator<Boolean> MSON_EVAL = new Evaluator<Boolean>() {
+   private static final Evaluator<Expression> MSON_EVAL = new Evaluator<Expression>() {
+      final LinkedList<String> scope = new LinkedList<>();
+
       {
+
          $(BinaryOperatorExpression.class,
            ConfigTokenType.EQUAL_PROPERTY,
            boe -> {
-              eval(boe.getKey());
-              System.out.print(" = ");
-              eval(boe.getValue());
-              System.out.println();
-              return true;
+              String key = boe.getKey()
+                              .apply(ValueExpression.class, ValueExpression::getValue).asString();
+
+              if (boe.getValue().isInstance(ValueExpression.class)) {
+                 System.out.println(String.format("Seting '%s' = '%s'", key,
+                                                  boe.getValue().as(ValueExpression.class).value));
+              } else if (boe.getValue().isInstance(ListExpression.class)) {
+                 scope.addLast(key);
+                 eval(boe.getValue());
+                 scope.removeLast();
+              }
+              return boe;
            });
 
-         $(ValueExpression.class, v -> {
-            System.out.print(v.value);
-            return true;
-         });
 
          $(ListExpression.class,
            ConfigTokenType.BEGIN_OBJECT,
            l -> {
+              System.out.println(scope);
               for (int i = 0; i < l.numberOfExpressions(); i++) {
                  System.out.print("\t");
                  eval(l.get(i));
