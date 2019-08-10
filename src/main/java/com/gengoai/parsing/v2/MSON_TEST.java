@@ -23,7 +23,6 @@
 package com.gengoai.parsing.v2;
 
 import com.gengoai.config.ConfigScanner;
-import com.gengoai.config.ConfigScanner.ConfigTokenType;
 import com.gengoai.io.Resources;
 import com.gengoai.parsing.v2.expressions.BinaryOperatorExpression;
 import com.gengoai.parsing.v2.expressions.ListExpression;
@@ -33,6 +32,8 @@ import com.gengoai.parsing.v2.expressions.ValueExpression;
 import java.io.StringReader;
 import java.util.LinkedList;
 
+import static com.gengoai.config.ConfigScanner.ConfigTokenType;
+import static com.gengoai.config.ConfigScanner.ConfigTokenType.EQUAL_PROPERTY;
 import static com.gengoai.parsing.v2.ParserGenerator.parserGenerator;
 
 /**
@@ -74,8 +75,8 @@ public class MSON_TEST {
                                                                                                           null))), 1);
          prefix(ConfigTokenType.BEGIN_OBJECT, ListExpression.handler(ConfigTokenType.BEGIN_OBJECT,
                                                                      ConfigTokenType.END_OBJECT,
-                                                                     ConfigTokenType.VALUE_SEPARATOR));
-         postfix(ConfigTokenType.EQUAL_PROPERTY, BinaryOperatorExpression.HANDLER, 5);
+                                                                     ConfigScanner.ConfigTokenType.VALUE_SEPARATOR));
+         postfix(EQUAL_PROPERTY, BinaryOperatorExpression.HANDLER, 5);
          postfix(ConfigTokenType.APPEND_PROPERTY, BinaryOperatorExpression.HANDLER, 5);
          postfix(ConfigTokenType.KEY_VALUE_SEPARATOR, BinaryOperatorExpression.HANDLER, 5);
          prefix(ConfigTokenType.IMPORT, PrefixOperatorExpression.HANDLER);
@@ -93,13 +94,17 @@ public class MSON_TEST {
       {
 
          $(BinaryOperatorExpression.class,
-           ConfigTokenType.EQUAL_PROPERTY,
+           EQUAL_PROPERTY,
            boe -> {
               String key = boe.getKey()
                               .apply(ValueExpression.class, ValueExpression::getValue).asString();
 
               if (boe.getValue().isInstance(ValueExpression.class)) {
-                 System.out.println(String.format("Seting '%s' = '%s'", key,
+                 String prop = key;
+                 if (scope.size() > 0) {
+                    prop = String.join(".", scope) + "." + prop;
+                 }
+                 System.out.println(String.format("Seting '%s' = '%s'", prop,
                                                   boe.getValue().as(ValueExpression.class).value));
               } else if (boe.getValue().isInstance(ListExpression.class)) {
                  scope.addLast(key);
@@ -111,15 +116,14 @@ public class MSON_TEST {
 
 
          $(ListExpression.class,
-           ConfigTokenType.BEGIN_OBJECT,
+           ConfigScanner.ConfigTokenType.BEGIN_OBJECT,
            l -> {
               System.out.println(scope);
               for (int i = 0; i < l.numberOfExpressions(); i++) {
                  System.out.print("\t");
                  eval(l.get(i));
-                 System.out.print(", ");
               }
-              return true;
+              return null;
            });
       }
    };
@@ -127,6 +131,25 @@ public class MSON_TEST {
    public static void main(String[] args) throws Exception {
       ParserGenerator pg = parserGenerator(MSON_GRAMMAR, MSON_LEXER);
       Parser p = pg.parse(Resources.from("/home/ik/prj/mango/src/test/resources/com/gengoai/other.conf"));
+
+      p.parseAllExpressions()
+       .forEach(e -> {
+
+          e.when(BinaryOperatorExpression.class, boe -> {
+             if (boe.getType().isInstance(EQUAL_PROPERTY)) {
+                String property = boe.getKey().apply(ValueExpression.class, ValueExpression::getValue).toString();
+                String value = boe.getValue().apply(ValueExpression.class, ValueExpression::getValue).asString();
+
+                System.out.println(property + " = " + value);
+             }
+          });
+
+          e.when(ListExpression.class, l -> {
+             System.out.println(l.numberOfExpressions());
+          });
+
+
+       });
       p.evaluateAll(MSON_EVAL);
    }
 

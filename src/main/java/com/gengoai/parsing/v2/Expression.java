@@ -27,6 +27,7 @@ import com.gengoai.conversion.Cast;
 
 import java.io.Serializable;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -71,6 +72,14 @@ public class Expression implements Serializable {
          return Optional.ofNullable(function.apply(Cast.as(this)));
       }
       return Optional.empty();
+   }
+
+   public <T extends Expression> boolean when(Class<T> tClass, Consumer<T> consumer) {
+      if (tClass.isInstance(this)) {
+         consumer.accept(Cast.as(this));
+         return true;
+      }
+      return false;
    }
 
 }//END OF Expression
