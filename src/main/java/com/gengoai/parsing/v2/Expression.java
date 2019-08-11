@@ -31,20 +31,45 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
+ * An expression encapsulates the result of parsing
+ *
  * @author David B. Bracewell
  */
 public class Expression implements Serializable {
    private static final long serialVersionUID = 1L;
    private final Tag type;
 
+   /**
+    * Instantiates a new Expression.
+    *
+    * @param type the Tag associated with the Expression
+    */
    public Expression(Tag type) {
       this.type = type;
    }
 
+   /**
+    * Applies the given function to this Expression treating it as an Expression of type <code>T</code>.
+    *
+    * @param <T>      the expression type parameter
+    * @param <O>      the output type parameter
+    * @param tClass   the class information of desired Expression type
+    * @param function the function to process the expression
+    * @return the output of the function processing this expression
+    * @throws IllegalStateException if this Expression is not of type <code>tClass</code>
+    */
    public <T extends Expression, O> O apply(Class<T> tClass, Function<T, O> function) {
       return function.apply(as(tClass));
    }
 
+   /**
+    * Casts this Expression as the given Expression type
+    *
+    * @param <T>    the expression type parameter
+    * @param tClass the class information of desired expression type
+    * @return the Expression as the given type
+    * @throws IllegalStateException if this Expression is not of type <code>tClass</code>
+    */
    public <T extends Expression> T as(Class<T> tClass) {
       if (tClass.isInstance(this)) {
          return Cast.as(this);
@@ -55,25 +80,60 @@ public class Expression implements Serializable {
                                          tClass.getSimpleName());
    }
 
+   /**
+    * Gets the tag associated with the Expression
+    *
+    * @return the type
+    */
    public Tag getType() {
       return type;
    }
 
+   /**
+    * Checks if this Expression is an instance of the given Expression type
+    *
+    * @param tClass the class information of desired expression type
+    * @return True - if the expression is an instance of the given expression type, False otherwise
+    */
    public boolean isInstance(Class<? extends Expression> tClass) {
       return tClass.isInstance(this);
    }
 
-   public boolean matches(Class<? extends Expression> tClass, Tag type) {
+   /**
+    * Checks if this Expression is an instance of the given Expression type and the given Tag type
+    *
+    * @param tClass the class information of desired expression type
+    * @param type   the tag type
+    * @return True - if the expression is an instance of the given expression type and tag type, False otherwise
+    */
+   public boolean isInstance(Class<? extends Expression> tClass, Tag type) {
       return tClass.isInstance(this) && type.isInstance(type);
    }
 
+   /**
+    * Applies the given function to the expression when it is an instance of the given expression type
+    *
+    * @param <T>      the expression type parameter
+    * @param <O>      the output type parameter
+    * @param tClass   the class information of desired Expression type
+    * @param function the function to process the expression
+    * @return the Optional output of the function.
+    */
    public <T extends Expression, O> Optional<O> when(Class<T> tClass, Function<T, O> function) {
-      if (tClass.isInstance(this)) {
+      if (isInstance(tClass)) {
          return Optional.ofNullable(function.apply(Cast.as(this)));
       }
       return Optional.empty();
    }
 
+   /**
+    * Applies the given consumer to the expression when it is an instance of the given expression type
+    *
+    * @param <T>      the expression type parameter
+    * @param tClass   the class information of desired Expression type
+    * @param consumer the consumer to process the expression
+    * @return True if consumer is applied, False otherwise
+    */
    public <T extends Expression> boolean when(Class<T> tClass, Consumer<T> consumer) {
       if (tClass.isInstance(this)) {
          consumer.accept(Cast.as(this));

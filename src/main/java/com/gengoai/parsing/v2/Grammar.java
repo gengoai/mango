@@ -29,6 +29,8 @@ import java.io.Serializable;
 import java.util.*;
 
 /**
+ * The type Grammar.
+ *
  * @author David B. Bracewell
  */
 public abstract class Grammar implements Serializable {
@@ -37,27 +39,63 @@ public abstract class Grammar implements Serializable {
    private final Map<Tag, PrefixHandler> prefixHandlerMap = new HashMap<>();
    private final Set<Tag> skipTags = new HashSet<>();
 
-
-   protected void prefix(Tag type, PrefixHandler handler) {
-      handler(type, handler, 0);
+   /**
+    * Gets postfix handler.
+    *
+    * @param token the token
+    * @return the postfix handler
+    */
+   public Optional<PostfixHandler> getPostfixHandler(ParserToken token) {
+      return getPostfixHandler(token.getType());
    }
 
-   protected void prefix(Tag type, PrefixHandler handler, int precedence) {
-      handler(type, handler, precedence);
+   /**
+    * Gets postfix handler.
+    *
+    * @param tokenType the token type
+    * @return the postfix handler
+    */
+   public Optional<PostfixHandler> getPostfixHandler(Tag tokenType) {
+      return Optional.ofNullable(postfixHandlerMap.get(tokenType));
    }
 
-   protected void postfix(Tag type, PostfixHandler handler) {
-      handler(type, handler, 1);
+   /**
+    * Gets prefix handler.
+    *
+    * @param token the token
+    * @return the prefix handler
+    */
+   public Optional<PrefixHandler> getPrefixHandler(ParserToken token) {
+      return getPrefixHandler(token.getType());
    }
 
-   protected void postfix(Tag type, PostfixHandler handler, int precedence) {
-      handler(type, handler, precedence);
+   /**
+    * Gets prefix handler.
+    *
+    * @param tokenType the token type
+    * @return the prefix handler
+    */
+   public Optional<PrefixHandler> getPrefixHandler(Tag tokenType) {
+      return Optional.ofNullable(prefixHandlerMap.get(tokenType));
    }
 
+   /**
+    * Handler.
+    *
+    * @param type    the type
+    * @param handler the handler
+    */
    protected void handler(Tag type, ParserHandler handler) {
       handler(type, handler, 0);
    }
 
+   /**
+    * Handler.
+    *
+    * @param type       the type
+    * @param handler    the handler
+    * @param precedence the precedence
+    */
    protected void handler(Tag type, ParserHandler handler, int precedence) {
       if (handler instanceof PostfixHandler) {
          postfixHandlerMap.put(type, Cast.as(handler));
@@ -67,35 +105,53 @@ public abstract class Grammar implements Serializable {
       }
    }
 
-   protected void skip(Tag type) {
-      skipTags.add(type);
-   }
-
-
-   public Optional<PostfixHandler> getPostfixHandler(ParserToken token) {
-      return getPostfixHandler(token.getType());
-   }
-
-   public Optional<PostfixHandler> getPostfixHandler(Tag tokenType) {
-      return Optional.ofNullable(postfixHandlerMap.get(tokenType));
-   }
-
-   public Optional<PrefixHandler> getPrefixHandler(ParserToken token) {
-      return getPrefixHandler(token.getType());
-   }
-
-   public Optional<PrefixHandler> getPrefixHandler(Tag tokenType) {
-      return Optional.ofNullable(prefixHandlerMap.get(tokenType));
-   }
-
+   /**
+    * Is ignored boolean.
+    *
+    * @param token the token
+    * @return the boolean
+    */
    public boolean isIgnored(ParserToken token) {
       return isIgnored(token.getType());
    }
 
+   /**
+    * Is ignored boolean.
+    *
+    * @param tokenType the token type
+    * @return the boolean
+    */
    public boolean isIgnored(Tag tokenType) {
       return skipTags.contains(tokenType);
    }
 
+   /**
+    * Postfix.
+    *
+    * @param type    the type
+    * @param handler the handler
+    */
+   protected void postfix(Tag type, PostfixHandler handler) {
+      handler(type, handler, 1);
+   }
+
+   /**
+    * Postfix.
+    *
+    * @param type       the type
+    * @param handler    the handler
+    * @param precedence the precedence
+    */
+   protected void postfix(Tag type, PostfixHandler handler, int precedence) {
+      handler(type, handler, precedence);
+   }
+
+   /**
+    * Precedence of int.
+    *
+    * @param tokenType the token type
+    * @return the int
+    */
    public int precedenceOf(Tag tokenType) {
       if (tokenType.isInstance(TokenStream.EOF)) {
          return Integer.MIN_VALUE;
@@ -103,11 +159,47 @@ public abstract class Grammar implements Serializable {
       return precedenceMap.getOrDefault(tokenType, 0);
    }
 
+   /**
+    * Precedence of int.
+    *
+    * @param token the token
+    * @return the int
+    */
    public int precedenceOf(ParserToken token) {
       if (token.equals(TokenStream.EOF_TOKEN)) {
          return Integer.MIN_VALUE;
       }
       return precedenceOf(token.getType());
+   }
+
+   /**
+    * Prefix.
+    *
+    * @param type    the type
+    * @param handler the handler
+    */
+   protected void prefix(Tag type, PrefixHandler handler) {
+      handler(type, handler, 0);
+   }
+
+   /**
+    * Prefix.
+    *
+    * @param type       the type
+    * @param handler    the handler
+    * @param precedence the precedence
+    */
+   protected void prefix(Tag type, PrefixHandler handler, int precedence) {
+      handler(type, handler, precedence);
+   }
+
+   /**
+    * Skip.
+    *
+    * @param type the type
+    */
+   protected void skip(Tag type) {
+      skipTags.add(type);
    }
 
 }//END OF Grammar

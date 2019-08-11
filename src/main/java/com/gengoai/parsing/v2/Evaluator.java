@@ -81,7 +81,7 @@ public abstract class Evaluator<O> extends Switch<Expression, O> {
     * @param function        the function to apply when the condition is met.
     */
    protected final <E extends Expression> void $(Class<E> expressionClass, Tag type, CheckedFunction<E, ? extends O> function) {
-      $case(e -> e.matches(expressionClass, type),
+      $case(e -> e.isInstance(expressionClass, type),
             e -> Cast.as(e, expressionClass),
             function);
    }

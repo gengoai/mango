@@ -30,6 +30,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * The type Regex lexer.
+ *
  * @author David B. Bracewell
  */
 class RegexLexer implements Lexer {
@@ -41,7 +43,12 @@ class RegexLexer implements Lexer {
    private final String[][] vars;
    private final Pattern regex;
 
-   public RegexLexer(TokenDef... definitions) {
+   /**
+    * Instantiates a new Regex lexer.
+    *
+    * @param definitions the definitions
+    */
+   protected RegexLexer(TokenDef... definitions) {
       this.definitions = definitions;
       this.groups = new String[definitions.length];
       this.vars = new String[definitions.length][];

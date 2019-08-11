@@ -25,6 +25,8 @@ package com.gengoai.parsing.v2;
 import java.io.Serializable;
 
 /**
+ * Abstract base token stream providing extracted tokens from a {@link Lexer}.
+ *
  * @author David B. Bracewell
  */
 public abstract class AbstractTokenStream implements TokenStream, Serializable {
@@ -62,6 +64,11 @@ public abstract class AbstractTokenStream implements TokenStream, Serializable {
       return next;
    }
 
-   
+
+   /**
+    * Gets the next available token.
+    *
+    * @return the next {@link ParserToken}
+    */
    protected abstract ParserToken next();
 }//END OF AbstractTokenStream

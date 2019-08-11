@@ -29,6 +29,8 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
+ * The type Parser token.
+ *
  * @author David B. Bracewell
  */
 public class ParserToken {
@@ -38,10 +40,27 @@ public class ParserToken {
    private final Tag type;
    private final String[] variables;
 
+   /**
+    * Instantiates a new Parser token.
+    *
+    * @param type  the type
+    * @param text  the text
+    * @param start the start
+    * @param end   the end
+    */
    public ParserToken(Tag type, String text, int start, int end) {
       this(type, text, start, end, new String[0]);
    }
 
+   /**
+    * Instantiates a new Parser token.
+    *
+    * @param type      the type
+    * @param text      the text
+    * @param start     the start
+    * @param end       the end
+    * @param variables the variables
+    */
    public ParserToken(Tag type, String text, int start, int end, String[] variables) {
       this.type = type;
       this.text = text;
@@ -60,30 +79,68 @@ public class ParserToken {
                 Arrays.equals(variables, that.variables);
    }
 
+   /**
+    * Gets end.
+    *
+    * @return the end
+    */
    public int getEnd() {
       return end;
    }
 
+   /**
+    * Gets start.
+    *
+    * @return the start
+    */
    public int getStart() {
       return start;
    }
 
+   /**
+    * Gets text.
+    *
+    * @return the text
+    */
    public String getText() {
       return text;
    }
 
+   /**
+    * Gets type.
+    *
+    * @return the type
+    */
    public Tag getType() {
       return type;
    }
 
+   /**
+    * Gets type.
+    *
+    * @param <T>    the type parameter
+    * @param tClass the t class
+    * @return the type
+    */
    public <T extends Tag> T getType(Class<T> tClass) {
       return Cast.as(type, tClass);
    }
 
+   /**
+    * Gets variable.
+    *
+    * @param index the index
+    * @return the variable
+    */
    public String getVariable(int index) {
       return variables[index];
    }
 
+   /**
+    * Gets variable count.
+    *
+    * @return the variable count
+    */
    public int getVariableCount() {
       return variables.length;
    }
@@ -95,6 +152,12 @@ public class ParserToken {
       return result;
    }
 
+   /**
+    * Is instance boolean.
+    *
+    * @param tags the tags
+    * @return the boolean
+    */
    public boolean isInstance(Tag... tags) {
       return type.isInstance(tags);
    }

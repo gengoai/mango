@@ -27,12 +27,26 @@ import com.gengoai.Tag;
 import java.io.Serializable;
 
 /**
+ * Defines a {@link Tag} and pattern representing a terminal token to be lexed.
+ *
  * @author David B. Bracewell
  */
 public interface TokenDef extends Tag, Serializable {
 
+   /**
+    * Regular expression pattern for use in a {@link Lexer}
+    *
+    * @return the pattern
+    */
    String getPattern();
 
+   /**
+    * Constructs a simple token definition using a {@link com.gengoai.StringTag}
+    *
+    * @param tag     the tag
+    * @param pattern the pattern
+    * @return the TokenDef
+    */
    static TokenDef token(String tag, String pattern) {
       return new SimpleTokenDef(tag, pattern);
    }

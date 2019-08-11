@@ -25,6 +25,8 @@ package com.gengoai.parsing.v2;
 import com.gengoai.Tag;
 
 /**
+ * The type Simple token def.
+ *
  * @author David B. Bracewell
  */
 class SimpleTokenDef implements TokenDef {
@@ -32,6 +34,12 @@ class SimpleTokenDef implements TokenDef {
    private final String tag;
    private final String pattern;
 
+   /**
+    * Instantiates a new SimpleTokenDef.
+    *
+    * @param tag     the tag
+    * @param pattern the pattern
+    */
    SimpleTokenDef(String tag, String pattern) {
       this.tag = tag;
       this.pattern = pattern;
