@@ -22,6 +22,7 @@
 
 package com.gengoai.parsing.v2.expressions;
 
+import com.gengoai.Tag;
 import com.gengoai.parsing.v2.Expression;
 import com.gengoai.parsing.v2.ParserToken;
 import com.gengoai.parsing.v2.PostfixHandler;
@@ -64,5 +65,12 @@ public class BinaryOperatorExpression extends Expression {
    }
 
    public static PostfixHandler HANDLER = (p, t, l) -> new BinaryOperatorExpression(t, l, p.parseExpression(t));
+
+   public static PostfixHandler listValueHandler(Tag endOfList, Tag separator) {
+      return (p, t, l) -> new BinaryOperatorExpression(t,
+                                                       l,
+                                                       new ListExpression(t.getType(),
+                                                                          p.parseExpressionList(endOfList, separator)));
+   }
 
 }//END OF BinaryOperatorExpression

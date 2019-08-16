@@ -107,7 +107,7 @@ public class Expression implements Serializable {
     * @return True - if the expression is an instance of the given expression type and tag type, False otherwise
     */
    public boolean isInstance(Class<? extends Expression> tClass, Tag type) {
-      return tClass.isInstance(this) && type.isInstance(type);
+      return tClass.isInstance(this) && this.type.isInstance(type);
    }
 
    /**

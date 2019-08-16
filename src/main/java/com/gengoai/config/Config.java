@@ -35,7 +35,7 @@ import com.gengoai.io.resource.Resource;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.logging.LogManager;
 import com.gengoai.logging.Logger;
-import com.gengoai.parsing.ParseException;
+import com.gengoai.parsing.v2.ParseException;
 import com.gengoai.reflection.BeanUtils;
 import com.gengoai.reflection.ReflectionException;
 import com.gengoai.string.Strings;
@@ -506,8 +506,9 @@ public final class Config implements Serializable {
          return; //Only load once!
       }
       try {
-         MsonConfigParser.parseResource(resource);
-      } catch (ParseException e) {
+         MsonConfigParser2.parseResource(resource);
+//         MsonConfigParser.parseResource(resource);
+      } catch (ParseException | IOException e) {
          throw new RuntimeException(e);
       }
       if (resource.path() != null) {

@@ -55,6 +55,17 @@ public class ParserToken {
    /**
     * Instantiates a new Parser token.
     *
+    * @param type  the type
+    * @param text  the text
+    * @param start the start
+    */
+   public ParserToken(Tag type, String text, int start) {
+      this(type, text, start, start+text.length(), new String[0]);
+   }
+
+   /**
+    * Instantiates a new Parser token.
+    *
     * @param type      the type
     * @param text      the text
     * @param start     the start

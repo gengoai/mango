@@ -30,10 +30,6 @@
     <description>A set of utilities and tools to speed up and ease programming in Java.</description>
     <url>http://www.gengoai.com/mango</url>
 
-    <prerequisites>
-        <maven>3.0.4</maven>
-    </prerequisites>
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
