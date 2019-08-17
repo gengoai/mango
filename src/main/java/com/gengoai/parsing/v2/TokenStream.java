@@ -29,46 +29,33 @@ import com.gengoai.string.Strings;
 import java.io.Serializable;
 
 /**
- * The interface Token stream.
+ * A stream of tokens extracted via a {@link Lexer} allowing for single token look-ahead. TokenStream implementations
+ * should signal the end of stream using the <code>EOF_TOKEN</code> which has a special <code>EOF</code> tag.
  *
  * @author David B. Bracewell
  */
 public interface TokenStream extends Serializable {
    /**
-    * The constant EOF.
+    * Special tag signaling the End-of-File (i.e. stream)
     */
    Tag EOF = new StringTag("~~~EOF~~~");
    /**
-    * The constant EOF_TOKEN.
+    * Special token signaling the End-of-File (i.e. stream)
     */
    ParserToken EOF_TOKEN = new ParserToken(EOF, Strings.EMPTY, -1, -1);
 
    /**
-    * Token parser token.
+    * Consumes a token from the stream.
     *
-    * @return the parser token
-    */
-   ParserToken token();
-
-   /**
-    * Consume parser token.
-    *
-    * @return the parser token
+    * @return the consumed token.
     */
    ParserToken consume();
 
    /**
-    * Peek parser token.
+    * Consume a token from the stream expecting the tag to be an instance of the given target type.
     *
-    * @return the parser token
-    */
-   ParserToken peek();
-
-   /**
-    * Consume parser token.
-    *
-    * @param target the target
-    * @return the parser token
+    * @param target the target tag that the consumed should be an instance of
+    * @return the consumed token
     */
    default ParserToken consume(Tag target) {
       ParserToken token = consume();
@@ -79,14 +66,27 @@ public interface TokenStream extends Serializable {
       return token;
    }
 
-
    /**
-    * Has next boolean.
+    * Checks if there are more non-EOF tokens on the stream
     *
-    * @return the boolean
+    * @return True if the next consumable token exists and is not EOF, False otherwise
     */
    default boolean hasNext() {
       return !peek().isInstance(EOF);
    }
+
+   /**
+    * Peeks at the next token on the stream.
+    *
+    * @return the next token on the stream (special EOF token if no more tokens exists)
+    */
+   ParserToken peek();
+
+   /**
+    * Returns the last token extracted via the call to consume.
+    *
+    * @return the last extracted token via consume
+    */
+   ParserToken token();
 
 }//END OF TokenStream

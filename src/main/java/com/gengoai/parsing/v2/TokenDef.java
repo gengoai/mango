@@ -27,7 +27,8 @@ import com.gengoai.Tag;
 import java.io.Serializable;
 
 /**
- * Defines a {@link Tag} and pattern representing a terminal token to be lexed.
+ * <p>Defines a {@link Tag} and pattern representing a terminal token to be lexed. Variables (sub-tokens) can be
+ * defined using an anonymous capture group, i.e. <code>(?<> ... )</code>.</p>
  *
  * @author David B. Bracewell
  */

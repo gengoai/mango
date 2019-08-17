@@ -23,17 +23,18 @@
 package com.gengoai.parsing.v2;
 
 import com.gengoai.Tag;
-import com.gengoai.conversion.Cast;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * The type Parser token.
+ * A token and its associated metadata extracted via a {@link Lexer}
  *
  * @author David B. Bracewell
  */
-public class ParserToken {
+public class ParserToken implements Serializable {
+   private static final long serialVersionUID = 1L;
    private final int end;
    private final int start;
    private final String text;
@@ -60,7 +61,7 @@ public class ParserToken {
     * @param start the start
     */
    public ParserToken(Tag type, String text, int start) {
-      this(type, text, start, start+text.length(), new String[0]);
+      this(type, text, start, start + text.length(), new String[0]);
    }
 
    /**
@@ -87,70 +88,63 @@ public class ParserToken {
       ParserToken that = (ParserToken) o;
       return Objects.equals(type, that.type) &&
                 Objects.equals(text, that.text) &&
-                Arrays.equals(variables, that.variables);
+                Arrays.equals(variables, that.variables) &&
+                Objects.equals(start, that.start);
    }
 
    /**
-    * Gets end.
+    * Gets the ending character offset of the token in the stream.
     *
-    * @return the end
+    * @return the ending character offset
     */
-   public int getEnd() {
+   public int getEndOffset() {
       return end;
    }
 
    /**
-    * Gets start.
+    * Gets the starting character offset of the token in the stream.
     *
-    * @return the start
+    * @return the starting character offset
     */
-   public int getStart() {
+   public int getStartOffset() {
       return start;
    }
 
    /**
-    * Gets text.
+    * Gets the extracted surface text of the token
     *
-    * @return the text
+    * @return the surface text of the token
     */
    public String getText() {
       return text;
    }
 
    /**
-    * Gets type.
+    * Gets the token's associated type
     *
-    * @return the type
+    * @return the token's type
     */
    public Tag getType() {
       return type;
    }
 
    /**
-    * Gets type.
+    * Gets a variable captured with the token.
     *
-    * @param <T>    the type parameter
-    * @param tClass the t class
-    * @return the type
-    */
-   public <T extends Tag> T getType(Class<T> tClass) {
-      return Cast.as(type, tClass);
-   }
-
-   /**
-    * Gets variable.
-    *
-    * @param index the index
-    * @return the variable
+    * @param index the index of the variable
+    * @return the variable value or null if the index is invalid or there are no variables
     */
    public String getVariable(int index) {
+      if (variables == null || index < 0 || index >= variables.length) {
+         return null;
+      }
       return variables[index];
    }
 
    /**
-    * Gets variable count.
+    * Gets the number of variables associated with the token
     *
-    * @return the variable count
+    * @return the number of variables
     */
    public int getVariableCount() {
       return variables.length;
@@ -158,16 +152,16 @@ public class ParserToken {
 
    @Override
    public int hashCode() {
-      int result = Objects.hash(type, text);
+      int result = Objects.hash(type, text, start, end);
       result = 31 * result + Arrays.hashCode(variables);
       return result;
    }
 
    /**
-    * Is instance boolean.
+    * Checks if the token's tag is an instance of one of the given tags
     *
-    * @param tags the tags
-    * @return the boolean
+    * @param tags the tags to check
+    * @return True if this token's tag is an instance of any of the given tags
     */
    public boolean isInstance(Tag... tags) {
       return type.isInstance(tags);
@@ -178,6 +172,8 @@ public class ParserToken {
       return "ParserToken{" +
                 "type=" + type +
                 ", text='" + text + '\'' +
+                ", start=" + start +
+                ", end=" + end +
                 ", variables=" + Arrays.toString(variables) +
                 '}';
    }
