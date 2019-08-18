@@ -150,6 +150,15 @@ public class ParserToken implements Serializable {
       return variables.length;
    }
 
+   /**
+    * Gets the token variables as an array of String
+    *
+    * @return the string array of token variables
+    */
+   public String[] getVariables() {
+      return variables;
+   }
+
    @Override
    public int hashCode() {
       int result = Objects.hash(type, text, start, end);
