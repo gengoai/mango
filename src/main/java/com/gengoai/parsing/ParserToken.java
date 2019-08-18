@@ -17,119 +17,164 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ *
  */
 
 package com.gengoai.parsing;
 
 import com.gengoai.Tag;
 
+import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 /**
- * A parse token from a Lexer to be used in a Parser
+ * A token and its associated metadata extracted via a {@link Lexer}
  *
  * @author David B. Bracewell
  */
-public final class ParserToken {
-
-   /**
-    * The Text.
-    */
-   public final String text;
-   /**
-    * The Type.
-    */
-   public final ParserTokenType type;
-
-   /**
-    * The Start.
-    */
-   public final int start;
-
-   /**
-    * The End.
-    */
-   public final int end;
-
-   /**
-    * The Variables.
-    */
-   public final String[] variables;
+public class ParserToken implements Serializable {
+   private static final long serialVersionUID = 1L;
+   private final int end;
+   private final int start;
+   private final String text;
+   private final Tag type;
+   private final String[] variables;
 
    /**
     * Instantiates a new Parser token.
     *
-    * @param text  the text
     * @param type  the type
+    * @param text  the text
     * @param start the start
+    * @param end   the end
     */
-   public ParserToken(String text, ParserTokenType type, int start) {
-      this(text, type, start, Collections.emptyList());
+   public ParserToken(Tag type, String text, int start, int end) {
+      this(type, text, start, end, new String[0]);
    }
 
    /**
     * Instantiates a new Parser token.
     *
-    * @param text      the text
+    * @param type  the type
+    * @param text  the text
+    * @param start the start
+    */
+   public ParserToken(Tag type, String text, int start) {
+      this(type, text, start, start + text.length(), new String[0]);
+   }
+
+   /**
+    * Instantiates a new Parser token.
+    *
     * @param type      the type
+    * @param text      the text
     * @param start     the start
+    * @param end       the end
     * @param variables the variables
     */
-   public ParserToken(String text, ParserTokenType type, int start, List<String> variables) {
-      this.text = text;
+   public ParserToken(Tag type, String text, int start, int end, String[] variables) {
       this.type = type;
+      this.text = text;
       this.start = start;
-      this.end = start + text.length();
-      this.variables = variables.toArray(new String[0]);
+      this.end = end;
+      this.variables = variables;
    }
 
    @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {return true;}
-      if (obj == null || getClass() != obj.getClass()) {return false;}
-      final ParserToken other = (ParserToken) obj;
-      return Objects.equals(this.text, other.text)
-                && Objects.equals(this.type, other.type);
+   public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof ParserToken)) return false;
+      ParserToken that = (ParserToken) o;
+      return Objects.equals(type, that.type) &&
+                Objects.equals(text, that.text) &&
+                Arrays.equals(variables, that.variables) &&
+                Objects.equals(start, that.start);
    }
 
    /**
-    * Gets text.
+    * Gets the ending character offset of the token in the stream.
     *
-    * @return the text
+    * @return the ending character offset
+    */
+   public int getEndOffset() {
+      return end;
+   }
+
+   /**
+    * Gets the starting character offset of the token in the stream.
+    *
+    * @return the starting character offset
+    */
+   public int getStartOffset() {
+      return start;
+   }
+
+   /**
+    * Gets the extracted surface text of the token
+    *
+    * @return the surface text of the token
     */
    public String getText() {
-      return this.text;
+      return text;
    }
 
    /**
-    * Gets type.
+    * Gets the token's associated type
     *
-    * @return the type
+    * @return the token's type
     */
-   public ParserTokenType getType() {
-      return this.type;
+   public Tag getType() {
+      return type;
+   }
+
+   /**
+    * Gets a variable captured with the token.
+    *
+    * @param index the index of the variable
+    * @return the variable value or null if the index is invalid or there are no variables
+    */
+   public String getVariable(int index) {
+      if (variables == null || index < 0 || index >= variables.length) {
+         return null;
+      }
+      return variables[index];
+   }
+
+   /**
+    * Gets the number of variables associated with the token
+    *
+    * @return the number of variables
+    */
+   public int getVariableCount() {
+      return variables.length;
    }
 
    @Override
    public int hashCode() {
-      return Objects.hash(text, type);
+      int result = Objects.hash(type, text, start, end);
+      result = 31 * result + Arrays.hashCode(variables);
+      return result;
    }
 
    /**
-    * Is instance boolean.
+    * Checks if the token's tag is an instance of one of the given tags
     *
-    * @param types the types
-    * @return the boolean
+    * @param tags the tags to check
+    * @return True if this token's tag is an instance of any of the given tags
     */
-   public boolean isInstance(Tag... types) {
-      return type.isInstance(types);
+   public boolean isInstance(Tag... tags) {
+      return type.isInstance(tags);
    }
 
+   @Override
    public String toString() {
-      return "ParserToken(text=" + this.getText() + ", type=" + this.getType() + ", variables=" + Arrays.toString(
-         variables) + ")";
+      return "ParserToken{" +
+                "type=" + type +
+                ", text='" + text + '\'' +
+                ", start=" + start +
+                ", end=" + end +
+                ", variables=" + Arrays.toString(variables) +
+                '}';
    }
-}//END OF ParseToken
+}//END OF ParserToken

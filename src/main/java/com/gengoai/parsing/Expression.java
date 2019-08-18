@@ -20,7 +20,7 @@
  *
  */
 
-package com.gengoai.parsing.v2;
+package com.gengoai.parsing;
 
 import com.gengoai.Tag;
 import com.gengoai.conversion.Cast;
@@ -108,6 +108,16 @@ public class Expression implements Serializable {
     */
    public boolean isInstance(Class<? extends Expression> tClass, Tag type) {
       return tClass.isInstance(this) && this.type.isInstance(type);
+   }
+
+   /**
+    * Checks if this Expression's tag is an instance of any of the given tags
+    *
+    * @param tags   the tags to check
+    * @return True - if the expression of any of the given tag , False otherwise
+    */
+   public boolean isInstance(Tag... tags) {
+      return getType().isInstance(tags);
    }
 
    /**

@@ -20,27 +20,56 @@
  *
  */
 
-package com.gengoai.parsing.v2.expressions;
+package com.gengoai.parsing;
 
 import com.gengoai.Tag;
-import com.gengoai.parsing.v2.Expression;
-import com.gengoai.parsing.v2.PrefixHandler;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
+ * The type List expression.
+ *
  * @author David B. Bracewell
  */
 public class ListExpression extends Expression implements Iterable<Expression> {
    private static final long serialVersionUID = 1L;
    private final List<Expression> expressions;
 
+   /**
+    * Instantiates a new List expression.
+    *
+    * @param type        the type
+    * @param expressions the expressions
+    */
    public ListExpression(Tag type, Collection<Expression> expressions) {
       super(type);
       this.expressions = new ArrayList<>(expressions);
+   }
+
+   /**
+    * Handler prefix handler.
+    *
+    * @param operator  the operator
+    * @param endOfList the end of list
+    * @param separator the separator
+    * @return the prefix handler
+    */
+   public static PrefixHandler handler(Tag operator, Tag endOfList, Tag separator) {
+      return (p, t) -> new ListExpression(operator, p.parseExpressionList(endOfList, separator));
+   }
+
+   /**
+    * Get expression.
+    *
+    * @param index the index
+    * @return the expression
+    */
+   public Expression get(int index) {
+      return expressions.get(index);
    }
 
    @Override
@@ -48,16 +77,22 @@ public class ListExpression extends Expression implements Iterable<Expression> {
       return expressions.iterator();
    }
 
+   /**
+    * Number of expressions int.
+    *
+    * @return the int
+    */
    public int numberOfExpressions() {
       return expressions.size();
    }
 
-   public Expression get(int index) {
-      return expressions.get(index);
-   }
-
-   public static PrefixHandler handler(Tag operator, Tag endOfList, Tag separator) {
-      return (p, t) -> new ListExpression(operator, p.parseExpressionList(endOfList, separator));
+   /**
+    * Stream stream.
+    *
+    * @return the stream
+    */
+   public Stream<Expression> stream() {
+      return expressions.stream();
    }
 
    @Override

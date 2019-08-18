@@ -22,41 +22,34 @@
 
 package com.gengoai.parsing;
 
+import com.gengoai.Tag;
+
+import java.io.Serializable;
+
 /**
- * The type Token def.
+ * <p>Defines a {@link Tag} and pattern representing a terminal token to be lexed. Variables (sub-tokens) can be
+ * defined using an anonymous capture group, i.e. <code>(?<> ... )</code>.</p>
  *
  * @author David B. Bracewell
  */
-public interface TokenDef extends ParserTokenType {
+public interface TokenDef extends Tag, Serializable {
 
    /**
-    * Define token def.
+    * Regular expression pattern for use in a {@link Lexer}
     *
-    * @param tag     the tag
-    * @param pattern the pattern
-    * @return the token def
+    * @return the pattern
     */
-   static TokenDef define(ParserTokenType tag, String pattern) {
-      return new TokenDefImpl(tag, pattern);
-   }
-
-   /**
-    * Define token def.
-    *
-    * @param tag     the tag
-    * @param pattern the pattern
-    * @return the token def
-    */
-   static TokenDef define(TokenDef tag, String pattern) {
-      return new TokenDefImpl(tag, pattern);
-   }
-
    String getPattern();
 
-   ParserTokenType getTag();
-
-   @Override
-   default String name() {
-      return getTag().name();
+   /**
+    * Constructs a simple token definition using a {@link com.gengoai.StringTag}
+    *
+    * @param tag     the tag
+    * @param pattern the pattern
+    * @return the TokenDef
+    */
+   static TokenDef token(String tag, String pattern) {
+      return new SimpleTokenDef(tag, pattern);
    }
+
 }//END OF TokenDef

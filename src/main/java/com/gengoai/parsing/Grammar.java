@@ -17,26 +17,22 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ *
  */
 
 package com.gengoai.parsing;
 
+import com.gengoai.Tag;
 import com.gengoai.conversion.Cast;
-import com.gengoai.parsing.expressions.Expression;
-import com.gengoai.parsing.handlers.InfixHandler;
-import com.gengoai.parsing.handlers.ParserHandler;
-import com.gengoai.parsing.handlers.PrefixHandler;
-import com.gengoai.parsing.handlers.PrefixSkipHandler;
+import com.gengoai.function.SerializablePredicate;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * <p>A grammar representing the rules for parsing. Rules are defined using <code>ParserHandler</code>s, which are
- * associated with individual <code>ParserTokenType</code>s. There are two main types of handlers, prefix and infix.
- * The
- * <code>PrefixHandler</code> takes care of prefix operators and the <code>InfixHandler</code> handles infix and
+ * associated with individual <code>Tag</code>s. There are two main types of handlers, prefix and postfix. The
+ * <code>PrefixHandler</code> takes care of prefix operators and the <code>PostfixHandler</code> handles infix and
  * postfix operators.</p>
  *
  * <p>By default a grammar will throw a <code>ParseException</code> when it encounters a token type that it does not
@@ -46,180 +42,209 @@ import java.util.Map;
  */
 public class Grammar implements Serializable {
    private static final long serialVersionUID = 1L;
-   private final Map<ParserTokenType, InfixHandler> infixHandlers = new HashMap<>();
-   private final Map<ParserTokenType, PrefixHandler> prefixHandlers = new HashMap<>();
-   private final PrefixHandler prefixSkipHandler;
-
+   private final Map<Tag, PostfixHandler> postfixHandlerMap = new HashMap<>();
+   private final Map<Tag, Integer> precedenceMap = new HashMap<>();
+   private final Map<Tag, PrefixHandler> prefixHandlerMap = new HashMap<>();
+   private final Map<Tag, SerializablePredicate<? extends Expression>> prefixValidators = new HashMap<>();
+   private final Map<Tag, SerializablePredicate<? extends Expression>> postfixValidators = new HashMap<>();
+   private final Set<Tag> skipTags = new HashSet<>();
 
    /**
-    * Instantiates a new Grammar which will throw a <code>ParseException</code> when encountering token types it cannot
-    * handle.
+    * Gets the postfix handler associated with the {@link Tag} of the given {@link ParserToken}
+    *
+    * @param token the token to use to determine the correct {@link PostfixHandler} to retrieve
+    * @return An {@link Optional} containing the postfix handler if available or empty if none are available
     */
-   public Grammar() {
-      this(false);
+   public Optional<PostfixHandler> getPostfixHandler(ParserToken token) {
+      return getPostfixHandler(token.getType());
    }
 
    /**
-    * Instantiates a new Grammar.
+    * Gets the postfix handler associated with the given {@link Tag}.
     *
-    * @param skipNonRegisteredTokenTypes When true the grammar will ignore token types is cannot handle and when false
-    *                                    it will throw a <code>ParseException</code>.
+    * @param tag the tag representing the operator / value for which we want to retrieve a {@link PostfixHandler}
+    * @return An {@link Optional} containing the postfix handler if available or empty if none are available
     */
-   public Grammar(boolean skipNonRegisteredTokenTypes) {
-      this.prefixSkipHandler = skipNonRegisteredTokenTypes ? new PrefixSkipHandler() : null;
+   public Optional<PostfixHandler> getPostfixHandler(Tag tag) {
+      return Optional.ofNullable(postfixHandlerMap.get(tag));
    }
 
    /**
-    * Gets infix handler.
+    * Gets the prefix handler associated with the {@link Tag} of the given {@link ParserToken}
     *
-    * @param type the type
-    * @return the infix handler
+    * @param token the token to use to determine the correct {@link PrefixHandler} to retrieve
+    * @return An {@link Optional} containing the prefix handler if available or empty if none are available
     */
-   public InfixHandler getInfixHandler(ParserTokenType type) {
-      return infixHandlers.get(type);
+   public Optional<PrefixHandler> getPrefixHandler(ParserToken token) {
+      return getPrefixHandler(token.getType());
    }
 
    /**
-    * Gets prefix handler.
+    * Gets the prefix handler associated with the given {@link Tag}.
     *
-    * @param type the type
-    * @return the prefix handler
+    * @param tag the tag representing the operator / value for which we want to retrieve a {@link PrefixHandler}
+    * @return An {@link Optional} containing the postfix handler if available or empty if none are available
     */
-   public PrefixHandler getPrefixHandler(ParserTokenType type) {
-      return prefixHandlers.get(type);
+   public Optional<PrefixHandler> getPrefixHandler(Tag tag) {
+      return Optional.ofNullable(prefixHandlerMap.get(tag));
    }
 
    /**
-    * Determines if the token can be parsed with an infix handler
+    * Checks if the given token should be ignored during parsing
     *
-    * @param token The token to check
-    * @return True if it has an associated infix handler, false otherwise
+    * @param token the token
+    * @return True - if should be ignored, False otherwise
     */
-   public boolean isInfix(ParserToken token) {
-      return token != null && infixHandlers.containsKey(token.type);
+   public boolean isIgnored(ParserToken token) {
+      return isIgnored(token.getType());
    }
 
    /**
-    * Determines if the token can be parsed with a prefix handler
+    * Checks if the given tag should be ignored during parsing
     *
-    * @param token The token to check
-    * @return True if it has an associated prefix handler, false otherwise
+    * @param tag the tag
+    * @return True - if should be ignored, False otherwise
     */
-   public boolean isPrefix(ParserToken token) {
-      return token != null && prefixHandlers.containsKey(token.type);
+   public boolean isIgnored(Tag tag) {
+      return skipTags.contains(tag);
    }
 
    /**
-    * Parses a prefix expression
+    * Registers a {@link PostfixHandler} with a precedence of <code>1</code> for the given {@link Tag}
     *
-    * @param expressionIterator The parser to use
-    * @param token              The token causing the prefix parse
-    * @return A parsed expression
-    * @throws ParseException Something went wrong parsing.
-    */
-   public Expression parse(ExpressionIterator expressionIterator, ParserToken token) throws ParseException {
-      PrefixHandler handler = prefixHandlers.getOrDefault(token.type, prefixSkipHandler);
-      if (handler == null) {
-         throw new ParseException("No PrefixHandler registered for token type " + token.type);
-      }
-      return handler.parse(expressionIterator, token);
-   }
-
-   /**
-    * Parses an infix or postfix expression
-    *
-    * @param expressionIterator The parser to use
-    * @param left               The expression to the left of the operator
-    * @param token              The token causing the prefix parse
-    * @return A parsed expression
-    * @throws ParseException Something went wrong parsing.
-    */
-   public Expression parse(ExpressionIterator expressionIterator, Expression left, ParserToken token) throws ParseException {
-      if (isInfix(token)) {
-         return infixHandlers.get(token.type).parse(expressionIterator, left, token);
-      }
-      return left;
-   }
-
-   /**
-    * Gets the precedence of the associated infix handler.
-    *
-    * @param token The token whose handler we want precedence for
-    * @return the precedence of the associated infix handler or 0 if there is none.
-    */
-   public int precedence(ParserToken token) {
-      if (isInfix(token)) {
-         return infixHandlers.get(token.type).precedence();
-      }
-      return 0;
-   }
-
-   /**
-    * Register grammar.
-    *
-    * @param type    the type
-    * @param handler the handler
+    * @param tag     the tag for which the handler will be registered
+    * @param handler the handler to associate with the given tag
     * @return the grammar
     */
-   public Grammar register(ParserTokenType type, ParserHandler handler) {
-      if (handler instanceof PrefixHandler) {
-         prefixHandlers.put(type, Cast.as(handler));
-      } else {
-         infixHandlers.put(type, Cast.as(handler));
+   public Grammar postfix(Tag tag, PostfixHandler handler) {
+      return postfix(tag, handler, 1);
+   }
+
+   /**
+    * Registers a {@link PostfixHandler} with the given precedence for the given {@link Tag}
+    *
+    * @param tag        the tag for which the handler will be registered
+    * @param handler    the handler to associate with the given tag
+    * @param precedence the precedence of the tag (operator). Note that precedence will be the given value or 1 if the
+    *                   given value is less than 1.
+    * @return the grammar
+    */
+   public Grammar postfix(Tag tag, PostfixHandler handler, int precedence) {
+      postfixHandlerMap.put(tag, Cast.as(handler));
+      precedenceMap.put(tag, Math.max(precedence, 1));
+      return this;
+   }
+
+   /**
+    * Registers a {@link PostfixHandler} with the given precedence for the given {@link Tag}
+    *
+    * @param tag        the tag for which the handler will be registered
+    * @param handler    the handler to associate with the given tag
+    * @param precedence the precedence of the tag (operator). Note that precedence will be the given value or 1 if the
+    *                   given value is less than 1.
+    * @param validator  the validator to use validate the generated expression
+    * @return the grammar
+    */
+   public <E extends Expression> Grammar postfix(Tag tag, PostfixHandler handler, int precedence, SerializablePredicate<E> validator) {
+      postfixHandlerMap.put(tag, Cast.as(handler));
+      precedenceMap.put(tag, Math.max(precedence, 1));
+      if (validator != null) {
+         postfixValidators.put(tag, validator);
       }
       return this;
    }
 
    /**
-    * Register grammar.
+    * Determines the precedence of the given tag
     *
-    * @param type    the type
-    * @param handler the handler
+    * @param tag the tag
+    * @return the precedence
+    */
+   public int precedenceOf(Tag tag) {
+      if (tag.isInstance(TokenStream.EOF)) {
+         return Integer.MIN_VALUE;
+      }
+      return precedenceMap.getOrDefault(tag, 0);
+   }
+
+   /**
+    * Determines the precedence of the {@link Tag} of the given {@link ParserToken}
+    *
+    * @param token the token for which the precedence will bec calculated.
+    * @return the precedence
+    */
+   public int precedenceOf(ParserToken token) {
+      if (token.equals(TokenStream.EOF_TOKEN)) {
+         return Integer.MIN_VALUE;
+      }
+      return precedenceOf(token.getType());
+   }
+
+   /**
+    * Registers a {@link PrefixHandler}  for the given {@link Tag}
+    *
+    * @param tag     the tag for which the handler will be registered
+    * @param handler the handler to associate with the given tag
     * @return the grammar
     */
-   public Grammar register(TokenDef type, ParserHandler handler) {
-      return register(type.getTag(), handler);
+   public Grammar prefix(Tag tag, PrefixHandler handler) {
+      prefixHandlerMap.put(tag, Cast.as(handler));
+      return this;
    }
 
    /**
-    * Registers a token type as being ignored, i.e. the grammar will skip it when seen.
+    * Registers a {@link PrefixHandler}  for the given {@link Tag}
     *
-    * @param type the token type to ignore
-    * @return This grammar (for fluent pattern)
+    * @param tag       the tag for which the handler will be registered
+    * @param handler   the handler to associate with the given tag
+    * @param validator the validator to use validate the generated expression
+    * @return the grammar
     */
-   public Grammar registerSkip(ParserTokenType type) {
-      return register(type, new PrefixSkipHandler());
-   }
-
-   /**
-    * Registers a token type as being ignored, i.e. the grammar will skip it when seen.
-    *
-    * @param type the token type to ignore
-    * @return This grammar (for fluent pattern)
-    */
-   public Grammar registerSkip(TokenDef type) {
-      return register(type.getTag(), new PrefixSkipHandler());
-   }
-
-   /**
-    * Determines if the given the token should be skipped or not
-    *
-    * @param token the token to check
-    * @return True if the token should be skipped, false if it should be parsed.
-    */
-   public boolean skip(ParserToken token) {
-      if (token == null) {
-         return false;
+   public <E extends Expression> Grammar prefix(Tag tag, PrefixHandler handler, SerializablePredicate<E> validator) {
+      prefixHandlerMap.put(tag, Cast.as(handler));
+      if (validator != null) {
+         prefixValidators.put(tag, validator);
       }
-      if (isPrefix(token)) {
-         if (prefixHandlers.containsKey(token.getType())) {
-            return prefixHandlers.get(token.getType()) instanceof PrefixSkipHandler;
-         } else {
-            return prefixSkipHandler != null;
-         }
-      }
-      return false;
+      return this;
    }
 
 
-}//END OF PrattParserGrammar
+   /**
+    * Registers the given {@link Tag} as one which should be skipped during parsing.
+    *
+    * @param tag the tag which will be skipped.
+    * @return the grammar
+    */
+   protected Grammar skip(Tag tag) {
+      skipTags.add(tag);
+      return this;
+   }
+
+   /**
+    * Validates the given expression as if it were generated from a postfix handler.
+    *
+    * @param expression the expression to validate
+    * @throws ParseException the exception if the expression is invalid
+    */
+   public void validatePostfix(Expression expression) throws ParseException {
+      if (!postfixValidators.getOrDefault(expression.getType(), e -> true).test(Cast.as(expression))) {
+         System.out.println("TESTING: " + expression.getType() + " : " + expression);
+         throw new ParseException("Parse Exception: Invalid Expression -> " + expression);
+      }
+   }
+
+   /**
+    * Validates the given expression as if it were generated from a prefix handler.
+    *
+    * @param expression the expression to validate
+    * @throws ParseException the exception if the expression is invalid
+    */
+   public void validatePrefix(Expression expression) throws ParseException {
+      if (!prefixValidators.getOrDefault(expression.getType(), e -> true).test(Cast.as(expression))) {
+         System.out.println("TESTING: " + expression.getType() + " : " + expression);
+         throw new ParseException("Parse Exception: Invalid Expression -> " + expression);
+      }
+   }
+
+
+}//END OF Grammar

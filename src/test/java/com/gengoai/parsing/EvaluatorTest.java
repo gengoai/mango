@@ -22,12 +22,6 @@
 package com.gengoai.parsing;
 
 import com.gengoai.collection.Lists;
-import com.gengoai.parsing.expressions.BinaryOperatorExpression;
-import com.gengoai.parsing.expressions.PostfixOperatorExpression;
-import com.gengoai.parsing.expressions.StringValueExpression;
-import com.gengoai.parsing.handlers.BinaryOperatorHandler;
-import com.gengoai.parsing.handlers.PostfixOperatorHandler;
-import com.gengoai.parsing.handlers.ValueHandler;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -36,13 +30,14 @@ import static org.junit.Assert.*;
  * @author David B. Bracewell
  */
 public class EvaluatorTest {
-   Grammar grammar = new Grammar().registerSkip(CommonTypes.WHITESPACE) //Skip Whitespace, but nothing else
-                                  .register(CommonTypes.PLUS, new BinaryOperatorHandler(10, false))
-                                  .register(CommonTypes.MINUS, new BinaryOperatorHandler(10, false))
-                                  .register(CommonTypes.MULTIPLY, new BinaryOperatorHandler(20, false))
-                                  .register(CommonTypes.DIVIDE, new BinaryOperatorHandler(20, false))
-                                  .register(CommonTypes.NUMBER, new ValueHandler())
-                                  .register(CommonTypes.EXCLAMATION, new PostfixOperatorHandler(30));
+   Grammar grammar = new Grammar().skip(CommonTypes.WHITESPACE) //Skip Whitespace, but nothing else
+                                  .postfix(CommonTypes.PLUS, BinaryInfixOperatorExpression.HANDLER, 10)
+                                  .postfix(CommonTypes.MINUS, BinaryInfixOperatorExpression.HANDLER, 10)
+                                  .postfix(CommonTypes.MULTIPLY, BinaryInfixOperatorExpression.HANDLER, 20)
+                                  .postfix(CommonTypes.DIVIDE, BinaryInfixOperatorExpression.HANDLER, 20)
+                                  .prefix(CommonTypes.NUMBER, ValueExpression.NUMERIC_HANDLER)
+                                  .postfix(CommonTypes.EXCLAMATION, UnaryOperatorExpression.POSTFIX_OPERATOR_HANDLER,
+                                           30);
 
    Lexer lexer = new RegexLexer(CommonTypes.WHITESPACE,
                                 CommonTypes.NUMBER,
@@ -56,42 +51,42 @@ public class EvaluatorTest {
       private static final long serialVersionUID = 1L;
 
       {
-         $(BinaryOperatorExpression.class, CommonTypes.PLUS, boe -> eval(boe.left) + eval(boe.right));
-         $(BinaryOperatorExpression.class, CommonTypes.MINUS, boe -> eval(boe.left) - eval(boe.right));
-         $(BinaryOperatorExpression.class, CommonTypes.MULTIPLY, boe -> eval(boe.left) * eval(boe.right));
-         $(BinaryOperatorExpression.class, CommonTypes.DIVIDE, boe -> eval(boe.left) / eval(boe.right));
-         $(PostfixOperatorExpression.class, CommonTypes.EXCLAMATION, pe -> eval(pe.left) * 10);
-         $(StringValueExpression.class, v -> Double.parseDouble(v.value));
+         $(BinaryInfixOperatorExpression.class, CommonTypes.PLUS, boe -> eval(boe.getLeft()) + eval(boe.getRight()));
+         $(BinaryInfixOperatorExpression.class, CommonTypes.MINUS, boe -> eval(boe.getLeft()) - eval(boe.getRight()));
+         $(BinaryInfixOperatorExpression.class, CommonTypes.MULTIPLY, boe -> eval(boe.getLeft()) * eval(boe.getRight()));
+         $(BinaryInfixOperatorExpression.class, CommonTypes.DIVIDE, boe -> eval(boe.getLeft()) / eval(boe.getRight()));
+         $(UnaryOperatorExpression.class, CommonTypes.EXCLAMATION, pe -> eval(pe.getValue()) * 10);
+         $(ValueExpression.class, v -> v.getValue().as(Double.class));
       }
    };
 
-   Parser parser = new Parser(grammar, lexer);
+   ParserGenerator parser = ParserGenerator.parserGenerator(grammar, lexer);
 
 
    @Test
-   public void test() throws Exception{
-      System.out.println(parser.evaluate("23 + 4 * 2 - 1", mathEvaluator));
+   public void test() throws Exception {
+      assertEquals(30, parser.parse("23 + 4 * 2 - 1 ").evaluate(mathEvaluator), 0);
    }
 
    @Test
    public void postfix() throws Exception {
-      assertEquals(60, parser.evaluate("2 * 3!", mathEvaluator), 0);
+      assertEquals(60, parser.parse("2 * 3!").evaluate(mathEvaluator), 0);
    }
 
    @Test
    public void order() throws Exception {
-      assertEquals(8, parser.evaluate("2+3 * 2", mathEvaluator), 0);
-      assertEquals(5, parser.evaluate("2 + 3 * 2 / 2", mathEvaluator), 0);
+      assertEquals(8, parser.parse("2+3 * 2").evaluate(mathEvaluator), 0);
+      assertEquals(5, parser.parse("2 + 3 * 2 / 2").evaluate(mathEvaluator), 0);
    }
 
    @Test(expected = ParseException.class)
    public void error() throws Exception {
-      parser.evaluate("-2 * 3 + 5", mathEvaluator);
+      parser.parse("-2 * 3 + 5").evaluate(mathEvaluator);
    }
 
    @Test
    public void all() throws Exception {
-      assertEquals(Lists.arrayListOf(8d), parser.evaluateAll("2+3 * 2", mathEvaluator));
+      assertEquals(Lists.arrayListOf(8d), parser.parse("2+3 * 2").evaluateAll(mathEvaluator));
    }
 
 }//END OF EvaluatorTest

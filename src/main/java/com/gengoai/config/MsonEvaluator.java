@@ -27,13 +27,13 @@ import com.gengoai.io.Resources;
 import com.gengoai.io.resource.ClasspathResource;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.logging.Loggable;
-import com.gengoai.parsing.v2.Evaluator;
-import com.gengoai.parsing.v2.Expression;
-import com.gengoai.parsing.v2.ParseException;
-import com.gengoai.parsing.v2.expressions.BinaryOperatorExpression;
-import com.gengoai.parsing.v2.expressions.ListExpression;
-import com.gengoai.parsing.v2.expressions.PrefixOperatorExpression;
-import com.gengoai.parsing.v2.expressions.ValueExpression;
+import com.gengoai.parsing.Evaluator;
+import com.gengoai.parsing.Expression;
+import com.gengoai.parsing.ParseException;
+import com.gengoai.parsing.BinaryInfixOperatorExpression;
+import com.gengoai.parsing.ListExpression;
+import com.gengoai.parsing.UnaryOperatorExpression;
+import com.gengoai.parsing.ValueExpression;
 import com.gengoai.string.Strings;
 
 import java.util.ArrayList;
@@ -51,16 +51,16 @@ class MsonEvaluator extends Evaluator<Expression> implements Loggable {
 
    MsonEvaluator(String resourceName) {
       this.resourceName = resourceName;
-      $(PrefixOperatorExpression.class,
+      $(UnaryOperatorExpression.class,
         ConfigTokenType.IMPORT,
         asFunction(exp -> handleImport(exp.getValue().as(ValueExpression.class).getValue().asString())));
-      $(BinaryOperatorExpression.class,
+      $(BinaryInfixOperatorExpression.class,
         ConfigTokenType.EQUAL_PROPERTY,
         asFunction(this::handleProperty));
-      $(BinaryOperatorExpression.class,
+      $(BinaryInfixOperatorExpression.class,
         ConfigTokenType.APPEND_PROPERTY,
         asFunction(this::handleAppendProperty));
-      $(BinaryOperatorExpression.class,
+      $(BinaryInfixOperatorExpression.class,
         ConfigTokenType.BEGIN_OBJECT,
         asFunction(this::handleSection));
    }
@@ -83,9 +83,9 @@ class MsonEvaluator extends Evaluator<Expression> implements Loggable {
          ListExpression mve = exp.as(ListExpression.class);
          JsonEntry map = JsonEntry.object();
          for (Expression e : mve) {
-            BinaryOperatorExpression boe = e.as(BinaryOperatorExpression.class);
-            String key = boe.getKey().as(ValueExpression.class).getValue().asString();
-            map.addProperty(key, convertExpression(boe.getValue()));
+            BinaryInfixOperatorExpression boe = e.as(BinaryInfixOperatorExpression.class);
+            String key = boe.getLeft().as(ValueExpression.class).getValue().asString();
+            map.addProperty(key, convertExpression(boe.getRight()));
          }
          return map;
       }
@@ -106,13 +106,13 @@ class MsonEvaluator extends Evaluator<Expression> implements Loggable {
       return effectiveKey;
    }
 
-   private void handleAppendProperty(BinaryOperatorExpression exp) throws ParseException {
-      String key = effectiveKey(exp.getKey().as(ValueExpression.class).getValue().asString());
+   private void handleAppendProperty(BinaryInfixOperatorExpression exp) throws ParseException {
+      String key = effectiveKey(exp.getLeft().as(ValueExpression.class).getValue().asString());
       List<Object> list = Config.get(key).asList(Object.class);
       if (list == null) {
          list = new ArrayList<>();
       }
-      processJson(list, convertExpression(exp.getValue()));
+      processJson(list, convertExpression(exp.getRight()));
       Config.getInstance()
          .setterFunction
          .setProperty(key, JsonEntry.array(list).toString(), resourceName);
@@ -139,22 +139,21 @@ class MsonEvaluator extends Evaluator<Expression> implements Loggable {
       }
    }
 
-   private void handleProperty(BinaryOperatorExpression exp) throws ParseException {
+   private void handleProperty(BinaryInfixOperatorExpression exp) throws ParseException {
       logFine("Handling property: {0}" + exp);
-      String key = effectiveKey(convertExpression(exp.getKey()).getAsString());
+      String key = effectiveKey(convertExpression(exp.getLeft()).getAsString());
       logFine("Effective key: {0}", key);
-      JsonEntry value = convertExpression(exp.getValue());
+      JsonEntry value = convertExpression(exp.getRight());
       String stringValue = value.isPrimitive() ? value.get().toString() : value.toString();
       Config.getInstance().setterFunction.setProperty(key, stringValue, resourceName);
-      System.out.println(key + " : " + value);
    }
 
-   private void handleSection(BinaryOperatorExpression exp) throws ParseException {
-      String section = effectiveKey(exp.getKey().as(ValueExpression.class).getValue().asString());
+   private void handleSection(BinaryInfixOperatorExpression exp) throws ParseException {
+      String section = effectiveKey(exp.getLeft().as(ValueExpression.class).getValue().asString());
       scope.addLast(section);
-      ListExpression mve = exp.getValue().as(ListExpression.class);
+      ListExpression mve = exp.getRight().as(ListExpression.class);
       for (Expression expression : mve) {
-         BinaryOperatorExpression boe = expression.as(BinaryOperatorExpression.class);
+         BinaryInfixOperatorExpression boe = expression.as(BinaryInfixOperatorExpression.class);
          if (boe.getType().isInstance(ConfigTokenType.BEGIN_OBJECT)) {
             handleSection(boe);
          } else if (boe.getType().equals(ConfigTokenType.APPEND_PROPERTY)) {

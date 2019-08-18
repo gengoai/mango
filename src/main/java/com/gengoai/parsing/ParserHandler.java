@@ -20,36 +20,16 @@
  *
  */
 
-package com.gengoai.config;
+package com.gengoai.parsing;
 
-import com.gengoai.parsing.ParserToken;
-import com.gengoai.parsing.expressions.ValueExpression;
+import java.io.Serializable;
 
 /**
- * A {@link ValueExpression} representing a Key in a key value pair
+ * The interface Parser handler.
  *
  * @author David B. Bracewell
  */
-public class KeyValueExpression extends ValueExpression<String> {
-   /**
-    * The Key.
-    */
-   public final String key;
-
-   /**
-    * Instantiates a new Key value expression.
-    *
-    * @param token the token
-    */
-   public KeyValueExpression(ParserToken token) {
-      super(token.type);
-      this.key = token.text;
-   }
+public interface ParserHandler extends Serializable {
 
 
-   @Override
-   public String getValue() {
-      return key;
-   }
-
-}//END OF KeyValueExpression
+}//END OF ParserHandler

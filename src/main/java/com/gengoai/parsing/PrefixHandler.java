@@ -20,44 +20,24 @@
  *
  */
 
-package com.gengoai.parsing.v2;
-
-import com.gengoai.Tag;
+package com.gengoai.parsing;
 
 /**
- * Default {@link TokenDef} implementation.
+ * Handler for prefix expressions.
  *
  * @author David B. Bracewell
  */
-class SimpleTokenDef implements TokenDef {
-   private static final long serialVersionUID = 1L;
-   private final String pattern;
-   private final String tag;
+@FunctionalInterface
+public interface PrefixHandler extends ParserHandler {
 
    /**
-    * Instantiates a new SimpleTokenDef.
+    * Handles the given prefix token using the given parser
     *
-    * @param tag     the tag
-    * @param pattern the pattern
+    * @param parser the parser to use
+    * @param token  the token representing the prefix operator
+    * @return the expression  resulting the handler
+    * @throws ParseException Something went wrong parsing the expression.
     */
-   SimpleTokenDef(String tag, String pattern) {
-      this.tag = tag;
-      this.pattern = pattern;
-   }
+   Expression handle(Parser parser, ParserToken token) throws ParseException;
 
-
-   @Override
-   public String getPattern() {
-      return pattern;
-   }
-
-   @Override
-   public boolean isInstance(Tag tag) {
-      return this.tag.equals(tag.name());
-   }
-
-   @Override
-   public String name() {
-      return tag;
-   }
-}//END OF SimpleTokenDef
+}//END OF PrefixHandler

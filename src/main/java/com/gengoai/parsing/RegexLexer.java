@@ -22,57 +22,47 @@
 
 package com.gengoai.parsing;
 
-import com.gengoai.io.resource.Resource;
 import com.gengoai.string.Strings;
 
-import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * The type Regex lexer.
+ * Default {@link Lexer} implementation based on regular expressions.
  *
  * @author David B. Bracewell
  */
-public class RegexLexer implements Lexer, Serializable {
+class RegexLexer implements Lexer {
    private static final Pattern VARIABLE_PLACEHOLDER = Pattern.compile("\\(\\?<>");
    private static final long serialVersionUID = 1L;
-   private final ParserTokenType[] tags;
-   private final String[][] vars;
+   private final TokenDef[] definitions;
    private final String[] groups;
    private final Pattern regex;
-
+   private final String[][] vars;
 
    /**
     * Instantiates a new Regex lexer.
     *
     * @param definitions the definitions
     */
-   public RegexLexer(TokenDef... definitions) {
-      this.tags = new ParserTokenType[definitions.length];
-      this.vars = new String[definitions.length][];
+   protected RegexLexer(TokenDef... definitions) {
+      this.definitions = definitions;
       this.groups = new String[definitions.length];
+      this.vars = new String[definitions.length][];
+
       StringBuilder pattern = new StringBuilder();
       for (int i = 0; i < definitions.length; i++) {
-         if (definitions[i] == null) {
-            throw new NullPointerException();
-         }
-         tags[i] = definitions[i].getTag();
-         groups[i] = "G" + i;
-
-
-         String p = definitions[i].getPattern();
+         groups[i] = "V" + i;
          int v = 0;
+         String p = definitions[i].getPattern();
          Matcher m = VARIABLE_PLACEHOLDER.matcher(p);
          while (m.find()) {
             p = p.replaceFirst(VARIABLE_PLACEHOLDER.pattern(), "(?<" + groups[i] + "V" + v + ">");
             v++;
          }
+         vars[i] = v == 0 ? null : new String[v];
          vars[i] = v == 0 ? null : new String[v];
          if (v > 0) {
             for (int j = 0; j < v; j++) {
@@ -86,85 +76,82 @@ public class RegexLexer implements Lexer, Serializable {
                 .append(p)
                 .append(")");
       }
-      this.regex = Pattern.compile("(" + pattern.toString().substring(1) + ")", Pattern.MULTILINE | Pattern.DOTALL);
+      this.regex = Pattern.compile("(?:" + pattern.toString().substring(1) + ")", Pattern.MULTILINE | Pattern.DOTALL);
+   }
+
+   private static void validate(String input, int startOffset, int endOffSet) {
+      String s = input.substring(startOffset, endOffSet);
+      if (Strings.isNotNullOrBlank(s)) {
+         throw new IllegalStateException("Parsing Error: Unmatched region '" + s + "'");
+      }
    }
 
    @Override
-   public ParserTokenStream lex(Resource input) throws IOException {
-      return new ParserTokenStream(new MatchIterator(input.readToString()));
-   }
+   public TokenStream lex(String input) {
+      return new AbstractTokenStream() {
+         private static final long serialVersionUID = 1L;
+         private final Matcher matcher = regex.matcher(input);
+         private int lastEnd;
 
 
-   private class MatchIterator implements Iterator<ParserToken> {
-      private final Matcher matcher;
-      private final String input;
-      private Boolean hasNext = null;
-      int lastEnd = 0;
+         @Override
+         protected ParserToken next() {
+            ParserToken token = null;
 
+            if (lastEnd >= input.length()) {
+               return EOF_TOKEN;
+            }
 
-      /**
-       * Instantiates a new Match iterator.
-       *
-       * @param input the input
-       */
-      public MatchIterator(String input) {
-         this.input = input;
-         this.matcher = regex.matcher(input);
-      }
+            int endOffset = lastEnd;
+            int startOffset = 0;
 
-      private boolean advance() {
-         if (hasNext == null) {
-            hasNext = matcher.find();
-         }
-         return hasNext;
-      }
-
-      @Override
-      public boolean hasNext() {
-         return advance();
-      }
-
-      @Override
-      public ParserToken next() {
-         if (!advance()) {
-            throw new NoSuchElementException();
-         }
-         hasNext = null;
-         ParserToken token = null;
-         int endOffset = lastEnd;
-         int startOffset = 0;
-         for (int i = 0; i < groups.length; i++) {
-            String group = groups[i];
-            if (matcher.group(group) != null) {
-               endOffset = matcher.end(group);
-               startOffset = matcher.start(group);
-               if (vars[i] != null) {
-                  List<String> varValues = new ArrayList<>();
-                  for (int j = 0; j < vars[i].length; j++) {
-                     varValues.add(matcher.group(vars[i][j]));
-                  }
-                  token = new ParserToken(matcher.group(group), tags[i], startOffset, varValues);
-               } else {
-                  token = new ParserToken(matcher.group(group), tags[i], startOffset);
+            if (!matcher.find(lastEnd)) {
+               if (Strings.isNullOrBlank(input.substring(endOffset))) {
+                  validate(input, endOffset, input.length());
                }
-               break;
             }
-         }
-         if (token == null) {
-            throw new IllegalStateException(String.format("Parsing Error: start=%s, content='%s'", startOffset,
-                                                          Strings.abbreviate(input.substring(startOffset), 10)));
-         }
-         if (startOffset > 0) {
-            String s = input.substring(lastEnd, startOffset);
-            if (Strings.isNotNullOrBlank(s)) {
-               throw new IllegalStateException(String.format("Parsing Error: start=%s, content='%s'", startOffset,
-                                                             Strings.abbreviate(input.substring(startOffset), 10)));
-            }
-         }
-         lastEnd = endOffset;
-         return token;
-      }
-   }
 
+            for (int i = 0; i < groups.length; i++) {
+               String group = groups[i];
+               if (matcher.group(group) != null) {
+                  endOffset = matcher.end(group);
+                  startOffset = matcher.start(group);
+                  if (vars[i] != null) {
+                     List<String> varValues = new ArrayList<>();
+                     for (int j = 0; j < vars[i].length; j++) {
+                        varValues.add(matcher.group(vars[i][j]));
+                     }
+                     token = new ParserToken(definitions[i],
+                                             matcher.group(group),
+                                             startOffset,
+                                             endOffset,
+                                             varValues.toArray(new String[0]));
+                  } else {
+                     token = new ParserToken(definitions[i],
+                                             matcher.group(group),
+                                             startOffset,
+                                             endOffset);
+                  }
+                  break;
+               }
+            }
+
+            if (token == null) {
+               throw new IllegalStateException(
+                  "Parsing Error: Unmatched token starting at {" + input.substring(lastEnd) + "}");
+            }
+
+            if (startOffset > 0) {
+               validate(input, lastEnd, startOffset);
+            }
+
+            lastEnd = endOffset;
+            return token;
+         }
+
+      };
+
+
+   }
 
 }//END OF RegexLexer

@@ -1,7 +1,7 @@
 package com.gengoai.config;
 
-import com.gengoai.parsing.v2.*;
-import com.gengoai.config.ConfigTokenType;
+import com.gengoai.parsing.ParseException;
+import com.gengoai.parsing.ParserToken;
 
 
 %%
@@ -9,37 +9,15 @@ import com.gengoai.config.ConfigTokenType;
 %class ConfigScanner
 %public
 %unicode
-%type com.gengoai.parsing.v2.ParserToken
+%type com.gengoai.parsing.ParserToken
 %function next
 %pack
 %char
 %line
 %yylexthrow{
-    com.gengoai.parsing.v2.ParseException
+    com.gengoai.parsing.ParseException
 %yylexthrow}
 
-
-//%{
-//public static final class ConfigTokenType  {
-//    public static final ParserTokenType IMPORT = ParserTokenType.tokenType("IMPORT");
-//    public static final ParserTokenType COMMENT = ParserTokenType.tokenType("COMMENT");
-//    public static final ParserTokenType NULL = ParserTokenType.tokenType("NULL");
-//    public static final ParserTokenType BOOLEAN = ParserTokenType.tokenType("BOOLEAN");
-//    public static final ParserTokenType STRING = ParserTokenType.tokenType("STRING");
-//    public static final ParserTokenType APPEND_PROPERTY = ParserTokenType.tokenType("APPEND_PROPERTY");
-//    public static final ParserTokenType EQUAL_PROPERTY = ParserTokenType.tokenType("EQUAL_PROPERTY");
-//    public static final ParserTokenType BEGIN_OBJECT = ParserTokenType.tokenType("BEGIN_OBJECT");
-//    public static final ParserTokenType END_OBJECT = ParserTokenType.tokenType("END_OBJECT");
-//    public static final ParserTokenType KEY = ParserTokenType.tokenType("KEY");
-//    public static final ParserTokenType MAP = ParserTokenType.tokenType("MAP");
-//    public static final ParserTokenType BEGIN_ARRAY = ParserTokenType.tokenType("BEGIN_ARRAY");
-//    public static final ParserTokenType END_ARRAY = ParserTokenType.tokenType("END_ARRAY");
-//    public static final ParserTokenType VALUE_SEPARATOR = ParserTokenType.tokenType("VALUE_SEPARATOR");
-//    public static final ParserTokenType KEY_VALUE_SEPARATOR = ParserTokenType.tokenType("KEY_VALUE_SEPARATOR");
-//    public static final ParserTokenType BEAN = ParserTokenType.tokenType("BEAN");
-//
-//}
-//%}
 
 string = (\\\"|[^\"])*
 safestring = [_a-zA-Z]+([_a-zA-Z0-9\.]+)*
@@ -69,4 +47,4 @@ number = -?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?
 {number} { return new ParserToken(ConfigTokenType.STRING,yytext(), yychar);}
 
 [ \t\r\n\f] { /* ignore white space. */ }
-. { throw new com.gengoai.parsing.v2.ParseException("Illegal character: "+yytext()+"\" at line: " + yyline + " char offset: " + yychar + " state: " + yystate()); }
+. { throw new ParseException("Illegal character: "+yytext()+"\" at line: " + yyline + " char offset: " + yychar + " state: " + yystate()); }

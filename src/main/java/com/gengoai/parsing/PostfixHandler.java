@@ -17,25 +17,28 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ *
  */
 
-package com.gengoai.parsing.handlers;
-
-import java.io.Serializable;
+package com.gengoai.parsing;
 
 /**
- * <p>Abstract base class for all parser handlers.</p>
+ * Handler for postfix and infix expressions.
  *
  * @author David B. Bracewell
  */
-public interface ParserHandler extends Serializable {
+@FunctionalInterface
+public interface PostfixHandler extends ParserHandler {
 
    /**
-    * Retrieves the precedence of the handler. Note that all PrefixHandlers will have a precedence of 0
+    * Handles the given postfix (or infix) token using the given parser
     *
-    * @return The precedence of the handler
+    * @param parser the parser to use
+    * @param token  the token representing the prefix operator
+    * @param left   the expression on the left-hand side of the operator
+    * @return the expression  resulting the handler
+    * @throws ParseException Something went wrong parsing the expression.
     */
-   int precedence();
+   Expression handle(Parser parser, ParserToken token, Expression left) throws ParseException;
 
-
-}//END OF ParserHandler
+}//END OF PostfixHandler

@@ -20,16 +20,44 @@
  *
  */
 
-package com.gengoai.parsing.v2;
+package com.gengoai.parsing;
 
-import java.io.Serializable;
+import com.gengoai.Tag;
 
 /**
- * The interface Parser handler.
+ * Default {@link TokenDef} implementation.
  *
  * @author David B. Bracewell
  */
-public interface ParserHandler extends Serializable {
+class SimpleTokenDef implements TokenDef {
+   private static final long serialVersionUID = 1L;
+   private final String pattern;
+   private final String tag;
+
+   /**
+    * Instantiates a new SimpleTokenDef.
+    *
+    * @param tag     the tag
+    * @param pattern the pattern
+    */
+   SimpleTokenDef(String tag, String pattern) {
+      this.tag = tag;
+      this.pattern = pattern;
+   }
 
 
-}//END OF ParserHandler
+   @Override
+   public String getPattern() {
+      return pattern;
+   }
+
+   @Override
+   public boolean isInstance(Tag tag) {
+      return this.tag.equals(tag.name());
+   }
+
+   @Override
+   public String name() {
+      return tag;
+   }
+}//END OF SimpleTokenDef

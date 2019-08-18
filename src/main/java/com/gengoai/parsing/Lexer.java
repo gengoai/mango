@@ -17,21 +17,22 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ *
  */
 
 package com.gengoai.parsing;
 
-import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * <p>A Lexer tokenizes a string or resource into tokens.</p>
  *
  * @author David B. Bracewell
  */
-public interface Lexer {
+public interface Lexer extends Serializable {
 
    /**
     * Tokenizes the input string into tokens
@@ -39,21 +40,29 @@ public interface Lexer {
     * @param input the input to tokenize
     * @return A token stream wrapping the tokenization results
     */
-   default ParserTokenStream lex(final String input) {
-      try {
-         return lex(Resources.fromString(input));
-      } catch (IOException e) {
-         throw new RuntimeException(e);
-      }
-   }
+   TokenStream lex(String input);
 
    /**
     * Reads from the given resource and tokenizes it into tokens
     *
-    * @param input the resource to read and tokenize
+    * @param resource the resource to read and tokenize
     * @return A token stream wrapping the tokenization results
     * @throws IOException Something went wrong reading from the input resource
     */
-   ParserTokenStream lex(final Resource input) throws IOException;
+   default TokenStream lex(Resource resource) throws IOException {
+      return lex(resource.readToString());
+   }
+
+   /**
+    * Creates a regular expression based lexer over the given token definitions.
+    *
+    * @param tokens the token definitions that include the token type (tag) and the regular expression pattern for
+    *               matching.
+    * @return the constructed lexer
+    */
+   static Lexer create(TokenDef... tokens) {
+      return new RegexLexer(tokens);
+   }
+
 
 }//END OF Lexer

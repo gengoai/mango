@@ -20,7 +20,7 @@
  *
  */
 
-package com.gengoai.parsing.v2;
+package com.gengoai.parsing;
 
 import java.io.Serializable;
 
