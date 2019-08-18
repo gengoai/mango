@@ -117,10 +117,7 @@ public class ValueExpression extends Expression {
 
    @Override
    public String toString() {
-      return "ValueExpression{" +
-                "type='" + getType() +
-                "', value=" + value +
-                '}';
+      return value.get().toString();
    }
 
 }//END OF ValueExpression

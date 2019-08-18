@@ -132,7 +132,20 @@ public class Parser implements TokenStream, Serializable {
     * @throws ParseException Something went wrong parsing
     */
    public Expression parseExpression(ParserToken precedence) throws ParseException {
-      return parseExpression(grammar.precedenceOf(precedence));
+      return parseExpression(precedence, false);
+   }
+
+   /**
+    * Parses the token stream to get the next expression
+    *
+    * @param token              Uses the associated precedence of the handler associated with the given token or 0 if no
+    *                           precedence is defined.
+    * @param isRightAssociative True - if this is a right associative rule
+    * @return the next expression in the parse
+    * @throws ParseException Something went wrong parsing
+    */
+   public Expression parseExpression(ParserToken token, boolean isRightAssociative) throws ParseException {
+      return parseExpression(grammar.precedenceOf(token), isRightAssociative);
    }
 
    /**
@@ -143,6 +156,21 @@ public class Parser implements TokenStream, Serializable {
     * @throws ParseException Something went wrong parsing
     */
    public Expression parseExpression(int precedence) throws ParseException {
+      return parseExpression(precedence, false);
+   }
+
+   /**
+    * Parses the token stream to get the next expression
+    *
+    * @param precedence         The precedence of the next prefix expression
+    * @param isRightAssociative True - if this is a right associative rule
+    * @return the next expression in the parse
+    * @throws ParseException Something went wrong parsing
+    */
+   public Expression parseExpression(int precedence, boolean isRightAssociative) throws ParseException {
+      if (isRightAssociative) {
+         precedence--;
+      }
       skip();
       ParserToken token = consume();
       Expression left = grammar.getPrefixHandler(token)

@@ -86,6 +86,12 @@ public class ListExpression extends Expression implements Iterable<Expression> {
       return expressions.size();
    }
 
+
+   public boolean isEmpty() {
+      return expressions.isEmpty();
+   }
+
+
    /**
     * Stream stream.
     *

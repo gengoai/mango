@@ -22,7 +22,7 @@
 
 package com.gengoai.parsing;
 
-import com.gengoai.Tag;
+import java.util.Objects;
 
 /**
  * An <code>Expression</code> unary operator which contains a single expression value
@@ -31,17 +31,54 @@ import com.gengoai.Tag;
  */
 public class UnaryOperatorExpression extends Expression {
    private static final long serialVersionUID = 1L;
+   /**
+    * Generic Handler for generating {@link UnaryOperatorExpression}s for postfix operators.
+    */
+   public static PostfixHandler POSTFIX_OPERATOR_HANDLER = (parser, token, left) -> new UnaryOperatorExpression(
+      token, left, false);
+   /**
+    * Generic Handler for generating {@link UnaryOperatorExpression}s for prefix operators using {@link
+    * Parser#parseExpression()}* to generate the value of the operator.
+    */
+   public static PrefixHandler PREFIX_OPERATOR_HANDLER = (p, t) -> new UnaryOperatorExpression(t,
+                                                                                               p.parseExpression(t),
+                                                                                               true);
+   private final boolean isPrefix;
+   private final String operator;
    private final Expression value;
 
    /**
     * Instantiates a new Prefix operator expression.
     *
-    * @param type  the type
-    * @param value the value
+    * @param token    the token
+    * @param value    the value
+    * @param isPrefix the is prefix
     */
-   public UnaryOperatorExpression(Tag type, Expression value) {
-      super(type);
+   public UnaryOperatorExpression(ParserToken token, Expression value, boolean isPrefix) {
+      super(token.getType());
+      this.operator = token.getText();
       this.value = value;
+      this.isPrefix = isPrefix;
+   }
+
+   @Override
+   public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof UnaryOperatorExpression)) return false;
+      UnaryOperatorExpression that = (UnaryOperatorExpression) o;
+      return isPrefix == that.isPrefix &&
+                Objects.equals(getType(), that.getType()) &&
+                Objects.equals(operator, that.getOperator()) &&
+                Objects.equals(value, that.value);
+   }
+
+   /**
+    * Gets operator.
+    *
+    * @return the operator
+    */
+   public String getOperator() {
+      return operator;
    }
 
    /**
@@ -53,16 +90,26 @@ public class UnaryOperatorExpression extends Expression {
       return value;
    }
 
-   /**
-    * Generic Handler for generating {@link UnaryOperatorExpression}s for prefix operators using {@link
-    * Parser#parseExpression()} to generate the value of the operator.
-    */
-   public static PrefixHandler PREFIX_OPERATOR_HANDLER = (p, t) -> new UnaryOperatorExpression(t.getType(),
-                                                                                               p.parseExpression(t));
+   @Override
+   public int hashCode() {
+      return Objects.hash(value, isPrefix, getType(), operator);
+   }
 
    /**
-    * Generic Handler for generating {@link UnaryOperatorExpression}s for postfix operators.
+    * Is prefix boolean.
+    *
+    * @return the boolean
     */
-   public static PostfixHandler POSTFIX_OPERATOR_HANDLER = (parser, token, left) -> new UnaryOperatorExpression(
-      token.getType(), left);
+   public boolean isPrefix() {
+      return isPrefix;
+   }
+
+   @Override
+   public String toString() {
+      if (isPrefix) {
+         return operator + value;
+      }
+      return value + operator;
+   }
+
 }//END OF PrefixOperatorExpression

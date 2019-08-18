@@ -27,13 +27,7 @@ import com.gengoai.io.Resources;
 import com.gengoai.io.resource.ClasspathResource;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.logging.Loggable;
-import com.gengoai.parsing.Evaluator;
-import com.gengoai.parsing.Expression;
-import com.gengoai.parsing.ParseException;
-import com.gengoai.parsing.BinaryInfixOperatorExpression;
-import com.gengoai.parsing.ListExpression;
-import com.gengoai.parsing.UnaryOperatorExpression;
-import com.gengoai.parsing.ValueExpression;
+import com.gengoai.parsing.*;
 import com.gengoai.string.Strings;
 
 import java.util.ArrayList;
@@ -149,7 +143,7 @@ class MsonEvaluator extends Evaluator<Expression> implements Loggable {
    }
 
    private void handleSection(BinaryInfixOperatorExpression exp) throws ParseException {
-      String section = effectiveKey(exp.getLeft().as(ValueExpression.class).getValue().asString());
+      String section = exp.getLeft().as(ValueExpression.class).getValue().asString();
       scope.addLast(section);
       ListExpression mve = exp.getRight().as(ListExpression.class);
       for (Expression expression : mve) {

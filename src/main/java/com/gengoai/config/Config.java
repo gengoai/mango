@@ -507,7 +507,6 @@ public final class Config implements Serializable {
       }
       try {
          MsonConfigParser.parseResource(resource);
-//         MsonConfigParser.parseResource(resource);
       } catch (ParseException | IOException e) {
          throw new RuntimeException(e);
       }
