@@ -23,11 +23,21 @@
 package com.gengoai.parsing.v2;
 
 /**
+ * Handler for prefix expressions.
+ *
  * @author David B. Bracewell
  */
 @FunctionalInterface
 public interface PrefixHandler extends ParserHandler {
 
+   /**
+    * Handles the given prefix token using the given parser
+    *
+    * @param parser the parser to use
+    * @param token  the token representing the prefix operator
+    * @return the expression  resulting the handler
+    * @throws ParseException Something went wrong parsing the expression.
+    */
    Expression handle(Parser parser, ParserToken token) throws ParseException;
 
 }//END OF PrefixHandler

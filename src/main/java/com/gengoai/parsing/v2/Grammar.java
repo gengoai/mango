@@ -29,7 +29,13 @@ import java.io.Serializable;
 import java.util.*;
 
 /**
- * The type Grammar.
+ * <p>A grammar representing the rules for parsing. Rules are defined using <code>ParserHandler</code>s, which are
+ * associated with individual <code>Tag</code>s. There are two main types of handlers, prefix and postfix. The
+ * <code>PrefixHandler</code> takes care of prefix operators and the <code>PostfixHandler</code> handles infix and
+ * postfix operators.</p>
+ *
+ * <p>By default a grammar will throw a <code>ParseException</code> when it encounters a token type that it does not
+ * know how to handle. Grammars can be set to instead ignore these tokens.</p>
  *
  * @author David B. Bracewell
  */

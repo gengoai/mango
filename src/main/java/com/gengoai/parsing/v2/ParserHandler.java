@@ -25,12 +25,11 @@ package com.gengoai.parsing.v2;
 import java.io.Serializable;
 
 /**
+ * The interface Parser handler.
+ *
  * @author David B. Bracewell
  */
 public interface ParserHandler extends Serializable {
 
-   default int precedence() {
-      return 0;
-   }
 
 }//END OF ParserHandler

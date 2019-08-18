@@ -28,6 +28,8 @@ import com.gengoai.io.resource.Resource;
 import java.io.IOException;
 
 /**
+ * The type Parser generator.
+ *
  * @author David B. Bracewell
  */
 public class ParserGenerator implements SerializableFunction<Resource, Parser> {
@@ -35,19 +37,45 @@ public class ParserGenerator implements SerializableFunction<Resource, Parser> {
    private final Grammar grammar;
    private final Lexer lexer;
 
+   /**
+    * Parser generator parser generator.
+    *
+    * @param grammar the grammar
+    * @param lexer   the lexer
+    * @return the parser generator
+    */
    public static ParserGenerator parserGenerator(Grammar grammar, Lexer lexer) {
       return new ParserGenerator(grammar, lexer);
    }
 
+   /**
+    * Instantiates a new Parser generator.
+    *
+    * @param grammar the grammar
+    * @param lexer   the lexer
+    */
    public ParserGenerator(Grammar grammar, Lexer lexer) {
       this.grammar = grammar;
       this.lexer = lexer;
    }
 
+   /**
+    * Parse parser.
+    *
+    * @param input the input
+    * @return the parser
+    */
    public Parser parse(String input) {
       return new Parser(grammar, lexer.lex(input));
    }
 
+   /**
+    * Parse parser.
+    *
+    * @param input the input
+    * @return the parser
+    * @throws IOException the io exception
+    */
    public Parser parse(Resource input) throws IOException {
       return new Parser(grammar, lexer.lex(input));
    }

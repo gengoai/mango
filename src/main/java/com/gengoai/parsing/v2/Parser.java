@@ -30,15 +30,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * <p>An implementation of a <a href="http://en.wikipedia.org/wiki/Pratt_parser">Pratt Parser</a> inspired by <a
+ * href="http://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/">Pratt Parsers:
+ * Expression Parsing Made Easy</a>. An instance of a Parser is tied to a specific <code>Grammar</code> and
+ * <code>TokenStream</code>. This implementation allows for operator precedence to be defined for each
+ * <code>ParserHandler</code> and allows the precedence to be specified when retrieving the next expression.</p>
+ *
  * @author David B. Bracewell
  */
 public class Parser implements TokenStream, Serializable {
    private final Grammar grammar;
    private final TokenStream tokenStream;
 
-   public Parser(Grammar grammar,
-                 TokenStream tokenStream
-                ) {
+   /**
+    * Instantiates a new Parser.
+    *
+    * @param grammar     the grammar to use for parsing
+    * @param tokenStream the {@link TokenStream} to parse from
+    */
+   public Parser(Grammar grammar, TokenStream tokenStream) {
       this.grammar = grammar;
       this.tokenStream = tokenStream;
    }
@@ -55,6 +65,7 @@ public class Parser implements TokenStream, Serializable {
     * @param <O>       the return type of the evaluator
     * @param evaluator the evaluator to use for transforming expressions
     * @return the single return values from the evaluator
+    * @throws ParseException the parse exception
     */
    public <O> O evaluate(Evaluator<? extends O> evaluator) throws ParseException {
       try {
@@ -66,6 +77,14 @@ public class Parser implements TokenStream, Serializable {
       }
    }
 
+   /**
+    * <p>Parses the given string and evaluates it with the given evaluator.</p>
+    *
+    * @param <O>       the return type of the evaluator
+    * @param evaluator the evaluator to use for transforming expressions
+    * @return A list of objects relating to the transformation of expressions by the given evaluator.
+    * @throws ParseException Something went wrong parsing
+    */
    public <O> List<O> evaluateAll(Evaluator<? extends O> evaluator) throws ParseException {
       List<O> evaluationResults = new ArrayList<>();
       while (tokenStream.hasNext()) {
@@ -80,6 +99,12 @@ public class Parser implements TokenStream, Serializable {
       return evaluationResults;
    }
 
+   /**
+    * Parse all expressions list.
+    *
+    * @return the list
+    * @throws ParseException the parse exception
+    */
    public List<Expression> parseAllExpressions() throws ParseException {
       List<Expression> expressions = new ArrayList<>();
       while (tokenStream.hasNext()) {
@@ -88,31 +113,35 @@ public class Parser implements TokenStream, Serializable {
       return expressions;
    }
 
-   public List<Expression> parseExpressionList(Tag endOfList, Tag separator) throws ParseException {
-      List<Expression> objExpressions = new ArrayList<>();
-      boolean isFirst = true;
-      while (!peek().isInstance(TokenStream.EOF, endOfList)) {
-         if (!isFirst && separator != null) {
-            consume(separator);
-         }
-         isFirst = false;
-         objExpressions.add(parseExpression());
-      }
-      if (peek().isInstance(TokenStream.EOF)) {
-         throw new ParseException("Parsing Error: Premature EOF");
-      }
-      consume(endOfList);
-      return objExpressions;
-   }
-
+   /**
+    * Parses the token stream to get the next expression
+    *
+    * @return the next expression in the parse
+    * @throws ParseException Something went wrong parsing
+    */
    public Expression parseExpression() throws ParseException {
       return parseExpression(0);
    }
 
+   /**
+    * Parses the token stream to get the next expression
+    *
+    * @param precedence Uses the associated precedence of the handler associated with the given token or 0 if no
+    *                   precedence is defined.
+    * @return the next expression in the parse
+    * @throws ParseException Something went wrong parsing
+    */
    public Expression parseExpression(ParserToken precedence) throws ParseException {
       return parseExpression(grammar.precedenceOf(precedence));
    }
 
+   /**
+    * Parses the token stream to get the next expression
+    *
+    * @param precedence The precedence of the next prefix expression
+    * @return the next expression in the parse
+    * @throws ParseException Something went wrong parsing
+    */
    public Expression parseExpression(int precedence) throws ParseException {
       ParserToken token = consume();
       Expression left = grammar.getPrefixHandler(token)
@@ -132,6 +161,32 @@ public class Parser implements TokenStream, Serializable {
          skip();
       }
       return left;
+   }
+
+   /**
+    * Parses a list of tokens ending with the <code>endOfList</code> tag and values separated using the
+    * <code>separator</code> tag.
+    *
+    * @param endOfList the {@link Tag} indicating the end of the list has been reached.
+    * @param separator the {@link Tag} separating values of the list (null value means no separator).
+    * @return the list of parsed expressions
+    * @throws ParseException Something went wrong parsing the token stream
+    */
+   public List<Expression> parseExpressionList(Tag endOfList, Tag separator) throws ParseException {
+      List<Expression> objExpressions = new ArrayList<>();
+      boolean isFirst = true;
+      while (!peek().isInstance(TokenStream.EOF, endOfList)) {
+         if (!isFirst && separator != null) {
+            consume(separator);
+         }
+         isFirst = false;
+         objExpressions.add(parseExpression());
+      }
+      if (peek().isInstance(TokenStream.EOF)) {
+         throw new ParseException("Parsing Error: Premature EOF");
+      }
+      consume(endOfList);
+      return objExpressions;
    }
 
    @Override

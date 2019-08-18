@@ -23,34 +23,35 @@
 package com.gengoai.parsing.v2;
 
 /**
+ * Exception class indicating an error in parsing.
+ *
  * @author David B. Bracewell
  */
 public class ParseException extends Exception {
+   private static final long serialVersionUID = 8886050550104037264L;
 
-  private static final long serialVersionUID = 8886050550104037264L;
+   /**
+    * Creates a new instance of the {@link ParseException}
+    */
+   public ParseException() {
+   }
 
-  /**
-   * Default constructor
-   */
-  public ParseException() {
-  }
+   /**
+    * Creates a new instance of the {@link ParseException}
+    *
+    * @param message the parse error message
+    */
+   public ParseException(String message) {
+      super(message);
+   }
 
-  /**
-   * Message Constructor
-   *
-   * @param message Error message
-   */
-  public ParseException(String message) {
-    super(message);
-  }
-
-  /**
-   * Wrapping Constructor
-   *
-   * @param caught The throwable we are rethrowing
-   */
-  public ParseException(Throwable caught) {
-    super(caught);
-  }
+   /**
+    * Creates a new instance of the {@link ParseException}
+    *
+    * @param caught The throwable we are rethrowing
+    */
+   public ParseException(Throwable caught) {
+      super(caught);
+   }
 
 }//END OF ParseException

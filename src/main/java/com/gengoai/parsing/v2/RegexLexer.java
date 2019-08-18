@@ -30,18 +30,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * The type Regex lexer.
+ * Default {@link Lexer} implementation based on regular expressions.
  *
  * @author David B. Bracewell
  */
 class RegexLexer implements Lexer {
-   private static final long serialVersionUID = 1L;
    private static final Pattern VARIABLE_PLACEHOLDER = Pattern.compile("\\(\\?<>");
-
+   private static final long serialVersionUID = 1L;
    private final TokenDef[] definitions;
    private final String[] groups;
-   private final String[][] vars;
    private final Pattern regex;
+   private final String[][] vars;
 
    /**
     * Instantiates a new Regex lexer.
@@ -78,6 +77,13 @@ class RegexLexer implements Lexer {
                 .append(")");
       }
       this.regex = Pattern.compile("(?:" + pattern.toString().substring(1) + ")", Pattern.MULTILINE | Pattern.DOTALL);
+   }
+
+   private static void validate(String input, int startOffset, int endOffSet) {
+      String s = input.substring(startOffset, endOffSet);
+      if (Strings.isNotNullOrBlank(s)) {
+         throw new IllegalStateException("Parsing Error: Unmatched region '" + s + "'");
+      }
    }
 
    @Override
@@ -146,13 +152,6 @@ class RegexLexer implements Lexer {
       };
 
 
-   }
-
-   private static void validate(String input, int startOffset, int endOffSet) {
-      String s = input.substring(startOffset, endOffSet);
-      if (Strings.isNotNullOrBlank(s)) {
-         throw new IllegalStateException("Parsing Error: Unmatched region '" + s + "'");
-      }
    }
 
 }//END OF RegexLexer

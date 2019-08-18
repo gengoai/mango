@@ -23,11 +23,22 @@
 package com.gengoai.parsing.v2;
 
 /**
+ * Handler for postfix and infix expressions.
+ *
  * @author David B. Bracewell
  */
 @FunctionalInterface
 public interface PostfixHandler extends ParserHandler {
 
+   /**
+    * Handles the given postfix (or infix) token using the given parser
+    *
+    * @param parser the parser to use
+    * @param token  the token representing the prefix operator
+    * @param left   the expression on the left-hand side of the operator
+    * @return the expression  resulting the handler
+    * @throws ParseException Something went wrong parsing the expression.
+    */
    Expression handle(Parser parser, ParserToken token, Expression left) throws ParseException;
 
 }//END OF PostfixHandler

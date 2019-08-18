@@ -25,14 +25,14 @@ package com.gengoai.parsing.v2;
 import com.gengoai.Tag;
 
 /**
- * The type Simple token def.
+ * Default {@link TokenDef} implementation.
  *
  * @author David B. Bracewell
  */
 class SimpleTokenDef implements TokenDef {
    private static final long serialVersionUID = 1L;
-   private final String tag;
    private final String pattern;
+   private final String tag;
 
    /**
     * Instantiates a new SimpleTokenDef.
