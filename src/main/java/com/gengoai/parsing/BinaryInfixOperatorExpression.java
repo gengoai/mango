@@ -36,8 +36,9 @@ public class BinaryInfixOperatorExpression extends Expression {
    public static PostfixHandler HANDLER = (p, t, l) -> new BinaryInfixOperatorExpression(t, l, p.parseExpression(t));
 
    public static PostfixHandler RIGHT_ASSOCIATIVE_HANDLER = (p, t, l) -> new BinaryInfixOperatorExpression(t,
-                                                                                                        l,
-                                                                                                        p.parseExpression(t, true));
+                                                                                                           l,
+                                                                                                           p.parseExpression(
+                                                                                                              t, true));
 
    private final Expression left;
    private final String operator;
@@ -87,9 +88,9 @@ public class BinaryInfixOperatorExpression extends Expression {
 
    @Override
    public String toString() {
-      return "BinaryOperatorExpression{" +
-                "key=" + left +
-                ", value=" + right +
+      return "BinaryInfixOperatorExpression{" +
+                "left=" + left +
+                ", right=" + right +
                 ", operator='" + operator + '\'' +
                 '}';
    }

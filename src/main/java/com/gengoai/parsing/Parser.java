@@ -123,6 +123,17 @@ public class Parser implements TokenStream, Serializable {
       return parseExpression(0);
    }
 
+   public <T extends Expression> T parseExpression(Class<T> tClass) throws ParseException {
+      return parseExpression().as(tClass);
+   }
+
+   public <T extends Expression> T parseExpression(ParserToken precedence, Class<T> tClass) throws ParseException {
+      return parseExpression(precedence).as(tClass);
+   }
+
+   public <T extends Expression> T parseExpression(int precedence, Class<T> tClass) throws ParseException {
+      return parseExpression(precedence).as(tClass);
+   }
    /**
     * Parses the token stream to get the next expression
     *
