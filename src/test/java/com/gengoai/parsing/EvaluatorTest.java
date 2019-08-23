@@ -65,28 +65,28 @@ public class EvaluatorTest {
 
    @Test
    public void test() throws Exception {
-      assertEquals(30, parser.parse("23 + 4 * 2 - 1 ").evaluate(mathEvaluator), 0);
+      assertEquals(30, parser.create("23 + 4 * 2 - 1 ").evaluate(mathEvaluator), 0);
    }
 
    @Test
    public void postfix() throws Exception {
-      assertEquals(60, parser.parse("2 * 3!").evaluate(mathEvaluator), 0);
+      assertEquals(60, parser.create("2 * 3!").evaluate(mathEvaluator), 0);
    }
 
    @Test
    public void order() throws Exception {
-      assertEquals(8, parser.parse("2+3 * 2").evaluate(mathEvaluator), 0);
-      assertEquals(5, parser.parse("2 + 3 * 2 / 2").evaluate(mathEvaluator), 0);
+      assertEquals(8, parser.create("2+3 * 2").evaluate(mathEvaluator), 0);
+      assertEquals(5, parser.create("2 + 3 * 2 / 2").evaluate(mathEvaluator), 0);
    }
 
    @Test(expected = ParseException.class)
    public void error() throws Exception {
-      parser.parse("-2 * 3 + 5").evaluate(mathEvaluator);
+      parser.create("-2 * 3 + 5").evaluate(mathEvaluator);
    }
 
    @Test
    public void all() throws Exception {
-      assertEquals(Lists.arrayListOf(8d), parser.parse("2+3 * 2").evaluateAll(mathEvaluator));
+      assertEquals(Lists.arrayListOf(8d), parser.create("2+3 * 2").evaluateAll(mathEvaluator));
    }
 
 }//END OF EvaluatorTest

@@ -22,23 +22,24 @@
 
 package com.gengoai.parsing;
 
-import com.gengoai.function.SerializableFunction;
 import com.gengoai.io.resource.Resource;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
- * The type Parser generator.
+ * Generates a {@link Parser} objects that uses a pre-defined {@link Grammar} to parse the {@link ParserToken}s
+ * extracted using the pre-defined {@link Lexer}.
  *
  * @author David B. Bracewell
  */
-public class ParserGenerator implements SerializableFunction<Resource, Parser> {
+public class ParserGenerator implements Serializable {
    private static final long serialVersionUID = 1L;
    private final Grammar grammar;
    private final Lexer lexer;
 
    /**
-    * Parser generator parser generator.
+    * Creates a {@link ParserGenerator} with the given {@link Grammar} amd {@link Lexer}.
     *
     * @param grammar the grammar
     * @param lexer   the lexer
@@ -48,45 +49,29 @@ public class ParserGenerator implements SerializableFunction<Resource, Parser> {
       return new ParserGenerator(grammar, lexer);
    }
 
-   /**
-    * Instantiates a new Parser generator.
-    *
-    * @param grammar the grammar
-    * @param lexer   the lexer
-    */
-   public ParserGenerator(Grammar grammar, Lexer lexer) {
+   private ParserGenerator(Grammar grammar, Lexer lexer) {
       this.grammar = grammar;
       this.lexer = lexer;
    }
 
    /**
-    * Parse parser.
+    * Creates a {@link Parser} over the lexed tokens in the give input
     *
-    * @param input the input
-    * @return the parser
+    * @param input the input to parser
+    * @return the Parser
     */
-   public Parser parse(String input) {
+   public Parser create(String input) {
       return new Parser(grammar, lexer.lex(input));
    }
 
    /**
-    * Parse parser.
+    * Creates a {@link Parser} over the lexed tokens in the give input
     *
-    * @param input the input
-    * @return the parser
-    * @throws IOException the io exception
+    * @param input the input to parser
+    * @return the Parser
     */
-   public Parser parse(Resource input) throws IOException {
+   public Parser create(Resource input) throws IOException {
       return new Parser(grammar, lexer.lex(input));
-   }
-
-   @Override
-   public Parser apply(Resource resource) {
-      try {
-         return parse(resource);
-      } catch (IOException e) {
-         throw new RuntimeException(e);
-      }
    }
 
 }//END OF ParserGenerator

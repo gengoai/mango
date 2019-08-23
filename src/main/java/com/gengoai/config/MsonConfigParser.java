@@ -65,7 +65,10 @@ class MsonConfigParser {
          postfix(BEGIN_OBJECT, (parser, token, left) -> {
                     ListExpression list = new ListExpression(token.getType(),
                                                              parser.parseExpressionList(END_OBJECT,
-                                                                                        null));
+                                                                                        null),
+                                                             "\n",
+                                                             "{",
+                                                             "}");
                     return new BinaryInfixOperatorExpression(token, left, list);
                  }, 10,
                  (BinaryInfixOperatorExpression e) -> e.getRight()
@@ -75,7 +78,12 @@ class MsonConfigParser {
                                                                                      BEGIN_OBJECT,
                                                                                      APPEND_PROPERTY)));
          prefix(BEGIN_OBJECT,
-                ListExpression.handler(BEGIN_OBJECT, END_OBJECT, VALUE_SEPARATOR),
+                ListExpression.handler(BEGIN_OBJECT,
+                                       END_OBJECT,
+                                       VALUE_SEPARATOR,
+                                       ",",
+                                       "{",
+                                       "}"),
                 (ListExpression e) -> e.stream().allMatch(se -> se.isInstance(KEY_VALUE_SEPARATOR)));
          postfix(EQUAL_PROPERTY,
                  BinaryInfixOperatorExpression.HANDLER,
@@ -96,7 +104,13 @@ class MsonConfigParser {
                 UnaryOperatorExpression.PREFIX_OPERATOR_HANDLER,
                 (UnaryOperatorExpression e) -> e.getValue().isInstance(ValueExpression.class) &&
                                                   e.getValue().getType().isInstance(STRING, KEY));
-         prefix(BEGIN_ARRAY, ListExpression.handler(BEGIN_ARRAY, END_ARRAY, VALUE_SEPARATOR));
+         prefix(BEGIN_ARRAY, ListExpression.handler(BEGIN_ARRAY,
+                                                    END_ARRAY,
+                                                    VALUE_SEPARATOR,
+                                                    ",",
+                                                    "[",
+                                                    "]"
+                                                   ));
       }
    };
 

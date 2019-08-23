@@ -58,7 +58,6 @@ public class BinaryInfixOperatorExpression extends Expression {
       this.right = right;
    }
 
-
    /**
     * Gets the left-hand expression
     *
@@ -88,11 +87,7 @@ public class BinaryInfixOperatorExpression extends Expression {
 
    @Override
    public String toString() {
-      return "BinaryInfixOperatorExpression{" +
-                "left=" + left +
-                ", right=" + right +
-                ", operator='" + operator + '\'' +
-                '}';
+      return String.format("%s %s %s", left, operator, right);
    }
 
 }//END OF BinaryOperatorExpression

@@ -22,13 +22,15 @@
 
 package com.gengoai.parsing;
 
+import java.io.Serializable;
+
 /**
  * Handler for postfix and infix expressions.
  *
  * @author David B. Bracewell
  */
 @FunctionalInterface
-public interface PostfixHandler extends ParserHandler {
+public interface PostfixHandler extends Serializable {
 
    /**
     * Handles the given postfix (or infix) token using the given parser

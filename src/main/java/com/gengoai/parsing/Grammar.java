@@ -43,10 +43,10 @@ import java.util.*;
 public class Grammar implements Serializable {
    private static final long serialVersionUID = 1L;
    private final Map<Tag, PostfixHandler> postfixHandlerMap = new HashMap<>();
+   private final Map<Tag, SerializablePredicate<? extends Expression>> postfixValidators = new HashMap<>();
    private final Map<Tag, Integer> precedenceMap = new HashMap<>();
    private final Map<Tag, PrefixHandler> prefixHandlerMap = new HashMap<>();
    private final Map<Tag, SerializablePredicate<? extends Expression>> prefixValidators = new HashMap<>();
-   private final Map<Tag, SerializablePredicate<? extends Expression>> postfixValidators = new HashMap<>();
    private final Set<Tag> skipTags = new HashSet<>();
 
    /**
@@ -207,7 +207,6 @@ public class Grammar implements Serializable {
       }
       return this;
    }
-
 
    /**
     * Registers the given {@link Tag} as one which should be skipped during parsing.

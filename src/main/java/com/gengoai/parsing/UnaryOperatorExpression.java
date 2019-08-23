@@ -107,9 +107,9 @@ public class UnaryOperatorExpression extends Expression {
    @Override
    public String toString() {
       if (isPrefix) {
-         return operator + value;
+         return String.format("%s%s", operator, value);
       }
-      return value + operator;
+      return String.format("%s%s", value, operator);
    }
 
 }//END OF PrefixOperatorExpression

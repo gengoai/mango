@@ -50,23 +50,11 @@ import com.gengoai.function.CheckedFunction;
 public abstract class Evaluator<O> extends Switch<Expression, O> {
    private static final long serialVersionUID = 1L;
 
-
    /**
     * Instantiates a new Evaluator.
     */
    protected Evaluator() {
       $default(exp -> {throw new ParseException("Unknown Expression [" + exp + " : " + exp.getType() + "]");});
-   }
-
-   /**
-    * Evaluates the given expression
-    *
-    * @param expression the expression to evaluate
-    * @return the result of evaluation
-    * @throws Exception Something went wrong during evaluation
-    */
-   public final O eval(Expression expression) throws Exception {
-      return switchOn(expression);
    }
 
    /**
@@ -85,7 +73,6 @@ public abstract class Evaluator<O> extends Switch<Expression, O> {
             function);
    }
 
-
    /**
     * Adds a switch statement where the condition is that the expression is of type <code>expressionClass</code>. When
     * the condition is met the expression is cast as the given expression class and the given function is applied.
@@ -98,6 +85,17 @@ public abstract class Evaluator<O> extends Switch<Expression, O> {
       $case(e -> e.isInstance(expressionClass),
             e -> Cast.as(e, expressionClass),
             function);
+   }
+
+   /**
+    * Evaluates the given expression
+    *
+    * @param expression the expression to evaluate
+    * @return the result of evaluation
+    * @throws Exception Something went wrong during evaluation
+    */
+   public final O eval(Expression expression) throws Exception {
+      return switchOn(expression);
    }
 
 }// END OF Evaluator

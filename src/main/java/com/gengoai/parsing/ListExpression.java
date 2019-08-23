@@ -23,11 +23,13 @@
 package com.gengoai.parsing;
 
 import com.gengoai.Tag;
+import com.gengoai.string.Strings;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -38,6 +40,9 @@ import java.util.stream.Stream;
 public class ListExpression extends Expression implements Iterable<Expression> {
    private static final long serialVersionUID = 1L;
    private final List<Expression> expressions;
+   private final String startOfList;
+   private final String endOfList;
+   private final String separator;
 
    /**
     * Instantiates a new List expression.
@@ -45,21 +50,34 @@ public class ListExpression extends Expression implements Iterable<Expression> {
     * @param type        the type
     * @param expressions the expressions
     */
-   public ListExpression(Tag type, Collection<Expression> expressions) {
+   public ListExpression(Tag type, Collection<Expression> expressions, String separator, String startOfList, String endOfList) {
       super(type);
       this.expressions = new ArrayList<>(expressions);
+      this.startOfList = startOfList;
+      this.endOfList = endOfList;
+      this.separator = separator;
    }
 
    /**
     * Handler prefix handler.
     *
-    * @param operator  the operator
-    * @param endOfList the end of list
-    * @param separator the separator
+    * @param startOfListTag the operator
+    * @param endOfListTag   the end of list
+    * @param separatorTag   the separator
     * @return the prefix handler
     */
-   public static PrefixHandler handler(Tag operator, Tag endOfList, Tag separator) {
-      return (p, t) -> new ListExpression(operator, p.parseExpressionList(endOfList, separator));
+   public static PrefixHandler handler(Tag startOfListTag,
+                                       Tag endOfListTag,
+                                       Tag separatorTag,
+                                       String startOfListStr,
+                                       String endOfListStr,
+                                       String separatorStr
+                                      ) {
+      return (p, t) -> new ListExpression(startOfListTag,
+                                          p.parseExpressionList(endOfListTag, separatorTag),
+                                          separatorStr,
+                                          startOfListStr,
+                                          endOfListStr);
    }
 
    /**
@@ -87,25 +105,50 @@ public class ListExpression extends Expression implements Iterable<Expression> {
    }
 
 
+   /**
+    * Checks if there no expressions in the list
+    *
+    * @return True if the list of expressions is empty
+    */
    public boolean isEmpty() {
       return expressions.isEmpty();
    }
 
 
    /**
-    * Stream stream.
+    * Generates the list of elements casting them to the desired expression type
     *
-    * @return the stream
+    * @param <E>    the expression type parameter
+    * @param eClass the expression class
+    * @return the list of expression as the given type
+    */
+   public <E extends Expression> List<E> elementsAs(Class<E> eClass) {
+      return expressions.stream().map(e -> e.as(eClass)).collect(Collectors.toList());
+   }
+
+   /**
+    * Streams the elements.
+    *
+    * @return the stream of elements
     */
    public Stream<Expression> stream() {
       return expressions.stream();
    }
 
+   /**
+    * Streams the elements as the given type.
+    *
+    * @param <E>    the expression type parameter
+    * @param eClass the expression class
+    * @return the stream of elements as the given type
+    */
+   public <E extends Expression> Stream<Expression> stream(Class<E> eClass) {
+      return expressions.stream().map(e -> e.as(eClass));
+   }
+
+
    @Override
    public String toString() {
-      return "ListExpression{" +
-                "type='" + getType() +
-                "', expressions=" + expressions +
-                '}';
+      return Strings.join(expressions, separator, startOfList, endOfList);
    }
 }//END OF ListExpression

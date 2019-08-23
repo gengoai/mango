@@ -134,6 +134,7 @@ public class Parser implements TokenStream, Serializable {
    public <T extends Expression> T parseExpression(int precedence, Class<T> tClass) throws ParseException {
       return parseExpression(precedence).as(tClass);
    }
+
    /**
     * Parses the token stream to get the next expression
     *

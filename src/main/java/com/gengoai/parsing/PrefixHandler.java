@@ -22,13 +22,15 @@
 
 package com.gengoai.parsing;
 
+import java.io.Serializable;
+
 /**
  * Handler for prefix expressions.
  *
  * @author David B. Bracewell
  */
 @FunctionalInterface
-public interface PrefixHandler extends ParserHandler {
+public interface PrefixHandler extends Serializable {
 
    /**
     * Handles the given prefix token using the given parser

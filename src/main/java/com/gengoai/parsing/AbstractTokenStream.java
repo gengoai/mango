@@ -35,11 +35,6 @@ public abstract class AbstractTokenStream implements TokenStream, Serializable {
    private ParserToken next;
 
    @Override
-   public final ParserToken token() {
-      return current;
-   }
-
-   @Override
    public final ParserToken consume() {
       if (current != null && current.isInstance(EOF)) {
          throw new IllegalStateException("Parser Error: Attempting to read beyond EOF");
@@ -53,6 +48,13 @@ public abstract class AbstractTokenStream implements TokenStream, Serializable {
       return current;
    }
 
+   /**
+    * Gets the next available token.
+    *
+    * @return the next {@link ParserToken}
+    */
+   protected abstract ParserToken next();
+
    @Override
    public final ParserToken peek() {
       if (current != null && current.isInstance(EOF)) {
@@ -64,11 +66,8 @@ public abstract class AbstractTokenStream implements TokenStream, Serializable {
       return next;
    }
 
-
-   /**
-    * Gets the next available token.
-    *
-    * @return the next {@link ParserToken}
-    */
-   protected abstract ParserToken next();
+   @Override
+   public final ParserToken token() {
+      return current;
+   }
 }//END OF AbstractTokenStream
