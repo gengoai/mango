@@ -82,7 +82,8 @@ class RegexLexer implements Lexer {
    private static void validate(String input, int startOffset, int endOffSet) {
       String s = input.substring(startOffset, endOffSet);
       if (Strings.isNotNullOrBlank(s)) {
-         throw new IllegalStateException("Parsing Error: Unmatched region '" + s + "'");
+         throw new IllegalStateException(
+            "Parsing Error: Unmatched region '" + s + "' (" + input.substring(startOffset) + ")");
       }
    }
 
@@ -97,18 +98,14 @@ class RegexLexer implements Lexer {
          @Override
          protected ParserToken next() {
             ParserToken token = null;
-
-            if (lastEnd >= input.length()) {
-               return EOF_TOKEN;
-            }
-
             int endOffset = lastEnd;
             int startOffset = 0;
 
-            if (!matcher.find(lastEnd)) {
-               if (Strings.isNullOrBlank(input.substring(endOffset))) {
+            if (!matcher.find()) {
+               if (Strings.isNotNullOrBlank(input.substring(endOffset))) {
                   validate(input, endOffset, input.length());
                }
+               return EOF_TOKEN;
             }
 
             for (int i = 0; i < groups.length; i++) {
