@@ -1,5 +1,6 @@
 package com.gengoai.string;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -8,6 +9,14 @@ import java.util.regex.Pattern;
  * @author David B. Bracewell
  */
 public final class Re {
+
+   public static String next(Matcher m) {
+      if (m.find()) {
+         return m.group();
+      }
+      return Strings.EMPTY;
+   }
+
    /**
     * An unescaped period representing match anything.
     */
