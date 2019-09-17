@@ -83,7 +83,8 @@ public final class HierarchicalRegistry<T extends HierarchicalEnumValue> extends
       if (name.startsWith(canonicalName)) {
          name = name.substring(canonicalName.length() + 1);
       }
-      return name.startsWith(parent.name()) ? name : parent + Character.toString(SEPARATOR) + name;
+      String prefix = parent.name() + SEPARATOR;
+      return name.startsWith(prefix) ? name : parent + Character.toString(SEPARATOR) + name;
    }
 
    /**

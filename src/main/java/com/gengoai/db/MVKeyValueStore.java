@@ -20,8 +20,9 @@
  *
  */
 
-package com.gengoai.collection;
+package com.gengoai.db;
 
+import com.gengoai.conversion.Cast;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 
@@ -29,28 +30,34 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.util.*;
-import java.util.function.BiPredicate;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author David B. Bracewell
  */
-public class DiskMap<K, V> implements Map<K, V>, Serializable, AutoCloseable {
-   public static final String DEFAULT_MAP_NAME = "DEFAULT_MAP";
+class MVKeyValueStore<K, V> implements NavigableKeyValueStore<K, V>, Serializable {
    private static final long serialVersionUID = 1L;
    private final File dbFile;
-   private final String mapName;
+   private final String namespace;
    private volatile transient MVMap<K, V> map;
 
-
-   public DiskMap(File dbFile) {
-      this(dbFile, DEFAULT_MAP_NAME);
+   public MVKeyValueStore(File dbFile, String namespace, boolean compressed) {
+      this.dbFile = dbFile;
+      this.namespace = namespace;
+      map = MVFactory.getMap(dbFile, namespace, compressed);
    }
 
-   public DiskMap(File dbFile, String mapName) {
-      this.dbFile = dbFile;
-      this.mapName = mapName;
-      this.map = MVStore.open(dbFile.getAbsolutePath()).openMap(mapName);
+   @Override
+   public K higherKey(K key) {
+      return map.higherKey(key);
+   }
+
+   @Override
+   public K lowerKey(K key) {
+      return map.lowerKey(key);
    }
 
    @Override
@@ -60,16 +67,12 @@ public class DiskMap<K, V> implements Map<K, V>, Serializable, AutoCloseable {
 
    @Override
    public void close() throws Exception {
-      commit();
-      this.map.getStore().closeImmediately();
+      MVFactory.close(dbFile);
    }
 
+   @Override
    public void commit() {
-      this.map.getStore().commit();
-   }
-
-   public void compact() {
-      map.getStore().compactRewriteFully();
+      map.getStore().commit();
    }
 
    @Override
@@ -79,7 +82,7 @@ public class DiskMap<K, V> implements Map<K, V>, Serializable, AutoCloseable {
 
    @Override
    public boolean containsValue(Object o) {
-      return map.containsKey(o);
+      return map.containsValue(o);
    }
 
    @Override
@@ -87,6 +90,7 @@ public class DiskMap<K, V> implements Map<K, V>, Serializable, AutoCloseable {
       return map.entrySet();
    }
 
+   @Override
    public K firstKey() {
       return map.firstKey();
    }
@@ -97,10 +101,16 @@ public class DiskMap<K, V> implements Map<K, V>, Serializable, AutoCloseable {
    }
 
    @Override
+   public String getNameSpace() {
+      return namespace;
+   }
+
+   @Override
    public boolean isEmpty() {
       return map.isEmpty();
    }
 
+   @Override
    public Iterator<K> keyIterator(K key) {
       return map.keyIterator(key);
    }
@@ -110,51 +120,16 @@ public class DiskMap<K, V> implements Map<K, V>, Serializable, AutoCloseable {
       return map.keySet();
    }
 
+   @Override
    public K lastKey() {
       return map.lastKey();
    }
 
-   public K lowerKey(K key) {
+   @Override
+   public K floorKey(K key) {
       return map.lowerKey(key);
    }
 
-   public Iterator<K> prefixIterator(K prefix, BiPredicate<K, K> isPrefix) {
-      K startKey = map.ceilingKey(prefix);
-      if (startKey == null) {
-         return Collections.emptyIterator();
-      }
-      return new Iterator<K>() {
-         private final Iterator<K> backing = map.keyIterator(startKey);
-         private K nextKey = null;
-
-         private boolean advance() {
-            if (nextKey != null) {
-               return true;
-            }
-            if (backing.hasNext()) {
-               nextKey = backing.next();
-               if (isPrefix.test(nextKey, prefix)) {
-                  return true;
-               }
-               nextKey = null;
-            }
-            return false;
-         }
-
-         @Override
-         public boolean hasNext() {
-            return advance();
-         }
-
-         @Override
-         public K next() {
-            advance();
-            K n = nextKey;
-            nextKey = null;
-            return n;
-         }
-      };
-   }
 
    @Override
    public V put(K k, V v) {
@@ -163,16 +138,12 @@ public class DiskMap<K, V> implements Map<K, V>, Serializable, AutoCloseable {
 
    @Override
    public void putAll(Map<? extends K, ? extends V> map) {
-      this.map.putAll(map);
+      map.putAll(Cast.cast(map));
    }
 
    private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
       stream.defaultReadObject();
-      this.map = MVStore.open(dbFile.getAbsolutePath()).openMap(mapName);
-   }
-
-   public V replace(K key, V value) {
-      return map.replace(key, value);
+      this.map = MVStore.open(dbFile.getAbsolutePath()).openMap(namespace);
    }
 
    @Override
@@ -185,11 +156,13 @@ public class DiskMap<K, V> implements Map<K, V>, Serializable, AutoCloseable {
       return map.size();
    }
 
+   @Override
    public long sizeAsLong() {
       return map.sizeAsLong();
    }
 
-   public K upperKey(K key) {
+   @Override
+   public K ceilingKey(K key) {
       return map.ceilingKey(key);
    }
 
@@ -198,4 +171,4 @@ public class DiskMap<K, V> implements Map<K, V>, Serializable, AutoCloseable {
       return map.values();
    }
 
-}//END OF DiskMap
+}//END OF MVKeyValueStore
