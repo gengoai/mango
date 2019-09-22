@@ -25,6 +25,7 @@ package com.gengoai.ui;
 import com.gengoai.conversion.Cast;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 
 /**
@@ -33,32 +34,32 @@ import java.awt.*;
 public class JStatusBar extends Box {
    private final JPanel[] panels;
    private final int panelHeight;
+   private final Border padding = BorderFactory.createEmptyBorder(1, 1, 1, 1);
 
    public JStatusBar(int numberOfPanels, JFrame owner) {
       super(0);
       setMinimumSize(new Dimension(owner.getWidth(), 20));
       setOpaque(true);
-      setBackground(SystemColor.control);
-      setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, SystemColor.controlShadow));
+      setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, SystemColor.windowBorder));
       this.panels = new JPanel[numberOfPanels];
-      this.panelHeight = owner.getFontMetrics(owner.getFont()).getHeight() + 8;
+      this.panelHeight = Math.max(owner.getFontMetrics(owner.getFont()).getHeight() + 8, 25);
       Dimension defaultDim = new Dimension(owner.getWidth() / numberOfPanels, this.panelHeight);
 
       for (int i = 0; i < numberOfPanels; i++) {
          JPanel panel = new JPanel(new BorderLayout());
-         panel.setMinimumSize(defaultDim);
-         panel.setPreferredSize(defaultDim);
+         this.panels[i] = panel;
+         setComponentSize(0, defaultDim.width);
          panel.setOpaque(false);
          if (i + 1 < numberOfPanels) {
             panel.setBorder(BorderFactory.createCompoundBorder(
-               BorderFactory.createEmptyBorder(0, 3, 0, 0),
-               BorderFactory.createMatteBorder(0, 0, 0, 1, SystemColor.controlShadow)));
+               padding,
+               BorderFactory.createMatteBorder(0, 0, 0, 1, SystemColor.windowBorder)));
          } else {
-            panel.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 0));
+            panel.setBorder(padding);
          }
-         this.panels[i] = panel;
          add(panel);
       }
+      add(Box.createHorizontalGlue());
    }
 
 
@@ -67,31 +68,41 @@ public class JStatusBar extends Box {
    }
 
    public void setText(int index, String text) {
+      setText(index, text, JLabel.LEFT);
+   }
+
+   public void setText(int index, String text, int alignment) {
       JPanel panel = panels[index];
       if (panel.getComponentCount() == 0 || !(panel.getComponent(0) instanceof JLabel)) {
-         JLabel label = new JLabel(text, JLabel.LEFT);
+         JLabel label = new JLabel(text, alignment);
          label.setOpaque(false);
          panel.removeAll();
-         panel.add(label, BorderLayout.WEST);
+         panel.add(label, BorderLayout.CENTER);
+         if (panel.getWidth() < getFontMetrics(getFont()).charsWidth(text.toCharArray(), 0, text.length())) {
+            label.setToolTipText(text);
+         }
       } else {
-         Cast.<JLabel>as(panel.getComponent(0)).setText(text);
+         JLabel label = Cast.<JLabel>as(panel.getComponent(0));
+         label.setText(text);
+         label.setToolTipText(text);
       }
    }
 
    public void setComponent(int index, JComponent component) {
       JPanel panel = panels[index];
       panel.removeAll();
-      panel.add(component);
+      panel.add(component, BorderLayout.CENTER);
       component.setOpaque(true);
    }
 
    public void setComponentSize(int index, int width) {
       panels[index].setPreferredSize(new Dimension(width, this.panelHeight));
-      panels[index].setMinimumSize(new Dimension(width, this.panelHeight));
+//      panels[index].setMinimumSize(new Dimension(width, this.panelHeight));
       panels[index].setMaximumSize(new Dimension(width, this.panelHeight));
    }
 
    public static void main(String[] args) throws Exception {
+      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
       JFrame frame = new JFrame();
       frame.setMinimumSize(new Dimension(800, 600));
       frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -100,11 +111,13 @@ public class JStatusBar extends Box {
       frame.add(sb, BorderLayout.SOUTH);
       frame.pack();
       sb.setText(0, "Hi this is a long text in the Status Bar");
-      sb.setText(1, "Windows");
-      sb.setComponentSize(0, 300);
-      sb.setComponentSize(1, 100);
-      sb.setComponentSize(2, 50);
-      sb.setComponent(2, new JButton("Click me!"));
+      sb.setText(1, "Windows", JLabel.CENTER);
+      sb.setComponentSize(0, 100);
+      sb.setComponentSize(1, 150);
+      frame.pack();
+      sb.setPreferredSize(new Dimension(sb.getWidth(), 30));
+      sb.setComponentSize(2, 100);
+      sb.setComponent(2, new JTextField(25));
       frame.setVisible(true);
    }
 
