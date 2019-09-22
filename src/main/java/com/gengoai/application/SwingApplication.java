@@ -1,14 +1,17 @@
 package com.gengoai.application;
 
+import com.gengoai.config.Config;
 import com.gengoai.logging.Loggable;
 import com.gengoai.string.Strings;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * <p> Abstract base class for a swing based applications. Child classes should define their UI via the {@link
@@ -36,9 +39,22 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
    private static final long serialVersionUID = 1L;
    private final String applicationName;
    private final String packageName;
-   private String[] nonNamedArguments;
    private String[] allArgs;
+   private String[] nonNamedArguments;
 
+
+   public static void runApplication(Supplier<? extends SwingApplication> supplier, String[] args) {
+      systemLookAndFeel();
+      supplier.get().run(args);
+   }
+
+   protected static void systemLookAndFeel() {
+      try {
+         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+      } catch (Exception e) {
+         throw new RuntimeException(e);
+      }
+   }
 
    /**
     * Instantiates a new Swing application.
@@ -66,8 +82,24 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
    protected SwingApplication(String applicationName, String packageName) {
       this.applicationName = Strings.isNullOrBlank(applicationName) ? getClass().getSimpleName() : applicationName;
       this.packageName = packageName;
-      nativeLookAndFeel();
    }
+
+   @Override
+   public final void setup() throws Exception {
+      int width = Config.get(getClass(), "width").asIntegerValue(800);
+      int height = Config.get(getClass(), "height").asIntegerValue(600);
+      setMinimumSize(new Dimension(width, height));
+      Rectangle screenRectangle = getGraphicsConfiguration().getDevice().getDefaultConfiguration().getBounds();
+      int xPos = Config.get(getClass(), "position.x").asIntegerValue(screenRectangle.width / 2 - width / 2);
+      int yPos = Config.get(getClass(), "position.y").asIntegerValue(screenRectangle.height / 2 - height / 2);
+      setLocation(xPos, yPos);
+      setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+      pack();
+      initControls();
+      pack();
+   }
+
+   protected abstract void initControls() throws Exception;
 
    /**
     * Mouse clicked mouse adapter.
@@ -195,17 +227,6 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
    @Override
    public void setPositionalArgs(String[] nonSpecifiedArguments) {
       this.nonNamedArguments = nonSpecifiedArguments;
-   }
-
-   /**
-    * Native look and feel.
-    */
-   protected void nativeLookAndFeel() {
-      try {
-         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-      } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
-         e.printStackTrace();
-      }
    }
 
    @Override
