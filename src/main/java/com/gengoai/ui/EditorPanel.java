@@ -84,46 +84,24 @@ public class EditorPanel extends JScrollPane {
 
       editorPane.getCaret().setVisible(true);
       editorPane.setFont(new Font(Font.MONOSPACED, Font.PLAIN, editorPane.getFont().getSize()));
-//      JTextArea lines = new JTextArea("1");
-//      lines.setPreferredSize(new Dimension(getFontMetrics(getFont()).charWidth('1') * 4, 0));
-//      lines.setMargin(editorPane.getMargin());
-//      lines.setEnabled(false);
-//      lines.setDisabledTextColor(SystemColor.textInactiveText);
-//      lines.setFont(new Font(Font.MONOSPACED, Font.PLAIN, editorPane.getFont().getSize()));
-//      lines.setBorder(null);
-//      editorPane.getStyledDocument().addDocumentListener(new DocumentListener() {
-//         @Override
-//         public void changedUpdate(DocumentEvent de) {
-//            lines.setText(getText());
-//         }
-//
-//         public String getText() {
-//            int caretPosition = editorPane.getStyledDocument().getLength();
-//            Element root = editorPane.getStyledDocument().getDefaultRootElement();
-//            int width = String.valueOf(root.getElementIndex(caretPosition) + 2).length();
-//            StringBuilder text = new StringBuilder("1")
-//                                    .append(System.getProperty("line.separator"));
-//            for (int i = 2; i < root.getElementIndex(caretPosition) + 2; i++) {
-//               text.append(i)
-//                   .append(System.getProperty("line.separator"));
-//            }
-//            return text.toString();
-//         }
-//
-//         @Override
-//         public void insertUpdate(DocumentEvent de) {
-//            lines.setText(getText());
-//         }
-//
-//         @Override
-//         public void removeUpdate(DocumentEvent de) {
-//            lines.setText(getText());
-//         }
-//      });
-//      setRowHeaderView(lines);
-
       LineNumbers lineNumbers = new LineNumbers();
       setRowHeaderView(lineNumbers);
+
+      editorPane.createToolTip().setBackground(Color.YELLOW);
+   }
+
+   @Override
+   public JToolTip createToolTip() {
+      return editorPane.createToolTip();
+   }
+
+   @Override
+   public void setToolTipText(String text) {
+      editorPane.setToolTipText(text);
+   }
+
+   public void addMouseMotionListener(MouseMotionListener listener) {
+      editorPane.addMouseMotionListener(listener);
    }
 
    public void addCaretListener(CaretListener listener) {
