@@ -51,13 +51,8 @@ class MVKeyValueStore<K, V> implements NavigableKeyValueStore<K, V>, Serializabl
    }
 
    @Override
-   public K higherKey(K key) {
-      return map.higherKey(key);
-   }
-
-   @Override
-   public K lowerKey(K key) {
-      return map.lowerKey(key);
+   public K ceilingKey(K key) {
+      return map.ceilingKey(key);
    }
 
    @Override
@@ -96,6 +91,11 @@ class MVKeyValueStore<K, V> implements NavigableKeyValueStore<K, V>, Serializabl
    }
 
    @Override
+   public K floorKey(K key) {
+      return map.lowerKey(key);
+   }
+
+   @Override
    public V get(Object o) {
       return map.get(o);
    }
@@ -103,6 +103,11 @@ class MVKeyValueStore<K, V> implements NavigableKeyValueStore<K, V>, Serializabl
    @Override
    public String getNameSpace() {
       return namespace;
+   }
+
+   @Override
+   public K higherKey(K key) {
+      return map.higherKey(key);
    }
 
    @Override
@@ -126,10 +131,9 @@ class MVKeyValueStore<K, V> implements NavigableKeyValueStore<K, V>, Serializabl
    }
 
    @Override
-   public K floorKey(K key) {
+   public K lowerKey(K key) {
       return map.lowerKey(key);
    }
-
 
    @Override
    public V put(K k, V v) {
@@ -159,11 +163,6 @@ class MVKeyValueStore<K, V> implements NavigableKeyValueStore<K, V>, Serializabl
    @Override
    public long sizeAsLong() {
       return map.sizeAsLong();
-   }
-
-   @Override
-   public K ceilingKey(K key) {
-      return map.ceilingKey(key);
    }
 
    @Override
