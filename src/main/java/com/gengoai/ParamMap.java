@@ -54,6 +54,7 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
    public static class Marshaller extends JsonMarshaller<ParamMap<?>> {
 
       @Override
+      @SuppressWarnings("unchecked")
       protected ParamMap<?> deserialize(JsonEntry entry, Type type) {
          try {
             ParamMap<?> map = Reflect.onClass(TypeUtils.asClass(type)).create().get();
