@@ -334,9 +334,7 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
 
       @Override
       public Counter<V> adjustValues(DoubleUnaryOperator function) {
-         Counter<V> toReturn = createIfNeeded().adjustValues(function);
-         removeIfEmpty();
-         return toReturn;
+         return createIfNeeded().adjustValues(function);
       }
 
       @Override
