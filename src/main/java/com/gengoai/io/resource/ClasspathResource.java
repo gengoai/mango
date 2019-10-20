@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 
 /**
  * <p> A <code>Resource</code> implementation for resources that exist on the classpath. Resources are loaded either
@@ -47,7 +46,6 @@ import java.util.zip.GZIPInputStream;
  * @author David B. Bracewell
  */
 public class ClasspathResource extends BaseResource {
-
    private static final Logger log = Logger.getLogger(ClasspathResource.class);
    private static final long serialVersionUID = -1977592698953910323L;
    private final String resource;
@@ -149,7 +147,7 @@ public class ClasspathResource extends BaseResource {
          return !asFile().get().isDirectory() && asFile().get().canRead();
       }
       try (InputStream is = inputStream()) {
-         return is.read() > 0 ;
+         return is.read() > 0;
       } catch (Exception e) {
          return false;
       }
@@ -212,18 +210,6 @@ public class ClasspathResource extends BaseResource {
 
 
    @Override
-   public InputStream inputStream() throws IOException {
-      InputStream rawis = createInputStream();
-      Validation.checkState(rawis != null, "This resource cannot be read from.");
-      PushbackInputStream is = new PushbackInputStream(rawis, 2);
-      if (FileUtils.isCompressed(is)) {
-         setIsCompressed(true);
-         return new GZIPInputStream(is);
-      }
-      return is;
-   }
-
-   @Override
    public InputStream createInputStream() throws IOException {
       return classLoader.getResourceAsStream(resource);
    }
@@ -262,4 +248,4 @@ public class ClasspathResource extends BaseResource {
                 Objects.equals(resource, other.resource);
    }
 
- }// END OF ClasspathResource
+}// END OF ClasspathResource

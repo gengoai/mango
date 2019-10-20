@@ -16,7 +16,6 @@ import java.util.zip.ZipFile;
  * @author David B. Bracewell
  */
 public class ZipResource extends BaseResource implements ReadOnlyResource {
-
    private ZipEntry entry;
    private ZipFile zipFile;
 

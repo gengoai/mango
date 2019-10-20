@@ -29,12 +29,10 @@ import com.gengoai.string.Strings;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PushbackInputStream;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -186,31 +184,6 @@ public final class FileUtils {
       return Math.max(spec.lastIndexOf(UNIX_SEPARATOR), spec.lastIndexOf(WINDOWS_SEPARATOR));
    }
 
-   /**
-    * Checks if an input stream is compressed using gzip or not.
-    *
-    * @param pushbackInputStream the pushback input stream
-    * @return True the input stream is gzip compressed
-    * @throws IOException Something went wrong reading from the stream
-    */
-   public static boolean isCompressed(PushbackInputStream pushbackInputStream) throws IOException {
-      if (pushbackInputStream == null) {
-         return false;
-      }
-      byte[] buffer = new byte[2];
-      int read = pushbackInputStream.read(buffer);
-      boolean isCompressed = false;
-
-      if (read == 2) {
-         isCompressed = ((buffer[0] == (byte) (GZIPInputStream.GZIP_MAGIC)) && (buffer[1] == (byte) (GZIPInputStream.GZIP_MAGIC >> 8)));
-      }
-
-      if (read != -1) {
-         pushbackInputStream.unread(buffer, 0, read);
-      }
-
-      return isCompressed;
-   }
 
    /**
     * Returns the parent directory for the given file. If the file passed in is actually a directory it will get the

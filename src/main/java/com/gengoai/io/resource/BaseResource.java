@@ -22,7 +22,8 @@
 package com.gengoai.io.resource;
 
 import com.gengoai.Validation;
-import com.gengoai.io.FileUtils;
+import com.gengoai.io.CompressedInputStream;
+import com.gengoai.io.Compression;
 import com.gengoai.string.Strings;
 
 import java.io.*;
@@ -30,8 +31,6 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 /**
  * Abstract base resource
@@ -40,10 +39,8 @@ import java.util.zip.GZIPOutputStream;
  */
 public abstract class BaseResource implements Resource, Serializable {
    private static final long serialVersionUID = 1L;
-
-
    private String charset = StandardCharsets.UTF_8.name();
-   private boolean isCompressed = false;
+   private Compression compression = Compression.NONE;
 
    @Override
    public Optional<File> asFile() {
@@ -116,18 +113,16 @@ public abstract class BaseResource implements Resource, Serializable {
 
    @Override
    public InputStream inputStream() throws IOException {
-      Validation.checkState(canRead(), "This is resource cannot be read from.");
-      PushbackInputStream is = new PushbackInputStream(createInputStream(), 2);
-      if (FileUtils.isCompressed(is)) {
-         setIsCompressed(true);
-         return new GZIPInputStream(is);
-      }
-      return is;
+      InputStream is = createInputStream();
+      Validation.notNull(is, "Error creating inputStream for: " + descriptor());
+      CompressedInputStream compressedInputStream = Compression.detect(is);
+      setCompression(compressedInputStream.getCompression());
+      return compressedInputStream;
    }
 
    @Override
    public final boolean isCompressed() {
-      return isCompressed;
+      return compression != Compression.NONE;
    }
 
    @Override
@@ -138,10 +133,7 @@ public abstract class BaseResource implements Resource, Serializable {
    @Override
    public OutputStream outputStream() throws IOException {
       Validation.checkState(canWrite(), "This is resource cannot be written to.");
-      if (isCompressed) {
-         return new GZIPOutputStream(createOutputStream());
-      }
-      return createOutputStream();
+      return compression.compressOutputStream(createOutputStream());
    }
 
    @Override
@@ -157,7 +149,17 @@ public abstract class BaseResource implements Resource, Serializable {
 
    @Override
    public final Resource setIsCompressed(boolean isCompressed) {
-      this.isCompressed = isCompressed;
+      if (isCompressed) {
+         compression = Compression.GZIP;
+      } else {
+         compression = Compression.NONE;
+      }
+      return this;
+   }
+
+   @Override
+   public Resource setCompression(Compression compression) {
+      this.compression = Validation.notNull(compression);
       return this;
    }
 

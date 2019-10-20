@@ -25,6 +25,7 @@ import com.gengoai.conversion.Cast;
 import com.gengoai.function.SerializableConsumer;
 import com.gengoai.function.Unchecked;
 import com.gengoai.io.CharsetDetectingReader;
+import com.gengoai.io.Compression;
 import com.gengoai.io.FileUtils;
 import com.gengoai.io.Resources;
 import com.gengoai.json.JsonEntry;
@@ -58,6 +59,9 @@ import static com.gengoai.reflection.TypeUtils.asClass;
 @JsonAdapter(Resource.ResourceMarshaller.class)
 public interface Resource {
 
+   /**
+    * The type Resource marshaller.
+    */
    class ResourceMarshaller extends JsonMarshaller<Resource> {
 
       @Override
@@ -231,6 +235,8 @@ public interface Resource {
 
    /**
     * Deletes the resource on ext
+    *
+    * @return the resource
     */
    default Resource deleteOnExit() {
       return this;
@@ -386,7 +392,7 @@ public interface Resource {
     * Mkdir boolean.
     *
     * @return the boolean
-    * @see java.io.File#mkdir() java.io.File#mkdir()java.io.File#mkdir()java.io.File#mkdir()
+    * @see java.io.File#mkdir() java.io.File#mkdir()java.io.File#mkdir()java.io.File#mkdir()java.io.File#mkdir()
     */
    default boolean mkdir() {
       return false;
@@ -396,7 +402,7 @@ public interface Resource {
     * Mkdirs boolean.
     *
     * @return the boolean
-    * @see java.io.File#mkdirs() java.io.File#mkdirs()java.io.File#mkdirs()java.io.File#mkdirs()
+    * @see java.io.File#mkdirs() java.io.File#mkdirs()java.io.File#mkdirs()java.io.File#mkdirs()java.io.File#mkdirs()
     */
    default boolean mkdirs() {
       return false;
@@ -507,6 +513,14 @@ public interface Resource {
     * @return the is compressed
     */
    Resource setIsCompressed(boolean isCompressed);
+
+   /**
+    * Sets the compression algorithm.
+    *
+    * @param compression the compression algorithm
+    * @return this Resource
+    */
+   Resource setCompression(Compression compression);
 
    /**
     * Uncompressed resource.

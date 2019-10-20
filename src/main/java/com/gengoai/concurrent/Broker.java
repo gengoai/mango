@@ -254,7 +254,7 @@ public class Broker<V> implements Serializable, Loggable {
          Validation.checkArgument(producers.size() > 0);
          Validation.checkArgument(consumers.size() > 0);
          if (queue == null) {
-            queue = new ArrayBlockingQueue<>(2 * (producers.size() + consumers.size()));
+            queue = new ArrayBlockingQueue<>(10 * (producers.size() + consumers.size()));
          }
          return new Broker<>(queue, producers, consumers);
       }

@@ -334,7 +334,10 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
 
       @Override
       public Counter<V> adjustValues(DoubleUnaryOperator function) {
-         return createIfNeeded().adjustValues(function);
+         if( map.containsKey(key)){
+            return map.get(key).adjustValues(function);
+         }
+         return createCounter();
       }
 
       @Override
@@ -360,9 +363,10 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
 
       @Override
       public Counter<V> bottomN(int n) {
-         Counter<V> toReturn = createIfNeeded().bottomN(n);
-         removeIfEmpty();
-         return toReturn;
+         if (map.containsKey(key)) {
+            return map.get(key).bottomN(n);
+         }
+         return createCounter();
       }
 
       @Override
