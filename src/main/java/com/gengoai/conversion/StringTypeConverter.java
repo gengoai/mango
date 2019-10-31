@@ -54,15 +54,9 @@ public class StringTypeConverter implements TypeConverter {
          return e.getDeclaringClass().getName() + "." + e.name();
       } else if (object instanceof EnumValue) {
          return Cast.<EnumValue>as(object).canonicalName();
+      } else if( object instanceof Resource){
+         return Cast.<Resource>as(object).descriptor();
       }
-
-      try {
-         Resource r = Converter.convert(object, Resource.class);
-         return r.readToString();
-      } catch (Exception e) {
-         //Ignore
-      }
-
       return object.toString();
    }
 

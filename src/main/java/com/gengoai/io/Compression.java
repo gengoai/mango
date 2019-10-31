@@ -107,14 +107,13 @@ public enum Compression {
       if (read == -1) {
          return new CompressedInputStream(is, NONE);
       }
+      pushbackInputStream.unread(buffer, 0, read);
       for (Compression value : values()) {
          if (value != NONE && matches(value.header, buffer)) {
-            pushbackInputStream.unread(buffer, 0, read);
             return new CompressedInputStream(pushbackInputStream, value);
          }
       }
-      pushbackInputStream.unread(buffer, 0, read);
-      return new CompressedInputStream(is, NONE);
+      return new CompressedInputStream(pushbackInputStream, NONE);
    }
 
    private static boolean matches(byte[] a1, byte[] a2) {

@@ -17,37 +17,36 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ *
  */
 
-package com.gengoai.concurrent;
+package com.gengoai.io;
+
+import java.io.Serializable;
+import java.util.function.Consumer;
+
+import static com.gengoai.Validation.checkArgument;
+import static com.gengoai.Validation.notNull;
 
 /**
- * <p>A producer implementation that produces items from an iterable.</p>
- *
- * @param <V> the type of item being produced.
  * @author David B. Bracewell
  */
-public class IterableProducer<V> extends Broker.Producer<V> {
-   private final Iterable<V> iterable;
+public class MonitoredObject<T> implements Serializable {
+   private static final long serialVersionUID = 1L;
+   protected final Object referent = new Object();
+   public final T object;
 
-   /**
-    * Instantiates a new Iterable producer.
-    *
-    * @param iterable the iterable
-    */
-   public IterableProducer(Iterable<V> iterable) {
-      this.iterable = iterable;
+   protected MonitoredObject(T object) {
+      notNull(object);
+      checkArgument(object instanceof AutoCloseable, "Object must be AutoCloseable");
+      this.object = ResourceMonitor.MONITOR.addResource(this, object);
    }
 
-   @Override
-   public void produce() {
-      start();
-      iterable.forEach(e -> {
-         if (e != null) {
-            yield(e);
-         }
-      });
-      stop();
+   protected MonitoredObject(T object, Consumer<T> onClose) {
+      notNull(object);
+      notNull(onClose);
+      this.object = ResourceMonitor.MONITOR.addResource(this, object, onClose);
    }
 
-}//END OF IterableProducer
+
+}//END OF MonitoredObject

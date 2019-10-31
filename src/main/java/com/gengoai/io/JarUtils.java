@@ -74,6 +74,9 @@ public class JarUtils {
       List<Resource> jars = new ArrayList<>();
       for (String jar : SystemInfo.JAVA_CLASS_PATH.split(SystemInfo.PATH_SEPARATOR)) {
          File file = new File(jar);
+         if (!file.exists()) {
+            continue;
+         }
          if (file.isDirectory()) {
             jars.add(new FileResource(jar));
          } else {

@@ -27,6 +27,8 @@ import com.gengoai.parsing.*;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Collections;
+import java.util.List;
 
 import static com.gengoai.config.ConfigTokenType.*;
 
@@ -40,13 +42,13 @@ class MsonConfigParser {
       ConfigScanner scanner = new ConfigScanner(new StringReader(input));
       return new AbstractTokenStream() {
          @Override
-         protected ParserToken next() {
+         protected List<ParserToken> next() {
             try {
                ParserToken pt = scanner.next();
                if (pt == null) {
-                  return TokenStream.EOF_TOKEN;
+                  return Collections.singletonList(TokenStream.EOF_TOKEN);
                }
-               return pt;
+               return Collections.singletonList(pt);
             } catch (Exception e) {
                throw new RuntimeException(e);
             }

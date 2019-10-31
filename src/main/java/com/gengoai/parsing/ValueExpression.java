@@ -36,7 +36,7 @@ import static java.lang.Double.parseDouble;
  *
  * @author David B. Bracewell
  */
-public class ValueExpression extends Expression {
+public class ValueExpression extends BaseExpression {
    /**
     * Creates a boolean value handler which will parse the {@link ParserToken} text to generate the boolean value
     */

@@ -111,7 +111,9 @@ public final class Json {
    protected static class JsonEntryMarshaller implements JsonSerializer<JsonEntry>, JsonDeserializer<JsonEntry> {
 
       @Override
-      public JsonEntry deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+      public JsonEntry deserialize(JsonElement jsonElement,
+                                   Type type,
+                                   JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
          return JsonEntry.from(jsonElement);
       }
 

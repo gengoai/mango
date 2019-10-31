@@ -709,7 +709,7 @@ public enum Language {
     */
    public static Language fromString(String code) {
       try {
-         return Language.valueOf(code);
+         return Language.valueOf(code.toUpperCase());
       } catch (Exception e) {
 
          Locale toFind;

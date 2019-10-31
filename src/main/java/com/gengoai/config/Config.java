@@ -361,6 +361,7 @@ public final class Config implements Serializable {
     */
    public static String[] initialize(String programName, String[] args, CommandLineParser parser, String... otherPackages) {
       Preloader.preload();
+
       String rval[];
       if (args != null) {
          rval = parser.parse(args);
@@ -402,7 +403,6 @@ public final class Config implements Serializable {
                log.finest("Loading {0}.conf from :", programName);
                loadConfig(resource);
             });
-
 
       // Store the command line arguments as a config settings.
       if (args != null) {

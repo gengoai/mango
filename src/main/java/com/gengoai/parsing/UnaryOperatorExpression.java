@@ -29,7 +29,7 @@ import java.util.Objects;
  *
  * @author David B. Bracewell
  */
-public class UnaryOperatorExpression extends Expression {
+public class UnaryOperatorExpression extends BaseExpression {
    private static final long serialVersionUID = 1L;
    /**
     * Generic Handler for generating {@link UnaryOperatorExpression}s for postfix operators.

@@ -17,37 +17,43 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ *
  */
 
-package com.gengoai.concurrent;
+package com.gengoai.function;
+
+import java.util.Collection;
+import java.util.Set;
+
+import static com.gengoai.Validation.notNull;
+import static com.gengoai.collection.Sets.hashSetOf;
 
 /**
- * <p>A producer implementation that produces items from an iterable.</p>
- *
- * @param <V> the type of item being produced.
  * @author David B. Bracewell
  */
-public class IterableProducer<V> extends Broker.Producer<V> {
-   private final Iterable<V> iterable;
+public final class Predicates {
 
-   /**
-    * Instantiates a new Iterable producer.
-    *
-    * @param iterable the iterable
-    */
-   public IterableProducer(Iterable<V> iterable) {
-      this.iterable = iterable;
+   private Predicates() {
+      throw new IllegalAccessError();
    }
 
-   @Override
-   public void produce() {
-      start();
-      iterable.forEach(e -> {
-         if (e != null) {
-            yield(e);
-         }
-      });
-      stop();
+
+   public static <T> SerializablePredicate<T> isIn(Set<T> set) {
+      notNull(set);
+      return set::contains;
    }
 
-}//END OF IterableProducer
+   public static <T> SerializablePredicate<T> isIn(Collection<T> collection) {
+      notNull(collection);
+      return collection::contains;
+   }
+
+   @SafeVarargs
+   public static <T> SerializablePredicate<T> isIn(T... array) {
+      if (array == null || array.length == 0) {
+         return t -> false;
+      }
+      return isIn(hashSetOf(array));
+   }
+
+}//END OF Predicates

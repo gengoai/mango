@@ -122,6 +122,7 @@ public interface Application extends Runnable, Serializable, Loggable {
          logSevere(e);
          System.exit(-1);
       }
+
       run();
    }
 

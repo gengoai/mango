@@ -37,7 +37,7 @@ import java.util.stream.Stream;
  *
  * @author David B. Bracewell
  */
-public class ListExpression extends Expression implements Iterable<Expression> {
+public class ListExpression extends BaseExpression implements Iterable<Expression> {
    private static final long serialVersionUID = 1L;
    private final List<Expression> expressions;
    private final String startOfList;

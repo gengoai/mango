@@ -27,7 +27,7 @@ package com.gengoai.parsing;
  *
  * @author David B. Bracewell
  */
-public class BinaryInfixOperatorExpression extends Expression {
+public class BinaryInfixOperatorExpression extends BaseExpression {
    private static final long serialVersionUID = 1L;
    /**
     * Generic Handler for generating {@link BinaryInfixOperatorExpression}s for infix operators using {@link

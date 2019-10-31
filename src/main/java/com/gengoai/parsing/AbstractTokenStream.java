@@ -23,6 +23,8 @@
 package com.gengoai.parsing;
 
 import java.io.Serializable;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Abstract base token stream providing extracted tokens from a {@link Lexer}.
@@ -32,19 +34,17 @@ import java.io.Serializable;
 public abstract class AbstractTokenStream implements TokenStream, Serializable {
    private static final long serialVersionUID = 1L;
    private ParserToken current;
-   private ParserToken next;
+   private LinkedList<ParserToken> buffer = new LinkedList<>();
 
    @Override
    public final ParserToken consume() {
       if (current != null && current.isInstance(EOF)) {
          throw new IllegalStateException("Parser Error: Attempting to read beyond EOF");
       }
-      if (next != null) {
-         current = next;
-         next = null;
-      } else {
-         current = next();
+      if (buffer.isEmpty()) {
+         buffer.addAll(next());
       }
+      current = buffer.removeFirst();
       return current;
    }
 
@@ -53,17 +53,17 @@ public abstract class AbstractTokenStream implements TokenStream, Serializable {
     *
     * @return the next {@link ParserToken}
     */
-   protected abstract ParserToken next();
+   protected abstract List<ParserToken> next();
 
    @Override
    public final ParserToken peek() {
       if (current != null && current.isInstance(EOF)) {
          throw new IllegalStateException("Parser Error: Attempting to read beyond EOF");
       }
-      if (next == null) {
-         next = next();
+      if (buffer.isEmpty()) {
+         buffer.addAll(next());
       }
-      return next;
+      return buffer.peek();
    }
 
    @Override

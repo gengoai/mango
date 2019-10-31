@@ -234,6 +234,7 @@ public class Parser implements TokenStream, Serializable {
 
    @Override
    public ParserToken peek() {
+      skip();
       return tokenStream.peek();
    }
 

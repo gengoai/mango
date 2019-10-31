@@ -35,18 +35,7 @@ import java.util.function.Function;
  *
  * @author David B. Bracewell
  */
-public class Expression implements Serializable {
-   private static final long serialVersionUID = 1L;
-   private final Tag type;
-
-   /**
-    * Instantiates a new Expression.
-    *
-    * @param type the Tag associated with the Expression
-    */
-   public Expression(Tag type) {
-      this.type = type;
-   }
+public interface Expression extends Serializable {
 
    /**
     * Applies the given function to this Expression treating it as an Expression of type <code>T</code>.
@@ -58,7 +47,7 @@ public class Expression implements Serializable {
     * @return the output of the function processing this expression
     * @throws IllegalStateException if this Expression is not of type <code>tClass</code>
     */
-   public <T extends Expression, O> O apply(Class<T> tClass, Function<T, O> function) {
+   default <T extends Expression, O> O apply(Class<T> tClass, Function<T, O> function) {
       return function.apply(as(tClass));
    }
 
@@ -70,14 +59,14 @@ public class Expression implements Serializable {
     * @return the Expression as the given type
     * @throws IllegalStateException if this Expression is not of type <code>tClass</code>
     */
-   public <T extends Expression> T as(Class<T> tClass) {
+   default <T extends Expression> T as(Class<T> tClass) {
       if (tClass.isInstance(this)) {
          return Cast.as(this);
       }
       throw new IllegalStateException("Parse Exception: Attempting to convert an expression of type '" +
                                          getClass().getSimpleName() +
                                          "' to an expression of type '" +
-                                         tClass.getSimpleName());
+                                         tClass.getSimpleName() + " (" + toString() + ")");
    }
 
    /**
@@ -85,9 +74,7 @@ public class Expression implements Serializable {
     *
     * @return the type
     */
-   public Tag getType() {
-      return type;
-   }
+   Tag getType();
 
    /**
     * Checks if this Expression is an instance of the given Expression type
@@ -95,7 +82,7 @@ public class Expression implements Serializable {
     * @param tClass the class information of desired expression type
     * @return True - if the expression is an instance of the given expression type, False otherwise
     */
-   public boolean isInstance(Class<? extends Expression> tClass) {
+   default boolean isInstance(Class<? extends Expression> tClass) {
       return tClass.isInstance(this);
    }
 
@@ -106,17 +93,17 @@ public class Expression implements Serializable {
     * @param type   the tag type
     * @return True - if the expression is an instance of the given expression type and tag type, False otherwise
     */
-   public boolean isInstance(Class<? extends Expression> tClass, Tag type) {
-      return tClass.isInstance(this) && this.type.isInstance(type);
+   default boolean isInstance(Class<? extends Expression> tClass, Tag type) {
+      return tClass.isInstance(this) && this.getType().isInstance(type);
    }
 
    /**
     * Checks if this Expression's tag is an instance of any of the given tags
     *
-    * @param tags   the tags to check
+    * @param tags the tags to check
     * @return True - if the expression of any of the given tag , False otherwise
     */
-   public boolean isInstance(Tag... tags) {
+   default boolean isInstance(Tag... tags) {
       return getType().isInstance(tags);
    }
 
@@ -129,7 +116,7 @@ public class Expression implements Serializable {
     * @param function the function to process the expression
     * @return the Optional output of the function.
     */
-   public <T extends Expression, O> Optional<O> when(Class<T> tClass, Function<T, O> function) {
+   default <T extends Expression, O> Optional<O> when(Class<T> tClass, Function<T, O> function) {
       if (isInstance(tClass)) {
          return Optional.ofNullable(function.apply(Cast.as(this)));
       }
@@ -144,7 +131,7 @@ public class Expression implements Serializable {
     * @param consumer the consumer to process the expression
     * @return True if consumer is applied, False otherwise
     */
-   public <T extends Expression> boolean when(Class<T> tClass, Consumer<T> consumer) {
+   default <T extends Expression> boolean when(Class<T> tClass, Consumer<T> consumer) {
       if (tClass.isInstance(this)) {
          consumer.accept(Cast.as(this));
          return true;

@@ -214,7 +214,7 @@ public class Grammar implements Serializable {
     * @param tag the tag which will be skipped.
     * @return the grammar
     */
-   protected Grammar skip(Tag tag) {
+   public Grammar skip(Tag tag) {
       skipTags.add(tag);
       return this;
    }

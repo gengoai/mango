@@ -17,37 +17,34 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ *
  */
 
-package com.gengoai.concurrent;
+package com.gengoai.parsing;
+
+import com.gengoai.Tag;
 
 /**
- * <p>A producer implementation that produces items from an iterable.</p>
+ * Abstract Base Class for Expressions to implement.
  *
- * @param <V> the type of item being produced.
  * @author David B. Bracewell
  */
-public class IterableProducer<V> extends Broker.Producer<V> {
-   private final Iterable<V> iterable;
+public abstract class BaseExpression implements Expression {
+   private static final long serialVersionUID = 1L;
+   private final Tag tag;
 
    /**
-    * Instantiates a new Iterable producer.
+    * Instantiates a new BaseExpression
     *
-    * @param iterable the iterable
+    * @param tag the tag for the expression
     */
-   public IterableProducer(Iterable<V> iterable) {
-      this.iterable = iterable;
+   public BaseExpression(Tag tag) {
+      this.tag = tag;
    }
 
    @Override
-   public void produce() {
-      start();
-      iterable.forEach(e -> {
-         if (e != null) {
-            yield(e);
-         }
-      });
-      stop();
+   public Tag getType() {
+      return tag;
    }
 
-}//END OF IterableProducer
+}//END OF BaseExpression
