@@ -68,7 +68,6 @@ public class SparkStream<T> implements MStream<T>, Serializable {
          int slices = Math.max(1, collection.size() / Config.get("spark.partitions").asIntegerValue(100));
          this.rdd = SparkStreamingContext.INSTANCE.sparkContext().parallelize(collection, slices);
       }
-//      this.onClose = mStream.getOnCloseHandler();
    }
 
    @Override

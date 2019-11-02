@@ -22,7 +22,6 @@
 package com.gengoai.application;
 
 import com.gengoai.config.Config;
-import com.gengoai.io.Resources;
 import com.gengoai.logging.Loggable;
 
 import java.io.Serializable;
@@ -30,6 +29,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Set;
 
 /**
  * <p>Generic interface for building applications that use Mango's {@link Config} and {@link CommandLineParser} to
@@ -37,26 +37,11 @@ import java.lang.annotation.Target;
  * during the run and has it options set to fields in the application defined using the {@link Option} annotation.</p>
  *
  * <p>A <code>Description</code> annotation can be added to a class extending Application to provide a short
- * description
- * of what the program does and will be displayed as part of the help screen. </p>
+ * description of what the program does and will be displayed as part of the help screen. </p>
  *
  * @author David B. Bracewell
  */
 public interface Application extends Runnable, Serializable, Loggable {
-
-   /**
-    * <p>Gets the command line arguments that were not specified as part of the command line parser</p>
-    *
-    * @return Arguments not specified in the command line parser
-    */
-   String[] getPositionalArgs();
-
-   /**
-    * <p>Sets the command line arguments that were not specified as part of the command line parser</p>
-    *
-    * @param nonSpecifiedArguments the non-specified arguments
-    */
-   void setPositionalArgs(String[] nonSpecifiedArguments);
 
    /**
     * <p>Get all arguments passed to the application.</p>
@@ -73,11 +58,11 @@ public interface Application extends Runnable, Serializable, Loggable {
    void setAllArguments(String[] allArguments);
 
    /**
-    * <p>Gets the package name to use for loading a <code>default.conf</code></p>
+    * Gets the set of dependent packages whose config needs to be loaded
     *
-    * @return the config package name or null if using the application's package
+    * @return the dependent packages
     */
-   String getConfigPackageName();
+   Set<String> getDependentPackages();
 
    /**
     * Gets the name of the application
@@ -86,6 +71,19 @@ public interface Application extends Runnable, Serializable, Loggable {
     */
    String getName();
 
+   /**
+    * <p>Gets the command line arguments that were not specified as part of the command line parser</p>
+    *
+    * @return Arguments not specified in the command line parser
+    */
+   String[] getPositionalArgs();
+
+   /**
+    * <p>Sets the command line arguments that were not specified as part of the command line parser</p>
+    *
+    * @param nonSpecifiedArguments the non-specified arguments
+    */
+   void setPositionalArgs(String[] nonSpecifiedArguments);
 
    /**
     * <p>Runs the application by first parsing the command line arguments and initializing the config. The process then
@@ -111,8 +109,10 @@ public interface Application extends Runnable, Serializable, Loggable {
 
       CommandLineParser parser = new CommandLineParser(this, cliDesc.toString());
       setPositionalArgs(Config.initialize(getName(), args, parser));
-      if (getConfigPackageName() != null) {
-         Config.loadConfig(Resources.fromClasspath(getConfigPackageName().replace(".", "/") + "/default.conf"));
+      if (getDependentPackages().size() > 0) {
+         for (String dependentPackage : getDependentPackages()) {
+            Config.loadPackageConfig(dependentPackage);
+         }
          Config.setAllCommandLine(parser);
       }
 

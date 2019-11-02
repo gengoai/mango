@@ -83,7 +83,7 @@ public class ApplicationTest {
        * Default Constructor
        */
       public TestApp() {
-         super("TestApp", "com.gengoai.test");
+         super("TestApp", new String[]{"com.gengoai.test"});
       }
 
       @Override
@@ -95,7 +95,6 @@ public class ApplicationTest {
          assertTrue(a);
          assertTrue(b);
          assertTrue(c);
-         assertEquals("com.gengoai.test", getConfigPackageName());
 
          //Test that config parameters are set
          assertEquals("John", Config.get("name").asString());

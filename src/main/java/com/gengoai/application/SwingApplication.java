@@ -1,5 +1,6 @@
 package com.gengoai.application;
 
+import com.gengoai.Validation;
 import com.gengoai.config.Config;
 import com.gengoai.logging.Loggable;
 import com.gengoai.string.Strings;
@@ -10,8 +11,12 @@ import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import static com.gengoai.collection.Sets.hashSetOf;
 
 /**
  * <p> Abstract base class for a swing based applications. Child classes should define their UI via the {@link
@@ -38,7 +43,7 @@ import java.util.function.Supplier;
 public abstract class SwingApplication extends JFrame implements Application, Loggable {
    private static final long serialVersionUID = 1L;
    private final String applicationName;
-   private final String packageName;
+   private final Set<String> dependencies = hashSetOf();
    private String[] allArgs;
    private String[] nonNamedArguments;
 
@@ -57,31 +62,36 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
    }
 
    /**
-    * Instantiates a new Swing application.
+    * Instantiates a new Application.
     */
-   public SwingApplication() {
-      this(null, null);
+   protected SwingApplication() {
+      this(null, new String[0]);
+   }
+
+
+   /**
+    * Instantiates a new Application.
+    *
+    * @param applicationName the application name
+    */
+   protected SwingApplication(String applicationName) {
+      this(applicationName, new String[0]);
    }
 
    /**
     * Instantiates a new SwingApplication.
     *
     * @param applicationName the application name
-    */
-   public SwingApplication(String applicationName) {
-      this(applicationName, null);
-   }
-
-   /**
-    * Instantiates a new SwingApplication.
-    *
-    * @param applicationName the application name
-    * @param packageName     the package name to use for the application, which is important for loading the correct
+    * @param dependencies    the package name to use for the application, which is important for loading the correct
     *                        configuration.
     */
-   protected SwingApplication(String applicationName, String packageName) {
+   protected SwingApplication(String applicationName, String[] dependencies) {
       this.applicationName = Strings.isNullOrBlank(applicationName) ? getClass().getSimpleName() : applicationName;
-      this.packageName = packageName;
+      this.dependencies.addAll(Arrays.asList(Validation.notNull(dependencies)));
+   }
+
+   protected void addDependency(String dependency) {
+      this.dependencies.add(dependency);
    }
 
    @Override
@@ -209,9 +219,10 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
       this.allArgs = allArguments;
    }
 
+
    @Override
-   public String getConfigPackageName() {
-      return packageName;
+   public Set<String> getDependentPackages() {
+      return dependencies;
    }
 
    @Override

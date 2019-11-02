@@ -70,8 +70,6 @@ public class Parser implements TokenStream, Serializable {
    public <O> O evaluate(Evaluator<? extends O> evaluator) throws ParseException {
       try {
          return evaluator.eval(parseExpression());
-      } catch (ParseException e) {
-         throw e;
       } catch (Exception e2) {
          throw new ParseException(e2);
       }

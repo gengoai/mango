@@ -109,7 +109,6 @@ class RegexLexer implements Lexer {
 
             if (!matcher.find()) {
                String text = input.substring(endOffset);
-               lastEnd = input.length();
                if (undefinedType != null && Strings.isNotNullOrBlank(text)) {
                   return Collections.singletonList(new ParserToken(undefinedType, text, endOffset));
                }
@@ -118,7 +117,6 @@ class RegexLexer implements Lexer {
                }
                return Collections.singletonList(EOF_TOKEN);
             }
-
             for (int i = 0; i < groups.length; i++) {
                String group = groups[i];
                if (matcher.group(group) != null) {

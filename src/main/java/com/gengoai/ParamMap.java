@@ -51,43 +51,10 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
    private static final long serialVersionUID = 1L;
    private final Map<String, Parameter<?>> map = new HashMap<>();
 
-   public static class Marshaller extends JsonMarshaller<ParamMap<?>> {
-
-      @Override
-      @SuppressWarnings("unchecked")
-      protected ParamMap<?> deserialize(JsonEntry entry, Type type) {
-         try {
-            ParamMap<?> map = Reflect.onClass(TypeUtils.asClass(type)).create().get();
-            entry.propertyIterator().forEachRemaining(e -> {
-               String key = e.getKey();
-               if (!key.equals("@type") && map.map.containsKey(key)) {
-                  ParamMap.Parameter param = map.map.get(key);
-                  param.set(e.getValue().getAs(param.param.type));
-               }
-            });
-            return map;
-         } catch (ReflectionException e) {
-            throw new RuntimeException(e);
-         }
-      }
-
-      @Override
-      protected JsonEntry serialize(ParamMap<?> paramMap, Type type) {
-         JsonEntry object = JsonEntry.object();
-         paramMap.map.forEach((k, v) -> object.addProperty(k, v.value));
-         return object;
-      }
-   }
-
-   public Set<String> parameterNames() {
-      return map.keySet();
-   }
-
    @Override
    public ParamMap<V> copy() {
       return Copyable.deepCopy(this);
    }
-
 
    /**
     * Get t.
@@ -103,10 +70,6 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
          return Cast.as(parameter.value);
       }
       throw new IllegalArgumentException("Unknown Parameter: " + param.name);
-   }
-
-   public <T> Param<T> getParameter(String name) {
-      return Cast.as(map.get(name).param);
    }
 
    /**
@@ -155,6 +118,10 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
       return defaultValue;
    }
 
+   public <T> Param<T> getParameter(String name) {
+      return Cast.as(map.get(name).param);
+   }
+
    /**
     * Parameter parameter.
     *
@@ -165,6 +132,10 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
     */
    public <T> Parameter<T> parameter(Param<T> param, T defValue) {
       return new Parameter<>(param, defValue);
+   }
+
+   public Set<String> parameterNames() {
+      return map.keySet();
    }
 
    /**
@@ -206,6 +177,14 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
       throw new IllegalArgumentException("Unknown Parameter: " + param);
    }
 
+   @Override
+   public String toString() {
+      return "ParamMap{" + map.values()
+                              .stream()
+                              .map(p -> p.param.name + "=" + p.value)
+                              .collect(Collectors.joining(", ")) + "}";
+   }
+
    public void update(Map<String, ?> parameters) {
       parameters.forEach((k, v) -> {
          if (map.containsKey(k)) {
@@ -219,14 +198,6 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
       });
    }
 
-   @Override
-   public String toString() {
-      return "ParamMap{" + map.values()
-                              .stream()
-                              .map(p -> p.param.name + "=" + p.value)
-                              .collect(Collectors.joining(", ")) + "}";
-   }
-
    /**
     * Update v.
     *
@@ -236,6 +207,34 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
    public V update(Consumer<V> updater) {
       updater.accept(Cast.as(this));
       return Cast.as(this);
+   }
+
+   public static class Marshaller extends JsonMarshaller<ParamMap<?>> {
+
+      @Override
+      @SuppressWarnings("unchecked")
+      protected ParamMap<?> deserialize(JsonEntry entry, Type type) {
+         try {
+            ParamMap<?> map = Reflect.onClass(TypeUtils.asClass(type)).create().get();
+            entry.propertyIterator().forEachRemaining(e -> {
+               String key = e.getKey();
+               if (!key.equals("@type") && map.map.containsKey(key)) {
+                  ParamMap.Parameter param = map.map.get(key);
+                  param.set(e.getValue().getAs(param.param.type));
+               }
+            });
+            return map;
+         } catch (ReflectionException e) {
+            throw new RuntimeException(e);
+         }
+      }
+
+      @Override
+      protected JsonEntry serialize(ParamMap<?> paramMap, Type type) {
+         JsonEntry object = JsonEntry.object();
+         paramMap.map.forEach((k, v) -> object.addProperty(k, v.value));
+         return object;
+      }
    }
 
    /**
@@ -271,16 +270,16 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
          return Cast.as(ParamMap.this);
       }
 
+      @Override
+      public String toString() {
+         return "Parameter{name=" + param.name + ", value=" + value + "}";
+      }
+
       public T value() {
          if (Number.class.isAssignableFrom(param.type)) {
             return Converter.convertSilently(value, param.type);
          }
          return value;
-      }
-
-      @Override
-      public String toString() {
-         return "Parameter{name=" + param.name + ", value=" + value + "}";
       }
    }
 
