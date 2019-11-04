@@ -152,11 +152,16 @@ public class ChineseWhispers<V> implements Clusterer<V> {
       List<Set<V>> rval = new ArrayList<>();
       for (Integer id : Sets.asHashSet(classMap.values())) {
          Set<V> cluster = new HashSet<>();
-         for (V v : classMap.keySet()) {
-            if (classMap.get(v).equals(id)) {
-               cluster.add(v);
+         for (Map.Entry<V, Integer> entry : classMap.entrySet()) {
+            if (entry.getValue().equals(id)) {
+               cluster.add(entry.getKey());
             }
          }
+//         for (V v : classMap.keySet()) {
+//            if (classMap.get(v).equals(id)) {
+//               cluster.add(v);
+//            }
+//         }
          rval.add(cluster);
       }
 

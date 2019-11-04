@@ -68,7 +68,7 @@ public class GraphViz<V> implements GraphWriter<V>, GraphRenderer<V> {
    }
 
    private static final Logger log = Logger.getLogger(GraphViz.class);
-   private static String DOT = "/usr/bin/dot";
+   private String DOT = "/usr/bin/dot";
    private EdgeEncoder<V> edgeEncoder;
    private VertexEncoder<V> vertexEncoder;
    private Format format = Format.PNG;

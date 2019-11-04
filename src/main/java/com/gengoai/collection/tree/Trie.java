@@ -437,6 +437,25 @@ public class Trie<V> implements Serializable, Map<String, V> {
       }
 
       @Override
+      public boolean equals(Object o) {
+         if (this == o) return true;
+         if (!(o instanceof TrieNode)) return false;
+         TrieNode<?> trieNode = (TrieNode<?>) o;
+         return depth == trieNode.depth &&
+            size == trieNode.size &&
+            Objects.equals(nodeChar, trieNode.nodeChar) &&
+            Objects.equals(parent, trieNode.parent) &&
+            Objects.equals(value, trieNode.value) &&
+            Objects.equals(matches, trieNode.matches) &&
+            Objects.equals(children, trieNode.children);
+      }
+
+      @Override
+      public int hashCode() {
+         return Objects.hash(nodeChar, parent, depth, value, matches, size, children);
+      }
+
+      @Override
       public int compareTo(TrieNode<V> o) {
          return nodeChar.compareTo(o.nodeChar);
       }
