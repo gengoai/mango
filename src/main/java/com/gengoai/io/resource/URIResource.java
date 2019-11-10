@@ -131,4 +131,6 @@ public class URIResource extends BaseResource {
    public String path() {
       return uri.getPath();
    }
+
+
 }//END OF URIResource

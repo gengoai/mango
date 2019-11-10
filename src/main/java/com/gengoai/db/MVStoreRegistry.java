@@ -24,7 +24,7 @@ package com.gengoai.db;
 
 import com.gengoai.collection.counter.ConcurrentHashMapCounter;
 import com.gengoai.collection.counter.Counter;
-import org.h2.mvstore.MVMap;
+import lombok.NonNull;
 import org.h2.mvstore.MVStore;
 
 import java.io.File;
@@ -32,40 +32,48 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-class MVFactory {
-
+/**
+ * @author David B. Bracewell
+ */
+public final class MVStoreRegistry {
    private static final Counter<File> fileCounter = new ConcurrentHashMapCounter<>();
    private static final ReentrantLock lock = new ReentrantLock();
-   private static final Map<File, MVStore> openStores = new ConcurrentHashMap<>();
+   private static final Map<File, MVStore> stores = new ConcurrentHashMap<>();
 
-   public static void close(File file) {
+   private MVStoreRegistry() {
+      throw new IllegalAccessError();
+   }
+
+   public static boolean close(@NonNull File file) {
       lock.lock();
       try {
-         if (openStores.containsKey(file)) {
+         if (stores.containsKey(file)) {
             fileCounter.decrement(file);
             if (!fileCounter.contains(file)) {
-               openStores.get(file).close();
+               stores.get(file).close();
+               stores.remove(file);
+               return true;
             }
          }
       } finally {
          lock.unlock();
       }
+      return false;
    }
 
-   public static <K, V> MVMap<K, V> getMap(File file, String namespace, boolean compressed) {
+   public static MVStore get(@NonNull File databaseFile, @NonNull boolean compressed) {
+      final MVStore.Builder builder = new MVStore.Builder().fileName(databaseFile.getAbsolutePath());
+      if (compressed) {
+         builder.compress();
+      }
       lock.lock();
       try {
-         if (compressed) {
-            openStores.computeIfAbsent(file,
-                                       f -> new MVStore.Builder().compress().fileName(f.getAbsolutePath()).open());
-         } else {
-            openStores.computeIfAbsent(file, f -> MVStore.open(f.getAbsolutePath()));
-         }
-         fileCounter.increment(file);
-         return openStores.get(file).openMap(namespace);
+         stores.computeIfAbsent(databaseFile, f -> builder.open());
+         fileCounter.increment(databaseFile);
+         return stores.get(databaseFile);
       } finally {
          lock.unlock();
       }
    }
 
-}//END OF MVFactory
+}//END OF MVStoreRegistry

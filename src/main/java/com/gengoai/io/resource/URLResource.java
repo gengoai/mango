@@ -72,8 +72,8 @@ public class URLResource extends BaseResource {
       if (!(o instanceof URLResource)) return false;
       URLResource that = (URLResource) o;
       return connectionTimeOut == that.connectionTimeOut &&
-                Objects.equals(url, that.url) &&
-                Objects.equals(userAgent, that.userAgent);
+         Objects.equals(url, that.url) &&
+         Objects.equals(userAgent, that.userAgent);
    }
 
    @Override
@@ -219,6 +219,5 @@ public class URLResource extends BaseResource {
    public void setConnectionTimeOut(int connectionTimeOut) {
       this.connectionTimeOut = connectionTimeOut;
    }
-
 
 }//END OF URLResource

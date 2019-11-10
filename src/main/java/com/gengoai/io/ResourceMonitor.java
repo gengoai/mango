@@ -113,7 +113,6 @@ public class ResourceMonitor extends Thread {
       try {
          while (true) {
             KeyedWeakReference ref = (KeyedWeakReference) referenceQueue.remove();
-            System.out.println(ref);
             try {
                map.remove(ref.monitoredResource.key);
                ref.monitoredResource.close();

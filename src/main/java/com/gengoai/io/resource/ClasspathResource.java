@@ -94,7 +94,7 @@ public class ClasspathResource extends BaseResource {
 
    @Override
    public String descriptor() {
-      return ClasspathResourceProvider.PROTOCOL + ":" + resource;
+      return ClasspathResourceProvider.SCHEME + ":" + resource;
    }
 
    @Override

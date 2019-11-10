@@ -37,11 +37,11 @@ import java.util.Map;
 @MetaInfServices
 public class FileResourceProvider implements ResourceProvider {
 
-   public static final String PROTOCOL = "file";
+   public static final String SCHEME = "file";
 
    @Override
    public String[] getProtocols() {
-      return new String[]{PROTOCOL};
+      return new String[]{SCHEME};
    }
 
    @Override

@@ -22,19 +22,20 @@
 
 package com.gengoai.db;
 
-import java.io.Serializable;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collections;
+import java.util.NavigableMap;
 
 /**
  * @author David B. Bracewell
  */
-class InMemoryKeyValueStore<K, V> extends ConcurrentHashMap<K, V> implements KeyValueStore<K, V>, Serializable {
+class InMemoryKeyValueStore<K, V> extends AbstractNavigableKeyValueStore<K, V> {
    private static final long serialVersionUID = 1L;
-   private final String namespace;
+   private transient volatile NavigableMap<K, V> map;
 
-   public InMemoryKeyValueStore(String namespace) {
-      this.namespace = namespace;
+   public InMemoryKeyValueStore(String namespace, boolean readOnly) {
+      super(namespace, readOnly);
    }
+
 
    @Override
    public void close() throws Exception {
@@ -46,14 +47,20 @@ class InMemoryKeyValueStore<K, V> extends ConcurrentHashMap<K, V> implements Key
 
    }
 
-   @Override
-   public String getNameSpace() {
-      return namespace;
+
+   protected NavigableMap<K, V> delegate() {
+      if (map == null) {
+         synchronized (this) {
+            if (map == null) {
+               map = MapRegistry.get(getNameSpace());
+               if (isReadOnly()) {
+                  map = Collections.unmodifiableNavigableMap(map);
+               }
+            }
+         }
+      }
+      return map;
    }
 
-   @Override
-   public long sizeAsLong() {
-      return size();
-   }
 
 }//END OF InMemoryKeyValueStore

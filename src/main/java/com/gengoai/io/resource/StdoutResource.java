@@ -70,4 +70,5 @@ public class StdoutResource extends BaseResource implements NonTraversableResour
    public Resource getChild(String relativePath) {
       return this;
    }
+
 }//END OF StdoutResource

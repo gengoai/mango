@@ -67,7 +67,7 @@ public class StringResource extends BaseResource implements NonTraversableResour
 
    @Override
    public byte[] readBytes() throws IOException {
-      return resource.toString().getBytes();
+      return resource.toString().getBytes(StandardCharsets.UTF_8);
    }
 
    @Override

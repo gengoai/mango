@@ -139,6 +139,16 @@ public final class Resources {
       return new URIResource(resource);
    }
 
+   /**
+    * <p> Creates a new {@link URIResource}. </p>
+    *
+    * @param resource The uri to wrap.
+    * @return A new Resource wrapping a uri.
+    */
+   public static URIResource fromURI(String resource) {
+      return new URIResource(URI.create(resource));
+   }
+
 
    /**
     * <p> Creases a new {@link FileResource}. </p>

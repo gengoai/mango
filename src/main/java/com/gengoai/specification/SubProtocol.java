@@ -17,31 +17,19 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ *
  */
 
-package com.gengoai.io.resource;
+package com.gengoai.specification;
 
-
-import java.io.IOException;
-import java.io.InputStream;
+import java.lang.annotation.*;
 
 /**
- * Resource that wraps standard in
- *
  * @author David B. Bracewell
  */
-public class StdinResource extends BaseResource implements NonTraversableResource, ReadOnlyResource {
-
-   private static final long serialVersionUID = 1373981063391575745L;
-
-   @Override
-   public InputStream createInputStream() throws IOException {
-      return System.in;
-   }
-
-   @Override
-   public boolean exists() {
-      return true;
-   }
-
-}//END OF StdinResource
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+@Inherited
+public @interface SubProtocol {
+   int value() default -1;
+}//END OF SubProtocol

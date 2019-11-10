@@ -24,6 +24,7 @@ package com.gengoai.io.resource;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 /**
@@ -77,7 +78,8 @@ public class ReaderResource extends BaseResource implements ReadOnlyResource, No
          while ((read = bufferedReader.read(buffer, 0, buffer.length)) > 0) {
             builder.append(buffer, 0, read);
          }
-         return builder.toString().getBytes();
+         return builder.toString().getBytes(StandardCharsets.UTF_8);
       }
    }
+
 }//END OF ReaderResource

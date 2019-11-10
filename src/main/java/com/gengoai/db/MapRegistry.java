@@ -17,43 +17,34 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ *
  */
 
-package com.gengoai.io.resource.spi;
+package com.gengoai.db;
 
 import com.gengoai.conversion.Cast;
-import com.gengoai.io.resource.Resource;
-import com.gengoai.io.resource.StdinResource;
-import com.gengoai.reflection.BeanMap;
-import org.kohsuke.MetaInfServices;
 
+import java.lang.ref.SoftReference;
 import java.util.Map;
+import java.util.NavigableMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
- * A provider for a resource wrapping standard in.
- *
  * @author David B. Bracewell
  */
-@MetaInfServices
-public class StdinResourceProvider implements ResourceProvider {
-
-   public static final String SCHEME = "stdin";
-
-   @Override
-   public String[] getProtocols() {
-      return new String[]{SCHEME};
+final class MapRegistry {
+   private MapRegistry() {
+      throw new IllegalAccessError();
    }
 
-   @Override
-   public Resource createResource(String specification, Map<String, String> properties) {
-      BeanMap beanMap = new BeanMap(new StdinResource());
-      beanMap.putAll(properties);
-      return Cast.as(beanMap.getBean());
+   private static final Map<String, SoftReference<NavigableMap>> stores = new ConcurrentHashMap<>();
+
+   static <K, V> ConcurrentSkipListMap<K, V> get(String namespace) {
+      return Cast.as(stores.compute(namespace, (ns, map) -> map == null
+                                                            ? new SoftReference<>(new ConcurrentSkipListMap<>())
+                                                            : map).get());
    }
 
-   @Override
-   public boolean requiresProtocol() {
-      return false;
-   }
 
-}//END OF FileResourceProvider
+}//END OF InMemoryKVRegistry

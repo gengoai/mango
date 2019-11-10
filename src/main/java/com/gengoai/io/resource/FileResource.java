@@ -54,7 +54,7 @@ public class FileResource extends BaseResource {
     * @param file The file to be wrapped.
     */
    public FileResource(File file) {
-      this.file = file.getAbsoluteFile();
+      this.file = file;
    }
 
    /**
@@ -76,7 +76,7 @@ public class FileResource extends BaseResource {
 
    @Override
    public Optional<File> asFile() {
-      return Optional.of(file.getAbsoluteFile());
+      return Optional.of(file);
    }
 
    @Override
@@ -155,7 +155,7 @@ public class FileResource extends BaseResource {
 
    @Override
    public String descriptor() {
-      return FileResourceProvider.PROTOCOL + ":" + file.getAbsolutePath();
+      return FileResourceProvider.SCHEME + ":" + file;
    }
 
    @Override
@@ -228,7 +228,6 @@ public class FileResource extends BaseResource {
    @Override
    public MStream<String> lines() throws IOException {
       return new LocalStream<>(lineStream());
-//      return new LocalStream<>(Files.lines(asPath().orElse(null)));
    }
 
    @Override

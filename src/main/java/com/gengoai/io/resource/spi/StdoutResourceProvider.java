@@ -37,11 +37,11 @@ import java.util.Map;
 @MetaInfServices
 public class StdoutResourceProvider implements ResourceProvider {
 
-   public static final String PROTOCOL = "stdout";
+   public static final String SCHEME = "stdout";
 
    @Override
    public String[] getProtocols() {
-      return new String[]{PROTOCOL};
+      return new String[]{SCHEME};
    }
 
    @Override

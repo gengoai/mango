@@ -17,43 +17,18 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ *
  */
 
-package com.gengoai.io.resource.spi;
-
-import com.gengoai.conversion.Cast;
-import com.gengoai.io.resource.Resource;
-import com.gengoai.io.resource.StdinResource;
-import com.gengoai.reflection.BeanMap;
-import org.kohsuke.MetaInfServices;
-
-import java.util.Map;
+package com.gengoai.specification;
 
 /**
- * A provider for a resource wrapping standard in.
- *
  * @author David B. Bracewell
  */
-@MetaInfServices
-public class StdinResourceProvider implements ResourceProvider {
+public class ConversionFunction {
 
-   public static final String SCHEME = "stdin";
-
-   @Override
-   public String[] getProtocols() {
-      return new String[]{SCHEME};
+   public Object convert(String string) {
+      return string;
    }
 
-   @Override
-   public Resource createResource(String specification, Map<String, String> properties) {
-      BeanMap beanMap = new BeanMap(new StdinResource());
-      beanMap.putAll(properties);
-      return Cast.as(beanMap.getBean());
-   }
-
-   @Override
-   public boolean requiresProtocol() {
-      return false;
-   }
-
-}//END OF FileResourceProvider
+}//END OF ConversionFunction

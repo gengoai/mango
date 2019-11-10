@@ -22,30 +22,30 @@
 
 package com.gengoai.db;
 
-import com.gengoai.collection.Iterators;
-import com.gengoai.conversion.Cast;
-import com.gengoai.io.MonitoredObject;
-import com.gengoai.io.ResourceMonitor;
-import org.h2.mvstore.MVMap;
-
-import java.io.File;
 import java.io.Serializable;
 import java.util.*;
 
 /**
+ * The type Abstract navigable key value store.
+ *
+ * @param <K> the type parameter
+ * @param <V> the type parameter
  * @author David B. Bracewell
  */
-class MVKeyValueStore<K, V> implements NavigableKeyValueStore<K, V>, Serializable {
+public abstract class AbstractNavigableKeyValueStore<K, V> implements NavigableKeyValueStore<K, V>, Serializable {
    private static final long serialVersionUID = 1L;
-   private final MonitoredObject<MVStoreHandle> handle;
    private final String namespace;
    private final boolean readOnly;
-   private volatile transient MVMap<K, V> map;
 
-   public MVKeyValueStore(File dbFile, String namespace, boolean compressed, boolean readOnly) {
+   /**
+    * Instantiates a new Abstract navigable key value store.
+    *
+    * @param namespace the namespace
+    * @param readOnly  the read only
+    */
+   protected AbstractNavigableKeyValueStore(String namespace, boolean readOnly) {
       this.namespace = namespace;
       this.readOnly = readOnly;
-      this.handle = ResourceMonitor.monitor(new MVStoreHandle(dbFile, compressed));
    }
 
    @Override
@@ -59,16 +59,6 @@ class MVKeyValueStore<K, V> implements NavigableKeyValueStore<K, V>, Serializabl
    }
 
    @Override
-   public void close() throws Exception {
-      handle.object.close();
-   }
-
-   @Override
-   public void commit() {
-      delegate().getStore().commit();
-   }
-
-   @Override
    public boolean containsKey(Object o) {
       return delegate().containsKey(o);
    }
@@ -78,22 +68,15 @@ class MVKeyValueStore<K, V> implements NavigableKeyValueStore<K, V>, Serializabl
       return delegate().containsValue(o);
    }
 
-   protected MVMap<K, V> delegate() {
-      if (map == null) {
-         synchronized (this) {
-            if (map == null) {
-               map = this.handle.object.getMap(namespace);
-            }
-         }
-      }
-      return map;
-   }
+   /**
+    * Delegate navigable map.
+    *
+    * @return the navigable map
+    */
+   protected abstract NavigableMap<K, V> delegate();
 
    @Override
    public Set<Entry<K, V>> entrySet() {
-      if (readOnly) {
-         return Collections.unmodifiableSet(delegate().entrySet());
-      }
       return delegate().entrySet();
    }
 
@@ -104,7 +87,7 @@ class MVKeyValueStore<K, V> implements NavigableKeyValueStore<K, V>, Serializabl
 
    @Override
    public K floorKey(K key) {
-      return delegate().lowerKey(key);
+      return delegate().floorKey(key);
    }
 
    @Override
@@ -134,17 +117,28 @@ class MVKeyValueStore<K, V> implements NavigableKeyValueStore<K, V>, Serializabl
 
    @Override
    public Iterator<K> keyIterator(K key) {
-      if (readOnly) {
-         return Iterators.unmodifiableIterator(delegate().keyIterator(key));
-      }
-      return delegate().keyIterator(key);
+      return new Iterator<K>() {
+         private K ck = ceilingKey(key);
+
+         @Override
+         public boolean hasNext() {
+            return ck != null;
+         }
+
+         @Override
+         public K next() {
+            if (ck == null) {
+               throw new NoSuchElementException();
+            }
+            K n = ck;
+            ck = higherKey(n);
+            return n;
+         }
+      };
    }
 
    @Override
    public Set<K> keySet() {
-      if (readOnly) {
-         return Collections.unmodifiableSet(delegate().keySet());
-      }
       return delegate().keySet();
    }
 
@@ -160,25 +154,16 @@ class MVKeyValueStore<K, V> implements NavigableKeyValueStore<K, V>, Serializabl
 
    @Override
    public V put(K k, V v) {
-      if (readOnly) {
-         throw new IllegalStateException("Cannot put to read-only KeyValue Store");
-      }
       return delegate().put(k, v);
    }
 
    @Override
    public void putAll(Map<? extends K, ? extends V> map) {
-      if (readOnly) {
-         throw new IllegalStateException("Cannot putAll to read-only KeyValue Store");
-      }
-      delegate().putAll(Cast.cast(map));
+      delegate().putAll(map);
    }
 
    @Override
    public V remove(Object o) {
-      if (readOnly) {
-         throw new IllegalStateException("Cannot remove from read-only KeyValue Store");
-      }
       return delegate().remove(o);
    }
 
@@ -189,15 +174,11 @@ class MVKeyValueStore<K, V> implements NavigableKeyValueStore<K, V>, Serializabl
 
    @Override
    public long sizeAsLong() {
-      return delegate().sizeAsLong();
+      return size();
    }
 
    @Override
    public Collection<V> values() {
-      if (readOnly) {
-         return Collections.unmodifiableCollection(delegate().values());
-      }
       return delegate().values();
    }
-
-}//END OF MVKeyValueStore
+}//END OF InMemoryKeyValueStore

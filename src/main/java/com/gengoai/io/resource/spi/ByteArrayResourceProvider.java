@@ -38,11 +38,11 @@ import java.util.Map;
 @MetaInfServices
 public class ByteArrayResourceProvider implements ResourceProvider {
 
-   public static final String PROTOCOL = "bytes";
+   public static final String SCHEME = "bytes";
 
    @Override
    public String[] getProtocols() {
-      return new String[]{PROTOCOL};
+      return new String[]{SCHEME};
    }
 
    @Override

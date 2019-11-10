@@ -37,11 +37,11 @@ import java.util.Map;
 @MetaInfServices
 public class StringResourceProvider implements ResourceProvider {
 
-   public static final String PROTOCOL = "string";
+   public static final String SCHEME = "string";
 
    @Override
    public String[] getProtocols() {
-      return new String[]{PROTOCOL};
+      return new String[]{SCHEME};
    }
 
    @Override

@@ -29,7 +29,7 @@ import com.gengoai.reflection.BeanMap;
 import java.util.Map;
 
 /**
- * <p>Creates resources for a given protocol. This is used in the {@link Resources} class to
+ * <p>Creates resources for a given SCHEME. This is used in the {@link Resources} class to
  * determine which type of resource to create when calling {@link Resources#from(String)}.</p>
  *
  * @author David B. Bracewell
@@ -52,7 +52,7 @@ public interface ResourceProvider {
    Resource createResource(String specification, Map<String, String> properties);
 
    /**
-    * @return True if the protocol is required as part of the specification
+    * @return True if the SCHEME is required as part of the specification
     */
    boolean requiresProtocol();
 
