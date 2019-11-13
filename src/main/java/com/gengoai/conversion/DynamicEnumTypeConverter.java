@@ -26,8 +26,8 @@ public class DynamicEnumTypeConverter implements TypeConverter {
    @Override
    public Object convert(Object source, Type... parameters) throws TypeConversionException {
       if (source instanceof JsonEntry
-             || source instanceof CharSequence
-             || source instanceof EnumValue) {
+         || source instanceof CharSequence
+         || source instanceof EnumValue) {
          String asString = Converter.convert(source, String.class);
          String enumName = asString;
          Class<?> enumClass = null;
@@ -40,7 +40,6 @@ public class DynamicEnumTypeConverter implements TypeConverter {
             enumClass = ReflectionUtils.getClassForNameQuietly(asString.substring(0, lastDot));
             enumName = asString.substring(lastDot + 1);
          }
-
 
 
          if (enumClass == null) {
@@ -57,7 +56,10 @@ public class DynamicEnumTypeConverter implements TypeConverter {
          }
 
          try {
-            return Reflect.onClass(enumClass).invoke("make", enumName).get();
+
+            return Reflect.onClass(enumClass)
+                          .getMethod("make", String.class)
+                          .invoke(enumName);
          } catch (ReflectionException e) {
             throw new TypeConversionException(source, parameterizedType(EnumValue.class, enumClass), e);
          }

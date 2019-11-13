@@ -96,9 +96,9 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
             }
          }
          try {
-            return Cast.as(Reflect.onClass(TypeUtils.asClass(type))
-                                  .getMethod("make")
-                                  .invoke(null, name));
+            return Reflect.onClass(TypeUtils.asClass(type))
+                                  .getMethod("make", String.class)
+                                  .invoke(name);
          } catch (Exception e) {
             throw new RuntimeException(e);
          }

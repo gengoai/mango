@@ -22,6 +22,7 @@
 package com.gengoai.reflection;
 
 import com.gengoai.Primitives;
+import com.gengoai.collection.Iterables;
 import com.gengoai.conversion.Val;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.logging.Loggable;
@@ -34,6 +35,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Predicate;
+
+import static com.gengoai.reflection.ReflectPredicates.nameIn;
 
 /**
  * Static classes to make reflection easier.
@@ -66,15 +69,6 @@ public final class ReflectionUtils implements Loggable {
       return null;
    }
 
-   public static <T> T newInstance(Type type) {
-      try {
-         return Reflect.onClass(TypeUtils.asClass(type))
-                       .create().get();
-      } catch (ReflectionException e) {
-         throw new RuntimeException(e);
-      }
-   }
-
    /**
     * <p>Creates an object from a string. It first checks if the string is a class name and if so attempts to create an
     * instance or get a singleton instance of the class. Next it checks if the string is class name and a static method
@@ -105,20 +99,18 @@ public final class ReflectionUtils implements Loggable {
 
             if (Reflect.onClass(clazz).containsField(field)) {
                try {
-                  return Reflect.onClass(clazz).get(field).get();
+                  return Reflect.onClass(clazz).getField(field).getReflectValue();
                } catch (ReflectionException e) {
                   //ignore this;
                }
             }
 
-            if (Reflect.onClass(clazz).containsMethod(field)) {
-               try {
-                  return Reflect.onClass(clazz).invoke(field).get();
-               } catch (ReflectionException e) {
-                  //ignore the error
-               }
+            Reflect r = Reflect.onClass(clazz);
+            try {
+               return r.getMethod(field).invoke();
+            } catch (ReflectionException e) {
+               //ignore the error
             }
-
             return Reflect.onClass(clazz).create(field).get();
          }
       }
@@ -295,24 +287,22 @@ public final class ReflectionUtils implements Loggable {
       if (cz == null) {
          return null;
       }
-      Method method = getSingletonMethod(cz);
       try {
-         return method == null ? null : Reflect.on(method, null, true).get();
+         RMethod method = getSingletonMethod(cz).orElse(null);
+         return method == null ? null : method.invoke();
       } catch (ReflectionException e) {
          throw new RuntimeException(e);
       }
    }
 
-   private static Method getSingletonMethod(Class<?> clazz) {
-      Reflect reflect = Reflect.onClass(clazz);
-      if (reflect.containsMethod("getInstance")) {
-         return reflect.getMethod("getInstance");
-      } else if (reflect.containsMethod("getSingleton")) {
-         return reflect.getMethod("getSingleton");
-      } else if (reflect.containsMethod("createInstance")) {
-         return reflect.getMethod("createInstance");
-      }
-      return null;
+   private static Optional<RMethod> getSingletonMethod(Class<?> clazz) {
+      return Iterables.getFirst(Reflect.onClass(clazz)
+                                       .getMethodsWhere(m -> {
+                                          if (m.numberOfParameters() > 0) {
+                                             return false;
+                                          }
+                                          return nameIn("getInstance", "getSingleton", "createInstance").test(m);
+                                       }));
    }
 
    /**
@@ -362,7 +352,16 @@ public final class ReflectionUtils implements Loggable {
       if (clazz == null) {
          return false;
       }
-      return getSingletonMethod(clazz) != null;
+      return getSingletonMethod(clazz).isPresent();
+   }
+
+   public static <T> T newInstance(Type type) {
+      try {
+         return Reflect.onClass(TypeUtils.asClass(type))
+                       .create().get();
+      } catch (ReflectionException e) {
+         throw new RuntimeException(e);
+      }
    }
 
    /**

@@ -21,13 +21,16 @@
 
 package com.gengoai.reflection;
 
-import com.gengoai.collection.Sets;
+import com.gengoai.collection.multimap.HashSetMultimap;
+import com.gengoai.collection.multimap.Multimap;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Contains basic information about the methods, fields and constructors for a class.
@@ -36,13 +39,10 @@ import java.util.*;
  */
 public final class ClassDescriptor implements Serializable {
    private static final long serialVersionUID = 1L;
-   private final Set<Method> methods = new HashSet<>();
-   private final Set<Method> declaredMethods = new HashSet<>();
-   private final Set<Field> fields = new HashSet<>();
-   private final Set<Field> declaredFields = new HashSet<>();
-   private final Set<Constructor<?>> constructors = new HashSet<>();
-   private final Set<Constructor<?>> declaredConstructors = new HashSet<>();
    private final Class<?> clazz;
+   private final Set<Constructor<?>> constructors = new HashSet<>();
+   private final Map<String, Field> fields = new HashMap<>();
+   private final Multimap<String, Method> methods = new HashSetMultimap<>();
 
    /**
     * Instantiates a new Class descriptor.
@@ -51,12 +51,20 @@ public final class ClassDescriptor implements Serializable {
     */
    public ClassDescriptor(Class<?> clazz) {
       this.clazz = clazz;
-      this.methods.addAll(Arrays.asList(clazz.getMethods()));
-      this.declaredMethods.addAll(Arrays.asList(clazz.getDeclaredMethods()));
-      this.constructors.addAll(Arrays.asList(clazz.getConstructors()));
-      this.declaredConstructors.addAll(Arrays.asList(clazz.getDeclaredConstructors()));
-      this.fields.addAll(Arrays.asList(clazz.getFields()));
-      this.declaredFields.addAll(ReflectionUtils.getDeclaredFields(clazz, true));
+      for (Method method : clazz.getMethods()) {
+         methods.put(method.getName(), method);
+      }
+      for (Method method : clazz.getDeclaredMethods()) {
+         methods.put(method.getName(), method);
+      }
+      for (Field field : clazz.getFields()) {
+         fields.put(field.getName(), field);
+      }
+      for (Field field : clazz.getDeclaredFields()) {
+         fields.put(field.getName(), field);
+      }
+      Collections.addAll(constructors, clazz.getConstructors());
+      Collections.addAll(constructors, clazz.getConstructors());
    }
 
    @Override
@@ -65,48 +73,6 @@ public final class ClassDescriptor implements Serializable {
       if (!(o instanceof ClassDescriptor)) return false;
       ClassDescriptor that = (ClassDescriptor) o;
       return Objects.equals(clazz, that.clazz);
-   }
-
-   /**
-    * Gets methods.
-    *
-    * @param privileged the privileged
-    * @return the methods
-    */
-   public Set<Method> getMethods(boolean privileged) {
-      if (privileged) {
-         return Collections.unmodifiableSet(Sets.union(methods, declaredMethods));
-      } else {
-         return Collections.unmodifiableSet(methods);
-      }
-   }
-
-   /**
-    * Gets constructors.
-    *
-    * @param privileged the privileged
-    * @return the constructors
-    */
-   public Set<Constructor<?>> getConstructors(boolean privileged) {
-      if (privileged) {
-         return Collections.unmodifiableSet(Sets.union(constructors, declaredConstructors));
-      } else {
-         return Collections.unmodifiableSet(constructors);
-      }
-   }
-
-   /**
-    * Gets fields.
-    *
-    * @param privileged the privileged
-    * @return the fields
-    */
-   public Set<Field> getFields(boolean privileged) {
-      if (privileged) {
-         return Collections.unmodifiableSet(Sets.union(fields, declaredFields));
-      } else {
-         return Collections.unmodifiableSet(fields);
-      }
    }
 
    /**
@@ -119,12 +85,78 @@ public final class ClassDescriptor implements Serializable {
    }
 
    /**
-    * Gets super class descriptor.
+    * Gets constructors.
     *
-    * @return the super class descriptor
+    * @param privileged the privileged
+    * @return the constructors
     */
-   public ClassDescriptor getSuperClassDescriptor() {
-      return ClassDescriptorCache.getInstance().getClassDescriptor(this.clazz.getSuperclass());
+   public Stream<Constructor<?>> getConstructors(boolean privileged) {
+      Stream<Constructor<?>> stream = constructors.stream();
+      if (!privileged) {
+         stream = stream.filter(m -> (m.getModifiers() & Modifier.PUBLIC) != 0);
+      }
+      return stream;
+   }
+
+   /**
+    * Gets field.
+    *
+    * @param name       the name
+    * @param privileged the privileged
+    * @return the field
+    */
+   public Field getField(String name, boolean privileged) {
+      Field f = fields.get(name);
+      if (f != null) {
+         return (privileged || (f.getModifiers() & Modifier.PUBLIC) != 0)
+                ? f
+                : null;
+      }
+      return null;
+   }
+
+
+   /**
+    * Gets fields.
+    *
+    * @param privileged the privileged
+    * @return the fields
+    */
+   public Stream<Field> getFields(boolean privileged) {
+      Stream<Field> stream = fields.values().stream();
+      if (!privileged) {
+         stream = stream.filter(m -> (m.getModifiers() & Modifier.PUBLIC) != 0);
+      }
+      return stream;
+   }
+
+   /**
+    * Gets methods.
+    *
+    * @param privileged the privileged
+    * @return the methods
+    */
+   public Stream<Method> getMethods(boolean privileged) {
+      Stream<Method> stream = methods.values().stream();
+      if (!privileged) {
+         stream = stream.filter(m -> (m.getModifiers() & Modifier.PUBLIC) != 0);
+      }
+      return stream;
+   }
+
+   /**
+    * Gets methods.
+    *
+    * @param name       the name
+    * @param privileged the privileged
+    * @return the methods
+    */
+   public Stream<Method> getMethods(String name, boolean privileged) {
+      Stream<Method> stream = methods.get(name).stream();
+      if (!privileged) {
+         stream = stream.filter(m -> (m.getModifiers() & Modifier.PUBLIC) != 0);
+      }
+      return stream;
    }
 
    @Override

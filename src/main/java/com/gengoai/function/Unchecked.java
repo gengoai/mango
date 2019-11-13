@@ -21,6 +21,8 @@
 
 package com.gengoai.function;
 
+import com.gengoai.conversion.Cast;
+
 import java.util.function.LongFunction;
 
 /**
@@ -28,12 +30,31 @@ import java.util.function.LongFunction;
  */
 public interface Unchecked {
 
+   static <T> SerializableConsumer<T> consumer(CheckedConsumer<T> consumer,
+                                               SerializableFunction<Throwable, Throwable> throwableHandler) {
+      return t -> {
+         try {
+            consumer.accept(t);
+         } catch (Throwable throwable) {
+            sneakyThrow(throwable);
+         }
+      };
+   }
+
+   static void throwChecked(Throwable throwable) {
+      Unchecked.<RuntimeException>sneakyThrow(throwable);
+   }
+
+   static <E extends Throwable> void sneakyThrow(Throwable throwable) throws E {
+      throw Cast.<E>as(throwable);
+   }
+
    static SerializableRunnable runnable(CheckedRunnable runnable) {
       return () -> {
          try {
             runnable.run();
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -50,7 +71,7 @@ public interface Unchecked {
          try {
             return checked.applyAsInt(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -68,7 +89,7 @@ public interface Unchecked {
          try {
             return checked.applyAsDouble(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -87,7 +108,7 @@ public interface Unchecked {
          try {
             checked.accept(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -105,7 +126,7 @@ public interface Unchecked {
          try {
             return checked.test(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -124,7 +145,7 @@ public interface Unchecked {
          try {
             checked.accept(t, value);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -144,7 +165,7 @@ public interface Unchecked {
          try {
             return checked.test(t, U);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -162,7 +183,7 @@ public interface Unchecked {
          try {
             return checked.applyAsDouble(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -180,7 +201,7 @@ public interface Unchecked {
          try {
             return checked.applyAsInt(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -198,7 +219,7 @@ public interface Unchecked {
          try {
             return checked.applyAsLong(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -216,7 +237,7 @@ public interface Unchecked {
          try {
             return checked.getAsBoolean();
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -234,7 +255,7 @@ public interface Unchecked {
          try {
             return checked.getAsInt();
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -252,7 +273,7 @@ public interface Unchecked {
          try {
             return checked.applyAsInt(t, u);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -271,7 +292,7 @@ public interface Unchecked {
          try {
             checked.accept(t, value);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -289,7 +310,7 @@ public interface Unchecked {
          try {
             return checked.applyAsLong(t, u);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -308,7 +329,7 @@ public interface Unchecked {
          try {
             return checked.apply(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -327,7 +348,7 @@ public interface Unchecked {
          try {
             return checked.apply(t, u);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -346,7 +367,7 @@ public interface Unchecked {
          try {
             return checked.test(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -365,7 +386,7 @@ public interface Unchecked {
          try {
             return checked.applyAsDouble(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -384,7 +405,7 @@ public interface Unchecked {
          try {
             return checked.get();
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -404,7 +425,7 @@ public interface Unchecked {
          try {
             return checked.applyAsDouble(t, u);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -422,7 +443,7 @@ public interface Unchecked {
          try {
             return checked.test(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -442,7 +463,7 @@ public interface Unchecked {
          try {
             checked.accept(t, u);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -460,7 +481,7 @@ public interface Unchecked {
          try {
             return checked.getAsLong();
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -479,7 +500,7 @@ public interface Unchecked {
          try {
             return checked.applyAsLong(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -498,7 +519,7 @@ public interface Unchecked {
          try {
             return checked.apply(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -516,7 +537,7 @@ public interface Unchecked {
          try {
             checked.accept(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -537,7 +558,7 @@ public interface Unchecked {
          try {
             return checked.apply(t, u);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -555,7 +576,7 @@ public interface Unchecked {
          try {
             return checked.applyAsDouble(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -573,7 +594,7 @@ public interface Unchecked {
          try {
             return checked.applyAsDouble(t, u);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -592,7 +613,7 @@ public interface Unchecked {
          try {
             return checked.apply(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -610,7 +631,7 @@ public interface Unchecked {
          try {
             return checked.applyAsInt(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -630,7 +651,7 @@ public interface Unchecked {
          try {
             return checked.applyAsLong(t, u);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -648,7 +669,7 @@ public interface Unchecked {
          try {
             return checked.test(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -667,7 +688,7 @@ public interface Unchecked {
          try {
             return checked.apply(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -685,7 +706,7 @@ public interface Unchecked {
          try {
             checked.accept(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -705,7 +726,7 @@ public interface Unchecked {
          try {
             return checked.apply(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -723,7 +744,7 @@ public interface Unchecked {
          try {
             return checked.applyAsLong(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -741,7 +762,7 @@ public interface Unchecked {
          try {
             checked.accept(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -759,7 +780,7 @@ public interface Unchecked {
          try {
             return checked.applyAsLong(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -778,7 +799,7 @@ public interface Unchecked {
          try {
             return checked.applyAsInt(t);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -796,7 +817,7 @@ public interface Unchecked {
          try {
             return checked.getAsDouble();
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -816,7 +837,7 @@ public interface Unchecked {
          try {
             return checked.applyAsInt(t, u);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };
@@ -835,7 +856,7 @@ public interface Unchecked {
          try {
             checked.accept(t, value);
          } catch (Throwable e) {
-            Sneaky.sneakyThrow(e);
+            throwChecked(e);
             throw new IllegalStateException(e);
          }
       };

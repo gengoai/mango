@@ -22,9 +22,12 @@
 
 package com.gengoai.db;
 
+import com.gengoai.collection.Sorting;
+
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.function.BiPredicate;
 
 import static com.gengoai.tuple.Tuples.$;
@@ -90,6 +93,44 @@ public interface NavigableKeyValueStore<K, V> extends KeyValueStore<K, V> {
     * @return the k
     */
    K lowerKey(K key);
+
+   default Iterator<K> keyIterator(K start, K end) {
+      return new Iterator<K>() {
+         final Iterator<K> iterator = keyIterator(start);
+         boolean hasNext = true;
+         K next = null;
+
+         private boolean advance() {
+            if (!hasNext) {
+               return false;
+            }
+            while (next == null && iterator.hasNext()) {
+               next = iterator.next();
+               if (Sorting.compare(next, end) > 0) {
+                  next = null;
+                  hasNext = false;
+                  return false;
+               }
+            }
+            return next != null;
+         }
+
+         @Override
+         public boolean hasNext() {
+            return advance();
+         }
+
+         @Override
+         public K next() {
+            if (!advance()) {
+               throw new NoSuchElementException();
+            }
+            K toReturn = next;
+            next = null;
+            return toReturn;
+         }
+      };
+   }
 
    /**
     * Search ceiling iterator.

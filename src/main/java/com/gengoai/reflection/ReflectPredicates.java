@@ -20,15 +20,37 @@
  *
  */
 
-package com.gengoai.specification;
+package com.gengoai.reflection;
+
+import com.gengoai.function.SerializablePredicate;
+import com.gengoai.string.Strings;
 
 /**
  * @author David B. Bracewell
  */
-public class ConversionFunction {
+public final class ReflectPredicates {
 
-   public Object convert(String string) {
-      return string;
+   private ReflectPredicates() {
+      throw new IllegalAccessError();
    }
 
-}//END OF ConversionFunction
+   public static SerializablePredicate<RBase> nameEq(String name) {
+      return e -> Strings.isNotNullOrBlank(name) && e.getName().equals(name);
+   }
+
+   public static SerializablePredicate<RBase> nameIn(String... names) {
+      return e -> {
+         if (names == null || names.length == 0) {
+            return false;
+         }
+         final String eName = e.getName();
+         for (String name : names) {
+            if (eName.equals(name)) {
+               return true;
+            }
+         }
+         return false;
+      };
+   }
+
+}//END OF ReflectPredicates

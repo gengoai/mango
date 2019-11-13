@@ -22,6 +22,8 @@
 
 package com.gengoai.db;
 
+import com.gengoai.Validation;
+
 import java.io.Serializable;
 import java.util.*;
 
@@ -44,7 +46,7 @@ public abstract class AbstractNavigableKeyValueStore<K, V> implements NavigableK
     * @param readOnly  the read only
     */
    protected AbstractNavigableKeyValueStore(String namespace, boolean readOnly) {
-      this.namespace = namespace;
+      this.namespace = Validation.notNullOrBlank(namespace, "Namespace must not be null or blank");
       this.readOnly = readOnly;
    }
 

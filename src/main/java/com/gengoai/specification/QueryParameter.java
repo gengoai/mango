@@ -25,6 +25,9 @@ package com.gengoai.specification;
 import java.lang.annotation.*;
 
 /**
+ * Annotation for Specifiable fields that represent an query parameter on the Specification. A query parameter key can
+ * be specified when the field name varies from the query parameter key..
+ *
  * @author David B. Bracewell
  */
 @Retention(RetentionPolicy.RUNTIME)

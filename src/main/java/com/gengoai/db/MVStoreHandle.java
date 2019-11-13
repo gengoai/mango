@@ -27,8 +27,6 @@ import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 
 /**
@@ -85,8 +83,4 @@ public class MVStoreHandle implements Serializable, AutoCloseable {
       return store;
    }
 
-   private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
-      stream.defaultReadObject();
-      this.store = MVStoreRegistry.get(file, compressed);
-   }
 }//END OF MVStoreHandle

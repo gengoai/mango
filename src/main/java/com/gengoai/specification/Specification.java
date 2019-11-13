@@ -26,18 +26,17 @@ import com.gengoai.Validation;
 import com.gengoai.collection.Iterables;
 import com.gengoai.collection.multimap.ArrayListMultimap;
 import com.gengoai.collection.multimap.Multimap;
-import com.gengoai.conversion.Cast;
-import com.gengoai.conversion.Converter;
-import com.gengoai.conversion.TypeConversionException;
+import com.gengoai.reflection.RField;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
 import com.gengoai.reflection.TypeUtils;
 import com.gengoai.string.Strings;
-import lombok.*;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
 
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -46,13 +45,18 @@ import java.util.regex.Pattern;
 import static com.gengoai.string.Re.*;
 
 /**
- * The type Specification.
+ * A specification defines a <code>Schema</code>, <code>Protocol</code>, <code>SubProtocols</code>, <code>Path</code>,
+ * and <code>Query Parameters</code> that define a resource, connection, etc. The specification form is as follows:
+ * <code>SCHEMA::(PROTOCOL::)?(SUB-PROTOCOL::)*PATH(;query=value)*</code> and example is:
+ * <code>kv::mem::people::</code> defining an in-memory key-value store with the namespace "people" or
+ * <code>kv::disk::people::~/people.db;readOnly=true</code> defining a disk-based key-value store with the namespace
+ * "people" stored at ~/people.db and being accessed as read only.
  *
  * @author David B. Bracewell
  */
 @EqualsAndHashCode(callSuper = false)
 @Builder
-public class Specification implements Serializable {
+public final class Specification implements Serializable {
    private static final Pattern SPEC_PATTERN = Pattern.compile(re("^",
                                                                   namedGroup("SCHEMA",
                                                                              oneOrMore(chars(LETTER, "_")),
@@ -90,6 +94,7 @@ public class Specification implements Serializable {
       this.path = path;
    }
 
+
    private static void getQueryParameters(String query, Multimap<String, String> map) {
       if (Strings.isNotNullOrBlank(query)) {
          Pattern.compile(";")
@@ -99,60 +104,57 @@ public class Specification implements Serializable {
       }
    }
 
-   @Override
-   public String toString() {
-      StringBuilder builder = new StringBuilder(schema).append("::");
-      if (Strings.isNotNullOrBlank(protocol)) {
-         builder.append(protocol).append("::");
-      }
-      if (subProtocol != null) {
-         subProtocol.forEach(sp -> builder.append(sp).append("::"));
-      }
-      if (Strings.isNotNullOrBlank(path)) {
-         builder.append(path);
-      }
-      for (Map.Entry<String, String> entry : queryParameters.entries()) {
-         builder.append(";").append(entry.getKey()).append("=").append(entry.getValue());
-      }
-      return builder.toString();
-   }
-
-   public static <T extends Specifiable> T parse(String specification,
-                                                 @NonNull Class<T> tClass) throws ReflectionException {
+   /**
+    * Parses the specification as a the given {@link Specifiable} type.
+    *
+    * @param <T>           the Specifiable type parameter
+    * @param specification the specification string
+    * @param tClass        the Specifiable class
+    * @return the Specifiable
+    */
+   public static <T extends Specifiable> T parse(String specification, @NonNull Class<T> tClass) {
       Specification spec = parse(specification);
-      Reflect r = Reflect.onClass(tClass).create().allowPrivilegedAccess();
-      Validation.checkArgument(r.<Specifiable>get().getSchema().equals(spec.getSchema()),
-                               "Invalid Schema: " + specification);
-      for (Field field : r.getFields()) {
-         for (Annotation annotation : field.getAnnotations()) {
-            if (annotation instanceof Protocol) {
-               setField(r, field, spec.getProtocol());
-            } else if (annotation instanceof Path) {
-               setField(r, field, spec.getPath());
-            } else if (annotation instanceof SubProtocol) {
-               SubProtocol subProtocol = Cast.as(annotation);
-               if (subProtocol.value() >= 0) {
-                  setField(r, field, spec.getSubProtocol(subProtocol.value()));
-               } else {
-                  setField(r, field, spec.getSubProtocol());
-               }
-            } else if (annotation instanceof QueryParameter) {
-               QueryParameter qp = Cast.as(annotation);
-               String key = Strings.isNullOrBlank(qp.value()) ? field.getName() : qp.value();
-               Type type = field.getGenericType();
-               if (TypeUtils.isAssignable(Iterable.class, type) || TypeUtils.asClass(type).isArray()) {
-                  setField(r, field, spec.getQueryParameterValues(key));
-               } else {
-                  setField(r, field, spec.getQueryParameterValue(key, null));
-               }
-            }
+      try {
+         Reflect r = Reflect.onClass(tClass)
+                            .create()
+                            .allowPrivilegedAccess();
+         Validation.checkArgument(r.<Specifiable>get().getSchema().equals(spec.getSchema()),
+                                  "Invalid Schema: " + specification);
+
+         for (RField field : r.getFieldsWithAnnotation(Protocol.class, SubProtocol.class,
+                                                       Path.class, QueryParameter.class)) {
+            field.withAnnotation(Protocol.class,
+                                 p -> field.set(spec.getProtocol()))
+                 .withAnnotation(Path.class,
+                                 p -> field.set(spec.getPath()))
+                 .withAnnotation(SubProtocol.class,
+                                 p -> {
+                                    if (p.value() >= 0) {
+                                       field.set(spec.getSubProtocol(p.value()));
+                                    } else {
+                                       field.set(spec.getAllSubProtocol());
+                                    }
+                                 })
+                 .withAnnotation(QueryParameter.class,
+                                 qp -> {
+                                    String key = Strings.isNullOrBlank(qp.value()) ? field.getName() : qp.value();
+                                    Type type = field.getType();
+                                    if (TypeUtils.isAssignable(Iterable.class, type) || TypeUtils.asClass(type)
+                                                                                                 .isArray()) {
+                                       field.set(spec.getAllQueryValues(key));
+                                    } else {
+                                       field.set(spec.getQueryValue(key, null));
+                                    }
+                                 });
          }
+         return r.get();
+      } catch (ReflectionException e) {
+         throw new RuntimeException(e);
       }
-      return r.get();
    }
 
    /**
-    * Parse specification.
+    * Parses the specification string.
     *
     * @param specificationString the specification string
     * @return the specification
@@ -175,43 +177,43 @@ public class Specification implements Serializable {
       throw new IllegalArgumentException("Invalid Specification: " + specificationString);
    }
 
-   private static void setField(Reflect r, Field field, Object value) throws ReflectionException {
-      if (value == null) {
-         return;
-      }
-      try {
-         r.set(field.getName(), Converter.convert(value, field.getGenericType()));
-      } catch (TypeConversionException e) {
-         throw new ReflectionException(e.getMessage());
-      }
+
+   /**
+    * Gets all query values associated with a given parameter
+    *
+    * @param parameter the parameter
+    * @return the query parameter values
+    */
+   public List<String> getAllQueryValues(String parameter) {
+      return Collections.unmodifiableList(queryParameters.get(parameter));
    }
 
    /**
-    * Gets query parameter value.
+    * Gets all subprotocol elements defined on the specification
+    *
+    * @return the list of sub-protocol elements
+    */
+   public List<String> getAllSubProtocol() {
+      return Collections.unmodifiableList(subProtocol);
+   }
+
+   /**
+    * Gets the first query parameter value associated with a parameter or the default value if the query parameter is
+    * not defined.
     *
     * @param parameter    the parameter
     * @param defaultValue the default value
     * @return the query parameter value
     */
-   public String getQueryParameterValue(String parameter, String defaultValue) {
+   public String getQueryValue(String parameter, String defaultValue) {
       return Iterables.getFirst(queryParameters.get(parameter), defaultValue);
    }
 
    /**
-    * Gets query parameter values.
+    * Gets the sub protocol at the given index or null if the index is invalid.
     *
-    * @param parameter the parameter
-    * @return the query parameter values
-    */
-   public List<String> getQueryParameterValues(String parameter) {
-      return Collections.unmodifiableList(queryParameters.get(parameter));
-   }
-
-   /**
-    * Gets sub protocol.
-    *
-    * @param index the index
-    * @return the sub protocol
+    * @param index the index of the sub-protocol element
+    * @return the sub protocol element or null if the index is invalid
     */
    public String getSubProtocol(int index) {
       return index >= 0 && index < subProtocol.size()
@@ -219,22 +221,22 @@ public class Specification implements Serializable {
              : null;
    }
 
-   /**
-    * Get sub protocol string [ ].
-    *
-    * @return the string [ ]
-    */
-   public List<String> getSubProtocol() {
-      return Collections.unmodifiableList(subProtocol);
-   }
-
-   /**
-    * Gets sub protocol count.
-    *
-    * @return the sub protocol count
-    */
-   public int getSubProtocolCount() {
-      return subProtocol.size();
+   @Override
+   public String toString() {
+      StringBuilder builder = new StringBuilder(schema).append("::");
+      if (Strings.isNotNullOrBlank(protocol)) {
+         builder.append(protocol).append("::");
+      }
+      if (subProtocol != null) {
+         subProtocol.forEach(sp -> builder.append(sp).append("::"));
+      }
+      if (Strings.isNotNullOrBlank(path)) {
+         builder.append(path);
+      }
+      for (Map.Entry<String, String> entry : queryParameters.entries()) {
+         builder.append(";").append(entry.getKey()).append("=").append(entry.getValue());
+      }
+      return builder.toString();
    }
 
    /**
@@ -243,22 +245,6 @@ public class Specification implements Serializable {
    public static class SpecificationBuilder {
       private Multimap<String, String> parameters = new ArrayListMultimap<>();
       private List<String> subProtocol = new ArrayList<>();
-
-
-      public SpecificationBuilder subProtocol(int index, String subProtocol) {
-         this.subProtocol.add(index, subProtocol);
-         return this;
-      }
-
-      public SpecificationBuilder subProtocol(String subProtocol) {
-         this.subProtocol.add(subProtocol);
-         return this;
-      }
-
-      public SpecificationBuilder subProtocol(Collection<String> subProtocol) {
-         this.subProtocol.addAll(subProtocol);
-         return this;
-      }
 
       /**
        * Build specification.
@@ -290,6 +276,40 @@ public class Specification implements Serializable {
        */
       public SpecificationBuilder queryParameter(String name, String value) {
          parameters.put(name, value);
+         return this;
+      }
+
+      /**
+       * Sub protocol specification builder.
+       *
+       * @param index       the index
+       * @param subProtocol the sub protocol
+       * @return the specification builder
+       */
+      public SpecificationBuilder subProtocol(int index, String subProtocol) {
+         this.subProtocol.add(index, subProtocol);
+         return this;
+      }
+
+      /**
+       * Sub protocol specification builder.
+       *
+       * @param subProtocol the sub protocol
+       * @return the specification builder
+       */
+      public SpecificationBuilder subProtocol(String subProtocol) {
+         this.subProtocol.add(subProtocol);
+         return this;
+      }
+
+      /**
+       * Sub protocol specification builder.
+       *
+       * @param subProtocol the sub protocol
+       * @return the specification builder
+       */
+      public SpecificationBuilder subProtocol(Collection<String> subProtocol) {
+         this.subProtocol.addAll(subProtocol);
          return this;
       }
 

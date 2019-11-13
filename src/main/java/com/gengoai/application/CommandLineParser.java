@@ -80,8 +80,8 @@ public final class CommandLineParser {
       this.owner = owner;
       if (owner != null) {
          Reflect.onObject(owner).allowPrivilegedAccess().getFields().forEach(field -> {
-            if (field.getAnnotationsByType(Option.class).length > 0) {
-               addOption(new NamedOption(field));
+            if (field.getAnnotations(Option.class).length > 0) {
+               addOption(new NamedOption(field.getElement()));
             }
          });
       }
@@ -205,7 +205,10 @@ public final class CommandLineParser {
          }
 
          if (owner != null && option.getField() != null) {
-            Reflect.onObject(owner).allowPrivilegedAccess().set(option.getField().getName(), option.getValue());
+            Reflect.onObject(owner)
+                   .allowPrivilegedAccess()
+                   .getField(option.getField().getName())
+                   .set(option.getValue());
          }
       }));
 
@@ -305,7 +308,7 @@ public final class CommandLineParser {
 
       if (option == null) {
          return unnamedOptions.containsKey(optionName) &&
-                   !unnamedOptions.get(optionName).equalsIgnoreCase("false");
+            !unnamedOptions.get(optionName).equalsIgnoreCase("false");
       }
 
       return isSet(option);

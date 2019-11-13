@@ -213,9 +213,9 @@ public final class TypeUtils {
 
    private static class ParameterizedTypeImpl implements ParameterizedType, Serializable {
       private static final long serialVersionUID = 1L;
-      private final Type rawType;
       private final Type[] actualTypeArguments;
       private final Type ownerType;
+      private final Type rawType;
 
       private ParameterizedTypeImpl(Type rawType, Type[] actualTypeArguments, Type ownerType) {
          this.rawType = rawType;

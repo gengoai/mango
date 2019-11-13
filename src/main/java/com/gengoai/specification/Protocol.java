@@ -25,6 +25,8 @@ package com.gengoai.specification;
 import java.lang.annotation.*;
 
 /**
+ * Annotation for Specifiable fields that should be assigned the protocol element of the Specification.
+ *
  * @author David B. Bracewell
  */
 @Retention(RetentionPolicy.RUNTIME)

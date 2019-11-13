@@ -4,10 +4,10 @@ import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Val;
 import com.gengoai.logging.Loggable;
 import com.gengoai.reflection.Reflect;
+import com.gengoai.reflection.RField;
 import com.gengoai.reflection.ReflectionException;
 
 import java.io.Serializable;
-import java.lang.reflect.Field;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -31,16 +31,16 @@ public interface Parameters<T extends Parameters> extends Serializable, Copyable
    default String asString() {
       StringBuilder builder = new StringBuilder(this.getClass().getSimpleName()).append("{");
       int cnt = 0;
-      for (Field f : Reflect.onObject(this).getFields()) {
+      for (RField f : Reflect.onObject(this).getFields()) {
          try {
             if (cnt > 0) {
                builder.append(", ");
             }
             builder.append(f.getName())
                    .append("=")
-                   .append(f.get(this));
+                   .append(f.getReflectValue().<Object>get());
             cnt++;
-         } catch (IllegalAccessException e) {
+         } catch (ReflectionException e) {
             //ignore
          }
       }
@@ -61,7 +61,7 @@ public interface Parameters<T extends Parameters> extends Serializable, Copyable
     */
    default Val get(String name) {
       try {
-         return Val.of(Reflect.onObject(this).get(name).get());
+         return Val.of(Reflect.onObject(this).getField(name).getReflectValue().get());
       } catch (ReflectionException e) {
          logWarn("Invalid Parameter: {0}", name);
          return Val.NULL;
@@ -78,7 +78,7 @@ public interface Parameters<T extends Parameters> extends Serializable, Copyable
     */
    default T set(String name, Object value) {
       try {
-         Reflect.onObject(this).set(name, value);
+         Reflect.onObject(this).getField(name).set(value);
       } catch (ReflectionException e) {
          if (e.getCause() instanceof NoSuchFieldException) {
             logWarn("Invalid Parameter: {0}", name);

@@ -98,7 +98,9 @@ public final class Converter {
     * @return the t
     * @throws TypeConversionException the type conversion exception
     */
-   public static <T> T convert(Object sourceObject, Class<?> destType, Type... parameters) throws TypeConversionException {
+   public static <T> T convert(Object sourceObject,
+                               Class<?> destType,
+                               Type... parameters) throws TypeConversionException {
       return Cast.as(convert(sourceObject, parameterizedType(destType, parameters)));
    }
 
@@ -181,7 +183,7 @@ public final class Converter {
                                           .stream()
                                           .filter(
                                              c -> c.getParameterCount() == 1 && c.getParameterTypes()[0] == sourceObject
-                                                                                                               .getClass())
+                                                .getClass())
                                           .findFirst()
                                           .orElseThrow(() -> new TypeConversionException(sourceObject, destType));
 

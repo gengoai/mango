@@ -76,8 +76,8 @@ public class BeanDescriptor implements Serializable {
       if (obj == null || getClass() != obj.getClass()) {return false;}
       final BeanDescriptor other = (BeanDescriptor) obj;
       return Objects.equals(this.readMethods, other.readMethods)
-                && Objects.equals(this.writeMethods, other.writeMethods)
-                && Objects.equals(this.clazz, other.clazz);
+         && Objects.equals(this.writeMethods, other.writeMethods)
+         && Objects.equals(this.clazz, other.clazz);
    }
 
    private void setReadWrite(Class<?> clazz) {
@@ -86,11 +86,11 @@ public class BeanDescriptor implements Serializable {
       }
       Reflect.onClass(clazz).getMethods().forEach(method -> {
          String name = method.getName();
-         if (!name.equals("getClass") && method.getAnnotation(Ignore.class) == null) {
+         if (!name.equals("getClass") && !method.isAnnotationPresent(Ignore.class)) {
             if (name.startsWith("get") || name.startsWith("is")) {
-               readMethods.put(transformName(name), method);
+               readMethods.put(transformName(name), method.getElement());
             } else if (name.startsWith("set")) {
-               writeMethods.put(transformName(name), method);
+               writeMethods.put(transformName(name), method.getElement());
             }
          }
       });

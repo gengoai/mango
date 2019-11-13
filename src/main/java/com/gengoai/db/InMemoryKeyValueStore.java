@@ -26,12 +26,23 @@ import java.util.Collections;
 import java.util.NavigableMap;
 
 /**
+ * Key-Value store implementation that stores all data in memory. Underlying maps are free to be shared across multiple
+ * kv stores and will only be garbage collected when there are no longer any references.
+ *
+ * @param <K> the key type parameter
+ * @param <V> the value type parameter
  * @author David B. Bracewell
  */
 class InMemoryKeyValueStore<K, V> extends AbstractNavigableKeyValueStore<K, V> {
    private static final long serialVersionUID = 1L;
    private transient volatile NavigableMap<K, V> map;
 
+   /**
+    * Instantiates a new In memory key value store.
+    *
+    * @param namespace the namespace
+    * @param readOnly  the read only
+    */
    public InMemoryKeyValueStore(String namespace, boolean readOnly) {
       super(namespace, readOnly);
    }
@@ -39,7 +50,7 @@ class InMemoryKeyValueStore<K, V> extends AbstractNavigableKeyValueStore<K, V> {
 
    @Override
    public void close() throws Exception {
-
+      map = null;
    }
 
    @Override

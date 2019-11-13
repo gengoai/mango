@@ -35,7 +35,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * @author David B. Bracewell
  */
-public final class MVStoreRegistry {
+final class MVStoreRegistry {
    private static final Counter<File> fileCounter = new ConcurrentHashMapCounter<>();
    private static final ReentrantLock lock = new ReentrantLock();
    private static final Map<File, MVStore> stores = new ConcurrentHashMap<>();
@@ -61,7 +61,7 @@ public final class MVStoreRegistry {
       return false;
    }
 
-   public static MVStore get(@NonNull File databaseFile, @NonNull boolean compressed) {
+   public static MVStore get(@NonNull File databaseFile, boolean compressed) {
       final MVStore.Builder builder = new MVStore.Builder().fileName(databaseFile.getAbsolutePath());
       if (compressed) {
          builder.compress();

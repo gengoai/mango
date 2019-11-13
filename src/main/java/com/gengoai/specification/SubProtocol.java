@@ -25,6 +25,10 @@ package com.gengoai.specification;
 import java.lang.annotation.*;
 
 /**
+ * Annotation for Specifiable fields that should be assigned the subprotcol element of the Specification. Allows for the
+ * entire array or individual elements (through the defined integer value) to be assigned. By default a value of -1 is
+ * used to indicate the entire list of the subprotocol.
+ *
  * @author David B. Bracewell
  */
 @Retention(RetentionPolicy.RUNTIME)

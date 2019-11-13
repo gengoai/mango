@@ -51,7 +51,7 @@ public final class Threads {
       try {
          Thread.sleep(milliseconds);
       } catch (InterruptedException e) {
-         //no op
+         Thread.currentThread().interrupt();
       }
    }
 
@@ -90,7 +90,10 @@ public final class Threads {
     * @param bufferSize              the size of the buffer used for feeding the consumer threads
     * @return True if the operation completed successfully
     */
-   public static <T> boolean process(Iterator<T> iterator, Consumer<T> consumer, int numberOfConsumerThreads, int bufferSize) {
+   public static <T> boolean process(Iterator<T> iterator,
+                                     Consumer<T> consumer,
+                                     int numberOfConsumerThreads,
+                                     int bufferSize) {
       return process(Iterables.asIterable(iterator), consumer, numberOfConsumerThreads, bufferSize);
    }
 
@@ -118,13 +121,16 @@ public final class Threads {
     * @param bufferSize              the size of the buffer used for feeding the consumer threads
     * @return True if the operation completed successfully
     */
-   public static <T> boolean process(Iterable<T> iterable, Consumer<T> consumer, int numberOfConsumerThreads, int bufferSize) {
+   public static <T> boolean process(Iterable<T> iterable,
+                                     Consumer<T> consumer,
+                                     int numberOfConsumerThreads,
+                                     int bufferSize) {
       return Broker.<T>builder()
-                .addProducer(new IterableProducer<>(iterable))
-                .addConsumer(consumer, numberOfConsumerThreads)
-                .bufferSize(bufferSize)
-                .build()
-                .run();
+         .addProducer(new IterableProducer<>(iterable))
+         .addConsumer(consumer, numberOfConsumerThreads)
+         .bufferSize(bufferSize)
+         .build()
+         .run();
    }
 
    /**
@@ -139,11 +145,11 @@ public final class Threads {
     */
    public static <T> boolean process(Iterable<T> iterable, Consumer<T> consumer, int numberOfConsumerThreads) {
       return Broker.<T>builder()
-                .addProducer(new IterableProducer<>(iterable))
-                .addConsumer(consumer, numberOfConsumerThreads)
-                .bufferSize(numberOfConsumerThreads * 100)
-                .build()
-                .run();
+         .addProducer(new IterableProducer<>(iterable))
+         .addConsumer(consumer, numberOfConsumerThreads)
+         .bufferSize(numberOfConsumerThreads * 100)
+         .build()
+         .run();
    }
 
 }// END OF INTERFACE Threads

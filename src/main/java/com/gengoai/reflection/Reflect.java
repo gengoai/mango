@@ -17,173 +17,170 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ *
  */
 
 package com.gengoai.reflection;
 
-import com.gengoai.Primitives;
+import com.gengoai.Validation;
+import com.gengoai.collection.Iterables;
 import com.gengoai.conversion.Cast;
-import com.gengoai.conversion.Converter;
-import com.gengoai.conversion.Val;
+import com.gengoai.function.SerializablePredicate;
 import com.gengoai.string.Strings;
+import lombok.NonNull;
 
-import java.lang.reflect.*;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Set;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.gengoai.collection.Lists.linkedListOf;
+import static com.gengoai.collection.Sets.hashSetOf;
+
 /**
- * Allows fluent use of reflection
+ * The type Reflect.
  *
  * @author David B. Bracewell
  */
-public final class Reflect {
-   private final Object object;
+public class Reflect extends RBase<Class<?>, Reflect> {
    private final Class<?> clazz;
-   private final boolean accessAll;
+   private final Object object;
+   private boolean privileged;
 
-   private Reflect(Object object, Class<?> clazz) {
-      this(object, clazz, false);
+   /**
+    * Instantiates a new Reflect.
+    */
+   public Reflect() {
+      this(null, null, false);
    }
 
-   private Reflect(Object object, Class<?> clazz, boolean accessAll) {
+   /**
+    * Instantiates a new Reflect.
+    *
+    * @param object     the object
+    * @param clazz      the clazz
+    * @param privileged the privileged
+    */
+   public Reflect(Object object, Class<?> clazz, boolean privileged) {
       this.object = object;
       this.clazz = clazz;
-      this.accessAll = accessAll;
+      this.privileged = privileged;
    }
 
-   private static Object convertValueType(Object value, Class<?> toClass) {
-      if (value == null) {
-         return Primitives.defaultValue(toClass);
-      }
-      if (Val.class.isAssignableFrom(toClass)) {
-         return Cast.as(value, Val.class).as(toClass);
-      }
-      if (toClass.isAssignableFrom(value.getClass())) {
-         return value;
-      }
-      Object out = Converter.convertSilently(value, toClass);
-      return out == null ? value : out;
-   }
+//   /**
+//    * Creates an instance Reflect for an object that gets constructed using the supplied constructor and arguments.
+//    *
+//    * @param constructor           The constructor to call
+//    * @param allowPrivilegedAccess Allows access to all methods on the object or class
+//    * @param args                  The arguments to pass to the constructor
+//    * @return A Reflect wrapper around the constructed object
+//    * @throws ReflectionException Something went wrong constructing the object
+//    */
+//   private static Reflect on(Constructor constructor,
+//                             boolean allowPrivilegedAccess,
+//                             Object... args) throws ReflectionException {
+//      boolean accessible = constructor.isAccessible();
+//      try {
+//         if (!accessible && allowPrivilegedAccess) {
+//            constructor.setAccessible(true);
+//         }
+//         if (args != null) {
+//            Class<?>[] parameterTypes = constructor.getParameterTypes();
+//            for (int i = 0; i < args.length; i++) {
+//               args[i] = convertValueType(args[i], parameterTypes[i]);
+//            }
+//         }
+//
+//         if (constructor.isVarArgs() && constructor.getParameterTypes()[0].isArray()) {
+//            Object object = constructor.newInstance(
+//               Array.newInstance(constructor.getParameterTypes()[0].getComponentType(), 0));
+//            return new Reflect(object, object.getClass(), allowPrivilegedAccess);
+//         }
+//
+//
+//         Object object = constructor.newInstance(args);
+//         return new Reflect(object, object.getClass(), allowPrivilegedAccess);
+//      } catch (InstantiationException | IllegalAccessException | InvocationTargetException | TypeConversionException e) {
+//         throw new ReflectionException(e);
+//      } finally {
+//         if (!accessible && allowPrivilegedAccess) {
+//            constructor.setAccessible(false);
+//         }
+//      }
+//   }
 
    /**
-    * Creates an instance Reflect for an object returned by invoking a method.
+    * On class reflect.
     *
-    * @param method                The method to call
-    * @param owner                 The object to call the method on (null for static)
-    * @param allowPrivilegedAccess Allows access to all methods on the object or class
-    * @param args                  The arguments to pass to the constructor
-    * @return A Reflect wrapper around the constructed object
-    * @throws ReflectionException Something went wrong invoking the method
-    */
-   public static Reflect on(Method method, Object owner, boolean allowPrivilegedAccess, Object... args) throws ReflectionException {
-      boolean accessible = method.isAccessible();
-      try {
-         if (!accessible && allowPrivilegedAccess) {
-            method.setAccessible(true);
-         }
-         Object[] convertedArgs = null;
-         if (args != null) {
-            convertedArgs = new Object[args.length];
-            Class<?>[] parameterTypes = method.getParameterTypes();
-            for (int i = 0; i < args.length; i++) {
-               convertedArgs[i] = convertValueType(args[i], parameterTypes[i]);
-            }
-         }
-         Object object = method.invoke(owner, convertedArgs);
-         return new Reflect(object, object == null ? Void.class : object.getClass(), allowPrivilegedAccess);
-      } catch (IllegalAccessException | InvocationTargetException e) {
-         throw new ReflectionException(e);
-      } finally {
-         if (!accessible && allowPrivilegedAccess) {
-            method.setAccessible(false);
-         }
-      }
-   }
-
-   /**
-    * Creates an instance Reflect for an object that gets constructed using the supplied constructor and arguments.
-    *
-    * @param constructor           The constructor to call
-    * @param allowPrivilegedAccess Allows access to all methods on the object or class
-    * @param args                  The arguments to pass to the constructor
-    * @return A Reflect wrapper around the constructed object
-    * @throws ReflectionException Something went wrong constructing the object
-    */
-   public static Reflect on(Constructor constructor, boolean allowPrivilegedAccess, Object... args) throws ReflectionException {
-      boolean accessible = constructor.isAccessible();
-      try {
-         if (!accessible && allowPrivilegedAccess) {
-            constructor.setAccessible(true);
-         }
-         if (args != null) {
-            Class<?>[] parameterTypes = constructor.getParameterTypes();
-            for (int i = 0; i < args.length; i++) {
-               args[i] = convertValueType(args[i], parameterTypes[i]);
-            }
-         }
-
-         if (constructor.isVarArgs() && constructor.getParameterTypes()[0].isArray()) {
-            Object object = constructor.newInstance(
-               Array.newInstance(constructor.getParameterTypes()[0].getComponentType(), 0));
-            return new Reflect(object, object.getClass(), allowPrivilegedAccess);
-         }
-
-
-         Object object = constructor.newInstance(args);
-         return new Reflect(object, object.getClass(), allowPrivilegedAccess);
-      } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-         throw new ReflectionException(e);
-      } finally {
-         if (!accessible && allowPrivilegedAccess) {
-            constructor.setAccessible(false);
-         }
-      }
-   }
-
-   /**
-    * Creates an instance of Reflect associated with a class
-    *
-    * @param clazz The class for reflection as string
-    * @return The Reflect object
-    * @throws Exception the exception
-    */
-   public static Reflect onClass(String clazz) throws Exception {
-      return new Reflect(null, ReflectionUtils.getClassForName(clazz));
-   }
-
-   /**
-    * Creates an instance of Reflect associated with a class
-    *
-    * @param clazz The class for reflection
-    * @return The Reflect object
+    * @param clazz the clazz
+    * @return the reflect
     */
    public static Reflect onClass(Class<?> clazz) {
-      return new Reflect(null, clazz);
+      return new Reflect(null, clazz, false);
    }
 
    /**
-    * Creates an instance of Reflect associated with an object
+    * On class reflect.
     *
-    * @param object The object for reflection
-    * @return The Reflect object
+    * @param className the class name
+    * @return the reflect
+    * @throws ReflectionException the reflection exception
+    */
+   public static Reflect onClass(String className) throws ReflectionException {
+      try {
+         return new Reflect(null, ReflectionUtils.getClassForName(className), false);
+      } catch (Exception e) {
+         throw new ReflectionException(e);
+      }
+   }
+
+   /**
+    * On object reflect.
+    *
+    * @param object the object
+    * @return the reflect
     */
    public static Reflect onObject(Object object) {
       if (object == null) {
-         return new Reflect(null, null);
+         return new Reflect(null, null, false);
       }
-      return new Reflect(object, object.getClass());
+      return new Reflect(object, object.getClass(), false);
    }
 
    /**
-    * Allow privileged access.
+    * Allow privileged access reflect.
     *
-    * @return An new Reflect object based on the current one that allows privileged access to methods, fields, and
-    * constructors.
+    * @return the reflect
     */
    public Reflect allowPrivilegedAccess() {
-      return new Reflect(object, clazz, true);
+      privileged = true;
+      return this;
+   }
+
+   /**
+    * Ancestors iterable.
+    *
+    * @return the iterable
+    */
+   public Iterable<Reflect> ancestors() {
+      return AncestorIterator::new;
+   }
+
+   /**
+    * Constructor r constructor.
+    *
+    * @return the r constructor
+    * @throws ReflectionException the reflection exception
+    */
+   public RConstructor constructor() throws ReflectionException {
+      for (Constructor<?> constructor : getConstructors()) {
+         if ((constructor.isVarArgs() && constructor.getParameterCount() == 1) || constructor.getParameterCount() == 0) {
+            return new RConstructor(this, constructor);
+         }
+      }
+      throw new ReflectionException("No Constructor found");
    }
 
    /**
@@ -198,9 +195,7 @@ public final class Reflect {
       }
       return ClassDescriptorCache.getInstance()
                                  .getClassDescriptor(clazz)
-                                 .getFields(accessAll)
-                                 .stream()
-                                 .anyMatch(f -> f.getName().equals(name));
+                                 .getField(name, privileged) != null;
    }
 
    /**
@@ -215,9 +210,8 @@ public final class Reflect {
       }
       return ClassDescriptorCache.getInstance()
                                  .getClassDescriptor(clazz)
-                                 .getMethods(accessAll)
-                                 .stream()
-                                 .anyMatch(f -> f.getName().equals(name));
+                                 .getMethods(name, privileged)
+                                 .count() > 0;
    }
 
    /**
@@ -227,25 +221,7 @@ public final class Reflect {
     * @throws ReflectionException Something went wrong constructing the object
     */
    public Reflect create() throws ReflectionException {
-      try {
-         return on(findConstructor(), accessAll);
-      } catch (NoSuchMethodException e) {
-         throw new ReflectionException(e);
-      }
-   }
-
-   private Constructor<?> findConstructor() throws NoSuchMethodException {
-      try {
-         return clazz.getConstructor();
-      } catch (NoSuchMethodException e) {
-         Constructor[] constructors = accessAll ? clazz.getDeclaredConstructors() : clazz.getConstructors();
-         for (Constructor<?> constructor : constructors) {
-            if (constructor.isVarArgs() || constructor.getParameterCount() == 0) {
-               return constructor;
-            }
-         }
-      }
-      throw new NoSuchMethodException();
+      return constructor().createReflective();
    }
 
    /**
@@ -267,56 +243,53 @@ public final class Reflect {
     * @return the reflect
     * @throws ReflectionException the reflection exception
     */
-   public Reflect create(Class[] types, Object... args) throws ReflectionException {
-      try {
-         return on(clazz.getConstructor(types), accessAll, args);
-      } catch (NoSuchMethodException e) {
-         for (Constructor constructor : getConstructors()) {
-            if (ReflectionUtils.typesMatch(constructor.getParameterTypes(), types)) {
-               return on(constructor, accessAll, args);
-            }
-         }
-         throw new ReflectionException(e);
-      }
+   public Reflect create(@NonNull Class[] types, @NonNull Object... args) throws ReflectionException {
+      Validation.checkArgument(types.length == args.length);
+      return getConstructor(types).createReflective(args);
    }
 
    /**
     * Get t.
     *
-    * @param <T> The object type
-    * @return The object used in reflection or null if there is not one
+    * @param <T> the type parameter
+    * @return the t
     */
    public <T> T get() {
       return Cast.as(object);
    }
 
    /**
-    * Gets the value of a field.
+    * Gets constructor.
     *
-    * @param fieldName The name of the field to get
-    * @return An instance of Reflect wrapping the result of the field value
-    * @throws ReflectionException Something went wrong getting the value of field
+    * @return the constructor
+    * @throws ReflectionException the reflection exception
     */
-   public Reflect get(String fieldName) throws ReflectionException {
-      Field f = getField(fieldName);
+   public RConstructor getConstructor() throws ReflectionException {
+      return ClassDescriptorCache.getInstance()
+                                 .getClassDescriptor(clazz)
+                                 .getConstructors(privileged)
+                                 .filter(c -> c.getParameterCount() == 0 || c.isVarArgs())
+                                 .findFirst()
+                                 .map(c -> new RConstructor(this, c))
+                                 .orElseThrow(() -> new ReflectionException("No such constructor"));
+   }
 
-      if (f == null) {
-         throw new ReflectionException(new NoSuchFieldException(fieldName + " is not a valid field for " + clazz));
-      }
-
-      boolean isAccessible = f.isAccessible();
-      try {
-         if (accessAll) {
-            f.setAccessible(true);
-         }
-         return onObject(f.get(object));
-      } catch (IllegalAccessException e) {
-         e.printStackTrace();
-         throw new ReflectionException(e);
-      } finally {
-         f.setAccessible(isAccessible);
-      }
-
+   /**
+    * Gets constructor.
+    *
+    * @param types the types
+    * @return the constructor
+    * @throws ReflectionException the reflection exception
+    */
+   public RConstructor getConstructor(@NonNull Type... types) throws ReflectionException {
+      return ClassDescriptorCache.getInstance()
+                                 .getClassDescriptor(clazz)
+                                 .getConstructors(privileged)
+                                 .filter(c -> c.getParameterCount() == types.length)
+                                 .map(c -> new RConstructor(this, c))
+                                 .filter(c -> c.parameterTypesCompatible(types))
+                                 .findFirst()
+                                 .orElseThrow(() -> new ReflectionException("No such constructor"));
    }
 
    /**
@@ -325,31 +298,119 @@ public final class Reflect {
     * @return The set of constructors for the object which is a combination of and if <code>allowPrivilegedAccess</code>
     * was called.
     */
-   public Set<Constructor<?>> getConstructors() {
+   public List<Constructor<?>> getConstructors() {
       return ClassDescriptorCache.getInstance()
                                  .getClassDescriptor(clazz)
-                                 .getConstructors(accessAll);
+                                 .getConstructors(privileged)
+                                 .collect(Collectors.toList());
    }
 
-   private Field getField(String fieldName) {
+   /**
+    * Gets constructors where.
+    *
+    * @param predicate the predicate
+    * @return the constructors where
+    */
+   public final List<RConstructor> getConstructorsWhere(@NonNull SerializablePredicate<? super RConstructor> predicate) {
       return ClassDescriptorCache.getInstance()
                                  .getClassDescriptor(clazz)
-                                 .getFields(accessAll)
-                                 .stream()
-                                 .filter(field -> field.getName().equals(fieldName))
-                                 .findFirst().orElse(null);
+                                 .getConstructors(privileged)
+                                 .map(c -> new RConstructor(this, c))
+                                 .filter(predicate)
+                                 .collect(Collectors.toList());
+   }
+
+   /**
+    * Gets constructors with annotation.
+    *
+    * @param annotationClasses the annotation classes
+    * @return the constructors with annotation
+    */
+   @SafeVarargs
+   public final List<RConstructor> getConstructorsWithAnnotation(@NonNull Class<? extends Annotation>... annotationClasses) {
+      return ClassDescriptorCache.getInstance()
+                                 .getClassDescriptor(clazz)
+                                 .getConstructors(privileged)
+                                 .filter(c -> RBase.isAnnotationPresent(c, annotationClasses))
+                                 .map(c -> new RConstructor(this, c))
+                                 .collect(Collectors.toList());
+   }
+
+   /**
+    * Gets declaring class.
+    *
+    * @return the declaring class
+    */
+   public Reflect getDeclaringClass() {
+      return Reflect.onClass(clazz.getDeclaringClass());
+   }
+
+   @Override
+   public Class<?> getElement() {
+      return clazz;
+   }
+
+   /**
+    * Gets field.
+    *
+    * @param name the name
+    * @return the field
+    * @throws ReflectionException the reflection exception
+    */
+   public RField getField(String name) throws ReflectionException {
+      Validation.notNullOrBlank(name);
+      Field f = ClassDescriptorCache.getInstance()
+                                    .getClassDescriptor(clazz)
+                                    .getField(name, privileged);
+      if (f == null) {
+         throw new ReflectionException("No such field: " + name);
+      }
+      return new RField(this, f);
    }
 
    /**
     * Gets fields.
     *
-    * @return The set of fields for the object which is a combination of and if <code>allowPrivilegedAccess</code> was
-    * called.
+    * @return the fields
     */
-   public Set<Field> getFields() {
+   public List<RField> getFields() {
       return ClassDescriptorCache.getInstance()
                                  .getClassDescriptor(clazz)
-                                 .getFields(accessAll);
+                                 .getFields(privileged)
+                                 .map(f -> new RField(this, f))
+                                 .collect(Collectors.toList());
+   }
+
+   /**
+    * Gets fields where.
+    *
+    * @param predicate the predicate
+    * @return the fields where
+    */
+   public List<RField> getFieldsWhere(@NonNull SerializablePredicate<RField> predicate) {
+      return ClassDescriptorCache.getInstance()
+                                 .getClassDescriptor(clazz)
+                                 .getFields(privileged)
+                                 .map(f -> new RField(this, f))
+                                 .filter(predicate)
+                                 .collect(Collectors.toList());
+   }
+
+   /**
+    * Gets fields with annotation.
+    *
+    * @param annotationClasses the annotation classes
+    * @return the fields with annotation
+    */
+   @SafeVarargs
+   public final List<RField> getFieldsWithAnnotation(@NonNull Class<? extends Annotation>... annotationClasses) {
+      Validation.checkArgument(annotationClasses.length > 0, "Must specify at least one annotation class");
+      return ClassDescriptorCache.getInstance()
+                                 .getClassDescriptor(clazz)
+                                 .getFields(privileged)
+                                 .filter(f -> RBase.isAnnotationPresent(f, annotationClasses))
+                                 .map(f -> new RField(this, f))
+                                 .collect(Collectors.toList());
    }
 
    /**
@@ -357,129 +418,201 @@ public final class Reflect {
     *
     * @param name the name
     * @return the method
+    * @throws ReflectionException the reflection exception
     */
-   public Method getMethod(final String name) {
-      if (Strings.isNullOrBlank(name)) {
-         return null;
+   public RMethod getMethod(String name) throws ReflectionException {
+      try {
+         return new RMethod(this, clazz.getMethod(name));
+      } catch (NoSuchMethodException e) {
+         return Iterables.getFirst(getMethods(name))
+                         .orElseThrow(() -> new ReflectionException("No Such Method: " + name));
       }
-      return getMethods().stream()
-                         .filter(method -> method.getName().equals(name))
-                         .min(Comparator.comparingInt(Method::getParameterCount))
-                         .orElse(null);
    }
 
    /**
-    * Gets methods.
+    * Gets method.
     *
-    * @return The set of methods for the object which is a combination of and if <code>allowPrivilegedAccess</code> was
-    * called.
+    * @param name  the name
+    * @param types the types
+    * @return the method
+    * @throws ReflectionException the reflection exception
     */
-   public Set<Method> getMethods() {
-      return ClassDescriptorCache.getInstance()
-                                 .getClassDescriptor(clazz)
-                                 .getMethods(accessAll);
+   public RMethod getMethod(String name, Type... types) throws ReflectionException {
+      return Iterables.getFirst(getMethodsWhere(name, m -> m.parameterTypesCompatible(types)))
+                      .orElseThrow(() -> new ReflectionException("No Such Method: " + name));
    }
 
    /**
     * Gets methods.
     *
-    * @param name      the name
-    * @param numParams the num params
+    * @param name the name
     * @return the methods
     */
-   public Set<Method> getMethods(final String name, final int numParams) {
-      if (Strings.isNullOrBlank(name) || numParams < 0) {
-         return Collections.emptySet();
-      }
+   public List<RMethod> getMethods(String name) {
       return ClassDescriptorCache.getInstance()
                                  .getClassDescriptor(clazz)
-                                 .getMethods(accessAll)
-                                 .stream()
-                                 .filter(f -> f.getName().equals(name) && f.getParameterCount() == numParams)
-                                 .collect(Collectors.toSet());
+                                 .getMethods(name, privileged)
+                                 .map(m -> new RMethod(this, m))
+                                 .collect(Collectors.toList());
    }
 
    /**
-    * Gets reflected class.
+    * Gets methods.
     *
-    * @return Class information for what is being reflected on
+    * @return the methods
     */
-   public Class<?> getReflectedClass() {
+   public List<RMethod> getMethods() {
+      return ClassDescriptorCache.getInstance()
+                                 .getClassDescriptor(clazz)
+                                 .getMethods(privileged)
+                                 .map(m -> new RMethod(this, m))
+                                 .collect(Collectors.toList());
+   }
+
+   /**
+    * Gets methods where.
+    *
+    * @param name      the name
+    * @param predicate the predicate
+    * @return the methods where
+    */
+   public List<RMethod> getMethodsWhere(String name, @NonNull SerializablePredicate<? super RMethod> predicate) {
+      return ClassDescriptorCache.getInstance()
+                                 .getClassDescriptor(clazz)
+                                 .getMethods(name, privileged)
+                                 .map(m -> new RMethod(this, m))
+                                 .filter(predicate)
+                                 .collect(Collectors.toList());
+   }
+
+   /**
+    * Gets methods where.
+    *
+    * @param predicate the predicate
+    * @return the methods where
+    */
+   public List<RMethod> getMethodsWhere(@NonNull SerializablePredicate<? super RMethod> predicate) {
+      return ClassDescriptorCache.getInstance()
+                                 .getClassDescriptor(clazz)
+                                 .getMethods(privileged)
+                                 .map(m -> new RMethod(this, m))
+                                 .filter(predicate)
+                                 .collect(Collectors.toList());
+   }
+
+
+   /**
+    * Gets methods with annotation.
+    *
+    * @param annotationClasses the annotation classes
+    * @return the methods with annotation
+    */
+   @SafeVarargs
+   public final List<RMethod> getMethodsWithAnnotation(@NonNull Class<? extends Annotation>... annotationClasses) {
+      return ClassDescriptorCache.getInstance()
+                                 .getClassDescriptor(clazz)
+                                 .getMethods(privileged)
+                                 .filter(m -> RBase.isAnnotationPresent(m, annotationClasses))
+                                 .map(m -> new RMethod(this, m))
+                                 .collect(Collectors.toList());
+   }
+
+   @Override
+   public int getModifiers() {
+      return clazz.getModifiers();
+   }
+
+   @Override
+   public String getName() {
+      return clazz.getName();
+   }
+
+   /**
+    * Gets super class.
+    *
+    * @return the super class
+    */
+   public Reflect getSuperClass() {
+      return Reflect.onClass(clazz.getSuperclass());
+   }
+
+   public Class<?> getType() {
       return clazz;
    }
 
    /**
-    * Has field boolean.
+    * Is privileged boolean.
     *
-    * @param fieldName the field name
     * @return the boolean
     */
-   public boolean hasField(String fieldName) {
-      return ClassDescriptorCache.getInstance()
-                                 .getClassDescriptor(clazz)
-                                 .getFields(accessAll)
-                                 .stream()
-                                 .anyMatch(f -> f.getName().equals(fieldName));
+   public boolean isPrivileged() {
+      return privileged;
    }
 
    /**
-    * Invokes a method with a given name and arguments with the most specific method possible
+    * Sets is privileged.
     *
-    * @param methodName The name of the method
-    * @param args       The arguments to the method
-    * @return A Reflect object representing the results
-    * @throws ReflectionException Something went wrong invoking the method
+    * @param allowPrivilegedAccess the allow privileged access
+    * @return the is privileged
     */
-   public Reflect invoke(String methodName, Object... args) throws ReflectionException {
-      Class[] types = ReflectionUtils.getTypes(args);
-      try {
-         return on(clazz.getMethod(methodName, types), object, accessAll, args);
-      } catch (NoSuchMethodException e) {
-         Method method = ReflectionUtils.bestMatchingMethod(getMethods(), methodName, types);
-         if (method != null) {
-            return on(method, object, accessAll, args);
+   public Reflect setIsPrivileged(boolean allowPrivilegedAccess) {
+      this.privileged = allowPrivilegedAccess;
+      return Cast.as(this);
+   }
+
+   private class AncestorIterator implements Iterator<Reflect> {
+      /**
+       * The Queue.
+       */
+      final Queue<Class<?>> queue = linkedListOf(clazz);
+      /**
+       * The Seen.
+       */
+      final Set<Class<?>> seen = hashSetOf(clazz);
+      /**
+       * The Next.
+       */
+      Reflect next = null;
+
+      /**
+       * Advance boolean.
+       *
+       * @return the boolean
+       */
+      boolean advance() {
+         while (next == null && queue.size() > 0) {
+            Class<?> nextClazz = queue.remove();
+            if (nextClazz != clazz) {
+               next = Reflect.onClass(nextClazz);
+            }
+            if (nextClazz.getSuperclass() != null && !seen.contains(nextClazz.getSuperclass())) {
+               queue.add(clazz.getSuperclass());
+               seen.add(clazz.getSuperclass());
+            }
+            for (Class<?> iface : nextClazz.getInterfaces()) {
+               if (!seen.contains(iface)) {
+                  queue.add(iface);
+                  seen.add(iface);
+               }
+            }
          }
-         throw new ReflectionException(e);
+         return next != null;
       }
 
-   }
-
-   /**
-    * Sets the value of a field. Will perform conversion on the value if needed.
-    *
-    * @param fieldName The name of the field to set
-    * @param value     The value to set the field to
-    * @return This instance of Reflect
-    * @throws ReflectionException Something went wrong setting the value of field
-    */
-   public Reflect set(String fieldName, Object value) throws ReflectionException {
-      Field field = null;
-      boolean isAccessible = false;
-      try {
-         if (hasField(fieldName)) {
-            field = getField(fieldName);
-            isAccessible = field.isAccessible();
-            field.setAccessible(accessAll);
-         } else {
-            throw new ReflectionException(new NoSuchFieldException());
-         }
-         value = convertValueType(value, field.getType());
-         field.set(object, value);
-         return this;
-      } catch (IllegalAccessException e) {
-         throw new ReflectionException(e);
-      } finally {
-         if (field != null) {
-            field.setAccessible(isAccessible);
-         }
+      @Override
+      public boolean hasNext() {
+         return advance();
       }
 
+      @Override
+      public Reflect next() {
+         if (!advance()) {
+            throw new NoSuchElementException();
+         }
+         Reflect r = next;
+         next = null;
+         return r;
+      }
    }
 
-   @Override
-   public String toString() {
-      return object == null ? clazz.toString() : object.toString();
-   }
-
-
-}//END OF Reflect
+}//END OF R2
