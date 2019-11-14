@@ -141,8 +141,8 @@ public final class Lists {
     * @param iterator the elements to add to the set
     * @return the new linked list containing the given elements
     */
-   public static <T> List<T> asLinkedList(Iterator<? extends T> iterator) {
-      return createList(LinkedList::new, Streams.asStream(iterator));
+   public static <T> LinkedList<T> asLinkedList(Iterator<? extends T> iterator) {
+      return Cast.as(createList(LinkedList::new, Streams.asStream(iterator)));
    }
 
    /**
@@ -152,8 +152,8 @@ public final class Lists {
     * @param iterable the elements to add to the set
     * @return the new linked list containing the given elements
     */
-   public static <T> List<T> asLinkedList(Iterable<? extends T> iterable) {
-      return createList(LinkedList::new, Streams.asStream(iterable));
+   public static <T> LinkedList<T> asLinkedList(Iterable<? extends T> iterable) {
+      return Cast.as(createList(LinkedList::new, Streams.asStream(iterable)));
    }
 
    /**
@@ -307,7 +307,8 @@ public final class Lists {
     * @param converter the converter
     * @return the list
     */
-   public static <I, O> List<O> transform(List<? extends I> list, SerializableFunction<? super I, ? extends O> converter) {
+   public static <I, O> List<O> transform(List<? extends I> list,
+                                          SerializableFunction<? super I, ? extends O> converter) {
       return new TransformedList<>(list, converter);
    }
 

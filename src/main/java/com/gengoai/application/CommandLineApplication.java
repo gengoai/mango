@@ -124,8 +124,7 @@ public abstract class CommandLineApplication implements Application, Serializabl
 
    @Override
    public void setPositionalArgs(String[] nonSpecifiedArguments) {
-      this.positionalArgs = new String[nonSpecifiedArguments.length];
-      System.arraycopy(nonSpecifiedArguments, 0, positionalArgs, 0, nonSpecifiedArguments.length);
+      this.positionalArgs = Arrays.copyOf(nonSpecifiedArguments, nonSpecifiedArguments.length);
    }
 
    /**

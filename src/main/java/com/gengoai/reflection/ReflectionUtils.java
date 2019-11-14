@@ -21,22 +21,12 @@
 
 package com.gengoai.reflection;
 
-import com.gengoai.Primitives;
-import com.gengoai.collection.Iterables;
-import com.gengoai.conversion.Val;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.logging.Loggable;
 import com.gengoai.logging.Logger;
 import com.gengoai.string.Strings;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.util.*;
-import java.util.function.Predicate;
-
-import static com.gengoai.reflection.ReflectPredicates.nameIn;
 
 /**
  * Static classes to make reflection easier.
@@ -50,26 +40,6 @@ public final class ReflectionUtils implements Loggable {
    }
 
    /**
-    * Finds the best Method match for a given method name and types against a collection of methods.
-    *
-    * @param methods    The collections of methods to choose from
-    * @param methodName The name of the method we want to match
-    * @param types      The types that we want to pass to the method.
-    * @return Null if there is no match, otherwise the Method which bests fits the given method name and types
-    */
-   public static Method bestMatchingMethod(Collection<Method> methods, String methodName, Class[] types) {
-      if (methods == null || Strings.isNullOrBlank(methodName) || types == null) {
-         return null;
-      }
-      for (Method method : methods) {
-         if (method.getName().equals(methodName) && typesMatch(method.getParameterTypes(), types)) {
-            return method;
-         }
-      }
-      return null;
-   }
-
-   /**
     * <p>Creates an object from a string. It first checks if the string is a class name and if so attempts to create an
     * instance or get a singleton instance of the class. Next it checks if the string is class name and a static method
     * or field name and if so invokes the static method or gets the value of the static field. </p>
@@ -77,25 +47,23 @@ public final class ReflectionUtils implements Loggable {
     * @param string The string containing information about the object to create
     * @return An object or null if the object the string maps to cannot be determined.
     */
-   public static Object createObject(String string) throws Exception {
+   public static Object createObjectFromString(String string) throws Exception {
       if (Strings.isNullOrBlank(string)) {
          return null;
       }
-      if (ReflectionUtils.isClassName(string)) {
-         Class<?> clazz = ReflectionUtils.getClassForNameQuietly(string);
-         if (ReflectionUtils.isSingleton(clazz)) {
-            return ReflectionUtils.getSingletonFor(clazz);
-         } else {
-            return BeanUtils.getBean(clazz);
-         }
+
+      Class<?> clazz = getClassForNameQuietly(string);
+      if (clazz != null) {
+         return Reflect.onClass(clazz).create().get();
       }
 
       int index = string.lastIndexOf(".");
       if (index != -1) {
          String field = string.substring(string.lastIndexOf('.') + 1);
          String cStr = string.substring(0, string.lastIndexOf('.'));
-         if (ReflectionUtils.isClassName(cStr)) {
-            Class<?> clazz = ReflectionUtils.getClassForNameQuietly(cStr);
+         clazz = getClassForNameQuietly(cStr);
+
+         if (clazz != null) {
 
             if (Reflect.onClass(clazz).containsField(field)) {
                try {
@@ -115,59 +83,6 @@ public final class ReflectionUtils implements Loggable {
          }
       }
       throw new ReflectionException("Unable to create object");
-   }
-
-   /**
-    * Gets all classes associated with (superclasses and interfaces) the given object.
-    *
-    * @param o The object
-    * @return List of classes including the class of the given object that match the given predicate
-    */
-   public static List<Class<?>> getAncestorClasses(Object o) {
-      return getAncestorClasses(o, x -> true);
-   }
-
-   /**
-    * Gets all classes associated with (superclasses and interfaces) the given object that pass the given predicate.
-    *
-    * @param o         The object
-    * @param predicate The predicate that ancestors must pass.
-    * @return List of classes including the class of the given object that match the given predicate
-    */
-   private static List<Class<?>> getAncestorClasses(Object o, Predicate<? super Class<?>> predicate) {
-      if (o == null) {
-         return Collections.emptyList();
-      }
-      List<Class<?>> matches = new ArrayList<>();
-      Set<Class<?>> seen = new HashSet<>();
-      Queue<Class<?>> queue = new LinkedList<>();
-      queue.add(o.getClass());
-      while (!queue.isEmpty()) {
-         Class<?> clazz = queue.remove();
-         if (predicate.test(clazz)) {
-            matches.add(clazz);
-         }
-         seen.add(clazz);
-         if (clazz.getSuperclass() != null && !seen.contains(clazz.getSuperclass())) {
-            queue.add(clazz.getSuperclass());
-         }
-         for (Class<?> iface : clazz.getInterfaces()) {
-            if (!seen.contains(iface)) {
-               queue.add(iface);
-            }
-         }
-      }
-      return matches;
-   }
-
-   /**
-    * Gets all interfaces that the given object implements
-    *
-    * @param o The object
-    * @return A list of interfaces implemented by the object
-    */
-   public static List<Class<?>> getAncestorInterfaces(Object o) {
-      return getAncestorClasses(o, Class::isInterface);
    }
 
    /**
@@ -251,6 +166,9 @@ public final class ReflectionUtils implements Loggable {
     * @return The Class information or null
     */
    public static Class<?> getClassForNameQuietly(String name) {
+      if (name == null) {
+         return null;
+      }
       try {
          return getClassForName(name);
       } catch (Exception | Error cnfe) {
@@ -258,131 +176,5 @@ public final class ReflectionUtils implements Loggable {
          return null;
       }
    }
-
-   /**
-    * Gets declared fields.
-    *
-    * @param clazz     the clazz
-    * @param recursive the recursive
-    * @return the declared fields
-    */
-   public static List<Field> getDeclaredFields(Class<?> clazz, boolean recursive) {
-      List<Field> fields = new ArrayList<>();
-      do {
-         fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
-         clazz = clazz.getSuperclass();
-      } while (recursive && clazz != null && clazz != Object.class);
-      return fields;
-   }
-
-   /**
-    * Gets the singleton instance of a class. Looks for a <code>getInstance</code>, <code>getSingleton</code> or
-    * <code>createInstance</code> method.
-    *
-    * @param <T> the type parameter
-    * @param cz  The class
-    * @return The singleton instance or null if the class is not a singleton.
-    */
-   public static <T> T getSingletonFor(Class<?> cz) {
-      if (cz == null) {
-         return null;
-      }
-      try {
-         RMethod method = getSingletonMethod(cz).orElse(null);
-         return method == null ? null : method.invoke();
-      } catch (ReflectionException e) {
-         throw new RuntimeException(e);
-      }
-   }
-
-   private static Optional<RMethod> getSingletonMethod(Class<?> clazz) {
-      return Iterables.getFirst(Reflect.onClass(clazz)
-                                       .getMethodsWhere(m -> {
-                                          if (m.numberOfParameters() > 0) {
-                                             return false;
-                                          }
-                                          return nameIn("getInstance", "getSingleton", "createInstance").test(m);
-                                       }));
-   }
-
-   /**
-    * Gets the types for an array of objects
-    *
-    * @param args The arguments to get types for
-    * @return A 0 sized array if the array is null, otherwise an array of class equalling the classes of the given args
-    * or <code>Object.cass</code> if the arg is null.
-    */
-   public static Class[] getTypes(Object... args) {
-      if (args.length == 0) {
-         return new Class[0];
-      }
-      Class[] types = new Class[args.length];
-      for (int i = 0; i < args.length; i++) {
-         types[i] = args[i] == null ? Object.class : args[i].getClass();
-      }
-      return types;
-   }
-
-   private static boolean inSameHierarchy(Class<?> c1, Class<?> c2) {
-      return Primitives.wrap(c1).isAssignableFrom(c2) || Primitives.wrap(c2).isAssignableFrom(c1);
-   }
-
-   /**
-    * Determines if a string is a class name.
-    *
-    * @param string The string
-    * @return True if value of the string is a class name.
-    */
-   public static boolean isClassName(String string) {
-      return Strings.isNotNullOrBlank(string) && getClassForNameQuietly(string) != null;
-   }
-
-   private static boolean isConvertible(Class<?> c1, Class<?> c2) {
-      return Val.class.isAssignableFrom(c1) || Val.class.isAssignableFrom(c2);
-   }
-
-   /**
-    * Determines if a class is a singleton by looking for certain methods on the class.  Looks for a
-    * <code>getInstance</code>, <code>getSingleton</code> or <code>createInstance</code> method.
-    *
-    * @param clazz The class
-    * @return True if it appears to be a singleton.
-    */
-   public static boolean isSingleton(Class<?> clazz) {
-      if (clazz == null) {
-         return false;
-      }
-      return getSingletonMethod(clazz).isPresent();
-   }
-
-   public static <T> T newInstance(Type type) {
-      try {
-         return Reflect.onClass(TypeUtils.asClass(type))
-                       .create().get();
-      } catch (ReflectionException e) {
-         throw new RuntimeException(e);
-      }
-   }
-
-   /**
-    * Determines if the two given arrays of class are compatible with one another.
-    *
-    * @param c1 array 1
-    * @param c2 array 2
-    * @return True if all classes are the same or those c1 are assignable from c2, otherwise false
-    */
-   @SuppressWarnings("unchecked")
-   public static boolean typesMatch(Class<?>[] c1, Class[] c2) {
-      if (c1.length != c2.length) {
-         return false;
-      }
-      for (int i = 0; i < c1.length; i++) {
-         if (!inSameHierarchy(c1[i], c2[i]) && !isConvertible(c1[i], c2[i])) {
-            return false;
-         }
-      }
-      return true;
-   }
-
 
 }// END OF CLASS ReflectionUtils

@@ -31,6 +31,7 @@ import com.gengoai.conversion.Val;
 import com.gengoai.function.CheckedBiConsumer;
 import com.gengoai.function.CheckedBiFunction;
 import com.gengoai.function.CheckedConsumer;
+import com.gengoai.function.CheckedFunction;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -41,10 +42,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The type Reflected annotated element.
+ * Base-class for fluent Reflection classes
  *
- * @param <T> the type parameter
- * @param <V> the type parameter
+ * @param <T> the element type parameter
+ * @param <V> this type parameter
  * @author David B. Bracewell
  */
 abstract class RBase<T extends AnnotatedElement, V extends RBase> implements Serializable {
@@ -70,6 +71,44 @@ abstract class RBase<T extends AnnotatedElement, V extends RBase> implements Ser
       }
       Object out = Converter.convert(value, toClass);
       return out == null ? value : out;
+   }
+
+   /**
+    * Gets the types for an array of objects
+    *
+    * @param args The arguments to get types for
+    * @return A 0 sized array if the array is null, otherwise an array of class equalling the classes of the given args
+    * or <code>Object.cass</code> if the arg is null.
+    */
+   protected static Class[] getTypes(Object... args) {
+      if (args.length == 0) {
+         return new Class[0];
+      }
+      Class[] types = new Class[args.length];
+      for (int i = 0; i < args.length; i++) {
+         types[i] = args[i] == null ? Object.class : args[i].getClass();
+      }
+      return types;
+   }
+
+
+   /**
+    * Determines if any of the given annotations are present on this object
+    *
+    * @param element           the annotated element to check
+    * @param annotationClasses the annotation classes
+    * @return True - if any of the given annotations are present on this object
+    */
+   @SuppressWarnings("unchecked")
+   @SafeVarargs
+   static boolean isAnnotationPresent(@NonNull AnnotatedElement element,
+                                      @NonNull Class<? extends Annotation>... annotationClasses) {
+      for (Class aClass : annotationClasses) {
+         if (element.isAnnotationPresent(aClass)) {
+            return true;
+         }
+      }
+      return false;
    }
 
    /**
@@ -161,6 +200,13 @@ abstract class RBase<T extends AnnotatedElement, V extends RBase> implements Ser
    public abstract T getElement();
 
    /**
+    * Gets the modifiers on this field.
+    *
+    * @return the modifiers
+    */
+   public abstract int getModifiers();
+
+   /**
     * Gets the name of the element
     *
     * @return the name of the element
@@ -199,24 +245,6 @@ abstract class RBase<T extends AnnotatedElement, V extends RBase> implements Ser
     */
    @SuppressWarnings("unchecked")
    @SafeVarargs
-   public static boolean isAnnotationPresent(@NonNull AnnotatedElement element,
-                                             @NonNull Class<? extends Annotation>... annotationClasses) {
-      for (Class aClass : annotationClasses) {
-         if (element.isAnnotationPresent(aClass)) {
-            return true;
-         }
-      }
-      return false;
-   }
-
-   /**
-    * Determines if any of the given annotations are present on this object
-    *
-    * @param annotationClasses the annotation classes
-    * @return True - if any of the given annotations are present on this object
-    */
-   @SuppressWarnings("unchecked")
-   @SafeVarargs
    public final boolean isAnnotationPresent(@NonNull Class<? extends Annotation>... annotationClasses) {
       for (Class aClass : annotationClasses) {
          if (getElement().isAnnotationPresent(aClass)) {
@@ -227,11 +255,11 @@ abstract class RBase<T extends AnnotatedElement, V extends RBase> implements Ser
    }
 
    private <A extends Annotation, O> O processAnnotation(A annotation,
-                                                         CheckedBiFunction<T, ? super A, ? extends O> function)
+                                                         CheckedFunction<? super A, ? extends O> function)
       throws ReflectionException {
       try {
          if (annotation != null) {
-            return function.apply(Cast.as(this), Cast.as(annotation));
+            return function.apply(Cast.as(annotation));
          }
          return null;
       } catch (Throwable e) {
@@ -251,7 +279,7 @@ abstract class RBase<T extends AnnotatedElement, V extends RBase> implements Ser
     * @throws ReflectionException Something went wrong during reflection
     */
    public final <A extends Annotation, O> O processAnnotation(@NonNull Class<A> annotationClass,
-                                                              @NonNull CheckedBiFunction<T, ? super A, ? extends O> function)
+                                                              @NonNull CheckedFunction<? super A, ? extends O> function)
       throws ReflectionException {
       return processAnnotation(getAnnotation(annotationClass), function);
    }
@@ -268,7 +296,7 @@ abstract class RBase<T extends AnnotatedElement, V extends RBase> implements Ser
     * @throws ReflectionException Something went wrong during reflection
     */
    public final <A extends Annotation, O> List<O> processAnnotations(@NonNull Class<A> annotationClass,
-                                                                     @NonNull CheckedBiFunction<T, ? super A, ? extends O> function)
+                                                                     @NonNull CheckedFunction<? super A, ? extends O> function)
       throws ReflectionException {
       List<O> list = new ArrayList<>();
       for (A annotation : getAnnotations(annotationClass)) {
@@ -292,13 +320,6 @@ abstract class RBase<T extends AnnotatedElement, V extends RBase> implements Ser
          throw new ReflectionException(e);
       }
    }
-
-   /**
-    * Gets the modifiers on this field.
-    *
-    * @return the modifiers
-    */
-   public abstract int getModifiers();
 
    /**
     * Applies the given {@link CheckedBiConsumer} to this object with the given annotation if it is present on the

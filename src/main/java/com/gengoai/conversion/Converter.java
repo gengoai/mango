@@ -172,7 +172,7 @@ public final class Converter {
       //Last chance
       try {
          return Cast.as(
-            BeanUtils.parameterizeObject(ReflectionUtils.createObject(convert(sourceObject, String.class))));
+            BeanUtils.parameterizeObject(ReflectionUtils.createObjectFromString(convert(sourceObject, String.class))));
       } catch (Exception e) {
          //ignore
       }

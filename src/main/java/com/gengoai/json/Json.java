@@ -43,7 +43,10 @@ public final class Json {
                      boolean isHier = Boolean.parseBoolean(parts[1]);
                      Object adapter;
                      try {
-                        adapter = Reflect.onClass(parts[2]).allowPrivilegedAccess().create().get();
+                        adapter = Reflect.onClass(parts[2])
+                                         .allowPrivilegedAccess()
+                                         .create()
+                                         .get();
                      } catch (Exception e) {
                         throw new IllegalArgumentException(e);
                      }
@@ -59,6 +62,7 @@ public final class Json {
             }
          }
       }
+
 
       builder.registerTypeHierarchyAdapter(JsonEntry.class, new JsonEntryMarshaller());
       builder.registerTypeHierarchyAdapter(Enum.class, new EnumMarshaller());

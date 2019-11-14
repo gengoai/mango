@@ -11,7 +11,6 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * <p>Convenience methods for creating type information</p>
@@ -22,27 +21,6 @@ public final class TypeUtils {
 
    private TypeUtils() {
       throw new IllegalAccessError();
-   }
-
-   /**
-    * All assignable boolean.
-    *
-    * @param l1 the l 1
-    * @param l2 the l 2
-    * @return the boolean
-    */
-   public static boolean allAssignable(List<Type> l1, List<Type> l2) {
-      if (l1.size() == l2.size()) {
-         for (int i = 0; i < l1.size(); i++) {
-            if (!isAssignable(l1.get(i), l2.get(i)) &&
-                   !isAssignable(Primitives.wrap(asClass(l1.get(i))), Primitives.wrap(asClass(l2.get(i))))
-            ) {
-               return false;
-            }
-         }
-         return true;
-      }
-      return false;
    }
 
    /**
@@ -136,8 +114,8 @@ public final class TypeUtils {
       }
       Class<?> clazz = asClass(type);
       return Iterable.class.isAssignableFrom(clazz) ||
-                Iterator.class.isAssignableFrom(clazz) ||
-                clazz.isArray();
+         Iterator.class.isAssignableFrom(clazz) ||
+         clazz.isArray();
    }
 
    /**

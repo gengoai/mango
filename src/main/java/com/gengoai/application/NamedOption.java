@@ -26,12 +26,16 @@ import com.gengoai.config.Config;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Converter;
 import com.gengoai.io.resource.Resource;
+import com.gengoai.reflection.RField;
+import com.gengoai.reflection.TypeUtils;
 import com.gengoai.string.CharMatcher;
 import com.gengoai.string.Strings;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.util.*;
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 
 /**
@@ -62,11 +66,11 @@ public final class NamedOption {
 
 
    private final String name;
-   private final Class<?> type;
+   private final Type type;
    private final String description;
    private final String[] aliases;
    private final boolean required;
-   private final Field field;
+   private final RField field;
    private Object value = null;
 
    /**
@@ -74,8 +78,8 @@ public final class NamedOption {
     *
     * @param field the field which contains an {@link Option} annotation
     */
-   public NamedOption(Field field) {
-      Option option = Validation.notNull(field.getAnnotationsByType(Option.class))[0];
+   public NamedOption(RField field) {
+      Option option = Validation.notNull(field.getAnnotation(Option.class));
       this.field = field;
 
       this.name = Strings.isNullOrBlank(option.name()) ? field.getName() : option.name();
@@ -109,7 +113,12 @@ public final class NamedOption {
     * @param aliases      the aliases
     * @param required     the required
     */
-   protected NamedOption(String name, Class<?> type, String description, Object defaultValue, Set<String> aliases, boolean required) {
+   protected NamedOption(String name,
+                         Class<?> type,
+                         String description,
+                         Object defaultValue,
+                         Set<String> aliases,
+                         boolean required) {
       Validation.checkArgument(!Strings.isNullOrBlank(name) && !CharMatcher.WhiteSpace.matchesAnyOf(name),
                                "Option name must have at least one character and must not have a space");
       Validation.notNullOrBlank(description, "Description must not be blank");
@@ -177,7 +186,7 @@ public final class NamedOption {
     *
     * @return the field
     */
-   public Field getField() {
+   public RField getField() {
       return this.field;
    }
 
@@ -195,7 +204,7 @@ public final class NamedOption {
     *
     * @return the class information for the type of the option
     */
-   public Class<?> getType() {
+   public Type getType() {
       return this.type;
    }
 
@@ -219,12 +228,12 @@ public final class NamedOption {
       if (obj == null || getClass() != obj.getClass()) {return false;}
       final NamedOption other = (NamedOption) obj;
       return Objects.equals(this.name, other.name)
-                && Objects.equals(this.type, other.type)
-                && Objects.equals(this.description, other.description)
-                && Objects.deepEquals(this.aliases, other.aliases)
-                && Objects.equals(this.required, other.required)
-                && Objects.equals(this.field, other.field)
-                && Objects.equals(this.value, other.value);
+         && Objects.equals(this.type, other.type)
+         && Objects.equals(this.description, other.description)
+         && Objects.deepEquals(this.aliases, other.aliases)
+         && Objects.equals(this.required, other.required)
+         && Objects.equals(this.field, other.field)
+         && Objects.equals(this.value, other.value);
    }
 
    private String toSpecificationForm(String optionName) {
@@ -264,29 +273,30 @@ public final class NamedOption {
          this.value = true;
 
       } else if (!Strings.isNullOrBlank(optionValue)) {
-
-         if (Collection.class.isAssignableFrom(type)) {
-
-            Class<?> genericType = field == null
-                                   ? String.class
-                                   : (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
-            this.value = Converter.convertSilently(optionValue, type, genericType);
-
-         } else if (Map.class.isAssignableFrom(type)) {
-
-            Class<?> keyType = field == null
-                               ? String.class
-                               : (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
-            Class<?> valueType = field == null
-                                 ? String.class
-                                 : (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[1];
-            this.value = Converter.convertSilently(optionValue, type, keyType, valueType);
-
-         } else {
-
-            this.value = Converter.convertSilently(optionValue, type);
-
-         }
+         this.value = Converter.convertSilently(optionValue, type);
+//         if (Collection.class.isAssignableFrom(type)) {
+//
+//            Class<?> genericType = field == null
+//                                   ? String.class
+//                                   : (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
+//            this.value = Converter.convertSilently(optionValue, type, genericType);
+//
+//
+//         } else if (Map.class.isAssignableFrom(type)) {
+//
+//            Class<?> keyType = field == null
+//                               ? String.class
+//                               : (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
+//            Class<?> valueType = field == null
+//                                 ? String.class
+//                                 : (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[1];
+//            this.value = Converter.convertSilently(optionValue, type, keyType, valueType);
+//
+//         } else {
+//
+//            this.value = Converter.convertSilently(optionValue, type);
+//
+//         }
 
       }
    }
@@ -297,7 +307,7 @@ public final class NamedOption {
     * @return True if the option is a boolean type, False otherwise
     */
    public boolean isBoolean() {
-      return boolean.class.isAssignableFrom(type) || Boolean.class.isAssignableFrom(type);
+      return TypeUtils.isAssignable(boolean.class, type) || TypeUtils.isAssignable(Boolean.class, type);
    }
 
 
@@ -340,11 +350,11 @@ public final class NamedOption {
 
    public String toString() {
       return "NamedOption(name=" + this.getName() +
-                ", type=" + this.getType() +
-                ", description=" + this.getDescription() +
-                ", aliases=" + Arrays.toString(this.getAliases()) +
-                ", required=" + this.isRequired() +
-                ", value=" + this.getValue() + ")";
+         ", type=" + this.getType() +
+         ", description=" + this.getDescription() +
+         ", aliases=" + Arrays.toString(this.getAliases()) +
+         ", required=" + this.isRequired() +
+         ", value=" + this.getValue() + ")";
    }
 
    /**

@@ -33,11 +33,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static com.gengoai.collection.Lists.linkedListOf;
-import static com.gengoai.collection.Sets.hashSetOf;
 
 /**
  * The type Reflect.
@@ -69,48 +67,6 @@ public class Reflect extends RBase<Class<?>, Reflect> {
       this.privileged = privileged;
    }
 
-//   /**
-//    * Creates an instance Reflect for an object that gets constructed using the supplied constructor and arguments.
-//    *
-//    * @param constructor           The constructor to call
-//    * @param allowPrivilegedAccess Allows access to all methods on the object or class
-//    * @param args                  The arguments to pass to the constructor
-//    * @return A Reflect wrapper around the constructed object
-//    * @throws ReflectionException Something went wrong constructing the object
-//    */
-//   private static Reflect on(Constructor constructor,
-//                             boolean allowPrivilegedAccess,
-//                             Object... args) throws ReflectionException {
-//      boolean accessible = constructor.isAccessible();
-//      try {
-//         if (!accessible && allowPrivilegedAccess) {
-//            constructor.setAccessible(true);
-//         }
-//         if (args != null) {
-//            Class<?>[] parameterTypes = constructor.getParameterTypes();
-//            for (int i = 0; i < args.length; i++) {
-//               args[i] = convertValueType(args[i], parameterTypes[i]);
-//            }
-//         }
-//
-//         if (constructor.isVarArgs() && constructor.getParameterTypes()[0].isArray()) {
-//            Object object = constructor.newInstance(
-//               Array.newInstance(constructor.getParameterTypes()[0].getComponentType(), 0));
-//            return new Reflect(object, object.getClass(), allowPrivilegedAccess);
-//         }
-//
-//
-//         Object object = constructor.newInstance(args);
-//         return new Reflect(object, object.getClass(), allowPrivilegedAccess);
-//      } catch (InstantiationException | IllegalAccessException | InvocationTargetException | TypeConversionException e) {
-//         throw new ReflectionException(e);
-//      } finally {
-//         if (!accessible && allowPrivilegedAccess) {
-//            constructor.setAccessible(false);
-//         }
-//      }
-//   }
-
    /**
     * On class reflect.
     *
@@ -124,16 +80,45 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    /**
     * On class reflect.
     *
+    * @param clazz the clazz
+    * @return the reflect
+    */
+   public static Reflect onClass(Type clazz) {
+      return new Reflect(null, TypeUtils.asClass(clazz), false);
+   }
+
+   /**
+    * On class reflect.
+    *
     * @param className the class name
     * @return the reflect
     * @throws ReflectionException the reflection exception
     */
    public static Reflect onClass(String className) throws ReflectionException {
       try {
+         Class<?> clazz = ReflectionUtils.getClassForNameQuietly(className);
+         if (clazz != null) {
+            return new Reflect(null, clazz, false);
+         }
          return new Reflect(null, ReflectionUtils.getClassForName(className), false);
       } catch (Exception e) {
          throw new ReflectionException(e);
       }
+   }
+
+
+   public boolean isSingleton() {
+      return ClassDescriptorCache.getInstance()
+                                 .getClassDescriptor(clazz)
+                                 .getSingletonMethod() != null;
+   }
+
+   public RMethod getSingletonMethod() throws ReflectionException {
+      return Optional.ofNullable(ClassDescriptorCache.getInstance()
+                                                     .getClassDescriptor(clazz)
+                                                     .getSingletonMethod())
+                     .map(m -> new RMethod(new Reflect(null, clazz, privileged), m))
+                     .orElseThrow(() -> new ReflectionException("No Singleton Static Method"));
    }
 
    /**
@@ -164,8 +149,10 @@ public class Reflect extends RBase<Class<?>, Reflect> {
     *
     * @return the iterable
     */
-   public Iterable<Reflect> ancestors() {
-      return AncestorIterator::new;
+   public Iterable<Reflect> getAncestors(boolean reverseOrder) {
+      return () -> ClassDescriptorCache.getInstance()
+                                       .getClassDescriptor(clazz)
+                                       .getAncestors(reverseOrder);
    }
 
    /**
@@ -221,6 +208,9 @@ public class Reflect extends RBase<Class<?>, Reflect> {
     * @throws ReflectionException Something went wrong constructing the object
     */
    public Reflect create() throws ReflectionException {
+      if (isSingleton()) {
+         return getSingletonMethod().invokeReflective();
+      }
       return constructor().createReflective();
    }
 
@@ -232,7 +222,13 @@ public class Reflect extends RBase<Class<?>, Reflect> {
     * @throws ReflectionException Something went wrong constructing the object
     */
    public Reflect create(Object... args) throws ReflectionException {
-      return create(ReflectionUtils.getTypes(args), args);
+//      if (isSingleton()) {
+//         if (args == null || args.length == 0) {
+//            return getSingletonMethod().invokeReflective();
+//         }
+//         throw new ReflectionException("Trying to call the constructor of a singleton object");
+//      }
+      return create(getTypes(args), args);
    }
 
    /**
@@ -245,6 +241,12 @@ public class Reflect extends RBase<Class<?>, Reflect> {
     */
    public Reflect create(@NonNull Class[] types, @NonNull Object... args) throws ReflectionException {
       Validation.checkArgument(types.length == args.length);
+//      if (isSingleton()) {
+//         if (args.length == 0) {
+//            return getSingletonMethod().invokeReflective();
+//         }
+//         throw new ReflectionException("Trying to call the constructor of a singleton object");
+//      }
       return getConstructor(types).createReflective(args);
    }
 
@@ -558,61 +560,6 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    public Reflect setIsPrivileged(boolean allowPrivilegedAccess) {
       this.privileged = allowPrivilegedAccess;
       return Cast.as(this);
-   }
-
-   private class AncestorIterator implements Iterator<Reflect> {
-      /**
-       * The Queue.
-       */
-      final Queue<Class<?>> queue = linkedListOf(clazz);
-      /**
-       * The Seen.
-       */
-      final Set<Class<?>> seen = hashSetOf(clazz);
-      /**
-       * The Next.
-       */
-      Reflect next = null;
-
-      /**
-       * Advance boolean.
-       *
-       * @return the boolean
-       */
-      boolean advance() {
-         while (next == null && queue.size() > 0) {
-            Class<?> nextClazz = queue.remove();
-            if (nextClazz != clazz) {
-               next = Reflect.onClass(nextClazz);
-            }
-            if (nextClazz.getSuperclass() != null && !seen.contains(nextClazz.getSuperclass())) {
-               queue.add(clazz.getSuperclass());
-               seen.add(clazz.getSuperclass());
-            }
-            for (Class<?> iface : nextClazz.getInterfaces()) {
-               if (!seen.contains(iface)) {
-                  queue.add(iface);
-                  seen.add(iface);
-               }
-            }
-         }
-         return next != null;
-      }
-
-      @Override
-      public boolean hasNext() {
-         return advance();
-      }
-
-      @Override
-      public Reflect next() {
-         if (!advance()) {
-            throw new NoSuchElementException();
-         }
-         Reflect r = next;
-         next = null;
-         return r;
-      }
    }
 
 }//END OF R2

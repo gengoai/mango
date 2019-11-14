@@ -21,7 +21,10 @@ import static com.gengoai.reflection.TypeUtils.parameterizedType;
 public abstract class MapTypeConverter implements TypeConverter {
 
 
-   private Map<?, ?> convertJson(JsonEntry json, Object source, Type keyType, Type valueType) throws TypeConversionException {
+   private Map<?, ?> convertJson(JsonEntry json,
+                                 Object source,
+                                 Type keyType,
+                                 Type valueType) throws TypeConversionException {
       Map<?, ?> map = createMap();
       if (!json.isObject()) {
          throw new TypeConversionException(source, parameterizedType(Map.class, keyType, valueType));
@@ -43,6 +46,7 @@ public abstract class MapTypeConverter implements TypeConverter {
       Type keyType = (parameters == null || parameters.length == 0) ? Object.class : parameters[0];
       Type valueType = (parameters == null || parameters.length < 2) ? Object.class : parameters[1];
 
+
       //In the case that the source object is a map, convert its keys and values
       if (source instanceof Map) {
          Map<?, ?> map = createMap();
@@ -56,7 +60,6 @@ public abstract class MapTypeConverter implements TypeConverter {
 
       if (source instanceof CharSequence) {
          String str = source.toString();
-
          //Empty String
          if (Strings.isNullOrBlank(str)) {
             return createMap();

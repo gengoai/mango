@@ -57,7 +57,7 @@ public abstract class RExecutable<T extends Executable, V extends RExecutable> e
    }
 
    protected final Object[] convertParameters(Object... args) throws TypeConversionException {
-      Class[] types = ReflectionUtils.getTypes(args);
+      Class[] types = getTypes(args);
       Type[] pTypes = getElement().getGenericParameterTypes();
       Object[] eArgs = new Object[args.length];
       for (int i = 0; i < args.length; i++) {

@@ -25,6 +25,7 @@ import com.gengoai.collection.Iterables;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Converter;
 import com.gengoai.function.Unchecked;
+import com.gengoai.reflection.RField;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.string.Strings;
 import com.gengoai.tuple.Tuple2;
@@ -79,11 +80,11 @@ public final class CommandLineParser {
    public CommandLineParser(Object owner, String applicationDescription) {
       this.owner = owner;
       if (owner != null) {
-         Reflect.onObject(owner).allowPrivilegedAccess().getFields().forEach(field -> {
-            if (field.getAnnotations(Option.class).length > 0) {
-               addOption(new NamedOption(field.getElement()));
-            }
-         });
+         for (RField field : Reflect.onObject(owner)
+                                    .allowPrivilegedAccess()
+                                    .getFieldsWithAnnotation(Option.class)) {
+            addOption(new NamedOption(field));
+         }
       }
       this.applicationDescription = Strings.isNullOrBlank(applicationDescription)
                                     ? "Help"

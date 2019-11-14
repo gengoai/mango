@@ -59,12 +59,12 @@ public class DynamicEnumTest {
 
    @Test
    public void testReferenceEquality() throws Exception {
-      assertTrue(WITH_SPACE == NamesEnum.make("with space"));
+      assertSame(WITH_SPACE, NamesEnum.make("with space"));
       Resource bytes = new ByteArrayResource();
       bytes.writeObject(WITH_SPACE);
       NamesEnum isItWhiteSpace = bytes.readObject();
-      assertTrue(WITH_SPACE == isItWhiteSpace);
-      assertTrue(WITH_SPACE == NamesEnum.make("with space"));
+      assertSame(WITH_SPACE, isItWhiteSpace);
+      assertSame(WITH_SPACE, NamesEnum.make("with space"));
    }
 
 

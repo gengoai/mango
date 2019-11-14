@@ -30,7 +30,6 @@ import com.gengoai.json.JsonEntry;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -165,11 +164,9 @@ public class BeanUtils {
          return null;
       }
       BeanMap beanMap = new BeanMap(object);
-      List<Class<?>> list = ReflectionUtils.getAncestorClasses(object);
-      Collections.reverse(list);
-      for (Class<?> clazz : list) {
-         doParametrization(configPrefix, beanMap, clazz.getName());
-      }
+      Reflect.onObject(object)
+             .getAncestors(true)
+             .forEach(a -> doParametrization(configPrefix, beanMap, a.getType().getName()));
       return object;
    }
 

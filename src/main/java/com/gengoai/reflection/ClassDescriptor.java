@@ -21,6 +21,7 @@
 
 package com.gengoai.reflection;
 
+import com.gengoai.collection.Iterators;
 import com.gengoai.collection.multimap.HashSetMultimap;
 import com.gengoai.collection.multimap.Multimap;
 
@@ -32,6 +33,9 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Stream;
 
+import static com.gengoai.collection.Lists.linkedListOf;
+import static com.gengoai.collection.Sets.hashSetOf;
+
 /**
  * Contains basic information about the methods, fields and constructors for a class.
  *
@@ -39,10 +43,12 @@ import java.util.stream.Stream;
  */
 public final class ClassDescriptor implements Serializable {
    private static final long serialVersionUID = 1L;
+   private final LinkedList<Reflect> ancestors = new LinkedList<>();
    private final Class<?> clazz;
    private final Set<Constructor<?>> constructors = new HashSet<>();
    private final Map<String, Field> fields = new HashMap<>();
    private final Multimap<String, Method> methods = new HashSetMultimap<>();
+   private Method singletonMethod;
 
    /**
     * Instantiates a new Class descriptor.
@@ -53,9 +59,15 @@ public final class ClassDescriptor implements Serializable {
       this.clazz = clazz;
       for (Method method : clazz.getMethods()) {
          methods.put(method.getName(), method);
+         if (isSingletonMethod(method)) {
+            singletonMethod = method;
+         }
       }
       for (Method method : clazz.getDeclaredMethods()) {
          methods.put(method.getName(), method);
+         if (isSingletonMethod(method)) {
+            singletonMethod = method;
+         }
       }
       for (Field field : clazz.getFields()) {
          fields.put(field.getName(), field);
@@ -65,6 +77,46 @@ public final class ClassDescriptor implements Serializable {
       }
       Collections.addAll(constructors, clazz.getConstructors());
       Collections.addAll(constructors, clazz.getConstructors());
+
+      final Queue<Class<?>> queue = linkedListOf(clazz);
+      final Set<Class<?>> seen = hashSetOf();
+      while (queue.size() > 0) {
+         Class<?> nextClazz = queue.remove();
+         if (nextClazz != clazz) {
+            ancestors.addLast(Reflect.onClass(nextClazz));
+         }
+
+         if (seen.contains(nextClazz)) {
+            continue;
+         }
+         seen.add(nextClazz);
+
+         if (nextClazz.getSuperclass() != null && !seen.contains(nextClazz.getSuperclass())) {
+            queue.add(clazz.getSuperclass());
+            seen.add(clazz.getSuperclass());
+         }
+         for (Class<?> iface : nextClazz.getInterfaces()) {
+            if (!seen.contains(iface)) {
+               queue.add(iface);
+               seen.add(iface);
+            }
+         }
+      }
+   }
+
+   public Iterator<Reflect> getAncestors(boolean reversed) {
+      if (reversed) {
+         return Iterators.unmodifiableIterator(ancestors.descendingIterator());
+      }
+      return Iterators.unmodifiableIterator(ancestors.iterator());
+   }
+
+   private static boolean isSingletonMethod(Method method) {
+      return Modifier.isStatic(method.getModifiers())
+         && method.getParameterCount() == 0
+         && (method.getName().equals("getSingleton")
+         || method.getName().equals("getInstance")
+         || method.getName().equals("createInstance"));
    }
 
    @Override
@@ -93,7 +145,7 @@ public final class ClassDescriptor implements Serializable {
    public Stream<Constructor<?>> getConstructors(boolean privileged) {
       Stream<Constructor<?>> stream = constructors.stream();
       if (!privileged) {
-         stream = stream.filter(m -> (m.getModifiers() & Modifier.PUBLIC) != 0);
+         stream = stream.filter(m -> Modifier.isPublic(m.getModifiers()));
       }
       return stream;
    }
@@ -108,13 +160,12 @@ public final class ClassDescriptor implements Serializable {
    public Field getField(String name, boolean privileged) {
       Field f = fields.get(name);
       if (f != null) {
-         return (privileged || (f.getModifiers() & Modifier.PUBLIC) != 0)
+         return (privileged || Modifier.isPublic(f.getModifiers()))
                 ? f
                 : null;
       }
       return null;
    }
-
 
    /**
     * Gets fields.
@@ -125,7 +176,7 @@ public final class ClassDescriptor implements Serializable {
    public Stream<Field> getFields(boolean privileged) {
       Stream<Field> stream = fields.values().stream();
       if (!privileged) {
-         stream = stream.filter(m -> (m.getModifiers() & Modifier.PUBLIC) != 0);
+         stream = stream.filter(m -> Modifier.isPublic(m.getModifiers()));
       }
       return stream;
    }
@@ -139,7 +190,25 @@ public final class ClassDescriptor implements Serializable {
    public Stream<Method> getMethods(boolean privileged) {
       Stream<Method> stream = methods.values().stream();
       if (!privileged) {
-         stream = stream.filter(m -> (m.getModifiers() & Modifier.PUBLIC) != 0);
+         stream = stream.filter(m -> Modifier.isPublic(m.getModifiers()));
+      }
+      return stream;
+   }
+
+   /**
+    * Gets methods.
+    *
+    * @param privileged the privileged
+    * @return the methods
+    */
+   public Stream<Method> getMethods(String[] names, boolean privileged) {
+      Stream<Method> stream = null;
+      for (String name : names) {
+         if (stream == null) {
+            stream = getMethods(name, privileged);
+         } else {
+            stream = Stream.concat(stream, getMethods(name, privileged));
+         }
       }
       return stream;
    }
@@ -154,9 +223,13 @@ public final class ClassDescriptor implements Serializable {
    public Stream<Method> getMethods(String name, boolean privileged) {
       Stream<Method> stream = methods.get(name).stream();
       if (!privileged) {
-         stream = stream.filter(m -> (m.getModifiers() & Modifier.PUBLIC) != 0);
+         stream = stream.filter(m -> Modifier.isPublic(m.getModifiers()));
       }
       return stream;
+   }
+
+   public Method getSingletonMethod() {
+      return singletonMethod;
    }
 
    @Override
