@@ -23,16 +23,19 @@
 package com.gengoai.reflection;
 
 import com.gengoai.conversion.Cast;
+import lombok.EqualsAndHashCode;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 
 /**
- * The type Reflected constructor.
+ * Wraps a Constructor allowing easy access to parameters and the ability to create new instances of an object.
  *
  * @author David B. Bracewell
  */
-public class RConstructor extends RExecutable<Constructor<?>, RConstructor> {
+@EqualsAndHashCode(callSuper = true)
+public final class RConstructor extends RExecutable<Constructor<?>, RConstructor> {
+   private static final long serialVersionUID = 1L;
    private final Constructor<?> constructor;
 
    RConstructor(Reflect owner, Constructor<?> constructor) {
@@ -42,12 +45,12 @@ public class RConstructor extends RExecutable<Constructor<?>, RConstructor> {
    }
 
    /**
-    * Create t.
+    * Create a new instance of the object calling the constructor that with the given arguments
     *
-    * @param <T>  the type parameter
-    * @param args the args
-    * @return the t
-    * @throws ReflectionException the reflection exception
+    * @param <T>  the type parameter for the object being created
+    * @param args the constructor arguments
+    * @return the created object
+    * @throws ReflectionException Something went wrong creating the object
     */
    public <T> T create(Object... args) throws ReflectionException {
       return Cast.as(process(constructor -> {
@@ -59,11 +62,12 @@ public class RConstructor extends RExecutable<Constructor<?>, RConstructor> {
    }
 
    /**
-    * Create reflective reflect.
+    * Create a new instance of the object calling the constructor that with the given arguments and wrapping the
+    * constructed object as a Reflect
     *
-    * @param args the args
-    * @return the reflect
-    * @throws ReflectionException the reflection exception
+    * @param args the constructor arguments
+    * @return the created object wrapped as a Reflect
+    * @throws ReflectionException Something went wrong creating the object
     */
    public Reflect createReflective(Object... args) throws ReflectionException {
       return Reflect.onObject(create(args));
@@ -77,6 +81,11 @@ public class RConstructor extends RExecutable<Constructor<?>, RConstructor> {
    @Override
    public Type getType() {
       return constructor.getAnnotatedReturnType().getType();
+   }
+
+   @Override
+   public String toString() {
+      return constructor.toString();
    }
 
 }//END OF ReflectedConstructor

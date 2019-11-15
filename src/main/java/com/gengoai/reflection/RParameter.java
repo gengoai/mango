@@ -24,6 +24,7 @@ package com.gengoai.reflection;
 
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Val;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 import java.lang.reflect.Parameter;
@@ -32,10 +33,11 @@ import java.lang.reflect.Type;
 import static com.gengoai.reflection.TypeUtils.isAssignable;
 
 /**
- * The type Reflect parameter.
+ * Wraps a Parameter giving easy access to its type information.
  *
  * @author David B. Bracewell
  */
+@EqualsAndHashCode(callSuper = false)
 public class RParameter extends RBase<Parameter, RParameter> {
    private static final long serialVersionUID = 1L;
    private final RExecutable<?, ?> owner;
@@ -88,6 +90,12 @@ public class RParameter extends RBase<Parameter, RParameter> {
     */
    public <T extends RExecutable<?, T>> T owner() {
       return Cast.as(owner);
+   }
+
+
+   @Override
+   public String toString() {
+      return parameter.toString();
    }
 
 }//END OF RParameter

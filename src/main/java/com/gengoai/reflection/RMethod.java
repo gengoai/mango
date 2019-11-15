@@ -23,15 +23,17 @@
 package com.gengoai.reflection;
 
 import com.gengoai.conversion.Cast;
+import lombok.EqualsAndHashCode;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
 /**
- * The type Reflected method.
+ * Wraps a Method allowing easy access to parameters and the ability to invoke the method.
  *
  * @author David B. Bracewell
  */
+@EqualsAndHashCode(callSuper = true)
 public class RMethod extends RExecutable<Method, RMethod> {
    private static final long serialVersionUID = 1L;
    private final Method method;
@@ -83,6 +85,11 @@ public class RMethod extends RExecutable<Method, RMethod> {
     */
    public Reflect invokeReflective(Object... args) throws ReflectionException {
       return Reflect.onObject(invoke(args));
+   }
+
+   @Override
+   public String toString() {
+      return method.toString();
    }
 
 }//END OF R2Method

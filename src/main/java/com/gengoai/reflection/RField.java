@@ -23,19 +23,20 @@
 package com.gengoai.reflection;
 
 import com.gengoai.conversion.Cast;
+import lombok.EqualsAndHashCode;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 
 /**
- * The type Reflected field.
+ * Wraps a Field allowing easy access to retrieving and setting its value.
  *
  * @author David B. Bracewell
  */
+@EqualsAndHashCode(callSuper = true)
 public class RField extends RAccessibleBase<Field, RField> {
    private static final long serialVersionUID = 1L;
    private final Field field;
-   private final Reflect owner;
 
    /**
     * Instantiates a new Reflected field.
@@ -44,7 +45,7 @@ public class RField extends RAccessibleBase<Field, RField> {
     * @param field the field
     */
    RField(Reflect owner, Field field) {
-      this.owner = owner;
+      super(owner);
       this.field = field;
       setIsPrivileged(owner.isPrivileged());
    }
@@ -56,7 +57,7 @@ public class RField extends RAccessibleBase<Field, RField> {
     * @throws ReflectionException Something went wrong getting the value
     */
    public <T> T get() throws ReflectionException {
-      return process(f -> Cast.as(f.get(owner.get())));
+      return process(f -> Cast.as(f.get(getOwner().get())));
    }
 
    /**
@@ -84,15 +85,6 @@ public class RField extends RAccessibleBase<Field, RField> {
    }
 
    /**
-    * Gets the {@link Reflect} object from which this field was created.
-    *
-    * @return the {@link Reflect} object from which this field was created.
-    */
-   public Reflect getOwner() {
-      return owner;
-   }
-
-   /**
     * Gets the value of this field as a {@link Reflect} object.
     *
     * @return the value of this field as a {@link Reflect} object.
@@ -115,14 +107,14 @@ public class RField extends RAccessibleBase<Field, RField> {
     * @throws ReflectionException Something went wrong setting or converting the value
     */
    public RField set(Object value) throws ReflectionException {
-      with(f -> f.set(owner.get(), convertValueType(value, getType())));
+      with(f -> f.set(getOwner().get(), convertValueType(value, getType())));
       return this;
    }
 
    @Override
    public String toString() {
-      if (owner.getType() != null) {
-         return owner.getType().getSimpleName() + "::" + field.getName();
+      if (getOwner().getType() != null) {
+         return getOwner().getType().getSimpleName() + "::" + field.getName();
       }
       return field.getName();
    }

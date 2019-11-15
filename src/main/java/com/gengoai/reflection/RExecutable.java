@@ -40,22 +40,34 @@ import java.util.stream.Stream;
 import static com.gengoai.reflection.TypeUtils.isAssignable;
 
 /**
- * The type Reflected executable.
+ * Base class for Executable objects (Methods and Constructors)
  *
- * @param <T> the type parameter
- * @param <V> the type parameter
+ * @param <T> the Executable type parameter
+ * @param <V> this type parameter
  * @author David B. Bracewell
  */
 public abstract class RExecutable<T extends Executable, V extends RExecutable> extends RAccessibleBase<T, V> {
    private static final long serialVersionUID = 1L;
-   private final Reflect owner;
    private final Lazy<List<RParameter>> parameters = new Lazy<>(() -> new ArrayList<>(
       Lists.transform(Arrays.asList(getElement().getParameters()), parameter -> new RParameter(this, parameter))));
 
+   /**
+    * Instantiates a new R executable.
+    *
+    * @param owner the owning Reflect
+    */
    protected RExecutable(Reflect owner) {
-      this.owner = owner;
+      super(owner);
    }
 
+
+   /**
+    * Converts the given set of arguments to values acceptable by this executable
+    *
+    * @param args the arguments to convert
+    * @return the converted arguments
+    * @throws TypeConversionException Something went wrong converting the arguments.
+    */
    protected final Object[] convertParameters(Object... args) throws TypeConversionException {
       Class[] types = getTypes(args);
       Type[] pTypes = getElement().getGenericParameterTypes();
@@ -89,27 +101,19 @@ public abstract class RExecutable<T extends Executable, V extends RExecutable> e
       return getElement().getName();
    }
 
-   /**
-    * Gets the {@link Reflect} object from which this executable was created.
-    *
-    * @return the {@link Reflect} object from which this executable was created.
-    */
-   public final Reflect getOwner() {
-      return owner;
-   }
 
    /**
-    * Gets parameter.
+    * Gets the ith parameter of the executable
     *
-    * @param index the index
+    * @param i the index of the parameter in the executable's parameter list
     * @return the parameter
     */
-   public RParameter getParameter(int index) {
-      return parameters.get().get(index);
+   public RParameter getParameter(int i) {
+      return parameters.get().get(i);
    }
 
    /**
-    * Gets parameters.
+    * Gets all parameters of this executable.
     *
     * @return the parameters
     */
@@ -118,31 +122,31 @@ public abstract class RExecutable<T extends Executable, V extends RExecutable> e
    }
 
    /**
-    * Is var args boolean.
+    * Checks if this executable has a varargs parameter
     *
-    * @return the boolean
+    * @return True if the executable takes a vararg parameter, False othrwise
     */
    public boolean isVarArgs() {
       return getElement().isVarArgs();
    }
 
    /**
-    * Number of parameters int.
+    * Gets the number of parameters on the executable
     *
-    * @return the int
+    * @return the number of parameters on the executable
     */
-   public int numberOfParameters() {
+   public int getParameterCount() {
       return getElement().getParameterCount();
    }
 
    /**
-    * Parameter types compatible boolean.
+    * Determines if the given types are compatible with the this executable's parameters
     *
-    * @param types the types
-    * @return the boolean
+    * @param types the types to check
+    * @return True if the given types are compatible
     */
    public boolean parameterTypesCompatible(@NonNull Type... types) {
-      return types.length == numberOfParameters()
+      return types.length == getParameterCount()
          && Streams.zip(parameters.get().stream(), Stream.of(types))
                    .allMatch(e -> e.getKey().isTypeCompatible(e.getValue()));
    }

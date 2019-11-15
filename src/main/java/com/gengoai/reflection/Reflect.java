@@ -27,6 +27,7 @@ import com.gengoai.collection.Iterables;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.SerializablePredicate;
 import com.gengoai.string.Strings;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 import java.lang.annotation.Annotation;
@@ -42,6 +43,7 @@ import java.util.stream.Collectors;
  *
  * @author David B. Bracewell
  */
+@EqualsAndHashCode(callSuper = false)
 public class Reflect extends RBase<Class<?>, Reflect> {
    private final Class<?> clazz;
    private final Object object;
@@ -106,21 +108,6 @@ public class Reflect extends RBase<Class<?>, Reflect> {
       }
    }
 
-
-   public boolean isSingleton() {
-      return ClassDescriptorCache.getInstance()
-                                 .getClassDescriptor(clazz)
-                                 .getSingletonMethod() != null;
-   }
-
-   public RMethod getSingletonMethod() throws ReflectionException {
-      return Optional.ofNullable(ClassDescriptorCache.getInstance()
-                                                     .getClassDescriptor(clazz)
-                                                     .getSingletonMethod())
-                     .map(m -> new RMethod(new Reflect(null, clazz, privileged), m))
-                     .orElseThrow(() -> new ReflectionException("No Singleton Static Method"));
-   }
-
    /**
     * On object reflect.
     *
@@ -145,29 +132,28 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
-    * Ancestors iterable.
-    *
-    * @return the iterable
-    */
-   public Iterable<Reflect> getAncestors(boolean reverseOrder) {
-      return () -> ClassDescriptorCache.getInstance()
-                                       .getClassDescriptor(clazz)
-                                       .getAncestors(reverseOrder);
-   }
-
-   /**
     * Constructor r constructor.
     *
     * @return the r constructor
     * @throws ReflectionException the reflection exception
     */
    public RConstructor constructor() throws ReflectionException {
-      for (Constructor<?> constructor : getConstructors()) {
-         if ((constructor.isVarArgs() && constructor.getParameterCount() == 1) || constructor.getParameterCount() == 0) {
-            return new RConstructor(this, constructor);
+      try {
+         Constructor<?> c = ClassDescriptorCache.getInstance()
+                                                .getClassDescriptor(clazz)
+                                                .getConstructors(privileged)
+                                                .filter(
+                                                   constructor -> (constructor.isVarArgs() && constructor.getParameterCount() == 1)
+                                                      || constructor.getParameterCount() == 0)
+                                                .findFirst()
+                                                .orElse(null);
+         if (c == null) {
+            c = clazz.getDeclaredConstructor();
          }
+         return new RConstructor(this, c);
+      } catch (NoSuchMethodException | SecurityException e) {
+         throw new ReflectionException(e);
       }
-      throw new ReflectionException("No Constructor found");
    }
 
    /**
@@ -222,12 +208,12 @@ public class Reflect extends RBase<Class<?>, Reflect> {
     * @throws ReflectionException Something went wrong constructing the object
     */
    public Reflect create(Object... args) throws ReflectionException {
-//      if (isSingleton()) {
-//         if (args == null || args.length == 0) {
-//            return getSingletonMethod().invokeReflective();
-//         }
-//         throw new ReflectionException("Trying to call the constructor of a singleton object");
-//      }
+      if (isSingleton()) {
+         if (args == null || args.length == 0) {
+            return getSingletonMethod().invokeReflective();
+         }
+         throw new ReflectionException("Trying to call the constructor of a singleton object");
+      }
       return create(getTypes(args), args);
    }
 
@@ -241,12 +227,12 @@ public class Reflect extends RBase<Class<?>, Reflect> {
     */
    public Reflect create(@NonNull Class[] types, @NonNull Object... args) throws ReflectionException {
       Validation.checkArgument(types.length == args.length);
-//      if (isSingleton()) {
-//         if (args.length == 0) {
-//            return getSingletonMethod().invokeReflective();
-//         }
-//         throw new ReflectionException("Trying to call the constructor of a singleton object");
-//      }
+      if (isSingleton()) {
+         if (args.length == 0) {
+            return getSingletonMethod().invokeReflective();
+         }
+         throw new ReflectionException("Trying to call the constructor of a singleton object");
+      }
       return getConstructor(types).createReflective(args);
    }
 
@@ -258,6 +244,18 @@ public class Reflect extends RBase<Class<?>, Reflect> {
     */
    public <T> T get() {
       return Cast.as(object);
+   }
+
+   /**
+    * Ancestors iterable.
+    *
+    * @param reverseOrder the reverse order
+    * @return the iterable
+    */
+   public Iterable<Reflect> getAncestors(boolean reverseOrder) {
+      return () -> ClassDescriptorCache.getInstance()
+                                       .getClassDescriptor(clazz)
+                                       .getAncestors(reverseOrder);
    }
 
    /**
@@ -502,7 +500,6 @@ public class Reflect extends RBase<Class<?>, Reflect> {
                                  .collect(Collectors.toList());
    }
 
-
    /**
     * Gets methods with annotation.
     *
@@ -530,6 +527,20 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
+    * Gets singleton method.
+    *
+    * @return the singleton method
+    * @throws ReflectionException the reflection exception
+    */
+   public RMethod getSingletonMethod() throws ReflectionException {
+      return Optional.ofNullable(ClassDescriptorCache.getInstance()
+                                                     .getClassDescriptor(clazz)
+                                                     .getSingletonMethod())
+                     .map(m -> new RMethod(new Reflect(null, clazz, privileged), m))
+                     .orElseThrow(() -> new ReflectionException("No Singleton Static Method"));
+   }
+
+   /**
     * Gets super class.
     *
     * @return the super class
@@ -549,6 +560,17 @@ public class Reflect extends RBase<Class<?>, Reflect> {
     */
    public boolean isPrivileged() {
       return privileged;
+   }
+
+   /**
+    * Is singleton boolean.
+    *
+    * @return the boolean
+    */
+   public boolean isSingleton() {
+      return ClassDescriptorCache.getInstance()
+                                 .getClassDescriptor(clazz)
+                                 .getSingletonMethod() != null;
    }
 
    /**

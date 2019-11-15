@@ -25,18 +25,26 @@ package com.gengoai.reflection;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.CheckedConsumer;
 import com.gengoai.function.CheckedFunction;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 import java.lang.reflect.AccessibleObject;
 
 /**
- * The type R accessible object.
+ * Base object wrapping {@link AccessibleObject}s and providing a {@link #process(CheckedFunction)} and {@link
+ * #with(CheckedConsumer)} method which automatically take care of setting the privileges of the object.
  *
  * @param <T> the type parameter
  * @param <V> the type parameter
  */
+@EqualsAndHashCode(callSuper = false)
 abstract class RAccessibleBase<T extends AccessibleObject, V extends RAccessibleBase> extends RBase<T, V> {
-   private boolean privileged = false;
+   private final Reflect owner;
+
+   protected RAccessibleBase(Reflect owner) {
+      this.owner = owner;
+   }
+
 
    /**
     * Allow privileged access to the object
@@ -44,8 +52,17 @@ abstract class RAccessibleBase<T extends AccessibleObject, V extends RAccessible
     * @return this Object
     */
    public final V allowPrivilegedAccess() {
-      this.privileged = true;
+      owner.setIsPrivileged(true);
       return Cast.as(this);
+   }
+
+   /**
+    * Gets the {@link Reflect} object from which this executable was created.
+    *
+    * @return the {@link Reflect} object from which this executable was created.
+    */
+   public final Reflect getOwner() {
+      return owner;
    }
 
    /**
@@ -54,7 +71,7 @@ abstract class RAccessibleBase<T extends AccessibleObject, V extends RAccessible
     * @return True - privileged access is allowed, False - no privileged access is allowed
     */
    public final boolean isPrivileged() {
-      return privileged;
+      return owner.isPrivileged();
    }
 
    /**
@@ -87,7 +104,7 @@ abstract class RAccessibleBase<T extends AccessibleObject, V extends RAccessible
     * @return this object
     */
    public final V setIsPrivileged(boolean allowPrivilegedAccess) {
-      this.privileged = allowPrivilegedAccess;
+      owner.setIsPrivileged(allowPrivilegedAccess);
       return Cast.as(this);
    }
 

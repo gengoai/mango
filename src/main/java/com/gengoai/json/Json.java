@@ -48,7 +48,7 @@ public final class Json {
                                          .create()
                                          .get();
                      } catch (Exception e) {
-                        throw new IllegalArgumentException(e);
+                        throw new RuntimeException(e);
                      }
                      if (isHier) {
                         builder.registerTypeHierarchyAdapter(type, adapter);
@@ -58,7 +58,7 @@ public final class Json {
                   }
                }
             } catch (IOException e) {
-               e.printStackTrace();
+               throw new RuntimeException(e);
             }
          }
       }
