@@ -9,7 +9,6 @@ import com.gengoai.reflection.ReflectionUtils;
 import com.gengoai.reflection.TypeUtils;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -177,18 +176,12 @@ public final class Converter {
          //ignore
       }
 
-      Constructor<?> constructor = Reflect.onClass(asClass(destType))
-                                          .allowPrivilegedAccess()
-                                          .getConstructors()
-                                          .stream()
-                                          .filter(
-                                             c -> c.getParameterCount() == 1 && c.getParameterTypes()[0] == sourceObject
-                                                .getClass())
-                                          .findFirst()
-                                          .orElseThrow(() -> new TypeConversionException(sourceObject, destType));
 
       try {
-         return Cast.as(constructor.newInstance(sourceObject));
+         return Cast.as(Reflect.onClass(asClass(destType))
+                               .allowPrivilegedAccess()
+                               .getConstructor(sourceObject.getClass())
+                               .create(sourceObject));
       } catch (Exception e) {
          //ignore
       }

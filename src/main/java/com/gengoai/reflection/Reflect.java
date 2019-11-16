@@ -39,69 +39,51 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * The type Reflect.
+ * Wrapper around an object or class allowing easy access to reflection operations.
  *
  * @author David B. Bracewell
  */
 @EqualsAndHashCode(callSuper = false)
-public class Reflect extends RBase<Class<?>, Reflect> {
+public final class Reflect extends RBase<Class<?>, Reflect> {
    private final Class<?> clazz;
    private final Object object;
    private boolean privileged;
 
-   /**
-    * Instantiates a new Reflect.
-    */
-   public Reflect() {
-      this(null, null, false);
-   }
-
-   /**
-    * Instantiates a new Reflect.
-    *
-    * @param object     the object
-    * @param clazz      the clazz
-    * @param privileged the privileged
-    */
-   public Reflect(Object object, Class<?> clazz, boolean privileged) {
+   private Reflect(Object object, Class<?> clazz, boolean privileged) {
       this.object = object;
       this.clazz = clazz;
       this.privileged = privileged;
    }
 
    /**
-    * On class reflect.
+    * Creates a Reflect object for the given class.
     *
-    * @param clazz the clazz
-    * @return the reflect
+    * @param clazz the class we want reflective access to
+    * @return the reflect object
     */
-   public static Reflect onClass(Class<?> clazz) {
+   public static Reflect onClass(@NonNull Class<?> clazz) {
       return new Reflect(null, clazz, false);
    }
 
    /**
-    * On class reflect.
+    * Creates a Reflect object for the given type.
     *
-    * @param clazz the clazz
-    * @return the reflect
+    * @param clazz the type we want reflective access to
+    * @return the reflect object
     */
-   public static Reflect onClass(Type clazz) {
+   public static Reflect onClass(@NonNull Type clazz) {
       return new Reflect(null, TypeUtils.asClass(clazz), false);
    }
 
    /**
-    * On class reflect.
+    * Creates a Reflect object for the class represented by the given class name.
     *
-    * @param className the class name
-    * @return the reflect
+    * @param className the name of the class we want reflective access to
+    * @return the reflect object
     * @throws ReflectionException the reflection exception
     */
    public static Reflect onClass(String className) throws ReflectionException {
       try {
-         Class<?> clazz = ReflectionUtils.getClassForNameQuietly(className);
-         if (clazz != null) {
-            return new Reflect(null, clazz, false);
-         }
          return new Reflect(null, ReflectionUtils.getClassForName(className), false);
       } catch (Exception e) {
          throw new ReflectionException(e);
@@ -109,10 +91,10 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
-    * On object reflect.
+    * Creates a Reflect object on the given object
     *
-    * @param object the object
-    * @return the reflect
+    * @param object the object we want reflective access to
+    * @return the reflect object
     */
    public static Reflect onObject(Object object) {
       if (object == null) {
@@ -122,38 +104,13 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
-    * Allow privileged access reflect.
+    * Allow privileged access during reflective calls.
     *
-    * @return the reflect
+    * @return this reflect object
     */
    public Reflect allowPrivilegedAccess() {
       privileged = true;
       return this;
-   }
-
-   /**
-    * Constructor r constructor.
-    *
-    * @return the r constructor
-    * @throws ReflectionException the reflection exception
-    */
-   public RConstructor constructor() throws ReflectionException {
-      try {
-         Constructor<?> c = ClassDescriptorCache.getInstance()
-                                                .getClassDescriptor(clazz)
-                                                .getConstructors(privileged)
-                                                .filter(
-                                                   constructor -> (constructor.isVarArgs() && constructor.getParameterCount() == 1)
-                                                      || constructor.getParameterCount() == 0)
-                                                .findFirst()
-                                                .orElse(null);
-         if (c == null) {
-            c = clazz.getDeclaredConstructor();
-         }
-         return new RConstructor(this, c);
-      } catch (NoSuchMethodException | SecurityException e) {
-         throw new ReflectionException(e);
-      }
    }
 
    /**
@@ -172,10 +129,10 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
-    * Contains method.
+    * Determines if a method with the given name is associated with the class
     *
-    * @param name the name
-    * @return the boolean
+    * @param name The method name
+    * @return True if there is a method with the given name
     */
    public boolean containsMethod(final String name) {
       if (Strings.isNullOrBlank(name)) {
@@ -197,7 +154,7 @@ public class Reflect extends RBase<Class<?>, Reflect> {
       if (isSingleton()) {
          return getSingletonMethod().invokeReflective();
       }
-      return constructor().createReflective();
+      return getConstructor().createReflective();
    }
 
    /**
@@ -218,12 +175,12 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
-    * Create reflect.
+    * Creates an instance of the class being reflected using the best constructor that matches the given types.
     *
-    * @param types the types
-    * @param args  the args
-    * @return the reflect
-    * @throws ReflectionException the reflection exception
+    * @param types The type of the given arguments.
+    * @param args  The arguments to the constructor.
+    * @return A <code>Reflect</code> object to do further reflection
+    * @throws ReflectionException Something went wrong constructing the object
     */
    public Reflect create(@NonNull Class[] types, @NonNull Object... args) throws ReflectionException {
       Validation.checkArgument(types.length == args.length);
@@ -237,20 +194,20 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
-    * Get t.
+    * Gets the underlying object.
     *
     * @param <T> the type parameter
-    * @return the t
+    * @return the underlying object or null if we are reflecting a class
     */
    public <T> T get() {
       return Cast.as(object);
    }
 
    /**
-    * Ancestors iterable.
+    * Gets an iterable of the ancestors of this class including super classes and interfaces.
     *
-    * @param reverseOrder the reverse order
-    * @return the iterable
+    * @param reverseOrder True - order starting at Object, False order starting at superclass.
+    * @return the iterable of Reflect objects representing super-classes and interfaces
     */
    public Iterable<Reflect> getAncestors(boolean reverseOrder) {
       return () -> ClassDescriptorCache.getInstance()
@@ -258,30 +215,34 @@ public class Reflect extends RBase<Class<?>, Reflect> {
                                        .getAncestors(reverseOrder);
    }
 
-   /**
-    * Gets constructor.
-    *
-    * @return the constructor
-    * @throws ReflectionException the reflection exception
-    */
-   public RConstructor getConstructor() throws ReflectionException {
-      return ClassDescriptorCache.getInstance()
-                                 .getClassDescriptor(clazz)
-                                 .getConstructors(privileged)
-                                 .filter(c -> c.getParameterCount() == 0 || c.isVarArgs())
-                                 .findFirst()
-                                 .map(c -> new RConstructor(this, c))
-                                 .orElseThrow(() -> new ReflectionException("No such constructor"));
-   }
 
    /**
-    * Gets constructor.
+    * Gets the best constructor for the class matching the given types
     *
-    * @param types the types
-    * @return the constructor
-    * @throws ReflectionException the reflection exception
+    * @param types The types (possibly empty) of the constructor parameters
+    * @return the best constructor constructor for the class
+    * @throws ReflectionException Either could not find an appropriate constructor or security did not allow reflective
+    *                             access.
     */
    public RConstructor getConstructor(@NonNull Type... types) throws ReflectionException {
+      if (types.length == 0) {
+         try {
+            Constructor<?> c = ClassDescriptorCache.getInstance()
+                                                   .getClassDescriptor(clazz)
+                                                   .getConstructors(privileged)
+                                                   .filter(
+                                                      constructor -> (constructor.isVarArgs() && constructor.getParameterCount() == 1)
+                                                         || constructor.getParameterCount() == 0)
+                                                   .findFirst()
+                                                   .orElse(null);
+            if (c == null) {
+               c = clazz.getDeclaredConstructor();
+            }
+            return new RConstructor(this, c);
+         } catch (NoSuchMethodException | SecurityException e) {
+            throw new ReflectionException(e);
+         }
+      }
       return ClassDescriptorCache.getInstance()
                                  .getClassDescriptor(clazz)
                                  .getConstructors(privileged)
@@ -293,23 +254,10 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
-    * Gets constructors.
+    * Gets the constructors for the class matching the given predicate
     *
-    * @return The set of constructors for the object which is a combination of and if <code>allowPrivilegedAccess</code>
-    * was called.
-    */
-   public List<Constructor<?>> getConstructors() {
-      return ClassDescriptorCache.getInstance()
-                                 .getClassDescriptor(clazz)
-                                 .getConstructors(privileged)
-                                 .collect(Collectors.toList());
-   }
-
-   /**
-    * Gets constructors where.
-    *
-    * @param predicate the predicate
-    * @return the constructors where
+    * @param predicate The predicate to use for filtering the constructors
+    * @return the constructors for the class matching the given predicate
     */
    public final List<RConstructor> getConstructorsWhere(@NonNull SerializablePredicate<? super RConstructor> predicate) {
       return ClassDescriptorCache.getInstance()
@@ -321,10 +269,10 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
-    * Gets constructors with annotation.
+    * Gets the constructors for the class with at least of the given annotations.
     *
-    * @param annotationClasses the annotation classes
-    * @return the constructors with annotation
+    * @param annotationClasses The annotation classes to search for
+    * @return the constructors for the class  with at least of the given annotations.
     */
    @SafeVarargs
    public final List<RConstructor> getConstructorsWithAnnotation(@NonNull Class<? extends Annotation>... annotationClasses) {
@@ -337,7 +285,7 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
-    * Gets declaring class.
+    * Gets the class that declares the reflected object
     *
     * @return the declaring class
     */
@@ -351,14 +299,13 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
-    * Gets field.
+    * Gets the field with the given name.
     *
-    * @param name the name
-    * @return the field
-    * @throws ReflectionException the reflection exception
+    * @param name the name of the field
+    * @return the reflected field
+    * @throws ReflectionException No field found
     */
    public RField getField(String name) throws ReflectionException {
-      Validation.notNullOrBlank(name);
       Field f = ClassDescriptorCache.getInstance()
                                     .getClassDescriptor(clazz)
                                     .getField(name, privileged);
@@ -369,7 +316,7 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
-    * Gets fields.
+    * Gets all fields.
     *
     * @return the fields
     */
@@ -382,10 +329,10 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
-    * Gets fields where.
+    * Gets all fields that match the given predicate
     *
-    * @param predicate the predicate
-    * @return the fields where
+    * @param predicate the predicate to use for filtering the fields
+    * @return the fields matching the given predicate
     */
    public List<RField> getFieldsWhere(@NonNull SerializablePredicate<RField> predicate) {
       return ClassDescriptorCache.getInstance()
@@ -397,10 +344,10 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
-    * Gets fields with annotation.
+    * Gets the fields for the class with at least of the given annotations.
     *
-    * @param annotationClasses the annotation classes
-    * @return the fields with annotation
+    * @param annotationClasses The annotation classes to search for
+    * @return the fields for the class  with at least of the given annotations.
     */
    @SafeVarargs
    public final List<RField> getFieldsWithAnnotation(@NonNull Class<? extends Annotation>... annotationClasses) {
@@ -414,11 +361,11 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
-    * Gets method.
+    * Gets the method with the given name.
     *
-    * @param name the name
-    * @return the method
-    * @throws ReflectionException the reflection exception
+    * @param name the name of the method
+    * @return the reflected method
+    * @throws ReflectionException No such method
     */
    public RMethod getMethod(String name) throws ReflectionException {
       try {
@@ -430,12 +377,12 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
-    * Gets method.
+    * Gets the method with the given name and with types compatible with the given types.
     *
-    * @param name  the name
-    * @param types the types
-    * @return the method
-    * @throws ReflectionException the reflection exception
+    * @param name  the name of the method
+    * @param types the types of the method parameters
+    * @return the reflected method
+    * @throws ReflectionException No such method
     */
    public RMethod getMethod(String name, Type... types) throws ReflectionException {
       return Iterables.getFirst(getMethodsWhere(name, m -> m.parameterTypesCompatible(types)))
@@ -443,10 +390,10 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
-    * Gets methods.
+    * Gets all methods with the given name.
     *
-    * @param name the name
-    * @return the methods
+    * @param name the name of the method
+    * @return the list of reflected methods
     */
    public List<RMethod> getMethods(String name) {
       return ClassDescriptorCache.getInstance()
@@ -457,9 +404,9 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
-    * Gets methods.
+    * Gets all methods.
     *
-    * @return the methods
+    * @return the list of reflected methods
     */
    public List<RMethod> getMethods() {
       return ClassDescriptorCache.getInstance()
@@ -470,11 +417,11 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
-    * Gets methods where.
+    * Gets the methods with the given name for the class matching the given predicate
     *
-    * @param name      the name
-    * @param predicate the predicate
-    * @return the methods where
+    * @param name      the name of the method
+    * @param predicate The predicate to use for filtering the constructors
+    * @return the methods for the class matching the given predicate
     */
    public List<RMethod> getMethodsWhere(String name, @NonNull SerializablePredicate<? super RMethod> predicate) {
       return ClassDescriptorCache.getInstance()
@@ -486,10 +433,10 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
-    * Gets methods where.
+    * Gets the methods for the class matching the given predicate
     *
-    * @param predicate the predicate
-    * @return the methods where
+    * @param predicate The predicate to use for filtering the constructors
+    * @return the methods for the class matching the given predicate
     */
    public List<RMethod> getMethodsWhere(@NonNull SerializablePredicate<? super RMethod> predicate) {
       return ClassDescriptorCache.getInstance()
@@ -501,10 +448,10 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
-    * Gets methods with annotation.
+    * Gets the methods for the class with at least of the given annotations.
     *
-    * @param annotationClasses the annotation classes
-    * @return the methods with annotation
+    * @param annotationClasses The annotation classes to search for
+    * @return the methods for the class  with at least of the given annotations.
     */
    @SafeVarargs
    public final List<RMethod> getMethodsWithAnnotation(@NonNull Class<? extends Annotation>... annotationClasses) {
@@ -527,10 +474,10 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
-    * Gets singleton method.
+    * Gets the singleton method of the object.
     *
-    * @return the singleton method
-    * @throws ReflectionException the reflection exception
+    * @return the reflected singleton method
+    * @throws ReflectionException No Such Method
     */
    public RMethod getSingletonMethod() throws ReflectionException {
       return Optional.ofNullable(ClassDescriptorCache.getInstance()
@@ -541,31 +488,32 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
-    * Gets super class.
+    * Gets the super-class of the class being reflected
     *
-    * @return the super class
+    * @return the reflected super class
     */
    public Reflect getSuperClass() {
       return Reflect.onClass(clazz.getSuperclass());
    }
 
+   @Override
    public Class<?> getType() {
       return clazz;
    }
 
    /**
-    * Is privileged boolean.
+    * is privileged access allowed on this object?
     *
-    * @return the boolean
+    * @return True - privileged access is allowed, False - no privileged access is allowed
     */
    public boolean isPrivileged() {
       return privileged;
    }
 
    /**
-    * Is singleton boolean.
+    * Does the reflected class have a singleton creation method (getInstance, getSingleton, or createInstance)
     *
-    * @return the boolean
+    * @return True - if the class being reflected is a singleton, False otherwise
     */
    public boolean isSingleton() {
       return ClassDescriptorCache.getInstance()
@@ -574,10 +522,10 @@ public class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
-    * Sets is privileged.
+    * Sets whether or not privileged access is allowed on this object
     *
-    * @param allowPrivilegedAccess the allow privileged access
-    * @return the is privileged
+    * @param allowPrivilegedAccess True - privileged access is allowed, False - no privileged access is allowed
+    * @return this object
     */
    public Reflect setIsPrivileged(boolean allowPrivilegedAccess) {
       this.privileged = allowPrivilegedAccess;

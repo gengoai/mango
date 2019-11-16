@@ -56,7 +56,7 @@ public class LongTextField extends JTextField {
       setValue(getValue() + 1);
    }
 
-   class LongTextDocument extends PlainDocument {
+   static class LongTextDocument extends PlainDocument {
 
       @Override
       public void insertString(int i, String s, AttributeSet attributeSet) throws BadLocationException {
