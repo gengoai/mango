@@ -75,40 +75,9 @@ import java.lang.reflect.Type;
 @JsonAdapter(EnumValue.Marshaller.class)
 public abstract class EnumValue<T extends EnumValue> implements Tag, Serializable, Cloneable, Comparable<T> {
    private static final long serialVersionUID = 1L;
-   private final String fullName;
+   private final String canonicalName;
    private final String name;
 
-
-   /**
-    * Json Marshaller for EnumValues and sub-classes
-    */
-   public static class Marshaller extends JsonMarshaller<EnumValue> {
-
-      @Override
-      public EnumValue deserialize(JsonEntry jsonElement,
-                                   Type type
-                                  ) {
-         String name = jsonElement.getAsString();
-         if (type == EnumValue.class) {
-            int lastIndex = name.lastIndexOf('.');
-            if (lastIndex >= 0) {
-               type = ReflectionUtils.getClassForNameQuietly(name.substring(0, lastIndex));
-            }
-         }
-         try {
-            return Reflect.onClass(TypeUtils.asClass(type))
-                                  .getMethod("make", String.class)
-                                  .invoke(name);
-         } catch (Exception e) {
-            throw new RuntimeException(e);
-         }
-      }
-
-      @Override
-      public JsonEntry serialize(EnumValue enumValue, Type type) {
-         return JsonEntry.from(enumValue.name());
-      }
-   }
 
    /**
     * Instantiates a new enum value.
@@ -117,9 +86,8 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
     */
    protected EnumValue(String name) {
       this.name = name;
-      this.fullName = getClass().getCanonicalName() + "." + this.name;
+      this.canonicalName = getClass().getCanonicalName() + "." + this.name;
    }
-
 
    /**
     * The entry point of application.
@@ -186,7 +154,7 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
     * @return the canonical name of the enum value
     */
    public final String canonicalName() {
-      return fullName;
+      return canonicalName;
    }
 
    @Override
@@ -202,8 +170,7 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
 
    @Override
    public final boolean equals(Object obj) {
-      return obj instanceof EnumValue && canonicalName().equals(
-         Cast.<EnumValue>as(obj).canonicalName());
+      return obj instanceof EnumValue && canonicalName().equals(Cast.<EnumValue>as(obj).canonicalName());
    }
 
    @Override
@@ -244,6 +211,37 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
    @Override
    public final String toString() {
       return name;
+   }
+
+   /**
+    * Json Marshaller for EnumValues and sub-classes
+    */
+   public static class Marshaller extends JsonMarshaller<EnumValue> {
+
+      @Override
+      public EnumValue deserialize(JsonEntry jsonElement,
+                                   Type type
+                                  ) {
+         String name = jsonElement.getAsString();
+         if (type == EnumValue.class) {
+            int lastIndex = name.lastIndexOf('.');
+            if (lastIndex >= 0) {
+               type = ReflectionUtils.getClassForNameQuietly(name.substring(0, lastIndex));
+            }
+         }
+         try {
+            return Reflect.onClass(TypeUtils.asClass(type))
+                          .getMethod("make", String.class)
+                          .invoke(name);
+         } catch (Exception e) {
+            throw new RuntimeException(e);
+         }
+      }
+
+      @Override
+      public JsonEntry serialize(EnumValue enumValue, Type type) {
+         return JsonEntry.from(enumValue.name());
+      }
    }
 
 }//END OF EnumValue

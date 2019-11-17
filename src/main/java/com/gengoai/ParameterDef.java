@@ -23,25 +23,29 @@
 package com.gengoai;
 
 import com.gengoai.reflection.TypeUtils;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
-import java.util.Objects;
 
 /**
- * The type Param.
+ * Defines a parameter and its type for use with in a {@link ParamMap}
  *
- * @param <T> the type parameter
+ * @param <T> the type of the parameter
  * @author David B. Bracewell
  */
-public class Param<T> implements Serializable {
+@EqualsAndHashCode(callSuper = false)
+@ToString
+public final class ParameterDef<T> implements Serializable {
    private static final long serialVersionUID = 1L;
    /**
-    * The Name.
+    * The Param name.
     */
    public final String name;
    /**
-    * The Type.
+    * The Param Type.
     */
    public final Class<T> type;
 
@@ -49,91 +53,85 @@ public class Param<T> implements Serializable {
    /**
     * Instantiates a new Param.
     *
-    * @param name the name
+    * @param name the name of the param
     * @param type the type
     */
-   public Param(String name, Class<T> type) {
-      this.name = name;
+   public ParameterDef(String name, @NonNull Class<T> type) {
+      this.name = Validation.notNullOrBlank(name);
       this.type = type;
    }
 
    /**
     * Instantiates a new Param.
     *
-    * @param name the name
+    * @param name the name of the param
     * @param type the type
     */
-   public Param(String name, Type type) {
-      this.name = name;
-      this.type = TypeUtils.asClass(type);
+   public ParameterDef(String name, @NonNull Type type) {
+      this(name, TypeUtils.asClass(type));
    }
 
    /**
-    * Bool param param.
+    * Creates a boolean param
     *
-    * @param name the name
+    * @param name the name of the param
     * @return the param
     */
-   public static Param<Boolean> boolParam(String name) {
-      return new Param<>(name, Boolean.class);
+   public static ParameterDef<Boolean> boolParam(String name) {
+      return new ParameterDef<>(name, Boolean.class);
    }
 
    /**
-    * Double param param.
+    * Creates a Double param param.
     *
-    * @param name the name
+    * @param name the name of the param
     * @return the param
     */
-   public static Param<Double> doubleParam(String name) {
-      return new Param<>(name, Double.class);
+   public static ParameterDef<Double> doubleParam(String name) {
+      return new ParameterDef<>(name, Double.class);
    }
 
    /**
-    * Float param param.
+    * Creates a Float param param.
     *
-    * @param name the name
+    * @param name the name of the param
     * @return the param
     */
-   public static Param<Float> floatParam(String name) {
-      return new Param<>(name, Float.class);
+   public static ParameterDef<Float> floatParam(String name) {
+      return new ParameterDef<>(name, Float.class);
    }
 
    /**
-    * Int param param.
+    * Creates a Int param param.
     *
-    * @param name the name
+    * @param name the name of the param
     * @return the param
     */
-   public static Param<Integer> intParam(String name) {
-      return new Param<>(name, Integer.class);
+   public static ParameterDef<Integer> intParam(String name) {
+      return new ParameterDef<>(name, Integer.class);
    }
 
    /**
-    * Long param param.
+    * Creates a Long param param.
     *
-    * @param name the name
+    * @param name the name of the param
     * @return the param
     */
-   public static Param<Long> longParam(String name) {
-      return new Param<>(name, Long.class);
+   public static ParameterDef<Long> longParam(String name) {
+      return new ParameterDef<>(name, Long.class);
    }
 
    /**
-    * Str param param.
+    * Creates a String param param.
     *
-    * @param name the name
+    * @param name the name of the param
     * @return the param
     */
-   public static Param<String> strParam(String name) {
-      return new Param<>(name, String.class);
+   public static ParameterDef<String> strParam(String name) {
+      return new ParameterDef<>(name, String.class);
    }
 
-   /**
-    * Check type.
-    *
-    * @param type the type
-    */
-   public void checkType(Class<?> type) {
+   void checkType(Class<?> type) {
       if (!this.type.isAssignableFrom(type)) {
          throw new IllegalArgumentException(
             "Invalid type: " + type.getSimpleName() + ", expecting " + this.type.getSimpleName()
@@ -141,12 +139,7 @@ public class Param<T> implements Serializable {
       }
    }
 
-   /**
-    * Check value.
-    *
-    * @param value the value
-    */
-   public void checkValue(Object value) {
+   void checkValue(Object value) {
       if (Number.class.isAssignableFrom(type) && value instanceof Number) {
          return;
       }
@@ -157,25 +150,4 @@ public class Param<T> implements Serializable {
       }
    }
 
-   @Override
-   public boolean equals(Object o) {
-      if (this == o) return true;
-      if (!(o instanceof Param)) return false;
-      Param<?> param = (Param<?>) o;
-      return Objects.equals(name, param.name) &&
-                Objects.equals(type, param.type);
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(name, type);
-   }
-
-   @Override
-   public String toString() {
-      return "Param{" +
-                "name='" + name + '\'' +
-                ", type=" + type +
-                '}';
-   }
-}//END OF Param
+}//END OF ParameterDef

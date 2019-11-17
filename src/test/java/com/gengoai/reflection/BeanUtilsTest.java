@@ -39,7 +39,7 @@ public class BeanUtilsTest {
    @Before
    public void setup() throws Exception {
       Config.initializeTest();
-      Config.loadConfig(Resources.fromClasspath("com/gengoai//testing.conf"));
+      Config.loadConfig(Resources.fromClasspath("com/gengoai/testing.conf"));
    }
 
    @Test

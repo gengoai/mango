@@ -138,6 +138,15 @@ public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> ext
       return this != registry().ROOT && children().isEmpty();
    }
 
+   /**
+    * Checks if this enum value is a root
+    *
+    * @return True if a root, False otherwise
+    */
+   public boolean isRoot() {
+      return parent() == null;
+   }
+
    @Override
    public String label() {
       int index = name().lastIndexOf(SEPARATOR);
@@ -162,16 +171,6 @@ public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> ext
       }
       return registry().make(name().substring(0, idx));
    }
-
-   /**
-    * Checks if this enum value is a root
-    *
-    * @return True if a root, False otherwise
-    */
-   public boolean isRoot() {
-      return parent() == null;
-   }
-
 
    /**
     * Generates an array of string representing the path of this enum value in the hierarchy

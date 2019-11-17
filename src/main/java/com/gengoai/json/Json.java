@@ -1,8 +1,8 @@
 package com.gengoai.json;
 
-import com.gengoai.io.JarUtils;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
+import com.gengoai.logging.Logger;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionUtils;
 import com.gengoai.reflection.TypeUtils;
@@ -11,10 +11,7 @@ import com.google.gson.*;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * <p>Convenience methods for serializing and deserializing objects to and from json and creating json reader and
@@ -24,12 +21,21 @@ import java.util.Set;
  */
 public final class Json {
    public static final Gson MAPPER;
+   private static final Logger log = Logger.getLogger(Json.class);
 
    static {
       GsonBuilder builder = new GsonBuilder();
       Set<String> processed = new HashSet<>();
-      for (Resource classpathResource : JarUtils.getClassPathJars()) {
-         Resource r = classpathResource.getChild("META-INF/marshallers.json");
+
+
+      Iterator<Resource> marshallers = null;
+      try {
+         marshallers = Resources.findAllResources("META-INF/marshallers.json");
+      } catch (IOException e) {
+         throw new RuntimeException(e);
+      }
+      while (marshallers.hasNext()) {
+         Resource r = marshallers.next();
          if (r.exists()) {
             try {
                for (String line : r.readLines()) {

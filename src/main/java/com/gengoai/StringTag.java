@@ -43,22 +43,6 @@ public class StringTag implements Tag, Serializable {
    private final String tag;
 
    /**
-    * The type Marshaller.
-    */
-   public static class Marshaller extends JsonMarshaller<StringTag> {
-
-      @Override
-      protected StringTag deserialize(JsonEntry entry, Type type) {
-         return new StringTag(entry.getAsString());
-      }
-
-      @Override
-      protected JsonEntry serialize(StringTag stringTag, Type type) {
-         return JsonEntry.from(stringTag.tag);
-      }
-   }
-
-   /**
     * Default Constructor
     *
     * @param tag The tag
@@ -68,19 +52,8 @@ public class StringTag implements Tag, Serializable {
       this.tag = tag;
    }
 
-   @Override
-   public boolean isInstance(Tag tag) {
-      return equals(tag);
-   }
-
-   @Override
-   public String name() {
-      return toString();
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(tag);
+   public static Tag tag(String name) {
+      return new StringTag(name);
    }
 
    @Override
@@ -96,12 +69,39 @@ public class StringTag implements Tag, Serializable {
    }
 
    @Override
+   public int hashCode() {
+      return Objects.hash(tag);
+   }
+
+   @Override
+   public boolean isInstance(Tag tag) {
+      return equals(tag);
+   }
+
+   @Override
+   public String name() {
+      return toString();
+   }
+
+   @Override
    public String toString() {
       return tag;
    }
 
-   public static Tag tag(String name) {
-      return new StringTag(name);
+   /**
+    * The type Marshaller.
+    */
+   public static class Marshaller extends JsonMarshaller<StringTag> {
+
+      @Override
+      protected StringTag deserialize(JsonEntry entry, Type type) {
+         return new StringTag(entry.getAsString());
+      }
+
+      @Override
+      protected JsonEntry serialize(StringTag stringTag, Type type) {
+         return JsonEntry.from(stringTag.tag);
+      }
    }
 
 }//END OF StringTag

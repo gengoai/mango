@@ -66,8 +66,7 @@ class MsonConfigParser {
          prefix(VALUE_SEPARATOR, ValueExpression.STRING_HANDLER);
          postfix(BEGIN_OBJECT, (parser, token, left) -> {
                     ListExpression list = new ListExpression(token.getType(),
-                                                             parser.parseExpressionList(END_OBJECT,
-                                                                                        null),
+                                                             parser.parseExpressionList(END_OBJECT, null),
                                                              "\n",
                                                              "{",
                                                              "}");
@@ -91,21 +90,21 @@ class MsonConfigParser {
                  BinaryInfixOperatorExpression.HANDLER,
                  5,
                  (BinaryInfixOperatorExpression e) -> e.getLeft().isInstance(ValueExpression.class) &&
-                                                         e.getLeft().getType().isInstance(STRING, KEY));
+                    e.getLeft().getType().isInstance(STRING, KEY));
          postfix(APPEND_PROPERTY,
                  BinaryInfixOperatorExpression.HANDLER,
                  5,
                  (BinaryInfixOperatorExpression e) -> e.getLeft().isInstance(ValueExpression.class) &&
-                                                         e.getLeft().getType().isInstance(STRING, KEY));
+                    e.getLeft().getType().isInstance(STRING, KEY));
          postfix(KEY_VALUE_SEPARATOR,
                  BinaryInfixOperatorExpression.HANDLER,
                  5,
                  (BinaryInfixOperatorExpression e) -> e.getLeft().isInstance(ValueExpression.class) &&
-                                                         e.getLeft().getType().isInstance(STRING, KEY));
+                    e.getLeft().getType().isInstance(STRING, KEY));
          prefix(IMPORT,
                 UnaryOperatorExpression.PREFIX_OPERATOR_HANDLER,
                 (UnaryOperatorExpression e) -> e.getValue().isInstance(ValueExpression.class) &&
-                                                  e.getValue().getType().isInstance(STRING, KEY));
+                   e.getValue().getType().isInstance(STRING, KEY));
          prefix(BEGIN_ARRAY, ListExpression.handler(BEGIN_ARRAY,
                                                     END_ARRAY,
                                                     VALUE_SEPARATOR,

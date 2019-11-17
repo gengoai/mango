@@ -44,6 +44,16 @@ public class HierarchicalEnumValueTest {
    }
 
    @Test
+   public void testGetLabel(){
+      assertEquals(GENERAL, RanksEnum.create("GENERAL"));
+   }
+
+   @Test(expected = IllegalArgumentException.class)
+   public void nonUniqueLabel() {
+      RanksEnum.create(COLONEL, "CAPTAIN");
+   }
+
+   @Test
    public void isRoot() throws Exception {
       assertFalse(PRESIDENT.isRoot());
       assertFalse(MAJOR.isRoot());

@@ -37,6 +37,11 @@ public class JsonReader implements AutoCloseable, Closeable {
       this.reader = new com.google.gson.stream.JsonReader(resource.reader());
    }
 
+   public JsonReader(com.google.gson.stream.JsonReader resource) throws IOException {
+      this.reader = resource;
+   }
+
+
    /**
     * Has next boolean.
     *
@@ -68,7 +73,7 @@ public class JsonReader implements AutoCloseable, Closeable {
    public JsonReader beginObject(String name) throws IOException {
       String nextName = nextName();
       checkState(nextName.equals(name), "Next Object is named (" +
-                                           nextName + "), but was expecting (" + name + ")");
+         nextName + "), but was expecting (" + name + ")");
       reader.beginObject();
       return this;
    }
@@ -94,7 +99,7 @@ public class JsonReader implements AutoCloseable, Closeable {
    public JsonReader beginArray(String name) throws IOException {
       String nextName = nextName();
       checkState(nextName.equals(name), "Next Array is named (" +
-                                           nextName + "), but was expecting (" + name + ")");
+         nextName + "), but was expecting (" + name + ")");
       reader.beginArray();
       return this;
    }
@@ -157,7 +162,7 @@ public class JsonReader implements AutoCloseable, Closeable {
       if (Strings.isNotNullOrBlank(name) || peek() == JsonToken.NAME) {
          String nextName = nextName();
          checkState(Strings.isNullOrBlank(name) || nextName.equals(name), "Next Map is named (" +
-                                                                                 nextName + "), but was expecting (" + name + ")");
+            nextName + "), but was expecting (" + name + ")");
       }
       return nextElement().getAsMap();
    }
@@ -184,7 +189,7 @@ public class JsonReader implements AutoCloseable, Closeable {
       if (Strings.isNotNullOrBlank(name) || peek() == JsonToken.NAME) {
          String nextName = nextName();
          checkState(Strings.isNullOrBlank(name) || nextName.equals(name), "Next Collection is named (" +
-                                                                                 nextName + "), but was expecting (" + name + ")");
+            nextName + "), but was expecting (" + name + ")");
       }
       return nextElement().getAsArray();
    }

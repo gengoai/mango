@@ -42,7 +42,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 public class BeanUtils {
    private static final ConcurrentSkipListMap<String, Object> SINGLETONS = new ConcurrentSkipListMap<>();
 
-   private static void doParametrization(String targetName, BeanMap beanMap, String className) {
+   private static void doParametrization(String targetName, BeanMap beanMap) {
       beanMap.getSetters()
              .stream()
              .filter(propertyName -> Config.hasProperty(targetName, propertyName))
@@ -166,7 +166,8 @@ public class BeanUtils {
       BeanMap beanMap = new BeanMap(object);
       Reflect.onObject(object)
              .getAncestors(true)
-             .forEach(a -> doParametrization(configPrefix, beanMap, a.getType().getName()));
+             .forEach(a -> doParametrization(a.getType().getName(), beanMap));
+      doParametrization(configPrefix, beanMap);
       return object;
    }
 

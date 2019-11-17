@@ -56,6 +56,15 @@ public final class Strings {
    }
 
 
+   public static int count(String str, String target) {
+      int index = -target.length();
+      int count = 0;
+      while ((index = str.indexOf(target, index + target.length())) != -1) {
+         count++;
+      }
+      return count;
+   }
+
    public static String blankToNull(String string) {
       return Strings.isNullOrBlank(string) ? null : string;
    }
@@ -451,8 +460,8 @@ public final class Strings {
          do {
             c = (char) (random.nextInt(maxRandom) + min);
          } while (Character.isLowSurrogate(c) ||
-                     Character.isHighSurrogate(c) ||
-                     !validChar.test(c));
+            Character.isHighSurrogate(c) ||
+            !validChar.test(c));
          array[i] = c;
       }
       return new String(array);

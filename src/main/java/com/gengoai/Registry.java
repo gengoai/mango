@@ -45,8 +45,8 @@ public class Registry<T extends EnumValue> implements Serializable {
     * The Canonical name.
     */
    protected final String canonicalName;
-   private final SerializableFunction<String, T> newInstance;
-   private final Map<String, T> registry = new ConcurrentHashMap<>();
+   protected final SerializableFunction<String, T> newInstance;
+   protected final Map<String, T> registry = new ConcurrentHashMap<>();
 
    /**
     * Instantiates a new Registry.
@@ -64,10 +64,15 @@ public class Registry<T extends EnumValue> implements Serializable {
     *
     * @param name the name
     */
-   protected void checkName(String name) {
+   protected String checkName(CharSequence name) {
       if (!CharMatcher.LetterOrDigit.or(CharMatcher.anyOf("_")).matchesAllOf(name)) {
          throw new IllegalArgumentException(name + " is invalid");
       }
+      return name.toString();
+   }
+
+   public boolean contains(String name) {
+      return registry.containsKey(normalize(name));
    }
 
    /**
@@ -77,12 +82,7 @@ public class Registry<T extends EnumValue> implements Serializable {
     * @return the enum value
     */
    public T make(String name) {
-      if (name.startsWith(canonicalName)) {
-         name = name.substring(canonicalName.length() + 1);
-      }
-      String norm = normalize(name);
-      checkName(norm);
-      return registry.computeIfAbsent(norm, newInstance);
+      return registry.computeIfAbsent(checkName(normalize(name)), newInstance);
    }
 
    /**
@@ -93,6 +93,9 @@ public class Registry<T extends EnumValue> implements Serializable {
     */
    protected String normalize(String name) {
       notNullOrBlank(name, "Name cannot be null or blank");
+      if (name.startsWith(canonicalName)) {
+         name = name.substring(canonicalName.length() + 1);
+      }
       StringBuilder toReturn = new StringBuilder();
       boolean previousSpace = false;
       for (char c : name.toCharArray()) {
@@ -110,16 +113,6 @@ public class Registry<T extends EnumValue> implements Serializable {
    }
 
    /**
-    * Gets all know enum values as a collection
-    *
-    * @return the collection
-    */
-   public Collection<T> values() {
-      return Collections.unmodifiableCollection(registry.values());
-   }
-
-
-   /**
     * Returns the enum value for a given name throwing an exception if it does not exist.
     *
     * @param name the name
@@ -133,8 +126,13 @@ public class Registry<T extends EnumValue> implements Serializable {
       throw new IllegalArgumentException(name + " is an unknown value");
    }
 
-   public boolean contains(String name) {
-      return registry.containsKey(normalize(name));
+   /**
+    * Gets all know enum values as a collection
+    *
+    * @return the collection
+    */
+   public Collection<T> values() {
+      return Collections.unmodifiableCollection(registry.values());
    }
 
 

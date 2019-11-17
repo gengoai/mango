@@ -31,9 +31,13 @@ import com.gengoai.json.JsonMarshaller;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
 import com.gengoai.reflection.TypeUtils;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -41,7 +45,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * The type Param map.
+ * A Map containing {@link ParameterDef}s and their values
  *
  * @param <V> the type parameter
  * @author David B. Bracewell
@@ -57,13 +61,14 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
    }
 
    /**
-    * Get t.
+    * Gets the value of the given {@link ParameterDef}
     *
-    * @param <T>   the type parameter
-    * @param param the param
-    * @return the t
+    * @param <T>   the type of the Param parameter
+    * @param param the param whose value we want
+    * @return the value of the param
+    * @throws IllegalArgumentException if the parm is unknown to this map
     */
-   public <T> T get(Param<T> param) {
+   public <T> T get(@NonNull ParameterDef<T> param) {
       if (map.containsKey(param.name)) {
          Parameter<?> parameter = map.get(param.name);
          parameter.param.checkType(param.type);
@@ -73,11 +78,12 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
    }
 
    /**
-    * Get t.
+    * Gets the value of the given {@link ParameterDef} name
     *
-    * @param <T>   the type parameter
-    * @param param the param
-    * @return the t
+    * @param <T>   the type of the Param parameter
+    * @param param the param whose value we want
+    * @return the value of the param
+    * @throws IllegalArgumentException if the parm is unknown to this map
     */
    public <T> T get(String param) {
       if (map.containsKey(param)) {
@@ -87,14 +93,14 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
    }
 
    /**
-    * Gets or default.
+    * Gets the value of the given {@link ParameterDef} or the default value if the Param is not in the map
     *
-    * @param <T>          the type parameter
-    * @param param        the param
-    * @param defaultValue the default value
-    * @return the or default
+    * @param <T>          the type of the Param parameter
+    * @param param        the param whose value we want
+    * @param defaultValue the default value to return if the param is not in the map
+    * @return the value of the param or the default value if the Param is not in the map
     */
-   public <T> T getOrDefault(Param<T> param, T defaultValue) {
+   public <T> T getOrDefault(ParameterDef<T> param, T defaultValue) {
       if (map.containsKey(param.name)) {
          return get(param);
       }
@@ -102,12 +108,12 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
    }
 
    /**
-    * Gets or default.
+    * Gets the value of the given {@link ParameterDef} or the default value if the Param is not in the map
     *
-    * @param <T>          the type parameter
-    * @param param        the param
-    * @param defaultValue the default value
-    * @return the or default
+    * @param <T>          the type of the Param parameter
+    * @param param        the param whose value we want
+    * @param defaultValue the default value to return if the param is not in the map
+    * @return the value of the param or the default value if the Param is not in the map
     */
    public <T> T getOrDefault(String param, T defaultValue) {
       if (map.containsKey(param)) {
@@ -118,61 +124,69 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
       return defaultValue;
    }
 
-   public <T> Param<T> getParameter(String name) {
-      return Cast.as(map.get(name).param);
+   /**
+    * Gets the {@link ParameterDef} with the given name in the map.
+    *
+    * @param <T>  the Param type parameter
+    * @param name the name of the param
+    * @return the param
+    * @throws IllegalArgumentException if the parm is unknown to this map
+    */
+   public <T> ParameterDef<T> getParam(String name) {
+      if (map.containsKey(name)) {
+         return Cast.as(map.get(name).param);
+      }
+      throw new IllegalArgumentException("Unknown Parameter: " + name);
    }
 
    /**
-    * Parameter parameter.
+    * Creates a {@link Parameter} of the given {@link ParameterDef} with the given default value registering it with
+    * this {@link ParamMap} and returning the created Parameter.
     *
-    * @param <T>      the type parameter
-    * @param param    the param
-    * @param defValue the def value
+    * @param <T>      the parameter type parameter
+    * @param param    the parameter definition
+    * @param defValue the default value
     * @return the parameter
     */
-   public <T> Parameter<T> parameter(Param<T> param, T defValue) {
+   public <T> Parameter<T> parameter(@NonNull ParameterDef<T> param, T defValue) {
       return new Parameter<>(param, defValue);
    }
 
+   /**
+    * Gets the parameter names associated with this ParamMap
+    *
+    * @return the set
+    */
    public Set<String> parameterNames() {
-      return map.keySet();
+      return Collections.unmodifiableSet(map.keySet());
    }
 
    /**
-    * Set v.
+    * Sets the value for the given parameter
     *
     * @param <T>   the type parameter
     * @param param the param
     * @param value the value
-    * @return the v
+    * @return this ParamMap
     */
-   public <T> V set(Param<T> param, T value) {
+   public <T> V set(@NonNull ParameterDef<T> param, T value) {
       if (map.containsKey(param.name)) {
-         Parameter<?> parameter = map.get(param.name);
-         parameter.param.checkType(param.type);
-         parameter.value = Cast.as(value);
-         return Cast.as(this);
+         return map.get(param.name).set(Cast.as(value));
       }
       throw new IllegalArgumentException("Unknown Parameter: " + param.name);
    }
 
    /**
-    * Set v.
+    * Sets the value for the given parameter
     *
     * @param <T>   the type parameter
     * @param param the param
     * @param value the value
-    * @return the v
+    * @return this ParamMap
     */
    public <T> V set(String param, T value) {
       if (map.containsKey(param)) {
-         Parameter<?> parameter = map.get(param);
-         if (value instanceof JsonEntry) {
-            value = Cast.<JsonEntry>as(value).getAs(parameter.param.type);
-         }
-         parameter.param.checkValue(value);
-         parameter.value = Cast.as(value);
-         return Cast.as(this);
+         return map.get(param).set(Cast.as(value));
       }
       throw new IllegalArgumentException("Unknown Parameter: " + param);
    }
@@ -185,7 +199,12 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
                               .collect(Collectors.joining(", ")) + "}";
    }
 
-   public void update(Map<String, ?> parameters) {
+   /**
+    * Updates the ParamMap using the given Map of param names and values
+    *
+    * @param parameters the parameters
+    */
+   public void update(@NonNull Map<String, ?> parameters) {
       parameters.forEach((k, v) -> {
          if (map.containsKey(k)) {
             Parameter<?> param = map.get(k);
@@ -199,16 +218,19 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
    }
 
    /**
-    * Update v.
+    * Updates the ParamMap using the given consumer.
     *
     * @param updater the updater
-    * @return the v
+    * @return this ParamMap
     */
-   public V update(Consumer<V> updater) {
+   public V update(@NonNull Consumer<V> updater) {
       updater.accept(Cast.as(this));
       return Cast.as(this);
    }
 
+   /**
+    * The type Marshaller.
+    */
    public static class Marshaller extends JsonMarshaller<ParamMap<?>> {
 
       @Override
@@ -238,43 +260,49 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
    }
 
    /**
-    * The type Parameter.
+    * Represents a {@link ParameterDef} and its value within a {@link ParamMap}.
     *
     * @param <T> the type parameter
     */
+   @EqualsAndHashCode(callSuper = false)
+   @ToString
    public class Parameter<T> implements Serializable {
       private static final long serialVersionUID = 1L;
       /**
-       * The Param.
+       * The Parameter definition.
        */
-      public final Param<T> param;
+      public final ParameterDef<T> param;
       /**
        * The Value.
        */
       private T value;
 
-      /**
-       * Instantiates a new Parameter.
-       *
-       * @param param        the param
-       * @param defaultValue the default value
-       */
-      private Parameter(Param<T> param, T defaultValue) {
+      private Parameter(ParameterDef<T> param, T defaultValue) {
          this.param = param;
          map.put(param.name, this);
          this.value = defaultValue;
       }
 
+      /**
+       * Sets the value of the parameter.
+       *
+       * @param value the value
+       * @return the param map the parameter belongs to
+       */
       public V set(T value) {
-         this.value = value;
+         if (value instanceof JsonEntry && param.type != JsonEntry.class) {
+            value = Cast.<JsonEntry>as(value).getAs(param.type);
+         }
+         param.checkValue(value);
+         this.value = Cast.as(value);
          return Cast.as(ParamMap.this);
       }
 
-      @Override
-      public String toString() {
-         return "Parameter{name=" + param.name + ", value=" + value + "}";
-      }
-
+      /**
+       * Gets the value of the parameter
+       *
+       * @return the value
+       */
       public T value() {
          if (Number.class.isAssignableFrom(param.type)) {
             return Converter.convertSilently(value, param.type);

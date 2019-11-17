@@ -5,8 +5,10 @@ import com.gengoai.string.Strings;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -27,11 +29,14 @@ public class ZipResource extends BaseResource implements ReadOnlyResource {
     */
    public ZipResource(String zipFile, String entry) {
       try {
-         this.zipFile = new ZipFile(zipFile);
+         this.zipFile = new ZipFile(zipFile.replaceFirst("^file:", ""));
       } catch (IOException e) {
          throw new RuntimeException(e);
       }
       if (Strings.isNotNullOrBlank(entry)) {
+         if (entry.startsWith("/")) {
+            entry = entry.substring(1);
+         }
          this.entry = this.zipFile.getEntry(entry);
       }
    }
@@ -44,7 +49,7 @@ public class ZipResource extends BaseResource implements ReadOnlyResource {
    @Override
    public boolean exists() {
       try {
-         if( zipFile == null || entry == null){
+         if (zipFile == null || entry == null) {
             return false;
          }
          createInputStream();
@@ -69,21 +74,36 @@ public class ZipResource extends BaseResource implements ReadOnlyResource {
 
    @Override
    public String descriptor() {
-      return zipFile.getName() + (entry == null ? "" : ":" + entry.getName());
+      return zipFile.getName() + (entry == null ? "" : "!" + entry.getName());
    }
 
+
+   private int depth(String s) {
+      if (s.endsWith("/")) {
+         return Strings.count(s, "/") - 1;
+      }
+      return Strings.count(s, "/");
+   }
+
+
    @Override
-   public List<Resource> getChildren() {
-      Enumeration<? extends ZipEntry> enumeration = zipFile.entries();
+   public List<Resource> getChildren(Pattern pattern, boolean recursive) {
+      if (entry != null && !entry.isDirectory()) {
+         return Collections.emptyList();
+      }
       List<Resource> resources = new ArrayList<>();
-      final String prefix = entry == null ? "" : entry.getName();
+      Enumeration<? extends ZipEntry> enumeration = zipFile.entries();
+      final int tDepth = depth(entry.getName());
+      final String path = entry.getName();
       while (enumeration.hasMoreElements()) {
-         ZipEntry ze = enumeration.nextElement();
-         if (ze.getName().startsWith(prefix)) {
-            resources.add(new ZipResource(zipFile.getName(), ze.getName()));
+         final String ze = enumeration.nextElement().getName();
+         if (ze.startsWith(path)
+            && ze.length() > path.length()
+            && (recursive || depth(ze) == (tDepth + 1))
+            && pattern.matcher(ze.substring(path.length() + 1)).matches()) {
+            resources.add(new ZipResource(zipFile.getName(), ze));
          }
       }
       return resources;
    }
-
 }//END OF ZipResource

@@ -26,11 +26,11 @@ import com.gengoai.collection.Streams;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonMarshaller;
 import com.gengoai.reflection.TypeUtils;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.Collection;
-import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 
@@ -44,39 +44,10 @@ import static com.gengoai.Validation.notNull;
  * @author David B. Bracewell
  */
 @JsonAdapter(Interner.InternerMarshaller.class)
+@EqualsAndHashCode(callSuper = false)
 public final class Interner<E> implements Serializable {
    private static final long serialVersionUID = 1L;
    private volatile WeakHashMap<E, E> map = new WeakHashMap<>();
-
-   public static class InternerMarshaller extends JsonMarshaller<Interner> {
-
-      @Override
-      protected Interner deserialize(JsonEntry entry, Type type) {
-         Type[] parameters = TypeUtils.getActualTypeArguments(type);
-         Interner<?> interner = new Interner<>();
-         entry.elementIterator()
-              .forEachRemaining(e -> interner.intern(e.getAs(TypeUtils.getOrObject(0, parameters))));
-         return interner;
-      }
-
-      @Override
-      protected JsonEntry serialize(Interner interner, Type type) {
-         return JsonEntry.array(interner.map.keySet());
-      }
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {return true;}
-      if (obj == null || getClass() != obj.getClass()) {return false;}
-      final Interner other = (Interner) obj;
-      return Objects.equals(this.map, other.map);
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(map);
-   }
 
    /**
     * <p>Adds or gets the canonical version of the incoming object.</p>
@@ -114,6 +85,26 @@ public final class Interner<E> implements Serializable {
    @Override
    public String toString() {
       return "Interner{size=" + size() + "}";
+   }
+
+   /**
+    * Json marshaling for Interner
+    */
+   public static class InternerMarshaller extends JsonMarshaller<Interner> {
+
+      @Override
+      protected Interner deserialize(JsonEntry entry, Type type) {
+         Type[] parameters = TypeUtils.getActualTypeArguments(type);
+         Interner<?> interner = new Interner<>();
+         entry.elementIterator()
+              .forEachRemaining(e -> interner.intern(e.getAs(TypeUtils.getOrObject(0, parameters))));
+         return interner;
+      }
+
+      @Override
+      protected JsonEntry serialize(Interner interner, Type type) {
+         return JsonEntry.array(interner.map.keySet());
+      }
    }
 
 }//END OF Interner

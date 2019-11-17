@@ -22,12 +22,13 @@
 package com.gengoai.io.resource;
 
 import com.gengoai.Validation;
+import com.gengoai.collection.Streams;
 import com.gengoai.io.FileUtils;
-import com.gengoai.io.JarUtils;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.spi.ClasspathResourceProvider;
 import com.gengoai.logging.Logger;
 import com.gengoai.string.Strings;
+import lombok.NonNull;
 
 import java.io.*;
 import java.net.URI;
@@ -38,6 +39,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * <p> A <code>Resource</code> implementation for resources that exist on the classpath. Resources are loaded either
@@ -58,7 +60,7 @@ public class ClasspathResource extends BaseResource {
     * @param resource The resource
     */
    public ClasspathResource(String resource) {
-      this(resource, ClasspathResource.class.getClassLoader());
+      this(resource, Thread.currentThread().getContextClassLoader());
    }
 
    /**
@@ -67,8 +69,8 @@ public class ClasspathResource extends BaseResource {
     * @param resource    The path to the resource.
     * @param classLoader The class loader to use.
     */
-   public ClasspathResource(String resource, ClassLoader classLoader) {
-      this.resource = FileUtils.toUnix(resource);
+   public ClasspathResource(String resource, @NonNull ClassLoader classLoader) {
+      this.resource = FileUtils.toUnix(Validation.notNullOrBlank(resource));
       this.classLoader = classLoader;
    }
 
@@ -82,14 +84,14 @@ public class ClasspathResource extends BaseResource {
    @Override
    public Optional<File> asFile() {
       return asURL()
-                .filter(u -> u.getProtocol() != null && u.getProtocol().equalsIgnoreCase("file"))
-                .map(u -> {
-                   try {
-                      return new File(u.toURI());
-                   } catch (Exception e) {
-                      return null;
-                   }
-                });
+         .filter(u -> u.getProtocol() != null && u.getProtocol().equalsIgnoreCase("file"))
+         .map(u -> {
+            try {
+               return new File(u.toURI());
+            } catch (Exception e) {
+               return null;
+            }
+         });
    }
 
    @Override
@@ -184,19 +186,14 @@ public class ClasspathResource extends BaseResource {
          return Resources.fromFile(asFile().get()).getChildren(filePattern, recursive);
       }
 
-      String matchText = path();
-      matchText = matchText.endsWith("/") ? matchText : matchText + "/";
       String path = path() + "/";
-
-      for (Resource resource : JarUtils.getClasspathResources()) {
-         String rName = resource.baseName();
-         String rPath = resource.path() + "/";
-         String rParent = resource.getParent().path() + "/";
-         if (rPath.startsWith(matchText) && (recursive || rParent.equals(path)) && filePattern.matcher(rName).find()) {
-            rval.add(resource);
-         }
+      try {
+         return Streams.asStream(Resources.findAllResources(path))
+                       .flatMap(resource -> resource.getChildren(filePattern, recursive).stream())
+                       .collect(Collectors.toList());
+      } catch (IOException e) {
+         throw new RuntimeException(e);
       }
-      return rval;
    }
 
    @Override
@@ -245,7 +242,7 @@ public class ClasspathResource extends BaseResource {
          return false;
       ClasspathResource other = (ClasspathResource) obj;
       return Objects.equals(classLoader, other.classLoader) &&
-                Objects.equals(resource, other.resource);
+         Objects.equals(resource, other.resource);
    }
 
 }// END OF ClasspathResource

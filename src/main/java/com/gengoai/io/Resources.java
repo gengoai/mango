@@ -22,19 +22,18 @@
 package com.gengoai.io;
 
 import com.gengoai.SystemInfo;
+import com.gengoai.Validation;
 import com.gengoai.conversion.Converter;
 import com.gengoai.io.resource.*;
 import com.gengoai.io.resource.spi.ResourceProvider;
 import com.gengoai.string.Strings;
+import lombok.NonNull;
 
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,6 +45,49 @@ import java.util.regex.Pattern;
 public final class Resources {
 
    private static final Map<String, ResourceProvider> resourceProviders = new HashMap<>();
+
+   /**
+    * Finds all resources with the given pattern across loaded ClassLoaders
+    *
+    * @param pattern the file pattern
+    * @return Iterator of resources
+    * @throws IOException Something went wrong access the jar/files
+    */
+   public static Iterator<Resource> findAllResources(String pattern) throws IOException {
+      Validation.notNullOrBlank(pattern);
+      return new Iterator<Resource>() {
+         Enumeration<URL> resources = Thread.currentThread()
+                                            .getContextClassLoader()
+                                            .getResources(pattern);
+
+         @Override
+         public boolean hasNext() {
+            return resources.hasMoreElements();
+         }
+
+         @Override
+         public Resource next() {
+            URL next = resources.nextElement();
+            if (next.getProtocol().equalsIgnoreCase("jar")) {
+               int idx = next.getPath().indexOf("!");
+               return new ZipResource(next.getPath().substring(0, idx),
+                                      next.getPath().substring(idx + 1));
+            }
+            return fromUrl(next);
+         }
+      };
+   }
+
+   /**
+    * Gets the jar file that a class is stored in.
+    *
+    * @param clazz The class whose associated jar file is descried.
+    * @return The Resource (jar file) for the class
+    */
+   public static Resource getJar(@NonNull Class<?> clazz) {
+      URL fileURL = clazz.getProtectionDomain().getCodeSource().getLocation();
+      return new FileResource(fileURL.getFile());
+   }
 
    static {
       for (ResourceProvider provider : ServiceLoader.load(ResourceProvider.class)) {

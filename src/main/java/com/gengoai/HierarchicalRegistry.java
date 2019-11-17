@@ -25,6 +25,9 @@ package com.gengoai;
 import com.gengoai.function.SerializableFunction;
 import com.gengoai.string.CharMatcher;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import static com.gengoai.HierarchicalEnumValue.SEPARATOR;
 
 /**
@@ -38,6 +41,7 @@ public final class HierarchicalRegistry<T extends HierarchicalEnumValue> extends
     * The Root.
     */
    public final T ROOT;
+   private Map<String, String> labelToNodeMap = new ConcurrentHashMap<>();
 
    /**
     * Instantiates a new Registry.
@@ -49,6 +53,7 @@ public final class HierarchicalRegistry<T extends HierarchicalEnumValue> extends
    public HierarchicalRegistry(SerializableFunction<String, T> newInstance, Class<T> owner, String rootName) {
       super(newInstance, owner);
       this.ROOT = make(rootName);
+      this.labelToNodeMap.put(this.ROOT.label(), this.ROOT.canonicalName());
    }
 
 
@@ -100,7 +105,23 @@ public final class HierarchicalRegistry<T extends HierarchicalEnumValue> extends
 
    @Override
    public T make(String name) {
-      return super.make(name);
+      name = normalize(name);
+      String label = name;
+      int sep = name.lastIndexOf(SEPARATOR);
+      if (sep >= 0) {
+         label = name.substring(name.lastIndexOf(SEPARATOR) + 1);
+      }
+      checkName(label);
+
+      if (label.equals(name) && labelToNodeMap.containsKey(label)) {
+         return registry.get(labelToNodeMap.get(label));
+      }
+
+      if (labelToNodeMap.containsKey(label) && !labelToNodeMap.get(label).equals(name)) {
+         throw new IllegalArgumentException("Labels must be unique");
+      }
+      labelToNodeMap.put(label, name);
+      return registry.computeIfAbsent(normalize(name), newInstance);
    }
 
 
