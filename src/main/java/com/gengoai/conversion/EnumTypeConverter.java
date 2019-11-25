@@ -1,7 +1,7 @@
 package com.gengoai.conversion;
 
 import com.gengoai.json.JsonEntry;
-import com.gengoai.reflection.ReflectionUtils;
+import com.gengoai.reflection.Reflect;
 import org.kohsuke.MetaInfServices;
 
 import java.lang.reflect.Type;
@@ -30,14 +30,14 @@ public class EnumTypeConverter implements TypeConverter {
          int lastDot = sourceStr.lastIndexOf('.');
          int lastDollar = sourceStr.lastIndexOf('$');
          if (lastDollar > 0) {
-            enumClass = ReflectionUtils.getClassForNameQuietly(sourceStr.substring(0, lastDollar));
+            enumClass = Reflect.getClassForNameQuietly(sourceStr.substring(0, lastDollar));
             try {
                source = enumClass.getFields()[Integer.parseInt(sourceStr.substring(lastDollar + 1)) - 1].get(null);
             } catch (IllegalAccessException e) {
                throw new TypeConversionException(source, parameterizedType(Enum.class, enumClass));
             }
          } else if (lastDot > 0) {
-            enumClass = ReflectionUtils.getClassForNameQuietly(sourceStr.substring(0, lastDot));
+            enumClass = Reflect.getClassForNameQuietly(sourceStr.substring(0, lastDot));
             source = sourceStr.substring(lastDot + 1);
          }
       }

@@ -22,12 +22,14 @@
 
 package com.gengoai.db;
 
+import lombok.NonNull;
+
 import java.util.Map;
 
 /**
  * A Key-Value store is a database in which data is associated with a unique key providing quick retrieval via the key.
- * Key-Value Stores are created using {@link KVStoreSpec#connect(String)}  where the specification is defined as
- * follows: <code>kv::[type]::[namespace]::[path];compressed=[true,false];readOnly=[true,false]</code>
+ * Key-Value Stores are created using {@link #connect(String)}  where the specification is
+ * defined as follows: <code>kv::[type]::[namespace]::[path];compressed=[true,false];readOnly=[true,false]</code>
  *
  * @param <K> the type parameter
  * @param <V> the type parameter
@@ -35,6 +37,9 @@ import java.util.Map;
  */
 public interface KeyValueStore<K, V> extends Map<K, V>, AutoCloseable {
 
+   static <K, V, T extends KeyValueStore<K, V>> T connect(@NonNull String connectionString) {
+      return KeyValueStoreConnection.parse(connectionString).connect();
+   }
 
    /**
     * Commits changes to the key-value store to be persisted

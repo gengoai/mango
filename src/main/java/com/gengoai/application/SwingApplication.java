@@ -27,10 +27,10 @@ import static com.gengoai.collection.Sets.hashSetOf;
  *    public class MyApplication extends SwingApplication {
  *
  *      public static void main(String[] args)  {
- *        new new MyApplication().run(args);
+ *        runApplication(MyApplication::new, args)
  *      }
  *
- *      public void setup() throws Exception {
+ *      public void initControls() throws Exception {
  *        //GUI setup goes here.
  *      }
  *
@@ -49,8 +49,9 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
 
 
    public static void runApplication(Supplier<? extends SwingApplication> supplier, String[] args) {
+      SwingApplication application = supplier.get();
       systemLookAndFeel();
-      supplier.get().run(args);
+      application.run(args);
    }
 
    protected static void systemLookAndFeel() {
@@ -104,7 +105,17 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
       int yPos = Config.get(getClass(), "position.y").asIntegerValue(screenRectangle.height / 2 - height / 2);
       setLocation(xPos, yPos);
       setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+      if (Config.hasProperty(getClass(), "lookAndFeel")) {
+         try {
+            UIManager.setLookAndFeel(Config.get(getClass(), "lookAndFeel").asString());
+         } catch (Exception e) {
+            throw new RuntimeException(e);
+         }
+      }
+
       pack();
+      SwingUtilities.updateComponentTreeUI(this);
       initControls();
       pack();
    }

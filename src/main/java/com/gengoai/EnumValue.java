@@ -32,7 +32,6 @@ import com.gengoai.io.resource.Resource;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonMarshaller;
 import com.gengoai.reflection.Reflect;
-import com.gengoai.reflection.ReflectionUtils;
 import com.gengoai.reflection.TypeUtils;
 
 import java.io.ObjectStreamException;
@@ -226,7 +225,7 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
          if (type == EnumValue.class) {
             int lastIndex = name.lastIndexOf('.');
             if (lastIndex >= 0) {
-               type = ReflectionUtils.getClassForNameQuietly(name.substring(0, lastIndex));
+               type = Reflect.getClassForNameQuietly(name.substring(0, lastIndex));
             }
          }
          try {

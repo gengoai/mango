@@ -26,6 +26,7 @@ import com.gengoai.Validation;
 import com.gengoai.collection.Iterables;
 import com.gengoai.collection.multimap.ArrayListMultimap;
 import com.gengoai.collection.multimap.Multimap;
+import com.gengoai.config.Config;
 import com.gengoai.reflection.RField;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
@@ -47,30 +48,40 @@ import static com.gengoai.string.Re.*;
 /**
  * A specification defines a <code>Schema</code>, <code>Protocol</code>, <code>SubProtocols</code>, <code>Path</code>,
  * and <code>Query Parameters</code> that define a resource, connection, etc. The specification form is as follows:
- * <code>SCHEMA::(PROTOCOL::)?(SUB-PROTOCOL::)*PATH(;query=value)*</code> and example is:
- * <code>kv::mem::people::</code> defining an in-memory key-value store with the namespace "people" or
- * <code>kv::disk::people::~/people.db;readOnly=true</code> defining a disk-based key-value store with the namespace
- * "people" stored at ~/people.db and being accessed as read only.
+ * <code>SCHEMA:(PROTOCOL(:SUB-PROTOCOL)*)?(::PATH)?(;query=value)*</code> and example is:
+ * <code>kv:mem:people</code> defining an in-memory key-value store with the namespace "people" or
+ * <code>kv:disk:people::~/people.db;readOnly=true</code> defining a disk-based key-value store with the namespace
+ * "people" stored at ~/people.db and being accessed as read only. Note that the Path and Query Arguments can will be
+ * resolved against the current Config allowing for dynamic paths like <code>${BASE_DIR}/myFile</code> for paths and
+ * <code>parameter=${parameter.defaultValue}</code> where <code>${BASE_DIR}</code> and
+ * <code>${parameter.defaultValue}</code> will be set via the Config.
  *
  * @author David B. Bracewell
  */
 @EqualsAndHashCode(callSuper = false)
 @Builder
 public final class Specification implements Serializable {
-   private static final Pattern SPEC_PATTERN = Pattern.compile(re("^",
-                                                                  namedGroup("SCHEMA",
-                                                                             oneOrMore(chars(LETTER, "_")),
-                                                                             zeroOrMore(q("::"),
-                                                                                        oneOrMore(chars(LETTER, "_")))
-                                                                            ),
-                                                                  q("::"),
-                                                                  namedGroup("PATH",
-                                                                             zeroOrMore(chars(true, q(";")))),
-                                                                  namedGroup("QUERY",
-                                                                             zeroOrOne(q(";"), oneOrMore(ANY))),
-                                                                  "$"), Pattern.CASE_INSENSITIVE);
+   private static final Pattern SPEC_PATTERN = Pattern.compile(line(namedGroup("SCHEMA",
+                                                                               oneOrMore(chars("\\w", "_"))),
+
+                                                                    zeroOrOne(":",
+                                                                              negLookahead(chars("\\w", "_", ":"))),
+
+                                                                    namedGroup("PROTOCOL",
+                                                                               zeroOrMore(q(":"),
+                                                                                          oneOrMore(
+                                                                                             chars("\\w", "_")))),
+
+                                                                    zeroOrOne(q("::"),
+                                                                              namedGroup("PATH",
+                                                                                         oneOrMore(notChars(q(";"))))),
+
+                                                                    zeroOrOne(namedGroup("QUERY",
+                                                                                         oneOrMore(q(";"),
+                                                                                                   oneOrMore(ANY))))
+                                                                   ),
+                                                               Pattern.CASE_INSENSITIVE);
    private static final long serialVersionUID = 1L;
-   @NonNull
    @Getter
    private final String path;
    @NonNull
@@ -87,11 +98,21 @@ public final class Specification implements Serializable {
    private Specification(@NonNull String schema,
                          @NonNull String protocol,
                          @NonNull List<String> subProtocol,
-                         @NonNull String path) {
+                         String path) {
       this.schema = schema;
       this.protocol = protocol;
       this.subProtocol = subProtocol;
       this.path = path;
+   }
+
+
+   /**
+    * Gets the set of query parameter names and values set on the specification.
+    *
+    * @return the set of query parameter names and values set on the specification.
+    */
+   public Set<Map.Entry<String, String>> queryParameters() {
+      return Collections.unmodifiableSet(queryParameters.entries());
    }
 
 
@@ -100,7 +121,7 @@ public final class Specification implements Serializable {
          Pattern.compile(";")
                 .splitAsStream(query.substring(1))
                 .map(s -> Arrays.copyOf(s.split("="), 2))
-                .forEach(s -> map.put(s[0].trim(), s[1].trim()));
+                .forEach(s -> map.put(s[0].trim(), Config.resolveVariables(s[1].trim())));
       }
    }
 
@@ -116,8 +137,8 @@ public final class Specification implements Serializable {
       Specification spec = parse(specification);
       try {
          Reflect r = Reflect.onClass(tClass)
-                            .create()
-                            .allowPrivilegedAccess();
+                            .allowPrivilegedAccess()
+                            .create();
          Validation.checkArgument(r.<Specifiable>get().getSchema().equals(spec.getSchema()),
                                   "Invalid Schema: " + specification);
 
@@ -162,15 +183,22 @@ public final class Specification implements Serializable {
    public static Specification parse(String specificationString) {
       Matcher m = SPEC_PATTERN.matcher(Validation.notNullOrBlank(specificationString));
       if (m.find()) {
-         String[] schema = m.group("SCHEMA").split("::");
-         String protocol = schema.length > 1 ? schema[1] : Strings.EMPTY;
-         List<String> subProtocol = schema.length > 2
-                                    ? Arrays.asList(Arrays.copyOfRange(schema, 2, schema.length))
+         String schema = m.group("SCHEMA");
+         String protocolSpec = m.group("PROTOCOL");
+         if (Strings.isNullOrBlank(protocolSpec)) {
+            protocolSpec = Strings.EMPTY;
+         } else {
+            protocolSpec = protocolSpec.substring(1);
+         }
+         String[] protocols = protocolSpec.split(":");
+         String protocol = protocols.length > 0 ? protocols[0] : null;
+         List<String> subProtocol = protocols.length >= 2
+                                    ? Arrays.asList(Arrays.copyOfRange(protocols, 1, protocols.length))
                                     : Collections.emptyList();
-         Specification specification = new Specification(schema[0],
+         Specification specification = new Specification(schema,
                                                          protocol,
                                                          subProtocol,
-                                                         m.group("PATH"));
+                                                         Config.resolveVariables(m.group("PATH")));
          getQueryParameters(m.group("QUERY"), specification.queryParameters);
          return specification;
       }
@@ -223,15 +251,15 @@ public final class Specification implements Serializable {
 
    @Override
    public String toString() {
-      StringBuilder builder = new StringBuilder(schema).append("::");
+      StringBuilder builder = new StringBuilder(schema);
       if (Strings.isNotNullOrBlank(protocol)) {
-         builder.append(protocol).append("::");
+         builder.append(":").append(protocol);
       }
       if (subProtocol != null) {
-         subProtocol.forEach(sp -> builder.append(sp).append("::"));
+         subProtocol.forEach(sp -> builder.append(":").append(sp));
       }
       if (Strings.isNotNullOrBlank(path)) {
-         builder.append(path);
+         builder.append("::").append(path);
       }
       for (Map.Entry<String, String> entry : queryParameters.entries()) {
          builder.append(";").append(entry.getKey()).append("=").append(entry.getValue());
@@ -240,14 +268,15 @@ public final class Specification implements Serializable {
    }
 
    /**
-    * The type Specification builder.
+    * Builder for Specifications
     */
-   public static class SpecificationBuilder {
+   public final static class SpecificationBuilder implements Serializable {
+      private static final long serialVersionUID = 1L;
       private Multimap<String, String> parameters = new ArrayListMultimap<>();
       private List<String> subProtocol = new ArrayList<>();
 
       /**
-       * Build specification.
+       * Builds the specification.
        *
        * @return the specification
        */
@@ -258,9 +287,9 @@ public final class Specification implements Serializable {
       }
 
       /**
-       * Clear query parameters specification builder.
+       * Clears the set query parameters from builder.
        *
-       * @return the specification builder
+       * @return this specification builder
        */
       public SpecificationBuilder clearQueryParameters() {
          parameters.clear();
@@ -268,11 +297,11 @@ public final class Specification implements Serializable {
       }
 
       /**
-       * Query parameter specification builder.
+       * Sets a query parameter on this builder.
        *
-       * @param name  the name
-       * @param value the value
-       * @return the specification builder
+       * @param name  the parameter name
+       * @param value the parameter value
+       * @return this specification builder
        */
       public SpecificationBuilder queryParameter(String name, String value) {
          parameters.put(name, value);
@@ -280,11 +309,11 @@ public final class Specification implements Serializable {
       }
 
       /**
-       * Sub protocol specification builder.
+       * Sets the sub-protocol of this builder.
        *
-       * @param index       the index
-       * @param subProtocol the sub protocol
-       * @return the specification builder
+       * @param index       the position of the sub-protocol
+       * @param subProtocol the sub-protocol name
+       * @return this specification builder
        */
       public SpecificationBuilder subProtocol(int index, String subProtocol) {
          this.subProtocol.add(index, subProtocol);
@@ -292,28 +321,28 @@ public final class Specification implements Serializable {
       }
 
       /**
-       * Sub protocol specification builder.
+       * Sets the only sub-protocol on the specification to the given value
        *
-       * @param subProtocol the sub protocol
-       * @return the specification builder
+       * @param subProtocol the sub-protocol name
+       * @return this specification builder
        */
       public SpecificationBuilder subProtocol(String subProtocol) {
-         this.subProtocol.add(subProtocol);
-         return this;
+         return subProtocol(Collections.singletonList(subProtocol));
       }
 
       /**
-       * Sub protocol specification builder.
+       * Sets the sub-protocol on the specification to the given list
        *
-       * @param subProtocol the sub protocol
-       * @return the specification builder
+       * @param subProtocol the list of sub-protocols
+       * @return this specification builder
        */
-      public SpecificationBuilder subProtocol(Collection<String> subProtocol) {
+      public SpecificationBuilder subProtocol(@NonNull List<String> subProtocol) {
+         this.subProtocol.clear();
          this.subProtocol.addAll(subProtocol);
          return this;
       }
 
-   }
+   }//END OF SpecificationBuilder
 
 
 }//END OF Specification

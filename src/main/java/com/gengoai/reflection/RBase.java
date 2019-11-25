@@ -40,6 +40,7 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Base-class for fluent Reflection classes
@@ -59,14 +60,14 @@ abstract class RBase<T extends AnnotatedElement, V extends RBase> implements Ser
     * @return the object
     * @throws TypeConversionException the type conversion exception
     */
-   protected static Object convertValueType(Object value, Type toClass) throws TypeConversionException {
+   static Object convertValueType(Object value, Type toClass) throws TypeConversionException {
       if (value == null) {
          return Primitives.defaultValue(TypeUtils.asClass(toClass));
       }
       if (TypeUtils.isAssignable(Val.class, toClass)) {
          return Validation.notNull(Cast.as(value, Val.class)).as(toClass);
       }
-      if (TypeUtils.isAssignable(toClass, value.getClass())) {
+      if (!TypeUtils.isCollection(toClass) && TypeUtils.isAssignable(toClass, value.getClass())) {
          return value;
       }
       Object out = Converter.convert(value, toClass);
@@ -80,7 +81,7 @@ abstract class RBase<T extends AnnotatedElement, V extends RBase> implements Ser
     * @return A 0 sized array if the array is null, otherwise an array of class equalling the classes of the given args
     * or <code>Object.cass</code> if the arg is null.
     */
-   protected static Class[] getTypes(Object... args) {
+   static Class[] getTypes(Object... args) {
       if (args.length == 0) {
          return new Class[0];
       }
@@ -243,15 +244,9 @@ abstract class RBase<T extends AnnotatedElement, V extends RBase> implements Ser
     * @param annotationClasses the annotation classes
     * @return True - if any of the given annotations are present on this object
     */
-   @SuppressWarnings("unchecked")
    @SafeVarargs
    public final boolean isAnnotationPresent(@NonNull Class<? extends Annotation>... annotationClasses) {
-      for (Class aClass : annotationClasses) {
-         if (getElement().isAnnotationPresent(aClass)) {
-            return true;
-         }
-      }
-      return false;
+      return Stream.of(annotationClasses).anyMatch(a -> getElement().isAnnotationPresent(a));
    }
 
    private <A extends Annotation, O> O processAnnotation(A annotation,

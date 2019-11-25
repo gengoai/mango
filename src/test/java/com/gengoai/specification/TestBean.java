@@ -20,37 +20,43 @@
  *
  */
 
-package com.gengoai.reflection;
+package com.gengoai.specification;
 
-import com.gengoai.function.SerializablePredicate;
-import com.gengoai.string.Strings;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
+import java.util.List;
 
 /**
  * @author David B. Bracewell
  */
-public final class ReflectPredicates {
+@Getter
+@EqualsAndHashCode(callSuper = false)
+public class TestBean implements Specifiable {
+   @Protocol
+   private String protocol;
+   @SubProtocol(0)
+   private String sp1;
+   @SubProtocol
+   private List<String> sp;
+   @Path
+   private String path;
+   @QueryParameter("q")
+   private int qp1;
+   @QueryParameter("f")
+   private float qp2;
+   @QueryParameter("b")
+   private List<Boolean> qp3;
 
-   private ReflectPredicates() {
-      throw new IllegalAccessError();
+
+   @Override
+   public String getSchema() {
+      return "testBean";
    }
 
-   public static SerializablePredicate<RBase> nameEq(String name) {
-      return e -> Strings.isNotNullOrBlank(name) && e.getName().equals(name);
+   @Override
+   public String toString(){
+      return toSpecification();
    }
 
-   public static SerializablePredicate<RBase> nameIn(String... names) {
-      return e -> {
-         if (names == null || names.length == 0) {
-            return false;
-         }
-         final String eName = e.getName();
-         for (String name : names) {
-            if (eName.equals(name)) {
-               return true;
-            }
-         }
-         return false;
-      };
-   }
-
-}//END OF ReflectPredicates
+}//END OF TestBean

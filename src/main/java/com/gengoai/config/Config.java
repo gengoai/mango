@@ -246,8 +246,8 @@ public final class Config implements Serializable {
          StackTraceElement ste = stackTrace[i];
          // ignore the config class
          if (!ste.getClassName().equals(Config.class.getName()) &&
-                !ste.getClassName().equals(CommandLineApplication.class.getName())
-                && !ste.getClassName().equals(Application.class.getName())
+            !ste.getClassName().equals(CommandLineApplication.class.getName())
+            && !ste.getClassName().equals(Application.class.getName())
          ) {
             return ste.getClassName();
          }
@@ -313,10 +313,10 @@ public final class Config implements Serializable {
    public static List<String> getPropertiesMatching(Predicate<? super String> matcher) {
       if (matcher != null) {
          return getInstance().properties
-                   .keySet()
-                   .parallelStream()
-                   .filter(matcher)
-                   .collect(Collectors.toList());
+            .keySet()
+            .parallelStream()
+            .filter(matcher)
+            .collect(Collectors.toList());
       }
       return Collections.emptyList();
    }
@@ -359,7 +359,10 @@ public final class Config implements Serializable {
     * @param otherPackages Other packages whose configs we should load
     * @return Non config/option parameters from command line
     */
-   public static String[] initialize(String programName, String[] args, CommandLineParser parser, String... otherPackages) {
+   public static String[] initialize(String programName,
+                                     String[] args,
+                                     CommandLineParser parser,
+                                     String... otherPackages) {
       Preloader.preload();
 
       String rval[];
@@ -406,8 +409,9 @@ public final class Config implements Serializable {
 
       // Store the command line arguments as a config settings.
       if (args != null) {
-         parser.getSetEntries().forEach(
-            entry -> ConfigSettingFunction.INSTANCE.setProperty(entry.getKey(), entry.getValue(), "CommandLine"));
+         parser.getSetEntries()
+               .forEach(
+                  entry -> ConfigSettingFunction.INSTANCE.setProperty(entry.getKey(), entry.getValue(), "CommandLine"));
       }
 
       if (parser.isSet(NamedOption.CONFIG)) {
@@ -551,7 +555,7 @@ public final class Config implements Serializable {
     * @param string the string
     * @return the string
     */
-   static String resolveVariables(String string) {
+   public static String resolveVariables(String string) {
       if (string == null) {
          return null;
       }

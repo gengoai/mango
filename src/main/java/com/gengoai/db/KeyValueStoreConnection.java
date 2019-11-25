@@ -26,7 +26,6 @@ import com.gengoai.Validation;
 import com.gengoai.conversion.Cast;
 import com.gengoai.specification.*;
 import lombok.Data;
-import lombok.NonNull;
 
 import java.io.File;
 import java.io.Serializable;
@@ -37,7 +36,7 @@ import java.io.Serializable;
  * @author David B. Bracewell
  */
 @Data
-public final class KVStoreSpec implements Specifiable, Serializable {
+final class KeyValueStoreConnection implements Specifiable, Serializable {
    private static final long serialVersionUID = 1L;
    @QueryParameter
    private boolean compressed = true;
@@ -49,19 +48,8 @@ public final class KVStoreSpec implements Specifiable, Serializable {
    private boolean readOnly = false;
    @Protocol
    private String type;
-
-   /**
-    * Connect t.
-    *
-    * @param <K>              the type parameter
-    * @param <V>              the type parameter
-    * @param <T>              the type parameter
-    * @param connectionString the connection string
-    * @return the t
-    */
-   public static <K, V, T extends KeyValueStore<K, V>> T connect(@NonNull String connectionString) {
-      return parse(connectionString).connect();
-   }
+   @QueryParameter
+   private boolean navigable = false;
 
    /**
     * Parse kv store spec.
@@ -69,8 +57,8 @@ public final class KVStoreSpec implements Specifiable, Serializable {
     * @param specification the specification
     * @return the kv store spec
     */
-   public static KVStoreSpec parse(String specification) {
-      KVStoreSpec spec = Specification.parse(specification, KVStoreSpec.class);
+   public static KeyValueStoreConnection parse(String specification) {
+      KeyValueStoreConnection spec = Specification.parse(specification, KeyValueStoreConnection.class);
       Validation.notNullOrBlank(spec.type, "Key-Value store type must not be blank or null");
       Validation.notNullOrBlank(spec.namespace, "Key-Value store namespace must not be blank or null");
       return spec;
@@ -87,7 +75,10 @@ public final class KVStoreSpec implements Specifiable, Serializable {
    public <K, V, T extends KeyValueStore<K, V>> T connect() {
       switch (type) {
          case "mem":
-            return Cast.as(new InMemoryKeyValueStore<K, V>(namespace, readOnly));
+            if (navigable) {
+               return Cast.as(new InMemoryNavigableKeyValueStore<K, V>(namespace, readOnly));
+            }
+            return Cast.as(new InMemoryKeyValueStore<>(namespace, readOnly));
          case "disk":
             Validation.notNullOrBlank(path, "Key-Value store path must not be blank or null");
             return Cast.as(new MVKeyValueStore<K, V>(new File(path),
@@ -110,4 +101,4 @@ public final class KVStoreSpec implements Specifiable, Serializable {
       return toSpecification();
    }
 
-}//END OF KVStoreSpec
+}//END OF KeyValueStoreConnection

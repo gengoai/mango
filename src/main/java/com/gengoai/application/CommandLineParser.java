@@ -261,7 +261,6 @@ public final class CommandLineParser {
    private String setValue(String key, String value, List<String> filtered) {
       //look up the option
       NamedOption option = options.get(key.replaceAll("^-+", ""));
-
       if (option == null) {
          //We have a non-specified argument, so add it to the filter list and check the value.
          filtered.add(key);

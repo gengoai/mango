@@ -51,14 +51,18 @@ public final class Resources {
     *
     * @param pattern the file pattern
     * @return Iterator of resources
-    * @throws IOException Something went wrong access the jar/files
     */
-   public static Iterator<Resource> findAllResources(String pattern) throws IOException {
+   public static Iterator<Resource> findAllClasspathResources(String pattern) {
       Validation.notNullOrBlank(pattern);
+      final Enumeration<URL> resources;
+      try {
+         resources = Thread.currentThread()
+                           .getContextClassLoader()
+                           .getResources(pattern);
+      } catch (IOException e) {
+         throw new RuntimeException(e);
+      }
       return new Iterator<Resource>() {
-         Enumeration<URL> resources = Thread.currentThread()
-                                            .getContextClassLoader()
-                                            .getResources(pattern);
 
          @Override
          public boolean hasNext() {

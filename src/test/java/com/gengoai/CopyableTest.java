@@ -20,6 +20,11 @@ public class CopyableTest {
       assertFalse(cc == cc.copy());
    }
 
+   @Test
+   public void testDeepCopy() {
+      assertEquals("This is a test", Copyable.deepCopy("This is a test"));
+   }
+
    public static class CopyClass implements Copyable<CopyClass> {
       public String name;
 
@@ -31,12 +36,6 @@ public class CopyableTest {
       @Override
       public CopyClass copy() {
          return new CopyClass(name);
-      }
-
-
-      @Override
-      public int hashCode() {
-         return Objects.hash(name);
       }
 
       @Override
@@ -51,6 +50,10 @@ public class CopyableTest {
          return this.name;
       }
 
+      @Override
+      public int hashCode() {
+         return Objects.hash(name);
+      }
 
       public String toString() {
          return "CopyableTest.CopyClass(name=" + this.getName() + ")";

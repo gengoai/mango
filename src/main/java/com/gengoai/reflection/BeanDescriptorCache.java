@@ -31,27 +31,18 @@ import com.gengoai.cache.Cache;
  * @author David B. Bracewell
  */
 public class BeanDescriptorCache {
-
-   private static volatile BeanDescriptorCache INSTANCE = null;
-
+   private static final BeanDescriptorCache INSTANCE = new BeanDescriptorCache();
    private final Cache<Class<?>, BeanDescriptor> cache;
+
+   private BeanDescriptorCache() {
+      cache = Cache.create(1000, BeanDescriptor::new);
+   }
 
    /**
     * @return An instance of the {@link BeanDescriptorCache}.
     */
    public static BeanDescriptorCache getInstance() {
-      if (INSTANCE == null) {
-         synchronized (BeanDescriptorCache.class) {
-            if (INSTANCE == null) {
-               INSTANCE = new BeanDescriptorCache();
-            }
-         }
-      }
       return INSTANCE;
-   }
-
-   protected BeanDescriptorCache() {
-      cache = Cache.create(1000, BeanDescriptor::new);
    }
 
    /**
@@ -60,7 +51,7 @@ public class BeanDescriptorCache {
     * @param clazz The class for which a {@link BeanDescriptor} is to be created.
     * @return A {@link BeanDescriptor} for the given class
     */
-   public synchronized BeanDescriptor get(Class<?> clazz) {
+   public BeanDescriptor get(Class<?> clazz) {
       return cache.get(clazz);
    }
 

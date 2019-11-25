@@ -69,12 +69,18 @@ public final class ClassDescriptor implements Serializable {
             singletonMethod = method;
          }
       }
-      for (Field field : clazz.getFields()) {
-         fields.put(field.getName(), field);
+
+      Class<?> tClass = clazz;
+      while (tClass != null && tClass != Object.class) {
+         for (Field field : tClass.getFields()) {
+            fields.put(field.getName(), field);
+         }
+         for (Field field : tClass.getDeclaredFields()) {
+            fields.put(field.getName(), field);
+         }
+         tClass = tClass.getSuperclass();
       }
-      for (Field field : clazz.getDeclaredFields()) {
-         fields.put(field.getName(), field);
-      }
+
       Collections.addAll(constructors, clazz.getConstructors());
       Collections.addAll(constructors, clazz.getConstructors());
 

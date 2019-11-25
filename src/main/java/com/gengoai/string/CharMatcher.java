@@ -2,6 +2,7 @@ package com.gengoai.string;
 
 import com.gengoai.Validation;
 import com.gengoai.function.SerializablePredicate;
+import lombok.NonNull;
 
 import java.util.BitSet;
 
@@ -51,7 +52,7 @@ public interface CharMatcher extends SerializablePredicate<Character> {
     * Matches punctuation.
     */
    CharMatcher Punctuation = c -> {
-      switch (Character.getType((char) c)) {
+      switch (Character.getType(c)) {
          case Character.CONNECTOR_PUNCTUATION:
          case Character.DASH_PUNCTUATION:
          case Character.END_PUNCTUATION:
@@ -106,13 +107,13 @@ public interface CharMatcher extends SerializablePredicate<Character> {
     * @param characters the characters
     * @return the char matcher
     */
-   static CharMatcher anyOf(CharSequence characters) {
+   static CharMatcher anyOf(@NonNull CharSequence characters) {
       final BitSet bitSet = characters.chars().collect(BitSet::new, BitSet::set, BitSet::or);
       return bitSet::get;
    }
 
    @Override
-   default CharMatcher and(SerializablePredicate<? super Character> other) {
+   default CharMatcher and(@NonNull SerializablePredicate<? super Character> other) {
       return character -> (test(character) && other.test(character));
    }
 
@@ -122,7 +123,7 @@ public interface CharMatcher extends SerializablePredicate<Character> {
     * @param sequence the sequence
     * @return the index of the first match or -1 if none
     */
-   default int findIn(CharSequence sequence) {
+   default int findIn(@NonNull CharSequence sequence) {
       return findIn(sequence, 0);
    }
 
@@ -133,7 +134,7 @@ public interface CharMatcher extends SerializablePredicate<Character> {
     * @param offset   the starting position to search in the CharSequence
     * @return the index of the first match or -1 if none
     */
-   default int findIn(CharSequence sequence, int offset) {
+   default int findIn(@NonNull CharSequence sequence, int offset) {
       Validation.checkElementIndex(offset, sequence.length());
       for (int i = offset; i < sequence.length(); i++) {
          if (test(sequence.charAt(i))) {
@@ -149,7 +150,7 @@ public interface CharMatcher extends SerializablePredicate<Character> {
     * @param sequence the sequence
     * @return True if this matcher matches all of the given CharSequence
     */
-   default boolean matchesAllOf(CharSequence sequence) {
+   default boolean matchesAllOf(@NonNull CharSequence sequence) {
       for (int i = 0; i < sequence.length(); i++) {
          if (!test(sequence.charAt(i))) {
             return false;
@@ -164,7 +165,7 @@ public interface CharMatcher extends SerializablePredicate<Character> {
     * @param sequence the sequence
     * @return True if this matcher matches any of the given CharSequence
     */
-   default boolean matchesAnyOf(CharSequence sequence) {
+   default boolean matchesAnyOf(@NonNull CharSequence sequence) {
       for (int i = 0; i < sequence.length(); i++) {
          if (test(sequence.charAt(i))) {
             return true;
@@ -179,7 +180,7 @@ public interface CharMatcher extends SerializablePredicate<Character> {
     * @param sequence the sequence
     * @return True if this matcher matches none of the given CharSequence
     */
-   default boolean matchesNoneOf(CharSequence sequence) {
+   default boolean matchesNoneOf(@NonNull CharSequence sequence) {
       for (int i = 0; i < sequence.length(); i++) {
          if (test(sequence.charAt(i))) {
             return false;
@@ -194,7 +195,7 @@ public interface CharMatcher extends SerializablePredicate<Character> {
    }
 
    @Override
-   default CharMatcher or(SerializablePredicate<? super Character> other) {
+   default CharMatcher or(@NonNull SerializablePredicate<? super Character> other) {
       return character -> (test(character) || other.test(character));
    }
 
@@ -204,7 +205,7 @@ public interface CharMatcher extends SerializablePredicate<Character> {
     * @param sequence the sequence
     * @return the trimmed string
     */
-   default String trimFrom(CharSequence sequence) {
+   default String trimFrom(@NonNull CharSequence sequence) {
       return trimTrailingFrom(trimLeadingFrom(sequence));
    }
 
@@ -214,7 +215,7 @@ public interface CharMatcher extends SerializablePredicate<Character> {
     * @param sequence the sequence
     * @return the trimmed string
     */
-   default String trimLeadingFrom(CharSequence sequence) {
+   default String trimLeadingFrom(@NonNull CharSequence sequence) {
       for (int first = 0; first < sequence.length(); first++) {
          if (!test(sequence.charAt(first))) {
             return sequence.subSequence(first, sequence.length()).toString();
@@ -229,7 +230,7 @@ public interface CharMatcher extends SerializablePredicate<Character> {
     * @param sequence the sequence
     * @return the trimmed string
     */
-   default String trimTrailingFrom(CharSequence sequence) {
+   default String trimTrailingFrom(@NonNull CharSequence sequence) {
       for (int last = sequence.length() - 1; last >= 0; last--) {
          if (!test(sequence.charAt(last))) {
             return sequence.subSequence(0, last + 1).toString();

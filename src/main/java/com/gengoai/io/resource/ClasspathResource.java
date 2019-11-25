@@ -187,13 +187,9 @@ public class ClasspathResource extends BaseResource {
       }
 
       String path = path() + "/";
-      try {
-         return Streams.asStream(Resources.findAllResources(path))
-                       .flatMap(resource -> resource.getChildren(filePattern, recursive).stream())
-                       .collect(Collectors.toList());
-      } catch (IOException e) {
-         throw new RuntimeException(e);
-      }
+      return Streams.asStream(Resources.findAllClasspathResources(path))
+                    .flatMap(resource -> resource.getChildren(filePattern, recursive).stream())
+                    .collect(Collectors.toList());
    }
 
    @Override

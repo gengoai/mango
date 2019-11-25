@@ -159,7 +159,7 @@ public class BeanUtils {
     * @param object The object to parameterize
     * @return The object
     */
-   public static <T> T parameterizeObject(String configPrefix, T object) {
+   private static <T> T parameterizeObject(String configPrefix, T object) {
       if (object == null) {
          return null;
       }

@@ -1,7 +1,7 @@
 package com.gengoai.conversion;
 
 import com.gengoai.json.JsonEntry;
-import com.gengoai.reflection.ReflectionUtils;
+import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.TypeUtils;
 import org.kohsuke.MetaInfServices;
 
@@ -32,7 +32,7 @@ public class ClassTypeConverter implements TypeConverter {
             throw new TypeConversionException(object, Class.class, e);
          }
       } else if (object instanceof CharSequence || object instanceof JsonEntry) {
-         Class<?> clazz = ReflectionUtils.getClassForNameQuietly(Converter.convert(object, String.class));
+         Class<?> clazz = Reflect.getClassForNameQuietly(Converter.convert(object, String.class));
          if (clazz != null) {
             return clazz;
          }

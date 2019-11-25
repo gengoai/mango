@@ -23,13 +23,13 @@ package com.gengoai.tuple;
 
 import com.gengoai.Copyable;
 import com.gengoai.Validation;
+import com.gengoai.annotation.JsonAdapter;
 import com.gengoai.collection.Sorting;
 import com.gengoai.conversion.Cast;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonMarshaller;
 import com.gengoai.reflection.TypeUtils;
 import com.gengoai.string.Strings;
-import com.google.gson.annotations.JsonAdapter;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;

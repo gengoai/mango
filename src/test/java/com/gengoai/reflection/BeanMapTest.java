@@ -24,6 +24,12 @@ package com.gengoai.reflection;
 import com.gengoai.tuple.Tuple2;
 import org.junit.Test;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static com.gengoai.reflection.TypeUtils.parameterizedType;
+import static com.gengoai.tuple.Tuples.$;
 import static org.junit.Assert.*;
 
 /**
@@ -32,22 +38,61 @@ import static org.junit.Assert.*;
 @SuppressWarnings("ALL")
 public class BeanMapTest {
 
-  @Test
-  @SuppressWarnings("unchecked")
-  public void testObject() throws Exception {
-    BeanMap map = new BeanMap(Tuple2.of("A", "B"));
-    assertFalse(map.containsKey("class"));
-    assertFalse(map.containsValue(Object.class));
-    assertFalse(map.isEmpty());
+   @Test
+   @SuppressWarnings("unchecked")
+   public void testObject() throws Exception {
+      BeanMap map = new BeanMap(Tuple2.of("A", "B"));
+      assertFalse(map.containsKey("class"));
+      assertFalse(map.containsValue(Object.class));
+      assertFalse(map.isEmpty());
 
-    assertTrue(map.containsKey("v1"));
-    assertTrue(map.containsKey("v2"));
+      assertTrue(map.containsKey("v1"));
+      assertTrue(map.containsKey("v2"));
 
-    assertEquals("A", map.get("v1"));
-    assertEquals("B", map.get("v2"));
+      assertEquals("A", map.get("v1"));
+      assertEquals("B", map.get("v2"));
 
-    assertNull(map.put("v1", "G"));
+      assertNull(map.put("v1", "G"));
 
-  }
+   }
+
+   public static class TestBean {
+      private boolean happy;
+      private String name;
+
+      public boolean isHappy() {
+         return happy;
+      }
+
+      public void setHappy(boolean happy) {
+         this.happy = happy;
+      }
+
+      public String getName() {
+         return name;
+      }
+
+      public void setName(String name) {
+         this.name = name;
+      }
+
+      public void setListOfStrings(List<String> strings) {
+
+      }
+   }
+
+   @Test
+   public void testBean() {
+      BeanMap map = new BeanMap(new TestBean());
+      map.put("happy", "true");
+      map.put("name", "alice");
+
+      Set<Map.Entry<String, Object>> entrySet = map.entrySet();
+      assertTrue(entrySet.contains($("name", "alice")));
+      assertTrue(entrySet.contains($("happy", true)));
+
+      assertEquals(parameterizedType(List.class, String.class), map.getType("listOfStrings"));
+
+   }
 
 }

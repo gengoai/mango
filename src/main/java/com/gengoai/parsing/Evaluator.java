@@ -22,10 +22,14 @@
 
 package com.gengoai.parsing;
 
-import com.gengoai.Switch;
 import com.gengoai.Tag;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.CheckedFunction;
+import lombok.NonNull;
+import lombok.Value;
+
+import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  * <p>An evaluator provides a switch-like interface for evaluating expressions. Custom evaluators can be created as
@@ -47,14 +51,29 @@ import com.gengoai.function.CheckedFunction;
  * @param <O> the type parameter
  * @author David B. Bracewell
  */
-public abstract class Evaluator<O> extends Switch<Expression, O> {
+public abstract class Evaluator<O> implements Serializable {
    private static final long serialVersionUID = 1L;
+   private final ArrayList<EvalCase<?, O>> statements = new ArrayList<>();
+
+   @Value
+   private static class EvalCase<E extends Expression, V> implements Serializable {
+      private static final long serialVersionUID = 1L;
+      private final Class<E> expressionClass;
+      private final Tag type;
+      private final CheckedFunction<E, ? extends V> function;
+
+      public EvalCase(Class<E> expressionClass, Tag type, CheckedFunction<E, ? extends V> function) {
+         this.expressionClass = expressionClass;
+         this.type = type;
+         this.function = function;
+      }
+   }
 
    /**
     * Instantiates a new Evaluator.
     */
    protected Evaluator() {
-      $default(exp -> {throw new ParseException("Unknown Expression [" + exp + " : " + exp.getType() + "]");});
+//      $default(exp -> {throw new ParseException("Unknown Expression [" + exp + " : " + exp.getType() + "]");});
    }
 
    /**
@@ -67,10 +86,10 @@ public abstract class Evaluator<O> extends Switch<Expression, O> {
     * @param type            the token type
     * @param function        the function to apply when the condition is met.
     */
-   protected final <E extends Expression> void $(Class<E> expressionClass, Tag type, CheckedFunction<E, ? extends O> function) {
-      $case(e -> e.isInstance(expressionClass, type),
-            e -> Cast.as(e, expressionClass),
-            function);
+   protected final <E extends Expression> void $(@NonNull Class<E> expressionClass,
+                                                 @NonNull Tag type,
+                                                 @NonNull CheckedFunction<E, ? extends O> function) {
+      statements.add(new EvalCase<>(expressionClass, type, function));
    }
 
    /**
@@ -82,9 +101,7 @@ public abstract class Evaluator<O> extends Switch<Expression, O> {
     * @param function        the function to apply when the condition is met.
     */
    protected final <E extends Expression> void $(Class<E> expressionClass, CheckedFunction<E, ? extends O> function) {
-      $case(e -> e.isInstance(expressionClass),
-            e -> Cast.as(e, expressionClass),
-            function);
+      statements.add(new EvalCase<>(expressionClass, null, function));
    }
 
    /**
@@ -92,10 +109,20 @@ public abstract class Evaluator<O> extends Switch<Expression, O> {
     *
     * @param expression the expression to evaluate
     * @return the result of evaluation
-    * @throws Exception Something went wrong during evaluation
+    * @throws ParseException Something went wrong during evaluation
     */
-   public final O eval(Expression expression) throws Exception {
-      return switchOn(expression);
+   public final O eval(Expression expression) throws ParseException {
+      for (EvalCase<?, O> statement : statements) {
+         if ((statement.type == null && expression.isInstance(statement.expressionClass))
+            || expression.isInstance(statement.expressionClass, statement.type)) {
+            try {
+               return statement.function.apply(Cast.as(expression.as(statement.expressionClass)));
+            } catch (Throwable throwable) {
+               throw new ParseException(throwable);
+            }
+         }
+      }
+      throw new ParseException("Unknown Expression [" + expression + " : " + expression.getType() + "]");
    }
 
 }// END OF Evaluator

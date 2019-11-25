@@ -44,7 +44,7 @@ public class LevelTypeConverter implements TypeConverter {
          } else if (str.startsWith(FULL_NAME)) {
             str = str.substring(FULL_NAME.length() + 1);
          }
-         return Level.parse(source.toString());
+         return Level.parse(str);
       } catch (IllegalArgumentException e) {
          throw new TypeConversionException(source, Level.class);
       }

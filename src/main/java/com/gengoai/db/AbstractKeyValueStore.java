@@ -22,9 +22,11 @@
 
 package com.gengoai.db;
 
-import java.util.Iterator;
-import java.util.NavigableMap;
-import java.util.NoSuchElementException;
+import com.gengoai.Validation;
+
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -34,8 +36,10 @@ import java.util.Set;
  * @param <V> the type parameter
  * @author David B. Bracewell
  */
-public abstract class AbstractNavigableKeyValueStore<K, V> extends AbstractKeyValueStore<K, V> implements NavigableKeyValueStore<K, V> {
+public abstract class AbstractKeyValueStore<K, V> implements KeyValueStore<K, V>, Serializable {
    private static final long serialVersionUID = 1L;
+   private final String namespace;
+   private final boolean readOnly;
 
    /**
     * Instantiates a new Abstract navigable key value store.
@@ -43,13 +47,24 @@ public abstract class AbstractNavigableKeyValueStore<K, V> extends AbstractKeyVa
     * @param namespace the namespace
     * @param readOnly  the read only
     */
-   protected AbstractNavigableKeyValueStore(String namespace, boolean readOnly) {
-      super(namespace, readOnly);
+   protected AbstractKeyValueStore(String namespace, boolean readOnly) {
+      this.namespace = Validation.notNullOrBlank(namespace, "Namespace must not be null or blank");
+      this.readOnly = readOnly;
    }
 
    @Override
-   public K ceilingKey(K key) {
-      return delegate().ceilingKey(key);
+   public void clear() {
+      delegate().clear();
+   }
+
+   @Override
+   public boolean containsKey(Object o) {
+      return delegate().containsKey(o);
+   }
+
+   @Override
+   public boolean containsValue(Object o) {
+      return delegate().containsValue(o);
    }
 
    /**
@@ -57,7 +72,7 @@ public abstract class AbstractNavigableKeyValueStore<K, V> extends AbstractKeyVa
     *
     * @return the navigable map
     */
-   protected abstract NavigableMap<K, V> delegate();
+   protected abstract Map<K, V> delegate();
 
    @Override
    public Set<Entry<K, V>> entrySet() {
@@ -65,51 +80,59 @@ public abstract class AbstractNavigableKeyValueStore<K, V> extends AbstractKeyVa
    }
 
    @Override
-   public K firstKey() {
-      return delegate().firstKey();
+   public V get(Object o) {
+      return delegate().get(o);
    }
 
    @Override
-   public K floorKey(K key) {
-      return delegate().floorKey(key);
+   public String getNameSpace() {
+      return namespace;
    }
 
    @Override
-   public K higherKey(K key) {
-      return delegate().higherKey(key);
+   public boolean isEmpty() {
+      return delegate().isEmpty();
    }
 
    @Override
-   public Iterator<K> keyIterator(K key) {
-      return new Iterator<K>() {
-         private K ck = ceilingKey(key);
-
-         @Override
-         public boolean hasNext() {
-            return ck != null;
-         }
-
-         @Override
-         public K next() {
-            if (ck == null) {
-               throw new NoSuchElementException();
-            }
-            K n = ck;
-            ck = higherKey(n);
-            return n;
-         }
-      };
+   public boolean isReadOnly() {
+      return readOnly;
    }
 
 
    @Override
-   public K lastKey() {
-      return delegate().lastKey();
+   public Set<K> keySet() {
+      return delegate().keySet();
+   }
+
+
+   @Override
+   public V put(K k, V v) {
+      return delegate().put(k, v);
    }
 
    @Override
-   public K lowerKey(K key) {
-      return delegate().lowerKey(key);
+   public void putAll(Map<? extends K, ? extends V> map) {
+      delegate().putAll(map);
    }
 
+   @Override
+   public V remove(Object o) {
+      return delegate().remove(o);
+   }
+
+   @Override
+   public int size() {
+      return delegate().size();
+   }
+
+   @Override
+   public long sizeAsLong() {
+      return size();
+   }
+
+   @Override
+   public Collection<V> values() {
+      return delegate().values();
+   }
 }//END OF InMemoryKeyValueStore

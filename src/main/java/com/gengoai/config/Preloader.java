@@ -1,8 +1,8 @@
 package com.gengoai.config;
 
-import com.gengoai.io.resource.ClasspathResource;
-import com.gengoai.io.resource.Resource;
-import com.gengoai.reflection.ReflectionUtils;
+import com.gengoai.io.Resources;
+import com.gengoai.logging.Logger;
+import com.gengoai.reflection.Reflect;
 
 import java.io.IOException;
 
@@ -12,29 +12,20 @@ import java.io.IOException;
  * @author David B. Bracewell
  */
 public final class Preloader {
+   private static final Logger log = Logger.getLogger(Preloader.class);
 
    /**
     * Preloads using the current thread's context class loader and the Preloader's, class loader.
     */
    public static void preload() {
-      preload(Thread.currentThread().getContextClassLoader());
-      preload(Preloader.class.getClassLoader());
-   }
-
-   /**
-    * Preloads using the given class loader.
-    *
-    * @param classLoader the class loader to scan for the preload.classes file
-    */
-   public static void preload(ClassLoader classLoader) {
-      Resource r = new ClasspathResource("META-INF/preload.classes", classLoader);
-      if (r.exists()) {
-         try {
-            r.readLines().forEach(ReflectionUtils::getClassForNameQuietly);
-         } catch (IOException e) {
-            e.printStackTrace();
-         }
-      }
+      Resources.findAllClasspathResources("META-INF/preload.classes")
+               .forEachRemaining(r -> {
+                  try {
+                     r.readLines().forEach(Reflect::getClassForNameQuietly);
+                  } catch (IOException e) {
+                     log.warn("Exception Preloading: {0}", e);
+                  }
+               });
    }
 
 }// END OF Preloader

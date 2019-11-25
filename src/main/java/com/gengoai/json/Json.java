@@ -2,9 +2,7 @@ package com.gengoai.json;
 
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
-import com.gengoai.logging.Logger;
 import com.gengoai.reflection.Reflect;
-import com.gengoai.reflection.ReflectionUtils;
 import com.gengoai.reflection.TypeUtils;
 import com.google.gson.*;
 
@@ -21,20 +19,14 @@ import java.util.*;
  */
 public final class Json {
    public static final Gson MAPPER;
-   private static final Logger log = Logger.getLogger(Json.class);
 
    static {
       GsonBuilder builder = new GsonBuilder();
       Set<String> processed = new HashSet<>();
 
 
-      Iterator<Resource> marshallers = null;
-      try {
-         marshallers = Resources.findAllResources("META-INF/marshallers.json");
-      } catch (IOException e) {
-         throw new RuntimeException(e);
-      }
-      while (marshallers.hasNext()) {
+      for (Iterator<Resource> marshallers = Resources.findAllClasspathResources("META-INF/marshallers.json");
+           marshallers.hasNext(); ) {
          Resource r = marshallers.next();
          if (r.exists()) {
             try {
@@ -45,7 +37,7 @@ public final class Json {
                   processed.add(line);
                   String[] parts = line.split("\t");
                   if (parts.length == 3) {
-                     Class<?> type = ReflectionUtils.getClassForNameQuietly(parts[0]);
+                     Class<?> type = Reflect.getClassForNameQuietly(parts[0]);
                      boolean isHier = Boolean.parseBoolean(parts[1]);
                      Object adapter;
                      try {
@@ -86,7 +78,7 @@ public final class Json {
                                                  entry.getProperty("parameters")
                                                       .getAsArray(Type.class)
                                                       .toArray(new Type[1]))
-                   : ReflectionUtils.getClassForName(entry.getAsString());
+                   : Reflect.getClassForName(entry.getAsString());
          } catch (Exception e) {
             throw new RuntimeException(e);
          }

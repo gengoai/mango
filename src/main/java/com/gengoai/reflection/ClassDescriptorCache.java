@@ -32,9 +32,7 @@ import java.io.Serializable;
  */
 public class ClassDescriptorCache implements Serializable {
    private static final long serialVersionUID = 1L;
-
-   private volatile static ClassDescriptorCache INSTANCE = null;
-
+   private final static ClassDescriptorCache INSTANCE = new ClassDescriptorCache();
    private final Cache<Class<?>, ClassDescriptor> classDescriptorCache = Cache.create(1000, ClassDescriptor::new);
 
    /**
@@ -43,13 +41,6 @@ public class ClassDescriptorCache implements Serializable {
     * @return the instance
     */
    public static ClassDescriptorCache getInstance() {
-      if (INSTANCE == null) {
-         synchronized (ClassDescriptorCache.class) {
-            if (INSTANCE == null) {
-               INSTANCE = new ClassDescriptorCache();
-            }
-         }
-      }
       return INSTANCE;
    }
 

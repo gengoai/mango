@@ -30,7 +30,7 @@ import com.gengoai.reflection.ReflectionException;
 import com.gengoai.string.Strings;
 
 import java.lang.reflect.Array;
-import java.util.Collection;
+import java.util.List;
 
 import static com.gengoai.reflection.TypeUtils.parameterizedType;
 
@@ -73,9 +73,9 @@ public interface Specifiable {
                                                      Converter.convert(field.get(), String.class));
                                     } else {
                                        b.subProtocol(
-                                          Converter.<Collection<String>>convert(field.get(), parameterizedType(
-                                             Collection.class,
-                                             String.class)));
+                                          Converter.<List<String>>convert(field.get(),
+                                                                          parameterizedType(List.class,
+                                                                                            String.class)));
                                     }
                                  })
                  .withAnnotation(QueryParameter.class,

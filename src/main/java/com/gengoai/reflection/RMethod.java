@@ -24,6 +24,7 @@ package com.gengoai.reflection;
 
 import com.gengoai.conversion.Cast;
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -37,6 +38,17 @@ import java.lang.reflect.Type;
 public class RMethod extends RExecutable<Method, RMethod> {
    private static final long serialVersionUID = 1L;
    private final Method method;
+
+   /**
+    * Wraps a method in the RMethod class with the given owning bean
+    *
+    * @param object  The object to use when invoking the method.
+    * @param method The method to call
+    * @return The RMethod
+    */
+   public static RMethod reflectOn(Object object, @NonNull Method method) {
+      return new RMethod(Reflect.onObject(object), method);
+   }
 
    /**
     * Instantiates a new Reflected method.
@@ -84,7 +96,7 @@ public class RMethod extends RExecutable<Method, RMethod> {
     * @throws ReflectionException Something went wrong invoking the method
     */
    public Reflect invokeReflective(Object... args) throws ReflectionException {
-      return Reflect.onObject(invoke(args));
+      return Reflect.onObject(invoke(args)).setIsPrivileged(isPrivileged());
    }
 
    @Override

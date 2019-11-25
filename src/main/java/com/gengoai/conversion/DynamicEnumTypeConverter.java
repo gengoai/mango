@@ -5,7 +5,6 @@ import com.gengoai.HierarchicalEnumValue;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
-import com.gengoai.reflection.ReflectionUtils;
 import org.kohsuke.MetaInfServices;
 
 import java.lang.reflect.Type;
@@ -37,7 +36,7 @@ public class DynamicEnumTypeConverter implements TypeConverter {
          //Check in the name
          int lastDot = asString.lastIndexOf('.');
          if (lastDot > 0) {
-            enumClass = ReflectionUtils.getClassForNameQuietly(asString.substring(0, lastDot));
+            enumClass = Reflect.getClassForNameQuietly(asString.substring(0, lastDot));
             enumName = asString.substring(lastDot + 1);
          }
 

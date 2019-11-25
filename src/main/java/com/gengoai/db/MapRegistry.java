@@ -26,7 +26,6 @@ import com.gengoai.conversion.Cast;
 
 import java.lang.ref.WeakReference;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -38,11 +37,17 @@ final class MapRegistry {
       throw new IllegalAccessError();
    }
 
-   private static final Map<String, WeakReference<NavigableMap>> stores = new ConcurrentHashMap<>();
+   private static final Map<String, WeakReference<Map>> stores = new ConcurrentHashMap<>();
 
-   static <K, V> ConcurrentSkipListMap<K, V> get(String namespace) {
+   static <K, V> ConcurrentSkipListMap<K, V> getNavigable(String namespace) {
       return Cast.as(stores.compute(namespace, (ns, map) -> map == null || map.get() == null
                                                             ? new WeakReference<>(new ConcurrentSkipListMap<>())
+                                                            : map).get());
+   }
+
+   static <K, V> Map<K, V> get(String namespace) {
+      return Cast.as(stores.compute(namespace, (ns, map) -> map == null || map.get() == null
+                                                            ? new WeakReference<>(new ConcurrentHashMap<>())
                                                             : map).get());
    }
 

@@ -5,8 +5,9 @@ import com.gengoai.Primitives;
 import com.gengoai.json.Json;
 import com.gengoai.reflection.BeanUtils;
 import com.gengoai.reflection.Reflect;
-import com.gengoai.reflection.ReflectionUtils;
+import com.gengoai.reflection.ReflectionException;
 import com.gengoai.reflection.TypeUtils;
+import com.gengoai.string.Strings;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -171,7 +172,7 @@ public final class Converter {
       //Last chance
       try {
          return Cast.as(
-            BeanUtils.parameterizeObject(ReflectionUtils.createObjectFromString(convert(sourceObject, String.class))));
+            BeanUtils.parameterizeObject(createObjectFromString(convert(sourceObject, String.class))));
       } catch (Exception e) {
          //ignore
       }
@@ -194,6 +195,52 @@ public final class Converter {
          }
       }
       throw new TypeConversionException(sourceObject, destType);
+   }
+
+   /**
+    * <p>Creates an object from a string. It first checks if the string is a class name and if so attempts to create an
+    * instance or get a singleton instance of the class. Next it checks if the string is class name and a static method
+    * or field name and if so invokes the static method or gets the value of the static field. </p>
+    *
+    * @param string The string containing information about the object to create
+    * @return An object or null if the object the string maps to cannot be determined.
+    */
+   private static Object createObjectFromString(String string) throws Exception {
+      if (Strings.isNullOrBlank(string)) {
+         return null;
+      }
+
+      Class<?> clazz = Reflect.getClassForNameQuietly(string);
+      if (clazz != null) {
+         return Reflect.onClass(clazz).create().get();
+      }
+
+      int index = string.lastIndexOf(".");
+      if (index != -1) {
+         String field = string.substring(string.lastIndexOf('.') + 1);
+         String cStr = string.substring(0, string.lastIndexOf('.'));
+         clazz = Reflect.getClassForNameQuietly(cStr);
+
+         if (clazz != null) {
+
+            if (Reflect.onClass(clazz).containsField(field)) {
+               try {
+                  return Reflect.onClass(clazz).getField(field).getReflectValue();
+               } catch (ReflectionException e) {
+                  //ignore this;
+               }
+            }
+
+            Reflect r = Reflect.onClass(clazz);
+            try {
+               return r.getMethod(field).invoke();
+            } catch (ReflectionException e) {
+               //ignore the error
+            }
+            return Reflect.onClass(clazz).create(field).get();
+         }
+      }
+      throw new ReflectionException("Unable to create object");
    }
 
 }//END OF Converter

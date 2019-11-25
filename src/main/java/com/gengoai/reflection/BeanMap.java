@@ -21,17 +21,19 @@
 
 package com.gengoai.reflection;
 
-import com.gengoai.conversion.Cast;
-import com.gengoai.conversion.Converter;
+import com.gengoai.collection.IteratorSet;
 import com.gengoai.logging.Logger;
-import com.gengoai.tuple.Tuple2;
+import lombok.NonNull;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.AbstractMap;
 import java.util.Collection;
-import java.util.Map;
+import java.util.Iterator;
 import java.util.Set;
-import java.util.stream.Collectors;
+
+import static com.gengoai.reflection.RMethod.reflectOn;
+import static com.gengoai.tuple.Tuples.$;
 
 /**
  * <p> A Map based interface for accessing the properties of a bean object. </p> <p> Property information is cached
@@ -40,7 +42,6 @@ import java.util.stream.Collectors;
  * @author David B. Bracewell
  */
 public class BeanMap extends AbstractMap<String, Object> {
-
    private static final Logger log = Logger.getLogger(BeanMap.class);
    private final Object bean;
    private final BeanDescriptor beanDescriptor;
@@ -50,24 +51,9 @@ public class BeanMap extends AbstractMap<String, Object> {
     *
     * @param bean The bean
     */
-   public BeanMap(Object bean) {
+   public BeanMap(@NonNull Object bean) {
       this.bean = bean;
       this.beanDescriptor = BeanDescriptorCache.getInstance().get(bean.getClass());
-   }
-
-
-   /**
-    * @return The names of the setter methods
-    */
-   public Set<String> getSetters() {
-      return beanDescriptor.getWriteMethodNames();
-   }
-
-   /**
-    * @return The bean in the bean map
-    */
-   public Object getBean() {
-      return bean;
    }
 
    @Override
@@ -77,19 +63,25 @@ public class BeanMap extends AbstractMap<String, Object> {
 
    @Override
    public boolean containsValue(Object arg0) {
-      for (String key : keySet()) {
-         if (arg0.equals(get(key))) {
-            return true;
-         }
-      }
-      return false;
+      return values().contains(arg0);
    }
 
    @Override
    public Set<Entry<String, Object>> entrySet() {
-      return this.keySet().stream()
-                 .map(key -> Cast.<Map.Entry<String, Object>>as(Tuple2.of(key, get(key))))
-                 .collect(Collectors.toSet());
+      return new IteratorSet<>(() -> new Iterator<Entry<String, Object>>() {
+         Iterator<String> getters = beanDescriptor.getReadMethodNames().iterator();
+
+         @Override
+         public boolean hasNext() {
+            return getters.hasNext();
+         }
+
+         @Override
+         public Entry<String, Object> next() {
+            String name = getters.next();
+            return $(name, get(name));
+         }
+      });
    }
 
    @Override
@@ -106,16 +98,30 @@ public class BeanMap extends AbstractMap<String, Object> {
    }
 
    /**
+    * @return The bean in the bean map
+    */
+   public Object getBean() {
+      return bean;
+   }
+
+   /**
+    * @return The names of the setter methods
+    */
+   public Set<String> getSetters() {
+      return beanDescriptor.getWriteMethodNames();
+   }
+
+   /**
     * Gets the type of the parameter on the setter method.
     *
     * @param key The setter method
     * @return A <code>Class</code> representing the parameter type of the setter method
     */
-   public Class<?> getType(String key) {
+   public Type getType(String key) {
       if (beanDescriptor.hasReadMethod(key)) {
-         return beanDescriptor.getReadMethod(key).getReturnType();
+         return beanDescriptor.getReadMethod(key).getGenericReturnType();
       } else if (beanDescriptor.hasWriteMethod(key)) {
-         Class<?>[] paramTypes = beanDescriptor.getWriteMethod(key).getParameterTypes();
+         Type[] paramTypes = beanDescriptor.getWriteMethod(key).getGenericParameterTypes();
          if (paramTypes.length > 0) {
             return paramTypes[0];
          }
@@ -135,20 +141,10 @@ public class BeanMap extends AbstractMap<String, Object> {
 
    @Override
    public Object put(String arg0, Object arg1) {
-      Method m = beanDescriptor.getWriteMethod(arg0);
-      if (m != null) {
+      if (beanDescriptor.hasWriteMethod(arg0)) {
          try {
-            Class<?> clazz = getType(arg0);
-            if (clazz.isAssignableFrom(arg1.getClass())) {
-               return m.invoke(bean, arg1);
-            }
-            if (Map.class.isAssignableFrom(clazz)) {
-               return m.invoke(bean, Converter.convert(arg1, clazz, Object.class, Object.class));
-            } else if (Collection.class.isAssignableFrom(clazz)) {
-               return m.invoke(bean, Converter.convert(arg1, clazz, Object.class));
-            }
-            return m.invoke(bean, Converter.convert(arg1, clazz));
-         } catch (Exception e) {
+            return reflectOn(bean, beanDescriptor.getWriteMethod(arg0)).invoke(arg1);
+         } catch (ReflectionException e) {
             throw new RuntimeException(e);
          }
       } else {
@@ -164,7 +160,19 @@ public class BeanMap extends AbstractMap<String, Object> {
 
    @Override
    public Collection<Object> values() {
-      return beanDescriptor.getReadMethodNames().stream().map(this::get).collect(Collectors.toList());
+      return new IteratorSet<>(() -> new Iterator<Object>() {
+         Iterator<String> getters = beanDescriptor.getReadMethodNames().iterator();
+
+         @Override
+         public boolean hasNext() {
+            return getters.hasNext();
+         }
+
+         @Override
+         public Object next() {
+            return get(getters.next());
+         }
+      });
    }
 
 }// END OF CLASS BeanMap

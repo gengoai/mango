@@ -41,7 +41,6 @@ public final class RConstructor extends RExecutable<Constructor<?>, RConstructor
    RConstructor(Reflect owner, Constructor<?> constructor) {
       super(owner);
       this.constructor = constructor;
-      setIsPrivileged(owner.isPrivileged());
    }
 
    /**
@@ -70,7 +69,7 @@ public final class RConstructor extends RExecutable<Constructor<?>, RConstructor
     * @throws ReflectionException Something went wrong creating the object
     */
    public Reflect createReflective(Object... args) throws ReflectionException {
-      return Reflect.onObject(create(args));
+      return Reflect.onObject(create(args)).setIsPrivileged(isPrivileged());
    }
 
    @Override

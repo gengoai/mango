@@ -11,6 +11,7 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Objects;
 
 /**
  * <p>Convenience methods for creating type information</p>
@@ -176,7 +177,7 @@ public final class TypeUtils {
       }
       Type rawType = null;
       try {
-         rawType = ReflectionUtils.getClassForName(s.substring(0, rawEnd));
+         rawType = Reflect.getClassForName(s.substring(0, rawEnd));
       } catch (Exception e) {
          throw new RuntimeException(e);
       }
@@ -228,6 +229,23 @@ public final class TypeUtils {
             sb.append(">");
          }
          return sb.toString();
+      }
+
+      @Override
+      public int hashCode() {
+         return Objects.hash(actualTypeArguments, ownerType, rawType);
+      }
+
+      @Override
+      public boolean equals(Object obj) {
+         if (this == obj) {return true;}
+         if (obj instanceof ParameterizedType) {
+            ParameterizedType ptO = Cast.as(obj);
+            return Objects.equals(rawType, ptO.getRawType())
+               && Objects.equals(ownerType, ptO.getOwnerType())
+               && Objects.deepEquals(actualTypeArguments, ptO.getActualTypeArguments());
+         }
+         return false;
       }
    }
 

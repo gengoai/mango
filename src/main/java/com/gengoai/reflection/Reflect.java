@@ -26,11 +26,14 @@ import com.gengoai.Validation;
 import com.gengoai.collection.Iterables;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.SerializablePredicate;
+import com.gengoai.io.resource.Resource;
+import com.gengoai.logging.Logger;
 import com.gengoai.string.Strings;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
@@ -45,6 +48,7 @@ import java.util.stream.Collectors;
  */
 @EqualsAndHashCode(callSuper = false)
 public final class Reflect extends RBase<Class<?>, Reflect> {
+   private static final Logger log = Logger.getLogger(Reflect.class);
    private final Class<?> clazz;
    private final Object object;
    private boolean privileged;
@@ -53,6 +57,98 @@ public final class Reflect extends RBase<Class<?>, Reflect> {
       this.object = object;
       this.clazz = clazz;
       this.privileged = privileged;
+   }
+
+   /**
+    * <p> Attempts to determine the Class for a given name in string form. For convenience the String, primitives and
+    * Object versions of the primitives can be called with just their name. The following types also have a short hand
+    * </p> <ul> <li>List - java.util.List</li> <li>ArrayList - java.util.ArrayList</li> <li>Set - java.util.Set</li>
+    * <li>HashSet - java.util.HashSet</li> <li>Map - java.util.Map</li> <li>HashMap - java.util.HashMap</li> </ul> <p>
+    * Array versions can be created by appending [] to the end. For example, String[] refers to an array of
+    * java.lang.String </p>
+    *
+    * @param name The class name
+    * @return The represented by the name
+    * @throws Exception the exception
+    */
+   public static Class<?> getClassForName(String name) throws Exception {
+      if (Strings.isNullOrBlank(name)) {
+         throw new ClassNotFoundException();
+      }
+      name = name.trim();
+
+      boolean isArray = false;
+      if (name.endsWith("[]")) {
+         isArray = true;
+         name = name.substring(0, name.length() - 2);
+      } else if (name.startsWith("[L")) {
+         isArray = true;
+         name = name.substring(2);
+      } else if (name.startsWith("[")) {
+         isArray = true;
+         name = name.substring(1);
+      }
+
+      switch (name) {
+         case "int":
+            return isArray ? int[].class : int.class;
+         case "double":
+            return isArray ? double[].class : double.class;
+         case "float":
+            return isArray ? float[].class : float.class;
+         case "boolean":
+            return isArray ? boolean[].class : boolean.class;
+         case "short":
+            return isArray ? short[].class : short.class;
+         case "byte":
+            return isArray ? byte[].class : byte.class;
+         case "long":
+            return isArray ? long[].class : long.class;
+         case "String":
+            return isArray ? String[].class : String.class;
+         case "Resource":
+            return isArray ? Resource[].class : Resource.class;
+      }
+
+      Class<?> clazz;
+      try {
+         clazz = Class.forName(name);
+      } catch (Exception e) {
+         try {
+            clazz = Class.forName("java.lang." + name);
+         } catch (Exception e2) {
+            try {
+               clazz = Class.forName("java.util." + name);
+            } catch (Exception e3) {
+               try {
+                  clazz = Class.forName("com.gengoai." + name);
+               } catch (Exception e4) {
+                  throw e;
+               }
+            }
+         }
+      }
+
+      return isArray ? Array.newInstance(clazz, 0).getClass() : clazz;
+   }
+
+   /**
+    * <p> Calls {@link #getClassForName(String)}, but suppresses exception to a log warning and returns null instead.
+    * Any exceptions are logged to the default logger.(at DEBUG level) and a null is returned. </p>
+    *
+    * @param name Name of class
+    * @return The Class information or null
+    */
+   public static Class<?> getClassForNameQuietly(String name) {
+      if (name == null) {
+         return null;
+      }
+      try {
+         return getClassForName(name);
+      } catch (Exception | Error cnfe) {
+         log.finest(cnfe);
+         return null;
+      }
    }
 
    /**
@@ -84,7 +180,7 @@ public final class Reflect extends RBase<Class<?>, Reflect> {
     */
    public static Reflect onClass(String className) throws ReflectionException {
       try {
-         return new Reflect(null, ReflectionUtils.getClassForName(className), false);
+         return new Reflect(null, getClassForName(className), false);
       } catch (Exception e) {
          throw new ReflectionException(e);
       }
@@ -201,6 +297,47 @@ public final class Reflect extends RBase<Class<?>, Reflect> {
     */
    public <T> T get() {
       return Cast.as(object);
+   }
+
+   /**
+    * Convenience method for getting the value of a field or getter method
+    *
+    * @param name the name of the field
+    * @param <T>  the value type
+    * @return the value of the field
+    * @throws ReflectionException Something went wrong accessing the field
+    */
+   public <T> T get(String name) throws ReflectionException {
+      if (containsField(name)) {
+         return getField(name).get();
+      }
+      String getter = "get" + firstUpper(name);
+      return getMethod(getter).invoke();
+   }
+
+   /**
+    * Convenience method for setting the value of a field or setter
+    *
+    * @param name  the name of the field
+    * @param value the value to set the field to
+    * @return this Reflect object
+    * @throws ReflectionException Something went wrong accessing the field
+    */
+   public Reflect set(String name, Object value) throws ReflectionException {
+      if (containsField(name)) {
+         getField(name).set(value);
+         return this;
+      }
+      String setter = "set" + firstUpper(name);
+      getMethod(setter).invoke(value);
+      return this;
+   }
+
+   private static String firstUpper(String in) {
+      if (in.length() <= 1) {
+         return in.toUpperCase();
+      }
+      return in.substring(0, 1).toUpperCase() + in.substring(1);
    }
 
    /**

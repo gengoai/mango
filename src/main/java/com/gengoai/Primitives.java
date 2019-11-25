@@ -3,12 +3,15 @@ package com.gengoai;
 import com.gengoai.collection.Iterables;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Converter;
+import com.gengoai.function.Switch;
+import lombok.NonNull;
 
 import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.gengoai.Validation.notNull;
+import static com.gengoai.function.Switch.$switch;
 
 /**
  * <p>Methods for working with primitive values including wrapping, unwrapping to object types and converting
@@ -18,17 +21,17 @@ import static com.gengoai.Validation.notNull;
  */
 public final class Primitives {
 
-   private static final Switch<Class<?>, Object> defaultValues = new Switch<Class<?>, Object>() {{
-      $case(Boolean.class, false);
-      $case(Byte.class, (byte) 0);
-      $case(Character.class, (char) 0);
-      $case(Double.class, 0d);
-      $case(Float.class, 0f);
-      $case(Integer.class, 0);
-      $case(Long.class, 0L);
-      $case(Short.class, (short) 0);
-      $defaultValue(null);
-   }};
+   private static final Switch<Object> defaultValues = $switch($ -> {
+      $.instanceOf(Boolean.class, false);
+      $.instanceOf(Byte.class, (byte) 0);
+      $.instanceOf(Character.class, (char) 0);
+      $.instanceOf(Double.class, 0d);
+      $.instanceOf(Float.class, 0f);
+      $.instanceOf(Integer.class, 0);
+      $.instanceOf(Long.class, 0L);
+      $.instanceOf(Short.class, (short) 0);
+      $.defaultNull();
+   });
    private static final Map<Class<?>, Class<?>> primitiveToWrap = new HashMap<>(20);
    private static final Map<Class<?>, Class<?>> wrapToPrimitive = new HashMap<>(20);
 
@@ -60,8 +63,8 @@ public final class Primitives {
     * @param clazz the clazz
     * @return the default value (null for non-primitives and their boxed types)
     */
-   public static <T> T defaultValue(Class<T> clazz) {
-      return Cast.as(defaultValues.apply(wrap(notNull(clazz))));
+   public static <T> T defaultValue(@NonNull Class<T> clazz) {
+      return Cast.as(defaultValues.apply(wrap(clazz)));
    }
 
    private static Object toArray(Iterable<? extends Number> numbers, Class<?> targetClass) {
@@ -169,8 +172,7 @@ public final class Primitives {
     * @param type the primitive type
     * @return the wrapped type class
     */
-   public static <T> Class<T> wrap(Class<T> type) {
-      notNull(type);
+   public static <T> Class<T> wrap(@NonNull Class<T> type) {
       return Cast.as(primitiveToWrap.getOrDefault(type, type));
    }
 
