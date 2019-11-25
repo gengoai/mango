@@ -20,7 +20,7 @@
  *
  */
 
-package com.gengoai.db;
+package com.gengoai.kv;
 
 import java.util.Iterator;
 import java.util.NavigableMap;

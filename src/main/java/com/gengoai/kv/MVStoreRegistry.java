@@ -20,7 +20,7 @@
  *
  */
 
-package com.gengoai.db;
+package com.gengoai.kv;
 
 import com.gengoai.collection.counter.ConcurrentHashMapCounter;
 import com.gengoai.collection.counter.Counter;

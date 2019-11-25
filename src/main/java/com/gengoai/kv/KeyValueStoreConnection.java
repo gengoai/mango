@@ -20,7 +20,7 @@
  *
  */
 
-package com.gengoai.db;
+package com.gengoai.kv;
 
 import com.gengoai.Validation;
 import com.gengoai.conversion.Cast;

@@ -1,4 +1,4 @@
-package com.gengoai.db;
+package com.gengoai.kv;
 
 import java.util.Collections;
 import java.util.Map;

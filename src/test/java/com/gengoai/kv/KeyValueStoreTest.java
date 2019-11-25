@@ -1,4 +1,4 @@
-package com.gengoai.db;
+package com.gengoai.kv;
 
 import com.gengoai.io.Resources;
 import org.junit.Test;
