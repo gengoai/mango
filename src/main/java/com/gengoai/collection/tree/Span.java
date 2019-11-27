@@ -13,8 +13,8 @@ import java.util.Objects;
  */
 public class Span implements Serializable, Comparable<Span> {
    private static final long serialVersionUID = 1L;
-   private final int start;
-   private final int end;
+   private int start;
+   private int end;
 
 
    /**
@@ -98,9 +98,9 @@ public class Span implements Serializable, Comparable<Span> {
    @Override
    public boolean equals(Object other) {
       return other != null &&
-                other.getClass().equals(Span.class) &&
-                Cast.<Span>as(other).start == this.start &&
-                Cast.<Span>as(other).end == this.end;
+         other.getClass().equals(Span.class) &&
+         Cast.<Span>as(other).start == this.start &&
+         Cast.<Span>as(other).end == this.end;
    }
 
    @Override
@@ -108,13 +108,11 @@ public class Span implements Serializable, Comparable<Span> {
       if (o == null) {
          return -1;
       }
-      if (start < o.start) {
-         return -1;
+      int cmp = Integer.compare(start, o.start);
+      if (cmp == 0) {
+         cmp = Integer.compare(end, o.end);
       }
-      if (start > o.start) {
-         return 1;
-      }
-      return Integer.compare(end, o.end);
+      return cmp;
    }
 
    /**
@@ -128,4 +126,11 @@ public class Span implements Serializable, Comparable<Span> {
       return new Span(start, end);
    }
 
+   protected void setStart(int start) {
+      this.start = start;
+   }
+
+   protected void setEnd(int end) {
+      this.end = end;
+   }
 }//END OF Span

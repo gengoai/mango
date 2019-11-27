@@ -136,6 +136,34 @@ public final class Iterators {
    }
 
    /**
+    * Gets the first element of the iterator that would be returned by calling <code>next</code> if it exists  or the
+    * default value.
+    *
+    * @param <T>          the iterator element type parameter
+    * @param iterator     the iterator
+    * @param defaultValue the default value
+    * @return the first element in the iterator or the default value
+    */
+   public static <T> T first(Iterator<? extends T> iterator, T defaultValue) {
+      return first(iterator).orElse(Cast.as(defaultValue));
+   }
+
+   /**
+    * Gets the first element of the iterator that would be returned by calling <code>next</code> if it exists.
+    *
+    * @param <T>      the iterator element type parameter
+    * @param iterator the iterator
+    * @return the first element in the iterator
+    */
+   public static <T> Optional<T> first(Iterator<? extends T> iterator) {
+      notNull(iterator);
+      if (iterator.hasNext()) {
+         return Optional.ofNullable(iterator.next());
+      }
+      return Optional.empty();
+   }
+
+   /**
     * Gets the last element of the iterator that would be returned by calling <code>next</code> until
     * <code>hasNext</code> returns false if it exists  or the default value.
     *
@@ -404,7 +432,8 @@ public final class Iterators {
       private final Iterator<? extends I> backing;
       private final SerializableFunction<? super I, ? extends O> transform;
 
-      private TransformedIterator(Iterator<? extends I> backing, SerializableFunction<? super I, ? extends O> transform) {
+      private TransformedIterator(Iterator<? extends I> backing,
+                                  SerializableFunction<? super I, ? extends O> transform) {
          this.backing = backing;
          this.transform = transform;
       }

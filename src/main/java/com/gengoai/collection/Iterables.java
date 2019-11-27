@@ -206,6 +206,11 @@ public final class Iterables {
       return Iterators.size(iterable.iterator());
    }
 
+   public static boolean isEmpty(Iterable<?> iterable) {
+      notNull(iterable);
+      return !iterable.iterator().hasNext();
+   }
+
    /**
     * <p>Sorts the items of an iterable returning an array of the sorted items.</p>
     *

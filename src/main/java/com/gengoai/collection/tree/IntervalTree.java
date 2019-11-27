@@ -1,8 +1,8 @@
 package com.gengoai.collection.tree;
 
 import com.gengoai.annotation.JsonAdapter;
-import com.gengoai.collection.Iterables;
 import com.gengoai.collection.Lists;
+import com.gengoai.collection.Sets;
 import com.gengoai.collection.Streams;
 import com.gengoai.conversion.Cast;
 import com.gengoai.json.JsonEntry;
@@ -10,10 +10,13 @@ import com.gengoai.json.JsonMarshaller;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
 import com.gengoai.reflection.TypeUtils;
+import lombok.NonNull;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * <p>An Tree structure with fast lookups for elements falling within a given interval.</p>
@@ -21,19 +24,373 @@ import java.util.*;
  * @param <T> the element type parameter
  * @author David B. Bracewell
  */
-@SuppressWarnings("unchecked")
 @JsonAdapter(IntervalTree.IntervalTreeMarshaller.class)
-public class IntervalTree<T extends Span> implements Serializable, Collection<T> {
+public class IntervalTree<T extends Span> implements Collection<T>, Serializable {
+   private static final boolean BLACK = false;
+   private static final boolean RED = true;
    private static final long serialVersionUID = 1L;
-   private static final Node<?> NULL = new Node<>(null, null, null, new Span(0, Integer.MAX_VALUE));
+   private final Node nil = new Node();
+   private Node root = nil;
+   private int size = 0;
 
-   static {
-      NULL.left = Cast.as(NULL);
-      NULL.right = Cast.as(NULL);
-      NULL.parent = Cast.as(NULL);
+   /**
+    * Instantiates a new IntervalTree
+    */
+   public IntervalTree() {
+
    }
 
+   /**
+    * Instantiates a new IntervalTree with the given items
+    *
+    * @param collection the collection of items to initialize the IntervalTree with
+    */
+   public IntervalTree(@NonNull Collection<T> collection) {
+      addAll(collection);
+   }
 
+   @Override
+   public boolean add(T item) {
+      if (item == null) {
+         return false;
+      }
+
+      Node y = nil;
+      Node x = root;
+
+      while (x.isNotNil()) {
+         y = x;
+         x.max = Math.max(x.max, item.end());
+         int cmp = item.compareTo(x);
+         if (cmp == 0) {
+            if (x.items.add(item)) {
+               size++;
+               return true;
+            }
+            return false;
+         }
+         x = cmp < 0 ? x.left : x.right;
+      }
+
+      Node z = new Node(item);
+      z.parent = y;
+
+      if (y.isNil()) {
+         root = z;
+         root.color = BLACK;
+      } else {
+         int cmp = z.compareTo(y);
+         if (cmp < 0) {
+            y.left = z;
+         } else {
+            y.right = z;
+         }
+         z.left = nil;
+         z.right = nil;
+         z.color = RED;
+         z.addRebalance();
+      }
+      size++;
+      return true;
+   }
+
+   @Override
+   public boolean addAll(Collection<? extends T> collection) {
+      boolean addAll = true;
+      for (T t : collection) {
+         if (!add(t)) {
+            addAll = false;
+         }
+      }
+      return addAll;
+   }
+
+   /**
+    * Returns the least elements in this set greater than or equal to the given element, or an empty Iterable if there
+    * is no such element.
+    *
+    * @param span the span to match
+    * @return the iterable of least elements greater than or equal to span, or an empty Iterable if there is no such
+    * element
+    */
+   public Iterable<T> ceiling(T span) {
+      return Collections.unmodifiableSet(ceiling(root, span).items);
+   }
+
+   private Node ceiling(Node n, T span) {
+      if (n.isNil()) {
+         return nil;
+      }
+      int cmp = span.compareTo(n);
+      if (cmp == 0) {
+         return n;
+      }
+      if (cmp > 0) {
+         return ceiling(n.right, span);
+      }
+      Node t = ceiling(n.left, span);
+      if (t.isNotNil()) {
+         return t;
+      }
+      return n;
+   }
+
+   /**
+    * Returns an iterator of items in the tree starting at the least element in the set greater than or equal to the
+    * given element or an empty iterator if there is no such element.
+    *
+    * @param start the span to match for the starting point of iteration
+    * @return the iterator of items in the tree starting at the least element in the set greater than or equal to the
+    * given element or an empty iterator if there is no such element.
+    */
+   public Iterator<T> ceilingIterator(T start) {
+      return new ItemIterator(ceiling(root, start), false);
+   }
+
+   @Override
+   public void clear() {
+      root = nil;
+   }
+
+   @Override
+   public boolean contains(Object o) {
+      T search = Cast.as(o);
+      if (search == null) {
+         return false;
+      }
+      return find(root, search) != null;
+   }
+
+   @Override
+   public boolean containsAll(Collection<?> collection) {
+      return collection.stream().allMatch(this::contains);
+   }
+
+   private Node find(Node n, T span) {
+      while (n != null) {
+         int cmp = span.compareTo(n);
+         if (cmp == 0) {
+            return n;
+         }
+         n = cmp < 0 ? n.left : n.right;
+      }
+      return null;
+   }
+
+   /**
+    * Returns the greatest elements in this set less than or equal to the given element, or an empty iterable if there
+    * is no such element.
+    *
+    * @param span the span to match
+    * @return the iterable of the the greatest elements in this set less than or equal to the given element, or an empty
+    * iterable if there is no such element.
+    */
+   public Iterable<T> floor(T span) {
+      return Collections.unmodifiableSet(floor(root, span).items);
+   }
+
+   private Node floor(Node n, T span) {
+      if (n.isNil()) {
+         return nil;
+      }
+      int cmp = span.compareTo(n);
+      if (cmp == 0) {
+         return n;
+      }
+      if (cmp < 0) {
+         return floor(n.left, span);
+      }
+      Node t = floor(n.right, span);
+      if (t.isNotNil()) {
+         return t;
+      }
+      return n;
+   }
+
+   /**
+    * Returns an iterator of items in the tree starting at the greatest element in the set less than or equal to the
+    * given element or an empty iterator if there is no such element.
+    *
+    * @param start the span to match for the starting point of iteration
+    * @return the iterator of items in the tree starting at the greatest element in the set less than or equal to the
+    * given element or an empty iterator if there is no such element.
+    */
+   public Iterator<T> floorIterator(T start) {
+      if (start == null) {
+         return Collections.emptyIterator();
+      }
+      return new DescendingIterator(lower(root, start), s -> s.start() <= start.start() && s.end() <= start.end());
+   }
+
+   /**
+    * Returns the least elements in this set greater than the given element, or an empty Iterable if there is no such
+    * element.
+    *
+    * @param span the span to match
+    * @return the iterable of least elements greater than span, or an empty Iterable if there is no such element
+    */
+   public Iterable<T> higher(T span) {
+      return Collections.unmodifiableSet(higher(root, span).items);
+   }
+
+   private Node higher(Node n, T span) {
+      if (span == null) {
+         return nil;
+      }
+      Node c = ceiling(n, span);
+      if (c.compareTo(span) == 0) {
+         return c.higher();
+      }
+      return c;
+   }
+
+   /**
+    * Returns an iterator of items in the tree starting at the least element in the set greater than  the given element
+    * or an empty iterator if there is no such element.
+    *
+    * @param start the span to match for the starting point of iteration
+    * @return the iterator of items in the tree starting at the least element in the set greater than the given element
+    * or an empty iterator if there is no such element.
+    */
+   public Iterator<T> higherIterator(T start) {
+      return new ItemIterator(higher(root, start), false);
+   }
+
+   @Override
+   public boolean isEmpty() {
+      return root.isNil();
+   }
+
+   @Override
+   public Iterator<T> iterator() {
+      return new ItemIterator(root, true);
+   }
+
+   /**
+    * Returns the greatest elements in this set less than the given element, or an empty iterable if there is no such
+    * element.
+    *
+    * @param span the span to match
+    * @return the iterable of the the greatest elements in this set less than the given element, or an empty iterable if
+    * there is no such element.
+    */
+   public Iterable<T> lower(T span) {
+      return Collections.unmodifiableSet(lower(root, span).items);
+   }
+
+   private Node lower(Node n, T span) {
+      if (span == null) {
+         return nil;
+      }
+      Node c = floor(n, span);
+      if (c.compareTo(span) == 0) {
+         return c.lower();
+      }
+      return c;
+   }
+
+   /**
+    * Returns an iterator of items in the tree starting at the greatest element in the set less than  the given element
+    * or an empty iterator if there is no such element.
+    *
+    * @param start the span to match for the starting point of iteration
+    * @return the iterator of items in the tree starting at the greatest element in the set less than the given element
+    * or an empty iterator if there is no such element.
+    */
+   public Iterator<T> lowerIterator(T start) {
+      if (start == null) {
+         return Collections.emptyIterator();
+      }
+      return new DescendingIterator(lower(root, start), s -> s.start() <= start.start() && s.end() < start.end());
+   }
+
+   /**
+    * Returns the collection of elements in this set overlapping with the given span including.
+    *
+    * @param span the span to match
+    * @return the list of elements overlapping in this set overlapping with the given span
+    */
+   public Iterable<T> overlapping(@NonNull Span span) {
+      return () -> new OverlappingSpanIterator(root, span);
+   }
+
+   public boolean containsOverlappingSpans(@NonNull Span span) {
+      return new OverlappingSpanIterator(root, span).hasNext();
+   }
+
+   @Override
+   public boolean remove(Object o) {
+      T search = Cast.as(o);
+      if (search == null) {
+         return false;
+      }
+      Node n = find(root, search);
+      boolean wasRemoved = n.items.remove(search);
+      if (wasRemoved) {
+         size--;
+      }
+      if (n.items.isEmpty()) {
+         n.delete();
+      }
+      return wasRemoved;
+   }
+
+   @Override
+   public boolean removeAll(Collection<?> collection) {
+      if (collection == null || collection.isEmpty()) {
+         return true;
+      }
+      boolean removeAll = true;
+      for (Object o : collection) {
+         if (!remove(o)) {
+            removeAll = false;
+         }
+      }
+      return removeAll;
+   }
+
+   @Override
+   public boolean retainAll(Collection<?> collection) {
+      if (collection == null || collection.isEmpty()) {
+         clear();
+         return true;
+      }
+      Iterator<T> iterator = iterator();
+      while (iterator.hasNext()) {
+         if (!collection.contains(iterator)) {
+            iterator.remove();
+         }
+      }
+      return containsAll(collection);
+   }
+
+   @Override
+   public int size() {
+      return size;
+   }
+
+   @Override
+   public Object[] toArray() {
+      return Streams.asStream(iterator()).toArray();
+   }
+
+   @Override
+   public <T1> T1[] toArray(T1[] t1s) {
+      return Lists.asArrayList(iterator()).toArray(t1s);
+   }
+
+   @Override
+   public String toString() {
+      return Streams.asStream(this)
+                    .map(Object::toString)
+                    .collect(Collectors.joining(", ", "[", "]"));
+   }
+
+   /**
+    * Json Marshaller for {@link IntervalTree}
+    *
+    * @param <T> the type parameter
+    */
    public static class IntervalTreeMarshaller<T extends Span> extends JsonMarshaller<IntervalTree<T>> {
 
       @Override
@@ -55,602 +412,470 @@ public class IntervalTree<T extends Span> implements Serializable, Collection<T>
       }
    }
 
-   /**
-    * The Root.
-    */
-   protected Node<T> root = Cast.as(NULL);
-   private int size = 0;
-
-   private static boolean isNull(Node node) {
-      return node == null || node.isNull();
-   }
-
-   private static boolean isRed(Node node) {
-      return !isNull(node) && node.isRed;
-   }
-
-   @Override
-   public boolean add(T T) {
-      if (T == null) {
-         return false;
-      }
-
-      Node<T> z = new Node<>(T);
-
-      //Empty tree, add this and return
-      if (isNull(root)) {
-         size++;
-         root = z;
-         root.setBlack();
-         return true;
-      }
-
-      Node<T> iNode = root;
-      Node<T> parent = Cast.as(NULL);
-      while (!isNull(iNode)) {
-         parent = iNode;
-         if (T.start() == iNode.span.start() && T.end() == iNode.span.end()) {
-            //Same span, so we will add it to this node
-            if (iNode.items.add(T)) {
-               //Increment the size if the T was added to the node's set.
-               size++;
-            }
-            return true;
-         } else if (T.start() <= iNode.span.start()) {
-            //Need to go to the left because the T's doesn't have the same span as the iNode and its
-            // start is <= the iNode's
-            iNode = iNode.left;
-         } else {
-            //Need to go to the right because the T's doesn't have the same span as the iNode and its
-            // start is >= the iNode's
-            iNode = iNode.right;
-         }
-      }
-
-      //At this point we did not found a matching span and traveled to the bottom of the tree
-      // We will set our the parent to last non-null iNode and increment the size.
-      z.parent = parent;
-      size++;
-      if (isNull(parent)) {
-         //Safety check that we are not at the root
-         root = z;
-      } else if (T.start() <= parent.span.start()) {
-         //the new node will go to the left of its parent
-         parent.left = z;
-      } else {
-         //the new node will go to the right of its parent
-         parent.right = z;
-      }
-
-      //Need to update and re-balance
-      update(z);
-      balance(z);
-      return true;
-   }
-
-   @Override
-   public boolean addAll(Collection<? extends T> c) {
-      if (c == null) {
-         return false;
-      }
-      return c.stream()
-              .allMatch(this::add);
-   }
-
-   private void balance(Node z) {
-      Node y;
-
-      while (!isNull(z) && z != root && !isNull(z.getParent()) && isRed(z.getParent())) {
-         if (z.getParent() == z.getGrandparent().left) {
-            y = z.getGrandparent().right;
-            if (isRed(y)) {
-               z.getParent().setBlack();
-               y.setBlack();
-               z.getGrandparent().setRed();
-               z = z.getGrandparent();
-            } else {
-               if (z == z.getParent().right) {
-                  z = z.getParent();
-                  rotateLeft(z);
-               }
-               z.getParent().setBlack();
-               z.getGrandparent().setBlack();
-               rotateRight(z.getGrandparent());
-            }
-         } else {
-            y = z.getGrandparent().left;
-            if (isRed(y)) {
-               z.getParent().setBlack();
-               y.setBlack();
-               z.getGrandparent().setRed();
-               z = z.getGrandparent();
-            } else {
-               if (z == z.getParent().left) {
-                  z = z.getParent();
-                  rotateRight(z);
-               }
-               z.getParent().setBlack();
-               z.getGrandparent().setRed();
-               rotateLeft(z.getGrandparent());
-            }
-         }
-      }
-      root.setBlack();
-   }
-
-   /**
-    * Gets the span that is next in the interval from the given span.
-    *
-    * @param T the span to get the ceiling for
-    * @return the next span
-    */
-   public T ceiling(T T) {
-      if (T == null) {
-         return null;
-      }
-      NodeIterator<T> iterator = new NodeIterator<>(root, T.end(), Integer.MAX_VALUE, true);
-      if (iterator.hasNext()) {
-         return iterator.next();
-      }
-      return null;
-   }
-
-   @Override
-   public void clear() {
-      this.root = Cast.as(NULL);
-   }
-
-   @Override
-   public boolean contains(Object o) {
-      if (o instanceof Span) {
-         Node n = findNode(root, Cast.as(o));
-         return !n.isNull() && n.items.contains(o);
-      }
-      return false;
-   }
-
-   @Override
-   public boolean containsAll(Collection<?> c) {
-      if (c == null) {
-         return false;
-      }
-      for (Object o : c) {
-         if (!contains(o)) {
-            return false;
-         }
-      }
-      return true;
-   }
-
-   private Node<T> findNode(Node<T> n, Span span) {
-      while (!n.isNull()) {
-         if (n.span.start() == span.start() && n.span.end() == span.end()) {
-            return n;
-         }
-         if (span.start() <= n.span.start()) {
-            n = n.left;
-         } else {
-            n = n.right;
-         }
-      }
-      return Cast.as(NULL);
-   }
-
-   /**
-    * Gets the span that is previous in the interval from the given span.
-    *
-    * @param T the span to get the floor for
-    * @return the previous span
-    */
-   public T floor(T T) {
-      if (T == null) {
-         return null;
-      }
-      NodeIterator<T> iterator = new NodeIterator<>(root, -1, T.start(), false);
-      if (iterator.hasNext()) {
-         return iterator.next();
-      }
-      return null;
-   }
-
-   @Override
-   public boolean isEmpty() {
-      return root == null || root.isNull();
-   }
-
-   @Override
-   public Iterator<T> iterator() {
-      return new NodeIterator<>(root);
-   }
-
-   /**
-    * Gets all spans that overlap the given span
-    *
-    * @param span the span
-    * @return the list of overlapping spans
-    */
-   public List<T> overlapping(Span span) {
-      if (span == null || root.isNull()) {
-         return Collections.emptyList();
-      }
-      return overlapping(root, span, new ArrayList<>());
-   }
-
-   private List<T> overlapping(Node<T> node, Span span, List<T> results) {
-      if (isNull(node)) {
-         return results;
-      }
-      if (node.span.overlaps(span)) {
-         results.addAll(node.items);
-      }
-      if (!isNull(node.left) && node.left.max >= span.start()) {
-         overlapping(node.left, span, results);
-      }
-      if (!isNull(node.right) && node.right.min <= span.end()) {
-         overlapping(node.right, span, results);
-      }
-      return results;
-   }
-
-   @Override
-   public boolean remove(Object o) {
-      if (o instanceof Span) {
-         T T = Cast.as(o);
-         Node n = findNode(root, T);
-
-         //Not in the tree
-         if (isNull(n) || !n.items.remove(T)) {
-            return false;
-         }
-         size--;
-
-         if (n.items.size() > 0) {
-            return true;
-         }
-
-         Node x;
-         Node y = Cast.as(NULL);
-
-         //Leaf Node
-         if (isNull(n.left) && isNull(n.left)) {
-            if (y.getParent().left == y) {
-               y.getParent().left = Cast.as(NULL);
-            } else {
-               y.getParent().right = Cast.as(NULL);
-            }
-            return true;
-         }
-
-         if (isNull(n.left) || isNull(n.left)) {
-            y = n;
-         }
-
-         if (!isNull(n.left)) {
-            x = y.left;
-         } else {
-            x = y.right;
-         }
-
-         x.parent = y.parent;
-
-         if (isNull(y.parent)) {
-            root = x;
-         } else if (!isNull(y.getParent().left) && y.getParent().left == y) {
-            y.getParent().left = x;
-         } else if (!isNull(y.getParent().right) && y.getParent().right == y) {
-            y.getParent().right = x;
-         }
-
-         update(x);
-         update(y);
-
-         return true;
-      }
-      return false;
-   }
-
-   @Override
-   public boolean removeAll(Collection<?> c) {
-      if (c == null) {
-         return false;
-      }
-      boolean removed = true;
-      for (Object o : c) {
-         if (!this.remove(o)) {
-            removed = false;
-         }
-      }
-      return removed;
-   }
-
-   @Override
-   public boolean retainAll(Collection<?> c) {
-      if (c != null) {
-         Collection<T> toRemove = Lists.difference(toList(), Cast.cast(c));
-         toRemove.forEach(this::remove);
-         return containsAll(c);
-      }
-      return false;
-   }
-
-   private void rotateLeft(Node x) {
-      Node y = x.right;
-      x.right = y.left;
-
-      if (!isNull(y)) {
-         y.left.parent = x;
-      }
-      y.parent = x.parent;
-
-      if (x == root) {
-         root = y;
-      } else if (x.getParent().left == x) {
-         x.parent.left = y;
-      } else {
-         x.parent.right = y;
-      }
-
-      y.left = x;
-      x.parent = y;
-      update(x);
-   }
-
-   private void rotateRight(Node x) {
-      Node y = x.left;
-      x.left = y.right;
-
-      if (!isNull(y)) {
-         y.right.parent = x;
-      }
-
-      y.parent = x.parent;
-
-      if (x == root) {
-         root = y;
-      } else if (x.getParent().right == x) {
-         x.parent.right = y;
-      } else {
-         x.parent.left = y;
-      }
-
-      y.right = x;
-      x.parent = y;
-      update(x);
-   }
-
-   @Override
-   public int size() {
-      return size;
-   }
-
-   @Override
-   public Object[] toArray() {
-      return Streams.asStream(iterator()).toArray();
-   }
-
-   @Override
-   public <E> E[] toArray(E[] array) {
-      return toList().toArray(array);
-   }
-
-   private List<T> toList() {
-      return Lists.asArrayList(Iterables.asIterable(this.iterator()));
-   }
-
-   private void update(Node node) {
-      while (!node.isNull()) {
-         node.max = Math.max(Math.max(node.left.max, node.right.max), node.span.end());
-         node.min = Math.min(Math.min(node.left.min, node.right.min), node.span.start());
-         node = node.parent;
-      }
-   }
-
-   /**
-    * <p>Wraps the Span allowing for multiple items on the same span</p>
-    *
-    * @param <T> the type parameter
-    */
-   protected static class Node<T extends Span> implements Serializable {
-      private static final long serialVersionUID = 1L;
-      /**
-       * The items on this interval
-       */
-      public final Set<T> items = new LinkedHashSet<>();
-      /**
-       * Is the node red?
-       */
-      public boolean isRed;
-      /**
-       * The interval captured by the Node
-       */
-      public Span span;
-      /**
-       * Left child
-       */
-      public Node<T> left;
-      /**
-       * Right child
-       */
-      public Node<T> right;
-      /**
-       * Parent
-       */
-      public Node<T> parent;
-      /**
-       * The Min.
-       */
-      public int min;
-      /**
-       * The Max.
-       */
-      public int max;
-
-      /**
-       * Instantiates a new Node.
-       *
-       * @param left   the left
-       * @param right  the right
-       * @param parent the parent
-       * @param span   the span
-       */
-      public Node(Node<T> left, Node<T> right, Node<T> parent, Span span) {
-         this.left = left;
-         this.max = span.start();
-         this.min = span.end();
-         this.parent = parent;
-         this.right = right;
-         this.span = span;
-         this.isRed = true;
-      }
-
-      /**
-       * Instantiates a new Node.
-       *
-       * @param T the T
-       */
-      public Node(T T) {
-         this.left = Cast.as(NULL);
-         this.right = Cast.as(NULL);
-         this.parent = Cast.as(NULL);
-         this.min = T.start();
-         this.max = T.end();
-         this.span = T;
-         this.items.add(T);
-         this.isRed = true;
-      }
-
-      /**
-       * Gets grandparent.
-       *
-       * @return the grandparent
-       */
-      public Node<T> getGrandparent() {
-         return parent == null ? Cast.as(NULL) : parent.parent == null ? Cast.as(NULL) : parent.parent;
-      }
-
-      /**
-       * Gets parent.
-       *
-       * @return the parent
-       */
-      public Node<T> getParent() {
-         return parent == null ? Cast.as(NULL) : parent;
-      }
-
-      /**
-       * Is null boolean.
-       *
-       * @return the boolean
-       */
-      public boolean isNull() {
-         return this == NULL;
-      }
-
-      /**
-       * Sets black.
-       */
-      public void setBlack() {
-         this.isRed = false;
-      }
-
-      /**
-       * Sets red.
-       */
-      public void setRed() {
-         this.isRed = true;
-      }
-
-      @Override
-      public String toString() {
-         return "(" + span.start() + ", " + span.end() + ")";
-      }
-
-   }
-
-   /**
-    * Iterator over Nodes returning the underlying spans.
-    *
-    * @param <T> the type parameter
-    */
-   protected static class NodeIterator<T extends Span> implements Iterator<T> {
-      private Deque<Node> stack = new LinkedList<>();
-      private Span targetSpan;
-      private boolean goLeft;
-      private LinkedList<T> Ts = new LinkedList<>();
-
-
-      /**
-       * Instantiates a new Node iterator.
-       *
-       * @param node the node
-       */
-      public NodeIterator(Node node) {
-         this(node, -1, Integer.MAX_VALUE, true);
-      }
-
-      /**
-       * Instantiates a new Node iterator.
-       *
-       * @param node   the node
-       * @param min    the min
-       * @param max    the max
-       * @param goLeft the go left
-       */
-      public NodeIterator(Node node, int min, int max, boolean goLeft) {
-         this.goLeft = goLeft;
-         this.targetSpan = new Span(min, max);
-         while (node != null && !node.isNull()) {
-            stack.push(node);
-            node = goLeft ? node.left : node.right;
-         }
-      }
-
-      private boolean advance() {
-         while (Ts.isEmpty()) {
-            if (stack.isEmpty()) {
-               return false;
-            }
-            Node node = stack.pop();
-            if (goLeft) {
-               if (node.right != null && !node.right.isNull()) {
-                  Node nr = node.right;
-                  while (!nr.isNull()) {
-                     stack.push(nr);
-                     nr = nr.left;
-                  }
-               }
-            } else {
-               if (node.left != null && !node.left.isNull()) {
-                  Node nr = node.left;
-                  while (!nr.isNull()) {
-                     stack.push(nr);
-                     nr = nr.right;
-                  }
-               }
-            }
-
-
-            if (node.span.overlaps(targetSpan)) {
-               Ts.addAll(node.items);
-            }
-         }
-
-         return true;
+   private class DescendingIterator implements Iterator<T> {
+      private Node current;
+      private Iterator<T> itemIterator;
+      private Node next;
+
+      private DescendingIterator(Node n, Predicate<Span> predicate) {
+         this.current = n.descendRightWhile(predicate);
+         this.next = this.current.lower();
+         this.itemIterator = this.current.iterator();
       }
 
       @Override
       public boolean hasNext() {
-         return advance();
+         return itemIterator.hasNext() || next.isNotNil();
       }
 
       @Override
       public T next() {
-         if (!advance()) {
+         if (!hasNext()) {
             throw new NoSuchElementException();
          }
-         return Ts.removeFirst();
+         if (itemIterator.hasNext()) {
+            return itemIterator.next();
+         } else {
+            current = next;
+            next = current.lower();
+            itemIterator = current.iterator();
+            return itemIterator.next();
+         }
       }
    }
 
+   private class ItemIterator implements Iterator<T> {
+      private Node current;
+      private Iterator<T> itemIterator;
+      private Node next;
 
-}//END OF IntervalTree
+      private ItemIterator(Node n, boolean descend) {
+         this.current = descend ? n.minimumDescendantNode() : n;
+         this.next = this.current.higher();
+         this.itemIterator = this.current.iterator();
+      }
+
+      @Override
+      public boolean hasNext() {
+         return itemIterator.hasNext() || next.isNotNil();
+      }
+
+      @Override
+      public T next() {
+         if (!hasNext()) {
+            throw new NoSuchElementException();
+         }
+         if (itemIterator.hasNext()) {
+            return itemIterator.next();
+         } else {
+            current = next;
+            next = current.higher();
+            itemIterator = current.iterator();
+            return itemIterator.next();
+         }
+      }
+   }
+
+   private class Node extends Span implements Serializable, Iterable<T> {
+      private static final long serialVersionUID = 1L;
+      private boolean color;
+      private Set<T> items;
+      private Node left = nil;
+      private int max;
+      private Node parent = nil;
+      private Node right = nil;
+
+      private Node() {
+         super(0, 0);
+         items = Collections.emptySet();
+         parent = this;
+         left = this;
+         right = this;
+         color = RED;
+      }
+
+      private Node(T span) {
+         super(span.start(), span.end());
+         this.color = RED;
+         this.items = Sets.hashSetOf(span);
+         this.max = span.end();
+      }
+
+      private void addRebalance() {
+         Node z = this;
+         while (z.parent.isRed()) {
+
+            if (z.parent.isLeftChild()) {
+               Node y = z.parent.parent.right;
+               if (y.isRed()) {
+                  z.right.color = BLACK;
+                  y.color = BLACK;
+                  z.parent.parent.color = RED;
+                  z = z.parent.parent;
+               } else {
+                  if (z.isRightChild()) {
+                     z = z.parent;
+                     z.leftRotate();
+                  }
+                  z.parent.color = BLACK;
+                  z.parent.parent.color = RED;
+                  z.parent.parent.rightRotate();
+               }
+            } else {
+               Node y = z.parent.parent.left;
+               if (y.isRed()) {
+                  z.parent.color = BLACK;
+                  y.color = BLACK;
+                  z.parent.parent.color = RED;
+                  z = z.parent.parent;
+               } else {
+                  if (z.isLeftChild()) {
+                     z = z.parent;
+                     z.rightRotate();
+                  }
+                  z.parent.color = BLACK;
+                  z.parent.parent.color = RED;
+                  z.parent.parent.leftRotate();
+               }
+            }
+         }
+         z.updateAncestors();
+         root.color = BLACK;
+      }
+
+      private void delete() {
+         if (isNil()) {
+            return;
+         }
+         size -= items.size();
+         Node x = this;
+         if (x.left.isNotNil() && x.right.isNotNil()) {
+            x = higher();
+            setEnd(x.end());
+            setStart(x.start());
+            items = x.items;
+            updateAncestors();
+         }
+         Node z = x.left.isNil() ? x.right : x.left;
+         z.parent = x.parent;
+         if (x == root) {
+            z = root;
+         } else if (x.isLeftChild()) {
+            x.parent.left = z;
+            x.updateAncestors();
+         } else {
+            x.parent.right = z;
+            x.updateAncestors();
+         }
+         if (x.color == BLACK) {
+            z.deleteRebalance();
+         }
+      }
+
+      private void deleteRebalance() {
+         Node x = this;
+         if (x != root && x.color == BLACK) {
+
+            if (x.isLeftChild()) {
+               Node w = x.parent.right;
+               if (w.color == RED) {
+                  w.color = BLACK;
+                  w.parent.color = RED;
+                  w.parent.leftRotate();
+                  w = x.parent.right;
+               }
+               if (w.left.color == BLACK && w.right.color == BLACK) {
+                  w.color = RED;
+                  x = x.parent;
+               } else {
+                  if (w.right.color == BLACK) {
+                     w.left.color = BLACK;
+                     w.color = RED;
+                     w.rightRotate();
+                     w = x.parent.right;
+                  }
+                  w.color = x.parent.color;
+                  x.parent.color = BLACK;
+                  w.right.color = BLACK;
+                  x.parent.leftRotate();
+                  x = root;
+               }
+            } else {
+               Node w = x.parent.left;
+               if (w.color == RED) {
+                  w.color = BLACK;
+                  w.parent.color = RED;
+                  w.parent.rightRotate();
+                  w = x.parent.left;
+               }
+               if (w.left.color == BLACK && w.right.color == BLACK) {
+                  w.color = RED;
+                  x = x.parent;
+               } else {
+                  if (w.left.color == BLACK) {
+                     w.right.color = BLACK;
+                     w.color = RED;
+                     w.leftRotate();
+                     w = x.parent.left;
+                  }
+                  w.color = x.parent.color;
+                  x.parent.color = BLACK;
+                  w.left.color = BLACK;
+                  x.parent.rightRotate();
+                  x = root;
+               }
+            }
+         }
+         x.color = BLACK;
+      }
+
+      private Node descendRightWhile(Predicate<Span> predicate) {
+         Node x = this;
+         while (x.right.isNotNil() && predicate.test(x.right)) {
+            x = x.right;
+         }
+         return predicate.test(x) ? x : x.left;
+      }
+
+      private Node higher() {
+         if (right.isNotNil()) {
+            return right.minimumDescendantNode();
+         }
+         Node child = this;
+         Node parent = this.parent;
+         while (parent.isNotNil() && child.isRightChild()) {
+            child = parent;
+            parent = parent.parent;
+         }
+         return parent;
+      }
+
+      private boolean isLeftChild() {
+         return parent.left == this;
+      }
+
+      private boolean isNil() {
+         return this == nil;
+      }
+
+      private boolean isNotNil() {
+         return this != nil;
+      }
+
+      private boolean isRed() {
+         return (!isNil() && color == RED);
+      }
+
+      private boolean isRightChild() {
+         return parent.right == this;
+      }
+
+      @Override
+      public Iterator<T> iterator() {
+         return items.iterator();
+      }
+
+      private void leftRotate() {
+         //We want to rotate the sub-tree to the left making the higher (right) node the new sub-tree root
+         Node newRoot = right;
+
+         right = newRoot.left;// Our new right node is the higher (right) node
+         //Update the parent if the node isn't nil
+         if (right.isNotNil()) {
+            right.parent = this;
+         }
+
+         //Set the parent of the lower child to the parent of this node
+         newRoot.parent = parent;
+
+         if (parent.isNil()) {
+
+            //If our parent is nil, it means we are the root of the tree
+            root = newRoot;
+
+         } else if (isLeftChild()) {
+            //If we our the left child, set our parent's left child to the new root
+            parent.left = newRoot;
+
+         } else {
+
+            //If we our the right child, set our parent's right child to the new root
+            parent.right = newRoot;
+         }
+
+         //We will become the left child of the new root node
+         newRoot.left = this;
+         parent = newRoot;
+
+         update();
+         newRoot.update();
+      }
+
+      private Node lower() {
+         if (!left.isNil()) {
+            return left.maximumDescendantNode();
+         }
+         Node child = this;
+         Node parent = this.parent;
+         while (parent.isNotNil() && child.isLeftChild()) {
+            child = parent;
+            parent = parent.parent;
+         }
+         return parent;
+      }
+
+      private Node maximumDescendantNode() {
+         Node x = this;
+         while (x.right.isNotNil()) {
+            x = x.right;
+         }
+         return x;
+      }
+
+      private Node minOverlapping(Span query) {
+         if (isNil() || max <= query.start()) {
+            return nil;
+         }
+         Node min = nil;
+         Node c = this;
+         while (c.isNotNil() && c.max > query.start()) {
+            //We found an overlapping node
+            if (c.overlaps(query)) {
+               min = c;
+               c = c.left;
+            } else {
+               //No joy in finding an overlapping node, so let's decide where to look next.
+               if (c.left.isNotNil() && c.left.max > query.start()) {
+                  c = c.left;
+               } else if (c.start() < query.end()) {
+                  c = c.right;
+               } else {
+                  break; //Unfortunately, both the left and right child were duds
+               }
+            }
+         }
+         return min;
+      }
+
+      private Node minimumDescendantNode() {
+         Node x = this;
+         while (x.left.isNotNil()) {
+            x = x.left;
+         }
+         return x;
+      }
+
+      private Node nextOverlapping(Span query) {
+         Node x = this;
+         //Look for an overlapping node on the higher side
+         Node nextOverlapping = right.isNotNil()
+                                ? right.minOverlapping(query)
+                                : nil;
+
+         //Go up the tree if we didn't find anything on the higher side looking at the higher side of left children.
+         //                  P
+         //               X   ( Z )
+         // i.e. look at Z if we are X and our parent P is not nil and we haven't find the next overlapping node
+         // otherwise we become P and try again
+         while (x.parent.isNotNil() && nextOverlapping.isNil()) {
+            if (x.isLeftChild()) {
+               nextOverlapping = x.parent.overlaps(query) ? x.parent
+                                                          : x.parent.right.minOverlapping(query);
+            }
+            x = x.parent;
+         }
+
+         return nextOverlapping;
+      }
+
+      private void rightRotate() {
+         // We want to rotate the sub-tree to the right, making the lower node the new root of the sub-tree
+         Node newRoot = left;
+
+         left = newRoot.right; // Our new left node is the higher (right) node
+         //Update the parent if the node isn't nil
+         if (left.isNotNil()) {
+            left.parent = this;
+         }
+
+         //Set the parent of the lower child to the parent of this node
+         newRoot.parent = parent;
+
+         if (parent.isNil()) {
+
+            //If our parent is nil, it means we are the root of the tree
+            root = newRoot;
+
+         } else if (isLeftChild()) {
+            //If we our the left child, set our parent's left child to the new root
+            parent.left = newRoot;
+
+         } else {
+
+            //If we our the right child, set our parent's right child to the new root
+            parent.right = newRoot;
+         }
+
+         //We will become the right child of the new root node
+         newRoot.right = this;
+         parent = newRoot;
+
+         update();
+         newRoot.update();
+      }
+
+
+      private void update() {
+         int newMax = end();
+         if (left.isNotNil()) {
+            newMax = Math.max(newMax, left.max);
+         }
+         if (right.isNotNil()) {
+            newMax = Math.max(newMax, right.max);
+         }
+         this.max = newMax;
+      }
+
+      private void updateAncestors() {
+         Node n = this;
+         n.update();
+         while (n.parent.isNotNil()) {
+            n = n.parent;
+            n.update();
+         }
+      }
+   }
+
+   private class OverlappingSpanIterator implements Iterator<T> {
+      private Node current;
+      private Iterator<T> itemIterator;
+      private Node next;
+      private Span target;
+
+      public OverlappingSpanIterator(Node start, Span target) {
+         this.target = target;
+         this.current = start.minOverlapping(target);
+         this.next = current.nextOverlapping(target);
+         this.itemIterator = this.current.iterator();
+      }
+
+      @Override
+      public boolean hasNext() {
+         return itemIterator.hasNext() || next.isNotNil();
+      }
+
+      @Override
+      public T next() {
+         if (!hasNext()) {
+            throw new NoSuchElementException();
+         }
+         if (!itemIterator.hasNext()) {
+            current = next;
+            next = current.nextOverlapping(target);
+            itemIterator = current.iterator();
+         }
+         return itemIterator.next();
+      }
+   }
+
+}//END OF RedBlackTree
