@@ -50,25 +50,17 @@ public final class ParameterDef<T> implements Serializable {
    public final Class<T> type;
 
 
-   /**
-    * Instantiates a new Param.
-    *
-    * @param name the name of the param
-    * @param type the type
-    */
-   public ParameterDef(String name, @NonNull Class<T> type) {
+   private ParameterDef(String name, @NonNull Class<T> type) {
       this.name = Validation.notNullOrBlank(name);
       this.type = type;
    }
 
-   /**
-    * Instantiates a new Param.
-    *
-    * @param name the name of the param
-    * @param type the type
-    */
-   public ParameterDef(String name, @NonNull Type type) {
-      this(name, TypeUtils.asClass(type));
+   public static <T> ParameterDef<T> param(String name, @NonNull Class<T> type) {
+      return new ParameterDef<>(name, type);
+   }
+
+   public static <T> ParameterDef<T> param(String name, @NonNull Type type) {
+      return new ParameterDef<>(name, TypeUtils.asClass(type));
    }
 
    /**
