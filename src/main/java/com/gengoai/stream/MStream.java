@@ -364,7 +364,8 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
     * @param keyFunction function to use to convert the items in the stream to something that is comparable.
     * @return the new stream
     */
-   <R extends Comparable<R>> MStream<T> sortBy(boolean ascending, SerializableFunction<? super T, ? extends R> keyFunction);
+   <R extends Comparable<R>> MStream<T> sortBy(boolean ascending,
+                                               SerializableFunction<? super T, ? extends R> keyFunction);
 
    /**
     * Sorts the items in the stream in ascending or descending order. Requires items to implement the

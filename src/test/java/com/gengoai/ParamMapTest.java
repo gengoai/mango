@@ -1,8 +1,13 @@
 package com.gengoai;
 
+import com.gengoai.collection.Maps;
+import com.gengoai.collection.Sets;
+import com.gengoai.json.Json;
 import com.gengoai.json.JsonEntry;
+import lombok.EqualsAndHashCode;
 import org.junit.Test;
 
+import static com.gengoai.tuple.Tuples.$;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 
@@ -17,21 +22,39 @@ public class ParamMapTest {
    static final ParameterDef<Double> doubleParam = ParameterDef.doubleParam("double");
    static final ParameterDef<Boolean> booleanParam = ParameterDef.boolParam("bool");
 
-   private static class TestParameters extends ParamMap<TestParameters> {
+   public static class TestParameters extends ParamMap<TestParameters> {
       private static final long serialVersionUID = 1L;
       public final Parameter<String> strP = parameter(stringParam, "");
       public final Parameter<Integer> intP = parameter(intParam, -1);
       public final Parameter<Float> floatP = parameter(floatParam, -1f);
       public final Parameter<Double> doubleP = parameter(doubleParam, -1d);
       public final Parameter<Boolean> boolP = parameter(booleanParam, true);
+
+      @Override
+      public boolean equals(Object o) {
+         return toString().equals(o.toString());
+      }
+   }
+
+   @Test
+   public void testEquality() {
+      assertEquals(stringParam, ParameterDef.strParam("str"));
+      assertEquals(new TestParameters().boolP, new TestParameters().boolP);
+   }
+
+   @Test
+   public void json() throws Exception {
+      TestParameters parameters = new TestParameters();
+      parameters.set(stringParam, "notEmpty");
+      assertEquals(parameters, Json.parse(Json.dumps(parameters), TestParameters.class));
    }
 
    @Test
    public void testConsumerUpdate() {
       TestParameters parameters = new TestParameters();
       parameters.update(p -> {
-         p.strP.set("testSet");
-         p.intP.set(100);
+         p.set(stringParam, "testSet");
+         p.set(intParam.name, 100);
       });
       assertEquals("testSet", parameters.strP.value());
       assertEquals(100, parameters.intP.value(), 0);
@@ -47,8 +70,24 @@ public class ParamMapTest {
       assertEquals(-1d, parameters.get(doubleParam), 0d);
       assertEquals(-1f, parameters.get("float"), 0f);
       assertEquals(-1f, parameters.get(floatParam), 0f);
+      assertEquals(-1f, parameters.getOrDefault(floatParam, 100f), 0f);
+      assertEquals(-1f, parameters.getOrDefault(floatParam.name, 100f), 0f);
+      assertEquals(42f, parameters.getOrDefault("NotThere", 42f), 0f);
+      assertEquals(42L, parameters.getOrDefault(ParameterDef.longParam("LongParam"), 42L), 0f);
       assertTrue(parameters.get(booleanParam.name));
       assertTrue(parameters.get(booleanParam));
+   }
+
+   @Test
+   public void testConsumerUpdateMap() {
+      TestParameters parameters = new TestParameters();
+      parameters.update(Maps.hashMapOf($(stringParam.name, "testSet"),
+                                       $(intParam.name, 100)));
+      assertEquals("testSet", parameters.strP.value());
+      assertEquals(100, parameters.intP.value(), 0);
+      assertEquals(-1d, parameters.doubleP.value(), 0d);
+      assertEquals(-1f, parameters.floatP.value(), 0f);
+      assertTrue(parameters.boolP.value());
    }
 
    @Test(expected = IllegalArgumentException.class)
@@ -66,4 +105,38 @@ public class ParamMapTest {
       parameters.get(ii);
    }
 
+   @Test(expected = IllegalArgumentException.class)
+   public void testGetOrDefaultBadType() {
+      TestParameters parameters = new TestParameters();
+      parameters.getOrDefault(stringParam.name, 100L);
+   }
+
+   @Test
+   public void parameterNames() {
+      assertEquals(Sets.hashSetOf(stringParam.name,
+                                  floatParam.name,
+                                  doubleParam.name,
+                                  intParam.name,
+                                  booleanParam.name),
+                   new TestParameters().parameterNames());
+   }
+
+   @Test(expected = IllegalArgumentException.class)
+   public void testUnknownParameterGetStr() {
+      TestParameters parameters = new TestParameters();
+      parameters.get("Not there");
+   }
+
+   @Test(expected = IllegalArgumentException.class)
+   public void testUnknownParameterGet() {
+      TestParameters parameters = new TestParameters();
+      parameters.get(ParameterDef.boolParam("NotThere"));
+   }
+
+
+   @Test(expected = IllegalArgumentException.class)
+   public void testUnknownParameterSet() {
+      TestParameters parameters = new TestParameters();
+      parameters.set("Not there", true);
+   }
 }

@@ -55,14 +55,6 @@ public final class ParameterDef<T> implements Serializable {
       this.type = type;
    }
 
-   public static <T> ParameterDef<T> param(String name, @NonNull Class<T> type) {
-      return new ParameterDef<>(name, type);
-   }
-
-   public static <T> ParameterDef<T> param(String name, @NonNull Type type) {
-      return new ParameterDef<>(name, TypeUtils.asClass(type));
-   }
-
    /**
     * Creates a boolean param
     *
@@ -114,6 +106,30 @@ public final class ParameterDef<T> implements Serializable {
    }
 
    /**
+    * Param parameter def.
+    *
+    * @param <T>  the type parameter
+    * @param name the name
+    * @param type the type
+    * @return the parameter def
+    */
+   public static <T> ParameterDef<T> param(String name, @NonNull Type type) {
+      return new ParameterDef<>(name, TypeUtils.asClass(type));
+   }
+
+   /**
+    * Param parameter def.
+    *
+    * @param <T>  the type parameter
+    * @param name the name
+    * @param type the type
+    * @return the parameter def
+    */
+   public static <T> ParameterDef<T> param(String name, @NonNull Class<T> type) {
+      return new ParameterDef<>(name, type);
+   }
+
+   /**
     * Creates a String param param.
     *
     * @param name the name of the param
@@ -123,6 +139,11 @@ public final class ParameterDef<T> implements Serializable {
       return new ParameterDef<>(name, String.class);
    }
 
+   /**
+    * Check type.
+    *
+    * @param type the type
+    */
    void checkType(Class<?> type) {
       if (!this.type.isAssignableFrom(type)) {
          throw new IllegalArgumentException(
@@ -131,6 +152,11 @@ public final class ParameterDef<T> implements Serializable {
       }
    }
 
+   /**
+    * Check value.
+    *
+    * @param value the value
+    */
    void checkValue(Object value) {
       if (Number.class.isAssignableFrom(type) && value instanceof Number) {
          return;

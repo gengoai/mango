@@ -13,6 +13,5 @@ public class StringTypeConverterTest {
    @Test
    public void convert() throws MalformedURLException, TypeConversionException {
       URL google = new URL("http://www.google.com");
-      System.out.println(Converter.convert(google,String.class));
    }
 }

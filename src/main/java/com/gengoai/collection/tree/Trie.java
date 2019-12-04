@@ -560,7 +560,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
        *
        * @return the iterator
        */
-      Iterator<Map.Entry<String, V>> subTreeIterator() {
+      Iterator<Entry<String, V>> subTreeIterator() {
          return new EntryIterator<>(this);
       }
 
@@ -645,15 +645,15 @@ public class Trie<V> implements Serializable, Map<String, V> {
       }
    }
 
-   private static class EntryIterator<V> extends TrieIterator<V, Map.Entry<String, V>> {
+   private static class EntryIterator<V> extends TrieIterator<V, Entry<String, V>> {
 
       private EntryIterator(TrieNode<V> node) {
          super(node);
       }
 
       @Override
-      Map.Entry<String, V> convert(final TrieNode<V> old) {
-         return new Map.Entry<String, V>() {
+      Entry<String, V> convert(final TrieNode<V> old) {
+         return new Entry<String, V>() {
             TrieNode<V> node = old;
 
             @Override

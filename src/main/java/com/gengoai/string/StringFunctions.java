@@ -91,7 +91,7 @@ public enum StringFunctions implements SerializableFunction<CharSequence, String
       }
    },
    /**
-    * Normalizes the string using {@link java.text.Normalizer.Form#NFKC}
+    * Normalizes the string using {@link Normalizer.Form#NFKC}
     */
    CANONICAL_NORMALIZATION {
       @Override

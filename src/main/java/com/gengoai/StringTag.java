@@ -26,6 +26,7 @@ import com.gengoai.annotation.JsonAdapter;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonMarshaller;
 import com.gengoai.string.Strings;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
@@ -38,6 +39,7 @@ import java.util.Objects;
  * @author David B. Bracewell
  */
 @JsonAdapter(StringTag.Marshaller.class)
+@EqualsAndHashCode(callSuper = false)
 public class StringTag implements Tag, Serializable {
    private static final long serialVersionUID = 1L;
    private final String tag;
@@ -45,32 +47,11 @@ public class StringTag implements Tag, Serializable {
    /**
     * Default Constructor
     *
-    * @param tag The tag
+    * @param tag The tag name
     */
    public StringTag(String tag) {
       Validation.checkArgument(!Strings.isNullOrBlank(tag), "Tag must not be null or blank.");
       this.tag = tag;
-   }
-
-   public static Tag tag(String name) {
-      return new StringTag(name);
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      }
-      if (obj == null || getClass() != obj.getClass()) {
-         return false;
-      }
-      final StringTag other = (StringTag) obj;
-      return Objects.equals(this.tag, other.tag);
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(tag);
    }
 
    @Override
@@ -89,7 +70,7 @@ public class StringTag implements Tag, Serializable {
    }
 
    /**
-    * The type Marshaller.
+    * StringTag Json Marshaller
     */
    public static class Marshaller extends JsonMarshaller<StringTag> {
 

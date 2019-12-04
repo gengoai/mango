@@ -31,20 +31,20 @@ import java.util.function.DoublePredicate;
 public interface SerializableDoublePredicate extends DoublePredicate, Serializable {
 
    @Override
-   default SerializableDoublePredicate and( DoublePredicate other) {
+   default SerializableDoublePredicate and(DoublePredicate other) {
       return i -> this.test(i) && other.test(i);
    }
 
    @Override
-   default SerializableDoublePredicate or( DoublePredicate other) {
+   default SerializableDoublePredicate or(DoublePredicate other) {
       return i -> this.test(i) || other.test(i);
    }
 
-   default SerializableDoublePredicate and( SerializableDoublePredicate other) {
+   default SerializableDoublePredicate and(SerializableDoublePredicate other) {
       return i -> this.test(i) && other.test(i);
    }
 
-   default SerializableDoublePredicate or( SerializableDoublePredicate other) {
+   default SerializableDoublePredicate or(SerializableDoublePredicate other) {
       return i -> this.test(i) || other.test(i);
    }
 

@@ -139,12 +139,12 @@ public interface NavigableKeyValueStore<K, V> extends KeyValueStore<K, V> {
     * @param traverseCondition the traverse condition
     * @return the iterator
     */
-   default Iterator<Map.Entry<K, V>> searchCeiling(K startKey, BiPredicate<K, K> traverseCondition) {
+   default Iterator<Entry<K, V>> searchCeiling(K startKey, BiPredicate<K, K> traverseCondition) {
       K ck = ceilingKey(startKey);
       if (ck == null) {
          return Collections.emptyIterator();
       }
-      return new Iterator<Map.Entry<K, V>>() {
+      return new Iterator<Entry<K, V>>() {
          private final Iterator<K> backing = keyIterator(ck);
          private K nextKey = null;
 
@@ -168,7 +168,7 @@ public interface NavigableKeyValueStore<K, V> extends KeyValueStore<K, V> {
          }
 
          @Override
-         public Map.Entry<K, V> next() {
+         public Entry<K, V> next() {
             advance();
             K n = nextKey;
             nextKey = null;

@@ -17,7 +17,7 @@ public class SqlDateTypeConverter implements TypeConverter {
 
    @Override
    public Object convert(Object object, Type... parameters) throws TypeConversionException {
-      if (object instanceof java.sql.Date) {
+      if (object instanceof Date) {
          return Cast.as(object);
       }
 

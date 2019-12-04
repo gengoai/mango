@@ -114,7 +114,6 @@ public class LoggerTest {
     sbh.clear();
 
     Logger.getLogger(LoggerTest.class).log(Level.INFO, "This is Global Logger test {0}", "1");
-    System.out.println(sbh.getContent());
     assertTrue(sbh.getContent().equals("This is Global Logger test 1"));
     sbh.clear();
 

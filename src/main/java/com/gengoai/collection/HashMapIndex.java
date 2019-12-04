@@ -32,8 +32,8 @@ import java.util.*;
  */
 public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
    private static final long serialVersionUID = 1L;
-   private final Map<TYPE, Integer> map = new HashMap<>();
    private final List<TYPE> list = new ArrayList<>();
+   private final Map<TYPE, Integer> map = new HashMap<>();
 
    @Override
    public int add(TYPE item) {
@@ -82,6 +82,14 @@ public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
    }
 
    @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {return true;}
+      if (obj == null || getClass() != obj.getClass()) {return false;}
+      final HashMapIndex<?> other = (HashMapIndex<?>) obj;
+      return Objects.equals(this.list, other.list);
+   }
+
+   @Override
    public TYPE get(int id) {
       if (id < 0 || id >= list.size()) {
          return null;
@@ -97,6 +105,10 @@ public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
       return -1;
    }
 
+   @Override
+   public int hashCode() {
+      return Objects.hash(map, list);
+   }
 
    @Override
    public boolean isEmpty() {
@@ -116,19 +128,5 @@ public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
    @Override
    public String toString() {
       return list.toString();
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(map, list);
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {return true;}
-      if (obj == null || getClass() != obj.getClass()) {return false;}
-      final HashMapIndex other = (HashMapIndex) obj;
-      return Objects.equals(this.map, other.map)
-                && Objects.equals(this.list, other.list);
    }
 }//END OF HashMapIndex

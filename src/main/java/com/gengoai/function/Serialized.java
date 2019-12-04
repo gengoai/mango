@@ -83,7 +83,8 @@ public interface Serialized {
     * @param p2  the p 2
     * @return the serializable bi predicate
     */
-   static <T, U> SerializableBiPredicate<T, U> and(SerializableBiPredicate<? super T, ? super U> p1, SerializableBiPredicate<? super T, ? super U> p2) {
+   static <T, U> SerializableBiPredicate<T, U> and(SerializableBiPredicate<? super T, ? super U> p1,
+                                                   SerializableBiPredicate<? super T, ? super U> p2) {
       return (t, u) -> p1.test(t, u) && p2.test(t, u);
    }
 
@@ -96,7 +97,8 @@ public interface Serialized {
     * @param p2  the p 2
     * @return the serializable bi predicate
     */
-   static <T, U> SerializableBiPredicate<T, U> or(SerializableBiPredicate<? super T, ? super U> p1, SerializableBiPredicate<? super T, ? super U> p2) {
+   static <T, U> SerializableBiPredicate<T, U> or(SerializableBiPredicate<? super T, ? super U> p1,
+                                                  SerializableBiPredicate<? super T, ? super U> p2) {
       return (t, u) -> p1.test(t, u) || p2.test(t, u);
    }
 

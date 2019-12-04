@@ -56,7 +56,7 @@ public class URLResource extends BaseResource {
     * Instantiates a new uRL resource.
     *
     * @param url the url
-    * @throws java.net.MalformedURLException the malformed url exception
+    * @throws MalformedURLException the malformed url exception
     */
    public URLResource(String url) throws MalformedURLException {
       this.url = new URL(url);

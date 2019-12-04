@@ -100,7 +100,7 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
     * @param defaultValue the default value to return if the param is not in the map
     * @return the value of the param or the default value if the Param is not in the map
     */
-   public <T> T getOrDefault(ParameterDef<T> param, T defaultValue) {
+   public <T> T getOrDefault(@NonNull ParameterDef<T> param, T defaultValue) {
       if (map.containsKey(param.name)) {
          return get(param);
       }

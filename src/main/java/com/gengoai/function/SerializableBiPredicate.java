@@ -39,7 +39,7 @@ public interface SerializableBiPredicate<T, U> extends BiPredicate<T, U>, Serial
    }
 
    @Override
-   default SerializableBiPredicate<T, U> and( BiPredicate<? super T, ? super U> other) {
+   default SerializableBiPredicate<T, U> and(BiPredicate<? super T, ? super U> other) {
       return (t, u) -> this.test(t, u) && other.test(t, u);
    }
 
@@ -48,7 +48,7 @@ public interface SerializableBiPredicate<T, U> extends BiPredicate<T, U>, Serial
       return (t, u) -> this.test(t, u) || other.test(t, u);
    }
 
-   default SerializableBiPredicate<T, U> and( SerializableBiPredicate<? super T, ? super U> other) {
+   default SerializableBiPredicate<T, U> and(SerializableBiPredicate<? super T, ? super U> other) {
       return (t, u) -> this.test(t, u) && other.test(t, u);
    }
 

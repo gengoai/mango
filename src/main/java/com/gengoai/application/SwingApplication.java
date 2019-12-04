@@ -1,5 +1,6 @@
 package com.gengoai.application;
 
+import com.gengoai.Stopwatch;
 import com.gengoai.Validation;
 import com.gengoai.config.Config;
 import com.gengoai.logging.Loggable;
@@ -49,14 +50,15 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
 
 
    public static void runApplication(Supplier<? extends SwingApplication> supplier, String[] args) {
+//      systemLookAndFeel();
       SwingApplication application = supplier.get();
-      systemLookAndFeel();
       application.run(args);
    }
 
-   protected static void systemLookAndFeel() {
+   protected void systemLookAndFeel() {
       try {
          UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+         SwingUtilities.updateComponentTreeUI(this);
       } catch (Exception e) {
          throw new RuntimeException(e);
       }
@@ -105,18 +107,8 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
       int yPos = Config.get(getClass(), "position.y").asIntegerValue(screenRectangle.height / 2 - height / 2);
       setLocation(xPos, yPos);
       setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
-      if (Config.hasProperty(getClass(), "lookAndFeel")) {
-         try {
-            UIManager.setLookAndFeel(Config.get(getClass(), "lookAndFeel").asString());
-         } catch (Exception e) {
-            throw new RuntimeException(e);
-         }
-      }
-
       pack();
-      SwingUtilities.updateComponentTreeUI(this);
-      initControls();
+      this.initControls();
       pack();
    }
 

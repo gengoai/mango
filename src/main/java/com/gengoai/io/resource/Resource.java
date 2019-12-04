@@ -392,7 +392,7 @@ public interface Resource {
     * Mkdir boolean.
     *
     * @return the boolean
-    * @see java.io.File#mkdir() java.io.File#mkdir()java.io.File#mkdir()java.io.File#mkdir()java.io.File#mkdir()
+    * @see File#mkdir() java.io.File#mkdir()java.io.File#mkdir()java.io.File#mkdir()java.io.File#mkdir()
     */
    default boolean mkdir() {
       return false;
@@ -402,7 +402,7 @@ public interface Resource {
     * Mkdirs boolean.
     *
     * @return the boolean
-    * @see java.io.File#mkdirs() java.io.File#mkdirs()java.io.File#mkdirs()java.io.File#mkdirs()java.io.File#mkdirs()
+    * @see File#mkdirs() java.io.File#mkdirs()java.io.File#mkdirs()java.io.File#mkdirs()java.io.File#mkdirs()
     */
    default boolean mkdirs() {
       return false;

@@ -50,11 +50,7 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
    }
 
    @Override
-   public boolean add(T item) {
-      if (item == null) {
-         return false;
-      }
-
+   public boolean add(@NonNull T item) {
       Node y = nil;
       Node x = root;
 
@@ -95,7 +91,7 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
    }
 
    @Override
-   public boolean addAll(Collection<? extends T> collection) {
+   public boolean addAll(@NonNull Collection<? extends T> collection) {
       boolean addAll = true;
       for (T t : collection) {
          if (!add(t)) {
@@ -113,7 +109,7 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
     * @return the iterable of least elements greater than or equal to span, or an empty Iterable if there is no such
     * element
     */
-   public Iterable<T> ceiling(T span) {
+   public Iterable<T> ceiling(@NonNull T span) {
       return Collections.unmodifiableSet(ceiling(root, span).items);
    }
 
@@ -143,7 +139,7 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
     * @return the iterator of items in the tree starting at the least element in the set greater than or equal to the
     * given element or an empty iterator if there is no such element.
     */
-   public Iterator<T> ceilingIterator(T start) {
+   public Iterator<T> ceilingIterator(@NonNull T start) {
       return new ItemIterator(ceiling(root, start), false);
    }
 
@@ -162,8 +158,12 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
    }
 
    @Override
-   public boolean containsAll(Collection<?> collection) {
+   public boolean containsAll(@NonNull Collection<?> collection) {
       return collection.stream().allMatch(this::contains);
+   }
+
+   public boolean containsOverlappingSpans(@NonNull Span span) {
+      return new OverlappingSpanIterator(root, span).hasNext();
    }
 
    private Node find(Node n, T span) {
@@ -185,7 +185,7 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
     * @return the iterable of the the greatest elements in this set less than or equal to the given element, or an empty
     * iterable if there is no such element.
     */
-   public Iterable<T> floor(T span) {
+   public Iterable<T> floor(@NonNull T span) {
       return Collections.unmodifiableSet(floor(root, span).items);
    }
 
@@ -215,10 +215,7 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
     * @return the iterator of items in the tree starting at the greatest element in the set less than or equal to the
     * given element or an empty iterator if there is no such element.
     */
-   public Iterator<T> floorIterator(T start) {
-      if (start == null) {
-         return Collections.emptyIterator();
-      }
+   public Iterator<T> floorIterator(@NonNull T start) {
       return new DescendingIterator(lower(root, start), s -> s.start() <= start.start() && s.end() <= start.end());
    }
 
@@ -229,14 +226,11 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
     * @param span the span to match
     * @return the iterable of least elements greater than span, or an empty Iterable if there is no such element
     */
-   public Iterable<T> higher(T span) {
+   public Iterable<T> higher(@NonNull T span) {
       return Collections.unmodifiableSet(higher(root, span).items);
    }
 
    private Node higher(Node n, T span) {
-      if (span == null) {
-         return nil;
-      }
       Node c = ceiling(n, span);
       if (c.compareTo(span) == 0) {
          return c.higher();
@@ -252,7 +246,7 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
     * @return the iterator of items in the tree starting at the least element in the set greater than the given element
     * or an empty iterator if there is no such element.
     */
-   public Iterator<T> higherIterator(T start) {
+   public Iterator<T> higherIterator(@NonNull T start) {
       return new ItemIterator(higher(root, start), false);
    }
 
@@ -274,14 +268,11 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
     * @return the iterable of the the greatest elements in this set less than the given element, or an empty iterable if
     * there is no such element.
     */
-   public Iterable<T> lower(T span) {
+   public Iterable<T> lower(@NonNull T span) {
       return Collections.unmodifiableSet(lower(root, span).items);
    }
 
    private Node lower(Node n, T span) {
-      if (span == null) {
-         return nil;
-      }
       Node c = floor(n, span);
       if (c.compareTo(span) == 0) {
          return c.lower();
@@ -297,10 +288,7 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
     * @return the iterator of items in the tree starting at the greatest element in the set less than the given element
     * or an empty iterator if there is no such element.
     */
-   public Iterator<T> lowerIterator(T start) {
-      if (start == null) {
-         return Collections.emptyIterator();
-      }
+   public Iterator<T> lowerIterator(@NonNull T start) {
       return new DescendingIterator(lower(root, start), s -> s.start() <= start.start() && s.end() < start.end());
    }
 
@@ -312,10 +300,6 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
     */
    public Iterable<T> overlapping(@NonNull Span span) {
       return () -> new OverlappingSpanIterator(root, span);
-   }
-
-   public boolean containsOverlappingSpans(@NonNull Span span) {
-      return new OverlappingSpanIterator(root, span).hasNext();
    }
 
    @Override
@@ -336,8 +320,8 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
    }
 
    @Override
-   public boolean removeAll(Collection<?> collection) {
-      if (collection == null || collection.isEmpty()) {
+   public boolean removeAll(@NonNull Collection<?> collection) {
+      if (collection.isEmpty()) {
          return true;
       }
       boolean removeAll = true;
@@ -350,8 +334,8 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
    }
 
    @Override
-   public boolean retainAll(Collection<?> collection) {
-      if (collection == null || collection.isEmpty()) {
+   public boolean retainAll(@NonNull Collection<?> collection) {
+      if (collection.isEmpty()) {
          clear();
          return true;
       }

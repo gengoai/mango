@@ -21,7 +21,7 @@ public interface Loggable {
    }
 
    /**
-    * Logs a message at {@link java.util.logging.Level#FINE}.
+    * Logs a message at {@link Level#FINE}.
     *
     * @param message The message accompanying the log
     * @param args    The arguments for the message.
@@ -31,7 +31,7 @@ public interface Loggable {
    }
 
    /**
-    * Logs a message at {@link java.util.logging.Level#FINER}.
+    * Logs a message at {@link Level#FINER}.
     *
     * @param message The message accompanying the log
     * @param args    The arguments for the message.
@@ -41,7 +41,7 @@ public interface Loggable {
    }
 
    /**
-    * Logs a message at {@link java.util.logging.Level#FINEST}.
+    * Logs a message at {@link Level#FINEST}.
     *
     * @param message The message accompanying the log
     * @param args    The arguments for the message.
@@ -51,7 +51,7 @@ public interface Loggable {
    }
 
    /**
-    * Logs a message at {@link java.util.logging.Level#SEVERE}.
+    * Logs a message at {@link Level#SEVERE}.
     *
     * @param message The message accompanying the log
     * @param args    The arguments for the message.
@@ -61,7 +61,7 @@ public interface Loggable {
    }
 
    /**
-    * Logs a message at {@link java.util.logging.Level#WARNING}.
+    * Logs a message at {@link Level#WARNING}.
     *
     * @param message The message accompanying the log
     * @param args    The arguments for the message.
@@ -71,7 +71,7 @@ public interface Loggable {
    }
 
    /**
-    * Logs a message at {@link java.util.logging.Level#INFO}.
+    * Logs a message at {@link Level#INFO}.
     *
     * @param message The message accompanying the log
     * @param args    The arguments for the message.
@@ -81,7 +81,7 @@ public interface Loggable {
    }
 
    /**
-    * Logs the stack trace for a throwable at {@link java.util.logging.Level#FINE}.
+    * Logs the stack trace for a throwable at {@link Level#FINE}.
     *
     * @param throwable The throwable to log
     */
@@ -90,7 +90,7 @@ public interface Loggable {
    }
 
    /**
-    * Logs the stack trace for a throwable at {@link java.util.logging.Level#FINER}.
+    * Logs the stack trace for a throwable at {@link Level#FINER}.
     *
     * @param throwable The throwable to log
     */
@@ -99,7 +99,7 @@ public interface Loggable {
    }
 
    /**
-    * Logs the stack trace for a throwable at {@link java.util.logging.Level#FINEST}.
+    * Logs the stack trace for a throwable at {@link Level#FINEST}.
     *
     * @param throwable The throwable to log
     */
@@ -108,7 +108,7 @@ public interface Loggable {
    }
 
    /**
-    * Logs the stack trace for a throwable at {@link java.util.logging.Level#SEVERE}.
+    * Logs the stack trace for a throwable at {@link Level#SEVERE}.
     *
     * @param throwable The throwable to log
     */
@@ -117,7 +117,7 @@ public interface Loggable {
    }
 
    /**
-    * Logs the stack trace for a throwable at {@link java.util.logging.Level#WARNING}.
+    * Logs the stack trace for a throwable at {@link Level#WARNING}.
     *
     * @param throwable The throwable to log
     */
@@ -126,7 +126,7 @@ public interface Loggable {
    }
 
    /**
-    * Logs a message at {@link java.util.logging.Level#INFO}.
+    * Logs a message at {@link Level#INFO}.
     *
     * @param throwable The throwable to log.
     */

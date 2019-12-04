@@ -22,7 +22,10 @@
 package com.gengoai.collection;
 
 
+import lombok.NonNull;
+
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.stream.Stream;
 
 /**
@@ -44,8 +47,8 @@ public final class Indexes {
     * @return A new index containing the given elements
     */
    @SafeVarargs
-   public static <TYPE> Index<TYPE> indexOf(TYPE... elements) {
-      return elements == null ? new HashMapIndex<>() : indexOf(Arrays.asList(elements));
+   public static <TYPE> Index<TYPE> indexOf(@NonNull TYPE... elements) {
+      return indexOf(Stream.of(elements));
    }
 
    /**
@@ -55,10 +58,8 @@ public final class Indexes {
     * @param elements the elements to initialize the index with
     * @return A new index containing the given elements
     */
-   public static <TYPE> Index<TYPE> indexOf(Iterable<TYPE> elements) {
-      Index<TYPE> index = new HashMapIndex<>();
-      index.addAll(elements);
-      return index;
+   public static <TYPE> Index<TYPE> indexOf(@NonNull Iterable<TYPE> elements) {
+      return indexOf(Streams.asStream(elements));
    }
 
    /**
@@ -68,7 +69,18 @@ public final class Indexes {
     * @param elements the elements to initialize the index with
     * @return A new index containing the given elements
     */
-   public static <TYPE> Index<TYPE> indexOf(Stream<TYPE> elements) {
+   public static <TYPE> Index<TYPE> indexOf(@NonNull Iterator<TYPE> elements) {
+      return indexOf(Streams.asStream(elements));
+   }
+
+   /**
+    * Creates a new index using the given set of elements
+    *
+    * @param <TYPE>   the component type of the index
+    * @param elements the elements to initialize the index with
+    * @return A new index containing the given elements
+    */
+   public static <TYPE> Index<TYPE> indexOf(@NonNull Stream<TYPE> elements) {
       Index<TYPE> index = new HashMapIndex<>();
       elements.forEach(index::add);
       return index;

@@ -30,6 +30,9 @@ import com.gengoai.reflection.RField;
 import com.gengoai.reflection.TypeUtils;
 import com.gengoai.string.CharMatcher;
 import com.gengoai.string.Strings;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
 import java.lang.reflect.Type;
 import java.util.Arrays;
@@ -62,9 +65,10 @@ import java.util.Set;
  *
  * @author David B. Bracewell
  */
+@Getter
+@ToString
+@EqualsAndHashCode(callSuper = false)
 public final class NamedOption {
-
-
    private final String name;
    private final Type type;
    private final String description;
@@ -81,18 +85,12 @@ public final class NamedOption {
    public NamedOption(RField field) {
       Option option = Validation.notNull(field.getAnnotation(Option.class));
       this.field = field;
-
       this.name = Strings.isNullOrBlank(option.name()) ? field.getName() : option.name();
-
       Validation.checkArgument(!Strings.isNullOrBlank(this.name) && !CharMatcher.WhiteSpace.matchesAnyOf(this.name),
                                "Option name must have at least one character and must not have a space");
-
       this.type = field.getType();
-
       Validation.notNullOrBlank(option.description(), "Description must not be blank");
-
       this.description = option.description();
-
       if (!Strings.isNullOrBlank(option.defaultValue())) {
          Config.setProperty(this.name, option.defaultValue());
          this.value = Converter.convertSilently(option.defaultValue(), type);
@@ -103,26 +101,15 @@ public final class NamedOption {
       this.required = option.required();
    }
 
-   /**
-    * Instantiates a new Named option.
-    *
-    * @param name         the name
-    * @param type         the type
-    * @param description  the description
-    * @param defaultValue the default value
-    * @param aliases      the aliases
-    * @param required     the required
-    */
-   protected NamedOption(String name,
-                         Class<?> type,
-                         String description,
-                         Object defaultValue,
-                         Set<String> aliases,
-                         boolean required) {
+   private NamedOption(String name,
+                       Class<?> type,
+                       String description,
+                       Object defaultValue,
+                       Set<String> aliases,
+                       boolean required) {
       Validation.checkArgument(!Strings.isNullOrBlank(name) && !CharMatcher.WhiteSpace.matchesAnyOf(name),
                                "Option name must have at least one character and must not have a space");
       Validation.notNullOrBlank(description, "Description must not be blank");
-
       this.name = name;
       this.type = type;
       this.description = description;
@@ -146,7 +133,6 @@ public final class NamedOption {
       return new NamedOptionBuilder();
    }
 
-
    /**
     * Converts the aliases into a specification forms, e.g. with "-" or "--" added.
     *
@@ -161,79 +147,6 @@ public final class NamedOption {
          a[i] = toSpecificationForm(aliases[i]);
       }
       return a;
-   }
-
-   /**
-    * Gets the aliases associated with the option
-    *
-    * @return Aliases associated with the option
-    */
-   public String[] getAliases() {
-      return this.aliases;
-   }
-
-   /**
-    * Gets the help description for the option.
-    *
-    * @return the description
-    */
-   public String getDescription() {
-      return this.description;
-   }
-
-   /**
-    * Gets the field associated if the option, if one.
-    *
-    * @return the field
-    */
-   public RField getField() {
-      return this.field;
-   }
-
-   /**
-    * Gets the name of the option.
-    *
-    * @return the name
-    */
-   public String getName() {
-      return this.name;
-   }
-
-   /**
-    * Gets the type of the argument.
-    *
-    * @return the class information for the type of the option
-    */
-   public Type getType() {
-      return this.type;
-   }
-
-   /**
-    * Gets whether or not the option is required
-    *
-    * @return True the option is required to be set on the command line
-    */
-   public boolean isRequired() {
-      return this.required;
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(name, type, description, aliases, required, field, value);
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {return true;}
-      if (obj == null || getClass() != obj.getClass()) {return false;}
-      final NamedOption other = (NamedOption) obj;
-      return Objects.equals(this.name, other.name)
-         && Objects.equals(this.type, other.type)
-         && Objects.equals(this.description, other.description)
-         && Objects.deepEquals(this.aliases, other.aliases)
-         && Objects.equals(this.required, other.required)
-         && Objects.equals(this.field, other.field)
-         && Objects.equals(this.value, other.value);
    }
 
    private String toSpecificationForm(String optionName) {
@@ -269,35 +182,9 @@ public final class NamedOption {
     */
    void setValue(String optionValue) {
       if (Strings.isNullOrBlank(optionValue) && isBoolean()) {
-
          this.value = true;
-
       } else if (!Strings.isNullOrBlank(optionValue)) {
          this.value = Converter.convertSilently(optionValue, type);
-//         if (Collection.class.isAssignableFrom(type)) {
-//
-//            Class<?> genericType = field == null
-//                                   ? String.class
-//                                   : (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
-//            this.value = Converter.convertSilently(optionValue, type, genericType);
-//
-//
-//         } else if (Map.class.isAssignableFrom(type)) {
-//
-//            Class<?> keyType = field == null
-//                               ? String.class
-//                               : (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
-//            Class<?> valueType = field == null
-//                                 ? String.class
-//                                 : (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[1];
-//            this.value = Converter.convertSilently(optionValue, type, keyType, valueType);
-//
-//         } else {
-//
-//            this.value = Converter.convertSilently(optionValue, type);
-//
-//         }
-
       }
    }
 
@@ -348,15 +235,6 @@ public final class NamedOption {
                                                                .alias("dump-config")
                                                                .build();
 
-   public String toString() {
-      return "NamedOption(name=" + this.getName() +
-         ", type=" + this.getType() +
-         ", description=" + this.getDescription() +
-         ", aliases=" + Arrays.toString(this.getAliases()) +
-         ", required=" + this.isRequired() +
-         ", value=" + this.getValue() + ")";
-   }
-
    /**
     * Builder class to create a named options
     */
@@ -380,7 +258,7 @@ public final class NamedOption {
        * @param alias the alias to add
        * @return the named option builder
        */
-      public NamedOption.NamedOptionBuilder alias(String alias) {
+      public NamedOptionBuilder alias(String alias) {
          this.aliases.add(alias);
          return this;
       }
@@ -401,7 +279,7 @@ public final class NamedOption {
        * @param defaultValue the default value
        * @return the named option builder
        */
-      public NamedOption.NamedOptionBuilder defaultValue(Object defaultValue) {
+      public NamedOptionBuilder defaultValue(Object defaultValue) {
          this.defaultValue = defaultValue;
          return this;
       }
@@ -412,7 +290,7 @@ public final class NamedOption {
        * @param description the description
        * @return the named option builder
        */
-      public NamedOption.NamedOptionBuilder description(String description) {
+      public NamedOptionBuilder description(String description) {
          this.description = description;
          return this;
       }
@@ -423,7 +301,7 @@ public final class NamedOption {
        * @param name the name
        * @return the named option builder
        */
-      public NamedOption.NamedOptionBuilder name(String name) {
+      public NamedOptionBuilder name(String name) {
          this.name = name;
          return this;
       }
@@ -434,7 +312,7 @@ public final class NamedOption {
        * @param required True - the option is required to be set
        * @return the named option builder
        */
-      public NamedOption.NamedOptionBuilder required(boolean required) {
+      public NamedOptionBuilder required(boolean required) {
          this.required = required;
          return this;
       }
@@ -449,7 +327,7 @@ public final class NamedOption {
        * @param type the type
        * @return the named option builder
        */
-      public NamedOption.NamedOptionBuilder type(Class<?> type) {
+      public NamedOptionBuilder type(Class<?> type) {
          this.type = type;
          return this;
       }

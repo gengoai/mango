@@ -42,6 +42,9 @@ import java.util.stream.Stream;
 @JsonAdapter(Index.IndexMarshaller.class)
 public interface Index<E> extends Iterable<E>, Copyable<Index<E>> {
 
+   /**
+    * Json Marshaller
+    */
    class IndexMarshaller extends JsonMarshaller<Index> {
 
       @Override

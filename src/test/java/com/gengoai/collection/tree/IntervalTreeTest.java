@@ -77,9 +77,6 @@ public class IntervalTreeTest {
                                   Span.of(1, 10)),
                    Sets.asHashSet(simple.overlapping(Span.of(1, 2))));
       assertTrue(Iterables.isEmpty(simple.overlapping(Span.of(11, 22))));
-      simple.overlapping(Span.of(1, 2))
-            .forEach(System.out::println);
-
    }
 
    @Before

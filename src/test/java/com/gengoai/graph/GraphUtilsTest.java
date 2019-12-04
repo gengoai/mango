@@ -23,8 +23,6 @@ package com.gengoai.graph;
 
 import com.gengoai.graph.io.DefaultEncodersDecoders;
 import com.gengoai.graph.io.GraphJson;
-import com.gengoai.graph.io.GraphMLReader;
-import com.gengoai.graph.io.GraphMLWriter;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.io.resource.StringResource;
@@ -93,16 +91,16 @@ public class GraphUtilsTest {
       assertTrue(d1.containsEdge("C", "B"));
       assertTrue(d1.containsEdge("B", "C"));
 
-      GraphMLReader<String> graphMLReader = new GraphMLReader<>(String.class);
-      GraphMLWriter<String> graphMlWriter = new GraphMLWriter<>();
-      graphMlWriter.setVertexEncoder(DefaultEncodersDecoders.defaultVertexEncoder());
-      graphMLReader.setVertexDecoder(DefaultEncodersDecoders.defaultVertexDecoder(String.class));
-      Resource r = new StringResource();
-      graphMlWriter.write(d1, r);
-
-
-      graphMLReader.setVertexDecoder(DefaultEncodersDecoders.defaultVertexDecoder(String.class));
-      Graph<String> g2 = graphMLReader.read(r);
+//      GraphMLReader<String> graphMLReader = new GraphMLReader<>(String.class);
+//      GraphMLWriter<String> graphMlWriter = new GraphMLWriter<>();
+//      graphMlWriter.setVertexEncoder(DefaultEncodersDecoders.defaultVertexEncoder());
+//      graphMLReader.setVertexDecoder(DefaultEncodersDecoders.defaultVertexDecoder(String.class));
+//      Resource r = new StringResource();
+//      graphMlWriter.write(d1, r);
+//
+//
+//      graphMLReader.setVertexDecoder(DefaultEncodersDecoders.defaultVertexDecoder(String.class));
+//      Graph<String> g2 = graphMLReader.read(r);
    }
 
    @Test

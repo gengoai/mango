@@ -816,7 +816,7 @@ public enum Language {
    }
 
    /**
-    * Gets language as a {@link java.util.Locale}
+    * Gets language as a {@link Locale}
     *
     * @return language locale
     */

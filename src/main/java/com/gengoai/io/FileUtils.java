@@ -206,7 +206,7 @@ public final class FileUtils {
    }
 
    /**
-    * Returns the path of the file in the same manner as {@link java.io.File#getPath()}.
+    * Returns the path of the file in the same manner as {@link File#getPath()}.
     *
     * @param file The file
     * @return The path or null if the file is null or empty
