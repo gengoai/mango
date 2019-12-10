@@ -36,7 +36,7 @@ public final class Iterators {
       } else if (object instanceof Iterator) {
          return Cast.as(object);
       } else if (object.getClass().isArray()) {
-         return Iterables.asIterable(object, Object.class).iterator();
+         return Iterables.asIterable(object).iterator();
       } else if (object instanceof Map) {
          return Cast.<Map<?, ?>>as(object).entrySet().iterator();
       } else if (object instanceof Counter) {

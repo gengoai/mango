@@ -31,14 +31,16 @@ public final class Iterables {
     *
     * @param <T>       the component type of the array
     * @param array     The array to wrap
-    * @param itemClass the component type of the array
     * @return An Iterable wrapping the iterator.
     */
-   public static <T> Iterable<T> asIterable(final Object array, final Class<T> itemClass) {
-      checkArgument(array.getClass().isArray());
-      if (array.getClass().getComponentType().isPrimitive()) {
-         return new PrimitiveArrayList<>(array, itemClass);
+   public static <T> Iterable<T> asIterable(final Object array) {
+      if (array == null) {
+         return Collections.emptyList();
       }
+      if (!array.getClass().isArray()) {
+         return Cast.as(Collections.singleton(array));
+      }
+      checkArgument(array.getClass().isArray());
       return new IteratorIterable<>(() -> new Iterator<T>() {
          int pos = 0;
 
@@ -50,7 +52,7 @@ public final class Iterables {
          @Override
          public T next() {
             Validation.checkElementIndex(pos, Array.getLength(array));
-            return itemClass.cast(Array.get(array, pos++));
+            return Cast.as(Array.get(array, pos++));
          }
       });
    }
@@ -192,6 +194,11 @@ public final class Iterables {
       return getLast(notNull(iterable)).orElse(Cast.as(defaultValue));
    }
 
+   public static boolean isEmpty(Iterable<?> iterable) {
+      notNull(iterable);
+      return !iterable.iterator().hasNext();
+   }
+
    /**
     * Gets the size of the iterable
     *
@@ -204,11 +211,6 @@ public final class Iterables {
          return ((Collection) iterable).size();
       }
       return Iterators.size(iterable.iterator());
-   }
-
-   public static boolean isEmpty(Iterable<?> iterable) {
-      notNull(iterable);
-      return !iterable.iterator().hasNext();
    }
 
    /**

@@ -23,8 +23,10 @@
 package com.gengoai.stream;
 
 import com.gengoai.Validation;
-import com.gengoai.conversion.Converter;
-import com.gengoai.function.*;
+import com.gengoai.function.SerializableBinaryOperator;
+import com.gengoai.function.SerializableComparator;
+import com.gengoai.function.SerializableConsumer;
+import com.gengoai.function.Unchecked;
 import com.gengoai.io.resource.Resource;
 
 import java.io.BufferedWriter;
@@ -130,7 +132,7 @@ abstract class BaseJavaStream<T> implements MStream<T>, Serializable {
    public final void saveAsTextFile(Resource location) {
       try (BufferedWriter writer = new BufferedWriter(location.writer())) {
          javaStream().forEach(Unchecked.consumer(o -> {
-            writer.write(Converter.convert(o, String.class));
+            writer.write(o.toString());
             writer.newLine();
          }));
       } catch (Exception e) {

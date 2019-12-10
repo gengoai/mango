@@ -22,9 +22,11 @@
 package com.gengoai.collection;
 
 import com.gengoai.conversion.Cast;
+import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static com.gengoai.Validation.notNull;
@@ -49,7 +51,7 @@ public final class Collect {
     * @param iterable   the iterable of elements to add
     * @return the collection with new elements added
     */
-   public static <T> Collection<T> addAll(Collection<T> collection, Iterable<? extends T> iterable) {
+   public static <T> Collection<T> addAll(@NonNull Collection<T> collection, @NonNull Iterable<? extends T> iterable) {
       iterable.forEach(collection::add);
       return collection;
    }
@@ -62,7 +64,7 @@ public final class Collect {
     * @param iterator   the iterator of elements to add
     * @return the collection with new elements added
     */
-   public static <T> Collection<T> addAll(Collection<T> collection, Iterator<? extends T> iterator) {
+   public static <T> Collection<T> addAll(@NonNull Collection<T> collection, @NonNull Iterator<? extends T> iterator) {
       iterator.forEachRemaining(collection::add);
       return collection;
    }
@@ -75,7 +77,7 @@ public final class Collect {
     * @param stream     the stream of elements to add
     * @return the collection with new elements added
     */
-   public static <T> Collection<T> addAll(Collection<T> collection, Stream<? extends T> stream) {
+   public static <T> Collection<T> addAll(@NonNull Collection<T> collection, @NonNull Stream<? extends T> stream) {
       stream.forEach(collection::add);
       return collection;
    }
@@ -87,11 +89,25 @@ public final class Collect {
     * @param iterable the iterable to wrap
     * @return the wrapped iterable
     */
-   public static <T> Collection<T> asCollection(Iterable<? extends T> iterable) {
+   public static <T> Collection<T> asCollection(@NonNull Iterable<? extends T> iterable) {
       if (iterable instanceof Collection) {
          return Cast.as(iterable);
       }
       return new IterableCollection<>(notNull(iterable));
+   }
+
+
+   @SafeVarargs
+   static <T, C extends Collection<T>> C createCollection(Supplier<C> supplier, T... items){
+      C collection = supplier.get();
+      Collections.addAll(collection,items);
+      return collection;
+   }
+
+   static <T, C extends Collection<T>> C createCollection(Supplier<C> supplier, Stream<? extends T> stream){
+      C collection = supplier.get();
+      stream.forEach(collection::add);
+      return collection;
    }
 
    /**

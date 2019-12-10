@@ -460,7 +460,7 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
       }
    }
 
-   private class Node extends Span implements Serializable, Iterable<T> {
+   private class Node extends SimpleSpan implements Serializable, Iterable<T> {
       private static final long serialVersionUID = 1L;
       private boolean color;
       private Set<T> items;

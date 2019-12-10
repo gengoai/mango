@@ -5,7 +5,6 @@ import com.gengoai.collection.Lists;
 import com.gengoai.collection.Sets;
 import com.gengoai.collection.Streams;
 import com.gengoai.conversion.Cast;
-import com.gengoai.conversion.Converter;
 import com.gengoai.conversion.Val;
 import com.gengoai.string.Strings;
 import com.google.gson.*;
@@ -28,47 +27,8 @@ import static com.gengoai.tuple.Tuples.$;
 public class JsonEntry implements Serializable {
    private JsonElement element;
 
-   private void writeObject(ObjectOutputStream oos) throws IOException {
-      oos.writeUTF(element.toString());
-   }
-
-   private void readObject(ObjectInputStream ois) throws IOException {
-      element = Json.parse(ois.readUTF()).element;
-   }
-
-
    private JsonEntry(JsonElement element) {
       this.element = element;
-   }
-
-
-   public JsonEntry mergeObject(JsonEntry entry) {
-      if (entry.isObject()) {
-         entry.propertyIterator()
-              .forEachRemaining(e -> this.addProperty(e.getKey(), e.getValue()));
-         return this;
-      }
-      throw new IllegalArgumentException("Object expected");
-   }
-
-   public String pprint() {
-      return pprint(3);
-   }
-
-   public String pprint(int indent) {
-      StringWriter sw = new StringWriter();
-      try (JsonWriter jw = MAPPER.newJsonWriter(sw)) {
-         jw.setIndent(Strings.repeat(' ', indent));
-         MAPPER.toJson(element, jw);
-      } catch (Exception e) {
-         //ignore
-      }
-      try {
-         sw.close();
-         return sw.getBuffer().toString();
-      } catch (IOException e) {
-         return null;
-      }
    }
 
    /**
@@ -107,22 +67,6 @@ public class JsonEntry implements Serializable {
     */
    public static JsonEntry from(Object v) {
       return new JsonEntry(toElement(v));
-   }
-
-   private static JsonElement iterableToElement(Iterable<?> iterable) {
-      JsonArray array = new JsonArray();
-      if (iterable != null) {
-         iterable.forEach(item -> array.add(from(item).element));
-      }
-      return array;
-   }
-
-   private static JsonElement mapToElement(Map<?, ?> map) {
-      JsonObject obj = new JsonObject();
-      if (map != null) {
-         map.forEach((k, v) -> obj.add(Converter.convertSilently(k, String.class), from(v).element));
-      }
-      return obj;
    }
 
    /**
@@ -238,7 +182,6 @@ public class JsonEntry implements Serializable {
    public void forEachProperty(BiConsumer<String, JsonEntry> consumer) {
       propertyIterator().forEachRemaining(e -> consumer.accept(e.getKey(), e.getValue()));
    }
-
 
    public Object get() {
       if (isString()) {
@@ -543,7 +486,6 @@ public class JsonEntry implements Serializable {
       return defaultValue;
    }
 
-
    /**
     * Gets the value of the given property name as a double
     *
@@ -579,7 +521,6 @@ public class JsonEntry implements Serializable {
       return element;
    }
 
-
    /**
     * Gets the value of the given property name as a float
     *
@@ -605,7 +546,6 @@ public class JsonEntry implements Serializable {
       }
       return defaultValue;
    }
-
 
    /**
     * Gets the value of the given property name as a int
@@ -633,7 +573,6 @@ public class JsonEntry implements Serializable {
       return defaultValue;
    }
 
-
    /**
     * Gets the value of the given property name as a long
     *
@@ -660,7 +599,6 @@ public class JsonEntry implements Serializable {
       return defaultValue;
    }
 
-
    /**
     * Gets the value of the given property name as a Number
     *
@@ -686,7 +624,6 @@ public class JsonEntry implements Serializable {
       }
       return defaultValue;
    }
-
 
    public Optional<JsonEntry> getOptionalProperty(String propertyName) {
       if (hasProperty(propertyName)) {
@@ -902,6 +839,35 @@ public class JsonEntry implements Serializable {
       return Collections.emptySet();
    }
 
+   public JsonEntry mergeObject(JsonEntry entry) {
+      if (entry.isObject()) {
+         entry.propertyIterator()
+              .forEachRemaining(e -> this.addProperty(e.getKey(), e.getValue()));
+         return this;
+      }
+      throw new IllegalArgumentException("Object expected");
+   }
+
+   public String pprint() {
+      return pprint(3);
+   }
+
+   public String pprint(int indent) {
+      StringWriter sw = new StringWriter();
+      try (JsonWriter jw = MAPPER.newJsonWriter(sw)) {
+         jw.setIndent(Strings.repeat(' ', indent));
+         MAPPER.toJson(element, jw);
+      } catch (Exception e) {
+         throw new RuntimeException(e);
+      }
+      try {
+         sw.close();
+         return sw.getBuffer().toString();
+      } catch (IOException e) {
+         throw new RuntimeException(e);
+      }
+   }
+
    /**
     * Gets an iterator over the elements in this element.
     *
@@ -913,6 +879,10 @@ public class JsonEntry implements Serializable {
                                     e -> $(e.getKey(), new JsonEntry(e.getValue())));
       }
       return Collections.emptyIterator();
+   }
+
+   private void readObject(ObjectInputStream ois) throws IOException {
+      element = Json.parse(ois.readUTF()).element;
    }
 
    public int size() {
@@ -929,6 +899,10 @@ public class JsonEntry implements Serializable {
    @Override
    public String toString() {
       return element.toString();
+   }
+
+   private void writeObject(ObjectOutputStream oos) throws IOException {
+      oos.writeUTF(element.toString());
    }
 
    private static class ElementList extends AbstractList<JsonEntry> {

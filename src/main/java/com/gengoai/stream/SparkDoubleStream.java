@@ -21,12 +21,11 @@
 
 package com.gengoai.stream;
 
+import com.gengoai.Primitives;
 import com.gengoai.Validation;
-import com.gengoai.collection.PrimitiveArrayList;
 import com.gengoai.config.Config;
 import com.gengoai.config.Configurator;
 import com.gengoai.conversion.Cast;
-import com.gengoai.conversion.Converter;
 import com.gengoai.function.*;
 import com.gengoai.math.EnhancedDoubleStatistics;
 import com.gengoai.stream.accumulator.MStatisticsAccumulator;
@@ -35,10 +34,11 @@ import org.apache.spark.broadcast.Broadcast;
 import scala.Tuple2;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import java.util.OptionalDouble;
 import java.util.PrimitiveIterator;
+import java.util.stream.Collectors;
 
 /**
  * <p>An implementation of a <code>MDoubleStream</code> backed by Spark DoubleRDD.</p>
@@ -48,8 +48,8 @@ import java.util.PrimitiveIterator;
 class SparkDoubleStream implements MDoubleStream, Serializable {
    private static final long serialVersionUID = 1L;
    private final JavaDoubleRDD doubleStream;
-   private SerializableRunnable onClose;
    private volatile Broadcast<Config> configBroadcast;
+   private SerializableRunnable onClose;
 
    /**
     * Instantiates a new Spark double stream.
@@ -120,7 +120,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
    public MDoubleStream flatMap(SerializableDoubleFunction<double[]> mapper) {
       return new SparkDoubleStream(doubleStream.flatMapToDouble(d -> {
          Configurator.INSTANCE.configure(configBroadcast.value());
-         return new PrimitiveArrayList<>(mapper.apply(d), Double.class).iterator();
+         return Arrays.stream(mapper.apply(d)).iterator();
       }));
    }
 
@@ -303,7 +303,7 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
 
    @Override
    public double[] toArray() {
-      return Converter.convertSilently(doubleStream.collect(), double[].class);
+      return Primitives.toDoubleArray(doubleStream.collect());
    }
 
    @Override
@@ -314,8 +314,11 @@ class SparkDoubleStream implements MDoubleStream, Serializable {
          return new SparkDoubleStream(doubleStream.union(Cast.<SparkDoubleStream>as(other).getRDD()));
       }
       SparkStreamingContext sc = getContext();
-      List<Double> doubleList = new PrimitiveArrayList<>(other.toArray(), Double.class);
-      return new SparkDoubleStream(doubleStream.union(sc.sparkContext().parallelizeDoubles(doubleList)));
+      return new SparkDoubleStream(doubleStream.union(sc.sparkContext()
+                                                        .parallelizeDoubles(Arrays.stream(other.toArray())
+                                                                                  .boxed()
+                                                                                  .collect(Collectors.toList())
+                                                                           )));
    }
 
    @Override

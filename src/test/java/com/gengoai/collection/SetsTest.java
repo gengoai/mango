@@ -25,7 +25,6 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
@@ -41,14 +40,6 @@ public class SetsTest {
                    Sets.transform(Sets.hashSetOf("a", "b", "c"), String::toUpperCase)
                   );
       assertTrue(Sets.transform(Collections.<String>emptySet(), String::toUpperCase).isEmpty());
-   }
-
-   @Test
-   public void filter() throws Exception {
-      assertEquals(Sets.hashSetOf(2, 4, 6),
-                   Sets.filter(Sets.hashSetOf(1, 2, 3, 4, 5, 6), i -> i % 2 == 0)
-                  );
-      assertTrue(Sets.filter(Collections.<String>emptySet(), Objects::nonNull).isEmpty());
    }
 
    @Test

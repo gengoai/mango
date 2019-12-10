@@ -1,6 +1,8 @@
 package com.gengoai.collection;
 
-import java.util.function.BiFunction;
+import lombok.NonNull;
+
+import java.util.Arrays;
 
 /**
  * <p>Convenience methods for creating object and primitive arrays.</p>
@@ -100,6 +102,16 @@ public final class Arrays2 {
    }
 
    /**
+    * Creates an array of long values
+    *
+    * @param values the values
+    * @return the long values
+    */
+   public static long[] arrayOfLong(long... values) {
+      return values;
+   }
+
+   /**
     * Creates an array of short values
     *
     * @param values the values
@@ -123,14 +135,16 @@ public final class Arrays2 {
       return values;
    }
 
-   /**
-    * Creates an array of long values
-    *
-    * @param values the values
-    * @return the long values
-    */
-   public static long[] arrayOfLong(long... values){
-      return values;
+   public static byte[] concat(@NonNull byte[] b1, @NonNull byte[] b2) {
+      if (b1.length == 0) {
+         return Arrays.copyOf(b2, b2.length);
+      }
+      if (b2.length == 0) {
+         return Arrays.copyOf(b1, b1.length);
+      }
+      byte[] out = Arrays.copyOf(b1, b1.length + b2.length);
+      System.arraycopy(b2, 0, out, b1.length, b2.length);
+      return out;
    }
 
 }//END OF Arrays2

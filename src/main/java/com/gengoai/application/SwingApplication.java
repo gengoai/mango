@@ -1,6 +1,5 @@
 package com.gengoai.application;
 
-import com.gengoai.Stopwatch;
 import com.gengoai.Validation;
 import com.gengoai.config.Config;
 import com.gengoai.logging.Loggable;
@@ -50,7 +49,6 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
 
 
    public static void runApplication(Supplier<? extends SwingApplication> supplier, String[] args) {
-//      systemLookAndFeel();
       SwingApplication application = supplier.get();
       application.run(args);
    }

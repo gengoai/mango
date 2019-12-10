@@ -19,26 +19,13 @@ import static org.junit.Assert.*;
 public class IterablesTest {
 
    @Test
-   public void zipWithIndex() {
-      Iterable<String> i1 = arrayListOf("A", "B");
-      Iterable<Map.Entry<String, Integer>> withIndex = Iterables.zipWithIndex(i1);
-      assertEquals($("A", 0), Iterables.getFirst(withIndex).orElseThrow(IndexOutOfBoundsException::new));
-      assertEquals($("B", 1), Iterables.getLast(withIndex).orElseThrow(IndexOutOfBoundsException::new));
-   }
-
-   @Test
-   public void transform() {
-      Iterable<Integer> i1 = arrayListOf(1, 2, 3, 4, 5, 6);
-      Iterable<Integer> transform = Iterables.transform(i1, n -> n + 1);
-      assertEquals(7, Iterables.getLast(transform, -1), 0);
-   }
-
-
-   @Test
-   public void filter() {
-      Iterable<Integer> i1 = arrayListOf(1, 2, 3, 4, 5, 6);
-      Iterable<Integer> filtered = Iterables.filter(i1, n -> n % 2 == 0);
-      assertEquals(3, Iterables.size(filtered));
+   public void arrayAsIterable() throws Exception {
+      Assert.assertEquals(arrayListOf(1, 2, 3),
+                          Lists.asArrayList(Iterables.asIterable(new int[]{1, 2, 3})));
+      Assert.assertEquals(arrayListOf(1, 2, 3),
+                          Lists.asArrayList(Iterables.asIterable(new Integer[]{1, 2, 3})));
+      Assert.assertEquals(arrayListOf(1d, 2d, 3d),
+                          Lists.asArrayList(Iterables.asIterable(new double[]{1.0, 2.0, 3.0})));
    }
 
    @Test
@@ -50,21 +37,11 @@ public class IterablesTest {
    }
 
    @Test
-   public void arrayAsIterable() throws Exception {
-      Assert.assertEquals(arrayListOf(1, 2, 3),
-                          Lists.asArrayList(Iterables.asIterable(new int[]{1, 2, 3}, Integer.class)));
-      Assert.assertEquals(arrayListOf(1, 2, 3),
-                          Lists.asArrayList(Iterables.asIterable(new Integer[]{1, 2, 3}, Integer.class)));
-      Assert.assertEquals(arrayListOf(1, 2, 3),
-                          Lists.asArrayList(Iterables.asIterable(new double[]{1.0, 2.0, 3.0}, Integer.class)));
+   public void filter() {
+      Iterable<Integer> i1 = arrayListOf(1, 2, 3, 4, 5, 6);
+      Iterable<Integer> filtered = Iterables.filter(i1, n -> n % 2 == 0);
+      assertEquals(3, Iterables.size(filtered));
    }
-
-   @Test(expected = ClassCastException.class)
-   public void arrayAsIterableBadCast() throws Exception {
-      Assert.assertEquals(arrayListOf(1, 2, 3),
-                          Lists.asArrayList(Iterables.asIterable(new Double[]{1.0, 2.0, 3.0}, Integer.class)));
-   }
-
 
    @Test
    public void getFirst() throws Exception {
@@ -79,7 +56,6 @@ public class IterablesTest {
       assertFalse(Iterables.getLast(Collections.emptySet()).isPresent());
       assertEquals("C", Iterables.getLast(Arrays.asList("A", "B", "C")).orElse(null));
    }
-
 
    @Test
    public void iteratorToIterable() throws Exception {
@@ -98,6 +74,13 @@ public class IterablesTest {
    }
 
    @Test
+   public void transform() {
+      Iterable<Integer> i1 = arrayListOf(1, 2, 3, 4, 5, 6);
+      Iterable<Integer> transform = Iterables.transform(i1, n -> n + 1);
+      assertEquals(7, Iterables.getLast(transform, -1), 0);
+   }
+
+   @Test
    public void zip() throws Exception {
       Assert.assertEquals(arrayListOf(new AbstractMap.SimpleEntry<>("A", 1),
                                       new AbstractMap.SimpleEntry<>("B", 2),
@@ -107,6 +90,14 @@ public class IterablesTest {
                          );
 
       assertEquals(0L, Iterables.size(Iterables.zip(Collections.emptySet(), Arrays.asList(1, 2, 3, 4))));
+   }
+
+   @Test
+   public void zipWithIndex() {
+      Iterable<String> i1 = arrayListOf("A", "B");
+      Iterable<Map.Entry<String, Integer>> withIndex = Iterables.zipWithIndex(i1);
+      assertEquals($("A", 0), Iterables.getFirst(withIndex).orElseThrow(IndexOutOfBoundsException::new));
+      assertEquals($("B", 1), Iterables.getLast(withIndex).orElseThrow(IndexOutOfBoundsException::new));
    }
 
 

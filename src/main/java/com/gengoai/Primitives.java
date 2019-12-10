@@ -1,12 +1,10 @@
 package com.gengoai;
 
-import com.gengoai.collection.Iterables;
 import com.gengoai.conversion.Cast;
-import com.gengoai.conversion.Converter;
 import com.gengoai.function.Switch;
 import lombok.NonNull;
+import org.apache.mahout.math.list.*;
 
-import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,18 +33,6 @@ public final class Primitives {
    private static final Map<Class<?>, Class<?>> primitiveToWrap = new HashMap<>(20);
    private static final Map<Class<?>, Class<?>> wrapToPrimitive = new HashMap<>(20);
 
-   static {
-      add(int.class, Integer.class);
-      add(short.class, Short.class);
-      add(long.class, Long.class);
-      add(char.class, Character.class);
-      add(boolean.class, Boolean.class);
-      add(void.class, Void.class);
-      add(byte.class, Byte.class);
-      add(float.class, Float.class);
-      add(double.class, Double.class);
-   }
-
    private Primitives() {
       throw new IllegalAccessError();
    }
@@ -67,24 +53,19 @@ public final class Primitives {
       return Cast.as(defaultValues.apply(wrap(clazz)));
    }
 
-   private static Object toArray(Iterable<? extends Number> numbers, Class<?> targetClass) {
-      Object array = Array.newInstance(targetClass, Iterables.size(numbers));
-      int index = 0;
-      for (Number number : numbers) {
-         Array.set(array, index, Converter.convertSilently(number, targetClass));
-         index++;
-      }
-      return array;
-   }
-
    /**
     * Converts and iterable of numbers to an array of byte
     *
     * @param numbers the numbers to convert
     * @return the byte array
     */
-   public static byte[] toByteArray(Iterable<? extends Number> numbers) {
-      return Cast.as(toArray(notNull(numbers), byte.class), byte[].class);
+   public static byte[] toByteArray(@NonNull Iterable<? extends Number> numbers) {
+      ByteArrayList list = new ByteArrayList();
+      for (Number number : numbers) {
+         list.add(number.byteValue());
+      }
+      list.trimToSize();
+      return list.elements();
    }
 
    /**
@@ -93,14 +74,13 @@ public final class Primitives {
     * @param characters the characters to convert
     * @return the char array
     */
-   public static char[] toCharArray(Iterable<Character> characters) {
-      char[] rval = new char[Iterables.size(notNull(characters))];
-      int index = 0;
+   public static char[] toCharArray(@NonNull Iterable<Character> characters) {
+      CharArrayList list = new CharArrayList();
       for (Character character : characters) {
-         rval[index] = character;
-         index++;
+         list.add(character);
       }
-      return rval;
+      list.trimToSize();
+      return list.elements();
    }
 
    /**
@@ -109,8 +89,13 @@ public final class Primitives {
     * @param numbers the numbers to convert
     * @return the double array
     */
-   public static double[] toDoubleArray(Iterable<? extends Number> numbers) {
-      return Cast.as(toArray(notNull(numbers), double.class), double[].class);
+   public static double[] toDoubleArray(@NonNull Iterable<? extends Number> numbers) {
+      DoubleArrayList list = new DoubleArrayList();
+      for (Number number : numbers) {
+         list.add(number.doubleValue());
+      }
+      list.trimToSize();
+      return list.elements();
    }
 
    /**
@@ -119,8 +104,13 @@ public final class Primitives {
     * @param numbers the numbers to convert
     * @return the float array
     */
-   public static float[] toFloatArray(Iterable<? extends Number> numbers) {
-      return Cast.as(toArray(notNull(numbers), float.class), float[].class);
+   public static float[] toFloatArray(@NonNull Iterable<? extends Number> numbers) {
+      FloatArrayList list = new FloatArrayList();
+      for (Number number : numbers) {
+         list.add(number.floatValue());
+      }
+      list.trimToSize();
+      return list.elements();
    }
 
    /**
@@ -129,8 +119,13 @@ public final class Primitives {
     * @param numbers the numbers to convert
     * @return the int array
     */
-   public static int[] toIntArray(Iterable<? extends Number> numbers) {
-      return Cast.as(toArray(notNull(numbers), int.class), int[].class);
+   public static int[] toIntArray(@NonNull Iterable<? extends Number> numbers) {
+      IntArrayList list = new IntArrayList();
+      for (Number number : numbers) {
+         list.add(number.intValue());
+      }
+      list.trimToSize();
+      return list.elements();
    }
 
    /**
@@ -139,8 +134,13 @@ public final class Primitives {
     * @param numbers the numbers to convert
     * @return the long array
     */
-   public static long[] toLongArray(Iterable<? extends Number> numbers) {
-      return Cast.as(toArray(notNull(numbers), long.class), long[].class);
+   public static long[] toLongArray(@NonNull Iterable<? extends Number> numbers) {
+      LongArrayList list = new LongArrayList();
+      for (Number number : numbers) {
+         list.add(number.longValue());
+      }
+      list.trimToSize();
+      return list.elements();
    }
 
    /**
@@ -149,8 +149,13 @@ public final class Primitives {
     * @param numbers the numbers to convert
     * @return the short array
     */
-   public static short[] toShortArray(Iterable<? extends Number> numbers) {
-      return Cast.as(toArray(notNull(numbers), short.class), short[].class);
+   public static short[] toShortArray(@NonNull Iterable<? extends Number> numbers) {
+      ShortArrayList list = new ShortArrayList();
+      for (Number number : numbers) {
+         list.add(number.shortValue());
+      }
+      list.trimToSize();
+      return list.elements();
    }
 
    /**
@@ -174,6 +179,18 @@ public final class Primitives {
     */
    public static <T> Class<T> wrap(@NonNull Class<T> type) {
       return Cast.as(primitiveToWrap.getOrDefault(type, type));
+   }
+
+   static {
+      add(int.class, Integer.class);
+      add(short.class, Short.class);
+      add(long.class, Long.class);
+      add(char.class, Character.class);
+      add(boolean.class, Boolean.class);
+      add(void.class, Void.class);
+      add(byte.class, Byte.class);
+      add(float.class, Float.class);
+      add(double.class, Double.class);
    }
 
 

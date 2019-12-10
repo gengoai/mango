@@ -23,7 +23,6 @@ package com.gengoai.string;
 
 import com.gengoai.Validation;
 import com.gengoai.collection.Streams;
-import com.gengoai.conversion.Converter;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVReader;
 
@@ -309,7 +308,7 @@ public final class Strings {
     */
    public static String join(Iterable<?> iterable, CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
       return Streams.asStream(iterable)
-                    .map(obj -> Converter.convertSilently(obj, String.class))
+                    .map(Object::toString)
                     .collect(Collectors.joining(delimiter, prefix, suffix));
    }
 
@@ -322,7 +321,7 @@ public final class Strings {
     */
    public static String join(Iterable<?> iterable, CharSequence delimiter) {
       return Streams.asStream(iterable)
-                    .map(obj -> Converter.convertSilently(obj, String.class))
+                    .map(Object::toString)
                     .collect(Collectors.joining(delimiter));
    }
 
@@ -336,7 +335,7 @@ public final class Strings {
     */
    public static <T> String join(T[] values, CharSequence delimiter) {
       return Streams.asStream(values)
-                    .map(obj -> Converter.convertSilently(obj, String.class))
+                    .map(Object::toString)
                     .collect(Collectors.joining(delimiter));
    }
 
@@ -353,7 +352,7 @@ public final class Strings {
     */
    public static <T> String join(T[] values, CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
       return Streams.asStream(values)
-                    .map(obj -> Converter.convertSilently(obj, String.class))
+                    .map(Object::toString)
                     .collect(Collectors.joining(delimiter, prefix, suffix));
    }
 
