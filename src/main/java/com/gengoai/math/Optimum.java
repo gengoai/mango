@@ -163,6 +163,44 @@ public enum Optimum implements Comparator<Double> {
    }
 
    /**
+    * Selects the index of the best value in the given array
+    *
+    * @param array the array to select from
+    * @return the index of the optimum value
+    */
+   public int optimumIndex(float[] array) {
+      notNull(array);
+      double val = startingValue();
+      int index = -1;
+      for (int i = 0; i < array.length; i++) {
+         if (test(array[i], val)) {
+            val = array[i];
+            index = i;
+         }
+      }
+      return index;
+   }
+
+   /**
+    * Selects the index of the best value in the given array
+    *
+    * @param array the array to select from
+    * @return the index of the optimum value
+    */
+   public int optimumIndex(int[] array) {
+      notNull(array);
+      double val = startingValue();
+      int index = -1;
+      for (int i = 0; i < array.length; i++) {
+         if (test(array[i], val)) {
+            val = array[i];
+            index = i;
+         }
+      }
+      return index;
+   }
+
+   /**
     * Selects the best value from the given array
     *
     * @param array the array to select from

@@ -71,7 +71,7 @@ public class LocalStream<T> extends BaseJavaStream<T> implements Serializable {
    public void close() throws IOException {
       try {
          streamSupplier.get().close();
-      } catch (UnsupportedOperationException uoe) {
+      } catch (UnsupportedOperationException | IllegalStateException uoe) {
          //noopt
       }
    }
@@ -165,7 +165,11 @@ public class LocalStream<T> extends BaseJavaStream<T> implements Serializable {
       if (streamSupplier.get().isParallel()) {
          return this;
       }
-      return new LocalStream<>(() -> streamSupplier.get().parallel(), cacheStrategy);
+      try {
+         return new LocalStream<>(() -> streamSupplier.get().parallel(), cacheStrategy);
+      } catch (IllegalStateException e){
+         return this;
+      }
    }
 
    @Override

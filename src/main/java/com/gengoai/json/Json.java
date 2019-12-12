@@ -20,113 +20,12 @@ import java.util.*;
 public final class Json {
    public static final Gson MAPPER;
 
-   static {
-      GsonBuilder builder = new GsonBuilder();
-      Set<String> processed = new HashSet<>();
-
-
-      for (Iterator<Resource> marshallers = Resources.findAllClasspathResources("META-INF/marshallers.json");
-           marshallers.hasNext(); ) {
-         Resource r = marshallers.next();
-         if (r.exists()) {
-            try {
-               for (String line : r.readLines()) {
-                  if (processed.contains(line)) {
-                     continue;
-                  }
-                  processed.add(line);
-                  String[] parts = line.split("\t");
-                  if (parts.length == 3) {
-                     Class<?> type = Reflect.getClassForNameQuietly(parts[0]);
-                     boolean isHier = Boolean.parseBoolean(parts[1]);
-                     Object adapter;
-                     try {
-                        adapter = Reflect.onClass(parts[2])
-                                         .allowPrivilegedAccess()
-                                         .create()
-                                         .get();
-                     } catch (Exception e) {
-                        throw new RuntimeException(e);
-                     }
-                     if (isHier) {
-                        builder.registerTypeHierarchyAdapter(type, adapter);
-                     } else {
-                        builder.registerTypeAdapter(type, adapter);
-                     }
-                  }
-               }
-            } catch (IOException e) {
-               throw new RuntimeException(e);
-            }
-         }
-      }
-
-
-      builder.registerTypeHierarchyAdapter(JsonEntry.class, new JsonEntryMarshaller());
-      builder.registerTypeHierarchyAdapter(Enum.class, new EnumMarshaller());
-      builder.registerTypeHierarchyAdapter(Type.class, new TypeMarshallar());
-      MAPPER = builder.create();
-   }
-
-   protected static class TypeMarshallar extends JsonMarshaller<Type> {
-
-      @Override
-      protected Type deserialize(JsonEntry entry, Type type) {
-         try {
-            return entry.isObject()
-                   ? TypeUtils.parameterizedType(entry.getProperty("rawType").getAs(Type.class),
-                                                 entry.getProperty("parameters")
-                                                      .getAsArray(Type.class)
-                                                      .toArray(new Type[1]))
-                   : Reflect.getClassForName(entry.getAsString());
-         } catch (Exception e) {
-            throw new RuntimeException(e);
-         }
-      }
-
-      @Override
-      protected JsonEntry serialize(Type type, Type type2) {
-         if (type instanceof ParameterizedType) {
-            return JsonEntry.object()
-                            .addProperty("rawType", TypeUtils.asClass(type))
-                            .addProperty("parameters", TypeUtils.parameterizedType(type));
-         }
-         return JsonEntry.from(type.getTypeName());
-      }
-   }
-
-   protected static class EnumMarshaller extends JsonMarshaller<Enum> {
-
-      @Override
-      @SuppressWarnings("unchecked")
-      protected Enum deserialize(JsonEntry entry, Type type) {
-         Class<Enum> c = TypeUtils.asClass(type);
-         return Enum.valueOf(c, entry.getAsString());
-      }
-
-      @Override
-      protected JsonEntry serialize(Enum anEnum, Type type) {
-         return JsonEntry.from(anEnum.name());
-      }
-   }
-
-   protected static class JsonEntryMarshaller implements JsonSerializer<JsonEntry>, JsonDeserializer<JsonEntry> {
-
-      @Override
-      public JsonEntry deserialize(JsonElement jsonElement,
-                                   Type type,
-                                   JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-         return JsonEntry.from(jsonElement);
-      }
-
-      @Override
-      public JsonElement serialize(JsonEntry entry, Type type, JsonSerializationContext jsonSerializationContext) {
-         return entry.getElement();
-      }
-   }
-
    private Json() {
       throw new IllegalAccessError();
+   }
+
+   public static JsonEntry asJsonEntry(Object o) {
+      return JsonEntry.from(o);
    }
 
    /**
@@ -204,6 +103,56 @@ public final class Json {
    }
 
    /**
+    * Parses the json string.
+    *
+    * @param json the json string to parse
+    * @return the parsed string as a json entry
+    * @throws IOException something went wrong parsing the json.
+    */
+   public static JsonEntry parse(String json) throws IOException {
+      return parse(Resources.fromString(json));
+   }
+
+   /**
+    * Parse the json in the given string returning the given type.
+    *
+    * @param <T>  the type parameter
+    * @param json the json
+    * @param type the type
+    * @return the parsed object
+    * @throws IOException Something went wrong parsing the json.
+    */
+   public static <T> T parse(String json, Type type) throws IOException {
+      return parse(Resources.fromString(json)).getAs(type);
+   }
+
+   /**
+    * Parses the given resource as json entry
+    *
+    * @param json the resource to read from
+    * @return the parsed resource as a json entry
+    * @throws IOException Something went wrong parsing the resource
+    */
+   public static JsonEntry parse(Resource json) throws IOException {
+      try (JsonReader reader = createReader(json)) {
+         return reader.nextElement();
+      }
+   }
+
+   /**
+    * Parse t.
+    *
+    * @param <T>  the type parameter
+    * @param json the json
+    * @param type the type
+    * @return the t
+    * @throws IOException the io exception
+    */
+   public static <T> T parse(Resource json, Type type) throws IOException {
+      return parse(json).getAs(type);
+   }
+
+   /**
     * Loads an array of objects from the given resource in json format.
     *
     * @param resource the resource to read from
@@ -236,7 +185,6 @@ public final class Json {
    public static Map<String, JsonEntry> parseObject(Resource json) throws IOException {
       return parse(json).getAsMap();
    }
-
 
    /**
     * Parses the json in the given resource creating an object of the given class type.
@@ -276,56 +224,109 @@ public final class Json {
       return parseObject(Resources.fromString(json));
    }
 
-   /**
-    * Parses the json string.
-    *
-    * @param json the json string to parse
-    * @return the parsed string as a json entry
-    * @throws IOException something went wrong parsing the json.
-    */
-   public static JsonEntry parse(String json) throws IOException {
-      return parse(Resources.fromString(json));
-   }
+   protected static class EnumMarshaller extends JsonMarshaller<Enum> {
 
-   /**
-    * Parse the json in the given string returning the given type.
-    *
-    * @param <T>  the type parameter
-    * @param json the json
-    * @param type the type
-    * @return the parsed object
-    * @throws IOException Something went wrong parsing the json.
-    */
-   public static <T> T parse(String json, Type type) throws IOException {
-      return parse(Resources.fromString(json)).getAs(type);
-   }
+      @Override
+      @SuppressWarnings("unchecked")
+      protected Enum deserialize(JsonEntry entry, Type type) {
+         Class<Enum> c = TypeUtils.asClass(type);
+         return Enum.valueOf(c, entry.getAsString());
+      }
 
-
-   /**
-    * Parses the given resource as json entry
-    *
-    * @param json the resource to read from
-    * @return the parsed resource as a json entry
-    * @throws IOException Something went wrong parsing the resource
-    */
-   public static JsonEntry parse(Resource json) throws IOException {
-      try (JsonReader reader = createReader(json)) {
-         return reader.nextElement();
+      @Override
+      protected JsonEntry serialize(Enum anEnum, Type type) {
+         return JsonEntry.from(anEnum.name());
       }
    }
 
+   protected static class JsonEntryMarshaller implements JsonSerializer<JsonEntry>, JsonDeserializer<JsonEntry> {
 
-   /**
-    * Parse t.
-    *
-    * @param <T>  the type parameter
-    * @param json the json
-    * @param type the type
-    * @return the t
-    * @throws IOException the io exception
-    */
-   public static <T> T parse(Resource json, Type type) throws IOException {
-      return parse(json).getAs(type);
+      @Override
+      public JsonEntry deserialize(JsonElement jsonElement,
+                                   Type type,
+                                   JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+         return JsonEntry.from(jsonElement);
+      }
+
+      @Override
+      public JsonElement serialize(JsonEntry entry, Type type, JsonSerializationContext jsonSerializationContext) {
+         return entry.getElement();
+      }
+   }
+
+   protected static class TypeMarshallar extends JsonMarshaller<Type> {
+
+      @Override
+      protected Type deserialize(JsonEntry entry, Type type) {
+         try {
+            return entry.isObject()
+                   ? TypeUtils.parameterizedType(entry.getProperty("rawType").getAs(Type.class),
+                                                 entry.getProperty("parameters")
+                                                      .getAsArray(Type.class)
+                                                      .toArray(new Type[1]))
+                   : Reflect.getClassForName(entry.getAsString());
+         } catch (Exception e) {
+            throw new RuntimeException(e);
+         }
+      }
+
+      @Override
+      protected JsonEntry serialize(Type type, Type type2) {
+         if (type instanceof ParameterizedType) {
+            return JsonEntry.object()
+                            .addProperty("rawType", TypeUtils.asClass(type))
+                            .addProperty("parameters", TypeUtils.parameterizedType(type));
+         }
+         return JsonEntry.from(type.getTypeName());
+      }
+   }
+
+   static {
+      GsonBuilder builder = new GsonBuilder();
+      Set<String> processed = new HashSet<>();
+
+
+      for (Iterator<Resource> marshallers = Resources.findAllClasspathResources("META-INF/marshallers.json");
+           marshallers.hasNext(); ) {
+         Resource r = marshallers.next();
+         if (r.exists()) {
+            try {
+               for (String line : r.readLines()) {
+                  if (processed.contains(line)) {
+                     continue;
+                  }
+                  processed.add(line);
+                  String[] parts = line.split("\t");
+                  if (parts.length == 3) {
+                     Class<?> type = Reflect.getClassForNameQuietly(parts[0]);
+                     boolean isHier = Boolean.parseBoolean(parts[1]);
+                     Object adapter;
+                     try {
+                        adapter = Reflect.onClass(parts[2])
+                                         .allowPrivilegedAccess()
+                                         .create()
+                                         .get();
+                     } catch (Exception e) {
+                        throw new RuntimeException(e);
+                     }
+                     if (isHier) {
+                        builder.registerTypeHierarchyAdapter(type, adapter);
+                     } else {
+                        builder.registerTypeAdapter(type, adapter);
+                     }
+                  }
+               }
+            } catch (IOException e) {
+               throw new RuntimeException(e);
+            }
+         }
+      }
+
+
+      builder.registerTypeHierarchyAdapter(JsonEntry.class, new JsonEntryMarshaller());
+      builder.registerTypeHierarchyAdapter(Enum.class, new EnumMarshaller());
+      builder.registerTypeHierarchyAdapter(Type.class, new TypeMarshallar());
+      MAPPER = builder.create();
    }
 
 }//END OF Json

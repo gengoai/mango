@@ -36,7 +36,7 @@ import java.io.Serializable;
  * @author David B. Bracewell
  */
 @Data
-final class KeyValueStoreConnection implements Specifiable, Serializable {
+public final class KeyValueStoreConnection implements Specifiable, Serializable {
    private static final long serialVersionUID = 1L;
    @QueryParameter
    private boolean compressed = true;

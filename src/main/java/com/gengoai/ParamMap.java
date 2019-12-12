@@ -24,6 +24,8 @@ package com.gengoai;
 
 import com.gengoai.annotation.JsonAdapter;
 import com.gengoai.conversion.Cast;
+import com.gengoai.conversion.Converter;
+import com.gengoai.conversion.TypeConversionException;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonMarshaller;
 import com.gengoai.reflection.Reflect;
@@ -184,7 +186,11 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
     */
    public <T> V set(String param, T value) {
       if (map.containsKey(param)) {
-         return map.get(param).set(Cast.as(value));
+         try {
+            return map.get(param).set(Cast.as(Converter.convert(value, map.get(param).param.type)));
+         } catch (TypeConversionException e) {
+            throw new IllegalArgumentException("Unknown Parameter: " + param);
+         }
       }
       throw new IllegalArgumentException("Unknown Parameter: " + param);
    }

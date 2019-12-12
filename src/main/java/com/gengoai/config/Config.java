@@ -32,6 +32,7 @@ import com.gengoai.conversion.Val;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.ClasspathResource;
 import com.gengoai.io.resource.Resource;
+import com.gengoai.json.Json;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.logging.LogManager;
 import com.gengoai.logging.Logger;
@@ -39,6 +40,7 @@ import com.gengoai.parsing.ParseException;
 import com.gengoai.reflection.BeanUtils;
 import com.gengoai.reflection.ReflectionException;
 import com.gengoai.string.Strings;
+import lombok.NonNull;
 
 import java.io.*;
 import java.lang.reflect.Type;
@@ -75,11 +77,11 @@ public final class Config implements Serializable {
    private static final String SYSTEM_PROPERTY = "system.";
    private static final Logger log = Logger.getLogger(Config.class);
    private static final long serialVersionUID = 6875819132224789761L;
-   private static Resource localConfigDirectory = Resources.fromFile(SystemInfo.USER_HOME + "/config/");
-   private static ClassLoader defaultClassLoader = Config.class.getClassLoader();
    private volatile static Config INSTANCE;
-   private final Map<String, String> properties = new ConcurrentHashMap<>();
+   private static ClassLoader defaultClassLoader = Config.class.getClassLoader();
+   private static Resource localConfigDirectory = Resources.fromFile(SystemInfo.USER_HOME + "/config/");
    private final Set<String> loaded = new ConcurrentSkipListSet<>();
+   private final Map<String, String> properties = new ConcurrentHashMap<>();
    /**
     * The Setter function.
     */
@@ -601,13 +603,24 @@ public final class Config implements Serializable {
       }
    }
 
+   public static void setProperty(@NonNull String name, Object value) {
+      if (value == null) {
+         getInstance().properties.remove(name);
+      }
+      if (value instanceof String) {
+         setProperty(name, value.toString());
+         return;
+      }
+      setProperty(name, Json.asJsonEntry(value).toString());
+   }
+
    /**
     * Sets the value of a property.
     *
     * @param name  the name of the property
     * @param value the value of the property
     */
-   public static void setProperty(String name, String value) {
+   public static void setProperty(@NonNull String name, String value) {
       getInstance().properties.put(name, value);
       if (name.toLowerCase().endsWith(".level")) {
          String className = name.substring(0, name.length() - ".level".length());
@@ -671,22 +684,6 @@ public final class Config implements Serializable {
    }
 
    /**
-    * Standard implementation of ConfigPropertySetter
-    */
-   enum ConfigSettingFunction implements ConfigPropertySetter {
-      /**
-       * The INSTANCE.
-       */
-      INSTANCE;
-
-      @Override
-      public void setProperty(String name, String value, String resourceName) {
-         Config.setProperty(name, value);
-      }
-
-   }
-
-   /**
     * The enum Config setting error.
     */
    enum ConfigSettingError implements ConfigPropertySetter {
@@ -698,6 +695,22 @@ public final class Config implements Serializable {
       @Override
       public void setProperty(String name, String value, String resourceName) {
          throw new IllegalStateException("Config not initialized");
+      }
+
+   }
+
+   /**
+    * Standard implementation of ConfigPropertySetter
+    */
+   enum ConfigSettingFunction implements ConfigPropertySetter {
+      /**
+       * The INSTANCE.
+       */
+      INSTANCE;
+
+      @Override
+      public void setProperty(String name, String value, String resourceName) {
+         Config.setProperty(name, value);
       }
 
    }

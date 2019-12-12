@@ -91,6 +91,22 @@ public class JsonEntry implements Serializable {
       return new JsonEntry(new JsonObject()).addProperty("@class", clazz);
    }
 
+   public static JsonEntry object(Object object) {
+      if (object == null) {
+         return new JsonEntry(JsonNull.INSTANCE);
+      }
+      return new JsonEntry(new JsonObject())
+         .addProperty("@class", object.getClass())
+         .addProperty("@value", object);
+   }
+
+   public static JsonEntry object(Class<?> clazz, Object value) {
+      return new JsonEntry(new JsonObject())
+         .addProperty("@class", clazz)
+         .addProperty("@value", value);
+   }
+
+
    private static JsonElement toElement(Object v) {
       if (v == null) {
          return JsonNull.INSTANCE;
@@ -184,6 +200,11 @@ public class JsonEntry implements Serializable {
    }
 
    public Object get() {
+      if (hasProperty("@class")) {
+         if (hasProperty("@value")) {
+            return getProperty("@value").getAs(getProperty("@class").getAs(Type.class));
+         }
+      }
       if (isString()) {
          return getAsString();
       }
@@ -216,6 +237,9 @@ public class JsonEntry implements Serializable {
       if (hasProperty("@class")) {
          Type t = getProperty("@class").getAs(Type.class);
          if (t != null) {
+            if (hasProperty("@value")) {
+               return MAPPER.fromJson(getProperty("@value").element, t);
+            }
             return MAPPER.fromJson(element, t);
          }
       }

@@ -42,7 +42,7 @@ public class SpecificationTest {
       assertEquals("~/main/path", specification.getPath());
       assertTrue(specification.getAllQueryValues("empty").isEmpty());
       assertEquals("a", specification.getQueryValue("empty", "a"));
-      assertTrue(specification.queryParameters().isEmpty());
+      assertTrue(specification.getQueryParameters().isEmpty());
 
       assertEquals("schema:protocol:subProtocol0::~/main/path", specification.toString());
    }
@@ -57,7 +57,7 @@ public class SpecificationTest {
       assertNull(specification.getPath());
       assertTrue(specification.getAllQueryValues("empty").isEmpty());
       assertEquals("a", specification.getQueryValue("empty", "a"));
-      assertTrue(specification.queryParameters().isEmpty());
+      assertTrue(specification.getQueryParameters().isEmpty());
 
       assertEquals("schema:protocol:subProtocol0", specification.toString());
    }
@@ -105,7 +105,7 @@ public class SpecificationTest {
       assertTrue(Strings.isNullOrBlank(specification.getSubProtocol(0)));
       assertTrue(Strings.isNullOrBlank(specification.getPath()));
       assertTrue(specification.getAllQueryValues("empty").isEmpty());
-      assertTrue(specification.queryParameters().isEmpty());
+      assertTrue(specification.getQueryParameters().isEmpty());
    }
 
    @Test(expected = IllegalArgumentException.class)

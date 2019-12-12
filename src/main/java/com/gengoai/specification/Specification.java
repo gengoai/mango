@@ -27,6 +27,7 @@ import com.gengoai.collection.Iterables;
 import com.gengoai.collection.multimap.ArrayListMultimap;
 import com.gengoai.collection.multimap.Multimap;
 import com.gengoai.config.Config;
+import com.gengoai.conversion.Converter;
 import com.gengoai.reflection.RField;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
@@ -104,17 +105,6 @@ public final class Specification implements Serializable {
       this.subProtocol = subProtocol;
       this.path = path;
    }
-
-
-   /**
-    * Gets the set of query parameter names and values set on the specification.
-    *
-    * @return the set of query parameter names and values set on the specification.
-    */
-   public Set<Map.Entry<String, String>> queryParameters() {
-      return Collections.unmodifiableSet(queryParameters.entries());
-   }
-
 
    private static void getQueryParameters(String query, Multimap<String, String> map) {
       if (Strings.isNotNullOrBlank(query)) {
@@ -205,7 +195,6 @@ public final class Specification implements Serializable {
       throw new IllegalArgumentException("Invalid Specification: " + specificationString);
    }
 
-
    /**
     * Gets all query values associated with a given parameter
     *
@@ -223,6 +212,15 @@ public final class Specification implements Serializable {
     */
    public List<String> getAllSubProtocol() {
       return Collections.unmodifiableList(subProtocol);
+   }
+
+   /**
+    * Gets the set of query parameter names and values set on the specification.
+    *
+    * @return the set of query parameter names and values set on the specification.
+    */
+   public Set<Map.Entry<String, String>> getQueryParameters() {
+      return Collections.unmodifiableSet(queryParameters.entries());
    }
 
    /**
@@ -247,6 +245,11 @@ public final class Specification implements Serializable {
       return index >= 0 && index < subProtocol.size()
              ? subProtocol.get(index)
              : null;
+   }
+
+   public Specification setQueryParameter(@NonNull String name, @NonNull Object value) {
+      queryParameters.put(name, Converter.convertSilently(value, String.class));
+      return this;
    }
 
    @Override

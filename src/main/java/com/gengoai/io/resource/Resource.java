@@ -30,6 +30,7 @@ import com.gengoai.io.FileUtils;
 import com.gengoai.io.Resources;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonMarshaller;
+import com.gengoai.stream.CacheStrategy;
 import com.gengoai.stream.LocalStream;
 import com.gengoai.stream.MStream;
 import com.google.gson.annotations.JsonAdapter;
@@ -60,54 +61,9 @@ import static com.gengoai.reflection.TypeUtils.asClass;
 public interface Resource {
 
    /**
-    * The type Resource marshaller.
-    */
-   class ResourceMarshaller extends JsonMarshaller<Resource> {
-
-      @Override
-      protected Resource deserialize(JsonEntry entry, Type typeOfT) {
-         return Resources.from(entry.getAsString());
-      }
-
-      @Override
-      public JsonEntry serialize(Resource resource, Type type) {
-         return JsonEntry.from(resource.descriptor());
-      }
-   }
-
-   /**
     * The constant ALL_FILE_PATTERN.
     */
    Pattern ALL_FILE_PATTERN = Pattern.compile(".*");
-
-
-   /**
-    * Copies the contents of this resource to another
-    *
-    * @param copyTo The resource to copy to
-    * @throws IOException Something went wrong copying.
-    */
-   default void copy(Resource copyTo) throws IOException {
-      checkState(copyTo.canWrite(), "The resource being copied to cannot be written to.");
-      if (isDirectory()) {
-         copyTo.mkdirs();
-         for (Resource child : getChildren(true)) {
-            Resource copyToChild = copyTo.getChild(
-               child.path().substring(path().length()).replaceAll("^[/]+", ""));
-            copyTo.getParent().mkdirs();
-            child.copy(copyToChild);
-         }
-      } else {
-         checkState(canRead(), "This resource cannot be read from.");
-         try (InputStream is = inputStream(); OutputStream os = copyTo.outputStream()) {
-            byte[] buffer = new byte[2000];
-            int read;
-            while ((read = is.read(buffer)) > 0) {
-               os.write(buffer, 0, read);
-            }
-         }
-      }
-   }
 
    /**
     * <p> Appends content to this resource. </p>
@@ -215,6 +171,34 @@ public interface Resource {
    Resource compressed();
 
    /**
+    * Copies the contents of this resource to another
+    *
+    * @param copyTo The resource to copy to
+    * @throws IOException Something went wrong copying.
+    */
+   default void copy(Resource copyTo) throws IOException {
+      checkState(copyTo.canWrite(), "The resource being copied to cannot be written to.");
+      if (isDirectory()) {
+         copyTo.mkdirs();
+         for (Resource child : getChildren(true)) {
+            Resource copyToChild = copyTo.getChild(
+               child.path().substring(path().length()).replaceAll("^[/]+", ""));
+            copyTo.getParent().mkdirs();
+            child.copy(copyToChild);
+         }
+      } else {
+         checkState(canRead(), "This resource cannot be read from.");
+         try (InputStream is = inputStream(); OutputStream os = copyTo.outputStream()) {
+            byte[] buffer = new byte[2000];
+            int read;
+            while ((read = is.read(buffer)) > 0) {
+               os.write(buffer, 0, read);
+            }
+         }
+      }
+   }
+
+   /**
     * Deletes the resource
     *
     * @return true if the deletion was successful
@@ -255,6 +239,23 @@ public interface Resource {
     * @return True if the resource exists, False if the resource does not exist.
     */
    boolean exists();
+
+   /**
+    * For each.
+    *
+    * @param consumer the consumer
+    * @throws IOException the io exception
+    */
+   default void forEach(SerializableConsumer<String> consumer) throws IOException {
+      checkState(canRead(), "This is resource cannot be read from.");
+      try (MStream<String> stream = lines()) {
+         stream.forEach(consumer);
+      } catch (IOException ioe) {
+         throw ioe;
+      } catch (Exception e) {
+         throw new IOException(e);
+      }
+   }
 
    /**
     * <p>Gets the charset for reading and writing. The charset if not specified will be automatically determined during
@@ -367,25 +368,8 @@ public interface Resource {
     * @throws IOException the io exception
     */
    default MStream<String> lines() throws IOException {
-      return new LocalStream<>(new BufferedReader(reader()).lines());
-   }
-
-
-   /**
-    * For each.
-    *
-    * @param consumer the consumer
-    * @throws IOException the io exception
-    */
-   default void forEach(SerializableConsumer<String> consumer) throws IOException {
-      checkState(canRead(), "This is resource cannot be read from.");
-      try (MStream<String> stream = lines()) {
-         stream.forEach(consumer);
-      } catch (IOException ioe) {
-         throw ioe;
-      } catch (Exception e) {
-         throw new IOException(e);
-      }
+      return new LocalStream<>(Unchecked.supplier(() -> new BufferedReader(reader()).lines()),
+                               CacheStrategy.InMemory);
    }
 
    /**
@@ -406,17 +390,6 @@ public interface Resource {
     */
    default boolean mkdirs() {
       return false;
-   }
-
-   /**
-    * Opens a writer for writing
-    *
-    * @return A writer
-    * @throws IOException the io exception
-    */
-   default Writer writer() throws IOException {
-      checkState(canWrite(), "This is resource cannot be written to.");
-      return new OutputStreamWriter(outputStream(), getCharset());
    }
 
    /**
@@ -507,20 +480,20 @@ public interface Resource {
    }
 
    /**
-    * Sets is compressed.
-    *
-    * @param isCompressed the is compressed
-    * @return the is compressed
-    */
-   Resource setIsCompressed(boolean isCompressed);
-
-   /**
     * Sets the compression algorithm.
     *
     * @param compression the compression algorithm
     * @return this Resource
     */
    Resource setCompression(Compression compression);
+
+   /**
+    * Sets is compressed.
+    *
+    * @param isCompressed the is compressed
+    * @return the is compressed
+    */
+   Resource setIsCompressed(boolean isCompressed);
 
    /**
     * Uncompressed resource.
@@ -575,6 +548,33 @@ public interface Resource {
          oos.flush();
       }
       return this;
+   }
+
+   /**
+    * Opens a writer for writing
+    *
+    * @return A writer
+    * @throws IOException the io exception
+    */
+   default Writer writer() throws IOException {
+      checkState(canWrite(), "This is resource cannot be written to.");
+      return new OutputStreamWriter(outputStream(), getCharset());
+   }
+
+   /**
+    * The type Resource marshaller.
+    */
+   class ResourceMarshaller extends JsonMarshaller<Resource> {
+
+      @Override
+      protected Resource deserialize(JsonEntry entry, Type typeOfT) {
+         return Resources.from(entry.getAsString());
+      }
+
+      @Override
+      public JsonEntry serialize(Resource resource, Type type) {
+         return JsonEntry.from(resource.descriptor());
+      }
    }
 
 

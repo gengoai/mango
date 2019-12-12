@@ -41,6 +41,7 @@ public interface KeyValueStore<K, V> extends Map<K, V>, AutoCloseable {
       return KeyValueStoreConnection.parse(connectionString).connect();
    }
 
+
    /**
     * Commits changes to the key-value store to be persisted
     */
