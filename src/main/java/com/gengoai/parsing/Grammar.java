@@ -25,6 +25,7 @@ package com.gengoai.parsing;
 import com.gengoai.Tag;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.SerializablePredicate;
+import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.*;
@@ -48,6 +49,16 @@ public class Grammar implements Serializable {
    private final Map<Tag, PrefixHandler> prefixHandlerMap = new HashMap<>();
    private final Map<Tag, SerializablePredicate<? extends Expression>> prefixValidators = new HashMap<>();
    private final Set<Tag> skipTags = new HashSet<>();
+
+   public Grammar() {
+
+   }
+
+   public Grammar(@NonNull GrammarRegistrable... registrables) {
+      for (GrammarRegistrable registrable : registrables) {
+         registrable.register(this);
+      }
+   }
 
    /**
     * Gets the postfix handler associated with the {@link Tag} of the given {@link ParserToken}
@@ -145,7 +156,10 @@ public class Grammar implements Serializable {
     * @param validator  the validator to use validate the generated expression
     * @return the grammar
     */
-   public <E extends Expression> Grammar postfix(Tag tag, PostfixHandler handler, int precedence, SerializablePredicate<E> validator) {
+   public <E extends Expression> Grammar postfix(Tag tag,
+                                                 PostfixHandler handler,
+                                                 int precedence,
+                                                 SerializablePredicate<E> validator) {
       postfixHandlerMap.put(tag, Cast.as(handler));
       precedenceMap.put(tag, Math.max(precedence, 1));
       if (validator != null) {

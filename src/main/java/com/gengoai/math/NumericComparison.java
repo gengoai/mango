@@ -1,6 +1,7 @@
 package com.gengoai.math;
 
 import com.gengoai.function.SerializableBiFunction;
+import lombok.NonNull;
 
 /**
  * Methods for comparing numeric (double) values.
@@ -50,21 +51,7 @@ public enum NumericComparison implements SerializableBiFunction<Number, Number, 
    EQ {
       @Override
       public boolean compare(double beingCompared, double comparedAgainst) {
-         return Double.compare(beingCompared,comparedAgainst) == 0;
-//         System.out.println(" >> " + beingCompared + " = " + comparedAgainst);
-//         if (Double.isFinite(beingCompared) && Double.isFinite(comparedAgainst)) {
-//            return beingCompared == comparedAgainst;
-//         }
-//         if (Double.isFinite(beingCompared)) {
-//            if (Double.isNaN(comparedAgainst)) {
-//               return Double.isNaN(beingCompared);
-//            }
-//            return beingCompared == comparedAgainst;
-//         }
-//         if (Double.isNaN(beingCompared)) {
-//            return Double.isNaN(comparedAgainst);
-//         }
-//         return beingCompared == comparedAgainst;
+         return Double.compare(beingCompared, comparedAgainst) == 0;
       }
    },
    /**
@@ -77,20 +64,28 @@ public enum NumericComparison implements SerializableBiFunction<Number, Number, 
       }
    };
 
+   public static NumericComparison fromString(@NonNull String string) {
+      switch (string) {
+         case "=":
+            return EQ;
+         case ">":
+            return GT;
+         case ">=":
+            return GTE;
+         case "<":
+            return LT;
+         case "<=":
+            return LTE;
+         case "!=":
+            return NE;
+      }
+      throw new IllegalArgumentException();
+   }
+
    @Override
    public Boolean apply(Number number, Number number2) {
       return compare(number.doubleValue(), number2.doubleValue());
    }
-
-   /**
-    * Compares two given numeric values
-    *
-    * @param beingCompared   The number being compared
-    * @param comparedAgainst The number being compared against
-    * @return true if the inequality holds
-    */
-   public abstract boolean compare(double beingCompared, double comparedAgainst);
-
 
    public String asString() {
       switch (this) {
@@ -109,5 +104,14 @@ public enum NumericComparison implements SerializableBiFunction<Number, Number, 
       }
       throw new IllegalArgumentException();
    }
+
+   /**
+    * Compares two given numeric values
+    *
+    * @param beingCompared   The number being compared
+    * @param comparedAgainst The number being compared against
+    * @return true if the inequality holds
+    */
+   public abstract boolean compare(double beingCompared, double comparedAgainst);
 
 }// END OF Inequality

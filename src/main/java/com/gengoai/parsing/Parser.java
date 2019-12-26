@@ -24,6 +24,7 @@ package com.gengoai.parsing;
 
 
 import com.gengoai.Tag;
+import com.gengoai.conversion.Cast;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -213,7 +214,7 @@ public class Parser implements TokenStream, Serializable {
     * @return the list of parsed expressions
     * @throws ParseException Something went wrong parsing the token stream
     */
-   public List<Expression> parseExpressionList(Tag endOfList, Tag separator) throws ParseException {
+   public <T extends Expression> List<T> parseExpressionList(Tag endOfList, Tag separator) throws ParseException {
       List<Expression> objExpressions = new ArrayList<>();
       boolean isFirst = true;
       while (!peek().isInstance(EOF, endOfList)) {
@@ -227,7 +228,36 @@ public class Parser implements TokenStream, Serializable {
          throw new ParseException("Parsing Error: Premature EOF");
       }
       consume(endOfList);
-      return objExpressions;
+      return Cast.cast(objExpressions);
+   }
+
+   /**
+    * Parses a list of tokens ending with the <code>endOfList</code> tag and values separated using the
+    * <code>separator</code> tag.
+    *
+    * @param endOfList the {@link Tag} indicating the end of the list has been reached.
+    * @param separator the {@link Tag} separating values of the list (null value means no separator).
+    * @return the list of parsed expressions
+    * @throws ParseException Something went wrong parsing the token stream
+    */
+   public <T extends Expression> List<T> parseExpressionList(Tag startOfList,
+                                                             Tag endOfList,
+                                                             Tag separator) throws ParseException {
+      List<Expression> objExpressions = new ArrayList<>();
+      boolean isFirst = true;
+      consume(startOfList);
+      while (!peek().isInstance(EOF, endOfList)) {
+         if (!isFirst && separator != null) {
+            consume(separator);
+         }
+         isFirst = false;
+         objExpressions.add(parseExpression());
+      }
+      if (peek().isInstance(EOF)) {
+         throw new ParseException("Parsing Error: Premature EOF");
+      }
+      consume(endOfList);
+      return Cast.cast(objExpressions);
    }
 
    @Override
