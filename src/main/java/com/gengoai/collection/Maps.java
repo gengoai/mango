@@ -23,6 +23,7 @@ package com.gengoai.collection;
 
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
+import lombok.NonNull;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,7 +57,6 @@ public final class Maps {
       keys.forEach(key -> map.put(key, valueMapper.apply(key)));
       return map;
    }
-
 
    /**
     * Creates an instance of the given map class.
@@ -94,6 +94,27 @@ public final class Maps {
    @SafeVarargs
    public static <K, V> Map<K, V> hashMapOf(Map.Entry<? extends K, ? extends V>... objects) {
       return mapOf(HashMap::new, objects);
+   }
+
+   public static <K> Iterator<K> tailKeyIterator(@NonNull final NavigableMap<K, ?> map, @NonNull K key) {
+      return new Iterator<K>() {
+         private K ck = map.ceilingKey(key);
+
+         @Override
+         public boolean hasNext() {
+            return ck != null;
+         }
+
+         @Override
+         public K next() {
+            if (ck == null) {
+               throw new NoSuchElementException();
+            }
+            K n = ck;
+            ck = map.higherKey(n);
+            return n;
+         }
+      };
    }
 
    /**
@@ -157,7 +178,8 @@ public final class Maps {
     * @param ascending True sort in ascending order, False in descending order
     * @return the list of sorted map entries
     */
-   public static <K extends Comparable<? super K>, V> List<Map.Entry<K, V>> sortEntriesByKey(Map<K, V> map, boolean ascending) {
+   public static <K extends Comparable<? super K>, V> List<Map.Entry<K, V>> sortEntriesByKey(Map<K, V> map,
+                                                                                             boolean ascending) {
       final Comparator<Map.Entry<K, V>> comparator = ascending
                                                      ? Map.Entry.comparingByKey()
                                                      : Map.Entry.<K, V>comparingByKey().reversed();
@@ -173,7 +195,8 @@ public final class Maps {
     * @param ascending True sort in ascending order, False in descending order
     * @return the list of sorted map entries
     */
-   public static <K, V extends Comparable<? super V>> List<Map.Entry<K, V>> sortEntriesByValue(Map<K, V> map, boolean ascending) {
+   public static <K, V extends Comparable<? super V>> List<Map.Entry<K, V>> sortEntriesByValue(Map<K, V> map,
+                                                                                               boolean ascending) {
       final Comparator<Map.Entry<K, V>> comparator = ascending
                                                      ? Map.Entry.comparingByValue()
                                                      : Map.Entry.<K, V>comparingByValue().reversed();

@@ -241,7 +241,6 @@ public class Grammar implements Serializable {
     */
    public void validatePostfix(Expression expression) throws ParseException {
       if (!postfixValidators.getOrDefault(expression.getType(), e -> true).test(Cast.as(expression))) {
-         System.out.println("TESTING: " + expression.getType() + " : " + expression);
          throw new ParseException("Parse Exception: Invalid Expression -> " + expression);
       }
    }
@@ -254,7 +253,6 @@ public class Grammar implements Serializable {
     */
    public void validatePrefix(Expression expression) throws ParseException {
       if (!prefixValidators.getOrDefault(expression.getType(), e -> true).test(Cast.as(expression))) {
-         System.out.println("TESTING: " + expression.getType() + " : " + expression);
          throw new ParseException("Parse Exception: Invalid Expression -> " + expression);
       }
    }

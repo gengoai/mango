@@ -75,24 +75,6 @@ public class ParamMapTest {
       assertTrue(parameters.get(booleanParam));
    }
 
-   @Test
-   public void testConsumerUpdateMap() {
-      TestParameters parameters = new TestParameters();
-//      parameters.update(Maps.hashMapOf($(stringParam.name, "testSet"),
-//                                       $(intParam.name, 100)));
-//      assertEquals("testSet", parameters.strP.value());
-//      assertEquals(100, parameters.intP.value(), 0);
-//      assertEquals(-1d, parameters.doubleP.value(), 0d);
-//      assertEquals(-1f, parameters.floatP.value(), 0f);
-//      assertTrue(parameters.boolP.value());
-   }
-
-   @Test(expected = IllegalArgumentException.class)
-   public void testSetBadValue() {
-      TestParameters parameters = new TestParameters();
-      parameters.set("str", 123);
-   }
-
 
    @Test(expected = IllegalArgumentException.class)
    public void testSetBadType() {

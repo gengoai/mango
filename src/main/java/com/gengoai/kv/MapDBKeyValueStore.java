@@ -20,36 +20,43 @@
  *
  */
 
-package com.gengoai.parsing;
+package com.gengoai.kv;
 
-import com.gengoai.Tag;
+import com.gengoai.collection.disk.NavigableDiskMap;
 
-import java.io.Serializable;
+import java.io.File;
+import java.util.NavigableMap;
 
 /**
- * <p>Defines a {@link Tag} and pattern representing a terminal token to be lexed. Variables (sub-tokens) can be
- * defined using an anonymous capture group, i.e. <code>(?&lt;&gt; ... )</code>.</p>
- *
  * @author David B. Bracewell
  */
-public interface TokenDef extends Tag, Serializable {
+class MapDBKeyValueStore<K, V> extends AbstractNavigableKeyValueStore<K, V> {
+   private static final long serialVersionUID = 1L;
+   private final NavigableDiskMap<K, V> map;
 
-   /**
-    * Regular expression pattern for use in a {@link Lexer}
-    *
-    * @return the pattern
-    */
-   String getPattern();
-
-   /**
-    * Constructs a simple token definition using a {@link com.gengoai.StringTag}
-    *
-    * @param tag     the tag
-    * @param pattern the pattern
-    * @return the TokenDef
-    */
-   static TokenDef token(String tag, String pattern) {
-      return new SimpleTokenDef(tag, pattern);
+   public MapDBKeyValueStore(File dbFile, String namespace, boolean compressed, boolean readOnly) {
+      super(namespace, readOnly);
+      this.map = NavigableDiskMap.<K, V>builder()
+         .file(dbFile)
+         .namespace(namespace)
+         .compressed(compressed)
+         .readOnly(readOnly)
+         .build();
    }
 
-}//END OF TokenDef
+   @Override
+   public void close() throws Exception {
+      map.close();
+   }
+
+   @Override
+   public void commit() {
+      map.commit();
+   }
+
+
+   @Override
+   protected NavigableMap<K, V> delegate() {
+      return map;
+   }
+}//END OF MVKeyValueStore

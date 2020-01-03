@@ -1,6 +1,4 @@
 /*
- * (c) 2005 David B. Bracewell
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,30 +15,27 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
  */
 
-package com.gengoai.kv;
+package com.gengoai.collection.disk;
 
 import com.gengoai.collection.counter.ConcurrentHashMapCounter;
 import com.gengoai.collection.counter.Counter;
 import lombok.NonNull;
-import org.h2.mvstore.MVStore;
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
 
 import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-/**
- * @author David B. Bracewell
- */
-final class MVStoreRegistry {
+final class MapDBRegistry {
    private static final Counter<File> fileCounter = new ConcurrentHashMapCounter<>();
    private static final ReentrantLock lock = new ReentrantLock();
-   private static final Map<File, MVStore> stores = new ConcurrentHashMap<>();
+   private static final Map<File, DB> stores = new ConcurrentHashMap<>();
 
-   private MVStoreRegistry() {
+   private MapDBRegistry() {
       throw new IllegalAccessError();
    }
 
@@ -61,14 +56,14 @@ final class MVStoreRegistry {
       return false;
    }
 
-   public static MVStore get(@NonNull File databaseFile, boolean compressed) {
-      final MVStore.Builder builder = new MVStore.Builder().fileName(databaseFile.getAbsolutePath());
+   public static DB get(@NonNull File databaseFile, boolean compressed) {
+      final DBMaker builder = DBMaker.newFileDB(databaseFile);
       if (compressed) {
-         builder.compress();
+         builder.compressionEnable();
       }
       lock.lock();
       try {
-         stores.computeIfAbsent(databaseFile, f -> builder.open());
+         stores.computeIfAbsent(databaseFile, f -> builder.make());
          fileCounter.increment(databaseFile);
          return stores.get(databaseFile);
       } finally {
@@ -76,4 +71,4 @@ final class MVStoreRegistry {
       }
    }
 
-}//END OF MVStoreRegistry
+}//END OF MapDBRegistry

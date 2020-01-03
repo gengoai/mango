@@ -81,7 +81,7 @@ public final class KeyValueStoreConnection implements Specifiable, Serializable 
             return Cast.as(new InMemoryKeyValueStore<>(namespace, readOnly));
          case "disk":
             Validation.notNullOrBlank(path, "Key-Value store path must not be blank or null");
-            return Cast.as(new MVKeyValueStore<K, V>(new File(path),
+            return Cast.as(new MapDBKeyValueStore<>(new File(path),
                                                      namespace,
                                                      compressed,
                                                      readOnly));

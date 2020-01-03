@@ -90,7 +90,7 @@ public enum Optimum implements Comparator<Double> {
     *
     * @param v1 the first value
     * @param v2 the second value
-    * @return the result of comparison (optimum value should be < 0)
+    * @return the result of comparison (optimum value should be {@code <}  0)
     */
    public abstract int compare(double v1, double v2);
 

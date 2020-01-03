@@ -1,6 +1,4 @@
 /*
- * (c) 2005 David B. Bracewell
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,70 +15,76 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
  */
 
-package com.gengoai.kv;
+package com.gengoai.collection.disk;
 
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import org.h2.mvstore.MVMap;
-import org.h2.mvstore.MVStore;
+import org.mapdb.DB;
 
 import java.io.File;
 import java.io.Serializable;
 
 /**
- * The type Mv store handle.
- *
- * @author David B. Bracewell
+ * The type Map db handle.
  */
-public class MVStoreHandle implements Serializable, AutoCloseable {
+@EqualsAndHashCode(exclude = "store")
+public final class MapDBHandle implements Serializable, AutoCloseable {
+   private static final long serialVersionUID = 1L;
    private final boolean compressed;
    private final File file;
-   private volatile transient MVStore store;
+   private volatile transient DB store;
 
    /**
-    * Instantiates a new Mv store handle.
+    * Instantiates a new MapDBHandle.
     *
-    * @param file       the file
-    * @param compressed the compressed
+    * @param file       the file containing the MapDB
+    * @param compressed True if compression is used
     */
-   public MVStoreHandle(@NonNull File file, boolean compressed) {
+   public MapDBHandle(@NonNull File file, boolean compressed) {
       this.file = file;
       this.compressed = compressed;
    }
 
    @Override
    public void close() throws Exception {
-      MVStoreRegistry.close(file);
+      MapDBRegistry.close(file);
    }
 
    /**
-    * Gets map.
-    *
-    * @param <K>       the type parameter
-    * @param <V>       the type parameter
-    * @param namespace the namespace
-    * @return the map
+    * Commits changes made to the database
     */
-   public <K, V> MVMap<K, V> getMap(String namespace) {
-      return getStore().openMap(namespace);
+   public void commit() {
+      getStore().commit();
+      getStore().compact();
    }
 
    /**
-    * Gets store.
+    * Deletes the database files.
+    */
+   public void delete() {
+      String path = file.getAbsolutePath();
+      for (File f : new File[]{file, new File(path + ".p"), new File(path + ".t")}) {
+         if (f.exists()) {
+            f.delete();
+         }
+      }
+   }
+
+   /**
+    * Gets the database store object
     *
     * @return the store
     */
-   protected MVStore getStore() {
+   protected DB getStore() {
       if (store == null) {
          synchronized (this) {
             if (store == null) {
-               store = MVStoreRegistry.get(file, compressed);
+               store = MapDBRegistry.get(file, compressed);
             }
          }
       }
       return store;
    }
-
-}//END OF MVStoreHandle
+}//END OF MapDBHandle

@@ -13,7 +13,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 /**
- * Maps keys to multiple values. Acts as a <code>Map<K, Collection<V>></code> where individual implementations specify
+ * Maps keys to multiple values. Acts as a {@code Map<K, Collection<V>} where individual implementations specify
  * the type of collection, e.g. List, Set, etc.
  *
  * @param <K> the key type parameter

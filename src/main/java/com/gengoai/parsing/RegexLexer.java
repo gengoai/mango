@@ -38,6 +38,7 @@ import java.util.regex.Pattern;
  * @author David B. Bracewell
  */
 class RegexLexer implements Lexer {
+   private static final String UNMATCHED_REGION = "Parsing Error: Unmatched region '%s' (%s)";
    private static final Pattern VARIABLE_PLACEHOLDER = Pattern.compile("\\(\\?<>");
    private static final long serialVersionUID = 1L;
    private final TokenDef[] definitions;
@@ -45,7 +46,6 @@ class RegexLexer implements Lexer {
    private final Pattern regex;
    private final String[][] vars;
    private Tag undefinedType = null;
-
 
    /**
     * Instantiates a new Regex lexer.
@@ -90,9 +90,6 @@ class RegexLexer implements Lexer {
       this.regex = Pattern.compile("(?:" + pattern.toString().substring(1) + ")", Pattern.MULTILINE | Pattern.DOTALL);
    }
 
-   private static final String UNMATCHED_REGION = "Parsing Error: Unmatched region '%s' (%s)";
-
-
    @Override
    public TokenStream lex(String input) {
       return new AbstractTokenStream() {
@@ -110,13 +107,17 @@ class RegexLexer implements Lexer {
             if (!matcher.find()) {
                String text = input.substring(endOffset);
                if (undefinedType != null && Strings.isNotNullOrBlank(text)) {
-                  return Collections.singletonList(new ParserToken(undefinedType, text, endOffset));
+                  return Arrays.asList(new ParserToken(undefinedType, text, endOffset),
+                                       EOF_TOKEN);
                }
+
                if (Strings.isNotNullOrBlank(text)) {
                   throw new IllegalStateException(String.format(UNMATCHED_REGION, text, input.substring(endOffset)));
                }
+
                return Collections.singletonList(EOF_TOKEN);
             }
+
             for (int i = 0; i < groups.length; i++) {
                String group = groups[i];
                if (matcher.group(group) != null) {

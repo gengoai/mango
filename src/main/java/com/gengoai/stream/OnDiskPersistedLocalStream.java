@@ -23,11 +23,12 @@
 package com.gengoai.stream;
 
 import com.gengoai.Validation;
+import com.gengoai.collection.Maps;
 import com.gengoai.collection.Streams;
+import com.gengoai.collection.disk.NavigableDiskMap;
 import com.gengoai.function.SerializableRunnable;
 import com.gengoai.io.Resources;
-import org.h2.mvstore.MVMap;
-import org.h2.mvstore.MVStore;
+import lombok.NonNull;
 
 import java.io.File;
 import java.util.concurrent.atomic.AtomicLong;
@@ -47,10 +48,8 @@ public class OnDiskPersistedLocalStream<T> extends LazyLocalStream<T> {
     * The constant DATA_MAP_NAME.
     */
    public static final String DATA_MAP_NAME = "data";
-   private final MVMap<Long, T> map;
-   private final MVStore store;
-   private File dbFile;
    private boolean isParallel = false;
+   private NavigableDiskMap<Long, T> map;
    private SerializableRunnable onClose;
 
 
@@ -60,13 +59,11 @@ public class OnDiskPersistedLocalStream<T> extends LazyLocalStream<T> {
     * @param db the db
     */
    public OnDiskPersistedLocalStream(File db) {
-      this.dbFile = db;
-      this.store = new MVStore.Builder()
-                      .fileName(db.getAbsolutePath())
-                      .readOnly()
-                      .compress()
-                      .open();
-      this.map = this.store.openMap(DATA_MAP_NAME);
+      this.map = NavigableDiskMap.<Long, T>builder()
+         .namespace(DATA_MAP_NAME)
+         .file(db)
+         .compressed(true)
+         .build();
    }
 
 
@@ -75,8 +72,9 @@ public class OnDiskPersistedLocalStream<T> extends LazyLocalStream<T> {
     *
     * @param source the source
     */
-   public OnDiskPersistedLocalStream(Stream<T> source) {
-      this(new LocalStream<>(source));
+   public OnDiskPersistedLocalStream(@NonNull Stream<T> source) {
+      this(createTemporaryStream(source));
+      onClose = () -> map.getHandle().delete();
    }
 
    /**
@@ -84,23 +82,25 @@ public class OnDiskPersistedLocalStream<T> extends LazyLocalStream<T> {
     *
     * @param source the source
     */
-   public OnDiskPersistedLocalStream(MStream<T> source) {
-      this(createTemporaryStream(source.javaStream()));
-      onClose = () -> dbFile.deleteOnExit();
+   public OnDiskPersistedLocalStream(@NonNull MStream<T> source) {
+      this(source.javaStream());
    }
 
    private static <E> File createTemporaryStream(Stream<E> stream) {
       File tempFile = Resources.temporaryFile().asFile().get();
-      tempFile.deleteOnExit();
-      MVStore store = new MVStore.Builder()
-                         .fileName(tempFile.getAbsolutePath())
-                         .compress()
-                         .open();
-      MVMap<Long, E> map = store.openMap(DATA_MAP_NAME);
+      NavigableDiskMap<Long, E> map = NavigableDiskMap.<Long, E>builder()
+         .namespace(DATA_MAP_NAME)
+         .file(tempFile)
+         .compressed(true)
+         .build();
       AtomicLong indexer = new AtomicLong();
       stream.forEach(data -> map.put(indexer.getAndIncrement(), data));
-      store.commit();
-      store.closeImmediately();
+      map.commit();
+      try {
+         map.close();
+      } catch (Exception e) {
+         throw new RuntimeException(e);
+      }
       return tempFile;
    }
 
@@ -118,7 +118,7 @@ public class OnDiskPersistedLocalStream<T> extends LazyLocalStream<T> {
 
    @Override
    public long count() {
-      return map.sizeAsLong();
+      return map.size();
    }
 
    @Override
@@ -132,7 +132,7 @@ public class OnDiskPersistedLocalStream<T> extends LazyLocalStream<T> {
    }
 
    private Stream<T> javaStream(long start) {
-      Stream<T> stream = Streams.asStream(map.keyIterator(start)).map(map::get).onClose(onClose);
+      Stream<T> stream = Streams.asStream(Maps.tailKeyIterator(map, start)).map(map::get).onClose(onClose);
       return isParallel ? stream.parallel() : stream;
    }
 
@@ -168,7 +168,7 @@ public class OnDiskPersistedLocalStream<T> extends LazyLocalStream<T> {
          return StreamingContext.local().empty();
       }
       if (withReplacement) {
-         final long size = map.sizeAsLong();
+         final long size = map.size();
          return new OnDiskPersistedLocalStream<>(
             LongStream.generate(() -> (long) (Math.random() * size)).mapToObj(map::get));
       }

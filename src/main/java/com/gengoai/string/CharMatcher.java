@@ -21,7 +21,7 @@ public interface CharMatcher extends SerializablePredicate<Character> {
     */
    CharMatcher Any = character -> true;
    /**
-    * Matches any ascii character (int value <= 127)
+    * Matches any ascii character (int value {@code <=}  127)
     */
    CharMatcher Ascii = character -> character <= 127;
    /**

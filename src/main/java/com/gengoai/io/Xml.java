@@ -89,7 +89,9 @@ public final class Xml {
     * @throws IOException        the io exception
     * @throws XMLStreamException the xml stream exception
     */
-   public static Iterable<Document> parse(Resource xmlResource, String tag, EventFilter eventFilter) throws IOException, XMLStreamException {
+   public static Iterable<Document> parse(Resource xmlResource,
+                                          String tag,
+                                          EventFilter eventFilter) throws IOException, XMLStreamException {
       notNull(xmlResource, "Must specify a resource");
       notNullOrBlank(tag, "Must specify a valid xml tag to capture");
       XMLInputFactory factory = XMLInputFactory.newFactory();
@@ -126,12 +128,7 @@ public final class Xml {
          if (document != null) {
             return true;
          }
-         if (isClosed) {
-            return false;
-         }
          if (!reader.hasNext()) {
-            isClosed = true;
-            reader.close();
             return false;
          }
          XMLEvent event;

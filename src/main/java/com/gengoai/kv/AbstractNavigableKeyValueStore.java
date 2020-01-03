@@ -22,9 +22,10 @@
 
 package com.gengoai.kv;
 
+import com.gengoai.collection.Maps;
+
 import java.util.Iterator;
 import java.util.NavigableMap;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
@@ -81,24 +82,7 @@ public abstract class AbstractNavigableKeyValueStore<K, V> extends AbstractKeyVa
 
    @Override
    public Iterator<K> keyIterator(K key) {
-      return new Iterator<K>() {
-         private K ck = ceilingKey(key);
-
-         @Override
-         public boolean hasNext() {
-            return ck != null;
-         }
-
-         @Override
-         public K next() {
-            if (ck == null) {
-               throw new NoSuchElementException();
-            }
-            K n = ck;
-            ck = higherKey(n);
-            return n;
-         }
-      };
+      return Maps.tailKeyIterator(delegate(), key);
    }
 
 

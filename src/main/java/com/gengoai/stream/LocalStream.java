@@ -28,6 +28,7 @@ import com.gengoai.collection.Streams;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.*;
 import com.gengoai.tuple.Tuples;
+import lombok.NonNull;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -53,7 +54,7 @@ public class LocalStream<T> extends BaseJavaStream<T> implements Serializable {
     *
     * @param stream the Java stream to wrap
     */
-   public LocalStream(final Stream<T> stream) {
+   public LocalStream(@NonNull final Stream<T> stream) {
       this(() -> stream, CacheStrategy.InMemory);
    }
 

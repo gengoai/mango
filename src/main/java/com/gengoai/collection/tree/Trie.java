@@ -238,6 +238,14 @@ public class Trie<V> implements Serializable, Map<String, V> {
       };
    }
 
+   public Iterator<String> prefixKeyIterator(String prefix){
+      final TrieNode<V> match = root.find(prefix);
+      if (match == null) {
+         return Collections.emptyIterator();
+      }
+      return Iterators.transform(Iterators.unmodifiableIterator(new EntryIterator<>(match)), Entry::getKey);
+   }
+
    /**
     * <p>Returns an unmodifiable map view of this Trie containing only those elements with the given prefix.</p>
     *

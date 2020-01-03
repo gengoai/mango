@@ -105,9 +105,7 @@ public abstract class SwingApplication extends JFrame implements Application, Lo
       int yPos = Config.get(getClass(), "position.y").asIntegerValue(screenRectangle.height / 2 - height / 2);
       setLocation(xPos, yPos);
       setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-      pack();
       this.initControls();
-      pack();
    }
 
    protected abstract void initControls() throws Exception;

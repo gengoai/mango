@@ -9,7 +9,7 @@ import java.io.RandomAccessFile;
 import static com.gengoai.io.IndexedFile.indexFileFor;
 
 /**
- * <p>An Indexed File Writer writes lines to the output file indexed by a corresponding key. The index (keys -> file
+ * <p>An Indexed File Writer writes lines to the output file indexed by a corresponding key. The index (keys -&gt; file
  * positions) is stored in another file in the same directory as the output file.</p>
  *
  * @author David B. Bracewell

@@ -28,6 +28,7 @@ import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.stream.accumulator.*;
 import com.gengoai.string.Strings;
+import lombok.NonNull;
 
 import java.io.IOException;
 import java.util.*;
@@ -136,7 +137,7 @@ public final class LocalStreamingContext extends StreamingContext {
    }
 
    @Override
-   public <T> MStream<T> stream(Stream<T> stream) {
+   public <T> MStream<T> stream(@NonNull Stream<T> stream) {
       if (stream == null) {
          return empty();
       }

@@ -199,7 +199,7 @@ public final class Math2 {
     * @param newMin      the lower bound of the new range
     * @param newMax      the upper bound of the new range
     * @return the given value rescaled to fall between newMin and new Max
-    * @throws IllegalArgumentException if originalMax <= originalMin or newMax <= newMin
+    * @throws IllegalArgumentException if originalMax {@code <=} originalMin or newMax {@code <=}  newMin
     */
    public static double rescale(double value, double originalMin, double originalMax, double newMin, double newMax) {
       checkArgument(originalMax > originalMin, "original upper bound must be > original lower bound");

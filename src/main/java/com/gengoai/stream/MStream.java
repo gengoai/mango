@@ -278,7 +278,7 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
    MStream<T> parallel();
 
    /**
-    * Partitions the stream into iterables each of size <= <code>partitionSize</code>.
+    * Partitions the stream into iterables each of size {@code <=}  <code>partitionSize</code>.
     *
     * @param partitionSize the desired number of objects in each partition
     * @return the new stream
