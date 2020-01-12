@@ -26,6 +26,7 @@ import com.gengoai.string.Strings;
 import lombok.NonNull;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -62,8 +63,8 @@ public final class BeanDescriptor implements Serializable {
     * @throws InstantiationException Something went wrong during instantiation.
     * @throws IllegalAccessException Couldn't access the class.
     */
-   public Object createInstance() throws InstantiationException, IllegalAccessException {
-      return clazz.newInstance();
+   public Object createInstance() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+      return clazz.getDeclaredConstructor().newInstance();
    }
 
    /**
@@ -73,8 +74,8 @@ public final class BeanDescriptor implements Serializable {
     */
    public Object createInstanceQuietly() {
       try {
-         return clazz.newInstance();
-      } catch (InstantiationException | IllegalAccessException e) {
+         return clazz.getDeclaredConstructor().newInstance();
+      } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
          log.finest(e);
          return null;
       }

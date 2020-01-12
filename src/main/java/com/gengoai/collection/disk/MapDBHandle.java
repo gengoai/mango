@@ -21,6 +21,7 @@ package com.gengoai.collection.disk;
 
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.mapdb.Atomic;
 import org.mapdb.DB;
 
 import java.io.File;
@@ -72,6 +73,18 @@ public final class MapDBHandle implements Serializable, AutoCloseable {
       }
    }
 
+   public Atomic.Boolean getBoolean(String name) {
+      return getStore().getAtomicBoolean(name);
+   }
+
+   public Atomic.Integer getInteger(String name) {
+      return getStore().getAtomicInteger(name);
+   }
+
+   public Atomic.Long getLong(String name) {
+      return getStore().getAtomicLong(name);
+   }
+
    /**
     * Gets the database store object
     *
@@ -86,5 +99,13 @@ public final class MapDBHandle implements Serializable, AutoCloseable {
          }
       }
       return store;
+   }
+
+   public Atomic.String getString(String name) {
+      return getStore().getAtomicString(name);
+   }
+
+   public <E> Atomic.Var<E> getVar(String name) {
+      return getStore().getAtomicVar(name);
    }
 }//END OF MapDBHandle

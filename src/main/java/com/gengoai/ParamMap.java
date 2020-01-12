@@ -22,12 +22,11 @@
 
 package com.gengoai;
 
-import com.gengoai.annotation.JsonAdapter;
+import com.gengoai.annotation.JsonHandler;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Converter;
 import com.gengoai.conversion.TypeConversionException;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.json.JsonMarshaller;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
 import com.gengoai.reflection.TypeUtils;
@@ -50,7 +49,7 @@ import java.util.stream.Collectors;
  * @param <V> the type parameter
  * @author David B. Bracewell
  */
-@JsonAdapter(ParamMap.Marshaller.class)
+@JsonHandler(ParamMap.Marshaller.class)
 public class ParamMap<V extends ParamMap> implements Serializable, Copyable<ParamMap<V>> {
    private static final long serialVersionUID = 1L;
    private final Map<String, Parameter<?>> map = new HashMap<>();
@@ -235,7 +234,7 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
    /**
     * The type Marshaller.
     */
-   public static class Marshaller extends JsonMarshaller<ParamMap<?>> {
+   public static class Marshaller extends com.gengoai.json.JsonMarshaller<ParamMap<?>> {
 
       @Override
       @SuppressWarnings("unchecked")

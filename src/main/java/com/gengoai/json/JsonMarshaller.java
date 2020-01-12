@@ -27,18 +27,35 @@ import com.google.gson.*;
 import java.lang.reflect.Type;
 
 /**
+ * The type Json marshaller.
+ *
+ * @param <T> the type parameter
  * @author David B. Bracewell
  */
 public abstract class JsonMarshaller<T> implements JsonSerializer<T>, JsonDeserializer<T> {
 
+   /**
+    * Deserialize t.
+    *
+    * @param entry the entry
+    * @param type  the type
+    * @return the t
+    */
    protected abstract T deserialize(JsonEntry entry, Type type);
-
-   protected abstract JsonEntry serialize(T t, Type type);
 
    @Override
    public final T deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
       return deserialize(JsonEntry.from(jsonElement), type);
    }
+
+   /**
+    * Serialize json entry.
+    *
+    * @param t    the t
+    * @param type the type
+    * @return the json entry
+    */
+   protected abstract JsonEntry serialize(T t, Type type);
 
    @Override
    public final JsonElement serialize(T t, Type type, JsonSerializationContext jsonSerializationContext) {

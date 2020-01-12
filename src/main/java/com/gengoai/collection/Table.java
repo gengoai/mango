@@ -1,9 +1,8 @@
 package com.gengoai.collection;
 
-import com.gengoai.annotation.JsonAdapter;
+import com.gengoai.annotation.JsonHandler;
 import com.gengoai.conversion.Cast;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.json.JsonMarshaller;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
 import com.gengoai.reflection.TypeUtils;
@@ -25,10 +24,10 @@ import static com.gengoai.reflection.TypeUtils.getOrObject;
  * @param <V> the value type parameter
  * @author David B. Bracewell
  */
-@JsonAdapter(Table.TableMarshaller.class)
+@JsonHandler(Table.TableMarshaller.class)
 public interface Table<R, C, V> {
 
-   class TableMarshaller extends JsonMarshaller<Table<?, ?, ?>> {
+   class TableMarshaller extends com.gengoai.json.JsonMarshaller<Table<?,?,?>> {
 
       @Override
       protected Table<?, ?, ?> deserialize(JsonEntry entry, Type type) {

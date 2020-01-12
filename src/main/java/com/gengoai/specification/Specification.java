@@ -319,6 +319,12 @@ public final class Specification implements Serializable {
        * @return this specification builder
        */
       public SpecificationBuilder subProtocol(int index, String subProtocol) {
+         if (Strings.isNullOrBlank(subProtocol)) {
+            return this;
+         }
+         while (index >= this.subProtocol.size()) {
+            this.subProtocol.add(null);
+         }
          this.subProtocol.add(index, subProtocol);
          return this;
       }

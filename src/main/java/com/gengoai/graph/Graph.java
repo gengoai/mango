@@ -22,7 +22,7 @@
 package com.gengoai.graph;
 
 
-import com.gengoai.annotation.JsonAdapter;
+import com.gengoai.annotation.JsonHandler;
 import com.gengoai.collection.Index;
 import com.gengoai.collection.Indexes;
 import com.gengoai.collection.Sets;
@@ -33,7 +33,6 @@ import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Converter;
 import com.gengoai.conversion.TypeConversionException;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.json.JsonMarshaller;
 import com.gengoai.reflection.TypeUtils;
 
 import java.lang.reflect.Type;
@@ -49,10 +48,10 @@ import static com.gengoai.reflection.TypeUtils.getOrObject;
  * @param <V> the vertex type
  * @author David B. Bracewell
  */
-@JsonAdapter(Graph.GraphMarshaller.class)
+@JsonHandler(Graph.GraphMarshaller.class)
 public interface Graph<V> extends Iterable<V> {
 
-   class GraphMarshaller<V> extends JsonMarshaller<Graph<V>> {
+   class GraphMarshaller<V> extends com.gengoai.json.JsonMarshaller<Graph<V>> {
 
       @Override
       protected Graph<V> deserialize(JsonEntry entry, Type type) {

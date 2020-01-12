@@ -22,15 +22,13 @@
 
 package com.gengoai;
 
-import com.gengoai.annotation.JsonAdapter;
+import com.gengoai.annotation.JsonHandler;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.json.JsonMarshaller;
 import com.gengoai.string.Strings;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
-import java.util.Objects;
 
 /**
  * A tag which is represented as a string. Care must be taken in that different string variations will represent
@@ -38,7 +36,7 @@ import java.util.Objects;
  *
  * @author David B. Bracewell
  */
-@JsonAdapter(StringTag.Marshaller.class)
+@JsonHandler(StringTag.Marshaller.class)
 @EqualsAndHashCode(callSuper = false)
 public class StringTag implements Tag, Serializable {
    private static final long serialVersionUID = 1L;
@@ -72,7 +70,7 @@ public class StringTag implements Tag, Serializable {
    /**
     * StringTag Json Marshaller
     */
-   public static class Marshaller extends JsonMarshaller<StringTag> {
+   public static class Marshaller extends com.gengoai.json.JsonMarshaller<StringTag> {
 
       @Override
       protected StringTag deserialize(JsonEntry entry, Type type) {

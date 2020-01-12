@@ -28,7 +28,7 @@ import com.gengoai.function.CheckedFunction;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
-import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.*;
 
 /**
  * Base object wrapping {@link AccessibleObject}s and providing a {@link #process(CheckedFunction)} and {@link
@@ -65,6 +65,24 @@ abstract class RAccessibleBase<T extends AccessibleObject, V extends RAccessible
       return owner;
    }
 
+   private boolean isAccessible() {
+      AnnotatedElement e = getElement();
+      if (e instanceof Constructor) {
+         return getElement().canAccess(null);
+      } else if (e instanceof Method) {
+         Method m = Cast.as(e);
+         return m.canAccess(Modifier.isStatic(m.getModifiers())
+                            ? null
+                            : getOwner().get());
+      } else if (e instanceof Field) {
+         Field m = Cast.as(e);
+         return m.canAccess(Modifier.isStatic(m.getModifiers())
+                            ? null
+                            : getOwner().get());
+      }
+      return getElement().canAccess(getOwner().get());
+   }
+
    /**
     * is privileged access allowed on this object?
     *
@@ -85,7 +103,7 @@ abstract class RAccessibleBase<T extends AccessibleObject, V extends RAccessible
    public final <O> O process(@NonNull CheckedFunction<T, O> function) throws ReflectionException {
       boolean isAccessible = false;
       try {
-         isAccessible = getElement().isAccessible();
+         isAccessible = isAccessible();
          if (isPrivileged()) {
             getElement().setAccessible(true);
          }
@@ -117,7 +135,7 @@ abstract class RAccessibleBase<T extends AccessibleObject, V extends RAccessible
    public final void with(@NonNull CheckedConsumer<T> consumer) throws ReflectionException {
       boolean isAccessible = false;
       try {
-         isAccessible = getElement().isAccessible();
+         isAccessible = isAccessible();
          if (isPrivileged()) {
             getElement().setAccessible(true);
          }

@@ -144,7 +144,7 @@ public class AtomicDouble extends Number {
     * @return True if updated, False if not
     */
    public final boolean weakCompareAndSet(double expect, double update) {
-      return backing.weakCompareAndSet(toLong(expect), toLong(update));
+      return backing.weakCompareAndSetPlain(toLong(expect), toLong(update));
    }
 
 }//END OF AtomicDouble

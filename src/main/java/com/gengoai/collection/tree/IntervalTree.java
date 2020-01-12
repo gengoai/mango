@@ -1,12 +1,11 @@
 package com.gengoai.collection.tree;
 
-import com.gengoai.annotation.JsonAdapter;
+import com.gengoai.annotation.JsonHandler;
 import com.gengoai.collection.Lists;
 import com.gengoai.collection.Sets;
 import com.gengoai.collection.Streams;
 import com.gengoai.conversion.Cast;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.json.JsonMarshaller;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
 import com.gengoai.reflection.TypeUtils;
@@ -24,7 +23,7 @@ import java.util.stream.Collectors;
  * @param <T> the element type parameter
  * @author David B. Bracewell
  */
-@JsonAdapter(IntervalTree.IntervalTreeMarshaller.class)
+@JsonHandler(IntervalTree.IntervalTreeMarshaller.class)
 public class IntervalTree<T extends Span> implements Collection<T>, Serializable {
    private static final boolean BLACK = false;
    private static final boolean RED = true;
@@ -154,7 +153,8 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
       if (search == null) {
          return false;
       }
-      return find(root, search) != null;
+      Node node = find(root, search);
+      return node != null && node.items.contains(o);
    }
 
    @Override
@@ -375,7 +375,7 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
     *
     * @param <T> the type parameter
     */
-   public static class IntervalTreeMarshaller<T extends Span> extends JsonMarshaller<IntervalTree<T>> {
+   public static class IntervalTreeMarshaller<T extends Span> extends com.gengoai.json.JsonMarshaller<IntervalTree<T>> {
 
       @Override
       protected IntervalTree<T> deserialize(JsonEntry entry, Type type) {

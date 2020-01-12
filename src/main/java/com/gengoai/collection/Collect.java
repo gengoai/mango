@@ -25,6 +25,7 @@ import com.gengoai.conversion.Cast;
 import lombok.NonNull;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -98,13 +99,13 @@ public final class Collect {
 
 
    @SafeVarargs
-   static <T, C extends Collection<T>> C createCollection(Supplier<C> supplier, T... items){
+   static <T, C extends Collection<T>> C createCollection(Supplier<C> supplier, T... items) {
       C collection = supplier.get();
-      Collections.addAll(collection,items);
+      Collections.addAll(collection, items);
       return collection;
    }
 
-   static <T, C extends Collection<T>> C createCollection(Supplier<C> supplier, Stream<? extends T> stream){
+   static <T, C extends Collection<T>> C createCollection(Supplier<C> supplier, Stream<? extends T> stream) {
       C collection = supplier.get();
       stream.forEach(collection::add);
       return collection;
@@ -137,8 +138,8 @@ public final class Collect {
          return Cast.as(new TreeSet<>());
       }
       try {
-         return collectionClass.newInstance();
-      } catch (InstantiationException | IllegalAccessException e) {
+         return collectionClass.getDeclaredConstructor().newInstance();
+      } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
          throw new RuntimeException(e);
       }
    }

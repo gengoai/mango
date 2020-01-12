@@ -21,10 +21,9 @@
 
 package com.gengoai;
 
-import com.gengoai.annotation.JsonAdapter;
+import com.gengoai.annotation.JsonHandler;
 import com.gengoai.collection.Streams;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.json.JsonMarshaller;
 import com.gengoai.reflection.TypeUtils;
 import lombok.EqualsAndHashCode;
 
@@ -43,7 +42,7 @@ import static com.gengoai.Validation.notNull;
  * @param <E> the type parameter
  * @author David B. Bracewell
  */
-@JsonAdapter(Interner.InternerMarshaller.class)
+@JsonHandler(Interner.InternerMarshaller.class)
 @EqualsAndHashCode(callSuper = false)
 public final class Interner<E> implements Serializable {
    private static final long serialVersionUID = 1L;
@@ -90,7 +89,7 @@ public final class Interner<E> implements Serializable {
    /**
     * Json marshaling for Interner
     */
-   public static class InternerMarshaller extends JsonMarshaller<Interner> {
+   public static class InternerMarshaller extends com.gengoai.json.JsonMarshaller<Interner> {
 
       @Override
       protected Interner deserialize(JsonEntry entry, Type type) {

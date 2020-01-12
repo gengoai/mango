@@ -22,9 +22,8 @@
 package com.gengoai.collection;
 
 import com.gengoai.Copyable;
-import com.gengoai.annotation.JsonAdapter;
+import com.gengoai.annotation.JsonHandler;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.json.JsonMarshaller;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
 import com.gengoai.reflection.TypeUtils;
@@ -39,13 +38,13 @@ import java.util.stream.Stream;
  * @param <E> the type parameter
  * @author David B. Bracewell
  */
-@JsonAdapter(Index.IndexMarshaller.class)
+@JsonHandler(Index.IndexMarshaller.class)
 public interface Index<E> extends Iterable<E>, Copyable<Index<E>> {
 
    /**
     * Json Marshaller
     */
-   class IndexMarshaller extends JsonMarshaller<Index> {
+   class IndexMarshaller extends com.gengoai.json.JsonMarshaller<Index> {
 
       @Override
       protected Index deserialize(JsonEntry entry, Type type) {

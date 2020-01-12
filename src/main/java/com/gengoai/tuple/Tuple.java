@@ -23,11 +23,10 @@ package com.gengoai.tuple;
 
 import com.gengoai.Copyable;
 import com.gengoai.Validation;
-import com.gengoai.annotation.JsonAdapter;
+import com.gengoai.annotation.JsonHandler;
 import com.gengoai.collection.Sorting;
 import com.gengoai.conversion.Cast;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.json.JsonMarshaller;
 import com.gengoai.reflection.TypeUtils;
 import com.gengoai.string.Strings;
 
@@ -44,37 +43,43 @@ import java.util.stream.Stream;
  *
  * @author David B. Bracewell
  */
-@JsonAdapter(Tuple.TupleMarshaller.class)
+@JsonHandler(Tuple.TupleMarshaller.class)
 public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copyable<Tuple>, Serializable {
    private static final long serialVersionUID = 1L;
 
-   public static class TupleMarshaller extends JsonMarshaller<Tuple> {
-
-      @Override
-      protected Tuple deserialize(JsonEntry entry, Type typeOfT) {
-         List<Object> elements = new ArrayList<>();
-         int index = 0;
-         Type[] types = TypeUtils.getActualTypeArguments(typeOfT);
-         for (Iterator<JsonEntry> itr = entry.elementIterator(); itr.hasNext(); ) {
-            Type type = TypeUtils.getOrObject(index, types);
-            elements.add(itr.next().getAs(type));
-            index++;
-         }
-         return new NTuple(elements.toArray());
+   /**
+    * Appends an item the beginning of the tuple resulting in a new tuple of degree + 1
+    *
+    * @param <T>    the type parameter
+    * @param object the object being appended
+    * @return A new tuple of degree + 1 containing the object at the beginning
+    */
+   public <T> Tuple appendLeft(T object) {
+      if (degree() == 0) {
+         return Tuple1.of(object);
       }
-
-      @Override
-      public JsonEntry serialize(Tuple objects, Type type) {
-         return JsonEntry.array(objects.array());
-      }
+      Object[] copy = new Object[degree() + 1];
+      System.arraycopy(array(), 0, copy, 1, degree());
+      copy[0] = object;
+      return NTuple.of(copy);
    }
 
    /**
-    * The number of items in the tuple
+    * Appends an item the end of the tuple resulting in a new tuple of degree + 1
     *
-    * @return the number of items in the tuple
+    * @param <T>    the type parameter
+    * @param object the object being appended
+    * @return A new tuple of degree + 1 containing the object at the end
     */
-   public abstract int degree();
+   public <T> Tuple appendRight(T object) {
+      if (degree() == 0) {
+         return Tuple1.of(object);
+      }
+      Object[] copy = new Object[degree() + 1];
+      System.arraycopy(array(), 0, copy, 0, degree());
+      copy[copy.length - 1] = object;
+      return NTuple.of(copy);
+   }
 
    /**
     * The tuple as an array of objects
@@ -84,17 +89,63 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
    public abstract Object[] array();
 
    @Override
-   public Iterator<Object> iterator() {
-      return Arrays.asList(array()).iterator();
+   public final int compareTo(Tuple o) {
+      if (degree() < o.degree()) {
+         return -1;
+      } else if (degree() > o.degree()) {
+         return 1;
+      }
+      Object[] a1 = array();
+      Object[] a2 = o.array();
+      for (int i = 0; i < a1.length; i++) {
+         int cmp = Sorting.compare(a1[i], a2[i]);
+         if (cmp != 0) {
+            return cmp;
+         }
+      }
+      return 0;
    }
 
    /**
-    * Gets a stream over the objects in the tuple
+    * The number of items in the tuple
     *
-    * @return A Stream of the objects in the tuple
+    * @return the number of items in the tuple
     */
-   public Stream<Object> stream() {
-      return Arrays.stream(array());
+   public abstract int degree();
+
+   @Override
+   public final boolean equals(Object obj) {
+      if (obj == null) {
+         return false;
+      } else if (obj instanceof Tuple) {
+         Tuple tuple = Cast.as(obj);
+         return degree() == tuple.degree() && Arrays.equals(array(), tuple.array());
+      } else if (obj instanceof Map.Entry && degree() == 2) {
+         Map.Entry e = Cast.as(obj);
+         return Objects.equals(e.getKey(), get(0)) && Objects.equals(e.getValue(), get(1));
+      }
+      return false;
+   }
+
+   /**
+    * Gets the ith item of the tuple.
+    *
+    * @param <T> the type parameter
+    * @param i   the index of the item
+    * @return the item at the ith index
+    */
+   public <T> T get(int i) {
+      return Cast.as(array()[i]);
+   }
+
+   @Override
+   public int hashCode() {
+      return Arrays.hashCode(array());
+   }
+
+   @Override
+   public Iterator<Object> iterator() {
+      return Arrays.asList(array()).iterator();
    }
 
    /**
@@ -117,17 +168,6 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
     */
    public Tuple mapValues(Function<Object, ?> function) {
       return NTuple.of(Arrays.stream(array()).map(function).collect(Collectors.toList()));
-   }
-
-   /**
-    * Gets the ith item of the tuple.
-    *
-    * @param <T> the type parameter
-    * @param i   the index of the item
-    * @return the item at the ith index
-    */
-   public <T> T get(int i) {
-      return Cast.as(array()[i]);
    }
 
    /**
@@ -159,23 +199,6 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
    }
 
    /**
-    * Appends an item the end of the tuple resulting in a new tuple of degree + 1
-    *
-    * @param <T>    the type parameter
-    * @param object the object being appended
-    * @return A new tuple of degree + 1 containing the object at the end
-    */
-   public <T> Tuple appendRight(T object) {
-      if (degree() == 0) {
-         return Tuple1.of(object);
-      }
-      Object[] copy = new Object[degree() + 1];
-      System.arraycopy(array(), 0, copy, 0, degree());
-      copy[copy.length - 1] = object;
-      return NTuple.of(copy);
-   }
-
-   /**
     * Takes a slice of the tuple from an inclusive start to an exclusive end index.
     *
     * @param start Where to start the slice from (inclusive)
@@ -192,63 +215,38 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
    }
 
    /**
-    * Appends an item the beginning of the tuple resulting in a new tuple of degree + 1
+    * Gets a stream over the objects in the tuple
     *
-    * @param <T>    the type parameter
-    * @param object the object being appended
-    * @return A new tuple of degree + 1 containing the object at the beginning
+    * @return A Stream of the objects in the tuple
     */
-   public <T> Tuple appendLeft(T object) {
-      if (degree() == 0) {
-         return Tuple1.of(object);
-      }
-      Object[] copy = new Object[degree() + 1];
-      System.arraycopy(array(), 0, copy, 1, degree());
-      copy[0] = object;
-      return NTuple.of(copy);
-   }
-
-
-   @Override
-   public final int compareTo(Tuple o) {
-      if (degree() < o.degree()) {
-         return -1;
-      } else if (degree() > o.degree()) {
-         return 1;
-      }
-      Object[] a1 = array();
-      Object[] a2 = o.array();
-      for (int i = 0; i < a1.length; i++) {
-         int cmp = Sorting.compare(a1[i], a2[i]);
-         if (cmp != 0) {
-            return cmp;
-         }
-      }
-      return 0;
-   }
-
-   @Override
-   public final boolean equals(Object obj) {
-      if (obj == null) {
-         return false;
-      } else if (obj instanceof Tuple) {
-         Tuple tuple = Cast.as(obj);
-         return degree() == tuple.degree() && Arrays.equals(array(), tuple.array());
-      } else if (obj instanceof Map.Entry && degree() == 2) {
-         Map.Entry e = Cast.as(obj);
-         return Objects.equals(e.getKey(), get(0)) && Objects.equals(e.getValue(), get(1));
-      }
-      return false;
-   }
-
-   @Override
-   public int hashCode() {
-      return Arrays.hashCode(array());
+   public Stream<Object> stream() {
+      return Arrays.stream(array());
    }
 
    @Override
    public String toString() {
       return Strings.join(array(), ", ", "(", ")");
+   }
+
+   public static class TupleMarshaller extends com.gengoai.json.JsonMarshaller<Tuple> {
+
+      @Override
+      protected Tuple deserialize(JsonEntry entry, Type typeOfT) {
+         List<Object> elements = new ArrayList<>();
+         int index = 0;
+         Type[] types = TypeUtils.getActualTypeArguments(typeOfT);
+         for (Iterator<JsonEntry> itr = entry.elementIterator(); itr.hasNext(); ) {
+            Type type = TypeUtils.getOrObject(index, types);
+            elements.add(itr.next().getAs(type));
+            index++;
+         }
+         return new NTuple(elements.toArray());
+      }
+
+      @Override
+      public JsonEntry serialize(Tuple objects, Type type) {
+         return JsonEntry.array(objects.array());
+      }
    }
 
 

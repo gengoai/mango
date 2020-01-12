@@ -1,11 +1,10 @@
 package com.gengoai.collection.tree;
 
-import com.gengoai.annotation.JsonAdapter;
+import com.gengoai.annotation.JsonHandler;
 import com.gengoai.collection.Iterators;
 import com.gengoai.collection.Maps;
 import com.gengoai.conversion.Cast;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.json.JsonMarshaller;
 import com.gengoai.reflection.TypeUtils;
 import com.gengoai.string.CharMatcher;
 import com.gengoai.string.Strings;
@@ -29,29 +28,10 @@ import static com.gengoai.tuple.Tuples.$;
  * @param <V> the value type of the trie.
  * @author David B. Bracewell
  */
-@JsonAdapter(Trie.TrieMarshaller.class)
+@JsonHandler(Trie.TrieMarshaller.class)
 public class Trie<V> implements Serializable, Map<String, V> {
    private static final long serialVersionUID = 1L;
    private final TrieNode<V> root;
-
-   public static class TrieMarshaller<T> extends JsonMarshaller<Trie<T>> {
-
-      @Override
-      protected Trie<T> deserialize(JsonEntry entry, Type type) {
-         Trie<T> trie = new Trie<>();
-         Type typeOfT = TypeUtils.getOrObject(0, TypeUtils.getActualTypeArguments(type));
-         entry.propertyIterator()
-              .forEachRemaining(e -> trie.put(e.getKey(), e.getValue().getAs(typeOfT)));
-         return trie;
-      }
-
-      @Override
-      protected JsonEntry serialize(Trie<T> t, Type type) {
-         JsonEntry object = JsonEntry.object();
-         t.forEach(object::addProperty);
-         return object;
-      }
-   }
 
    /**
     * Instantiates a new Trie.
@@ -238,14 +218,6 @@ public class Trie<V> implements Serializable, Map<String, V> {
       };
    }
 
-   public Iterator<String> prefixKeyIterator(String prefix){
-      final TrieNode<V> match = root.find(prefix);
-      if (match == null) {
-         return Collections.emptyIterator();
-      }
-      return Iterators.transform(Iterators.unmodifiableIterator(new EntryIterator<>(match)), Entry::getKey);
-   }
-
    /**
     * <p>Returns an unmodifiable map view of this Trie containing only those elements with the given prefix.</p>
     *
@@ -273,6 +245,14 @@ public class Trie<V> implements Serializable, Map<String, V> {
             };
          }
       };
+   }
+
+   public Iterator<String> prefixKeyIterator(String prefix) {
+      final TrieNode<V> match = root.find(prefix);
+      if (match == null) {
+         return Collections.emptyIterator();
+      }
+      return Iterators.transform(Iterators.unmodifiableIterator(new EntryIterator<>(match)), Entry::getKey);
    }
 
    @Override
@@ -304,7 +284,13 @@ public class Trie<V> implements Serializable, Map<String, V> {
       return value;
    }
 
-   private void search(TrieNode<V> node, char letter, String word, int[] previous, Map<String, Integer> results, int maxCost, int substitutionCost) {
+   private void search(TrieNode<V> node,
+                       char letter,
+                       String word,
+                       int[] previous,
+                       Map<String, Integer> results,
+                       int maxCost,
+                       int substitutionCost) {
       int columns = word.length() + 1;
       int[] current = new int[columns];
       current[0] = previous[0] + 1;
@@ -424,15 +410,143 @@ public class Trie<V> implements Serializable, Map<String, V> {
       };
    }
 
+   private static class EntryIterator<V> extends TrieIterator<V, Entry<String, V>> {
+
+      private EntryIterator(TrieNode<V> node) {
+         super(node);
+      }
+
+      @Override
+      Entry<String, V> convert(final TrieNode<V> old) {
+         return new Entry<String, V>() {
+            TrieNode<V> node = old;
+
+            @Override
+            public boolean equals(Object obj) {
+               if (obj == null || !(obj instanceof Entry)) {
+                  return false;
+               }
+               Entry e = Cast.as(obj);
+               return e.getKey().equals(node.matches) && e.getValue().equals(node.value);
+            }
+
+            @Override
+            public String getKey() {
+               return node.matches;
+            }
+
+            @Override
+            public V getValue() {
+               return node.value;
+            }
+
+            @Override
+            public V setValue(V value) {
+               V oldValue = node.value;
+               node.value = value;
+               return oldValue;
+            }
+
+            @Override
+            public String toString() {
+               return node.matches + "=" + node.value;
+            }
+         };
+      }
+
+
+   }
+
+   private static class KeyIterator<V> extends TrieIterator<V, String> {
+
+      private KeyIterator(TrieNode<V> node) {
+         super(node);
+      }
+
+      @Override
+      String convert(TrieNode<V> node) {
+         return node.matches;
+      }
+
+   }
+
+   private static abstract class TrieIterator<V, E> implements Iterator<E> {
+      private final Queue<TrieNode<V>> queue = new LinkedList<>();
+      private TrieNode<V> current = null;
+      private TrieNode<V> old = null;
+
+      private TrieIterator(TrieNode<V> node) {
+         if (node.matches != null) {
+            queue.add(node);
+         } else {
+            queue.addAll(node.children);
+         }
+      }
+
+      /**
+       * Convert e.
+       *
+       * @param node the node
+       * @return the e
+       */
+      abstract E convert(TrieNode<V> node);
+
+      @Override
+      public boolean hasNext() {
+         return move() != null;
+      }
+
+      private TrieNode<V> move() {
+         while (current == null || current.matches == null) {
+            if (queue.isEmpty()) {
+               return null;
+            }
+            current = queue.remove();
+            queue.addAll(current.children);
+         }
+         return current;
+      }
+
+      @Override
+      public E next() {
+         old = move();
+         if (old == null) {
+            throw new NoSuchElementException();
+         }
+         current = null;
+         return convert(old);
+      }
+
+   }
+
+   public static class TrieMarshaller<T> extends com.gengoai.json.JsonMarshaller<Trie<T>> {
+
+      @Override
+      protected Trie<T> deserialize(JsonEntry entry, Type type) {
+         Trie<T> trie = new Trie<>();
+         Type typeOfT = TypeUtils.getOrObject(0, TypeUtils.getActualTypeArguments(type));
+         entry.propertyIterator()
+              .forEachRemaining(e -> trie.put(e.getKey(), e.getValue().getAs(typeOfT)));
+         return trie;
+      }
+
+      @Override
+      protected JsonEntry serialize(Trie<T> t, Type type) {
+         JsonEntry object = JsonEntry.object();
+         t.forEach(object::addProperty);
+         return object;
+      }
+   }
+
    private static class TrieNode<V> implements Serializable, Comparable<TrieNode<V>> {
       private static final long serialVersionUID = 1L;
+      private final int depth;
       private final Character nodeChar;
       private final TrieNode<V> parent;
-      private final int depth;
-      private V value;
+      private ArrayList<TrieNode<V>> children = new ArrayList<>(5);
       private String matches;
       private int size = 0;
-      private ArrayList<TrieNode<V>> children = new ArrayList<>(5);
+      private V value;
 
       private TrieNode(Character nodeChar, TrieNode<V> parent) {
          this.nodeChar = nodeChar;
@@ -442,25 +556,6 @@ public class Trie<V> implements Serializable, Map<String, V> {
          } else {
             this.depth = parent.depth + 1;
          }
-      }
-
-      @Override
-      public boolean equals(Object o) {
-         if (this == o) return true;
-         if (!(o instanceof TrieNode)) return false;
-         TrieNode<?> trieNode = (TrieNode<?>) o;
-         return depth == trieNode.depth &&
-            size == trieNode.size &&
-            Objects.equals(nodeChar, trieNode.nodeChar) &&
-            Objects.equals(parent, trieNode.parent) &&
-            Objects.equals(value, trieNode.value) &&
-            Objects.equals(matches, trieNode.matches) &&
-            Objects.equals(children, trieNode.children);
-      }
-
-      @Override
-      public int hashCode() {
-         return Objects.hash(nodeChar, parent, depth, value, matches, size, children);
       }
 
       @Override
@@ -476,6 +571,20 @@ public class Trie<V> implements Serializable, Map<String, V> {
        */
       public boolean contains(String string) {
          return find(string) != null;
+      }
+
+      @Override
+      public boolean equals(Object o) {
+         if (this == o) return true;
+         if (!(o instanceof TrieNode)) return false;
+         TrieNode<?> trieNode = (TrieNode<?>) o;
+         return depth == trieNode.depth &&
+            size == trieNode.size &&
+            Objects.equals(nodeChar, trieNode.nodeChar) &&
+            Objects.equals(parent, trieNode.parent) &&
+            Objects.equals(value, trieNode.value) &&
+            Objects.equals(matches, trieNode.matches) &&
+            Objects.equals(children, trieNode.children);
       }
 
       /**
@@ -549,6 +658,11 @@ public class Trie<V> implements Serializable, Map<String, V> {
          return children.get(index);
       }
 
+      @Override
+      public int hashCode() {
+         return Objects.hash(nodeChar, parent, depth, value, matches, size, children);
+      }
+
       /**
        * Prune.
        */
@@ -579,68 +693,6 @@ public class Trie<V> implements Serializable, Map<String, V> {
 
    }
 
-   private static abstract class TrieIterator<V, E> implements Iterator<E> {
-      private final Queue<TrieNode<V>> queue = new LinkedList<>();
-      private TrieNode<V> current = null;
-      private TrieNode<V> old = null;
-
-      private TrieIterator(TrieNode<V> node) {
-         if (node.matches != null) {
-            queue.add(node);
-         } else {
-            queue.addAll(node.children);
-         }
-      }
-
-      /**
-       * Convert e.
-       *
-       * @param node the node
-       * @return the e
-       */
-      abstract E convert(TrieNode<V> node);
-
-      @Override
-      public boolean hasNext() {
-         return move() != null;
-      }
-
-      private TrieNode<V> move() {
-         while (current == null || current.matches == null) {
-            if (queue.isEmpty()) {
-               return null;
-            }
-            current = queue.remove();
-            queue.addAll(current.children);
-         }
-         return current;
-      }
-
-      @Override
-      public E next() {
-         old = move();
-         if (old == null) {
-            throw new NoSuchElementException();
-         }
-         current = null;
-         return convert(old);
-      }
-
-   }
-
-   private static class KeyIterator<V> extends TrieIterator<V, String> {
-
-      private KeyIterator(TrieNode<V> node) {
-         super(node);
-      }
-
-      @Override
-      String convert(TrieNode<V> node) {
-         return node.matches;
-      }
-
-   }
-
    private static class ValueIterator<V> extends TrieIterator<V, V> {
 
       private ValueIterator(TrieNode<V> node) {
@@ -651,53 +703,6 @@ public class Trie<V> implements Serializable, Map<String, V> {
       V convert(TrieNode<V> node) {
          return node.value;
       }
-   }
-
-   private static class EntryIterator<V> extends TrieIterator<V, Entry<String, V>> {
-
-      private EntryIterator(TrieNode<V> node) {
-         super(node);
-      }
-
-      @Override
-      Entry<String, V> convert(final TrieNode<V> old) {
-         return new Entry<String, V>() {
-            TrieNode<V> node = old;
-
-            @Override
-            public boolean equals(Object obj) {
-               if (obj == null || !(obj instanceof Entry)) {
-                  return false;
-               }
-               Entry e = Cast.as(obj);
-               return e.getKey().equals(node.matches) && e.getValue().equals(node.value);
-            }
-
-            @Override
-            public String getKey() {
-               return node.matches;
-            }
-
-            @Override
-            public V getValue() {
-               return node.value;
-            }
-
-            @Override
-            public V setValue(V value) {
-               V oldValue = node.value;
-               node.value = value;
-               return oldValue;
-            }
-
-            @Override
-            public String toString() {
-               return node.matches + "=" + node.value;
-            }
-         };
-      }
-
-
    }
 
 

@@ -22,7 +22,7 @@
 
 package com.gengoai;
 
-import com.gengoai.annotation.JsonAdapter;
+import com.gengoai.annotation.JsonHandler;
 import com.gengoai.application.CommandLineParser;
 import com.gengoai.application.NamedOption;
 import com.gengoai.config.Preloader;
@@ -30,7 +30,6 @@ import com.gengoai.conversion.Cast;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.json.JsonMarshaller;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.TypeUtils;
 
@@ -71,7 +70,7 @@ import java.lang.reflect.Type;
  * @param <T> the type parameter
  * @author David B. Bracewell
  */
-@JsonAdapter(EnumValue.Marshaller.class)
+@JsonHandler(EnumValue.Marshaller.class)
 public abstract class EnumValue<T extends EnumValue> implements Tag, Serializable, Cloneable, Comparable<T> {
    private static final long serialVersionUID = 1L;
    private final String canonicalName;
@@ -215,7 +214,7 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
    /**
     * Json Marshaller for EnumValues and sub-classes
     */
-   public static class Marshaller extends JsonMarshaller<EnumValue> {
+   public static class Marshaller extends com.gengoai.json.JsonMarshaller<EnumValue> {
 
       @Override
       public EnumValue deserialize(JsonEntry jsonElement,

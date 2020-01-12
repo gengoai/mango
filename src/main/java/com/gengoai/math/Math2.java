@@ -23,8 +23,8 @@ package com.gengoai.math;
 
 import com.gengoai.collection.Streams;
 
-import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
@@ -39,15 +39,14 @@ import static com.gengoai.Validation.checkArgument;
  */
 public final class Math2 {
 
-   private Math2() {
-      throw new IllegalAccessError();
-   }
-
    /**
     * The constant LOG_2.
     */
    public static final double LOG_2 = Math.log(2);
 
+   private Math2() {
+      throw new IllegalAccessError();
+   }
 
    /**
     * Calculates the AUC (Area Under the Curve)
@@ -104,63 +103,6 @@ public final class Math2 {
       return (sum / n1 - (n1 + 1.0) / 2.0) / n0;
    }
 
-
-   /**
-    * Try to parse a string into a double returning null if a parse error occurs
-    *
-    * @param string the string to parse
-    * @return the parsed Double value or null if not parsable
-    */
-   public static Double tryParseDouble(String string) {
-      try {
-         return Double.parseDouble(string);
-      } catch (NumberFormatException t) {
-         return null;
-      }
-   }
-
-   /**
-    * Try to parse a string into a integer returning null if a parse error occurs
-    *
-    * @param string the string to parse
-    * @return the parsed Integer value or null if not parsable
-    */
-   public static Integer tryParseInteger(String string) {
-      try {
-         return Integer.parseInt(string);
-      } catch (NumberFormatException t) {
-         return null;
-      }
-   }
-
-   /**
-    * Try to parse a string into a long returning null if a parse error occurs
-    *
-    * @param string the string to parse
-    * @return the parsed long value or null if not parsable
-    */
-   public static Long tryParseLong(String string) {
-      try {
-         return Long.parseLong(string);
-      } catch (NumberFormatException t) {
-         return null;
-      }
-   }
-
-   /**
-    * Try to parse a string into a float returning null if a parse error occurs
-    *
-    * @param string the string to parse
-    * @return the parsed Float value or null if not parsable
-    */
-   public static Float tryParseFloat(String string) {
-      try {
-         return Float.parseFloat(string);
-      } catch (NumberFormatException t) {
-         return null;
-      }
-   }
-
    /**
     * <p>Clips a value to ensure it falls between the lower or upper bound of range.</p>
     *
@@ -188,6 +130,23 @@ public final class Math2 {
    public static double log2(double number) {
       return Math.log(number) / LOG_2;
    }
+
+   public static <E> E maxBy(E e1, E e2, Comparator<E> comparator) {
+      int cmp = comparator.compare(e1, e2);
+      if (cmp >= 0) {
+         return e1;
+      }
+      return e2;
+   }
+
+   public static <E> E minBy(E e1, E e2, Comparator<E> comparator) {
+      int cmp = comparator.compare(e1, e2);
+      if (cmp <= 0) {
+         return e1;
+      }
+      return e2;
+   }
+
 
    /**
     * <p>Rescales a value from an old range to a new range, e.g. change the value 2 in a 1 to 5 scale to the value 3.25
@@ -231,7 +190,6 @@ public final class Math2 {
       return summaryStatistics(values).getSum();
    }
 
-
    /**
     * <p>Sums the numbers in the given array.</p>
     *
@@ -265,7 +223,6 @@ public final class Math2 {
       return LongStream.of(values).sum();
    }
 
-
    /**
     * <p>Calculates the summary statistics for the values in the given array.</p>
     *
@@ -278,7 +235,6 @@ public final class Math2 {
                                                         EnhancedDoubleStatistics::accept,
                                                         EnhancedDoubleStatistics::combine);
    }
-
 
    /**
     * <p>Calculates the summary statistics for the values in the given array.</p>
@@ -323,14 +279,59 @@ public final class Math2 {
    }
 
    /**
-    * Truncates a double to a given precision.
+    * Try to parse a string into a double returning null if a parse error occurs
     *
-    * @param value     the value to truncate
-    * @param precision the number of decimal places
-    * @return the double
+    * @param string the string to parse
+    * @return the parsed Double value or null if not parsable
     */
-   public static double truncate(double value, int precision) {
-      return BigDecimal.valueOf(value).setScale(precision, BigDecimal.ROUND_HALF_UP).doubleValue();
+   public static Double tryParseDouble(String string) {
+      try {
+         return Double.parseDouble(string);
+      } catch (NumberFormatException t) {
+         return null;
+      }
+   }
+
+   /**
+    * Try to parse a string into a float returning null if a parse error occurs
+    *
+    * @param string the string to parse
+    * @return the parsed Float value or null if not parsable
+    */
+   public static Float tryParseFloat(String string) {
+      try {
+         return Float.parseFloat(string);
+      } catch (NumberFormatException t) {
+         return null;
+      }
+   }
+
+   /**
+    * Try to parse a string into a integer returning null if a parse error occurs
+    *
+    * @param string the string to parse
+    * @return the parsed Integer value or null if not parsable
+    */
+   public static Integer tryParseInteger(String string) {
+      try {
+         return Integer.parseInt(string);
+      } catch (NumberFormatException t) {
+         return null;
+      }
+   }
+
+   /**
+    * Try to parse a string into a long returning null if a parse error occurs
+    *
+    * @param string the string to parse
+    * @return the parsed long value or null if not parsable
+    */
+   public static Long tryParseLong(String string) {
+      try {
+         return Long.parseLong(string);
+      } catch (NumberFormatException t) {
+         return null;
+      }
    }
 
 }//END OF Math2
