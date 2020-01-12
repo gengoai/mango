@@ -23,6 +23,7 @@ import com.gengoai.Validation;
 import com.gengoai.collection.Iterators;
 import com.gengoai.io.MonitoredObject;
 import com.gengoai.io.ResourceMonitor;
+import com.gengoai.io.resource.Resource;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -43,7 +44,7 @@ public class DiskQueue<E> implements Queue<E>, Serializable, AutoCloseable {
    private volatile transient Queue<E> queue;
 
    @Builder
-   private DiskQueue(@NonNull File file, String namespace, boolean compressed, boolean readOnly) {
+   private DiskQueue(@NonNull Resource file, String namespace, boolean compressed, boolean readOnly) {
       this.nameSpace = Validation.notNullOrBlank(namespace);
       this.handle = ResourceMonitor.monitor(new MapDBHandle(file, compressed));
       this.readOnly = readOnly;

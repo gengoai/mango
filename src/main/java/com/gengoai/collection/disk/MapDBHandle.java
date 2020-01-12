@@ -19,6 +19,10 @@
 
 package com.gengoai.collection.disk;
 
+import com.gengoai.function.Unchecked;
+import com.gengoai.io.Resources;
+import com.gengoai.io.resource.Resource;
+import com.gengoai.logging.Loggable;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.mapdb.Atomic;
@@ -31,81 +35,92 @@ import java.io.Serializable;
  * The type Map db handle.
  */
 @EqualsAndHashCode(exclude = "store")
-public final class MapDBHandle implements Serializable, AutoCloseable {
-   private static final long serialVersionUID = 1L;
-   private final boolean compressed;
-   private final File file;
-   private volatile transient DB store;
+public final class MapDBHandle implements Serializable, AutoCloseable, Loggable {
+    private static final long serialVersionUID = 1L;
+    private final boolean compressed;
+    private final File file;
+    private volatile transient DB store;
 
-   /**
-    * Instantiates a new MapDBHandle.
-    *
-    * @param file       the file containing the MapDB
-    * @param compressed True if compression is used
-    */
-   public MapDBHandle(@NonNull File file, boolean compressed) {
-      this.file = file;
-      this.compressed = compressed;
-   }
+    /**
+     * Instantiates a new MapDBHandle.
+     *
+     * @param resource   the file containing the MapDB
+     * @param compressed True if compression is used
+     */
+    public MapDBHandle(@NonNull Resource resource, boolean compressed) {
+        this.file = resource.asFile()
+                .orElseGet(Unchecked.supplier(() -> {
+                    Resource tempDir = Resources.temporaryDirectory();
+                    tempDir.deleteOnExit();
+                    resource.copy(tempDir.getChild(resource.baseName()));
+                    Resources.from(resource.descriptor() + ".p")
+                            .copy(tempDir.getChild(resource.baseName() + ".p"));
+                    Resources.from(resource.descriptor() + ".t")
+                            .copy(tempDir.getChild(resource.baseName() + ".t"));
+                    logFine("Copying resources to {0}", tempDir);
+                    return tempDir.getChild(resource.baseName()).asFile().orElseThrow();
+                }));
+        this.compressed = compressed;
+    }
 
-   @Override
-   public void close() throws Exception {
-      MapDBRegistry.close(file);
-   }
+    @Override
+    public void close() throws Exception {
+        MapDBRegistry.close(file);
+    }
 
-   /**
-    * Commits changes made to the database
-    */
-   public void commit() {
-      getStore().commit();
-      getStore().compact();
-   }
+    /**
+     * Commits changes made to the database
+     */
+    public void commit() {
+        getStore().commit();
+        getStore().compact();
+    }
 
-   /**
-    * Deletes the database files.
-    */
-   public void delete() {
-      String path = file.getAbsolutePath();
-      for (File f : new File[]{file, new File(path + ".p"), new File(path + ".t")}) {
-         if (f.exists()) {
-            f.delete();
-         }
-      }
-   }
-
-   public Atomic.Boolean getBoolean(String name) {
-      return getStore().getAtomicBoolean(name);
-   }
-
-   public Atomic.Integer getInteger(String name) {
-      return getStore().getAtomicInteger(name);
-   }
-
-   public Atomic.Long getLong(String name) {
-      return getStore().getAtomicLong(name);
-   }
-
-   /**
-    * Gets the database store object
-    *
-    * @return the store
-    */
-   protected DB getStore() {
-      if (store == null) {
-         synchronized (this) {
-            if (store == null) {
-               store = MapDBRegistry.get(file, compressed);
+    /**
+     * Deletes the database files.
+     */
+    public void delete() {
+        String path = file.getAbsolutePath();
+        for (File f : new File[]{file, new File(path + ".p"), new File(path + ".t")}) {
+            if (f.exists()) {
+                f.delete();
             }
-         }
-      }
-      return store;
-   }
+        }
+    }
 
-   public Atomic.String getString(String name) {
-      return getStore().getAtomicString(name);
-   }
+    public Atomic.Boolean getBoolean(String name) {
+        return getStore().getAtomicBoolean(name);
+    }
 
-   public <E> Atomic.Var<E> getVar(String name) {
-      return getStore().getAtomicVar(name);
-   }
+    public Atomic.Integer getInteger(String name) {
+        return getStore().getAtomicInteger(name);
+    }
+
+    public Atomic.Long getLong(String name) {
+        return getStore().getAtomicLong(name);
+    }
+
+    /**
+     * Gets the database store object
+     *
+     * @return the store
+     */
+    protected DB getStore() {
+        if (store == null) {
+            synchronized (this) {
+                if (store == null) {
+                    store = MapDBRegistry.get(file, compressed);
+                }
+            }
+        }
+        return store;
+    }
+
+    public Atomic.String getString(String name) {
+        return getStore().getAtomicString(name);
+    }
+
+    public <E> Atomic.Var<E> getVar(String name) {
+        return getStore().getAtomicVar(name);
+    }
 }//END OF MapDBHandle

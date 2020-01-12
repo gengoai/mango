@@ -20,11 +20,14 @@
 package com.gengoai.collection.disk;
 
 import com.gengoai.Validation;
+import com.gengoai.collection.tree.Span;
 import com.gengoai.io.MonitoredObject;
 import com.gengoai.io.ResourceMonitor;
+import com.gengoai.io.resource.Resource;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.mapdb.BTreeMap;
 
 import java.io.File;
 import java.io.Serializable;
@@ -42,8 +45,9 @@ public class DiskMap<K, V> implements Map<K, V>, AutoCloseable, Serializable {
    private final boolean readOnly;
    private volatile transient Map<K, V> map;
 
+
    @Builder
-   private DiskMap(@NonNull File file, String namespace, boolean compressed, boolean readOnly) {
+   private DiskMap(@NonNull Resource file, String namespace, boolean compressed, boolean readOnly) {
       this.nameSpace = Validation.notNullOrBlank(namespace);
       this.handle = ResourceMonitor.monitor(new MapDBHandle(file, compressed));
       this.readOnly = readOnly;

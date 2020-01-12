@@ -22,6 +22,7 @@ package com.gengoai.collection.disk;
 import com.gengoai.Validation;
 import com.gengoai.io.MonitoredObject;
 import com.gengoai.io.ResourceMonitor;
+import com.gengoai.io.resource.Resource;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -47,7 +48,7 @@ public final class NavigableDiskMap<K, V> implements NavigableMap<K, V>, Seriali
 
 
    @Builder
-   private NavigableDiskMap(@NonNull File file, String namespace, boolean compressed, boolean readOnly) {
+   private NavigableDiskMap(@NonNull Resource file, String namespace, boolean compressed, boolean readOnly) {
       this.nameSpace = Validation.notNullOrBlank(namespace);
       this.handle = ResourceMonitor.monitor(new MapDBHandle(file, compressed));
       this.readOnly = readOnly;
