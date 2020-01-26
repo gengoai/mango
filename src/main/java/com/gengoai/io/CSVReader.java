@@ -21,7 +21,7 @@
 
 package com.gengoai.io;
 
-import com.gengoai.collection.Streams;
+import com.gengoai.stream.Streams;
 import com.gengoai.function.SerializableFunction;
 import com.gengoai.function.Unchecked;
 import com.gengoai.string.CharMatcher;

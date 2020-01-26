@@ -3,7 +3,7 @@ package com.gengoai.collection.tree;
 import com.gengoai.annotation.JsonHandler;
 import com.gengoai.collection.Lists;
 import com.gengoai.collection.Sets;
-import com.gengoai.collection.Streams;
+import com.gengoai.stream.Streams;
 import com.gengoai.conversion.Cast;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.reflection.Reflect;

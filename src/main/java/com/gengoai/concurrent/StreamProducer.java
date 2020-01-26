@@ -30,14 +30,14 @@ import java.util.stream.Stream;
  * @author David B. Bracewell
  */
 public class StreamProducer<V> extends Broker.Producer<V> {
-   private final Stream<V> stream;
+   private final Stream<? extends V> stream;
 
    /**
     * Instantiates a new Stream producer.
     *
     * @param stream the stream
     */
-   public StreamProducer(Stream<V> stream) {
+   public StreamProducer(Stream<? extends V> stream) {
       this.stream = stream;
    }
 

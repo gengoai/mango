@@ -1,5 +1,7 @@
 package com.gengoai.collection;
 
+import com.gengoai.stream.Streams;
+
 import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Iterator;

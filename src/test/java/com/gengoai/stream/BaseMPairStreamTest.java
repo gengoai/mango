@@ -1,6 +1,7 @@
 package com.gengoai.stream;
 
 import com.gengoai.config.Config;
+import com.gengoai.stream.local.LocalStreamingContext;
 import com.gengoai.tuple.Tuple2;
 import org.junit.Test;
 

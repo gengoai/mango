@@ -5,8 +5,10 @@ import com.gengoai.io.resource.Resource;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.TypeUtils;
 import com.google.gson.*;
+import com.google.gson.annotations.Expose;
 
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -18,7 +20,72 @@ import java.util.*;
  * @author David B. Bracewell
  */
 public final class Json {
+   private static final ExclusionStrategy EXCLUSION_STRATEGY = new ExclusionStrategy() {
+      @Override
+      public boolean shouldSkipField(FieldAttributes fieldAttributes) {
+         if(fieldAttributes.hasModifier(Modifier.TRANSIENT)) {
+            return true;
+         }
+         Expose expose = fieldAttributes.getAnnotation(Expose.class);
+         return expose != null && !expose.deserialize();
+      }
+
+      @Override
+      public boolean shouldSkipClass(Class<?> aClass) {
+         Expose expose = aClass.getAnnotation(Expose.class);
+         return expose != null && !expose.deserialize();
+      }
+   };
    public static final Gson MAPPER;
+
+   static {
+      GsonBuilder builder = new GsonBuilder();
+      Set<String> processed = new HashSet<>();
+      builder.addDeserializationExclusionStrategy(EXCLUSION_STRATEGY);
+      builder.addSerializationExclusionStrategy(EXCLUSION_STRATEGY);
+      for(Iterator<Resource> marshallers = Resources.findAllClasspathResources("META-INF/marshallers.json");
+          marshallers.hasNext(); ) {
+         Resource r = marshallers.next();
+         if(r.exists()) {
+            try {
+               for(String line : r.readLines()) {
+                  if(processed.contains(line)) {
+                     continue;
+                  }
+                  processed.add(line);
+                  String[] parts = line.split("\t");
+                  if(parts.length == 3) {
+                     Class<?> type = Reflect.getClassForNameQuietly(parts[0]);
+                     boolean isHier = Boolean.parseBoolean(parts[1]);
+                     Object adapter;
+                     try {
+                        adapter = Reflect.onClass(parts[2])
+                                         .allowPrivilegedAccess()
+                                         .create()
+                                         .get();
+                     } catch(Exception e) {
+                        throw new RuntimeException(e);
+                     }
+                     if(isHier) {
+                        builder.registerTypeHierarchyAdapter(type, adapter);
+                     }
+                     else {
+                        builder.registerTypeAdapter(type, adapter);
+                     }
+                  }
+               }
+            } catch(IOException e) {
+               throw new RuntimeException(e);
+            }
+         }
+      }
+
+
+      builder.registerTypeHierarchyAdapter(JsonEntry.class, new JsonEntryMarshaller());
+      builder.registerTypeHierarchyAdapter(Enum.class, new EnumMarshaller());
+      builder.registerTypeHierarchyAdapter(Type.class, new TypeMarshallar());
+      MAPPER = builder.create();
+   }
 
    private Json() {
       throw new IllegalAccessError();
@@ -72,16 +139,16 @@ public final class Json {
     * @throws IOException Something went wrong writing to the given resource
     */
    public static Resource dump(Object object, Resource resource, int indentLength) throws IOException {
-      try (JsonWriter writer = new JsonWriter(resource)) {
-         if (indentLength > 0) {
+      try(JsonWriter writer = new JsonWriter(resource)) {
+         if(indentLength > 0) {
             writer.spaceIndent(indentLength);
          }
          JsonEntry objJson = JsonEntry.from(object);
-         if (objJson.isPrimitive()) {
+         if(objJson.isPrimitive()) {
             writer.beginDocument(true);
          }
          writer.write(objJson);
-         if (objJson.isPrimitive()) {
+         if(objJson.isPrimitive()) {
             writer.endDocument();
          }
       }
@@ -97,7 +164,7 @@ public final class Json {
    public static String dumps(Object object) {
       try {
          return dump(object, Resources.fromString()).readToString();
-      } catch (IOException e) {
+      } catch(IOException e) {
          throw new RuntimeException(e);
       }
    }
@@ -134,7 +201,7 @@ public final class Json {
     * @throws IOException Something went wrong parsing the resource
     */
    public static JsonEntry parse(Resource json) throws IOException {
-      try (JsonReader reader = createReader(json)) {
+      try(JsonReader reader = createReader(json)) {
          return reader.nextElement();
       }
    }
@@ -265,68 +332,20 @@ public final class Json {
                                                       .getAsArray(Type.class)
                                                       .toArray(new Type[1]))
                    : Reflect.getClassForName(entry.getAsString());
-         } catch (Exception e) {
+         } catch(Exception e) {
             throw new RuntimeException(e);
          }
       }
 
       @Override
       protected JsonEntry serialize(Type type, Type type2) {
-         if (type instanceof ParameterizedType) {
+         if(type instanceof ParameterizedType) {
             return JsonEntry.object()
                             .addProperty("rawType", TypeUtils.asClass(type))
                             .addProperty("parameters", TypeUtils.parameterizedType(type));
          }
          return JsonEntry.from(type.getTypeName());
       }
-   }
-
-   static {
-      GsonBuilder builder = new GsonBuilder();
-      Set<String> processed = new HashSet<>();
-
-
-      for (Iterator<Resource> marshallers = Resources.findAllClasspathResources("META-INF/marshallers.json");
-           marshallers.hasNext(); ) {
-         Resource r = marshallers.next();
-         if (r.exists()) {
-            try {
-               for (String line : r.readLines()) {
-                  if (processed.contains(line)) {
-                     continue;
-                  }
-                  processed.add(line);
-                  String[] parts = line.split("\t");
-                  if (parts.length == 3) {
-                     Class<?> type = Reflect.getClassForNameQuietly(parts[0]);
-                     boolean isHier = Boolean.parseBoolean(parts[1]);
-                     Object adapter;
-                     try {
-                        adapter = Reflect.onClass(parts[2])
-                                         .allowPrivilegedAccess()
-                                         .create()
-                                         .get();
-                     } catch (Exception e) {
-                        throw new RuntimeException(e);
-                     }
-                     if (isHier) {
-                        builder.registerTypeHierarchyAdapter(type, adapter);
-                     } else {
-                        builder.registerTypeAdapter(type, adapter);
-                     }
-                  }
-               }
-            } catch (IOException e) {
-               throw new RuntimeException(e);
-            }
-         }
-      }
-
-
-      builder.registerTypeHierarchyAdapter(JsonEntry.class, new JsonEntryMarshaller());
-      builder.registerTypeHierarchyAdapter(Enum.class, new EnumMarshaller());
-      builder.registerTypeHierarchyAdapter(Type.class, new TypeMarshallar());
-      MAPPER = builder.create();
    }
 
 }//END OF Json

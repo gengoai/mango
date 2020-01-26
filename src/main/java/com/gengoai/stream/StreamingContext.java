@@ -27,7 +27,8 @@ import com.gengoai.conversion.Cast;
 import com.gengoai.function.Unchecked;
 import com.gengoai.io.FileUtils;
 import com.gengoai.io.resource.Resource;
-import com.gengoai.stream.accumulator.*;
+import com.gengoai.stream.local.LocalStreamingContext;
+import com.gengoai.stream.spark.SparkStreamingContext;
 import com.gengoai.tuple.Tuple2;
 
 import java.io.Serializable;
@@ -63,7 +64,9 @@ public abstract class StreamingContext implements Serializable, AutoCloseable {
     * @return the streaming context
     */
    public static StreamingContext get(boolean distributed) {
-      return distributed ? distributed() : local();
+      return distributed
+             ? distributed()
+             : local();
    }
 
    /**
@@ -157,7 +160,7 @@ public abstract class StreamingContext implements Serializable, AutoCloseable {
     * @return the MDoubleStream
     */
    public MDoubleStream doubleStream(double... values) {
-      if (values == null) {
+      if(values == null) {
          return doubleStream(DoubleStream.empty());
       }
       return doubleStream(DoubleStream.of(values));
@@ -320,6 +323,7 @@ public abstract class StreamingContext implements Serializable, AutoCloseable {
     */
    public abstract <K, V> MPairStream<K, V> pairStream(Collection<Entry<? extends K, ? extends V>> tuples);
 
+
    /**
     * Creates a new pair stream from the given array of tuples.
     *
@@ -331,7 +335,7 @@ public abstract class StreamingContext implements Serializable, AutoCloseable {
    @SuppressWarnings("unchecked")
    @SafeVarargs
    public final <K, V> MPairStream<K, V> pairStream(Tuple2<? extends K, ? extends V>... tuples) {
-      if (tuples == null) {
+      if(tuples == null) {
          return emptyPair();
       }
       return pairStream(Arrays.asList(tuples));
@@ -374,7 +378,7 @@ public abstract class StreamingContext implements Serializable, AutoCloseable {
    @SuppressWarnings("unchecked")
    @SafeVarargs
    public final <T> MStream<T> stream(T... items) {
-      if (items == null) {
+      if(items == null) {
          return empty();
       }
       return stream(Arrays.asList(items));
@@ -406,7 +410,7 @@ public abstract class StreamingContext implements Serializable, AutoCloseable {
     * @return the new MStream
     */
    public <T> MStream<T> stream(Iterator<? extends T> iterator) {
-      if (iterator == null) {
+      if(iterator == null) {
          return empty();
       }
       return stream(Cast.<Iterable<T>>as(Iterables.asIterable(iterator)));
@@ -439,15 +443,15 @@ public abstract class StreamingContext implements Serializable, AutoCloseable {
 
 
    public MStream<String> textFile(Resource location, String pattern) {
-      if (!location.isDirectory() && FileUtils.createFilePattern(pattern).matcher(location.baseName()).find()) {
+      if(!location.isDirectory() && FileUtils.createFilePattern(pattern).matcher(location.baseName()).find()) {
          return textFile(location);
       }
       return stream(asArrayList(location.childIterator(pattern, true)))
-                .filter(r -> !r.isDirectory())
-                .filter(r -> r.asFile()
-                              .map(file -> !file.isHidden())
-                              .orElse(true))
-                .flatMap(Unchecked.function(r -> r.readLines().stream()));
+            .filter(r -> !r.isDirectory())
+            .filter(r -> r.asFile()
+                          .map(file -> !file.isHidden())
+                          .orElse(true))
+            .flatMap(Unchecked.function(r -> r.readLines().stream()));
    }
 
 }//END OF StreamingContext

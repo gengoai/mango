@@ -22,6 +22,7 @@
 package com.gengoai.collection;
 
 import com.gengoai.function.SerializableFunction;
+import com.gengoai.stream.Streams;
 import lombok.NonNull;
 
 import java.io.Serializable;

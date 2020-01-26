@@ -21,10 +21,7 @@
 
 package com.gengoai.io.resource;
 
-import com.gengoai.io.QuietIO;
 import com.gengoai.io.resource.spi.FileResourceProvider;
-import com.gengoai.stream.LocalStream;
-import com.gengoai.stream.MStream;
 import com.gengoai.string.Strings;
 
 import java.io.*;
@@ -36,7 +33,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 /**
  * <p> A <code>Resource</code> implementation that wraps a <code>File</code>. </p>
@@ -216,19 +212,7 @@ public class FileResource extends BaseResource {
       return file.isDirectory();
    }
 
-   private Stream<String> lineStream() {
-      try {
-         BufferedReader reader = new BufferedReader(reader());
-         return reader.lines().onClose(() -> QuietIO.closeQuietly(reader));
-      } catch (IOException ioe) {
-         throw new UncheckedIOException(ioe);
-      }
-   }
 
-   @Override
-   public MStream<String> lines() throws IOException {
-      return new LocalStream<>(lineStream());
-   }
 
    @Override
    public boolean mkdir() {

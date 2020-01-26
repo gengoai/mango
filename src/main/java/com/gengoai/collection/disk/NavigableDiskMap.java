@@ -27,7 +27,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 
-import java.io.File;
 import java.io.Serializable;
 import java.util.*;
 
@@ -97,11 +96,11 @@ public final class NavigableDiskMap<K, V> implements NavigableMap<K, V>, Seriali
    }
 
    private NavigableMap<K, V> delegate() {
-      if (map == null) {
-         synchronized (this) {
-            if (map == null) {
+      if(map == null || handle.object.isClosed()) {
+         synchronized(this) {
+            if(map == null || handle.object.isClosed()) {
                map = this.handle.object.getStore().getTreeMap(getNameSpace());
-               if (isReadOnly()) {
+               if(isReadOnly()) {
                   map = Collections.unmodifiableNavigableMap(map);
                }
             }
@@ -127,12 +126,12 @@ public final class NavigableDiskMap<K, V> implements NavigableMap<K, V>, Seriali
 
    @Override
    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (!(o instanceof NavigableDiskMap)) return false;
+      if(this == o) return true;
+      if(!(o instanceof NavigableDiskMap)) return false;
       NavigableDiskMap<?, ?> that = (NavigableDiskMap<?, ?>) o;
       return isReadOnly() == that.isReadOnly() &&
-         Objects.equals(handle, that.handle) &&
-         Objects.equals(getNameSpace(), that.getNameSpace());
+            Objects.equals(handle, that.handle) &&
+            Objects.equals(getNameSpace(), that.getNameSpace());
    }
 
    @Override

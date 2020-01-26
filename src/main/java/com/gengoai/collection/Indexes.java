@@ -22,9 +22,9 @@
 package com.gengoai.collection;
 
 
+import com.gengoai.stream.Streams;
 import lombok.NonNull;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.stream.Stream;
 

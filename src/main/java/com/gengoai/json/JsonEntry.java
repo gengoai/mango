@@ -3,7 +3,7 @@ package com.gengoai.json;
 import com.gengoai.collection.Iterators;
 import com.gengoai.collection.Lists;
 import com.gengoai.collection.Sets;
-import com.gengoai.collection.Streams;
+import com.gengoai.stream.Streams;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Val;
 import com.gengoai.string.Strings;

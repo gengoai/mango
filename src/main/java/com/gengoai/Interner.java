@@ -22,7 +22,7 @@
 package com.gengoai;
 
 import com.gengoai.annotation.JsonHandler;
-import com.gengoai.collection.Streams;
+import com.gengoai.stream.Streams;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.reflection.TypeUtils;
 import lombok.EqualsAndHashCode;

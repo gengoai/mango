@@ -22,7 +22,7 @@
 package com.gengoai.io.resource;
 
 import com.gengoai.Validation;
-import com.gengoai.collection.Streams;
+import com.gengoai.stream.Streams;
 import com.gengoai.io.FileUtils;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.spi.ClasspathResourceProvider;

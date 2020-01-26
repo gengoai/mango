@@ -1,10 +1,15 @@
 package com.gengoai;
 
+import com.gengoai.logging.Logger;
 import com.gengoai.string.Strings;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.stream.IntStream;
 
 import static com.gengoai.Validation.checkState;
@@ -15,22 +20,36 @@ import static com.gengoai.Validation.notNull;
  *
  * @author David B. Bracewell
  */
-public class Stopwatch implements Serializable {
+public class Stopwatch implements Serializable, AutoCloseable {
    private static final long serialVersionUID = 1L;
-   private long start = -1L;
-   private long elapsedTime = 0L;
-   private boolean isRunning = false;
    /**
     * The Name of the stopwatch
     */
    public final String name;
+   private long start = -1L;
+   private long elapsedTime = 0L;
+   private boolean isRunning = false;
+   @Getter
+   @Setter
+   @NonNull
+   private Logger logger;
+   @Getter
+   @Setter
+   @NonNull
+   private Level logLevel;
 
 
    private Stopwatch(boolean started, String name) {
+      this(started, name, Logger.getGlobalLogger(), Level.OFF);
+   }
+
+   private Stopwatch(boolean started, String name, Logger logger, Level level) {
       this.name = name;
-      if (started) {
+      if(started) {
          start();
       }
+      this.logger = logger;
+      this.logLevel = level;
    }
 
 
@@ -59,6 +78,63 @@ public class Stopwatch implements Serializable {
       IntStream.range(0, nTrials).forEach(i -> runnable.run());
       toReturn.stop();
       return toReturn.averageTime(nTrials);
+   }
+
+   /**
+    * Create a stopwatch that is started.
+    *
+    * @param name the name of the stopwatch for reporting purposes
+    * @return the stopwatch
+    */
+   public static Stopwatch createStarted(String name) {
+      return new Stopwatch(true, name);
+   }
+
+   /**
+    * Create a stopwatch that is started.
+    *
+    * @param name the name of the stopwatch for reporting purposes
+    * @return the stopwatch
+    */
+   public static Stopwatch createStarted(String name, Logger logger, Level level) {
+      return new Stopwatch(true, name, logger, level);
+   }
+
+   /**
+    * Create a stopwatch that is started.
+    *
+    * @return the stopwatch
+    */
+   public static Stopwatch createStarted() {
+      return new Stopwatch(true, null);
+   }
+
+   /**
+    * Create a stopwatch that is started.
+    *
+    * @return the stopwatch
+    */
+   public static Stopwatch createStarted(Logger logger, Level level) {
+      return new Stopwatch(true, null, logger, level);
+   }
+
+   /**
+    * Create a stopwatch that is stopped.
+    *
+    * @param name the name of the stopwatch for reporting purposes
+    * @return the stopwatch
+    */
+   public static Stopwatch createStopped(String name) {
+      return new Stopwatch(false, name);
+   }
+
+   /**
+    * Create a stopwatch that is stopped.
+    *
+    * @return the stopwatch
+    */
+   public static Stopwatch createStopped() {
+      return new Stopwatch(false, null);
    }
 
 
@@ -105,6 +181,12 @@ public class Stopwatch implements Serializable {
       this.elapsedTime = 0L;
    }
 
+   public void resetAndStart() {
+      this.isRunning = false;
+      reset();
+      start();
+   }
+
    /**
     * Gets the elapsed time in given time units
     *
@@ -126,11 +208,10 @@ public class Stopwatch implements Serializable {
              : elapsedTime;
    }
 
-
    @Override
    public String toString() {
       StringBuilder stringBuilder = new StringBuilder();
-      if (Strings.isNotNullOrBlank(name)) {
+      if(Strings.isNotNullOrBlank(name)) {
          stringBuilder.append(name).append(": ");
       }
       stringBuilder.append(Duration.ofNanos(getElapsedTime()).toString()
@@ -140,43 +221,8 @@ public class Stopwatch implements Serializable {
       return stringBuilder.toString();
    }
 
-
-   /**
-    * Create a stopwatch that is started.
-    *
-    * @param name the name of the stopwatch for reporting purposes
-    * @return the stopwatch
-    */
-   public static Stopwatch createStarted(String name) {
-      return new Stopwatch(true, name);
-   }
-
-
-   /**
-    * Create a stopwatch that is started.
-    *
-    * @return the stopwatch
-    */
-   public static Stopwatch createStarted() {
-      return new Stopwatch(true, null);
-   }
-
-   /**
-    * Create a stopwatch that is stopped.
-    *
-    * @param name the name of the stopwatch for reporting purposes
-    * @return the stopwatch
-    */
-   public static Stopwatch createStopped(String name) {
-      return new Stopwatch(false, name);
-   }
-
-   /**
-    * Create a stopwatch that is stopped.
-    *
-    * @return the stopwatch
-    */
-   public static Stopwatch createStopped() {
-      return new Stopwatch(false, null);
+   @Override
+   public void close() {
+      logger.log(logLevel, this.toString());
    }
 }//END OF Stopwatch

@@ -111,13 +111,6 @@ public interface MDoubleStream extends AutoCloseable {
    StreamingContext getContext();
 
    /**
-    * Gets the handler that is called when the stream is closed.
-    *
-    * @return the on close handler
-    */
-   SerializableRunnable getOnCloseHandler();
-
-   /**
     * Determines if the stream is empty or not
     *
     * @return True if empty, False otherwise
@@ -191,7 +184,9 @@ public interface MDoubleStream extends AutoCloseable {
     *
     * @param onCloseHandler the handler to run when the stream is closed.
     */
-   void onClose(SerializableRunnable onCloseHandler);
+   MDoubleStream onClose(SerializableRunnable onCloseHandler);
+
+   boolean isDistributed();
 
    /**
     * Ensures that the stream is parallel or distributed.
@@ -278,14 +273,6 @@ public interface MDoubleStream extends AutoCloseable {
     */
    MDoubleStream union(MDoubleStream other);
 
-   /**
-    * Can this stream be consumed more the once?
-    *
-    * @return True the stream can be reused multiple times, False the stream can only be used once
-    */
-   default boolean isReusable() {
-      return false;
-   }
 
    /**
     * Updates the config instance used for this String

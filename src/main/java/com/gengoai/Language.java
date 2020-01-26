@@ -21,7 +21,7 @@
 
 package com.gengoai;
 
-import com.gengoai.collection.Streams;
+import com.gengoai.stream.Streams;
 import com.gengoai.logging.Logger;
 import com.gengoai.string.Strings;
 

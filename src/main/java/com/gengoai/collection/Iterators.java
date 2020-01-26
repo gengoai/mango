@@ -6,6 +6,7 @@ import com.gengoai.collection.counter.MultiCounter;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.SerializableFunction;
 import com.gengoai.function.SerializablePredicate;
+import com.gengoai.stream.Streams;
 
 import java.util.*;
 import java.util.stream.IntStream;

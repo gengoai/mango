@@ -21,7 +21,7 @@
 
 package com.gengoai.math;
 
-import com.gengoai.collection.Streams;
+import com.gengoai.stream.Streams;
 
 import java.util.Arrays;
 import java.util.Comparator;

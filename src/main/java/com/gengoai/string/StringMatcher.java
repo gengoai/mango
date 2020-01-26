@@ -82,6 +82,7 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
     */
    StringMatcher UpperCase = NotNullOrBlank.and(CharMatcher.UpperCase::matchesAllOf);
 
+
    /**
     * String matcher that evaluates true if the CharSequence contains the given string to match.
     *

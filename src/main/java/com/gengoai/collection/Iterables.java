@@ -5,6 +5,7 @@ import com.gengoai.conversion.Cast;
 import com.gengoai.function.SerializableFunction;
 import com.gengoai.function.SerializablePredicate;
 import com.gengoai.function.SerializableSupplier;
+import com.gengoai.stream.Streams;
 
 import java.lang.reflect.Array;
 import java.util.*;
@@ -13,7 +14,7 @@ import java.util.stream.Collectors;
 
 import static com.gengoai.Validation.checkArgument;
 import static com.gengoai.Validation.notNull;
-import static com.gengoai.collection.Streams.asStream;
+import static com.gengoai.stream.Streams.asStream;
 
 /**
  * Methods for manipulating iterables

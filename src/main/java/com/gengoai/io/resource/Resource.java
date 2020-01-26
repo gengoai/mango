@@ -30,9 +30,9 @@ import com.gengoai.io.FileUtils;
 import com.gengoai.io.Resources;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonMarshaller;
-import com.gengoai.stream.CacheStrategy;
-import com.gengoai.stream.LocalStream;
+import com.gengoai.stream.local.LocalStreamingContext;
 import com.gengoai.stream.MStream;
+import com.gengoai.stream.Streams;
 import com.google.gson.annotations.JsonAdapter;
 
 import java.io.*;
@@ -40,6 +40,7 @@ import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Iterator;
@@ -74,7 +75,7 @@ public interface Resource {
     */
    default Resource append(String content) throws IOException {
       checkState(canWrite(), "This resource cannot be written to.");
-      if (content == null) {
+      if(content == null) {
          return this;
       }
       return append(content.getBytes(getCharset()));
@@ -178,20 +179,22 @@ public interface Resource {
     */
    default void copy(Resource copyTo) throws IOException {
       checkState(copyTo.canWrite(), "The resource being copied to cannot be written to.");
-      if (isDirectory()) {
+      if(isDirectory()) {
          copyTo.mkdirs();
-         for (Resource child : getChildren(true)) {
+         for(Resource child : getChildren(true)) {
             Resource copyToChild = copyTo.getChild(
-               child.path().substring(path().length()).replaceAll("^[/]+", ""));
+                  child.path().substring(path().length()).replaceAll("^[/]+", ""));
             copyTo.getParent().mkdirs();
             child.copy(copyToChild);
          }
-      } else {
+      }
+      else {
          checkState(canRead(), "This resource cannot be read from.");
-         try (InputStream is = inputStream(); OutputStream os = copyTo.outputStream()) {
+         try(InputStream is = inputStream();
+             OutputStream os = copyTo.outputStream()) {
             byte[] buffer = new byte[2000];
             int read;
-            while ((read = is.read(buffer)) > 0) {
+            while((read = is.read(buffer)) > 0) {
                os.write(buffer, 0, read);
             }
          }
@@ -248,11 +251,11 @@ public interface Resource {
     */
    default void forEach(SerializableConsumer<String> consumer) throws IOException {
       checkState(canRead(), "This is resource cannot be read from.");
-      try (MStream<String> stream = lines()) {
+      try(MStream<String> stream = lines()) {
          stream.forEach(consumer);
-      } catch (IOException ioe) {
+      } catch(IOException ioe) {
          throw ioe;
-      } catch (Exception e) {
+      } catch(Exception e) {
          throw new IOException(e);
       }
    }
@@ -368,8 +371,15 @@ public interface Resource {
     * @throws IOException the io exception
     */
    default MStream<String> lines() throws IOException {
-      return new LocalStream<>(Unchecked.supplier(() -> new BufferedReader(reader()).lines()),
-                               CacheStrategy.InMemory);
+      if(asFile().isPresent()) {
+         final Path file = asFile().orElseThrow().toPath();
+         return LocalStreamingContext.INSTANCE.stream(
+               Streams.reusableStream(Unchecked.supplier(() -> Files.lines(file)))
+                                                     );
+      }
+      return LocalStreamingContext.INSTANCE.stream(
+            Streams.reusableStream(Unchecked.supplier(() -> new BufferedReader(reader()).lines()))
+                                                  );
    }
 
    /**
@@ -415,11 +425,11 @@ public interface Resource {
     */
    default byte[] readBytes() throws IOException {
       checkState(canRead(), "This is resource cannot be read from.");
-      try (ByteArrayOutputStream byteWriter = new ByteArrayOutputStream();
-           BufferedInputStream byteReader = new BufferedInputStream(inputStream())) {
+      try(ByteArrayOutputStream byteWriter = new ByteArrayOutputStream();
+          BufferedInputStream byteReader = new BufferedInputStream(inputStream())) {
          int bytesRead;
          byte[] buffer = new byte[1024];
-         while ((bytesRead = byteReader.read(buffer)) != -1) {
+         while((bytesRead = byteReader.read(buffer)) != -1) {
             byteWriter.write(buffer, 0, bytesRead);
          }
          return byteWriter.toByteArray();
@@ -434,11 +444,11 @@ public interface Resource {
     */
    default List<String> readLines() throws IOException {
       checkState(canRead(), "This is resource cannot be read from.");
-      try (MStream<String> stream = lines()) {
+      try(MStream<String> stream = lines()) {
          return stream.collect();
-      } catch (IOException e) {
+      } catch(IOException e) {
          throw e;
-      } catch (Exception e) {
+      } catch(Exception e) {
          throw new IOException(e);
       }
    }
@@ -452,7 +462,8 @@ public interface Resource {
     */
    default <T> T readObject() throws Exception {
       checkState(canRead(), "This is resource cannot be read from.");
-      try (InputStream is = inputStream(); ObjectInputStream ois = new ObjectInputStream(is)) {
+      try(InputStream is = inputStream();
+          ObjectInputStream ois = new ObjectInputStream(is)) {
          return Cast.as(ois.readObject(), asClass(Object.class));
       }
    }
@@ -511,8 +522,8 @@ public interface Resource {
     */
    default Resource write(byte[] content) throws IOException {
       checkState(canWrite(), "This is resource cannot be written to.");
-      if (content != null) {
-         try (OutputStream os = outputStream()) {
+      if(content != null) {
+         try(OutputStream os = outputStream()) {
             os.write(content);
          }
       }
@@ -528,7 +539,7 @@ public interface Resource {
     */
    default Resource write(String content) throws IOException {
       checkState(canWrite(), "This is resource cannot be written to.");
-      if (content != null) {
+      if(content != null) {
          write(content.getBytes(getCharset()));
       }
       return this;
@@ -543,7 +554,8 @@ public interface Resource {
     */
    default Resource writeObject(Object object) throws Exception {
       checkState(canWrite(), "This is resource cannot be written to.");
-      try (OutputStream os = outputStream(); ObjectOutputStream oos = new ObjectOutputStream(os)) {
+      try(OutputStream os = outputStream();
+          ObjectOutputStream oos = new ObjectOutputStream(os)) {
          oos.writeObject(object);
          oos.flush();
       }

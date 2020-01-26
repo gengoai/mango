@@ -3,7 +3,7 @@ package com.gengoai.stream;
 import com.gengoai.collection.Lists;
 import com.gengoai.collection.Maps;
 import com.gengoai.config.Config;
-import com.gengoai.stream.accumulator.*;
+import com.gengoai.stream.local.LocalStreamingContext;
 import com.gengoai.string.Strings;
 import com.gengoai.tuple.Tuple2;
 import org.junit.Assert;
@@ -217,12 +217,12 @@ public abstract class BaseMStreamTest {
    @Test
    public void union() throws Exception {
       assertEquals(
-         Arrays.asList("A", "B", "C"),
-         sc.stream("A").union(sc.stream("B", "C")).collect()
+            Arrays.asList("A", "B", "C"),
+            sc.stream("A").union(sc.stream("B", "C")).collect()
                   );
       assertEquals(
-         Arrays.asList("A"),
-         sc.stream("A").union(sc.empty()).collect()
+            Arrays.asList("A"),
+            sc.stream("A").union(sc.empty()).collect()
                   );
 
       StreamingContext other;

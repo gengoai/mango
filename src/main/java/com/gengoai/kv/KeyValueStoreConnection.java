@@ -24,10 +24,10 @@ package com.gengoai.kv;
 
 import com.gengoai.Validation;
 import com.gengoai.conversion.Cast;
+import com.gengoai.io.Resources;
 import com.gengoai.specification.*;
 import lombok.Data;
 
-import java.io.File;
 import java.io.Serializable;
 
 /**
@@ -73,18 +73,18 @@ public final class KeyValueStoreConnection implements Specifiable, Serializable 
     * @return the t
     */
    public <K, V, T extends KeyValueStore<K, V>> T connect() {
-      switch (type) {
+      switch(type) {
          case "mem":
-            if (navigable) {
+            if(navigable) {
                return Cast.as(new InMemoryNavigableKeyValueStore<K, V>(namespace, readOnly));
             }
             return Cast.as(new InMemoryKeyValueStore<>(namespace, readOnly));
          case "disk":
             Validation.notNullOrBlank(path, "Key-Value store path must not be blank or null");
-            return Cast.as(new MapDBKeyValueStore<>(new File(path),
-                                                     namespace,
-                                                     compressed,
-                                                     readOnly));
+            return Cast.as(new MapDBKeyValueStore<>(Resources.from(path),
+                  namespace,
+                  compressed,
+                  readOnly));
          default:
             throw new IllegalArgumentException("Invalid key-value type: " + type);
       }

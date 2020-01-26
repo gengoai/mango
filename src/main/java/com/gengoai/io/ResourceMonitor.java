@@ -34,6 +34,9 @@ import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 import static com.gengoai.Validation.notNull;
@@ -43,15 +46,20 @@ import static com.gengoai.Validation.notNull;
  */
 public class ResourceMonitor extends Thread {
    protected static final ResourceMonitor MONITOR = new ResourceMonitor();
+
+   static {
+      MONITOR.start();
+   }
+
    private final ConcurrentHashMap<Object, KeyedWeakReference> map = new ConcurrentHashMap<>();
    private final ReferenceQueue<Object> referenceQueue = new ReferenceQueue<>();
+
 
    private ResourceMonitor() {
       setPriority(Thread.MAX_PRIORITY);
       setName("GarbageCollectingConcurrentMap-cleanupthread");
       setDaemon(true);
    }
-
 
    public static Connection monitor(Connection connection) {
       return Cast.as(Proxy.newProxyInstance(notNull(connection).getClass().getClassLoader(),
@@ -87,6 +95,25 @@ public class ResourceMonitor extends Thread {
                                             new MStreamInvocationHandler<>(notNull(stream))));
    }
 
+   public static DoubleStream monitor(DoubleStream stream) {
+      return Cast.as(Proxy.newProxyInstance(DoubleStream.class.getClassLoader(),
+                                            new Class[]{DoubleStream.class},
+                                            new DoubleStreamInvocationHandler(notNull(stream))));
+   }
+
+   public static IntStream monitor(IntStream stream) {
+      return Cast.as(Proxy.newProxyInstance(IntStream.class.getClassLoader(),
+                                            new Class[]{IntStream.class},
+                                            new IntStreamInvocationHandler(notNull(stream))));
+   }
+
+   public static LongStream monitor(LongStream stream) {
+      return Cast.as(Proxy.newProxyInstance(DoubleStream.class.getClassLoader(),
+                                            new Class[]{LongStream.class},
+                                            new LongStreamInvocationHandler(notNull(stream))));
+   }
+
+
    public static <T> MonitoredObject<T> monitor(T object) {
       return new MonitoredObject<>(object);
    }
@@ -107,22 +134,21 @@ public class ResourceMonitor extends Thread {
       return resource;
    }
 
-
    @Override
    public void run() {
       try {
-         while (true) {
+         while(true) {
             KeyedWeakReference ref = (KeyedWeakReference) referenceQueue.remove();
             try {
                map.remove(ref.monitoredResource.key);
                ref.monitoredResource.close();
-            } catch (Exception e) {
-               if (!e.getMessage().toLowerCase().contains("already closed")) {
+            } catch(Exception e) {
+               if(!e.getMessage().toLowerCase().contains("already closed")) {
                   e.printStackTrace();
                }
             }
          }
-      } catch (InterruptedException e) {
+      } catch(InterruptedException e) {
          //
       }
    }
@@ -244,6 +270,45 @@ public class ResourceMonitor extends Thread {
       }
    }
 
+   private static class DoubleStreamInvocationHandler implements InvocationHandler {
+      final DoubleStream backingStream;
+
+      private DoubleStreamInvocationHandler(DoubleStream backingStream) {
+         this.backingStream = MONITOR.addResource(this, backingStream);
+      }
+
+      @Override
+      public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
+         return method.invoke(backingStream, objects);
+      }
+   }
+
+   private static class LongStreamInvocationHandler implements InvocationHandler {
+      final LongStream backingStream;
+
+      private LongStreamInvocationHandler(LongStream backingStream) {
+         this.backingStream = MONITOR.addResource(this, backingStream);
+      }
+
+      @Override
+      public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
+         return method.invoke(backingStream, objects);
+      }
+   }
+
+   private static class IntStreamInvocationHandler implements InvocationHandler {
+      final IntStream backingStream;
+
+      private IntStreamInvocationHandler(IntStream backingStream) {
+         this.backingStream = MONITOR.addResource(this, backingStream);
+      }
+
+      @Override
+      public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
+         return method.invoke(backingStream, objects);
+      }
+   }
+
    private class KeyedWeakReference extends WeakReference<Object> {
       public final KeyedObject<?> monitoredResource;
 
@@ -251,10 +316,6 @@ public class ResourceMonitor extends Thread {
          super(referenceObject, referenceQueue);
          this.monitoredResource = monitoredResource;
       }
-   }
-
-   static {
-      MONITOR.start();
    }
 
 }//END OF ReferenceMonitor

@@ -22,7 +22,7 @@
 package com.gengoai.string;
 
 import com.gengoai.Validation;
-import com.gengoai.collection.Streams;
+import com.gengoai.stream.Streams;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVReader;
 

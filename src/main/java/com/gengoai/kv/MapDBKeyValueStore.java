@@ -23,6 +23,7 @@
 package com.gengoai.kv;
 
 import com.gengoai.collection.disk.NavigableDiskMap;
+import com.gengoai.io.resource.Resource;
 
 import java.io.File;
 import java.util.NavigableMap;
@@ -34,7 +35,7 @@ class MapDBKeyValueStore<K, V> extends AbstractNavigableKeyValueStore<K, V> {
    private static final long serialVersionUID = 1L;
    private final NavigableDiskMap<K, V> map;
 
-   public MapDBKeyValueStore(File dbFile, String namespace, boolean compressed, boolean readOnly) {
+   public MapDBKeyValueStore(Resource dbFile, String namespace, boolean compressed, boolean readOnly) {
       super(namespace, readOnly);
       this.map = NavigableDiskMap.<K, V>builder()
          .file(dbFile)

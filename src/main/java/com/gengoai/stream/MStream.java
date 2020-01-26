@@ -26,6 +26,7 @@ import com.gengoai.conversion.Cast;
 import com.gengoai.function.*;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
+import com.gengoai.stream.spark.SparkStream;
 
 import java.util.*;
 import java.util.stream.Collector;
@@ -167,6 +168,8 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
    MStream<T> intersection(MStream<T> other);
 
    /**
+    * Is distributed boolean.
+    *
     * @return True if the stream is distributed
     */
    boolean isDistributed();
@@ -267,6 +270,7 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
     * file handles.
     *
     * @param closeHandler the handler to run when the stream is closed.
+    * @return the m stream
     */
    MStream<T> onClose(SerializableRunnable closeHandler);
 
@@ -285,6 +289,12 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
     */
    MStream<Stream<T>> partition(long partitionSize);
 
+   /**
+    * Persists the stream to the given storage level
+    *
+    * @param storageLevel the storage level
+    * @return the persisted MStream
+    */
    MStream<T> persist(StorageLevel storageLevel);
 
    /**
@@ -388,6 +398,8 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
 
 
    /**
+    * To distributed stream spark stream.
+    *
     * @return A distributed version of the stream
     */
    default SparkStream<T> toDistributedStream() {
@@ -403,7 +415,7 @@ public interface MStream<T> extends AutoCloseable, Iterable<T> {
    MStream<T> union(MStream<T> other);
 
    /**
-    * Updates the config instance used for this String
+    * Updates the config instance used for this stream
     */
    default void updateConfig() {
 

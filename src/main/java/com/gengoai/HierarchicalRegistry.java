@@ -54,6 +54,7 @@ public final class HierarchicalRegistry<T extends HierarchicalEnumValue> extends
       super(newInstance, owner);
       this.ROOT = make(rootName);
       this.labelToNodeMap.put(this.ROOT.label(), this.ROOT.canonicalName());
+      this.registry.put(this.ROOT.canonicalName(), this.ROOT);
    }
 
 
@@ -69,7 +70,7 @@ public final class HierarchicalRegistry<T extends HierarchicalEnumValue> extends
    }
 
    protected void checkName(String name) {
-      if (!CharMatcher.LetterOrDigit.or(CharMatcher.anyOf("_$")).matchesAllOf(name)) {
+      if(!CharMatcher.LetterOrDigit.or(CharMatcher.anyOf("_$")).matchesAllOf(name)) {
          throw new IllegalArgumentException(name + " is invalid");
       }
    }
@@ -82,14 +83,16 @@ public final class HierarchicalRegistry<T extends HierarchicalEnumValue> extends
     * @return the string
     */
    protected String ensureParent(T parent, String name) {
-      if (parent == null || parent == ROOT) {
+      if(parent == null || parent == ROOT) {
          return name;
       }
-      if (name.startsWith(canonicalName)) {
+      if(name.startsWith(canonicalName)) {
          name = name.substring(canonicalName.length() + 1);
       }
       String prefix = parent.name() + SEPARATOR;
-      return name.startsWith(prefix) ? name : parent + Character.toString(SEPARATOR) + name;
+      return name.startsWith(prefix)
+             ? name
+             : parent + Character.toString(SEPARATOR) + name;
    }
 
    /**
@@ -108,16 +111,16 @@ public final class HierarchicalRegistry<T extends HierarchicalEnumValue> extends
       name = normalize(name);
       String label = name;
       int sep = name.lastIndexOf(SEPARATOR);
-      if (sep >= 0) {
+      if(sep >= 0) {
          label = name.substring(name.lastIndexOf(SEPARATOR) + 1);
       }
       checkName(label);
 
-      if (label.equals(name) && labelToNodeMap.containsKey(label)) {
+      if(label.equals(name) && labelToNodeMap.containsKey(label)) {
          return registry.get(labelToNodeMap.get(label));
       }
 
-      if (labelToNodeMap.containsKey(label) && !labelToNodeMap.get(label).equals(name)) {
+      if(labelToNodeMap.containsKey(label) && !labelToNodeMap.get(label).equals(name)) {
          throw new IllegalArgumentException("Labels must be unique");
       }
       labelToNodeMap.put(label, name);

@@ -27,6 +27,7 @@ import com.gengoai.json.JsonEntry;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
 import com.gengoai.reflection.TypeUtils;
+import com.gengoai.stream.Streams;
 
 import java.lang.reflect.Type;
 import java.util.List;

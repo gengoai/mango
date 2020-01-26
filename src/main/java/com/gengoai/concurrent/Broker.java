@@ -47,7 +47,9 @@ public class Broker<V> implements Serializable, Loggable {
    final List<java.util.function.Consumer<? super V>> consumers;
    final AtomicInteger runningProducers = new AtomicInteger();
 
-   private Broker(ArrayBlockingQueue<V> queue, List<Producer<V>> producers, List<java.util.function.Consumer<? super V>> consumers) {
+   private Broker(ArrayBlockingQueue<V> queue,
+                  List<Producer<V>> producers,
+                  List<java.util.function.Consumer<? super V>> consumers) {
       this.queue = queue;
       this.producers = producers;
       this.consumers = consumers;
@@ -72,25 +74,25 @@ public class Broker<V> implements Serializable, Loggable {
       runningProducers.set(producers.size());
 
       //create the producers
-      for (Producer<V> producer : producers) {
+      for(Producer<V> producer : producers) {
          producer.setOwner(this);
          executors.submit(new ProducerThread(producer));
       }
 
       //create the consumers
-      for (java.util.function.Consumer<? super V> consumer : consumers) {
+      for(java.util.function.Consumer<? super V> consumer : consumers) {
          executors.submit(new ConsumerThread(consumer));
       }
 
       //give it some more time to process
-      while (runningProducers.get() > 0 || !queue.isEmpty()) {
+      while(runningProducers.get() > 0 || !queue.isEmpty()) {
          Threads.sleep(10);
       }
 
       executors.shutdown();
       try {
          executors.awaitTermination(Integer.MAX_VALUE, TimeUnit.SECONDS);
-      } catch (InterruptedException e) {
+      } catch(InterruptedException e) {
          logWarn(e);
          return false;
       }
@@ -146,7 +148,7 @@ public class Broker<V> implements Serializable, Loggable {
       protected final void yield(V object) {
          try {
             owner.queue.put(object);
-         } catch (InterruptedException e) {
+         } catch(InterruptedException e) {
             logWarn(e);
          }
       }
@@ -180,7 +182,7 @@ public class Broker<V> implements Serializable, Loggable {
        * @return the builder
        */
       public Builder<V> addConsumer(java.util.function.Consumer<? super V> consumer, int number) {
-         for (int i = 0; i < number; i++) {
+         for(int i = 0; i < number; i++) {
             this.consumers.add(consumer);
          }
          return this;
@@ -205,7 +207,7 @@ public class Broker<V> implements Serializable, Loggable {
        * @return the builder
        */
       public Builder<V> addProducer(Producer<V> producer, int number) {
-         for (int i = 0; i < number; i++) {
+         for(int i = 0; i < number; i++) {
             this.producers.add(producer);
          }
          return this;
@@ -253,7 +255,7 @@ public class Broker<V> implements Serializable, Loggable {
       public Broker<V> build() {
          Validation.checkArgument(producers.size() > 0);
          Validation.checkArgument(consumers.size() > 0);
-         if (queue == null) {
+         if(queue == null) {
             queue = new ArrayBlockingQueue<>(10 * (producers.size() + consumers.size()));
          }
          return new Broker<>(queue, producers, consumers);
@@ -271,10 +273,10 @@ public class Broker<V> implements Serializable, Loggable {
 
       @Override
       public void run() {
-         while (!Thread.currentThread().isInterrupted() && producer.isRunning()) {
+         while(!Thread.currentThread().isInterrupted() && producer.isRunning()) {
             try {
                producer.produce();
-            } catch (Exception e) {
+            } catch(Exception e) {
                logWarn(e);
             }
          }
@@ -292,18 +294,18 @@ public class Broker<V> implements Serializable, Loggable {
 
       @Override
       public void run() {
-         while (!Thread.currentThread().isInterrupted()) {
+         while(!Thread.currentThread().isInterrupted()) {
             try {
                V v = queue.poll(100, TimeUnit.NANOSECONDS);
-               if (v != null) {
+               if(v != null) {
                   consumerAction.accept(v);
                }
-               if (runningProducers.get() <= 0 && queue.isEmpty()) {
+               if(runningProducers.get() <= 0 && queue.isEmpty()) {
                   break;
                }
-            } catch (InterruptedException e) {
-               break;
-            } catch (Exception e) {
+            } catch(InterruptedException e) {
+               Thread.currentThread().interrupt();
+            } catch(Exception e) {
                logWarn(e);
             }
          }

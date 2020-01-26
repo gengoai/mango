@@ -2,6 +2,7 @@ package com.gengoai.collection;
 
 import com.gengoai.io.resource.Resource;
 import com.gengoai.io.resource.StringResource;
+import com.gengoai.stream.Streams;
 import org.junit.Assert;
 import org.junit.Test;
 
