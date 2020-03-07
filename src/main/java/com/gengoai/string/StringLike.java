@@ -24,7 +24,7 @@ public interface StringLike extends CharSequence {
     * @param string the sequence to search for
     * @return true if this string contains s, false otherwise
     */
-   default boolean contains(String string) {
+   default boolean contains(CharSequence string) {
       return toString().contains(string);
    }
 

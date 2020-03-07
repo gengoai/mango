@@ -31,8 +31,8 @@ import java.io.Serializable;
 import java.lang.reflect.Type;
 
 /**
- * A tag which is represented as a string. Care must be taken in that different string variations will represent
- * different tags.
+ * <p>A tag which is represented as a string. Care must be taken in that different string variations will represent
+ * different tags.</p>
  *
  * @author David B. Bracewell
  */

@@ -21,11 +21,9 @@
 
 package com.gengoai.graph;
 
-import com.gengoai.graph.io.DefaultEncodersDecoders;
 import com.gengoai.graph.io.GraphJson;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
-import com.gengoai.io.resource.StringResource;
 import org.junit.Before;
 import org.junit.Test;
 

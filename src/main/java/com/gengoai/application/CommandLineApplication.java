@@ -21,16 +21,6 @@
 
 package com.gengoai.application;
 
-import com.gengoai.Validation;
-import com.gengoai.logging.Loggable;
-import com.gengoai.string.Strings;
-
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Set;
-
-import static com.gengoai.collection.Sets.hashSetOf;
-
 /**
  * <p> Abstract base class for a command line application. Child classes should implement the <code>programLogic</code>
  * method and create a main method calling the {@link #run(String[])} method. An example application is listed
@@ -53,20 +43,14 @@ import static com.gengoai.collection.Sets.hashSetOf;
  *
  * @author David B. Bracewell
  */
-public abstract class CommandLineApplication implements Application, Serializable, Loggable {
+public abstract class CommandLineApplication extends Application {
    private static final long serialVersionUID = 1L;
-
-   public final String applicationName;
-   private String[] allArgs;
-   private final Set<String> dependencies = hashSetOf();
-   private String[] positionalArgs;
-
 
    /**
     * Instantiates a new Application.
     */
    protected CommandLineApplication() {
-      this(null, new String[0]);
+      super();
    }
 
 
@@ -76,55 +60,7 @@ public abstract class CommandLineApplication implements Application, Serializabl
     * @param applicationName the application name
     */
    protected CommandLineApplication(String applicationName) {
-      this(applicationName, new String[0]);
-   }
-
-
-   /**
-    * Instantiates a new Application.
-    *
-    * @param applicationName the application name
-    * @param dependencies    the dependent package names to use for the application, which is important for loading the
-    *                        correct configuration.
-    */
-   protected CommandLineApplication(String applicationName, String[] dependencies) {
-      this.applicationName = Strings.isNullOrBlank(applicationName) ? getClass().getSimpleName() : applicationName;
-      this.dependencies.addAll(Arrays.asList(Validation.notNull(dependencies)));
-   }
-
-   protected void addDependency(String dependency) {
-      this.dependencies.add(dependency);
-   }
-
-   @Override
-   public final String[] getAllArguments() {
-      return allArgs;
-   }
-
-   @Override
-   public void setAllArguments(String[] allArguments) {
-      this.allArgs = allArguments;
-   }
-
-
-   @Override
-   public Set<String> getDependentPackages() {
-      return dependencies;
-   }
-
-   @Override
-   public String getName() {
-      return applicationName;
-   }
-
-   @Override
-   public final String[] getPositionalArgs() {
-      return positionalArgs;
-   }
-
-   @Override
-   public void setPositionalArgs(String[] nonSpecifiedArguments) {
-      this.positionalArgs = Arrays.copyOf(nonSpecifiedArguments, nonSpecifiedArguments.length);
+      super(applicationName);
    }
 
    /**
@@ -138,7 +74,7 @@ public abstract class CommandLineApplication implements Application, Serializabl
    public final void run() {
       try {
          programLogic();
-      } catch (Exception e) {
+      } catch(Exception e) {
          logSevere(e);
          System.exit(-1);
       }

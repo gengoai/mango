@@ -21,12 +21,14 @@
 
 package com.gengoai;
 
+import lombok.NonNull;
+
 import java.util.Arrays;
 
 /**
- * <p>An interface that defines a tag name and a methodology to determine if one tag is an instance of another.
- * Individual implementations may define the <code>isInstance</code> method to take into account a hierarchy or other
- * attributes that define a tag.</p>
+ * <p>A Tag represents a label on an object. Tags allow for instanceOf checks using {@link #isInstance(Tag)} and {@link
+ * #isInstance(Tag...)}. Individual implementations may define the <code>isInstance</code> method to take into account a
+ * hierarchy or other attributes that define a tag.</p>
  *
  * @author David B. Bracewell
  */
@@ -35,10 +37,10 @@ public interface Tag {
    /**
     * Determines if this tag is an instance of a given tag.
     *
-    * @param tag The given tag
+    * @param tag The given tag to check if this one is an instance of
     * @return True if this tag is an instance of the given tag
     */
-   default boolean isInstance(Tag tag) {
+   default boolean isInstance(@NonNull Tag tag) {
       return getClass().isInstance(tag) && name().equals(tag.name());
    }
 
@@ -48,15 +50,34 @@ public interface Tag {
     * @param tags the tags to check against
     * @return True if this tag is an instance of any one of the given tags
     */
-   default boolean isInstance(Tag... tags) {
+   default boolean isInstance(@NonNull Tag... tags) {
       return Arrays.stream(Validation.notNull(tags)).anyMatch(this::isInstance);
    }
 
    /**
-    * The name of the enum value
+    * Gets the label associated with the tag. In most cases the label is the same as the name, but when tags are
+    * defined using a {@link HierarchicalEnumValue} the label is the leaf node name without the full path.
     *
-    * @return The name of the enum value
+    * @return the label of the tag
+    */
+   default String label() {
+      return name();
+   }
+
+   /**
+    * The name of the tag.
+    *
+    * @return The name of the tag
     */
    String name();
+
+   /**
+    * Gets the parent of this tag
+    *
+    * @return the parent or null if it has no parent
+    */
+   default Tag parent() {
+      return null;
+   }
 
 }//END OF Tag

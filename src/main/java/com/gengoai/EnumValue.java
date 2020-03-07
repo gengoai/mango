@@ -30,8 +30,8 @@ import com.gengoai.conversion.Cast;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.json.JsonEntry;
+import com.gengoai.reflection.RMethod;
 import com.gengoai.reflection.Reflect;
-import com.gengoai.reflection.TypeUtils;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
@@ -129,7 +129,7 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
 
       String className = parser.get("className");
       String packageName = parser.get("packageName");
-      if (packageName.endsWith(";")) {
+      if(packageName.endsWith(";")) {
          packageName = packageName.substring(0, packageName.length() - 1);
       }
       String str = template.readToString();
@@ -139,7 +139,7 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
       out = out.getChild(packageName.replace('.', '/'));
       out.mkdirs();
       out = out.getChild(className + ".java");
-      if (out.exists()) {
+      if(out.exists()) {
          throw new IllegalStateException(out.path() + " already exists, please delete first!");
       }
       out.write(str);
@@ -181,15 +181,6 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
       return this.equals(value);
    }
 
-   /**
-    * Gets the label associated with the Enum value
-    *
-    * @return the label
-    */
-   public String label() {
-      return name;
-   }
-
    @Override
    public String name() {
       return name;
@@ -214,24 +205,28 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
    /**
     * Json Marshaller for EnumValues and sub-classes
     */
-   public static class Marshaller extends com.gengoai.json.JsonMarshaller<EnumValue> {
+   public static class Marshaller extends com.gengoai.json.JsonMarshaller<EnumValue<?>> {
 
       @Override
-      public EnumValue deserialize(JsonEntry jsonElement,
-                                   Type type
-                                  ) {
+      public EnumValue<?> deserialize(JsonEntry jsonElement, Type type) {
          String name = jsonElement.getAsString();
-         if (type == EnumValue.class) {
+         if(type == EnumValue.class) {
+            //We have been told to create an EnumValue class, so we need the full canonical name
+            //to determine what type of enum to get.
             int lastIndex = name.lastIndexOf('.');
-            if (lastIndex >= 0) {
+            if(lastIndex >= 0) {
                type = Reflect.getClassForNameQuietly(name.substring(0, lastIndex));
             }
          }
          try {
-            return Reflect.onClass(TypeUtils.asClass(type))
-                          .getMethod("make", String.class)
-                          .invoke(name);
-         } catch (Exception e) {
+            //We assume that all EnumValues have a "make" method that takes a string
+            // or a valueof method
+            Reflect r = Reflect.onClass(type);
+            RMethod toInvoke = r.containsMethod("make", String.class)
+                               ? r.getMethod("make", String.class)
+                               : r.getMethod("valueOf", String.class);
+            return toInvoke.invoke(name);
+         } catch(Exception e) {
             throw new RuntimeException(e);
          }
       }

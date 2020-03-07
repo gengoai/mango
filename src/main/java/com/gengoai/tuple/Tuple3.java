@@ -125,7 +125,7 @@ public class Tuple3<A, B, C> extends Tuple {
 
    @Override
    public String toString() {
-      return "(" + v1 + ", " + v2 + "," + v3 + ")";
+      return "(" + v1 + ", " + v2 + ", " + v3 + ")";
    }
 
    @Override

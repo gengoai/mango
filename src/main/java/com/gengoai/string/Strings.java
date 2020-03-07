@@ -22,9 +22,10 @@
 package com.gengoai.string;
 
 import com.gengoai.Validation;
-import com.gengoai.stream.Streams;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVReader;
+import com.gengoai.stream.Streams;
+import com.gengoai.tuple.IntPair;
 
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -58,21 +59,42 @@ public final class Strings {
    public static int count(String str, String target) {
       int index = -target.length();
       int count = 0;
-      while ((index = str.indexOf(target, index + target.length())) != -1) {
+      while((index = str.indexOf(target, index + target.length())) != -1) {
          count++;
       }
       return count;
    }
 
+   public static IntPair expand(String txt, int start, int end) {
+      while(start > 0 && !Character.isWhitespace(txt.charAt(start - 1)) && !CharMatcher.Punctuation.test(
+            txt.charAt(start - 1))) {
+         start--;
+      }
+
+      while(start < end && Character.isWhitespace(txt.charAt(start))) {
+         start++;
+      }
+      while(end < txt.length() && !Character.isWhitespace(txt.charAt(end)) && !CharMatcher.Punctuation.test(
+            txt.charAt(end))) {
+         end++;
+      }
+      while(end > start && Character.isWhitespace(txt.charAt(end - 1))) {
+         end--;
+      }
+      return IntPair.of(start, end);
+   }
+
    public static String blankToNull(String string) {
-      return Strings.isNullOrBlank(string) ? null : string;
+      return Strings.isNullOrBlank(string)
+             ? null
+             : string;
    }
 
    public static String appendIfNotPresent(String string, String suffix) {
-      if (string == null) {
+      if(string == null) {
          return null;
       }
-      if (string.endsWith(suffix)) {
+      if(string.endsWith(suffix)) {
          return string;
       }
       return string + suffix;
@@ -85,7 +107,9 @@ public final class Strings {
     * @return the output string (empty if input null, input otherwise)
     */
    public static String nullToEmpty(String input) {
-      return input == null ? EMPTY : input;
+      return input == null
+             ? EMPTY
+             : input;
    }
 
    /**
@@ -96,10 +120,10 @@ public final class Strings {
     * @return The abbreviated string
     */
    public static String abbreviate(CharSequence input, int length) {
-      if (input == null) {
+      if(input == null) {
          return null;
       }
-      if (input.length() <= length) {
+      if(input.length() <= length) {
          return input.toString();
       }
       return input.subSequence(0, length) + "...";
@@ -113,7 +137,7 @@ public final class Strings {
     * @return the centered string
     */
    public static String center(String s, int length) {
-      if (s == null) {
+      if(s == null) {
          return null;
       }
       int start = (int) Math.floor(Math.max(0, (length - s.length()) / 2d));
@@ -130,9 +154,9 @@ public final class Strings {
     */
    public static String compactRepeatedChars(CharSequence sequence) {
       StringBuilder builder = new StringBuilder();
-      for (int i = 0; i < sequence.length(); i++) {
+      for(int i = 0; i < sequence.length(); i++) {
          char c = sequence.charAt(i);
-         if (builder.length() == 0 || builder.charAt(builder.length() - 1) != c) {
+         if(builder.length() == 0 || builder.charAt(builder.length() - 1) != c) {
             builder.append(c);
          }
       }
@@ -148,14 +172,16 @@ public final class Strings {
     * @return as long as neither are null
     */
    public static int compare(String s1, String s2, boolean ignoreCase) {
-      if (s1 == null && s2 == null) {
+      if(s1 == null && s2 == null) {
          return 0;
-      } else if (s1 == null) {
+      } else if(s1 == null) {
          return -1;
-      } else if (s2 == null) {
+      } else if(s2 == null) {
          return 1;
       }
-      return ignoreCase ? s1.compareToIgnoreCase(s2) : s1.compareTo(s2);
+      return ignoreCase
+             ? s1.compareToIgnoreCase(s2)
+             : s1.compareTo(s2);
    }
 
    /**
@@ -165,11 +191,11 @@ public final class Strings {
     * @return the first non null or blank string (null if none)
     */
    public static String firstNonNullOrBlank(String... strings) {
-      if (strings == null || strings.length == 0) {
+      if(strings == null || strings.length == 0) {
          return null;
       }
-      for (String s : strings) {
-         if (isNotNullOrBlank(s)) {
+      for(String s : strings) {
+         if(isNotNullOrBlank(s)) {
             return s;
          }
       }
@@ -363,7 +389,7 @@ public final class Strings {
     * @return the string
     */
    public static String leftTrim(CharSequence input) {
-      if (input == null) {
+      if(input == null) {
          return null;
       }
       return StringFunctions.LEFT_TRIM.apply(input.toString());
@@ -379,9 +405,9 @@ public final class Strings {
     * @return the string
     */
    public static String padEnd(CharSequence sequence, int desiredLength, char paddingCharacter) {
-      if (sequence == null) {
+      if(sequence == null) {
          return repeat(paddingCharacter, desiredLength);
-      } else if (sequence.length() == desiredLength) {
+      } else if(sequence.length() == desiredLength) {
          return sequence.toString();
       }
       return sequence.toString() + repeat(paddingCharacter, desiredLength - sequence.length());
@@ -397,9 +423,9 @@ public final class Strings {
     * @return the string
     */
    public static String padStart(CharSequence sequence, int desiredLength, char paddingCharacter) {
-      if (sequence == null) {
+      if(sequence == null) {
          return repeat(paddingCharacter, desiredLength);
-      } else if (sequence.length() == desiredLength) {
+      } else if(sequence.length() == desiredLength) {
          return sequence.toString();
       }
       return repeat(paddingCharacter, desiredLength - sequence.length()) + sequence.toString();
@@ -448,19 +474,19 @@ public final class Strings {
     * @return A string of random characters
     */
    public static String randomString(int length, int min, int max, CharMatcher validChar) {
-      if (length <= 0) {
+      if(length <= 0) {
          return EMPTY;
       }
       Random random = new Random();
       int maxRandom = max - min;
       char[] array = new char[length];
-      for (int i = 0; i < array.length; i++) {
+      for(int i = 0; i < array.length; i++) {
          char c;
          do {
             c = (char) (random.nextInt(maxRandom) + min);
-         } while (Character.isLowSurrogate(c) ||
-            Character.isHighSurrogate(c) ||
-            !validChar.test(c));
+         } while(Character.isLowSurrogate(c) ||
+               Character.isHighSurrogate(c) ||
+               !validChar.test(c));
          array[i] = c;
       }
       return new String(array);
@@ -473,7 +499,7 @@ public final class Strings {
     * @return Resulting string without diacritic marks
     */
    public static String removeDiacritics(CharSequence input) {
-      if (input == null) {
+      if(input == null) {
          return null;
       }
       return StringFunctions.DIACRITICS_NORMALIZATION.apply(input.toString());
@@ -510,7 +536,7 @@ public final class Strings {
     * @return the string
     */
    public static String rightTrim(CharSequence input) {
-      if (input == null) {
+      if(input == null) {
          return null;
       }
       return StringFunctions.RIGHT_TRIM.apply(input.toString());
@@ -525,11 +551,11 @@ public final class Strings {
     * @return the boolean
     */
    public static boolean safeEquals(String s1, String s2, boolean caseSensitive) {
-      if (s1 == s2) {
+      if(s1 == s2) {
          return true;
-      } else if (s1 == null || s2 == null) {
+      } else if(s1 == null || s2 == null) {
          return false;
-      } else if (caseSensitive) {
+      } else if(caseSensitive) {
          return s1.equals(s2);
       }
       return s1.equalsIgnoreCase(s2);
@@ -544,18 +570,18 @@ public final class Strings {
     * @return A list of all the cells in the input
     */
    public static List<String> split(CharSequence input, char separator) {
-      if (input == null) {
+      if(input == null) {
          return new ArrayList<>();
       }
       Validation.checkArgument(separator != '"', "Separator cannot be a quote");
-      try (CSVReader reader = CSV.builder().delimiter(separator).reader(new StringReader(input.toString()))) {
+      try(CSVReader reader = CSV.builder().delimiter(separator).reader(new StringReader(input.toString()))) {
          List<String> all = new ArrayList<>();
          List<String> row;
-         while ((row = reader.nextRow()) != null) {
+         while((row = reader.nextRow()) != null) {
             all.addAll(row);
          }
          return all;
-      } catch (Exception e) {
+      } catch(Exception e) {
          throw new RuntimeException(e);
       }
    }
@@ -569,8 +595,8 @@ public final class Strings {
     */
    public static String javaStringEscape(String string) {
       StringBuilder b = new StringBuilder();
-      for (char c : string.toCharArray()) {
-         if (c >= 128) {
+      for(char c : string.toCharArray()) {
+         if(c >= 128) {
             b.append("\\u").append(String.format("%04X", (int) c));
          } else {
             b.append(c);
@@ -587,7 +613,7 @@ public final class Strings {
     * @return the normalized string
     */
    public static String toCanonicalForm(CharSequence input) {
-      if (input == null) {
+      if(input == null) {
          return null;
       }
       return StringFunctions.CANONICAL_NORMALIZATION.apply(input.toString());
@@ -600,7 +626,7 @@ public final class Strings {
     * @return The title cased version of the input
     */
    public static String toTitleCase(CharSequence input) {
-      if (input == null) {
+      if(input == null) {
          return null;
       }
       return StringFunctions.TITLE_CASE.apply(input.toString());
@@ -613,7 +639,7 @@ public final class Strings {
     * @return Trimmed string or null if input was null
     */
    public static String trim(CharSequence input) {
-      if (input == null) {
+      if(input == null) {
          return null;
       }
       return StringFunctions.TRIM.apply(input.toString());
@@ -627,12 +653,12 @@ public final class Strings {
     * @return the string
     */
    public static String unescape(String input, char escapeCharacter) {
-      if (input == null) {
+      if(input == null) {
          return null;
       }
       StringBuilder builder = new StringBuilder();
-      for (int i = 0; i < input.length(); ) {
-         if (input.charAt(i) == escapeCharacter) {
+      for(int i = 0; i < input.length(); ) {
+         if(input.charAt(i) == escapeCharacter) {
             builder.append(input.charAt(i + 1));
             i = i + 2;
          } else {

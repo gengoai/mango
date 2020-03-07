@@ -314,7 +314,7 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry's element is not a json primitive
     */
    public Character getAsCharacter() {
-      return element.getAsCharacter();
+      return element.getAsString().charAt(0);
    }
 
    /**
@@ -492,7 +492,7 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry is not a json object
     */
    public Character getCharacterProperty(String propertyName) {
-      return getProperty(propertyName).element.getAsCharacter();
+      return getProperty(propertyName).element.getAsString().charAt(0);
    }
 
    /**
@@ -505,7 +505,7 @@ public class JsonEntry implements Serializable {
     */
    public Character getCharacterProperty(String propertyName, Character defaultValue) {
       if (element.getAsJsonObject().has(propertyName)) {
-         return element.getAsJsonObject().get(propertyName).getAsCharacter();
+         return element.getAsJsonObject().get(propertyName).getAsString().charAt(0);
       }
       return defaultValue;
    }

@@ -54,10 +54,10 @@ public final class Xml {
    }
 
    private static Optional<String> getTagName(XMLEvent event) {
-      if (event.isStartElement()) {
+      if(event.isStartElement()) {
          return Optional.of(event.asStartElement().getName().getLocalPart());
       }
-      if (event.isEndElement()) {
+      if(event.isEndElement()) {
          return Optional.of(event.asEndElement().getName().getLocalPart());
       }
       return Optional.empty();
@@ -96,7 +96,7 @@ public final class Xml {
       notNullOrBlank(tag, "Must specify a valid xml tag to capture");
       XMLInputFactory factory = XMLInputFactory.newFactory();
       final XMLEventReader reader;
-      if (eventFilter == null) {
+      if(eventFilter == null) {
          reader = factory.createXMLEventReader(xmlResource.inputStream(), "UTF-8");
       } else {
          reader = factory.createFilteredReader(factory.createXMLEventReader(xmlResource.inputStream(), "UTF-8"),
@@ -110,13 +110,12 @@ public final class Xml {
       private final XMLEventReader reader;
       private final String tag;
       Document document;
-      private boolean isClosed = false;
 
       private XmlIterator(String tag, XMLEventReader reader) {
          this.monitoredObject = ResourceMonitor.monitor(reader, r -> {
             try {
                r.close();
-            } catch (XMLStreamException e) {
+            } catch(XMLStreamException e) {
                e.printStackTrace();
             }
          });
@@ -125,25 +124,26 @@ public final class Xml {
       }
 
       private boolean advance() throws Exception {
-         if (document != null) {
+         if(document != null) {
             return true;
          }
-         if (!reader.hasNext()) {
+         if(!reader.hasNext()) {
             return false;
          }
          XMLEvent event;
-         while ((event = reader.nextEvent()).getEventType() != XMLEvent.END_DOCUMENT) {
-            if (getTagName(event).map(n -> n.equals(tag)).orElse(false)) {
+         if((event = reader.nextEvent()).getEventType() != XMLEvent.END_DOCUMENT) {
+            if(getTagName(event).map(n -> n.equals(tag)).orElse(false)) {
                document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
                final XMLEventWriter writer = XMLOutputFactory.newInstance()
                                                              .createXMLEventWriter(new DOMResult(document));
                writer.add(event);
-               while ((event = reader.nextEvent()).getEventType() != XMLEvent.END_DOCUMENT) {
+               while(reader.hasNext() && (event = reader.nextEvent()).getEventType() != XMLEvent.END_DOCUMENT) {
                   writer.add(event);
-                  if (getTagName(event).map(n -> n.equals(tag)).orElse(false)) {
+                  if(getTagName(event).map(n -> n.equals(tag)).orElse(false)) {
                      break;
                   }
                }
+               writer.close();
                return true;
             }
          }
@@ -154,7 +154,7 @@ public final class Xml {
       public boolean hasNext() {
          try {
             return advance();
-         } catch (Exception e) {
+         } catch(Exception e) {
             return false;
          }
       }
@@ -163,7 +163,7 @@ public final class Xml {
       public Document next() {
          try {
             advance();
-         } catch (Exception e) {
+         } catch(Exception e) {
             throw new RuntimeException(e);
          }
          Document toReturn = document;

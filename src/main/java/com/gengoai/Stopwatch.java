@@ -17,15 +17,39 @@ import static com.gengoai.Validation.notNull;
 
 /**
  * <p>Tracks start and ending times to determine total time taken.</p>
+ * <p>Normal usage of a Stopwatch is a follows:
+ * <pre>
+ * {@code
+ *    var sw = Stopwatch.createStarted() //optionally you can give your Stopwatch a name
+ *    //Perform some activity
+ *    sw.stop();
+ *    System.out.println(sw); // output total time
+ *    sw.reset();
+ *    sw.start();
+ *    //Perform another activity
+ *    sw.stop();
+ *    System.out.println(sw); // output total time
+ * }
+ * </pre>
+ * </p>
+ * <p> In cases where you do not want the stopwatch to start on creation you can use {@link #createStopped()}.
+ * Additionally, you can use the Stopwatch as a resource to automatically log the timing on close as follows:
+ * <pre>
+ * {@code
+ *    //By default the log level is set to OFF and the Logger is the global logger
+ *    //We change that by:
+ *    try( var sw = Stopwatch.createStarted(MyLogger, Level.INFO) ){
+ *       //Perform some activity
+ *    }
+ * }
+ * </pre>
+ * </p>
  *
  * @author David B. Bracewell
  */
 public class Stopwatch implements Serializable, AutoCloseable {
    private static final long serialVersionUID = 1L;
-   /**
-    * The Name of the stopwatch
-    */
-   public final String name;
+   private final String name;
    private long start = -1L;
    private long elapsedTime = 0L;
    private boolean isRunning = false;
@@ -81,7 +105,7 @@ public class Stopwatch implements Serializable, AutoCloseable {
    }
 
    /**
-    * Create a stopwatch that is started.
+    * Create a named stopwatch that is started.
     *
     * @param name the name of the stopwatch for reporting purposes
     * @return the stopwatch
@@ -150,41 +174,9 @@ public class Stopwatch implements Serializable, AutoCloseable {
       return this;
    }
 
-   private long getSystemNano() {
-      return TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
-   }
-
-   /**
-    * Start the stopwatch.
-    */
-   public void start() {
-      checkState(!isRunning, "Cannot start an already started Stopwatch");
-      this.isRunning = true;
-      this.start = getSystemNano();
-   }
-
-   /**
-    * Stop the stopwatch.
-    */
-   public void stop() {
-      checkState(isRunning, "Cannot stop an already stopped Stopwatch");
-      this.isRunning = false;
-      elapsedTime += (getSystemNano() - this.start);
-   }
-
-   /**
-    * Reset the stopwatch.
-    */
-   public void reset() {
-      this.isRunning = false;
-      this.start = -1;
-      this.elapsedTime = 0L;
-   }
-
-   public void resetAndStart() {
-      this.isRunning = false;
-      reset();
-      start();
+   @Override
+   public void close() {
+      logger.log(logLevel, this.toString());
    }
 
    /**
@@ -208,6 +200,43 @@ public class Stopwatch implements Serializable, AutoCloseable {
              : elapsedTime;
    }
 
+   private long getSystemNano() {
+      return TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
+   }
+
+   /**
+    * Reset the stopwatch.
+    */
+   public void reset() {
+      this.isRunning = false;
+      this.start = -1;
+      this.elapsedTime = 0L;
+   }
+
+   public void resetAndStart() {
+      this.isRunning = false;
+      reset();
+      start();
+   }
+
+   /**
+    * Start the stopwatch.
+    */
+   public void start() {
+      checkState(!isRunning, "Cannot start an already started Stopwatch");
+      this.isRunning = true;
+      this.start = getSystemNano();
+   }
+
+   /**
+    * Stop the stopwatch.
+    */
+   public void stop() {
+      checkState(isRunning, "Cannot stop an already stopped Stopwatch");
+      this.isRunning = false;
+      elapsedTime += (getSystemNano() - this.start);
+   }
+
    @Override
    public String toString() {
       StringBuilder stringBuilder = new StringBuilder();
@@ -219,10 +248,5 @@ public class Stopwatch implements Serializable, AutoCloseable {
                                    .replaceAll("(\\d[HMS])(?!$)", "$1 ")
                                    .toLowerCase());
       return stringBuilder.toString();
-   }
-
-   @Override
-   public void close() {
-      logger.log(logLevel, this.toString());
    }
 }//END OF Stopwatch

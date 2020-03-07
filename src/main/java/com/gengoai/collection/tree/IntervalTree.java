@@ -3,12 +3,12 @@ package com.gengoai.collection.tree;
 import com.gengoai.annotation.JsonHandler;
 import com.gengoai.collection.Lists;
 import com.gengoai.collection.Sets;
-import com.gengoai.stream.Streams;
 import com.gengoai.conversion.Cast;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
 import com.gengoai.reflection.TypeUtils;
+import com.gengoai.stream.Streams;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -53,29 +53,31 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
       Node y = nil;
       Node x = root;
 
-      while (x.isNotNil()) {
+      while(x.isNotNil()) {
          y = x;
          x.max = Math.max(x.max, item.end());
          int cmp = item.compareTo(x);
-         if (cmp == 0) {
-            if (x.items.add(item)) {
+         if(cmp == 0) {
+            if(x.items.add(item)) {
                size++;
                return true;
             }
             return false;
          }
-         x = cmp < 0 ? x.left : x.right;
+         x = cmp < 0
+             ? x.left
+             : x.right;
       }
 
       Node z = new Node(item);
       z.parent = y;
 
-      if (y.isNil()) {
+      if(y.isNil()) {
          root = z;
          root.color = BLACK;
       } else {
          int cmp = z.compareTo(y);
-         if (cmp < 0) {
+         if(cmp < 0) {
             y.left = z;
          } else {
             y.right = z;
@@ -92,8 +94,8 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
    @Override
    public boolean addAll(@NonNull Collection<? extends T> collection) {
       boolean addAll = true;
-      for (T t : collection) {
-         if (!add(t)) {
+      for(T t : collection) {
+         if(!add(t)) {
             addAll = false;
          }
       }
@@ -113,18 +115,18 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
    }
 
    private Node ceiling(Node n, T span) {
-      if (n.isNil()) {
+      if(n.isNil()) {
          return nil;
       }
       int cmp = span.compareTo(n);
-      if (cmp == 0) {
+      if(cmp == 0) {
          return n;
       }
-      if (cmp > 0) {
+      if(cmp > 0) {
          return ceiling(n.right, span);
       }
       Node t = ceiling(n.left, span);
-      if (t.isNotNil()) {
+      if(t.isNotNil()) {
          return t;
       }
       return n;
@@ -150,7 +152,7 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
    @Override
    public boolean contains(Object o) {
       T search = Cast.as(o);
-      if (search == null) {
+      if(search == null) {
          return false;
       }
       Node node = find(root, search);
@@ -167,12 +169,14 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
    }
 
    private Node find(Node n, T span) {
-      while (n != null) {
+      while(n != null && !n.isNil()) {
          int cmp = span.compareTo(n);
-         if (cmp == 0) {
+         if(cmp == 0) {
             return n;
          }
-         n = cmp < 0 ? n.left : n.right;
+         n = cmp < 0
+             ? n.left
+             : n.right;
       }
       return null;
    }
@@ -190,18 +194,18 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
    }
 
    private Node floor(Node n, T span) {
-      if (n.isNil()) {
+      if(n.isNil()) {
          return nil;
       }
       int cmp = span.compareTo(n);
-      if (cmp == 0) {
+      if(cmp == 0) {
          return n;
       }
-      if (cmp < 0) {
+      if(cmp < 0) {
          return floor(n.left, span);
       }
       Node t = floor(n.right, span);
-      if (t.isNotNil()) {
+      if(t.isNotNil()) {
          return t;
       }
       return n;
@@ -216,7 +220,7 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
     * given element or an empty iterator if there is no such element.
     */
    public Iterator<T> floorIterator(@NonNull T start) {
-      return new DescendingIterator(lower(root, start), s -> s.start() <= start.start() && s.end() <= start.end());
+      return new DescendingIterator(floor(root, start), s -> s.start() <= start.start() && s.end() <= start.end());
    }
 
    /**
@@ -232,7 +236,7 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
 
    private Node higher(Node n, T span) {
       Node c = ceiling(n, span);
-      if (c.compareTo(span) == 0) {
+      if(c.compareTo(span) == 0) {
          return c.higher();
       }
       return c;
@@ -274,7 +278,7 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
 
    private Node lower(Node n, T span) {
       Node c = floor(n, span);
-      if (c.compareTo(span) == 0) {
+      if(c.compareTo(span) == 0) {
          return c.lower();
       }
       return c;
@@ -305,15 +309,18 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
    @Override
    public boolean remove(Object o) {
       T search = Cast.as(o);
-      if (search == null) {
+      if(search == null) {
          return false;
       }
       Node n = find(root, search);
+      if(n == null) {
+         return false;
+      }
       boolean wasRemoved = n.items.remove(search);
-      if (wasRemoved) {
+      if(wasRemoved) {
          size--;
       }
-      if (n.items.isEmpty()) {
+      if(n.items.isEmpty()) {
          n.delete();
       }
       return wasRemoved;
@@ -321,12 +328,12 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
 
    @Override
    public boolean removeAll(@NonNull Collection<?> collection) {
-      if (collection.isEmpty()) {
+      if(collection.isEmpty()) {
          return true;
       }
       boolean removeAll = true;
-      for (Object o : collection) {
-         if (!remove(o)) {
+      for(Object o : collection) {
+         if(!remove(o)) {
             removeAll = false;
          }
       }
@@ -335,13 +342,13 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
 
    @Override
    public boolean retainAll(@NonNull Collection<?> collection) {
-      if (collection.isEmpty()) {
+      if(collection.isEmpty()) {
          clear();
          return true;
       }
       Iterator<T> iterator = iterator();
-      while (iterator.hasNext()) {
-         if (!collection.contains(iterator)) {
+      while(iterator.hasNext()) {
+         if(!collection.contains(iterator)) {
             iterator.remove();
          }
       }
@@ -385,7 +392,7 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
             entry.elementIterator()
                  .forEachRemaining(e -> tree.add(e.getAs(tType)));
             return tree;
-         } catch (ReflectionException e) {
+         } catch(ReflectionException e) {
             throw new RuntimeException(e);
          }
       }
@@ -414,10 +421,10 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
 
       @Override
       public T next() {
-         if (!hasNext()) {
+         if(!hasNext()) {
             throw new NoSuchElementException();
          }
-         if (itemIterator.hasNext()) {
+         if(itemIterator.hasNext()) {
             return itemIterator.next();
          } else {
             current = next;
@@ -434,7 +441,9 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
       private Node next;
 
       private ItemIterator(Node n, boolean descend) {
-         this.current = descend ? n.minimumDescendantNode() : n;
+         this.current = descend
+                        ? n.minimumDescendantNode()
+                        : n;
          this.next = this.current.higher();
          this.itemIterator = this.current.iterator();
       }
@@ -446,10 +455,10 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
 
       @Override
       public T next() {
-         if (!hasNext()) {
+         if(!hasNext()) {
             throw new NoSuchElementException();
          }
-         if (itemIterator.hasNext()) {
+         if(itemIterator.hasNext()) {
             return itemIterator.next();
          } else {
             current = next;
@@ -487,17 +496,17 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
 
       private void addRebalance() {
          Node z = this;
-         while (z.parent.isRed()) {
+         while(z.parent.isRed()) {
 
-            if (z.parent.isLeftChild()) {
+            if(z.parent.isLeftChild()) {
                Node y = z.parent.parent.right;
-               if (y.isRed()) {
+               if(y.isRed()) {
                   z.right.color = BLACK;
                   y.color = BLACK;
                   z.parent.parent.color = RED;
                   z = z.parent.parent;
                } else {
-                  if (z.isRightChild()) {
+                  if(z.isRightChild()) {
                      z = z.parent;
                      z.leftRotate();
                   }
@@ -507,13 +516,13 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
                }
             } else {
                Node y = z.parent.parent.left;
-               if (y.isRed()) {
+               if(y.isRed()) {
                   z.parent.color = BLACK;
                   y.color = BLACK;
                   z.parent.parent.color = RED;
                   z = z.parent.parent;
                } else {
-                  if (z.isLeftChild()) {
+                  if(z.isLeftChild()) {
                      z = z.parent;
                      z.rightRotate();
                   }
@@ -528,51 +537,53 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
       }
 
       private void delete() {
-         if (isNil()) {
+         if(isNil()) {
             return;
          }
          size -= items.size();
          Node x = this;
-         if (x.left.isNotNil() && x.right.isNotNil()) {
+         if(x.left.isNotNil() && x.right.isNotNil()) {
             x = higher();
             setEnd(x.end());
             setStart(x.start());
             items = x.items;
             updateAncestors();
          }
-         Node z = x.left.isNil() ? x.right : x.left;
+         Node z = x.left.isNil()
+                  ? x.right
+                  : x.left;
          z.parent = x.parent;
-         if (x == root) {
+         if(x == root) {
             z = root;
-         } else if (x.isLeftChild()) {
+         } else if(x.isLeftChild()) {
             x.parent.left = z;
             x.updateAncestors();
          } else {
             x.parent.right = z;
             x.updateAncestors();
          }
-         if (x.color == BLACK) {
+         if(x.color == BLACK) {
             z.deleteRebalance();
          }
       }
 
       private void deleteRebalance() {
          Node x = this;
-         if (x != root && x.color == BLACK) {
+         if(x != root && x.color == BLACK) {
 
-            if (x.isLeftChild()) {
+            if(x.isLeftChild()) {
                Node w = x.parent.right;
-               if (w.color == RED) {
+               if(w.color == RED) {
                   w.color = BLACK;
                   w.parent.color = RED;
                   w.parent.leftRotate();
                   w = x.parent.right;
                }
-               if (w.left.color == BLACK && w.right.color == BLACK) {
+               if(w.left.color == BLACK && w.right.color == BLACK) {
                   w.color = RED;
                   x = x.parent;
                } else {
-                  if (w.right.color == BLACK) {
+                  if(w.right.color == BLACK) {
                      w.left.color = BLACK;
                      w.color = RED;
                      w.rightRotate();
@@ -586,17 +597,17 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
                }
             } else {
                Node w = x.parent.left;
-               if (w.color == RED) {
+               if(w.color == RED) {
                   w.color = BLACK;
                   w.parent.color = RED;
                   w.parent.rightRotate();
                   w = x.parent.left;
                }
-               if (w.left.color == BLACK && w.right.color == BLACK) {
+               if(w.left.color == BLACK && w.right.color == BLACK) {
                   w.color = RED;
                   x = x.parent;
                } else {
-                  if (w.left.color == BLACK) {
+                  if(w.left.color == BLACK) {
                      w.right.color = BLACK;
                      w.color = RED;
                      w.leftRotate();
@@ -615,19 +626,21 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
 
       private Node descendRightWhile(Predicate<Span> predicate) {
          Node x = this;
-         while (x.right.isNotNil() && predicate.test(x.right)) {
+         while(x.right.isNotNil() && predicate.test(x.right)) {
             x = x.right;
          }
-         return predicate.test(x) ? x : x.left;
+         return predicate.test(x)
+                ? x
+                : x.left;
       }
 
       private Node higher() {
-         if (right.isNotNil()) {
+         if(right.isNotNil()) {
             return right.minimumDescendantNode();
          }
          Node child = this;
          Node parent = this.parent;
-         while (parent.isNotNil() && child.isRightChild()) {
+         while(parent.isNotNil() && child.isRightChild()) {
             child = parent;
             parent = parent.parent;
          }
@@ -665,19 +678,19 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
 
          right = newRoot.left;// Our new right node is the higher (right) node
          //Update the parent if the node isn't nil
-         if (right.isNotNil()) {
+         if(right.isNotNil()) {
             right.parent = this;
          }
 
          //Set the parent of the lower child to the parent of this node
          newRoot.parent = parent;
 
-         if (parent.isNil()) {
+         if(parent.isNil()) {
 
             //If our parent is nil, it means we are the root of the tree
             root = newRoot;
 
-         } else if (isLeftChild()) {
+         } else if(isLeftChild()) {
             //If we our the left child, set our parent's left child to the new root
             parent.left = newRoot;
 
@@ -696,12 +709,12 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
       }
 
       private Node lower() {
-         if (!left.isNil()) {
+         if(!left.isNil()) {
             return left.maximumDescendantNode();
          }
          Node child = this;
          Node parent = this.parent;
-         while (parent.isNotNil() && child.isLeftChild()) {
+         while(parent.isNotNil() && child.isLeftChild()) {
             child = parent;
             parent = parent.parent;
          }
@@ -710,28 +723,28 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
 
       private Node maximumDescendantNode() {
          Node x = this;
-         while (x.right.isNotNil()) {
+         while(x.right.isNotNil()) {
             x = x.right;
          }
          return x;
       }
 
       private Node minOverlapping(Span query) {
-         if (isNil() || max <= query.start()) {
+         if(isNil() || max <= query.start()) {
             return nil;
          }
          Node min = nil;
          Node c = this;
-         while (c.isNotNil() && c.max > query.start()) {
+         while(c.isNotNil() && c.max > query.start()) {
             //We found an overlapping node
-            if (c.overlaps(query)) {
+            if(c.overlaps(query)) {
                min = c;
                c = c.left;
             } else {
                //No joy in finding an overlapping node, so let's decide where to look next.
-               if (c.left.isNotNil() && c.left.max > query.start()) {
+               if(c.left.isNotNil() && c.left.max > query.start()) {
                   c = c.left;
-               } else if (c.start() < query.end()) {
+               } else if(c.start() < query.end()) {
                   c = c.right;
                } else {
                   break; //Unfortunately, both the left and right child were duds
@@ -743,7 +756,7 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
 
       private Node minimumDescendantNode() {
          Node x = this;
-         while (x.left.isNotNil()) {
+         while(x.left.isNotNil()) {
             x = x.left;
          }
          return x;
@@ -761,10 +774,11 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
          //               X   ( Z )
          // i.e. look at Z if we are X and our parent P is not nil and we haven't find the next overlapping node
          // otherwise we become P and try again
-         while (x.parent.isNotNil() && nextOverlapping.isNil()) {
-            if (x.isLeftChild()) {
-               nextOverlapping = x.parent.overlaps(query) ? x.parent
-                                                          : x.parent.right.minOverlapping(query);
+         while(x.parent.isNotNil() && nextOverlapping.isNil()) {
+            if(x.isLeftChild()) {
+               nextOverlapping = x.parent.overlaps(query)
+                                 ? x.parent
+                                 : x.parent.right.minOverlapping(query);
             }
             x = x.parent;
          }
@@ -778,19 +792,19 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
 
          left = newRoot.right; // Our new left node is the higher (right) node
          //Update the parent if the node isn't nil
-         if (left.isNotNil()) {
+         if(left.isNotNil()) {
             left.parent = this;
          }
 
          //Set the parent of the lower child to the parent of this node
          newRoot.parent = parent;
 
-         if (parent.isNil()) {
+         if(parent.isNil()) {
 
             //If our parent is nil, it means we are the root of the tree
             root = newRoot;
 
-         } else if (isLeftChild()) {
+         } else if(isLeftChild()) {
             //If we our the left child, set our parent's left child to the new root
             parent.left = newRoot;
 
@@ -811,10 +825,10 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
 
       private void update() {
          int newMax = end();
-         if (left.isNotNil()) {
+         if(left.isNotNil()) {
             newMax = Math.max(newMax, left.max);
          }
-         if (right.isNotNil()) {
+         if(right.isNotNil()) {
             newMax = Math.max(newMax, right.max);
          }
          this.max = newMax;
@@ -823,7 +837,7 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
       private void updateAncestors() {
          Node n = this;
          n.update();
-         while (n.parent.isNotNil()) {
+         while(n.parent.isNotNil()) {
             n = n.parent;
             n.update();
          }
@@ -850,10 +864,10 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
 
       @Override
       public T next() {
-         if (!hasNext()) {
+         if(!hasNext()) {
             throw new NoSuchElementException();
          }
-         if (!itemIterator.hasNext()) {
+         if(!itemIterator.hasNext()) {
             current = next;
             next = current.nextOverlapping(target);
             itemIterator = current.iterator();

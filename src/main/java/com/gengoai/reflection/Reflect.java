@@ -72,64 +72,84 @@ public final class Reflect extends RBase<Class<?>, Reflect> {
     * @throws Exception the exception
     */
    public static Class<?> getClassForName(String name) throws Exception {
-      if (Strings.isNullOrBlank(name)) {
+      if(Strings.isNullOrBlank(name)) {
          throw new ClassNotFoundException();
       }
       name = name.trim();
 
       boolean isArray = false;
-      if (name.endsWith("[]")) {
+      if(name.endsWith("[]")) {
          isArray = true;
          name = name.substring(0, name.length() - 2);
-      } else if (name.startsWith("[L")) {
+      } else if(name.startsWith("[L")) {
          isArray = true;
          name = name.substring(2);
-      } else if (name.startsWith("[")) {
+      } else if(name.startsWith("[")) {
          isArray = true;
          name = name.substring(1);
       }
 
-      switch (name) {
+      switch(name) {
          case "int":
-            return isArray ? int[].class : int.class;
+            return isArray
+                   ? int[].class
+                   : int.class;
          case "double":
-            return isArray ? double[].class : double.class;
+            return isArray
+                   ? double[].class
+                   : double.class;
          case "float":
-            return isArray ? float[].class : float.class;
+            return isArray
+                   ? float[].class
+                   : float.class;
          case "boolean":
-            return isArray ? boolean[].class : boolean.class;
+            return isArray
+                   ? boolean[].class
+                   : boolean.class;
          case "short":
-            return isArray ? short[].class : short.class;
+            return isArray
+                   ? short[].class
+                   : short.class;
          case "byte":
-            return isArray ? byte[].class : byte.class;
+            return isArray
+                   ? byte[].class
+                   : byte.class;
          case "long":
-            return isArray ? long[].class : long.class;
+            return isArray
+                   ? long[].class
+                   : long.class;
          case "String":
-            return isArray ? String[].class : String.class;
+            return isArray
+                   ? String[].class
+                   : String.class;
          case "Resource":
-            return isArray ? Resource[].class : Resource.class;
+            return isArray
+                   ? Resource[].class
+                   : Resource.class;
       }
 
       Class<?> clazz;
       try {
          clazz = Class.forName(name);
-      } catch (Exception e) {
+      } catch(Exception e) {
          try {
             clazz = Class.forName("java.lang." + name);
-         } catch (Exception e2) {
+         } catch(Exception e2) {
             try {
                clazz = Class.forName("java.util." + name);
-            } catch (Exception e3) {
+            } catch(Exception e3) {
                try {
                   clazz = Class.forName("com.gengoai." + name);
-               } catch (Exception e4) {
+               } catch(Exception e4) {
                   throw e;
                }
             }
          }
       }
 
-      return isArray ? Array.newInstance(clazz, 0).getClass() : clazz;
+      return isArray
+             ? Array.newInstance(clazz, 0).getClass()
+             : clazz;
    }
 
    /**
@@ -140,12 +160,12 @@ public final class Reflect extends RBase<Class<?>, Reflect> {
     * @return The Class information or null
     */
    public static Class<?> getClassForNameQuietly(String name) {
-      if (name == null) {
+      if(name == null) {
          return null;
       }
       try {
          return getClassForName(name);
-      } catch (Exception | Error cnfe) {
+      } catch(Exception | Error cnfe) {
          log.finest(cnfe);
          return null;
       }
@@ -181,7 +201,7 @@ public final class Reflect extends RBase<Class<?>, Reflect> {
    public static Reflect onClass(String className) throws ReflectionException {
       try {
          return new Reflect(null, getClassForName(className), false);
-      } catch (Exception e) {
+      } catch(Exception e) {
          throw new ReflectionException(e);
       }
    }
@@ -193,10 +213,17 @@ public final class Reflect extends RBase<Class<?>, Reflect> {
     * @return the reflect object
     */
    public static Reflect onObject(Object object) {
-      if (object == null) {
+      if(object == null) {
          return new Reflect(null, null, false);
       }
       return new Reflect(object, object.getClass(), false);
+   }
+
+   private static String firstUpper(String in) {
+      if(in.length() <= 1) {
+         return in.toUpperCase();
+      }
+      return in.substring(0, 1).toUpperCase() + in.substring(1);
    }
 
    /**
@@ -216,7 +243,7 @@ public final class Reflect extends RBase<Class<?>, Reflect> {
     * @return True if there is a field with the given name
     */
    public boolean containsField(String name) {
-      if (Strings.isNullOrBlank(name)) {
+      if(Strings.isNullOrBlank(name)) {
          return false;
       }
       return ClassDescriptorCache.getInstance()
@@ -231,7 +258,7 @@ public final class Reflect extends RBase<Class<?>, Reflect> {
     * @return True if there is a method with the given name
     */
    public boolean containsMethod(final String name) {
-      if (Strings.isNullOrBlank(name)) {
+      if(Strings.isNullOrBlank(name)) {
          return false;
       }
       return ClassDescriptorCache.getInstance()
@@ -241,13 +268,26 @@ public final class Reflect extends RBase<Class<?>, Reflect> {
    }
 
    /**
+    * Determines if a method with the given name is associated with the class
+    *
+    * @param name The method name
+    * @return True if there is a method with the given name
+    */
+   public boolean containsMethod(final String name, Type... parameters) {
+      if(Strings.isNullOrBlank(name)) {
+         return false;
+      }
+      return getMethodsWhere(name, m -> m.parameterTypesCompatible(parameters)).size() > 0;
+   }
+
+   /**
     * Creates an instance of the class being reflected using the no-argument constructor.
     *
     * @return A <code>Reflect</code> object to do further reflection
     * @throws ReflectionException Something went wrong constructing the object
     */
    public Reflect create() throws ReflectionException {
-      if (isSingleton()) {
+      if(isSingleton()) {
          return getSingletonMethod().invokeReflective();
       }
       return getConstructor().createReflective();
@@ -261,8 +301,8 @@ public final class Reflect extends RBase<Class<?>, Reflect> {
     * @throws ReflectionException Something went wrong constructing the object
     */
    public Reflect create(Object... args) throws ReflectionException {
-      if (isSingleton()) {
-         if (args == null || args.length == 0) {
+      if(isSingleton()) {
+         if(args == null || args.length == 0) {
             return getSingletonMethod().invokeReflective();
          }
          throw new ReflectionException("Trying to call the constructor of a singleton object");
@@ -280,8 +320,8 @@ public final class Reflect extends RBase<Class<?>, Reflect> {
     */
    public Reflect create(@NonNull Class[] types, @NonNull Object... args) throws ReflectionException {
       Validation.checkArgument(types.length == args.length);
-      if (isSingleton()) {
-         if (args.length == 0) {
+      if(isSingleton()) {
+         if(args.length == 0) {
             return getSingletonMethod().invokeReflective();
          }
          throw new ReflectionException("Trying to call the constructor of a singleton object");
@@ -308,36 +348,11 @@ public final class Reflect extends RBase<Class<?>, Reflect> {
     * @throws ReflectionException Something went wrong accessing the field
     */
    public <T> T get(String name) throws ReflectionException {
-      if (containsField(name)) {
+      if(containsField(name)) {
          return getField(name).get();
       }
       String getter = "get" + firstUpper(name);
       return getMethod(getter).invoke();
-   }
-
-   /**
-    * Convenience method for setting the value of a field or setter
-    *
-    * @param name  the name of the field
-    * @param value the value to set the field to
-    * @return this Reflect object
-    * @throws ReflectionException Something went wrong accessing the field
-    */
-   public Reflect set(String name, Object value) throws ReflectionException {
-      if (containsField(name)) {
-         getField(name).set(value);
-         return this;
-      }
-      String setter = "set" + firstUpper(name);
-      getMethod(setter).invoke(value);
-      return this;
-   }
-
-   private static String firstUpper(String in) {
-      if (in.length() <= 1) {
-         return in.toUpperCase();
-      }
-      return in.substring(0, 1).toUpperCase() + in.substring(1);
    }
 
    /**
@@ -352,7 +367,6 @@ public final class Reflect extends RBase<Class<?>, Reflect> {
                                        .getAncestors(reverseOrder);
    }
 
-
    /**
     * Gets the best constructor for the class matching the given types
     *
@@ -362,21 +376,21 @@ public final class Reflect extends RBase<Class<?>, Reflect> {
     *                             access.
     */
    public RConstructor getConstructor(@NonNull Type... types) throws ReflectionException {
-      if (types.length == 0) {
+      if(types.length == 0) {
          try {
             Constructor<?> c = ClassDescriptorCache.getInstance()
                                                    .getClassDescriptor(clazz)
                                                    .getConstructors(privileged)
                                                    .filter(
-                                                      constructor -> (constructor.isVarArgs() && constructor.getParameterCount() == 1)
-                                                         || constructor.getParameterCount() == 0)
+                                                         constructor -> (constructor.isVarArgs() && constructor.getParameterCount() == 1)
+                                                               || constructor.getParameterCount() == 0)
                                                    .findFirst()
                                                    .orElse(null);
-            if (c == null) {
+            if(c == null) {
                c = clazz.getDeclaredConstructor();
             }
             return new RConstructor(this, c);
-         } catch (NoSuchMethodException | SecurityException e) {
+         } catch(NoSuchMethodException | SecurityException e) {
             throw new ReflectionException(e);
          }
       }
@@ -446,7 +460,7 @@ public final class Reflect extends RBase<Class<?>, Reflect> {
       Field f = ClassDescriptorCache.getInstance()
                                     .getClassDescriptor(clazz)
                                     .getField(name, privileged);
-      if (f == null) {
+      if(f == null) {
          throw new ReflectionException("No such field: " + name);
       }
       return new RField(this, f);
@@ -507,7 +521,7 @@ public final class Reflect extends RBase<Class<?>, Reflect> {
    public RMethod getMethod(String name) throws ReflectionException {
       try {
          return new RMethod(this, clazz.getMethod(name));
-      } catch (NoSuchMethodException e) {
+      } catch(NoSuchMethodException e) {
          return Iterables.getFirst(getMethods(name))
                          .orElseThrow(() -> new ReflectionException("No Such Method: " + name));
       }
@@ -656,6 +670,24 @@ public final class Reflect extends RBase<Class<?>, Reflect> {
       return ClassDescriptorCache.getInstance()
                                  .getClassDescriptor(clazz)
                                  .getSingletonMethod() != null;
+   }
+
+   /**
+    * Convenience method for setting the value of a field or setter
+    *
+    * @param name  the name of the field
+    * @param value the value to set the field to
+    * @return this Reflect object
+    * @throws ReflectionException Something went wrong accessing the field
+    */
+   public Reflect set(String name, Object value) throws ReflectionException {
+      if(containsField(name)) {
+         getField(name).set(value);
+         return this;
+      }
+      String setter = "set" + firstUpper(name);
+      getMethod(setter).invoke(value);
+      return this;
    }
 
    /**

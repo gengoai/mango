@@ -124,9 +124,9 @@ public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> ext
    @Override
    public final boolean isInstance(Tag value) {
       return value != null
-                && (value == registry().ROOT
-                       || value.name().equals(name())
-                       || name().startsWith(value.name() + SEPARATOR));
+            && (value == registry().ROOT ||
+            value.name().equals(name()) ||
+            name().startsWith(value.name() + SEPARATOR));
    }
 
    /**
@@ -150,23 +150,19 @@ public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> ext
    @Override
    public String label() {
       int index = name().lastIndexOf(SEPARATOR);
-      if (index > 0) {
+      if(index > 0) {
          return name().substring(index + 1);
       }
       return name();
    }
 
-   /**
-    * Gets the parent of this enum value (NULL if it is a root)
-    *
-    * @return the parent or null if it is a root
-    */
+   @Override
    public T parent() {
-      if (this == registry().ROOT) {
+      if(this == registry().ROOT) {
          return null;
       }
       int idx = name().lastIndexOf(SEPARATOR);
-      if (idx < 0) {
+      if(idx < 0) {
          return registry().ROOT;
       }
       return registry().make(name().substring(0, idx));

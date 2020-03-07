@@ -44,7 +44,9 @@ import com.gengoai.config.Config;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import static com.gengoai.collection.Maps.hashMapOf;
 import static com.gengoai.tuple.Tuples.$;
@@ -83,7 +85,12 @@ public class ApplicationTest {
        * Default Constructor
        */
       public TestApp() {
-         super("TestApp", new String[]{"com.gengoai.test"});
+         super("TestApp");
+      }
+
+      @Override
+      public Set<String> getDependentPackages() {
+         return Collections.singleton("com.gengoai.test");
       }
 
       @Override
