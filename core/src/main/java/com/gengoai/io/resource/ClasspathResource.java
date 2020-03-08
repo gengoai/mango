@@ -22,11 +22,12 @@
 package com.gengoai.io.resource;
 
 import com.gengoai.Validation;
-import com.gengoai.stream.Streams;
+import com.gengoai.function.Unchecked;
 import com.gengoai.io.FileUtils;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.spi.ClasspathResourceProvider;
 import com.gengoai.logging.Logger;
+import com.gengoai.stream.Streams;
 import com.gengoai.string.Strings;
 import lombok.NonNull;
 
@@ -84,19 +85,14 @@ public class ClasspathResource extends BaseResource {
    @Override
    public Optional<File> asFile() {
       return asURL()
-         .filter(u -> u.getProtocol() != null && u.getProtocol().equalsIgnoreCase("file"))
-         .map(u -> {
-            try {
-               return new File(u.toURI());
-            } catch (Exception e) {
-               return null;
-            }
-         });
-   }
-
-   @Override
-   public String descriptor() {
-      return ClasspathResourceProvider.SCHEME + ":" + resource;
+            .filter(u -> u.getProtocol() != null && u.getProtocol().equalsIgnoreCase("file"))
+            .map(u -> {
+               try {
+                  return new File(u.toURI());
+               } catch(Exception e) {
+                  return null;
+               }
+            });
    }
 
    @Override
@@ -104,7 +100,7 @@ public class ClasspathResource extends BaseResource {
       return asURL().map(url -> {
          try {
             return url.toURI();
-         } catch (URISyntaxException e) {
+         } catch(URISyntaxException e) {
             return null;
          }
       });
@@ -116,21 +112,8 @@ public class ClasspathResource extends BaseResource {
    }
 
    @Override
-   public boolean isDirectory() {
-      if (asFile().isPresent()) {
-         return asFile().get().isDirectory();
-      }
-      return !canRead();
-   }
-
-   @Override
-   public String path() {
-      return FileUtils.path(resource);
-   }
-
-   @Override
    public String baseName() {
-      if (asFile().isPresent()) {
+      if(asFile().isPresent()) {
          return asFile().get().getName();
       }
       String path = path();
@@ -139,33 +122,50 @@ public class ClasspathResource extends BaseResource {
    }
 
    @Override
-   public boolean canWrite() {
-      return asFile().map(File::canWrite).orElse(false);
-   }
-
-   @Override
    public boolean canRead() {
-      if (asFile().isPresent()) {
+      if(asFile().isPresent()) {
          return !asFile().get().isDirectory() && asFile().get().canRead();
       }
-      try (InputStream is = inputStream()) {
+      try(InputStream is = inputStream()) {
          return is.read() > 0;
-      } catch (Exception e) {
+      } catch(Exception e) {
          return false;
       }
    }
 
    @Override
-   public Resource getChild(String relativePath) {
-      if (relativePath == null) {
-         relativePath = Strings.EMPTY;
-      }
-      relativePath = relativePath.replaceFirst("^[\\\\/]+", "");
-      if (resource.endsWith("/")) {
-         return new ClasspathResource(resource + relativePath, classLoader);
-      } else {
-         return new ClasspathResource(resource + "/" + relativePath, classLoader);
-      }
+   public boolean canWrite() {
+      return asFile().map(File::canWrite).orElse(false);
+   }
+
+   @Override
+   public InputStream createInputStream() throws IOException {
+      return asFile().map(Unchecked.function(file -> Resources.fromFile(file).inputStream()))
+                     .orElse(classLoader.getResourceAsStream(resource));
+   }
+
+   @Override
+   public OutputStream createOutputStream() throws IOException {
+      Validation.checkState(canWrite(), "Unable to write to this resource");
+      return new FileOutputStream(this.asFile().orElseThrow(NullPointerException::new));
+   }
+
+   @Override
+   public String descriptor() {
+      return ClasspathResourceProvider.SCHEME + ":" + resource;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if(this == obj)
+         return true;
+      if(obj == null)
+         return false;
+      if(getClass() != obj.getClass())
+         return false;
+      ClasspathResource other = (ClasspathResource) obj;
+      return Objects.equals(classLoader, other.classLoader) &&
+            Objects.equals(resource, other.resource);
    }
 
    @Override
@@ -174,15 +174,28 @@ public class ClasspathResource extends BaseResource {
    }
 
    @Override
+   public Resource getChild(String relativePath) {
+      if(relativePath == null) {
+         relativePath = Strings.EMPTY;
+      }
+      relativePath = relativePath.replaceFirst("^[\\\\/]+", "");
+      if(resource.endsWith("/")) {
+         return new ClasspathResource(resource + relativePath, classLoader);
+      } else {
+         return new ClasspathResource(resource + "/" + relativePath, classLoader);
+      }
+   }
+
+   @Override
    public List<Resource> getChildren(Pattern filePattern, boolean recursive) {
       List<Resource> rval = new ArrayList<>();
 
 
-      if (!isDirectory()) {
+      if(!isDirectory()) {
          return rval;
       }
 
-      if (asFile().isPresent()) {
+      if(asFile().isPresent()) {
          return Resources.fromFile(asFile().get()).getChildren(filePattern, recursive);
       }
 
@@ -195,32 +208,10 @@ public class ClasspathResource extends BaseResource {
    @Override
    public Resource getParent() {
       String parent = FileUtils.parent(resource);
-      if (parent == null) {
+      if(parent == null) {
          return EmptyResource.INSTANCE;
       }
       return new ClasspathResource(parent);
-   }
-
-
-   @Override
-   public InputStream createInputStream() throws IOException {
-      return classLoader.getResourceAsStream(resource);
-   }
-
-   @Override
-   public OutputStream createOutputStream() throws IOException {
-      Validation.checkState(canWrite(), "Unable to write to this resource");
-      return new FileOutputStream(this.asFile().orElseThrow(NullPointerException::new));
-   }
-
-   @Override
-   public boolean mkdirs() {
-      return asFile().map(File::mkdirs).orElse(false);
-   }
-
-   @Override
-   public boolean mkdir() {
-      return asFile().map(File::mkdir).orElse(false);
    }
 
    @Override
@@ -229,16 +220,26 @@ public class ClasspathResource extends BaseResource {
    }
 
    @Override
-   public boolean equals(Object obj) {
-      if (this == obj)
-         return true;
-      if (obj == null)
-         return false;
-      if (getClass() != obj.getClass())
-         return false;
-      ClasspathResource other = (ClasspathResource) obj;
-      return Objects.equals(classLoader, other.classLoader) &&
-         Objects.equals(resource, other.resource);
+   public boolean isDirectory() {
+      if(asFile().isPresent()) {
+         return asFile().get().isDirectory();
+      }
+      return !canRead();
+   }
+
+   @Override
+   public boolean mkdir() {
+      return asFile().map(File::mkdir).orElse(false);
+   }
+
+   @Override
+   public boolean mkdirs() {
+      return asFile().map(File::mkdirs).orElse(false);
+   }
+
+   @Override
+   public String path() {
+      return FileUtils.path(resource);
    }
 
 }// END OF ClasspathResource

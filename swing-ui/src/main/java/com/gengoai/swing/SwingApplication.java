@@ -21,8 +21,6 @@ package com.gengoai.swing;
 
 import com.gengoai.application.Application;
 import com.gengoai.config.Config;
-import jiconfont.icons.font_awesome.FontAwesome;
-import jiconfont.swing.IconFontSwing;
 
 import javax.swing.*;
 import java.awt.*;
@@ -79,7 +77,6 @@ public abstract class SwingApplication extends Application {
    public static void runApplication(Supplier<? extends SwingApplication> supplier,
                                      String applicationName,
                                      String[] args) {
-      IconFontSwing.register(FontAwesome.getIconFont());
       SwingUtilities.invokeLater(() -> {
          Config.loadApplicationConfig(applicationName);
          final String lookAndFeel = Config.get("swing.lookAndFeel")

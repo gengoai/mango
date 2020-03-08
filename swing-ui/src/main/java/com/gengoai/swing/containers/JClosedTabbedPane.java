@@ -20,13 +20,15 @@
 package com.gengoai.swing.containers;
 
 import com.gengoai.conversion.Cast;
+import com.gengoai.swing.ColorUtils;
+import com.gengoai.swing.FontAwesome;
 import com.gengoai.swing.MouseListeners;
-import jiconfont.icons.font_awesome.FontAwesome;
-import jiconfont.swing.IconFontSwing;
 import lombok.NonNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
 
 import static com.gengoai.function.Functional.with;
@@ -89,13 +91,31 @@ public class JClosedTabbedPane extends JTabbedPane {
          label = with(new JLabel(title), l -> {
             l.setIcon(icon);
          });
-         button = with(new JButton(IconFontSwing.buildIcon(FontAwesome.WINDOW_CLOSE,
-                                                           getFontMetrics(getFont()).getHeight())), b -> {
-            b.addMouseListener(MouseListeners.mouseClicked(e -> {
-               onCloseClicked.accept(this.tab);
-            }));
-            b.setMargin(new Insets(0, 0, 0, 0));
-         });
+         final Icon cBtnIcon = FontAwesome.WINDOW_CLOSE.create(getFontMetrics(getFont()).getHeight(),
+                                                               ColorUtils.getContrastingFontColor(getBackground()));
+         final Icon cHover = FontAwesome.WINDOW_CLOSE.create(getFontMetrics(getFont()).getHeight(),
+                                                             Color.RED);
+         button = with(new JButton(cBtnIcon),
+                       b -> {
+                          b.setOpaque(false);
+                          b.setBorder(BorderFactory.createEmptyBorder());
+                          b.addMouseListener(MouseListeners.mouseClicked(e -> {
+                             onCloseClicked.accept(this.tab);
+                          }));
+                          b.setMargin(new Insets(0, 0, 0, 0));
+                          b.setMaximumSize(new Dimension(cBtnIcon.getIconWidth() + 2, cBtnIcon.getIconWidth() + 2));
+                          b.addMouseListener(new MouseAdapter() {
+                             @Override
+                             public void mouseEntered(MouseEvent e) {
+                                b.setIcon(cHover);
+                             }
+
+                             @Override
+                             public void mouseExited(MouseEvent e) {
+                                b.setIcon(cBtnIcon);
+                             }
+                          });
+                       });
 
          add(label);
          add(button);

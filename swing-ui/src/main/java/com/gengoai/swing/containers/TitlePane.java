@@ -19,13 +19,15 @@
 
 package com.gengoai.swing.containers;
 
-import jiconfont.icons.font_awesome.FontAwesome;
-import jiconfont.swing.IconFontSwing;
+import com.gengoai.swing.ColorUtils;
+import com.gengoai.swing.FontAwesome;
 import lombok.NonNull;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
 
 import static com.gengoai.function.Functional.with;
@@ -73,11 +75,23 @@ public class TitlePane extends JPanel {
          btnClose = with(new JButton(), b -> {
             b.setOpaque(true);
             b.setBorder(null);
-            final Icon icon = IconFontSwing.buildIcon(FontAwesome.WINDOW_CLOSE,
-                                                      getFontMetrics(getFont()).getHeight(),
-                                                      getBackground().darker());
-            b.setIcon(icon);
+            final Icon stdIcon = FontAwesome.WINDOW_CLOSE.create(getFontMetrics(getFont()).getHeight(),
+                                                                 ColorUtils.getContrastingFontColor(getBackground()));
+            final Icon cHover = FontAwesome.WINDOW_CLOSE.create(getFontMetrics(getFont()).getHeight(),
+                                                                Color.RED);
+            b.setIcon(stdIcon);
             b.addActionListener(e -> onBtnClick.accept(e));
+            b.addMouseListener(new MouseAdapter() {
+               @Override
+               public void mouseEntered(MouseEvent e) {
+                  b.setIcon(cHover);
+               }
+
+               @Override
+               public void mouseExited(MouseEvent e) {
+                  b.setIcon(stdIcon);
+               }
+            });
          });
          header.add(btnClose, BorderLayout.EAST);
       } else {
