@@ -1,0 +1,64 @@
+/*
+ * (c) 2005 David B. Bracewell
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ */
+
+package com.gengoai.json;
+
+import com.google.gson.*;
+
+import java.lang.reflect.Type;
+
+/**
+ * The type Json marshaller.
+ *
+ * @param <T> the type parameter
+ * @author David B. Bracewell
+ */
+public abstract class JsonMarshaller<T> implements JsonSerializer<T>, JsonDeserializer<T> {
+
+   /**
+    * Deserialize t.
+    *
+    * @param entry the entry
+    * @param type  the type
+    * @return the t
+    */
+   protected abstract T deserialize(JsonEntry entry, Type type);
+
+   @Override
+   public final T deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+      return deserialize(JsonEntry.from(jsonElement), type);
+   }
+
+   /**
+    * Serialize json entry.
+    *
+    * @param t    the t
+    * @param type the type
+    * @return the json entry
+    */
+   protected abstract JsonEntry serialize(T t, Type type);
+
+   @Override
+   public final JsonElement serialize(T t, Type type, JsonSerializationContext jsonSerializationContext) {
+      return serialize(t, type).getElement();
+   }
+}//END OF JsonMarshaller
