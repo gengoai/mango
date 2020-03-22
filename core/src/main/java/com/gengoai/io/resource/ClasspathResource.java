@@ -26,7 +26,6 @@ import com.gengoai.function.Unchecked;
 import com.gengoai.io.FileUtils;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.spi.ClasspathResourceProvider;
-import com.gengoai.logging.Logger;
 import com.gengoai.stream.Streams;
 import com.gengoai.string.Strings;
 import lombok.NonNull;
@@ -49,7 +48,6 @@ import java.util.stream.Collectors;
  * @author David B. Bracewell
  */
 public class ClasspathResource extends BaseResource {
-   private static final Logger log = Logger.getLogger(ClasspathResource.class);
    private static final long serialVersionUID = -1977592698953910323L;
    private final String resource;
    private final ClassLoader classLoader;

@@ -22,8 +22,8 @@
 package com.gengoai.reflection;
 
 import com.gengoai.collection.IteratorSet;
-import com.gengoai.logging.Logger;
 import lombok.NonNull;
+import lombok.extern.java.Log;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
+import static com.gengoai.LogUtils.logFinest;
 import static com.gengoai.reflection.RMethod.reflectOn;
 import static com.gengoai.tuple.Tuples.$;
 
@@ -41,8 +42,8 @@ import static com.gengoai.tuple.Tuples.$;
  *
  * @author David B. Bracewell
  */
+@Log
 public class BeanMap extends AbstractMap<String, Object> {
-   private static final Logger log = Logger.getLogger(BeanMap.class);
    private final Object bean;
    private final BeanDescriptor beanDescriptor;
 
@@ -87,11 +88,11 @@ public class BeanMap extends AbstractMap<String, Object> {
    @Override
    public Object get(Object arg0) {
       Method m = beanDescriptor.getReadMethod(arg0.toString());
-      if (m != null) {
+      if(m != null) {
          try {
             return m.invoke(bean);
-         } catch (Exception e) {
-            log.finest(e);
+         } catch(Exception e) {
+            logFinest(log, e);
          }
       }
       return null;
@@ -118,11 +119,11 @@ public class BeanMap extends AbstractMap<String, Object> {
     * @return A <code>Class</code> representing the parameter type of the setter method
     */
    public Type getType(String key) {
-      if (beanDescriptor.hasReadMethod(key)) {
+      if(beanDescriptor.hasReadMethod(key)) {
          return beanDescriptor.getReadMethod(key).getGenericReturnType();
-      } else if (beanDescriptor.hasWriteMethod(key)) {
+      } else if(beanDescriptor.hasWriteMethod(key)) {
          Type[] paramTypes = beanDescriptor.getWriteMethod(key).getGenericParameterTypes();
-         if (paramTypes.length > 0) {
+         if(paramTypes.length > 0) {
             return paramTypes[0];
          }
       }
@@ -141,14 +142,14 @@ public class BeanMap extends AbstractMap<String, Object> {
 
    @Override
    public Object put(String arg0, Object arg1) {
-      if (beanDescriptor.hasWriteMethod(arg0)) {
+      if(beanDescriptor.hasWriteMethod(arg0)) {
          try {
             return reflectOn(bean, beanDescriptor.getWriteMethod(arg0)).invoke(arg1);
-         } catch (ReflectionException e) {
+         } catch(ReflectionException e) {
             throw new RuntimeException(e);
          }
       } else {
-         log.finest("{0} is not a setter on {1}.", arg0, bean.getClass());
+         logFinest(log, "{0} is not a setter on {1}.", arg0, bean.getClass());
       }
       return null;
    }

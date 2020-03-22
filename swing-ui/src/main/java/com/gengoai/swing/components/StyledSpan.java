@@ -20,11 +20,12 @@
 package com.gengoai.swing.components;
 
 import com.gengoai.collection.tree.SimpleSpan;
-import lombok.EqualsAndHashCode;
 
-@EqualsAndHashCode(callSuper = true)
+import java.util.Objects;
+
 public class StyledSpan extends SimpleSpan {
    public final String style;
+   public final String label;
 
    /**
     * Instantiates a new Simple span.
@@ -32,10 +33,26 @@ public class StyledSpan extends SimpleSpan {
     * @param start the start
     * @param end   the end
     * @param style
+    * @param label
     */
-   protected StyledSpan(int start, int end, String style) {
+   public StyledSpan(int start, int end, String style, String label) {
       super(start, end);
       this.style = style;
+      this.label = label;
+   }
+
+   @Override
+   public boolean equals(Object o) {
+      if(this == o) return true;
+      if(o == null || getClass() != o.getClass()) return false;
+      if(!super.equals(o)) return false;
+      StyledSpan that = (StyledSpan) o;
+      return Objects.equals(style, that.style);
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(super.hashCode(), style);
    }
 
    public String toString() {

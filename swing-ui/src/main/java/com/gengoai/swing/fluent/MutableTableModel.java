@@ -17,13 +17,26 @@
  * under the License.
  */
 
-package com.gengoai.swing.containers;
+package com.gengoai.swing.fluent;
 
-import java.awt.*;
+import java.util.List;
 
-@FunctionalInterface
-public interface TabCloseAction {
+public interface MutableTableModel {
 
-   void onClose(int index, Component tab);
+   default void addAllRows(Object[][] rows) {
+      for(Object[] row : rows) {
+         addRow(row);
+      }
+   }
 
-}//END OF TabCloseAction
+   void setRowCount(int numRows);
+
+   default void addAllRows(List<List<?>> rows) {
+      rows.forEach(this::addRow);
+   }
+
+   void addRow(List<?> row);
+
+   void addRow(Object[] row);
+
+}//END OF MutableTableModel

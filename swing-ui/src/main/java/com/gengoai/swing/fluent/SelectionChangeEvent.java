@@ -1,6 +1,4 @@
 /*
- * (c) 2005 David B. Bracewell
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,42 +17,14 @@
  * under the License.
  */
 
-package com.gengoai.logging;
+package com.gengoai.swing.fluent;
 
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
+import com.gengoai.tuple.IntPair;
+import lombok.Value;
 
-public class StringBuilderHandler extends Handler {
+@Value
+public class SelectionChangeEvent {
+   IntPair oldSelection;
+   IntPair newSelection;
 
-  private static final Object lock = new Object();
-  private StringBuilder stringBuffer = new StringBuilder();
-
-  @Override
-  public void publish(LogRecord record) {
-    synchronized (lock) {
-      stringBuffer.setLength(0);
-      stringBuffer.append(getFormatter().format(record));
-    }
-  }
-
-  @Override
-  public void flush() {
-  }
-
-  @Override
-  public void close() throws SecurityException {
-  }
-
-  public String getContent() {
-    synchronized (lock) {
-      return stringBuffer.toString();
-    }
-  }
-
-  public void clear() {
-    synchronized (lock) {
-      stringBuffer = new StringBuilder();
-    }
-  }
-
-}
+}//END OF SelectionChangeEvent

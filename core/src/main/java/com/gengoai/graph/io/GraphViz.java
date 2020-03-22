@@ -31,43 +31,24 @@ import com.gengoai.graph.Graph;
 import com.gengoai.graph.Vertex;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
-import com.gengoai.logging.Logger;
 import com.gengoai.string.Strings;
+import lombok.extern.java.Log;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import static com.gengoai.LogUtils.logFine;
+
 /**
  * <p>An implementation of a <code>GraphRender</code> and <code>GraphWriter</code> for GraphViz</p>
  *
  * @param <V> the vertex type
  */
+@Log
 public class GraphViz<V> implements GraphWriter<V>, GraphRenderer<V> {
 
-   public static <V> GraphVizBuilder<V> builder() {
-      return new GraphVizBuilder<>();
-   }
-
-   public enum Format {
-      JPG("jpg"),
-      PNG("png"),
-      SVG("svg");
-
-      private final String extension;
-
-      Format(String extension) {
-         this.extension = extension;
-      }
-
-      public String getExtension() {
-         return extension;
-      }
-
-   }
-
-   private static final Logger log = Logger.getLogger(GraphViz.class);
    private String DOT = "/usr/bin/dot";
    private EdgeEncoder<V> edgeEncoder;
    private VertexEncoder<V> vertexEncoder;
@@ -120,11 +101,28 @@ public class GraphViz<V> implements GraphWriter<V>, GraphRenderer<V> {
       setVertexEncoder(vertexEncoder);
       setFormat(format);
       String configName = "graphviz.dot." + SystemInfo.OS_NAME;
-      log.fine("Looking for dot in config {0}", configName);
-      if (Config.hasProperty(configName)) {
+      logFine(log, "Looking for dot in config {0}", configName);
+      if(Config.hasProperty(configName)) {
          DOT = Config.get(configName).asString();
-         log.fine("Setting DOT location to {0} from config {1}", DOT, configName);
+         logFine(log, "Setting DOT location to {0} from config {1}", DOT, configName);
       }
+   }
+
+   public static <V> GraphVizBuilder<V> builder() {
+      return new GraphVizBuilder<>();
+   }
+
+   private String escape(String input) {
+      if(input == null || input.length() == 0) {
+         return "\"" + Strings.EMPTY + "\"";
+      }
+      if(input.length() == 1) {
+         return "\"" + input + "\"";
+      }
+      if(input.charAt(0) == '"' && input.charAt(input.length() - 1) == '"') {
+         return input;
+      }
+      return "\"" + input + "\"";
    }
 
    @Override
@@ -136,33 +134,40 @@ public class GraphViz<V> implements GraphWriter<V>, GraphRenderer<V> {
 
       Runtime rt = Runtime.getRuntime();
       String[] args = {DOT, "-T" + format.getExtension(),
-         tempLoc.asFile().get().getAbsolutePath(),
-         "-o", location.asFile().get().getAbsolutePath()};
+            tempLoc.asFile().get().getAbsolutePath(),
+            "-o", location.asFile().get().getAbsolutePath()};
       Process p = rt.exec(args);
 
       try {
          p.waitFor();
-      } catch (InterruptedException e) {
+      } catch(InterruptedException e) {
          throw new RuntimeException(e);
       }
    }
 
-   private String escape(String input) {
-      if (input == null || input.length() == 0) {
-         return "\"" + Strings.EMPTY + "\"";
+   @Override
+   public void setEdgeEncoder(EdgeEncoder<V> edgeEncoder) {
+      if(edgeEncoder == null) {
+         this.edgeEncoder = DefaultEncodersDecoders.defaultEdgeEncoder();
+      } else {
+         this.edgeEncoder = edgeEncoder;
       }
-      if (input.length() == 1) {
-         return "\"" + input + "\"";
-      }
-      if (input.charAt(0) == '"' && input.charAt(input.length() - 1) == '"') {
-         return input;
-      }
-      return "\"" + input + "\"";
+   }
+
+   /**
+    * Sets format.
+    *
+    * @param format the format
+    */
+   public void setFormat(Format format) {
+      this.format = format == null
+                    ? Format.PNG
+                    : format;
    }
 
    @Override
    public void setVertexEncoder(VertexEncoder<V> vertexEncoder) {
-      if (vertexEncoder == null) {
+      if(vertexEncoder == null) {
          this.vertexEncoder = DefaultEncodersDecoders.defaultVertexEncoder();
       } else {
          this.vertexEncoder = vertexEncoder;
@@ -170,21 +175,12 @@ public class GraphViz<V> implements GraphWriter<V>, GraphRenderer<V> {
    }
 
    @Override
-   public void setEdgeEncoder(EdgeEncoder<V> edgeEncoder) {
-      if (edgeEncoder == null) {
-         this.edgeEncoder = DefaultEncodersDecoders.defaultEdgeEncoder();
-      } else {
-         this.edgeEncoder = edgeEncoder;
-      }
-   }
-
-   @Override
    public void write(Graph<V> graph, Resource location, Multimap<String, String> parameters) throws IOException {
       location.setCharset(StandardCharsets.UTF_8);
-      try (BufferedWriter writer = new BufferedWriter(location.writer())) {
+      try(BufferedWriter writer = new BufferedWriter(location.writer())) {
 
          //Write the header
-         if (graph.isDirected()) {
+         if(graph.isDirected()) {
             writer.write("digraph G {");
          } else {
             writer.write("graph G {");
@@ -192,9 +188,9 @@ public class GraphViz<V> implements GraphWriter<V>, GraphRenderer<V> {
          writer.newLine();
 
          writer.write("rankdir = BT;\n");
-         if (parameters.containsKey("graph")) {
+         if(parameters.containsKey("graph")) {
             writer.write("graph [");
-            for (String property : parameters.get("graph")) {
+            for(String property : parameters.get("graph")) {
                writer.write(property);
             }
             writer.write("];");
@@ -203,21 +199,21 @@ public class GraphViz<V> implements GraphWriter<V>, GraphRenderer<V> {
 
          Index<V> vertexIndex = Indexes.indexOf(graph.vertices());
 
-         for (V vertex : graph.vertices()) {
+         for(V vertex : graph.vertices()) {
             Vertex vertexProps = vertexEncoder.encode(vertex);
             writer.write(Integer.toString(vertexIndex.getId(vertex)));
             writer.write(" [");
             writer.write("label=" + escape(vertexProps.getLabel()) + " ");
-            for (Map.Entry<String, String> entry : vertexProps.getProperties().entrySet()) {
+            for(Map.Entry<String, String> entry : vertexProps.getProperties().entrySet()) {
                writer.write(entry.getKey() + "=" + escape(entry.getValue()) + " ");
             }
             writer.write("];");
             writer.newLine();
          }
 
-         for (Edge<V> edge : graph.edges()) {
+         for(Edge<V> edge : graph.edges()) {
             writer.write(Integer.toString(vertexIndex.getId(edge.getFirstVertex())));
-            if (graph.isDirected()) {
+            if(graph.isDirected()) {
                writer.write(" -> ");
             } else {
                writer.write(" -- ");
@@ -225,9 +221,9 @@ public class GraphViz<V> implements GraphWriter<V>, GraphRenderer<V> {
             writer.write(Integer.toString(vertexIndex.getId(edge.getSecondVertex())));
 
             Map<String, String> edgeProps = edgeEncoder.encode(edge);
-            if (edgeProps != null && !edgeProps.isEmpty()) {
+            if(edgeProps != null && !edgeProps.isEmpty()) {
                writer.write(" [");
-               for (Map.Entry<String, String> entry : edgeProps.entrySet()) {
+               for(Map.Entry<String, String> entry : edgeProps.entrySet()) {
                   writer.write(entry.getKey() + "=" + escape(entry.getValue()) + " ");
                }
                writer.write("];");
@@ -242,15 +238,22 @@ public class GraphViz<V> implements GraphWriter<V>, GraphRenderer<V> {
       }
    }
 
-   /**
-    * Sets format.
-    *
-    * @param format the format
-    */
-   public void setFormat(Format format) {
-      this.format = format == null ? Format.PNG : format;
-   }
+   public enum Format {
+      JPG("jpg"),
+      PNG("png"),
+      SVG("svg");
 
+      private final String extension;
+
+      Format(String extension) {
+         this.extension = extension;
+      }
+
+      public String getExtension() {
+         return extension;
+      }
+
+   }
 
    public static class GraphVizBuilder<V> {
       private VertexEncoder<V> vertexEncoder;

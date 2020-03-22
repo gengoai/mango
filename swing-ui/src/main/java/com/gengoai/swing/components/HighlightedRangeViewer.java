@@ -1,6 +1,4 @@
 /*
- * (c) 2005 David B. Bracewell
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,8 +17,8 @@
  * under the License.
  */
 
-/**
- * Wrappers around java.util.logging that make logging more convenient
- * @author David B. Bracewell
- */
-package com.gengoai.logging;
+package com.gengoai.swing.components;
+
+public class HighlightedRangeViewer extends BaseHighlightedRangeViewer<HighlightedRangeViewer> {
+
+}//END OF HighlightedRangeViewer

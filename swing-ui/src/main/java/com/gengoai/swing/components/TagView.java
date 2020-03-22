@@ -25,65 +25,62 @@ import com.gengoai.collection.Iterables;
 import com.gengoai.conversion.Cast;
 import com.gengoai.string.Strings;
 import com.gengoai.swing.ColorUtils;
-import com.gengoai.swing.MouseListeners;
+import com.gengoai.swing.fluent.FluentJTree;
+import com.gengoai.swing.fluent.VBox;
 import lombok.NonNull;
 
 import javax.swing.*;
 import javax.swing.tree.*;
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
-import java.util.List;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class TagView extends JPanel {
+public class TagView extends VBox {
    private final Map<Tag, DefaultMutableTreeNode> tag2View = new HashMap<>();
+   private final FluentJTree treeView;
    private TagModel tagModel = null;
    private String[] nonRootTags;
    private JComboBox<String> comboBox = new JComboBox<>();
-   private JTree treeView = new JTree() {
-      @Override
-      public TreeCellRenderer getCellRenderer() {
-         return new CustomCellRenderer();
-      }
-
-   };
-
    @NonNull
-   private Consumer<TagInfo> onSelect = t -> {
-   };
-
+   private Vector<Consumer<TagInfo>> selectActions = new Vector<>();
    @NonNull
    private Supplier<Boolean> canPerformShortcut = () -> true;
 
    public TagView() {
-      setLayout(new BorderLayout());
-      add(comboBox, BorderLayout.NORTH);
-      add(new JScrollPane(treeView), BorderLayout.CENTER);
-      for(KeyListener kl : treeView.getListeners(KeyListener.class)) {
-         removeKeyListener(kl);
-      }
-      treeView.setRowHeight(getFontMetrics(getFont()).getHeight() + 3);
-      treeView.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-      treeView.addMouseListener(MouseListeners.mouseClicked(e -> {
-         TreePath tp = treeView.getSelectionModel().getSelectionPath();
-         if(tp != null) {
-            DefaultMutableTreeNode node = Cast.as(tp.getLastPathComponent());
-            onSelect.accept(Cast.as(node.getUserObject()));
+      treeView = new FluentJTree() {
+         @Override
+         public TreeCellRenderer getCellRenderer() {
+            return new CustomCellRenderer();
          }
-      }));
+      }.rowPadding(3)
+       .singleSelectionModel()
+       .removeAllKeyListeners()
+       .onMouseClicked(($, e) -> {
+          TreePath tp = $.getSelectionPath();
+          if(tp != null) {
+             DefaultMutableTreeNode node = Cast.as(tp.getLastPathComponent());
+             performSelectionTag(Cast.as(node.getUserObject()));
+          }
+       });
       comboBox.addActionListener(a -> {
          if(a.getActionCommand().equalsIgnoreCase("comboBoxEdited") ||
                (a.getModifiers() & ActionEvent.MOUSE_EVENT_MASK) == ActionEvent.MOUSE_EVENT_MASK) {
             TagInfo tag = tagModel.getTagInfo(comboBox.getSelectedItem().toString());
-            treeView.getSelectionModel().setSelectionPath(new TreePath(tag2View.get(tag.getTag()).getPath()));
-            onSelect.accept(tag);
+            treeView.selectionPath(tag2View.get(tag.getTag()).getPath());
+            performSelectionTag(tag);
          }
       });
       setMinimumSize(new Dimension(150, 100));
+
+      add(comboBox);
+      add(new JScrollPane(treeView));
+      setResizeWithComponent(1);
    }
 
    private DefaultMutableTreeNode createTreeItem(TagInfo tagInfo) {
@@ -96,7 +93,7 @@ public class TagView extends JPanel {
                                    if(tagInfo.getShortcut().equals(ks)) {
                                       final DefaultMutableTreeNode node = tag2View.get(tagInfo.getTag());
                                       treeView.setSelectionPath(new TreePath(node.getPath()));
-                                      onSelect.accept(tagInfo);
+                                      performSelectionTag(tagInfo);
                                    }
                                 }
                                 return false;
@@ -104,7 +101,6 @@ public class TagView extends JPanel {
       }
       return treeItem;
    }
-
 
    public DefaultMutableTreeNode getNodeFor(TagInfo tagInfo) {
       return tag2View.get(tagInfo.getTag());
@@ -118,21 +114,29 @@ public class TagView extends JPanel {
       return tagModel;
    }
 
-   public void setTagModel(TagModel newTagModel) {
-      this.tagModel = newTagModel;
-      updateView();
-   }
-
    public String[] getTags() {
       return nonRootTags;
+   }
+
+   public TagView onTagSelect(@NonNull Consumer<TagInfo> selectFunction) {
+      selectActions.add(selectFunction);
+      return this;
+   }
+
+   private void performSelectionTag(TagInfo tagInfo) {
+      for(Consumer<TagInfo> selectAction : selectActions) {
+         selectAction.accept(tagInfo);
+      }
    }
 
    public void setCanPerformShortcut(Supplier<Boolean> canPerformShortcut) {
       this.canPerformShortcut = canPerformShortcut;
    }
 
-   public void setOnNodeSelect(Consumer<TagInfo> consumer) {
-      this.onSelect = consumer;
+
+   public void setTagModel(TagModel newTagModel) {
+      this.tagModel = newTagModel;
+      updateView();
    }
 
    private void updateView() {
@@ -200,7 +204,7 @@ public class TagView extends JPanel {
 
          if(Strings.isNotNullOrBlank(shortcut)) {
             g.setFont(font);
-            g.setColor(ColorUtils.getContrastingFontColor(ti.getColor()));
+            g.setColor(ColorUtils.calculateBestFontColor(ti.getColor()));
             int y = h - font.getSize() / 2 + 1;
             g.drawString(shortcut, 2, y);
          }

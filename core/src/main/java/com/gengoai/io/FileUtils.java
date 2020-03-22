@@ -95,7 +95,7 @@ public final class FileUtils {
       if (Strings.isNullOrBlank(file)) {
          return Strings.EMPTY;
       }
-      file = Strings.trim(file);
+      file = file.strip();
       int index = indexOfLastSeparator(file);
       if (index == -1) {
          return file.replaceAll(Pattern.quote(suffix) + "$", "");
@@ -129,7 +129,7 @@ public final class FileUtils {
       if (Strings.isNullOrBlank(file)) {
          return Strings.EMPTY;
       }
-      file = Strings.trim(file);
+      file = file.strip();
       int separator = indexOfLastSeparator(file);
       int extension = indexOfFileExtension(file);
 
@@ -152,7 +152,7 @@ public final class FileUtils {
       if (Strings.isNullOrBlank(file)) {
          return Strings.EMPTY;
       }
-      file = Strings.trim(file);
+      file = file.strip();
       int index = indexOfFileExtension(file);
       if (index == -1) {
          return Strings.EMPTY;
@@ -196,7 +196,7 @@ public final class FileUtils {
       if (Strings.isNullOrBlank(file)) {
          return Strings.EMPTY;
       }
-      file = Strings.trim(file);
+      file = file.strip();
       String path = path(file);
       int index = indexOfLastSeparator(path);
       if (index <= 0) {
@@ -215,7 +215,7 @@ public final class FileUtils {
       if (Strings.isNullOrBlank(file)) {
          return Strings.EMPTY;
       }
-      file = Strings.trim(file);
+      file = file.strip();
       int pos = indexOfLastSeparator(file);
       return pos == file.length() - 1 ? file.substring(0, file.length() - 1) : file;
    }

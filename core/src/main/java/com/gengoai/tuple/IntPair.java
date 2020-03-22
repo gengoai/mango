@@ -23,9 +23,29 @@ import lombok.Value;
 
 import java.io.Serializable;
 
+/**
+ * A pair of primitive int values.
+ */
 @Value(staticConstructor = "of")
-public class IntPair implements Serializable {
-   public final int v1;
-   public final int v2;
+public class IntPair implements Serializable, Comparable<IntPair> {
+   /**
+    * The first value
+    */
+   public int v1;
+   /**
+    * The second value
+    */
+   public int v2;
 
+   @Override
+   public int compareTo(IntPair o) {
+      if(o == null) {
+         return 1;
+      }
+      int cmp = Integer.compare(v1, o.v1);
+      if(cmp == 0) {
+         cmp = Integer.compare(v2, o.v2);
+      }
+      return cmp;
+   }
 }//END OF IntPair

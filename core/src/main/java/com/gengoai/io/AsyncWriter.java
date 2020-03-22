@@ -23,7 +23,7 @@ package com.gengoai.io;
 
 import com.gengoai.Validation;
 import com.gengoai.concurrent.Threads;
-import com.gengoai.logging.Logger;
+import lombok.extern.java.Log;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -32,14 +32,15 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.gengoai.LogUtils.logSevere;
+
 /**
  * <p>Wraps an underlying writer allowing multiple threads to write through buffering calls to a blocking queue.</p>
  *
  * @author David B. Bracewell
  */
+@Log
 public class AsyncWriter extends Writer implements Runnable {
-
-   private static final Logger log = Logger.getLogger(AsyncWriter.class);
    private final AtomicBoolean isStopped = new AtomicBoolean(false);
    private final BlockingQueue<String> queue = new LinkedBlockingQueue<>();
    private final AtomicBoolean isTerminated = new AtomicBoolean(false);
@@ -58,12 +59,10 @@ public class AsyncWriter extends Writer implements Runnable {
    }
 
    @Override
-   public void write(char[] cbuf, int off, int len) throws IOException {
-      Validation.checkArgument(!isStopped.get(), "Cannot write to a closed writer.");
-      try {
-         queue.put(new String(cbuf, off, len));
-      } catch (InterruptedException e) {
-         throw new IOException(e);
+   public void close() throws IOException {
+      isStopped.set(true);
+      while(thread.isAlive()) {
+         Threads.sleep(100);
       }
    }
 
@@ -71,15 +70,6 @@ public class AsyncWriter extends Writer implements Runnable {
    public void flush() throws IOException {
       wrap.flush();
    }
-
-   @Override
-   public void close() throws IOException {
-      isStopped.set(true);
-      while (thread.isAlive()) {
-         Threads.sleep(100);
-      }
-   }
-
 
    /**
     * Determines if the writing has been terminated
@@ -92,29 +82,39 @@ public class AsyncWriter extends Writer implements Runnable {
 
    @Override
    public void run() {
-      while (!Thread.currentThread().isInterrupted()) {
+      while(!Thread.currentThread().isInterrupted()) {
          try {
             String out = queue.poll(100, TimeUnit.MILLISECONDS);
-            if (out != null) {
+            if(out != null) {
                wrap.write(out);
             }
-            if (queue.isEmpty() && isStopped.get()) {
+            if(queue.isEmpty() && isStopped.get()) {
                break;
             }
-         } catch (InterruptedException e) {
+         } catch(InterruptedException e) {
             break;
-         } catch (IOException e) {
-            log.severe(e);
+         } catch(IOException e) {
+            logSevere(log, e);
             break;
          }
       }
       try {
          wrap.flush();
-      } catch (IOException e) {
+      } catch(IOException e) {
          throw new RuntimeException(e);
       }
       QuietIO.closeQuietly(wrap);
       isTerminated.set(true);
+   }
+
+   @Override
+   public void write(char[] cbuf, int off, int len) throws IOException {
+      Validation.checkArgument(!isStopped.get(), "Cannot write to a closed writer.");
+      try {
+         queue.put(new String(cbuf, off, len));
+      } catch(InterruptedException e) {
+         throw new IOException(e);
+      }
    }
 
 }//END OF AsyncWriter

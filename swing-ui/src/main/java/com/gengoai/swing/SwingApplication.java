@@ -23,7 +23,9 @@ import com.gengoai.application.Application;
 import com.gengoai.config.Config;
 
 import javax.swing.*;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.LayoutManager;
+import java.awt.Rectangle;
 import java.util.Properties;
 import java.util.function.Supplier;
 
@@ -116,20 +118,12 @@ public abstract class SwingApplication extends Application {
       return mainWindowFrame.getExtendedState();
    }
 
-   public void setExtendedState(int state) {
-      mainWindowFrame.setExtendedState(state);
-   }
-
    public int getHeight() {
       return mainWindowFrame.getHeight();
    }
 
    public String getTitle() {
       return mainWindowFrame.getTitle();
-   }
-
-   public void setTitle(String title) {
-      mainWindowFrame.setTitle(title);
    }
 
    public int getWidth() {
@@ -149,6 +143,10 @@ public abstract class SwingApplication extends Application {
    @Override
    public final void run() {
       setVisible(true);
+   }
+
+   public void setExtendedState(int state) {
+      mainWindowFrame.setExtendedState(state);
    }
 
    public void setJMenuBar(JMenuBar menuBar) {
@@ -175,6 +173,10 @@ public abstract class SwingApplication extends Application {
       mainWindowFrame.setPreferredSize(dimension);
    }
 
+   public void setTitle(String title) {
+      mainWindowFrame.setTitle(title);
+   }
+
    public void setVisible(boolean isVisible) {
       mainWindowFrame.setVisible(isVisible);
    }
@@ -197,6 +199,7 @@ public abstract class SwingApplication extends Application {
          setLocation(xPos, yPos);
       }
 
+      mainWindowFrame.setTitle(getName());
       mainWindowFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
       this.initControls();
    }

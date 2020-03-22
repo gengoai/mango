@@ -1,6 +1,4 @@
 /*
- * (c) 2005 David B. Bracewell
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,19 +17,13 @@
  * under the License.
  */
 
-package com.gengoai.logging;
+package com.gengoai.swing.components;
 
-import java.util.logging.Formatter;
-import java.util.logging.LogRecord;
+import java.awt.*;
 
-public class SuperSimpleFormatter extends Formatter {
+@FunctionalInterface
+public interface TabCloseAction {
 
-  @Override
-  public String format(LogRecord record) {
-    if (record.getThrown() != null) {
-      return record.getThrown().getMessage();
-    }
-    return record.getMessage();
-  }
+   void onClose(int index, Component tab);
 
-}
+}//END OF TabCloseAction

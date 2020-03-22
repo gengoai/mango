@@ -19,54 +19,77 @@
 
 package com.gengoai.swing;
 
+import com.gengoai.reflection.Reflect;
+import com.gengoai.string.Strings;
 import lombok.NonNull;
 
-import java.awt.*;
-import java.lang.reflect.Field;
+import java.awt.Color;
 import java.util.Random;
 
+/**
+ * The type Color utils.
+ */
 public final class ColorUtils {
 
-   public ColorUtils() {
+   /**
+    * Instantiates a new Color utils.
+    */
+   private ColorUtils() {
       throw new IllegalAccessError();
    }
 
-   public static String getHTMLColorString(Color color) {
-      String red = Integer.toHexString(color.getRed());
-      String green = Integer.toHexString(color.getGreen());
-      String blue = Integer.toHexString(color.getBlue());
-
-      return "#" +
-            (red.length() == 1? "0" + red : red) +
-            (green.length() == 1? "0" + green : green) +
-            (blue.length() == 1? "0" + blue : blue);
+   /**
+    * Gets contrasting font color.
+    *
+    * @param background the background
+    * @return the contrasting font color
+    */
+   public static Color calculateBestFontColor(@NonNull Color background) {
+      if((background.getRed() * 0.299 + background.getGreen() * 0.587 + background.getBlue() * 0.114) > 128) {
+         return Color.BLACK;
+      }
+      return Color.WHITE;
    }
 
-   public static Color stringToColor(final String value) {
-      if(value == null) {
+   /**
+    * String to color color.
+    *
+    * @param value the value
+    * @return the color
+    */
+   public static Color parseColor(final String value) {
+      if(Strings.isNullOrBlank(value)) {
          return Color.GRAY;
       }
       try {
-         // get color by hex or octal value
          return Color.decode(value);
       } catch(NumberFormatException nfe) {
-         // if we can't decode lets try to get it by name
          try {
-            // try to get a color by name using reflection
-            final Field f = Color.class.getField(value);
-
-            return (Color) f.get(null);
+            return Reflect.onClass(Color.class)
+                          .getField(value)
+                          .get();
          } catch(Exception ce) {
-            // if we can't get any color return black
-            return Color.black;
+            throw new RuntimeException("Invalid Color: " + value);
          }
       }
    }
 
+   /**
+    * Random color color.
+    *
+    * @return the color
+    */
    public static Color randomColor() {
-      return randomColor(Color.WHITE);
+      Random rnd = new Random();
+      return new Color(rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
    }
 
+   /**
+    * Random color color.
+    *
+    * @param baseColor the base color
+    * @return the color
+    */
    public static Color randomColor(@NonNull Color baseColor) {
       Random rnd = new Random();
       int red = (rnd.nextInt(256) + baseColor.getRed()) / 2;
@@ -75,11 +98,16 @@ public final class ColorUtils {
       return new Color(red, green, blue);
    }
 
-
-   public static Color getContrastingFontColor(@NonNull Color background) {
-      if((background.getRed() * 0.299 + background.getGreen() * 0.587 + background.getBlue() * 0.114) > 120) {
-         return Color.BLACK;
-      }
-      return Color.WHITE;
+   /**
+    * Gets html color string.
+    *
+    * @param color the color
+    * @return the html color string
+    */
+   public static String toHexString(Color color) {
+      return "#" +
+            Strings.padStart(Integer.toHexString(color.getRed()), 2, '0') +
+            Strings.padStart(Integer.toHexString(color.getGreen()), 2, '0') +
+            Strings.padStart(Integer.toHexString(color.getBlue()), 2, '0');
    }
 }//END OF ColorUtils

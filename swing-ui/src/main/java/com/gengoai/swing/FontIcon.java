@@ -21,7 +21,8 @@ package com.gengoai.swing;
 
 import com.gengoai.io.resource.Resource;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
@@ -34,6 +35,8 @@ final class FontIcon implements Serializable {
    protected FontIcon(Resource fontResource) {
       try {
          this.font = Font.createFont(0, fontResource.inputStream());
+         GraphicsEnvironment.getLocalGraphicsEnvironment()
+                            .registerFont(this.font);
       } catch(Exception e) {
          throw new RuntimeException(e);
       }
@@ -44,6 +47,9 @@ final class FontIcon implements Serializable {
       Rectangle2D stringBounds = sized.getStringBounds(text, new FontRenderContext(null, true, true));
       int width = (int) stringBounds.getWidth();
       int height = (int) stringBounds.getHeight();
+
+      width = Math.max(width, height);
+      height = Math.max(width, height);
 
       BufferedImage bufImage = new BufferedImage(width, height, 2);
       Graphics2D g2d = bufImage.createGraphics();
@@ -77,6 +83,10 @@ final class FontIcon implements Serializable {
 
    public final Icon createIcon(String text, float size) {
       return new ImageIcon(buildImage(text, size, Color.BLACK, null));
+   }
+
+   public String getFontName() {
+      return font.getFontName();
    }
 
 }//END OF FontIcon

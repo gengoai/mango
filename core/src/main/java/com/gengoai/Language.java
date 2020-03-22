@@ -22,7 +22,6 @@
 package com.gengoai;
 
 import com.gengoai.stream.Streams;
-import com.gengoai.logging.Logger;
 import com.gengoai.string.Strings;
 
 import java.text.Collator;
@@ -693,7 +692,6 @@ public enum Language {
       }
    };
 
-   private static final Logger log = Logger.getLogger(Language.class);
    private final String code;
    private transient List<Locale> locales;
 
@@ -710,12 +708,12 @@ public enum Language {
    public static Language fromString(String code) {
       try {
          return Language.valueOf(code.toUpperCase());
-      } catch (Exception e) {
+      } catch(Exception e) {
 
          Locale toFind;
-         if (code.contains("_") || code.contains("-")) {
+         if(code.contains("_") || code.contains("-")) {
             String[] parts = code.split("[_\\-]");
-            if (parts.length >= 2) {
+            if(parts.length >= 2) {
                toFind = new Locale(parts[0], parts[1]);
             } else {
                toFind = new Locale(code);
@@ -735,84 +733,15 @@ public enum Language {
     * @return language language
     */
    public static Language fromLocale(Locale locale) {
-      if (locale == null) {
+      if(locale == null) {
          locale = Locale.getDefault();
       }
-      for (Language l : Language.values()) {
-         if (l.asLocale().getLanguage().equals(locale.getLanguage())) {
+      for(Language l : Language.values()) {
+         if(l.asLocale().getLanguage().equals(locale.getLanguage())) {
             return l;
          }
       }
       return UNKNOWN;
-   }
-
-   /**
-    * Gets locales.
-    *
-    * @return possible locales associated with language.
-    */
-   public synchronized List<Locale> getLocales() {
-      if (locales != null) {
-         return locales;
-      }
-      locales = new ArrayList<>();
-      for (Locale locale : DateFormat.getAvailableLocales()) {
-         if (locale.getLanguage().equalsIgnoreCase(code)) {
-            locales.add(locale);
-         }
-      }
-      return locales;
-   }
-
-   /**
-    * Joins the words in the array separating them with a space if the language uses whitespace
-    *
-    * @param words the words to join
-    * @return the joined words
-    */
-   public String join(String[] words) {
-      return Streams.asStream(words)
-                    .collect(Collectors.joining((usesWhitespace() ? Strings.BLANK : Strings.EMPTY)));
-   }
-
-   /**
-    * Joins the words in the array separating them with a space if the language uses whitespace
-    *
-    * @param words the words to join
-    * @return the joined words
-    */
-   public String join(CharSequence[] words) {
-      return Streams.asStream(words)
-                    .collect(Collectors.joining((usesWhitespace() ? Strings.BLANK : Strings.EMPTY)));
-   }
-
-   /**
-    * Joins the words in the array separating them with a space if the language uses whitespace
-    *
-    * @param words the words to join
-    * @return the joined words
-    */
-   public String join(Iterable<? extends CharSequence> words) {
-      return Streams.asStream(words)
-                    .collect(Collectors.joining((usesWhitespace() ? Strings.BLANK : Strings.EMPTY)));
-   }
-
-   /**
-    * Does the language use whitespace to separate words
-    *
-    * @return True if language uses white space to separate words, false if not
-    */
-   public boolean usesWhitespace() {
-      return true;
-   }
-
-   /**
-    * Is the language written right to left
-    *
-    * @return True if language is written  right to left
-    */
-   public boolean isRightToLeft() {
-      return false;
    }
 
    /**
@@ -822,43 +751,6 @@ public enum Language {
     */
    public Locale asLocale() {
       return Locale.forLanguageTag(name());
-   }
-
-   /**
-    * Gets number format.
-    *
-    * @return number format
-    */
-   public NumberFormat getNumberFormat() {
-      return DecimalFormat.getNumberInstance(asLocale());
-   }
-
-   /**
-    * Gets currency format.
-    *
-    * @return currency format
-    */
-   public NumberFormat getCurrencyFormat() {
-      return DecimalFormat.getCurrencyInstance(asLocale());
-   }
-
-   /**
-    * Gets percent format.
-    *
-    * @return percent format
-    */
-   public NumberFormat getPercentFormat() {
-      return DecimalFormat.getPercentInstance(asLocale());
-   }
-
-   /**
-    * Gets date format.
-    *
-    * @param style style
-    * @return date format
-    */
-   public DateFormat getDateFormat(int style) {
-      return DateFormat.getDateInstance(style, asLocale());
    }
 
    /**
@@ -902,6 +794,118 @@ public enum Language {
     */
    public final Collator getCollator() {
       return getCollator(Collator.TERTIARY, Collator.FULL_DECOMPOSITION);
+   }
+
+   /**
+    * Gets currency format.
+    *
+    * @return currency format
+    */
+   public NumberFormat getCurrencyFormat() {
+      return DecimalFormat.getCurrencyInstance(asLocale());
+   }
+
+   /**
+    * Gets date format.
+    *
+    * @param style style
+    * @return date format
+    */
+   public DateFormat getDateFormat(int style) {
+      return DateFormat.getDateInstance(style, asLocale());
+   }
+
+   /**
+    * Gets locales.
+    *
+    * @return possible locales associated with language.
+    */
+   public synchronized List<Locale> getLocales() {
+      if(locales != null) {
+         return locales;
+      }
+      locales = new ArrayList<>();
+      for(Locale locale : DateFormat.getAvailableLocales()) {
+         if(locale.getLanguage().equalsIgnoreCase(code)) {
+            locales.add(locale);
+         }
+      }
+      return locales;
+   }
+
+   /**
+    * Gets number format.
+    *
+    * @return number format
+    */
+   public NumberFormat getNumberFormat() {
+      return DecimalFormat.getNumberInstance(asLocale());
+   }
+
+   /**
+    * Gets percent format.
+    *
+    * @return percent format
+    */
+   public NumberFormat getPercentFormat() {
+      return DecimalFormat.getPercentInstance(asLocale());
+   }
+
+   /**
+    * Is the language written right to left
+    *
+    * @return True if language is written  right to left
+    */
+   public boolean isRightToLeft() {
+      return false;
+   }
+
+   /**
+    * Joins the words in the array separating them with a space if the language uses whitespace
+    *
+    * @param words the words to join
+    * @return the joined words
+    */
+   public String join(String[] words) {
+      return Streams.asStream(words)
+                    .collect(Collectors.joining((usesWhitespace()
+                                                 ? Strings.BLANK
+                                                 : Strings.EMPTY)));
+   }
+
+   /**
+    * Joins the words in the array separating them with a space if the language uses whitespace
+    *
+    * @param words the words to join
+    * @return the joined words
+    */
+   public String join(CharSequence[] words) {
+      return Streams.asStream(words)
+                    .collect(Collectors.joining((usesWhitespace()
+                                                 ? Strings.BLANK
+                                                 : Strings.EMPTY)));
+   }
+
+   /**
+    * Joins the words in the array separating them with a space if the language uses whitespace
+    *
+    * @param words the words to join
+    * @return the joined words
+    */
+   public String join(Iterable<? extends CharSequence> words) {
+      return Streams.asStream(words)
+                    .collect(Collectors.joining((usesWhitespace()
+                                                 ? Strings.BLANK
+                                                 : Strings.EMPTY)));
+   }
+
+   /**
+    * Does the language use whitespace to separate words
+    *
+    * @return True if language uses white space to separate words, false if not
+    */
+   public boolean usesWhitespace() {
+      return true;
    }
 
 }// END OF Language

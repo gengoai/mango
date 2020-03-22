@@ -24,6 +24,7 @@ package com.gengoai.tuple;
 import com.gengoai.Copyable;
 import com.gengoai.Validation;
 import com.gengoai.annotation.JsonHandler;
+import com.gengoai.collection.Arrays2;
 import com.gengoai.collection.Sorting;
 import com.gengoai.conversion.Cast;
 import com.gengoai.json.JsonEntry;
@@ -55,13 +56,10 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
     * @return A new tuple of degree + 1 containing the object at the beginning
     */
    public <T> Tuple appendLeft(T object) {
-      if (degree() == 0) {
+      if(degree() == 0) {
          return Tuple1.of(object);
       }
-      Object[] copy = new Object[degree() + 1];
-      System.arraycopy(array(), 0, copy, 1, degree());
-      copy[0] = object;
-      return NTuple.of(copy);
+      return NTuple.of(Arrays2.concat(new Object[]{object}, array()));
    }
 
    /**
@@ -72,13 +70,10 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
     * @return A new tuple of degree + 1 containing the object at the end
     */
    public <T> Tuple appendRight(T object) {
-      if (degree() == 0) {
+      if(degree() == 0) {
          return Tuple1.of(object);
       }
-      Object[] copy = new Object[degree() + 1];
-      System.arraycopy(array(), 0, copy, 0, degree());
-      copy[copy.length - 1] = object;
-      return NTuple.of(copy);
+      return NTuple.of(Arrays2.concat(array(), new Object[]{object}));
    }
 
    /**
@@ -90,16 +85,16 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
 
    @Override
    public final int compareTo(Tuple o) {
-      if (degree() < o.degree()) {
+      if(degree() < o.degree()) {
          return -1;
-      } else if (degree() > o.degree()) {
+      } else if(degree() > o.degree()) {
          return 1;
       }
       Object[] a1 = array();
       Object[] a2 = o.array();
-      for (int i = 0; i < a1.length; i++) {
+      for(int i = 0; i < a1.length; i++) {
          int cmp = Sorting.compare(a1[i], a2[i]);
-         if (cmp != 0) {
+         if(cmp != 0) {
             return cmp;
          }
       }
@@ -115,13 +110,13 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
 
    @Override
    public final boolean equals(Object obj) {
-      if (obj == null) {
+      if(obj == null) {
          return false;
-      } else if (obj instanceof Tuple) {
+      } else if(obj instanceof Tuple) {
          Tuple tuple = Cast.as(obj);
          return degree() == tuple.degree() && Arrays.equals(array(), tuple.array());
-      } else if (obj instanceof Map.Entry && degree() == 2) {
-         Map.Entry e = Cast.as(obj);
+      } else if(obj instanceof Map.Entry && degree() == 2) {
+         Map.Entry<?, ?> e = Cast.as(obj);
          return Objects.equals(e.getKey(), get(0)) && Objects.equals(e.getValue(), get(1));
       }
       return false;
@@ -176,12 +171,10 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
     * @return A new tuple without the shifted element;
     */
    public Tuple shiftLeft() {
-      if (degree() < 2) {
+      if(degree() < 2) {
          return Tuple0.INSTANCE;
       }
-      Object[] copy = new Object[degree() - 1];
-      System.arraycopy(array(), 1, copy, 0, copy.length);
-      return NTuple.of(copy);
+      return NTuple.of(Arrays.copyOfRange(array(), 1, degree()));
    }
 
    /**
@@ -190,12 +183,10 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
     * @return A new tuple without the shifted element;
     */
    public Tuple shiftRight() {
-      if (degree() < 2) {
+      if(degree() < 2) {
          return Tuple0.INSTANCE;
       }
-      Object[] copy = new Object[degree() - 1];
-      System.arraycopy(array(), 0, copy, 0, copy.length);
-      return NTuple.of(copy);
+      return NTuple.of(Arrays.copyOfRange(array(), 0, degree() - 1));
    }
 
    /**
@@ -208,7 +199,7 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
    public Tuple slice(int start, int end) {
       Validation.checkArgument(start >= 0, "Start index must be >= 0");
       Validation.checkArgument(start < end, "Start index must be < end index");
-      if (start >= degree()) {
+      if(start >= degree()) {
          return Tuple0.INSTANCE;
       }
       return new NTuple(Arrays.copyOfRange(array(), start, Math.min(end, degree())));
@@ -235,7 +226,7 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
          List<Object> elements = new ArrayList<>();
          int index = 0;
          Type[] types = TypeUtils.getActualTypeArguments(typeOfT);
-         for (Iterator<JsonEntry> itr = entry.elementIterator(); itr.hasNext(); ) {
+         for(Iterator<JsonEntry> itr = entry.elementIterator(); itr.hasNext(); ) {
             Type type = TypeUtils.getOrObject(index, types);
             elements.add(itr.next().getAs(type));
             index++;

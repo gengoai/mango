@@ -23,8 +23,8 @@ import com.gengoai.collection.Lists;
 import com.gengoai.collection.tree.IntervalTree;
 import com.gengoai.collection.tree.Span;
 import com.gengoai.string.Strings;
-import com.gengoai.swing.KeyListeners;
-import com.gengoai.swing.MouseListeners;
+import com.gengoai.swing.listeners.KeyListeners;
+import com.gengoai.swing.listeners.MouseListeners;
 import com.gengoai.tuple.IntPair;
 import lombok.NonNull;
 
@@ -40,13 +40,10 @@ import java.awt.geom.Point2D;
 import java.util.List;
 import java.util.function.Consumer;
 
-
 /**
  * @author David B. Bracewell
  */
 public class EditorPanel extends JScrollPane {
-
-   public static final AutoExpandAction NO_AUTO_EXPANSION = (s, e, t, o) -> IntPair.of(s, e);
 
    public static final AutoExpandAction DEFAULT_AUTO_EXPANSION = (s, e, t, span) -> {
       if(span == null) {
@@ -54,8 +51,7 @@ public class EditorPanel extends JScrollPane {
       }
       return IntPair.of(span.start(), span.end());
    };
-
-
+   public static final AutoExpandAction NO_AUTO_EXPANSION = (s, e, t, o) -> IntPair.of(s, e);
    private final JTextPane editorPane;
    private final IntervalTree<StyledSpan> range2Style = new IntervalTree<>();
    private Style DEFAULT;
@@ -71,7 +67,7 @@ public class EditorPanel extends JScrollPane {
       editorPane.setCharacterAttributes(DEFAULT, true);
       editorPane.setSelectionColor(Color.YELLOW);
       editorPane.setSelectedTextColor(Color.BLACK);
-      editorPane.addKeyListener(KeyListeners.onKeyReleased(this::zoom));
+      editorPane.addKeyListener(KeyListeners.keyReleased(this::zoom));
       SimpleAttributeSet attributeSet = new SimpleAttributeSet();
       StyleConstants.setLineSpacing(attributeSet, 0.5f);
       editorPane.getStyledDocument()
@@ -122,8 +118,7 @@ public class EditorPanel extends JScrollPane {
    public void clearStyle(int start, int end) {
       for(StyledSpan styledSpan : getStyleName(start, end)) {
          range2Style.remove(styledSpan);
-         editorPane.getStyledDocument()
-                   .setCharacterAttributes(styledSpan.start(), styledSpan.length(), DEFAULT, true);
+         editorPane.getStyledDocument().setCharacterAttributes(styledSpan.start(), styledSpan.length(), DEFAULT, true);
       }
    }
 
@@ -141,24 +136,20 @@ public class EditorPanel extends JScrollPane {
    }
 
    public int getLineCount() {
-      return editorPane.getDocument()
-                       .getDefaultRootElement()
-                       .getElementCount();
+      return editorPane.getDocument().getDefaultRootElement().getElementCount();
    }
 
    public StyledSpan getOverlappingStyledSpan(final int start, final int end) {
       List<StyledSpan> spans = Lists.asArrayList(range2Style.overlapping(Span.of(start, end)));
-      return spans.stream()
-                  .max((s1, s2) -> {
-                     int cmp = Integer.compare(Math.abs(s1.start() - start),
-                                               Math.abs(s2.start() - start));
-                     if(cmp == 0) {
-                        cmp = Integer.compare(s1.length(), s2.length());
-                     } else {
-                        cmp = -cmp;
-                     }
-                     return cmp;
-                  }).orElse(null);
+      return spans.stream().max((s1, s2) -> {
+         int cmp = Integer.compare(Math.abs(s1.start() - start), Math.abs(s2.start() - start));
+         if(cmp == 0) {
+            cmp = Integer.compare(s1.length(), s2.length());
+         } else {
+            cmp = -cmp;
+         }
+         return cmp;
+      }).orElse(null);
    }
 
    public String getSelectedText() {
@@ -185,11 +176,6 @@ public class EditorPanel extends JScrollPane {
       return editorPane.getText();
    }
 
-   public void setText(String text) {
-      range2Style.clear();
-      editorPane.setText(text);
-   }
-
    public int getTextAtPosition(Point2D point2D) {
       return editorPane.viewToModel2D(point2D);
    }
@@ -199,11 +185,9 @@ public class EditorPanel extends JScrollPane {
    }
 
    public void highlight(int start, int end, String style) {
-      range2Style.add(new StyledSpan(start, end, style));
-      editorPane.getStyledDocument()
-                .setCharacterAttributes(start, end - start, editorPane.getStyle(style), true);
+      range2Style.add(new StyledSpan(start, end, style, style));
+      editorPane.getStyledDocument().setCharacterAttributes(start, end - start, editorPane.getStyle(style), true);
    }
-
 
    public void setAutoExpandAction(@NonNull AutoExpandAction action) {
       this.autoExpand = action;
@@ -219,9 +203,7 @@ public class EditorPanel extends JScrollPane {
    }
 
    public void setFontSize(int fontSize) {
-      editorPane.setFont(new Font(editorPane.getFont().getName(),
-                                  editorPane.getFont().getStyle(),
-                                  fontSize));
+      editorPane.setFont(new Font(editorPane.getFont().getName(), editorPane.getFont().getStyle(), fontSize));
    }
 
    public void setSelectionRange(int start, int end) {
@@ -239,8 +221,12 @@ public class EditorPanel extends JScrollPane {
    }
 
    public void setStyle(int start, int end, String styleName) {
-      editorPane.getStyledDocument()
-                .setCharacterAttributes(start, end - start, editorPane.getStyle(styleName), true);
+      editorPane.getStyledDocument().setCharacterAttributes(start, end - start, editorPane.getStyle(styleName), true);
+   }
+
+   public void setText(String text) {
+      range2Style.clear();
+      editorPane.setText(text);
    }
 
    @Override
@@ -249,7 +235,7 @@ public class EditorPanel extends JScrollPane {
    }
 
    public void updateHighlight(int start, int end, String oldStyle, String newStyle) {
-      range2Style.remove(new StyledSpan(start, end, oldStyle));
+      range2Style.remove(new StyledSpan(start, end, oldStyle, oldStyle));
       highlight(start, end, newStyle);
    }
 
@@ -350,8 +336,7 @@ public class EditorPanel extends JScrollPane {
       private void updateSize() {
          Dimension size = new Dimension(editorPane.getGraphics()
                                                   .getFontMetrics()
-                                                  .stringWidth(String.format("%3d", getLineCount() + 2)
-                                                              ) + 5,
+                                                  .stringWidth(String.format("%3d", getLineCount() + 2)) + 5,
                                         editorPane.getHeight());
          setPreferredSize(size);
          setSize(size);

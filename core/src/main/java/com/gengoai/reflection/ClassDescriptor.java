@@ -57,26 +57,34 @@ public final class ClassDescriptor implements Serializable {
     */
    public ClassDescriptor(Class<?> clazz) {
       this.clazz = clazz;
-      for (Method method : clazz.getMethods()) {
-         methods.put(method.getName(), method);
-         if (isSingletonMethod(method)) {
+      for(Method method : clazz.getMethods()) {
+         if(method.getDeclaringClass().equals(clazz) || !methods.containsKey(method.getName())) {
+            methods.put(method.getName(), method);
+         }
+         if(isSingletonMethod(method)) {
             singletonMethod = method;
          }
       }
-      for (Method method : clazz.getDeclaredMethods()) {
-         methods.put(method.getName(), method);
-         if (isSingletonMethod(method)) {
+      for(Method method : clazz.getDeclaredMethods()) {
+         if(method.getDeclaringClass().equals(clazz) || !methods.containsKey(method.getName())) {
+            methods.put(method.getName(), method);
+         }
+         if(isSingletonMethod(method)) {
             singletonMethod = method;
          }
       }
 
       Class<?> tClass = clazz;
-      while (tClass != null && tClass != Object.class) {
-         for (Field field : tClass.getFields()) {
-            fields.put(field.getName(), field);
+      while(tClass != null && tClass != Object.class) {
+         for(Field field : tClass.getFields()) {
+            if(field.getDeclaringClass().equals(clazz) || !fields.containsKey(field.getName())) {
+               fields.put(field.getName(), field);
+            }
          }
-         for (Field field : tClass.getDeclaredFields()) {
-            fields.put(field.getName(), field);
+         for(Field field : tClass.getDeclaredFields()) {
+            if(field.getDeclaringClass().equals(clazz) || !fields.containsKey(field.getName())) {
+               fields.put(field.getName(), field);
+            }
          }
          tClass = tClass.getSuperclass();
       }
@@ -86,23 +94,23 @@ public final class ClassDescriptor implements Serializable {
 
       final Queue<Class<?>> queue = linkedListOf(clazz);
       final Set<Class<?>> seen = hashSetOf();
-      while (queue.size() > 0) {
+      while(queue.size() > 0) {
          Class<?> nextClazz = queue.remove();
-         if (nextClazz != clazz) {
+         if(nextClazz != clazz) {
             ancestors.addLast(Reflect.onClass(nextClazz));
          }
 
-         if (seen.contains(nextClazz)) {
+         if(seen.contains(nextClazz)) {
             continue;
          }
          seen.add(nextClazz);
 
-         if (nextClazz.getSuperclass() != null && !seen.contains(nextClazz.getSuperclass())) {
+         if(nextClazz.getSuperclass() != null && !seen.contains(nextClazz.getSuperclass())) {
             queue.add(clazz.getSuperclass());
             seen.add(clazz.getSuperclass());
          }
-         for (Class<?> iface : nextClazz.getInterfaces()) {
-            if (!seen.contains(iface)) {
+         for(Class<?> iface : nextClazz.getInterfaces()) {
+            if(!seen.contains(iface)) {
                queue.add(iface);
                seen.add(iface);
             }
@@ -110,27 +118,27 @@ public final class ClassDescriptor implements Serializable {
       }
    }
 
-   public Iterator<Reflect> getAncestors(boolean reversed) {
-      if (reversed) {
-         return Iterators.unmodifiableIterator(ancestors.descendingIterator());
-      }
-      return Iterators.unmodifiableIterator(ancestors.iterator());
-   }
-
    private static boolean isSingletonMethod(Method method) {
       return Modifier.isStatic(method.getModifiers())
-         && method.getParameterCount() == 0
-         && (method.getName().equals("getSingleton")
-         || method.getName().equals("getInstance")
-         || method.getName().equals("createInstance"));
+            && method.getParameterCount() == 0
+            && (method.getName().equals("getSingleton")
+            || method.getName().equals("getInstance")
+            || method.getName().equals("createInstance"));
    }
 
    @Override
    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (!(o instanceof ClassDescriptor)) return false;
+      if(this == o) return true;
+      if(!(o instanceof ClassDescriptor)) return false;
       ClassDescriptor that = (ClassDescriptor) o;
       return Objects.equals(clazz, that.clazz);
+   }
+
+   public Iterator<Reflect> getAncestors(boolean reversed) {
+      if(reversed) {
+         return Iterators.unmodifiableIterator(ancestors.descendingIterator());
+      }
+      return Iterators.unmodifiableIterator(ancestors.iterator());
    }
 
    /**
@@ -150,7 +158,7 @@ public final class ClassDescriptor implements Serializable {
     */
    public Stream<Constructor<?>> getConstructors(boolean privileged) {
       Stream<Constructor<?>> stream = constructors.stream();
-      if (!privileged) {
+      if(!privileged) {
          stream = stream.filter(m -> Modifier.isPublic(m.getModifiers()));
       }
       return stream;
@@ -165,7 +173,7 @@ public final class ClassDescriptor implements Serializable {
     */
    public Field getField(String name, boolean privileged) {
       Field f = fields.get(name);
-      if (f != null) {
+      if(f != null) {
          return (privileged || Modifier.isPublic(f.getModifiers()))
                 ? f
                 : null;
@@ -181,7 +189,7 @@ public final class ClassDescriptor implements Serializable {
     */
    public Stream<Field> getFields(boolean privileged) {
       Stream<Field> stream = fields.values().stream();
-      if (!privileged) {
+      if(!privileged) {
          stream = stream.filter(m -> Modifier.isPublic(m.getModifiers()));
       }
       return stream;
@@ -195,7 +203,7 @@ public final class ClassDescriptor implements Serializable {
     */
    public Stream<Method> getMethods(boolean privileged) {
       Stream<Method> stream = methods.values().stream();
-      if (!privileged) {
+      if(!privileged) {
          stream = stream.filter(m -> Modifier.isPublic(m.getModifiers()));
       }
       return stream;
@@ -209,8 +217,8 @@ public final class ClassDescriptor implements Serializable {
     */
    public Stream<Method> getMethods(String[] names, boolean privileged) {
       Stream<Method> stream = null;
-      for (String name : names) {
-         if (stream == null) {
+      for(String name : names) {
+         if(stream == null) {
             stream = getMethods(name, privileged);
          } else {
             stream = Stream.concat(stream, getMethods(name, privileged));
@@ -228,7 +236,7 @@ public final class ClassDescriptor implements Serializable {
     */
    public Stream<Method> getMethods(String name, boolean privileged) {
       Stream<Method> stream = methods.get(name).stream();
-      if (!privileged) {
+      if(!privileged) {
          stream = stream.filter(m -> Modifier.isPublic(m.getModifiers()));
       }
       return stream;

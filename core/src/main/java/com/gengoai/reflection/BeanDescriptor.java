@@ -21,9 +21,9 @@
 
 package com.gengoai.reflection;
 
-import com.gengoai.logging.Logger;
 import com.gengoai.string.Strings;
 import lombok.NonNull;
+import lombok.extern.java.Log;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
@@ -31,13 +31,15 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.gengoai.LogUtils.logFinest;
+
 /**
  * Contains basic information about the read and write methods for a bean class.
  *
  * @author David B. Bracewell
  */
+@Log
 public final class BeanDescriptor implements Serializable {
-   private static final Logger log = Logger.getLogger(BeanDescriptor.class);
    private static final long serialVersionUID = -6445604079340822462L;
    private final Class<?> clazz;
    private final Map<String, Method> readMethods = new ConcurrentHashMap<>();
@@ -63,7 +65,11 @@ public final class BeanDescriptor implements Serializable {
     * @throws InstantiationException Something went wrong during instantiation.
     * @throws IllegalAccessException Couldn't access the class.
     */
-   public Object createInstance() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+   public Object createInstance() throws
+                                  InstantiationException,
+                                  IllegalAccessException,
+                                  NoSuchMethodException,
+                                  InvocationTargetException {
       return clazz.getDeclaredConstructor().newInstance();
    }
 
@@ -75,16 +81,20 @@ public final class BeanDescriptor implements Serializable {
    public Object createInstanceQuietly() {
       try {
          return clazz.getDeclaredConstructor().newInstance();
-      } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-         log.finest(e);
+      } catch(InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+         logFinest(log, e);
          return null;
       }
    }
 
    @Override
    public boolean equals(Object obj) {
-      if (this == obj) {return true;}
-      if (obj == null || getClass() != obj.getClass()) {return false;}
+      if(this == obj) {
+         return true;
+      }
+      if(obj == null || getClass() != obj.getClass()) {
+         return false;
+      }
       final BeanDescriptor other = (BeanDescriptor) obj;
       return Objects.equals(this.clazz, other.clazz);
    }
@@ -184,15 +194,15 @@ public final class BeanDescriptor implements Serializable {
    }
 
    private void setReadWrite(Class<?> clazz) {
-      if (clazz == null) {
+      if(clazz == null) {
          return;
       }
       Reflect.onClass(clazz).getMethods().forEach(method -> {
          String name = method.getName();
-         if (!name.equals("getClass") && !method.isAnnotationPresent(Ignore.class)) {
-            if (name.startsWith("get") || name.startsWith("is")) {
+         if(!name.equals("getClass") && !method.isAnnotationPresent(Ignore.class)) {
+            if(name.startsWith("get") || name.startsWith("is")) {
                readMethods.put(transformName(name), method.getElement());
-            } else if (name.startsWith("set")) {
+            } else if(name.startsWith("set")) {
                writeMethods.put(transformName(name), method.getElement());
             }
          }
@@ -201,10 +211,10 @@ public final class BeanDescriptor implements Serializable {
 
    private String transformName(String name) {
       int prefixLen = 3;
-      if (name.startsWith("is")) {
+      if(name.startsWith("is")) {
          prefixLen = 2;
       }
-      if (name.length() == prefixLen) {
+      if(name.length() == prefixLen) {
          return Strings.EMPTY;
       }
       char[] carrry = name.substring(prefixLen).toCharArray();

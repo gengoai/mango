@@ -80,6 +80,7 @@ public final class CommandLineParser {
    public CommandLineParser(Object owner, String applicationDescription) {
       this.owner = owner;
       if (owner != null) {
+
          for (RField field : Reflect.onObject(owner)
                                     .allowPrivilegedAccess()
                                     .getFieldsWithAnnotation(Option.class)) {
@@ -91,7 +92,7 @@ public final class CommandLineParser {
                                     : applicationDescription.trim();
       addOption(NamedOption.HELP);
       addOption(NamedOption.CONFIG);
-      addOption(NamedOption.CONFIG_EXPLAIN);
+      addOption(NamedOption.DUMP_CONFIG);
    }
 
    private static boolean isOptionName(String string) {

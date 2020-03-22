@@ -89,8 +89,9 @@ public class TagModel implements Serializable, Iterable<TagInfo> {
    public static class Builder {
       private Map<Tag, TagInfo> tagInfo = new HashMap<>();
 
-      public void forEach(BiConsumer<Tag,TagInfo> consumer){
+      public Builder forEach(BiConsumer<Tag,TagInfo> consumer){
          tagInfo.forEach(consumer);
+         return this;
       }
 
       public Builder add(@NonNull Tag tag, Color color, KeyStroke shortcut) {

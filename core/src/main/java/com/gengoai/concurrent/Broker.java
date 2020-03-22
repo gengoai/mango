@@ -22,7 +22,8 @@
 package com.gengoai.concurrent;
 
 import com.gengoai.Validation;
-import com.gengoai.logging.Loggable;
+import com.gengoai.LogUtils;
+import lombok.extern.java.Log;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -34,13 +35,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.gengoai.LogUtils.logWarning;
+
 /**
  * <p>An implementation of the Producer Consumer problem in which one or more producers are generating data for one or
  * more consumers to process.</p>
  *
  * @author David B. Bracewell
  */
-public class Broker<V> implements Serializable, Loggable {
+@Log
+public class Broker<V> implements Serializable {
    private static final long serialVersionUID = 1L;
    final ArrayBlockingQueue<V> queue;
    final List<Producer<V>> producers;
@@ -93,7 +97,7 @@ public class Broker<V> implements Serializable, Loggable {
       try {
          executors.awaitTermination(Integer.MAX_VALUE, TimeUnit.SECONDS);
       } catch(InterruptedException e) {
-         logWarn(e);
+         logWarning(log, e);
          return false;
       }
       return true;
@@ -104,7 +108,8 @@ public class Broker<V> implements Serializable, Loggable {
     * the production process, {@link #stop()} to signal production has finished, and {@link #yield(Object)} to offer an
     * item up for consumption.</p>
     */
-   public abstract static class Producer<V> implements Loggable {
+   @Log
+   public abstract static class Producer<V> {
 
       Broker<V> owner;
       boolean isStopped = false;
@@ -149,7 +154,7 @@ public class Broker<V> implements Serializable, Loggable {
          try {
             owner.queue.put(object);
          } catch(InterruptedException e) {
-            logWarn(e);
+            logWarning(log, e);
          }
       }
 
@@ -263,7 +268,7 @@ public class Broker<V> implements Serializable, Loggable {
 
    }//END OF ProducerConsumer$Builder
 
-   private class ProducerThread implements Runnable, Loggable {
+   private class ProducerThread implements Runnable {
 
       final Producer<V> producer;
 
@@ -277,14 +282,14 @@ public class Broker<V> implements Serializable, Loggable {
             try {
                producer.produce();
             } catch(Exception e) {
-               logWarn(e);
+               logWarning(LogUtils.getLogger(getClass()), e);
             }
          }
       }
 
    }//END OF Broker$ProducerThread
 
-   private class ConsumerThread implements Runnable, Loggable {
+   private class ConsumerThread implements Runnable {
 
       final java.util.function.Consumer<? super V> consumerAction;
 
@@ -306,7 +311,7 @@ public class Broker<V> implements Serializable, Loggable {
             } catch(InterruptedException e) {
                Thread.currentThread().interrupt();
             } catch(Exception e) {
-               logWarn(e);
+               logWarning(LogUtils.getLogger(getClass()), e);
             }
          }
       }

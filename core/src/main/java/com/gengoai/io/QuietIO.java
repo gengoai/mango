@@ -22,18 +22,19 @@
 package com.gengoai.io;
 
 
-import com.gengoai.logging.Logger;
+import lombok.extern.java.Log;
 
 import java.io.Closeable;
+
+import static com.gengoai.LogUtils.logWarning;
 
 /**
  * IO Operations that suppress exceptions
  *
  * @author David B. Bracewell
  */
+@Log
 public class QuietIO {
-
-   private final static Logger logger = Logger.getLogger(QuietIO.class);
 
    /**
     * Closes the <code>Closeable</code>ignoring any exception
@@ -41,13 +42,13 @@ public class QuietIO {
     * @param closeable thing to close
     */
    public static void closeQuietly(Closeable closeable) {
-      if (closeable == null) {
+      if(closeable == null) {
          return;
       }
       try {
          closeable.close();
-      } catch (Exception e) {
-         logger.warn(e);
+      } catch(Exception e) {
+         logWarning(log, e);
       }
    }
 
@@ -57,13 +58,13 @@ public class QuietIO {
     * @param closeable thing to close
     */
    public static void closeQuietly(AutoCloseable closeable) {
-      if (closeable == null) {
+      if(closeable == null) {
          return;
       }
       try {
          closeable.close();
-      } catch (Exception e) {
-         logger.warn(e);
+      } catch(Exception e) {
+         logWarning(log, e);
       }
    }
 

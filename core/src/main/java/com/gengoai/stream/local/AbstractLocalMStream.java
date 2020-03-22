@@ -59,6 +59,16 @@ abstract class AbstractLocalMStream<T> implements MStream<T>, Serializable {
    }
 
    @Override
+   public MStream<T> cache() {
+      return new LocalInMemoryMStream<>(collect());
+   }
+
+   @Override
+   public void close() throws Exception {
+      javaStream().close();
+   }
+
+   @Override
    public <R> R collect(@NonNull Collector<? super T, ?, R> collector) {
       return javaStream().collect(collector);
    }
@@ -121,11 +131,6 @@ abstract class AbstractLocalMStream<T> implements MStream<T>, Serializable {
    @Override
    public StreamingContext getContext() {
       return LocalStreamingContext.INSTANCE;
-   }
-
-   @Override
-   public void close() throws Exception {
-      javaStream().close();
    }
 
    @Override
@@ -227,8 +232,7 @@ abstract class AbstractLocalMStream<T> implements MStream<T>, Serializable {
       }
       if(withReplacement) {
          return cache().sample(true, number);
-      }
-      else {
+      } else {
          return shuffle(new Random()).limit(number);
       }
    }
@@ -236,9 +240,13 @@ abstract class AbstractLocalMStream<T> implements MStream<T>, Serializable {
    @Override
    public void saveAsTextFile(Resource location) {
       try(BufferedWriter writer = new BufferedWriter(location.writer())) {
+         AtomicLong lineCounter = new AtomicLong();
          javaStream().forEach(Unchecked.consumer(o -> {
             writer.write(o.toString());
             writer.newLine();
+            if(lineCounter.incrementAndGet() % 500 == 0) {
+               writer.flush();
+            }
          }));
       } catch(Exception e) {
          throw new RuntimeException(e);
@@ -301,11 +309,6 @@ abstract class AbstractLocalMStream<T> implements MStream<T>, Serializable {
    public MPairStream<T, Long> zipWithIndex() {
       final AtomicLong index = new AtomicLong();
       return mapToPair(e -> $(e, index.getAndIncrement()));
-   }
-
-   @Override
-   public MStream<T> cache() {
-      return new LocalInMemoryMStream<>(collect());
    }
 
 }//END OF AbstractLocalMStream

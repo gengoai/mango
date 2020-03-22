@@ -17,10 +17,12 @@
  * under the License.
  */
 
-package com.gengoai.swing;
+package com.gengoai.swing.listeners;
 
 import lombok.NonNull;
 
+import javax.swing.JComponent;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.function.Consumer;
@@ -32,59 +34,35 @@ public final class KeyListeners {
    }
 
 
-   public static KeyListener onKeyPressed(@NonNull Consumer<KeyEvent> listener) {
-      return new KeyListener() {
+   public static KeyListener keyPressed(@NonNull Consumer<KeyEvent> listener) {
+      return new KeyAdapter() {
          @Override
-         public void keyTyped(KeyEvent keyEvent) {
-
-         }
-
-         @Override
-         public void keyPressed(KeyEvent keyEvent) {
-            listener.accept(keyEvent);
-         }
-
-         @Override
-         public void keyReleased(KeyEvent keyEvent) {
-
+         public void keyPressed(KeyEvent e) {
+            listener.accept(e);
          }
       };
    }
 
-   public static KeyListener onKeyReleased(@NonNull Consumer<KeyEvent> listener) {
-      return new KeyListener() {
+   public static <T extends JComponent> T keyReleased(@NonNull T component,
+                                                      @NonNull Consumer<KeyEvent> listener) {
+      component.addKeyListener(keyReleased(listener));
+      return component;
+   }
+
+   public static KeyListener keyReleased(@NonNull Consumer<KeyEvent> eventHandler) {
+      return new KeyAdapter() {
          @Override
-         public void keyTyped(KeyEvent keyEvent) {
-
-         }
-
-         @Override
-         public void keyPressed(KeyEvent keyEvent) {
-
-         }
-
-         @Override
-         public void keyReleased(KeyEvent keyEvent) {
-            listener.accept(keyEvent);
+         public void keyReleased(KeyEvent e) {
+            eventHandler.accept(e);
          }
       };
    }
 
-   public static KeyListener onKeyTyped(@NonNull Consumer<KeyEvent> listener) {
-      return new KeyListener() {
+   public static KeyListener keyTyped(@NonNull Consumer<KeyEvent> listener) {
+      return new KeyAdapter() {
          @Override
          public void keyTyped(KeyEvent keyEvent) {
             listener.accept(keyEvent);
-         }
-
-         @Override
-         public void keyPressed(KeyEvent keyEvent) {
-
-         }
-
-         @Override
-         public void keyReleased(KeyEvent keyEvent) {
-
          }
       };
    }

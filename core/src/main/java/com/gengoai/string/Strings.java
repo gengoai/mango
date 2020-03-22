@@ -26,13 +26,18 @@ import com.gengoai.io.CSV;
 import com.gengoai.io.CSVReader;
 import com.gengoai.stream.Streams;
 import com.gengoai.tuple.IntPair;
+import lombok.NonNull;
 
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.function.IntFunction;
+import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import static com.gengoai.Validation.notNullOrBlank;
 
 /**
  * <p>Convenience methods for manipulating strings.</p>
@@ -40,76 +45,17 @@ import java.util.stream.IntStream;
  * @author David B. Bracewell
  */
 public final class Strings {
-
+   /**
+    * Single blank string
+    */
+   public static final String BLANK = " ";
    /**
     * Empty String
     */
    public static final String EMPTY = "";
 
-   /**
-    * Single blank string
-    */
-   public static final String BLANK = " ";
-
    private Strings() {
       throw new IllegalAccessError();
-   }
-
-
-   public static int count(String str, String target) {
-      int index = -target.length();
-      int count = 0;
-      while((index = str.indexOf(target, index + target.length())) != -1) {
-         count++;
-      }
-      return count;
-   }
-
-   public static IntPair expand(String txt, int start, int end) {
-      while(start > 0 && !Character.isWhitespace(txt.charAt(start - 1)) && !CharMatcher.Punctuation.test(
-            txt.charAt(start - 1))) {
-         start--;
-      }
-
-      while(start < end && Character.isWhitespace(txt.charAt(start))) {
-         start++;
-      }
-      while(end < txt.length() && !Character.isWhitespace(txt.charAt(end)) && !CharMatcher.Punctuation.test(
-            txt.charAt(end))) {
-         end++;
-      }
-      while(end > start && Character.isWhitespace(txt.charAt(end - 1))) {
-         end--;
-      }
-      return IntPair.of(start, end);
-   }
-
-   public static String blankToNull(String string) {
-      return Strings.isNullOrBlank(string)
-             ? null
-             : string;
-   }
-
-   public static String appendIfNotPresent(String string, String suffix) {
-      if(string == null) {
-         return null;
-      }
-      if(string.endsWith(suffix)) {
-         return string;
-      }
-      return string + suffix;
-   }
-
-   /**
-    * Converts null values into an empty string
-    *
-    * @param input the input string
-    * @return the output string (empty if input null, input otherwise)
-    */
-   public static String nullToEmpty(String input) {
-      return input == null
-             ? EMPTY
-             : input;
    }
 
    /**
@@ -130,6 +76,20 @@ public final class Strings {
    }
 
    /**
+    * Append if not present string.
+    *
+    * @param string the string
+    * @param suffix the suffix
+    * @return the string
+    */
+   public static String appendIfNotPresent(@NonNull String string, String suffix) {
+      notNullOrBlank(suffix, "The suffix must not be null or blank");
+      return string.endsWith(suffix)
+             ? string
+             : (string + suffix);
+   }
+
+   /**
     * Centers an input string inside a string of given length
     *
     * @param s      the string to center
@@ -137,6 +97,7 @@ public final class Strings {
     * @return the centered string
     */
    public static String center(String s, int length) {
+      Validation.checkArgument(length > 0, "Length must be > 0");
       if(s == null) {
          return null;
       }
@@ -145,61 +106,128 @@ public final class Strings {
    }
 
    /**
-    * <p>Replaces repeated characters with a single instance. e.g. <code>Gooooood</code> would become
-    * <code>God</code>.</p>
+    * Counts the number target strings in the given string
     *
-    * @param sequence The character sequence
-    * @return The compacted string
-    * @throws NullPointerException when the sequence is null
+    * @param str    the str to calculate the count on
+    * @param target the target which we want to count
+    * @return the number of times target occurs in str
     */
-   public static String compactRepeatedChars(CharSequence sequence) {
-      StringBuilder builder = new StringBuilder();
-      for(int i = 0; i < sequence.length(); i++) {
-         char c = sequence.charAt(i);
-         if(builder.length() == 0 || builder.charAt(builder.length() - 1) != c) {
-            builder.append(c);
-         }
+   public static int count(String str, String target) {
+      notNullOrBlank(target, "Target string must not be null or blank,");
+      if(Strings.isNullOrBlank(str)) {
+         return 0;
       }
+      int index = -target.length();
+      int count = 0;
+      while((index = str.indexOf(target, index + target.length())) != -1) {
+         count++;
+      }
+      return count;
+   }
+
+   /**
+    * Escapes a string by placing an escape character in front of reserved characters.
+    *
+    * @param input              the input
+    * @param escapeCharacter    the escape character
+    * @param reservedCharacters the characters needing to be escaped
+    * @return the string
+    */
+   public static String escape(String input, char escapeCharacter, @NonNull String reservedCharacters) {
+      return escape(input,
+                    Character.toString(escapeCharacter),
+                    i -> reservedCharacters.contains(Character.toString(i)),
+                    Character::toString);
+   }
+
+   /**
+    * Escapes and converts characters matched using the given <code>escapeChecker</code> predicate by prepending the
+    * transformed value, determines using the given <code>conversionFunction</code>, with the
+    * <code>escapeMarker</code>.
+    * <p>
+    * <pre>
+    * {@code
+    *       escape("MY @ time is great.",
+    *              "\\x",
+    *              c -> !Character.isLetter(c) && !Character.isWhitespace(c),
+    *              c -> Integer::toHexString);
+    * }
+    * </pre>
+    * Generates <code>MY \x40 time is great\x2e</code>
+    * </p>
+    *
+    * @param input              the input string to escape
+    * @param escapeMarker       the escape string to use
+    * @param escapeChecker      the predicate to check if a character needs to be escaped
+    * @param conversionFunction the function to convert the character needing escaped to a string.
+    * @return the escaped string
+    */
+   public static String escape(String input,
+                               @NonNull String escapeMarker,
+                               @NonNull IntPredicate escapeChecker,
+                               @NonNull IntFunction<String> conversionFunction) {
+      if(input == null) {
+         return null;
+      }
+      StringBuilder builder = new StringBuilder();
+      input.chars()
+           .forEach(c -> {
+              if(escapeChecker.test(c)) {
+                 builder.append(escapeMarker)
+                        .append(conversionFunction.apply(c));
+              } else {
+                 builder.append((char) c);
+              }
+           });
       return builder.toString();
    }
 
    /**
-    * Null safe comparison of strings
+    * Escapes the unicode in the given string using the Java specification
     *
-    * @param s1         string 1
-    * @param s2         string 2
-    * @param ignoreCase True perform case insensitive comparison, False perform case sensitive comparison
-    * @return as long as neither are null
+    * @param string The string to escape
+    * @return The escaped string
     */
-   public static int compare(String s1, String s2, boolean ignoreCase) {
-      if(s1 == null && s2 == null) {
-         return 0;
-      } else if(s1 == null) {
-         return -1;
-      } else if(s2 == null) {
-         return 1;
-      }
-      return ignoreCase
-             ? s1.compareToIgnoreCase(s2)
-             : s1.compareTo(s2);
+   public static String escapeUnicode(String string) {
+      return escape(string,
+                    "\\u",
+                    i -> i > 128,
+                    c -> String.format("%04X", (int) c));
    }
 
    /**
-    * Returns the first string in the given array that is not null or blank
+    * Expand int pair.
     *
-    * @param strings the strings
-    * @return the first non null or blank string (null if none)
+    * @param txt   the txt
+    * @param start the start
+    * @param end   the end
+    * @return the int pair
     */
-   public static String firstNonNullOrBlank(String... strings) {
-      if(strings == null || strings.length == 0) {
-         return null;
+   public static IntPair expand(String txt, int start, int end) {
+
+      while(start > 0 &&
+            !Character.isWhitespace(txt.charAt(start - 1)) &&
+            !CharMatcher.Punctuation.test(txt.charAt(start - 1))) {
+         start--;
       }
-      for(String s : strings) {
-         if(isNotNullOrBlank(s)) {
-            return s;
-         }
+
+      while(start < end &&
+            Character.isWhitespace(txt.charAt(start))) {
+         start++;
       }
-      return null;
+
+      while(end < txt.length() &&
+            !Character.isWhitespace(txt.charAt(end)) &&
+            !CharMatcher.Punctuation.test(txt.charAt(end))) {
+         end++;
+      }
+
+      while(end > start &&
+            Character.isWhitespace(txt.charAt(end - 1))) {
+         end--;
+      }
+
+      return IntPair.of(start, end);
    }
 
    /**
@@ -332,7 +360,10 @@ public final class Strings {
     * @param suffix    the suffix
     * @return the string
     */
-   public static String join(Iterable<?> iterable, CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
+   public static String join(@NonNull Iterable<?> iterable,
+                             @NonNull CharSequence delimiter,
+                             @NonNull CharSequence prefix,
+                             @NonNull CharSequence suffix) {
       return Streams.asStream(iterable)
                     .map(Object::toString)
                     .collect(Collectors.joining(delimiter, prefix, suffix));
@@ -345,7 +376,7 @@ public final class Strings {
     * @param delimiter the delimiter
     * @return the string
     */
-   public static String join(Iterable<?> iterable, CharSequence delimiter) {
+   public static String join(@NonNull Iterable<?> iterable, @NonNull CharSequence delimiter) {
       return Streams.asStream(iterable)
                     .map(Object::toString)
                     .collect(Collectors.joining(delimiter));
@@ -359,7 +390,7 @@ public final class Strings {
     * @param delimiter the delimiter
     * @return the string
     */
-   public static <T> String join(T[] values, CharSequence delimiter) {
+   public static <T> String join(@NonNull T[] values, @NonNull CharSequence delimiter) {
       return Streams.asStream(values)
                     .map(Object::toString)
                     .collect(Collectors.joining(delimiter));
@@ -376,23 +407,32 @@ public final class Strings {
     * @param suffix    the suffix
     * @return the string
     */
-   public static <T> String join(T[] values, CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
+   public static <T> String join(@NonNull T[] values,
+                                 @NonNull CharSequence delimiter,
+                                 @NonNull CharSequence prefix,
+                                 @NonNull CharSequence suffix) {
       return Streams.asStream(values)
                     .map(Object::toString)
                     .collect(Collectors.joining(delimiter, prefix, suffix));
    }
 
+   public static void main(String[] args) {
+      System.out.println(escape("MY @ time is great.",
+                                "\\x",
+                                c -> !Character.isLetter(c) && !Character.isWhitespace(c),
+                                Integer::toHexString));
+   }
+
    /**
-    * Trims the left end of the string using {@link StringFunctions#LEFT_TRIM}.
+    * Converts null values into an empty string
     *
-    * @param input the input
-    * @return the string
+    * @param input the input string
+    * @return the output string (empty if input null, input otherwise)
     */
-   public static String leftTrim(CharSequence input) {
-      if(input == null) {
-         return null;
-      }
-      return StringFunctions.LEFT_TRIM.apply(input.toString());
+   public static String nullToEmpty(String input) {
+      return input == null
+             ? EMPTY
+             : input;
    }
 
    /**
@@ -506,6 +546,25 @@ public final class Strings {
    }
 
    /**
+    * <p>Replaces repeated characters with a single instance. e.g. <code>Gooooood</code> would become
+    * <code>God</code>.</p>
+    *
+    * @param sequence The character sequence
+    * @return The compacted string
+    * @throws NullPointerException when the sequence is null
+    */
+   public static String removeRepeatedChars(CharSequence sequence) {
+      StringBuilder builder = new StringBuilder();
+      for(int i = 0; i < sequence.length(); i++) {
+         char c = sequence.charAt(i);
+         if(builder.length() == 0 || builder.charAt(builder.length() - 1) != c) {
+            builder.append(c);
+         }
+      }
+      return builder.toString();
+   }
+
+   /**
     * Repeats the given string count times
     *
     * @param s     the string to repeat
@@ -527,19 +586,6 @@ public final class Strings {
     */
    public static String repeat(char c, int count) {
       return repeat(Character.toString(c), count);
-   }
-
-   /**
-    * Trims the right end of the string using {@link StringFunctions#RIGHT_TRIM}.
-    *
-    * @param input the input
-    * @return the string
-    */
-   public static String rightTrim(CharSequence input) {
-      if(input == null) {
-         return null;
-      }
-      return StringFunctions.RIGHT_TRIM.apply(input.toString());
    }
 
    /**
@@ -586,26 +632,6 @@ public final class Strings {
       }
    }
 
-
-   /**
-    * Escapes the unicode in the given string using the Java specification
-    *
-    * @param string The string to escape
-    * @return The escaped string
-    */
-   public static String javaStringEscape(String string) {
-      StringBuilder b = new StringBuilder();
-      for(char c : string.toCharArray()) {
-         if(c >= 128) {
-            b.append("\\u").append(String.format("%04X", (int) c));
-         } else {
-            b.append(c);
-         }
-      }
-      return b.toString();
-   }
-
-
    /**
     * Normalize to canonical form.
     *
@@ -633,19 +659,6 @@ public final class Strings {
    }
 
    /**
-    * Trims a string of unicode whitespace and invisible characters
-    *
-    * @param input Input string
-    * @return Trimmed string or null if input was null
-    */
-   public static String trim(CharSequence input) {
-      if(input == null) {
-         return null;
-      }
-      return StringFunctions.TRIM.apply(input.toString());
-   }
-
-   /**
     * Unescapes a string which is escaped with the given escaped character.
     *
     * @param input           the input
@@ -668,7 +681,6 @@ public final class Strings {
       }
       return builder.toString();
    }
-
 
 }// END OF StringUtils
 

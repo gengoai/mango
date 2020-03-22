@@ -27,10 +27,10 @@ import com.gengoai.collection.Iterables;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.SerializablePredicate;
 import com.gengoai.io.resource.Resource;
-import com.gengoai.logging.Logger;
 import com.gengoai.string.Strings;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.extern.java.Log;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
@@ -41,14 +41,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.gengoai.LogUtils.logFinest;
+
 /**
  * Wrapper around an object or class allowing easy access to reflection operations.
  *
  * @author David B. Bracewell
  */
 @EqualsAndHashCode(callSuper = false)
+@Log
 public final class Reflect extends RBase<Class<?>, Reflect> {
-   private static final Logger log = Logger.getLogger(Reflect.class);
    private final Class<?> clazz;
    private final Object object;
    private boolean privileged;
@@ -166,7 +168,7 @@ public final class Reflect extends RBase<Class<?>, Reflect> {
       try {
          return getClassForName(name);
       } catch(Exception | Error cnfe) {
-         log.finest(cnfe);
+         logFinest(log, cnfe);
          return null;
       }
    }

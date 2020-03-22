@@ -22,7 +22,7 @@
 package com.gengoai.application;
 
 import com.gengoai.config.Config;
-import com.gengoai.logging.Loggable;
+import com.gengoai.LogUtils;
 import com.gengoai.string.Strings;
 
 import java.io.Serializable;
@@ -32,6 +32,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Collections;
 import java.util.Set;
+
+import static com.gengoai.LogUtils.logSevere;
 
 /**
  * <p>Generic interface for building applications that use Mango's {@link Config} and {@link CommandLineParser} to
@@ -50,7 +52,7 @@ import java.util.Set;
  *
  * @author David B. Bracewell
  */
-public abstract class Application implements Runnable, Serializable, Loggable {
+public abstract class Application implements Runnable, Serializable {
    private static final long serialVersionUID = 1L;
    private final String name;
    private String[] allArguments = new String[0];
@@ -119,7 +121,7 @@ public abstract class Application implements Runnable, Serializable, Loggable {
       this.allArguments = new String[args.length];
       System.arraycopy(args, 0, this.allArguments, 0, args.length);
 
-      StringBuilder cliDesc = new StringBuilder(getName());
+      StringBuilder cliDesc = new StringBuilder();
       for(Description description : this.getClass().getAnnotationsByType(Description.class)) {
          cliDesc.append("\n").append(description.value());
       }
@@ -135,7 +137,7 @@ public abstract class Application implements Runnable, Serializable, Loggable {
       try {
          setup();
       } catch(Exception e) {
-         logSevere(e);
+         logSevere(LogUtils.getLogger(getClass()), e);
          System.exit(-1);
       }
       run();
@@ -153,7 +155,7 @@ public abstract class Application implements Runnable, Serializable, Loggable {
     */
    @Target({ElementType.TYPE})
    @Retention(RetentionPolicy.RUNTIME)
-   @interface Description {
+   public @interface Description {
 
       /**
        * Value string.

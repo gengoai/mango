@@ -37,7 +37,6 @@ import lombok.ToString;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 
@@ -58,7 +57,7 @@ import java.util.Set;
  * <li>{@link NamedOption#HELP}: Shows help if <code>-h</code> or <code>--help</code> is given.</li>
  * <li>{@link NamedOption#CONFIG}: Specifies a configuration resource to load when <code>--config</code> is given.
  * </li>
- * <li>{@link NamedOption#CONFIG_EXPLAIN}: Shows how the current configuration was created with the lineage of each
+ * <li>{@link NamedOption#DUMP_CONFIG}: Shows how the current configuration was created with the lineage of each
  * property when <code>--config-explain</code> is given.</li>
  * </ul>
  * </p>
@@ -223,17 +222,12 @@ public final class NamedOption {
     * Shows how the current configuration was created with the lineage of each property when
     * <code>--config-explain</code> is given.
     */
-   public static final NamedOption CONFIG_EXPLAIN = NamedOption.builder()
-                                                               .name("config-explain")
-                                                               .type(Boolean.class)
-                                                               .description("Explains how the config values were set.")
-                                                               .defaultValue(false)
-                                                               .alias("config_explain")
-                                                               .alias("config_dump")
-                                                               .alias("config-dump")
-                                                               .alias("dump_config")
-                                                               .alias("dump-config")
-                                                               .build();
+   public static final NamedOption DUMP_CONFIG = NamedOption.builder()
+                                                            .name("dump-config")
+                                                            .type(Boolean.class)
+                                                            .description("Explains how the config values were set.")
+                                                            .defaultValue(false)
+                                                            .build();
 
    /**
     * Builder class to create a named options

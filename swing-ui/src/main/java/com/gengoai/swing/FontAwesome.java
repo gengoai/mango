@@ -20,9 +20,13 @@
 package com.gengoai.swing;
 
 import com.gengoai.io.Resources;
+import com.gengoai.reflection.Reflect;
+import com.gengoai.reflection.ReflectionException;
+import lombok.NonNull;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import java.awt.Color;
 
 public enum FontAwesome {
    AD('\uf641'),
@@ -998,8 +1002,12 @@ public enum FontAwesome {
       this.icon = icon;
    }
 
-   public final Icon create(float size, Color foreground, Color background) {
-      return fontIcon.createIcon(Character.toString(icon), size, foreground, background);
+   public static String getFontName() {
+      return fontIcon.getFontName();
+   }
+
+   public String asString() {
+      return Character.toString(icon);
    }
 
    public final Icon create(float size, Color foreground) {
@@ -1008,6 +1016,23 @@ public enum FontAwesome {
 
    public final Icon create(float size) {
       return fontIcon.createIcon(Character.toString(icon), size);
+   }
+
+   public final Icon create(float size, Color foreground, Color background) {
+      return fontIcon.createIcon(Character.toString(icon), size, foreground, background);
+   }
+
+   public <T extends JComponent> T setText(@NonNull T component) {
+      Fonts.setFont(component, getFontName());
+      if(Reflect.onObject(component).containsMethod("setText", String.class)) {
+         try {
+            Reflect.onObject(component).getMethod("setText", String.class)
+                   .invoke(asString());
+         } catch(ReflectionException e) {
+            throw new RuntimeException(e);
+         }
+      }
+      return component;
    }
 
 }//END OF FontAwesome

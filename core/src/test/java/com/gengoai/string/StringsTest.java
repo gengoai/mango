@@ -28,11 +28,6 @@ import static org.junit.Assert.*;
 public class StringsTest {
 
    @Test
-   public void testTrim() throws Exception {
-      assertEquals("test", Strings.trim("   test　"));
-   }
-
-   @Test
    public void testCase() throws Exception {
       assertEquals("Title Case", Strings.toTitleCase("title case"));
       assertEquals("Title Case", Strings.toTitleCase("TITLE CASE"));
@@ -58,14 +53,6 @@ public class StringsTest {
       assertNull(Strings.abbreviate(null, 3));
    }
 
-   @Test
-   public void testCompare() throws Exception {
-      assertEquals(0, Strings.compare(null, null, true));
-      assertEquals(0, Strings.compare("ABC", "abc", true));
-      assertEquals(1, Strings.compare("ABC", null, true));
-      assertEquals(-1, Strings.compare(null, "ABC", true));
-      assertNotEquals(0, Strings.compare("ABC", "abc", false));
-   }
 
    @Test
    public void testNormalization() throws Exception {
@@ -122,29 +109,6 @@ public class StringsTest {
       assertFalse(Strings.isPunctuation(null));
    }
 
-   @Test
-   public void trim() throws Exception {
-      final String untrimmed = "  Alphabet Soup  " +
-                                  "";
-      assertEquals("Alphabet Soup  " +
-                      "", Strings.leftTrim(untrimmed));
-      assertEquals("  Alphabet Soup", Strings.rightTrim(untrimmed));
-      assertEquals("Alphabet Soup", Strings.trim(untrimmed));
-
-      assertNull(Strings.leftTrim(null));
-      assertNull(Strings.rightTrim(null));
-      assertNull(Strings.trim(null));
-   }
-
-   @Test
-   public void firstNonNullOrBlank() throws Exception {
-      assertEquals("One", Strings.firstNonNullOrBlank("One", "Two", null));
-      assertEquals("Two", Strings.firstNonNullOrBlank("   ", "Two", null));
-      assertEquals("Two", Strings.firstNonNullOrBlank(null, "Two", null));
-      assertNull(Strings.firstNonNullOrBlank(null, null, "        "));
-      assertNull(Strings.firstNonNullOrBlank());
-      assertNull(Strings.firstNonNullOrBlank((String) null));
-   }
 
    @Test
    public void center() throws Exception {

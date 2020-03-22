@@ -1,6 +1,5 @@
 package com.gengoai;
 
-import com.gengoai.logging.Logger;
 import com.gengoai.string.Strings;
 import lombok.Getter;
 import lombok.NonNull;
@@ -10,6 +9,7 @@ import java.io.Serializable;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
 import static com.gengoai.Validation.checkState;
@@ -64,7 +64,7 @@ public class Stopwatch implements Serializable, AutoCloseable {
 
 
    private Stopwatch(boolean started, String name) {
-      this(started, name, Logger.getGlobalLogger(), Level.OFF);
+      this(started, name, LogUtils.getGlobalLogger(), Level.OFF);
    }
 
    private Stopwatch(boolean started, String name, Logger logger, Level level) {

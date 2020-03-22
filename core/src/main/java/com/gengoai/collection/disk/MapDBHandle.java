@@ -22,20 +22,23 @@ package com.gengoai.collection.disk;
 import com.gengoai.function.Unchecked;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
-import com.gengoai.logging.Loggable;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.extern.java.Log;
 import org.mapdb.Atomic;
 import org.mapdb.DB;
 
 import java.io.File;
 import java.io.Serializable;
 
+import static com.gengoai.LogUtils.logFine;
+
 /**
  * The type Map db handle.
  */
 @EqualsAndHashCode(exclude = "store")
-public final class MapDBHandle implements Serializable, AutoCloseable, Loggable {
+@Log
+public final class MapDBHandle implements Serializable, AutoCloseable {
    private static final long serialVersionUID = 1L;
    private final boolean compressed;
    private final File file;
@@ -57,14 +60,10 @@ public final class MapDBHandle implements Serializable, AutoCloseable, Loggable 
                                       .copy(tempDir.getChild(resource.baseName() + ".p"));
                              Resources.from(resource.descriptor() + ".t")
                                       .copy(tempDir.getChild(resource.baseName() + ".t"));
-                             logFine("Copying resources to {0}", tempDir);
+                             logFine(log, "Copying resources to {0}", tempDir);
                              return tempDir.getChild(resource.baseName()).asFile().orElseThrow();
                           }));
       this.compressed = compressed;
-   }
-
-   public boolean isClosed() {
-      return store == null || store.isClosed();
    }
 
    @Override
@@ -126,5 +125,9 @@ public final class MapDBHandle implements Serializable, AutoCloseable, Loggable 
 
    public <E> Atomic.Var<E> getVar(String name) {
       return getStore().getAtomicVar(name);
+   }
+
+   public boolean isClosed() {
+      return store == null || store.isClosed();
    }
 }//END OF MapDBHandle

@@ -38,7 +38,9 @@ public enum StringFunctions implements SerializableFunction<CharSequence, String
    UPPER_CASE {
       @Override
       public String apply(CharSequence input) {
-         return input == null ? null : input.toString().toUpperCase();
+         return input == null
+                ? null
+                : input.toString().toUpperCase();
       }
    },
    /**
@@ -47,7 +49,9 @@ public enum StringFunctions implements SerializableFunction<CharSequence, String
    LOWER_CASE {
       @Override
       public String apply(CharSequence input) {
-         return input == null ? null : input.toString().toLowerCase();
+         return input == null
+                ? null
+                : input.toString().toLowerCase();
       }
    },
    /**
@@ -56,16 +60,16 @@ public enum StringFunctions implements SerializableFunction<CharSequence, String
    TITLE_CASE {
       @Override
       public String apply(CharSequence input) {
-         if (input == null) {
+         if(input == null) {
             return null;
          }
-         if (input.toString().isEmpty()) {
+         if(input.toString().isEmpty()) {
             return input.toString();
          }
          char[] chars = input.toString().toLowerCase().toCharArray();
          chars[0] = Character.toUpperCase(chars[0]);
-         for (int i = 1; i < input.length() - 1; i++) {
-            if (Character.isWhitespace(chars[i - 1])) {
+         for(int i = 1; i < input.length() - 1; i++) {
+            if(Character.isWhitespace(chars[i - 1])) {
                chars[i] = Character.toUpperCase(chars[i]);
             }
          }
@@ -78,7 +82,9 @@ public enum StringFunctions implements SerializableFunction<CharSequence, String
    REVERSE {
       @Override
       public String apply(CharSequence input) {
-         return input == null ? null : new StringBuilder(input).reverse().toString();
+         return input == null
+                ? null
+                : new StringBuilder(input).reverse().toString();
       }
    },
    /**
@@ -87,7 +93,9 @@ public enum StringFunctions implements SerializableFunction<CharSequence, String
    TRIM {
       @Override
       public String apply(CharSequence input) {
-         return input == null ? null : CharMatcher.WhiteSpace.trimFrom(input);
+         return input == null
+                ? null
+                : input.toString().strip();
       }
    },
    /**
@@ -96,7 +104,9 @@ public enum StringFunctions implements SerializableFunction<CharSequence, String
    CANONICAL_NORMALIZATION {
       @Override
       public String apply(CharSequence input) {
-         return input == null ? null : Normalizer.normalize(input, Normalizer.Form.NFKC);
+         return input == null
+                ? null
+                : Normalizer.normalize(input, Normalizer.Form.NFKC);
       }
    },
    /**
@@ -105,10 +115,11 @@ public enum StringFunctions implements SerializableFunction<CharSequence, String
    DIACRITICS_NORMALIZATION {
       @Override
       public String apply(CharSequence input) {
-         return input == null ? null :
-                Normalizer.normalize(Normalizer.normalize(input, Normalizer.Form.NFD)
-                                               .replaceAll("\\p{InCombiningDiacriticalMarks}+", ""),
-                                     Normalizer.Form.NFC);
+         return input == null
+                ? null
+                : Normalizer.normalize(Normalizer.normalize(input, Normalizer.Form.NFD)
+                                                 .replaceAll("\\p{InCombiningDiacriticalMarks}+", ""),
+                                       Normalizer.Form.NFC);
       }
    },
    /**
@@ -117,10 +128,9 @@ public enum StringFunctions implements SerializableFunction<CharSequence, String
    LEFT_TRIM {
       @Override
       public String apply(CharSequence input) {
-         if (input == null) {
-            return null;
-         }
-         return CharMatcher.WhiteSpace.trimLeadingFrom(input);
+         return input == null
+                ? null
+                : input.toString().stripLeading();
       }
    },
    /**
@@ -129,10 +139,9 @@ public enum StringFunctions implements SerializableFunction<CharSequence, String
    RIGHT_TRIM {
       @Override
       public String apply(CharSequence input) {
-         if (input == null) {
-            return null;
-         }
-         return CharMatcher.WhiteSpace.trimTrailingFrom(input);
+         return input == null
+                ? null
+                : input.toString().stripTrailing();
       }
    },
    /**
@@ -141,7 +150,9 @@ public enum StringFunctions implements SerializableFunction<CharSequence, String
    NULL_TO_EMPTY {
       @Override
       public String apply(CharSequence input) {
-         return input == null ? Strings.EMPTY : input.toString();
+         return input == null
+                ? Strings.EMPTY
+                : input.toString();
       }
    };
 
@@ -165,7 +176,9 @@ public enum StringFunctions implements SerializableFunction<CharSequence, String
     * @return The function
     */
    public static SerializableFunction<String, String> REGEX_REPLACE(final Pattern pattern, final String replacement) {
-      return arg0 -> arg0 == null ? null : pattern.matcher(arg0).replaceAll(replacement);
+      return arg0 -> arg0 == null
+                     ? null
+                     : pattern.matcher(arg0).replaceAll(replacement);
    }
 
 

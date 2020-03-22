@@ -19,10 +19,22 @@
 
 package com.gengoai.swing.components;
 
+import com.gengoai.string.Strings;
 import com.gengoai.tuple.IntPair;
 
 @FunctionalInterface
 public interface AutoExpandAction {
+
+   static AutoExpandAction expandOnWhiteSpace = (s, e, t, m) -> {
+      if(m == null) {
+         return Strings.expand(t, s, e);
+      }
+      return IntPair.of(m.start(), m.end());
+   };
+
+   static AutoExpandAction noExpansion = (s, e, t, m) -> {
+      return IntPair.of(s, e);
+   };
 
    IntPair expand(int start, int end, String text, StyledSpan matchingSpan);
 

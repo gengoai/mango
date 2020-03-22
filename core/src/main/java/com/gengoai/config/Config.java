@@ -22,6 +22,7 @@
 package com.gengoai.config;
 
 import com.gengoai.Language;
+import com.gengoai.LogUtils;
 import com.gengoai.SystemInfo;
 import com.gengoai.application.Application;
 import com.gengoai.application.CommandLineApplication;
@@ -34,13 +35,12 @@ import com.gengoai.io.resource.ClasspathResource;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.json.Json;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.logging.LogManager;
-import com.gengoai.logging.Logger;
 import com.gengoai.parsing.ParseException;
 import com.gengoai.reflection.BeanUtils;
 import com.gengoai.reflection.ReflectionException;
 import com.gengoai.string.Strings;
 import lombok.NonNull;
+import lombok.extern.java.Log;
 
 import java.io.*;
 import java.lang.reflect.Type;
@@ -48,11 +48,15 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Predicate;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.gengoai.LogUtils.*;
 
 /**
  * <p> A complete configuration class that allows for inheritance, multiline inputs, variable interpolation, and
@@ -65,13 +69,13 @@ import java.util.stream.Stream;
  *
  * @author David B. Bracewell
  */
+@Log
 public final class Config implements Serializable {
    private static final String BEAN_PROPERTY = "@{";
    private static final Pattern BEAN_SUBSTITUTION = Pattern.compile(Pattern.quote(BEAN_PROPERTY) + "(.+?)\\}");
    private static final String DEFAULT_CONFIG_FILE_NAME = "default.conf";
    private static final Pattern STRING_SUBSTITUTION = Pattern.compile("\\$\\{(.+?)}");
    private static final String SYSTEM_PROPERTY = "system.";
-   private static final Logger log = Logger.getLogger(Config.class);
    private static final long serialVersionUID = 6875819132224789761L;
    /**
     * File extensions for config files.
@@ -80,6 +84,24 @@ public final class Config implements Serializable {
    private volatile static Config INSTANCE;
    private static ClassLoader defaultClassLoader = Config.class.getClassLoader();
    private static Resource localConfigDirectory = Resources.fromFile(SystemInfo.USER_HOME + "/config/");
+
+   static {
+      if(System.getProperty("java.util.logging.config.file") == null) {
+         try {
+            ROOT.setLevel(Level.ALL);
+            for(Handler handler : ROOT.getHandlers()) {
+               ROOT.removeHandler(handler);
+            }
+            final ConsoleHandler consoleHandler = new ConsoleHandler();
+            consoleHandler.setLevel(Level.INFO);
+            consoleHandler.setFormatter(FORMATTER);
+            ROOT.addHandler(consoleHandler);
+         } catch(Exception e) {
+            throw new RuntimeException(e);
+         }
+      }
+   }
+
    private final Set<String> loaded = new ConcurrentSkipListSet<>();
    private final Map<String, String> properties = new ConcurrentHashMap<>();
    /**
@@ -381,7 +403,7 @@ public final class Config implements Serializable {
 
 
       //Check if we should only explain the config
-      if(NamedOption.CONFIG_EXPLAIN.<Boolean>getValue()) {
+      if(NamedOption.DUMP_CONFIG.<Boolean>getValue()) {
          getInstance().setterFunction = ConfigExplainSettingFunction.INSTANCE;
       } else {
          getInstance().setterFunction = ConfigSettingFunction.INSTANCE;
@@ -419,7 +441,7 @@ public final class Config implements Serializable {
       setAllCommandLine(parser);
 
       // If config-explain was set then output the config recording and then quit
-      if(parser.isSet(NamedOption.CONFIG_EXPLAIN)) {
+      if(parser.isSet(NamedOption.DUMP_CONFIG)) {
          ConfigExplainSettingFunction settings = (ConfigExplainSettingFunction) getInstance().setterFunction;
          for(String key : new TreeSet<>(settings.properties.keySet())) {
             System.err.println(key);
@@ -508,7 +530,7 @@ public final class Config implements Serializable {
                   )
                .filter(Resource::exists)
                .forEach(resource -> {
-                  log.fine("Loading Application Configuration from {0}", resource.path());
+                  logFine(log, "Loading Application Configuration from {0}", resource.path());
                   loadConfig(resource);
                });
       }
@@ -640,11 +662,11 @@ public final class Config implements Serializable {
       getInstance().properties.put(name, value);
       if(name.toLowerCase().endsWith(".level")) {
          String className = name.substring(0, name.length() - ".level".length());
-         LogManager.getLogManager().setLevel(className, Level.parse(value.trim().toUpperCase()));
+         LogUtils.setLevel(className, Level.parse(value.trim().toUpperCase()));
       }
       if(name.equals("com.gengoai.logging.logfile")) {
          try {
-            LogManager.addFileHandler(value);
+            LogUtils.addFileHandler(value);
          } catch(IOException e) {
             throw new RuntimeException(e);
          }
@@ -653,7 +675,7 @@ public final class Config implements Serializable {
          String systemSetting = name.substring(SYSTEM_PROPERTY.length());
          System.setProperty(systemSetting, value);
       }
-      log.finest("Setting property {0} to value of {1}", name, value);
+      logFinest(log, "Setting property {0} to value of {1}", name, value);
    }
 
    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {

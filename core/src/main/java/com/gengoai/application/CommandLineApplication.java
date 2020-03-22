@@ -21,6 +21,10 @@
 
 package com.gengoai.application;
 
+import com.gengoai.LogUtils;
+
+import static com.gengoai.LogUtils.logSevere;
+
 /**
  * <p> Abstract base class for a command line application. Child classes should implement the <code>programLogic</code>
  * method and create a main method calling the {@link #run(String[])} method. An example application is listed
@@ -75,7 +79,7 @@ public abstract class CommandLineApplication extends Application {
       try {
          programLogic();
       } catch(Exception e) {
-         logSevere(e);
+         logSevere(LogUtils.getLogger(getClass()), e);
          System.exit(-1);
       }
    }

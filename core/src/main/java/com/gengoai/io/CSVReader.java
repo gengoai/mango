@@ -86,7 +86,7 @@ public class CSVReader implements Closeable, AutoCloseable, Iterable<List<String
    private void addCell(boolean isQuoted) {
       String cellString = cell.toString();
       if (STATE == IN_FIELD) {
-         cellString = Strings.rightTrim(cellString);
+         cellString = cellString.strip();
       }
       if (keepEmptyCells || !Strings.isNullOrBlank(cellString)) {
          if (cellString.length() > 0 && cellString.charAt(cellString.length() - 1) == escape) {

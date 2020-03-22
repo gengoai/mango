@@ -17,12 +17,13 @@
  * under the License.
  */
 
-package com.gengoai.swing.containers;
+package com.gengoai.swing.components;
 
 import com.gengoai.conversion.Cast;
+import com.gengoai.string.Strings;
 import com.gengoai.swing.ColorUtils;
 import com.gengoai.swing.FontAwesome;
-import com.gengoai.swing.MouseListeners;
+import com.gengoai.swing.listeners.MouseListeners;
 import lombok.NonNull;
 
 import javax.swing.*;
@@ -33,18 +34,19 @@ import java.util.function.Consumer;
 
 import static com.gengoai.function.Functional.with;
 
-public class JClosedTabbedPane extends JTabbedPane {
+public class TabbedPane extends JTabbedPane {
    @NonNull
    private Consumer<Component> onCloseClicked = this::remove;
 
-   public JClosedTabbedPane() {
+   public TabbedPane() {
+      this(JTabbedPane.TOP, WRAP_TAB_LAYOUT);
    }
 
-   public JClosedTabbedPane(int tabPlacement) {
-      super(tabPlacement);
+   public TabbedPane(int tabPlacement) {
+      super(tabPlacement, WRAP_TAB_LAYOUT);
    }
 
-   public JClosedTabbedPane(int tabPlacement, int tabLayoutPolicy) {
+   public TabbedPane(int tabPlacement, int tabLayoutPolicy) {
       super(tabPlacement, tabLayoutPolicy);
    }
 
@@ -52,6 +54,7 @@ public class JClosedTabbedPane extends JTabbedPane {
    public void insertTab(String title, Icon icon, Component component, String tip, int index) {
       super.insertTab(title, icon, component, tip, index);
       setTabComponentAt(index, new CloseButtonTab(component, title, icon));
+      setToolTipTextAt(getTabCount() - 1, title);
    }
 
    public void setCloseButtonVisible(int index, boolean visible) {
@@ -88,11 +91,12 @@ public class JClosedTabbedPane extends JTabbedPane {
          this.tab = tab;
          setOpaque(false);
          setLayout(new FlowLayout(FlowLayout.CENTER, 3, 3));
+         title = Strings.abbreviate(title, 18);
          label = with(new JLabel(title), l -> {
             l.setIcon(icon);
          });
          final Icon cBtnIcon = FontAwesome.WINDOW_CLOSE.create(getFontMetrics(getFont()).getHeight(),
-                                                               ColorUtils.getContrastingFontColor(getBackground()));
+                                                               ColorUtils.calculateBestFontColor(getBackground()));
          final Icon cHover = FontAwesome.WINDOW_CLOSE.create(getFontMetrics(getFont()).getHeight(),
                                                              Color.RED);
          button = with(new JButton(cBtnIcon),

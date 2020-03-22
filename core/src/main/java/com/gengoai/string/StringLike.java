@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * The interface String like.
+ * Defines an objects which acts similar to Java String.
  */
 public interface StringLike extends CharSequence {
 
