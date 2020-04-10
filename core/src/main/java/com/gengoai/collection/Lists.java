@@ -170,6 +170,36 @@ public final class Lists {
    }
 
    /**
+    * <p>Retains all items in collection1 that are not in collection2 and returns them as a list.</p>
+    *
+    * @param <E>         the component type of the collections
+    * @param collection1 the first collection of items
+    * @param collection2 the second collection of items
+    * @return A list of the collection1 - collection2
+    */
+   public static <E> List<E> difference(@NonNull Collection<? extends E> collection1,
+                                        @NonNull Collection<? extends E> collection2) {
+      return Streams.difference(collection1, collection2).collect(Collectors.toList());
+   }
+
+   /**
+    * <p>Ensures that the size of the given list is at least the supplied desired size. If the list size is smaller, it
+    * will add the given default value to the end of the list until <code>list.size() >= desiredSize</code></p>
+    *
+    * @param <T>          the component type of the list
+    * @param list         the list whose size is being checked
+    * @param desiredSize  the desired size of the list
+    * @param defaultValue the default value to add to the list to reach the desired size
+    * @return the list passed in with size greater than or equal to the desired size
+    */
+   public static <T> List<T> ensureSize(@NonNull List<T> list, int desiredSize, T defaultValue) {
+      while(list.size() < desiredSize) {
+         list.add(defaultValue);
+      }
+      return list;
+   }
+
+   /**
     * Creates a linked list of the supplied elements
     *
     * @param <T>      the component type of the set
@@ -179,6 +209,24 @@ public final class Lists {
    @SafeVarargs
    public static <T> LinkedList<T> linkedListOf(@NonNull T... elements) {
       return createCollection(LinkedList::new, elements);
+   }
+
+   /**
+    * Partitions a list into multiple lists of partition size (last list may have a size less than partition size). This
+    * method uses <code>subList</code> which means that each partition is a view into the underlying list.
+    *
+    * @param <T>           the list component type
+    * @param list          the list to partition
+    * @param partitionSize the partition size
+    * @return A list of partitioned lists
+    */
+   public static <T> List<List<T>> partition(@NonNull List<T> list, int partitionSize) {
+      checkArgument(partitionSize > 0, "Partition size must be >= 0");
+      List<List<T>> partitions = new ArrayList<>();
+      for(int i = 0; i < list.size(); i += partitionSize) {
+         partitions.add(list.subList(i, Math.min(list.size(), i + partitionSize)));
+      }
+      return partitions;
    }
 
    /**
@@ -193,7 +241,7 @@ public final class Lists {
       checkArgument(N > 0, "Must have a sample size > 0");
       Random random = new Random();
       List<E> sample = new ArrayList<>();
-      while (sample.size() < N) {
+      while(sample.size() < N) {
          sample.add(list.get(random.nextInt(list.size())));
       }
       return sample;

@@ -22,6 +22,7 @@
 package com.gengoai.string;
 
 import com.gengoai.Validation;
+import com.gengoai.collection.tree.Span;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVReader;
 import com.gengoai.stream.Streams;
@@ -29,11 +30,11 @@ import com.gengoai.tuple.IntPair;
 import lombok.NonNull;
 
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.function.IntFunction;
 import java.util.function.IntPredicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -82,8 +83,11 @@ public final class Strings {
     * @param suffix the suffix
     * @return the string
     */
-   public static String appendIfNotPresent(@NonNull String string, String suffix) {
+   public static String appendIfNotPresent(String string, String suffix) {
       notNullOrBlank(suffix, "The suffix must not be null or blank");
+      if(string == null) {
+         return null;
+      }
       return string.endsWith(suffix)
              ? string
              : (string + suffix);
@@ -203,7 +207,7 @@ public final class Strings {
     * @param end   the end
     * @return the int pair
     */
-   public static IntPair expand(String txt, int start, int end) {
+   public static Span expand(String txt, int start, int end) {
 
       while(start > 0 &&
             !Character.isWhitespace(txt.charAt(start - 1)) &&
@@ -227,7 +231,11 @@ public final class Strings {
          end--;
       }
 
-      return IntPair.of(start, end);
+      return Span.of(start, end);
+   }
+
+   public static Iterator<IntPair> findIterator(@NonNull String input, @NonNull String target) {
+      return new FindIterator(input, target);
    }
 
    /**
@@ -421,6 +429,10 @@ public final class Strings {
                                 "\\x",
                                 c -> !Character.isLetter(c) && !Character.isWhitespace(c),
                                 Integer::toHexString));
+   }
+
+   public static Iterator<IntPair> matchIterator(@NonNull String input, @NonNull Pattern pattern) {
+      return new MatcherIterator(pattern.matcher(input));
    }
 
    /**
@@ -680,6 +692,75 @@ public final class Strings {
          }
       }
       return builder.toString();
+   }
+
+   private static class FindIterator implements Iterator<IntPair> {
+      private final String input;
+      private final String target;
+      private int start = 0;
+
+      private FindIterator(String input, String target) {
+         this.input = input;
+         this.target = target;
+      }
+
+      protected boolean advance() {
+         if(input.length() == 0 || start >= input.length()) {
+            return false;
+         }
+         start = input.indexOf(target);
+         return start >= 0;
+      }
+
+      @Override
+      public boolean hasNext() {
+         return advance();
+      }
+
+      @Override
+      public IntPair next() {
+         if(!advance()) {
+            throw new NoSuchElementException();
+         }
+         var retValue = IntPair.of(start, start + target.length());
+         start += target.length();
+         return retValue;
+      }
+   }
+
+   private static class MatcherIterator implements Iterator<IntPair> {
+      private final Matcher matcher;
+      private IntPair next = null;
+
+      private MatcherIterator(Matcher matcher) {
+         this.matcher = matcher;
+      }
+
+      protected boolean advance() {
+         if(next != null) {
+            return true;
+         }
+         if(matcher.find()) {
+            next = IntPair.of(matcher.start(), matcher.end());
+            return true;
+         }
+         return false;
+      }
+
+      @Override
+      public boolean hasNext() {
+         return advance();
+      }
+
+      @Override
+      public IntPair next() {
+         if(!advance()) {
+            throw new NoSuchElementException();
+         }
+         var retValue = IntPair.of(next.v1, next.v2);
+         next = null;
+         return retValue;
+      }
    }
 
 }// END OF StringUtils

@@ -588,9 +588,9 @@ public enum Language {
     */
    TATAR("TT"),
    /**
-    * Tegulu language.
+    * Telugu language.
     */
-   TEGULU("TE"),
+   TELUGU("TE"),
    /**
     * Thai language.
     */

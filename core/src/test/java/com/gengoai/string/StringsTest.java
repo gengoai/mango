@@ -114,9 +114,14 @@ public class StringsTest {
    public void center() throws Exception {
       assertEquals("  One  ", Strings.center("One", 7));
       assertEquals("One", Strings.center("One", 1));
-      assertEquals("One", Strings.center("One", -1));
-      assertNull(Strings.center(null, -1));
+      assertNull(Strings.center(null, 1));
    }
+
+   @Test(expected = IllegalArgumentException.class)
+   public void centerLengthError() throws Exception {
+      assertEquals("One", Strings.center("One", -1));
+   }
+
 
    @Test
    public void repeat() throws Exception {

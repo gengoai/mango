@@ -24,7 +24,6 @@ public final class Iterators {
       throw new IllegalAccessError();
    }
 
-
    /**
     * As iterator iterator.
     *
@@ -32,17 +31,17 @@ public final class Iterators {
     * @return the iterator
     */
    public static Iterator<?> asIterator(Object object) {
-      if (object instanceof Iterable) {
+      if(object instanceof Iterable) {
          return Cast.<Iterable>as(object).iterator();
-      } else if (object instanceof Iterator) {
+      } else if(object instanceof Iterator) {
          return Cast.as(object);
-      } else if (object.getClass().isArray()) {
+      } else if(object.getClass().isArray()) {
          return Iterables.asIterable(object).iterator();
-      } else if (object instanceof Map) {
+      } else if(object instanceof Map) {
          return Cast.<Map<?, ?>>as(object).entrySet().iterator();
-      } else if (object instanceof Counter) {
+      } else if(object instanceof Counter) {
          return Cast.<Counter<?>>as(object).entries().iterator();
-      } else if (object instanceof MultiCounter) {
+      } else if(object instanceof MultiCounter) {
          return Cast.<MultiCounter<?, ?>>as(object).entries().iterator();
       }
       return Collections.singleton(object).iterator();
@@ -87,56 +86,6 @@ public final class Iterators {
    }
 
    /**
-    * Flattens an iterator of iterators.
-    *
-    * @param <T>      the iterator element type parameter
-    * @param iterator the iterator
-    * @return the flattened iterator
-    */
-   public static <T> Iterator<T> flatten(final Iterator<? extends Iterator<? extends T>> iterator) {
-      return new ConcatIterator<>(iterator);
-   }
-
-   /**
-    * Gets the element of the iterator after iterator <code>index</code> times if it exists
-    *
-    * @param <T>      the iterator element type parameter
-    * @param iterator the iterator
-    * @param n        how many times to iterate
-    * @return Optional of the element of the iterator after iterating n times if it exists
-    */
-   public static <T> Optional<T> get(Iterator<? extends T> iterator, int n) {
-      int i = iterateTo(notNull(iterator), n);
-      if (i == n && iterator.hasNext()) {
-         return Optional.ofNullable(iterator.next());
-      }
-      return Optional.empty();
-   }
-
-   /**
-    * Gets the element of the iterator after iterator <code>index</code> times if it exists and if it does not exist,
-    * returns the default value
-    *
-    * @param <T>          the iterator element type parameter
-    * @param iterator     the iterator
-    * @param n            how many times to iterate
-    * @param defaultValue the default value to return if nothing is at the given index
-    * @return the element of the iterator after iterating n times or default value if cannot iterator n times
-    */
-   public static <T> T get(Iterator<? extends T> iterator, int n, T defaultValue) {
-      return get(iterator, n).orElse(Cast.as(defaultValue));
-   }
-
-   private static int iterateTo(Iterator<?> iterator, int index) {
-      int i = 0;
-      while (i < index && iterator.hasNext()) {
-         i++;
-         iterator.next();
-      }
-      return i;
-   }
-
-   /**
     * Gets the first element of the iterator that would be returned by calling <code>next</code> if it exists  or the
     * default value.
     *
@@ -158,10 +107,60 @@ public final class Iterators {
     */
    public static <T> Optional<T> first(Iterator<? extends T> iterator) {
       notNull(iterator);
-      if (iterator.hasNext()) {
+      if(iterator.hasNext()) {
          return Optional.ofNullable(iterator.next());
       }
       return Optional.empty();
+   }
+
+   /**
+    * Flattens an iterator of iterators.
+    *
+    * @param <T>      the iterator element type parameter
+    * @param iterator the iterator
+    * @return the flattened iterator
+    */
+   public static <T> Iterator<T> flatten(final Iterator<? extends Iterator<? extends T>> iterator) {
+      return new ConcatIterator<>(iterator);
+   }
+
+   /**
+    * Gets the element of the iterator after iterator <code>index</code> times if it exists
+    *
+    * @param <T>      the iterator element type parameter
+    * @param iterator the iterator
+    * @param n        how many times to iterate
+    * @return Optional of the element of the iterator after iterating n times if it exists
+    */
+   public static <T> Optional<T> get(Iterator<? extends T> iterator, int n) {
+      int i = iterateTo(notNull(iterator), n);
+      if(i == n && iterator.hasNext()) {
+         return Optional.ofNullable(iterator.next());
+      }
+      return Optional.empty();
+   }
+
+   /**
+    * Gets the element of the iterator after iterator <code>index</code> times if it exists and if it does not exist,
+    * returns the default value
+    *
+    * @param <T>          the iterator element type parameter
+    * @param iterator     the iterator
+    * @param n            how many times to iterate
+    * @param defaultValue the default value to return if nothing is at the given index
+    * @return the element of the iterator after iterating n times or default value if cannot iterator n times
+    */
+   public static <T> T get(Iterator<? extends T> iterator, int n, T defaultValue) {
+      return get(iterator, n).orElse(Cast.as(defaultValue));
+   }
+
+   private static int iterateTo(Iterator<?> iterator, int index) {
+      int i = 0;
+      while(i < index && iterator.hasNext()) {
+         i++;
+         iterator.next();
+      }
+      return i;
    }
 
    /**
@@ -188,7 +187,7 @@ public final class Iterators {
    public static <T> Optional<T> last(Iterator<? extends T> iterator) {
       notNull(iterator);
       T value = null;
-      while (iterator.hasNext()) {
+      while(iterator.hasNext()) {
          value = iterator.next();
       }
       return Optional.ofNullable(value);
@@ -202,7 +201,7 @@ public final class Iterators {
     * @return the next element in the iterator
     */
    public static <T> Optional<T> next(Iterator<? extends T> iterator) {
-      if (notNull(iterator).hasNext()) {
+      if(notNull(iterator).hasNext()) {
          return Optional.ofNullable(iterator.next());
       }
       return Optional.empty();
@@ -263,6 +262,26 @@ public final class Iterators {
                                        pad);
    }
 
+   public static <T> Iterator<T> singletonIterator(T object) {
+      return new Iterator<T>() {
+         boolean available = true;
+
+         @Override
+         public boolean hasNext() {
+            return available;
+         }
+
+         @Override
+         public T next() {
+            if(!available) {
+               throw new NoSuchElementException();
+            }
+            available = false;
+            return object;
+         }
+      };
+   }
+
    /**
     * Gets the number of items in the iterator
     *
@@ -316,7 +335,6 @@ public final class Iterators {
       return new ZippedIterator<>(notNull(iterator1), notNull(iterator2));
    }
 
-
    /**
     * Creates pairs of entries from the given iterator and its index in the iterator (0 based)
     *
@@ -349,11 +367,11 @@ public final class Iterators {
       public List<E> next() {
          Validation.checkState(backing.hasNext());
          List<E> nextList = new ArrayList<>();
-         while (backing.hasNext() && nextList.size() < partitionSize) {
+         while(backing.hasNext() && nextList.size() < partitionSize) {
             nextList.add(backing.next());
          }
-         if (pad) {
-            while (nextList.size() < partitionSize) {
+         if(pad) {
+            while(nextList.size() < partitionSize) {
                nextList.add(null);
             }
          }
@@ -399,10 +417,10 @@ public final class Iterators {
       }
 
       private boolean advance() {
-         while (next == null && backing.hasNext()) {
+         while(next == null && backing.hasNext()) {
             next = backing.next();
             canRemove = false;
-            if (!filter.test(next)) {
+            if(!filter.test(next)) {
                next = null;
             }
          }
@@ -464,12 +482,12 @@ public final class Iterators {
       }
 
       private boolean advance() {
-         if (current != null && current.hasNext()) {
+         if(current != null && current.hasNext()) {
             return true;
          }
-         while (iterables.hasNext()) {
+         while(iterables.hasNext()) {
             current = iterables.next().iterator();
-            if (current.hasNext()) {
+            if(current.hasNext()) {
                return true;
             }
          }
@@ -502,12 +520,12 @@ public final class Iterators {
       }
 
       private boolean advance() {
-         if (current != null && current.hasNext()) {
+         if(current != null && current.hasNext()) {
             return true;
          }
-         while (iterators.hasNext()) {
+         while(iterators.hasNext()) {
             current = iterators.next();
-            if (current.hasNext()) {
+            if(current.hasNext()) {
                return true;
             }
          }
@@ -556,6 +574,5 @@ public final class Iterators {
          throw new UnsupportedOperationException();
       }
    }
-
 
 }//END OF Iterators

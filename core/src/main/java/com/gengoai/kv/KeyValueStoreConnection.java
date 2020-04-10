@@ -73,7 +73,7 @@ public final class KeyValueStoreConnection implements Specifiable, Serializable 
     * @return the t
     */
    public <K, V, T extends KeyValueStore<K, V>> T connect() {
-      switch(type) {
+      switch(type.toLowerCase()) {
          case "mem":
             if(navigable) {
                return Cast.as(new InMemoryNavigableKeyValueStore<K, V>(namespace, readOnly));

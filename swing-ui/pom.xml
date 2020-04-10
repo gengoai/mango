@@ -27,7 +27,6 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
     <artifactId>mango-swing-ui</artifactId>
-    <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>${project.groupId}:${project.artifactId}</name>
     <dependencies>
@@ -38,7 +37,6 @@
         <dependency>
             <groupId>com.gengoai</groupId>
             <artifactId>mango</artifactId>
-            <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

@@ -80,7 +80,7 @@ public class SpecificationTest {
       assertEquals("a", specification.getAllQueryValues("p").get(0));
       assertEquals("a", specification.getQueryValue("p", "b"));
       assertEquals(1, specification.getAllQueryValues("v").size());
-      assertEquals("c", specification.getQueryValue("v", "d"));
+      assertEquals("c", specification.getQueryValue("v", "d").strip());
    }
 
    @Test
@@ -94,7 +94,7 @@ public class SpecificationTest {
       assertEquals("a", specification.getAllQueryValues("p").get(0));
       assertEquals("a", specification.getQueryValue("p", "b"));
       assertEquals(1, specification.getAllQueryValues("v").size());
-      assertEquals("c", specification.getQueryValue("v", "d"));
+      assertEquals("c", specification.getQueryValue("v", "d").strip());
    }
 
    @Test

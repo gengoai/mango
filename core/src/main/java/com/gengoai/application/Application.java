@@ -21,10 +21,11 @@
 
 package com.gengoai.application;
 
-import com.gengoai.config.Config;
 import com.gengoai.LogUtils;
+import com.gengoai.config.Config;
 import com.gengoai.string.Strings;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -42,10 +43,10 @@ import static com.gengoai.LogUtils.logSevere;
  * {@link Option} annotation.</p>
  *
  * <p>Applications provide access to all arguments on the command line through {@link #getAllArguments()} and to
- * positional (non-parsed) objects through {@link #getPositionalArgs()}. Application flow begins with a call to
- * {@link #run(String[])} which loads the config files and parses the command line and then calls {@link #setup()}
- * to setup the application, and finally {@link #run()} implementing the run logic. Note that additional config packages
- * can be loaded by defining additional packages in {@link #getDependentPackages()}</p>
+ * positional (non-parsed) objects through {@link #getPositionalArgs()}. Application flow begins with a call to {@link
+ * #run(String[])} which loads the config files and parses the command line and then calls {@link #setup()} to setup the
+ * application, and finally {@link #run()} implementing the run logic. Note that additional config packages can be
+ * loaded by defining additional packages in {@link #getDependentPackages()}</p>
  *
  * <p>A <code>Description</code> annotation can be added to a class to provide a short description of what the program
  * does and will be displayed as part of the help screen. </p>
@@ -66,6 +67,11 @@ public abstract class Application implements Runnable, Serializable {
       this.name = Strings.isNullOrBlank(name)
                   ? getClass().getSimpleName()
                   : name;
+      try {
+         LogUtils.addFileHandler(this.name);
+      } catch(IOException e) {
+         throw new RuntimeException(e);
+      }
    }
 
    /**
@@ -103,7 +109,6 @@ public abstract class Application implements Runnable, Serializable {
    public final String[] getPositionalArgs() {
       return positionalArguments;
    }
-
 
    /**
     * <p>Runs the application by first parsing the command line arguments and initializing the config. The process then

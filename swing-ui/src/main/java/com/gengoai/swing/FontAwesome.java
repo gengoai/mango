@@ -19,15 +19,20 @@
 
 package com.gengoai.swing;
 
+import com.gengoai.Validation;
 import com.gengoai.io.Resources;
-import com.gengoai.reflection.Reflect;
-import com.gengoai.reflection.ReflectionException;
 import lombok.NonNull;
 
-import javax.swing.Icon;
-import javax.swing.JComponent;
+import javax.swing.*;
+import javax.swing.text.JTextComponent;
 import java.awt.Color;
 
+import static com.gengoai.swing.FlatLafColors.*;
+
+/**
+ * Enumeration of the FontAwesome 5.0 free Font icons see <a href="https://fontawesome.com/cheatsheet">Font Awesome
+ * Free's Cheatsheet</a>
+ */
 public enum FontAwesome {
    AD('\uf641'),
    ADDRESS_BOOK('\uf2b9'),
@@ -1002,37 +1007,138 @@ public enum FontAwesome {
       this.icon = icon;
    }
 
+   /**
+    * @return The name of the font family.
+    */
    public static String getFontName() {
       return fontIcon.getFontName();
    }
 
-   public String asString() {
-      return Character.toString(icon);
+   public JButton createButton(float size) {
+      JButton button = new JButton();
+      button.setIcon(createIcon(size));
+      button.setRolloverIcon(createFocusedIcon(size));
+      button.setDisabledIcon(createDisabledIcon(size));
+      button.setContentAreaFilled(false);
+      button.setBorder(null);
+      return button;
    }
 
-   public final Icon create(float size, Color foreground) {
+   /**
+    * Creates a disabled Icon from the glyph in the given size and a foreground color set to the color the UIManager
+    * returns for <code>Button.focus</code>.
+    *
+    * @param size the size of the Icon
+    * @return An Icon
+    */
+   public final Icon createDisabledIcon(float size) {
+      Validation.checkArgument(size > 0);
+      return fontIcon.createIcon(Character.toString(icon),
+                                 size,
+                                 Button_disabledText.color());
+   }
+
+   /**
+    * Creates a focused Icon from the glyph in the given size and a foreground color set to the color the UIManager
+    * returns for <code>Button.focus</code>.
+    *
+    * @param size the size of the Icon
+    * @return An Icon
+    */
+   public final Icon createFocusedIcon(float size) {
+      Validation.checkArgument(size > 0);
+      Color fg = Colors.isDark(Button_background.color())
+                 ? Button_foreground.color().brighter()
+                 : Button_focus.color().darker();
+      return fontIcon.createIcon(Character.toString(icon),
+                                 size,
+                                 fg);
+   }
+
+   /**
+    * Creates an Icon from the glyph in the given size and with the given foreground color.
+    *
+    * @param size       the size of the Icon
+    * @param foreground the foreground color
+    * @return An Icon
+    */
+   public final Icon createIcon(float size, Color foreground) {
+      Validation.checkArgument(size > 0);
       return fontIcon.createIcon(Character.toString(icon), size, foreground);
    }
 
-   public final Icon create(float size) {
-      return fontIcon.createIcon(Character.toString(icon), size);
-   }
-
-   public final Icon create(float size, Color foreground, Color background) {
+   /**
+    * Creates an Icon from the glyph in the given size and with the given foreground and background colors.
+    *
+    * @param size       the size of the Icon
+    * @param foreground the foreground color
+    * @param background the background color
+    * @return An Icon
+    */
+   public final Icon createIcon(float size, Color foreground, Color background) {
+      Validation.checkArgument(size > 0);
       return fontIcon.createIcon(Character.toString(icon), size, foreground, background);
    }
 
-   public <T extends JComponent> T setText(@NonNull T component) {
-      Fonts.setFont(component, getFontName());
-      if(Reflect.onObject(component).containsMethod("setText", String.class)) {
-         try {
-            Reflect.onObject(component).getMethod("setText", String.class)
-                   .invoke(asString());
-         } catch(ReflectionException e) {
-            throw new RuntimeException(e);
-         }
-      }
-      return component;
+   /**
+    * Creates an Icon from the glyph in the given size and a foreground color set to the color the UIManager returns
+    * for
+    * <code>Button.foreground</code>.
+    *
+    * @param size the size of the Icon
+    * @return An Icon
+    */
+   public final Icon createIcon(float size) {
+      Validation.checkArgument(size > 0);
+      return fontIcon.createIcon(Character.toString(icon), size, Button_foreground.color());
+   }
+
+   /**
+    * Creates a focused Icon from the glyph in the given size and a foreground color set to the color the UIManager
+    * returns for <code>Button.focus</code>.
+    *
+    * @param size the size of the Icon
+    * @return An Icon
+    */
+   public final Icon createSelectedIcon(float size) {
+      Validation.checkArgument(size > 0);
+      Color fg = Colors.isDark(Button_foreground.color())
+                 ? Button_foreground.color()
+                 : Button_foreground.color().brighter();
+      return fontIcon.createIcon(Character.toString(icon),
+                                 size,
+                                 fg);
+   }
+
+   public JToggleButton createToggleButton(float size) {
+      JToggleButton button = new JToggleButton();
+      button.setIcon(createIcon(size));
+      button.setRolloverIcon(createFocusedIcon(size));
+      button.setDisabledIcon(createDisabledIcon(size));
+      button.setSelectedIcon(createSelectedIcon(size));
+      button.setContentAreaFilled(true);
+      button.setBorder(BorderFactory.createEmptyBorder());
+      return button;
+   }
+
+   public void setText(@NonNull JTextComponent component) {
+      Fonts.setFontFamily(component, getFontName());
+      component.setText(toString());
+   }
+
+   public void setText(@NonNull AbstractButton component) {
+      Fonts.setFontFamily(component, getFontName());
+      component.setText(toString());
+   }
+
+   public void setText(@NonNull JLabel component) {
+      Fonts.setFontFamily(component, getFontName());
+      component.setText(toString());
+   }
+
+   @Override
+   public String toString() {
+      return Character.toString(icon);
    }
 
 }//END OF FontAwesome

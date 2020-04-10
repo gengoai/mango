@@ -21,6 +21,7 @@
 
 package com.gengoai.io.resource;
 
+import com.gengoai.io.FileUtils;
 import com.gengoai.io.resource.spi.FileResourceProvider;
 import com.gengoai.string.Strings;
 
@@ -64,7 +65,7 @@ public class FileResource extends BaseResource {
 
    @Override
    public Resource append(byte[] byteArray) throws IOException {
-      try (FileOutputStream outputStream = new FileOutputStream(file, true)) {
+      try(FileOutputStream outputStream = new FileOutputStream(file, true)) {
          outputStream.write(byteArray);
       }
       return this;
@@ -84,7 +85,7 @@ public class FileResource extends BaseResource {
    public Optional<URL> asURL() {
       try {
          return Optional.of(file.toURI().toURL());
-      } catch (MalformedURLException e) {
+      } catch(MalformedURLException e) {
          return Optional.empty();
       }
    }
@@ -120,13 +121,13 @@ public class FileResource extends BaseResource {
    }
 
    private boolean delete(File file) {
-      if (file.isDirectory()) {
+      if(file.isDirectory()) {
 
-         if (file.list().length == 0) {
+         if(file.list().length == 0) {
             //Empty dir can delete
             file.delete();
          } else {
-            for (File child : file.listFiles()) {
+            for(File child : file.listFiles()) {
                delete(child);
             }
             file.delete();
@@ -141,7 +142,7 @@ public class FileResource extends BaseResource {
 
    @Override
    public Resource deleteOnExit() {
-      if (file.isDirectory()) {
+      if(file.isDirectory()) {
          Runtime.getRuntime().addShutdownHook(new Thread(() -> delete(true)));
       } else {
          file.deleteOnExit();
@@ -156,8 +157,12 @@ public class FileResource extends BaseResource {
 
    @Override
    public boolean equals(Object obj) {
-      if (this == obj) {return true;}
-      if (obj == null || getClass() != obj.getClass()) {return false;}
+      if(this == obj) {
+         return true;
+      }
+      if(obj == null || getClass() != obj.getClass()) {
+         return false;
+      }
       final FileResource other = (FileResource) obj;
       return Objects.equals(this.file, other.file);
    }
@@ -169,7 +174,7 @@ public class FileResource extends BaseResource {
 
    @Override
    public Resource getChild(String relativePath) {
-      if (relativePath == null) {
+      if(relativePath == null) {
          relativePath = Strings.EMPTY;
       }
       return new FileResource(new File(file, relativePath.trim()));
@@ -179,12 +184,12 @@ public class FileResource extends BaseResource {
    public List<Resource> getChildren(Pattern pattern, boolean recursive) {
       List<Resource> rval = new ArrayList<>();
       File[] files = file.listFiles();
-      if (files != null) {
-         for (File f : files) {
-            if (pattern.matcher(f.getName()).find()) {
+      if(files != null) {
+         for(File f : files) {
+            if(pattern.matcher(f.getName()).find()) {
                FileResource r = new FileResource(f);
                rval.add(r);
-               if (recursive) {
+               if(recursive) {
                   rval.addAll(r.getChildren(pattern, true));
                }
             }
@@ -196,7 +201,7 @@ public class FileResource extends BaseResource {
    @Override
    public Resource getParent() {
       File p = file.getAbsoluteFile().getParentFile();
-      if (p == null) {
+      if(p == null) {
          return EmptyResource.INSTANCE;
       }
       return new FileResource(p);
@@ -209,10 +214,11 @@ public class FileResource extends BaseResource {
 
    @Override
    public boolean isDirectory() {
-      return file.isDirectory();
+      if(file.exists()) {
+         return file.isDirectory();
+      }
+      return file.getName().endsWith("/") || Strings.isNullOrBlank(FileUtils.extension(file.getName()));
    }
-
-
 
    @Override
    public boolean mkdir() {

@@ -32,14 +32,50 @@ import java.util.logging.*;
  */
 public final class LogUtils {
    /**
-    * The root logger
-    */
-   public static final Logger ROOT = Logger.getLogger("");
-   /**
     * Instance of the MangoLogFormatter to share amongst Handlers.
     */
    public static final Formatter FORMATTER = new MangoLogFormatter();
+   /**
+    * The root logger
+    */
+   public static final Logger ROOT = Logger.getLogger("");
 
+   /**
+    * Adds a file handler that writes to the location specified in <code>com.gengoai.logging.dir</code> or if not set
+    * <code>USER_HOME/logs/</code>. The filenames are in the form of <code>basename%g</code> where %g is the rotated
+    * file number. Max file size is 100MB and 50 files will be used.
+    *
+    * @param basename the basename
+    * @throws IOException the io exception
+    */
+   public synchronized static void addFileHandler(String basename) throws IOException {
+      String dir = Strings.appendIfNotPresent(Config.get("com.gengoai.logging.dir")
+                                                    .asString(SystemInfo.USER_HOME + "/logs/"), "/");
+      Resources.from(dir).mkdirs();
+      FileHandler fh = new FileHandler(dir + basename + ".log", false);
+      fh.setLevel(Config.get("com.gengoai.logging.fileLevel")
+                        .as(Level.class, Level.FINE));
+      fh.setFormatter(FORMATTER);
+      addHandler(fh);
+   }
+
+   /**
+    * Adds a handler to the root.
+    *
+    * @param handler the handler to add
+    */
+   public synchronized static void addHandler(Handler handler) {
+      ROOT.addHandler(handler);
+   }
+
+   /**
+    * Gets the global Logger
+    *
+    * @return The global logger
+    */
+   public static Logger getGlobalLogger() {
+      return Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+   }
 
    /**
     * Gets a logger for the given class..
@@ -76,7 +112,7 @@ public final class LogUtils {
    public static void log(@NonNull Logger logger,
                           @NonNull Level level,
                           @NonNull Throwable throwable) {
-      logger.log(level, "", throwable);
+      logger.log(level, throwable.getMessage(), throwable);
    }
 
    /**
@@ -94,29 +130,6 @@ public final class LogUtils {
       logger.log(level, message, throwable);
    }
 
-
-   /**
-    * Logs a message at {@link Level#INFO}.
-    *
-    * @param logger  the logger
-    * @param message The message accompanying the log
-    * @param params  The arguments for the message.
-    */
-   public static void logInfo(@NonNull Logger logger, String message, Object... params) {
-      logger.log(Level.INFO, message, params);
-   }
-
-   /**
-    * Logs a message at {@link Level#SEVERE}.
-    *
-    * @param logger  the logger
-    * @param message The message accompanying the log
-    * @param params  The arguments for the message.
-    */
-   public static void logSevere(@NonNull Logger logger, String message, Object... params) {
-      logger.log(Level.SEVERE, message, params);
-   }
-
    /**
     * Logs a message at {@link Level#CONFIG}.
     *
@@ -126,74 +139,6 @@ public final class LogUtils {
     */
    public static void logConfig(@NonNull Logger logger, String message, Object... params) {
       logger.log(Level.CONFIG, message, params);
-   }
-
-   /**
-    * Logs a message at {@link Level#WARNING}.
-    *
-    * @param logger  the logger
-    * @param message The message accompanying the log
-    * @param params  The arguments for the message.
-    */
-   public static void logWarning(@NonNull Logger logger, String message, Object... params) {
-      logger.log(Level.WARNING, message, params);
-   }
-
-   /**
-    * Logs a message at {@link Level#FINE}.
-    *
-    * @param logger  the logger
-    * @param message The message accompanying the log
-    * @param params  The arguments for the message.
-    */
-   public static void logFine(@NonNull Logger logger, String message, Object... params) {
-      logger.log(Level.FINE, message, params);
-   }
-
-   /**
-    * Logs a message at {@link Level#FINER}.
-    *
-    * @param logger  the logger
-    * @param message The message accompanying the log
-    * @param params  The arguments for the message.
-    */
-   public static void logFiner(@NonNull Logger logger, String message, Object... params) {
-      logger.log(Level.FINER, message, params);
-   }
-
-   /**
-    * Logs a message at {@link Level#FINEST}.
-    *
-    * @param logger  the logger
-    * @param message The message accompanying the log
-    * @param params  The arguments for the message.
-    */
-   public static void logFinest(@NonNull Logger logger, String message, Object... params) {
-      logger.log(Level.FINEST, message, params);
-   }
-
-   /**
-    * Logs the given throwable at {@link Level#INFO}.
-    *
-    * @param logger    the logger
-    * @param message   The message accompanying the log
-    * @param throwable The throwable to log.
-    */
-   public static void logInfo(@NonNull Logger logger, String message, @NonNull Throwable throwable) {
-      logger.log(Level.INFO, message, throwable);
-   }
-
-   /**
-    * Logs the given throwable at {@link Level#SEVERE}.
-    *
-    * @param logger    the logger
-    * @param message   The message accompanying the log
-    * @param throwable The throwable to log.
-    */
-   public static void logSevere(@NonNull Logger logger,
-                                String message,
-                                @NonNull Throwable throwable) {
-      logger.log(Level.SEVERE, message, throwable);
    }
 
    /**
@@ -210,16 +155,25 @@ public final class LogUtils {
    }
 
    /**
-    * Logs the given throwable at {@link Level#WARNING}.
+    * Logs the given throwable at {@link Level#CONFIG}.
     *
     * @param logger    the logger
-    * @param message   The message accompanying the log
     * @param throwable The throwable to log.
     */
-   public static void logWarning(@NonNull Logger logger,
-                                 String message,
-                                 @NonNull Throwable throwable) {
-      logger.log(Level.WARNING, message, throwable);
+   public static void logConfig(@NonNull Logger logger,
+                                @NonNull Throwable throwable) {
+      logger.log(Level.CONFIG, throwable.getMessage(), throwable);
+   }
+
+   /**
+    * Logs a message at {@link Level#FINE}.
+    *
+    * @param logger  the logger
+    * @param message The message accompanying the log
+    * @param params  The arguments for the message.
+    */
+   public static void logFine(@NonNull Logger logger, String message, Object... params) {
+      logger.log(Level.FINE, message, params);
    }
 
    /**
@@ -234,6 +188,27 @@ public final class LogUtils {
    }
 
    /**
+    * Logs the given throwable at {@link Level#FINE}.
+    *
+    * @param logger    the logger
+    * @param throwable The throwable to log.
+    */
+   public static void logFine(@NonNull Logger logger, @NonNull Throwable throwable) {
+      logger.log(Level.FINE, throwable.getMessage(), throwable);
+   }
+
+   /**
+    * Logs a message at {@link Level#FINER}.
+    *
+    * @param logger  the logger
+    * @param message The message accompanying the log
+    * @param params  The arguments for the message.
+    */
+   public static void logFiner(@NonNull Logger logger, String message, Object... params) {
+      logger.log(Level.FINER, message, params);
+   }
+
+   /**
     * Logs the given throwable at {@link Level#FINER}.
     *
     * @param logger    the logger
@@ -242,6 +217,27 @@ public final class LogUtils {
     */
    public static void logFiner(@NonNull Logger logger, String message, @NonNull Throwable throwable) {
       logger.log(Level.FINER, message, throwable);
+   }
+
+   /**
+    * Logs the given throwable at {@link Level#FINER}.
+    *
+    * @param logger    the logger
+    * @param throwable The throwable to log.
+    */
+   public static void logFiner(@NonNull Logger logger, @NonNull Throwable throwable) {
+      logger.log(Level.FINER, throwable.getMessage(), throwable);
+   }
+
+   /**
+    * Logs a message at {@link Level#FINEST}.
+    *
+    * @param logger  the logger
+    * @param message The message accompanying the log
+    * @param params  The arguments for the message.
+    */
+   public static void logFinest(@NonNull Logger logger, String message, Object... params) {
+      logger.log(Level.FINEST, message, params);
    }
 
    /**
@@ -255,6 +251,37 @@ public final class LogUtils {
       logger.log(Level.FINEST, message, throwable);
    }
 
+   /**
+    * Logs the given throwable at {@link Level#FINEST}.
+    *
+    * @param logger    the logger
+    * @param throwable The throwable to log.
+    */
+   public static void logFinest(@NonNull Logger logger, @NonNull Throwable throwable) {
+      logger.log(Level.FINEST, throwable.getMessage(), throwable);
+   }
+
+   /**
+    * Logs a message at {@link Level#INFO}.
+    *
+    * @param logger  the logger
+    * @param message The message accompanying the log
+    * @param params  The arguments for the message.
+    */
+   public static void logInfo(@NonNull Logger logger, String message, Object... params) {
+      logger.log(Level.INFO, message, params);
+   }
+
+   /**
+    * Logs the given throwable at {@link Level#INFO}.
+    *
+    * @param logger    the logger
+    * @param message   The message accompanying the log
+    * @param throwable The throwable to log.
+    */
+   public static void logInfo(@NonNull Logger logger, String message, @NonNull Throwable throwable) {
+      logger.log(Level.INFO, message, throwable);
+   }
 
    /**
     * Logs the given throwable at {@link Level#INFO}.
@@ -263,7 +290,31 @@ public final class LogUtils {
     * @param throwable The throwable to log.
     */
    public static void logInfo(@NonNull Logger logger, @NonNull Throwable throwable) {
-      logger.log(Level.INFO, "", throwable);
+      logger.log(Level.INFO, throwable.getMessage(), throwable);
+   }
+
+   /**
+    * Logs a message at {@link Level#SEVERE}.
+    *
+    * @param logger  the logger
+    * @param message The message accompanying the log
+    * @param params  The arguments for the message.
+    */
+   public static void logSevere(@NonNull Logger logger, String message, Object... params) {
+      logger.log(Level.SEVERE, message, params);
+   }
+
+   /**
+    * Logs the given throwable at {@link Level#SEVERE}.
+    *
+    * @param logger    the logger
+    * @param message   The message accompanying the log
+    * @param throwable The throwable to log.
+    */
+   public static void logSevere(@NonNull Logger logger,
+                                String message,
+                                @NonNull Throwable throwable) {
+      logger.log(Level.SEVERE, message, throwable);
    }
 
    /**
@@ -274,18 +325,31 @@ public final class LogUtils {
     */
    public static void logSevere(@NonNull Logger logger,
                                 @NonNull Throwable throwable) {
-      logger.log(Level.SEVERE, "", throwable);
+      logger.log(Level.SEVERE, throwable.getMessage(), throwable);
    }
 
    /**
-    * Logs the given throwable at {@link Level#CONFIG}.
+    * Logs a message at {@link Level#WARNING}.
+    *
+    * @param logger  the logger
+    * @param message The message accompanying the log
+    * @param params  The arguments for the message.
+    */
+   public static void logWarning(@NonNull Logger logger, String message, Object... params) {
+      logger.log(Level.WARNING, message, params);
+   }
+
+   /**
+    * Logs the given throwable at {@link Level#WARNING}.
     *
     * @param logger    the logger
+    * @param message   The message accompanying the log
     * @param throwable The throwable to log.
     */
-   public static void logConfig(@NonNull Logger logger,
-                                @NonNull Throwable throwable) {
-      logger.log(Level.CONFIG, "", throwable);
+   public static void logWarning(@NonNull Logger logger,
+                                 String message,
+                                 @NonNull Throwable throwable) {
+      logger.log(Level.WARNING, message, throwable);
    }
 
    /**
@@ -296,73 +360,7 @@ public final class LogUtils {
     */
    public static void logWarning(@NonNull Logger logger,
                                  @NonNull Throwable throwable) {
-      logger.log(Level.WARNING, "", throwable);
-   }
-
-   /**
-    * Logs the given throwable at {@link Level#FINE}.
-    *
-    * @param logger    the logger
-    * @param throwable The throwable to log.
-    */
-   public static void logFine(@NonNull Logger logger, @NonNull Throwable throwable) {
-      logger.log(Level.FINE, "", throwable);
-   }
-
-   /**
-    * Logs the given throwable at {@link Level#FINER}.
-    *
-    * @param logger    the logger
-    * @param throwable The throwable to log.
-    */
-   public static void logFiner(@NonNull Logger logger, @NonNull Throwable throwable) {
-      logger.log(Level.FINER, "", throwable);
-   }
-
-   /**
-    * Logs the given throwable at {@link Level#FINEST}.
-    *
-    * @param logger    the logger
-    * @param throwable The throwable to log.
-    */
-   public static void logFinest(@NonNull Logger logger, @NonNull Throwable throwable) {
-      logger.log(Level.FINEST, "", throwable);
-   }
-
-   /**
-    * Adds a file handler that writes to the location specified in <code>com.gengoai.logging.dir</code> or if not
-    * set <code>USER_HOME/logs/</code>. The filenames are in the form of <code>basename%g</code> where %g is the rotated
-    * file number. Max file size is 100MB and 50 files will be used.
-    *
-    * @param basename the basename
-    * @throws IOException the io exception
-    */
-   public synchronized static void addFileHandler(String basename) throws IOException {
-      String dir = Strings.appendIfNotPresent(Config.get("com.gengoai.logging.dir")
-                                                    .asString(SystemInfo.USER_HOME + "/logs/"), "/");
-      Resources.from(dir).mkdirs();
-      FileHandler fh = new FileHandler(dir + basename + ".log", false);
-      fh.setLevel(Level.FINEST);
-      fh.setFormatter(FORMATTER);
-      addHandler(fh);
-   }
-
-   /**
-    * Adds a handler to the root.
-    *
-    * @param handler the handler to add
-    */
-   public synchronized static void addHandler(Handler handler) {
-      ROOT.addHandler(handler);
-   }
-
-   /**
-    * Gets the global Logger
-    *
-    * @return The global logger
-    */
-   public static Logger getGlobalLogger() {
-      return Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+      logger.log(Level.WARNING, throwable.getMessage(), throwable);
    }
 
    /**
@@ -383,4 +381,5 @@ public final class LogUtils {
                    }
                 });
    }
+
 }//END OF LogUtils

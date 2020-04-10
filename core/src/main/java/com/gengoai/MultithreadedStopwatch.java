@@ -1,5 +1,6 @@
 package com.gengoai;
 
+import com.gengoai.config.Config;
 import com.gengoai.string.Strings;
 import com.gengoai.tuple.Tuple2;
 import lombok.NonNull;
@@ -47,30 +48,37 @@ public class MultithreadedStopwatch implements Serializable {
    private AtomicLong calls = new AtomicLong();
 
    public MultithreadedStopwatch(String name) {
-      this(name, Level.OFF);
+      this(name, determineLevel(name));
    }
 
    public MultithreadedStopwatch(String name, @NonNull Level level) {
       this.name = name;
       final Logger logger = Strings.isNotNullOrBlank(name)
-                            ? Logger.getLogger(name, null)
+                            ? Logger.getLogger(name)
                             : Logger.getGlobal();
-      final Level effectiveLevel = logger.getLevel() == null
-                                   ? level
-                                   : logger.getLevel();
-      if(effectiveLevel != Level.OFF) {
+      if(level != Level.OFF) {
          final Timer timer = new Timer("StopwatchTimer", true);
          timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                if(calls.get() > 0 || runningStarts.size() > 0) {
-                  logger.log(effectiveLevel, MultithreadedStopwatch.this.toString());
+                  logger.log(level, MultithreadedStopwatch.this.toString());
                }
             }
          }, 30000, 30000);
       }
    }
 
+   private static Level determineLevel(String name) {
+      String[] parts = name.split("\\.");
+      for(int length = parts.length; length > 0; length--) {
+         String key = "Stopwatch." + String.join(".", Arrays.copyOfRange(parts, 0, length)) + ".level";
+         if(Config.hasProperty(key)) {
+            return Config.get(key).as(Level.class);
+         }
+      }
+      return Config.get("Stopwatch.level").as(Level.class, Level.OFF);
+   }
 
    /**
     * Gets the elapsed time in given time units

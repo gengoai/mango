@@ -28,7 +28,6 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
     <artifactId>mango</artifactId>
-    <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>${project.groupId}:${project.artifactId}</name>
 
@@ -77,16 +76,6 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.github.jiconfont</groupId>
-            <artifactId>jiconfont-font_awesome</artifactId>
-            <version>4.7.0.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.formdev</groupId>
-            <artifactId>flatlaf</artifactId>
-            <version>0.26</version>
         </dependency>
     </dependencies>
 

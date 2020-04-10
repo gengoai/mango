@@ -34,8 +34,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import static com.gengoai.LogUtils.logFinest;
 import static com.gengoai.function.CheckedConsumer.asFunction;
-import static com.gengoai.LogUtils.logFine;
 
 /**
  * @author David B. Bracewell
@@ -115,7 +115,7 @@ class MsonEvaluator extends Evaluator<Expression> {
    }
 
    private void handleImport(String importString) throws ParseException {
-      logFine(log, "Handing Import of {0}", importString);
+      logFinest(log, "Handing Import of {0}", importString);
       if(!importString.endsWith(Config.CONF_EXTENSION) && importString.contains("/")) {
          //We don't have a MSON extension at the end and the import string is a path
          throw new ParseException(String.format("Invalid Import Statement (%s)", importString));
@@ -123,22 +123,22 @@ class MsonEvaluator extends Evaluator<Expression> {
       String path = Config.resolveVariables(importString).trim();
       if(path.contains("/")) {
          if(path.startsWith("file:")) {
-            logFine(log, "Loading config from: {0}", path);
+            logFinest(log, "Loading config from: {0}", path);
             Config.loadConfig(Resources.from(path));
          } else {
-            logFine(log, "Loading config from resource: {0}", path);
+            logFinest(log, "Loading config from resource: {0}", path);
             Config.loadConfig(new ClasspathResource(path));
          }
       } else {
-         logFine(log, "Loading package config: {0}", path);
+         logFinest(log, "Loading package config: {0}", path);
          Config.loadPackageConfig(path);
       }
    }
 
    private void handleProperty(BinaryInfixOperatorExpression exp) throws ParseException {
-      logFine(log, "Handling property: {0}" + exp);
+      logFinest(log, "Handling property: {0}", exp);
       String key = effectiveKey(convertExpression(exp.getLeft()).getAsString());
-      logFine(log, "Effective key: {0}", key);
+      logFinest(log, "Effective key: {0}", key);
       JsonEntry value = convertExpression(exp.getRight());
       String stringValue = value.isPrimitive()
                            ? value.get().toString()

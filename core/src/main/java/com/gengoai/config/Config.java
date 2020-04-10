@@ -88,12 +88,12 @@ public final class Config implements Serializable {
    static {
       if(System.getProperty("java.util.logging.config.file") == null) {
          try {
-            ROOT.setLevel(Level.ALL);
+            ROOT.setLevel(Level.INFO);
             for(Handler handler : ROOT.getHandlers()) {
                ROOT.removeHandler(handler);
             }
             final ConsoleHandler consoleHandler = new ConsoleHandler();
-            consoleHandler.setLevel(Level.INFO);
+            consoleHandler.setLevel(Level.ALL);
             consoleHandler.setFormatter(FORMATTER);
             ROOT.addHandler(consoleHandler);
          } catch(Exception e) {
@@ -294,15 +294,6 @@ public final class Config implements Serializable {
    }
 
    /**
-    * Sets the default <code>ClassLoader</code> to use with Classpath resources
-    *
-    * @param newDefaultClassLoader The new ClassLoader
-    */
-   public static void setDefaultClassLoader(ClassLoader newDefaultClassLoader) {
-      defaultClassLoader = newDefaultClassLoader;
-   }
-
-   /**
     * Gets the singleton instance of the config. This should not normally be used by api consumers
     *
     * @return the singleton instance of the config.
@@ -314,20 +305,6 @@ public final class Config implements Serializable {
                INSTANCE = new Config();
             }
          }
-      }
-      return INSTANCE;
-   }
-
-   /**
-    * Sets the singleton instance of the config. This is mainly useful in distributed environments where we are passing
-    * configurations around.
-    *
-    * @param config the config that will become the single instance
-    * @return the singleton instance of the config
-    */
-   public static Config setInstance(Config config) {
-      synchronized(Config.class) {
-         INSTANCE = config;
       }
       return INSTANCE;
    }
@@ -401,7 +378,6 @@ public final class Config implements Serializable {
          rval = new String[0];
       }
 
-
       //Check if we should only explain the config
       if(NamedOption.DUMP_CONFIG.<Boolean>getValue()) {
          getInstance().setterFunction = ConfigExplainSettingFunction.INSTANCE;
@@ -437,7 +413,6 @@ public final class Config implements Serializable {
          loadConfig(NamedOption.CONFIG.getValue());
       }
 
-
       setAllCommandLine(parser);
 
       // If config-explain was set then output the config recording and then quit
@@ -457,7 +432,6 @@ public final class Config implements Serializable {
          }
          System.exit(0);
       }
-
 
       return rval;
    }
@@ -639,6 +613,29 @@ public final class Config implements Serializable {
                                                                           entry.getValue(),
                                                                           "CommandLine"));
       }
+   }
+
+   /**
+    * Sets the default <code>ClassLoader</code> to use with Classpath resources
+    *
+    * @param newDefaultClassLoader The new ClassLoader
+    */
+   public static void setDefaultClassLoader(ClassLoader newDefaultClassLoader) {
+      defaultClassLoader = newDefaultClassLoader;
+   }
+
+   /**
+    * Sets the singleton instance of the config. This is mainly useful in distributed environments where we are passing
+    * configurations around.
+    *
+    * @param config the config that will become the single instance
+    * @return the singleton instance of the config
+    */
+   public static Config setInstance(Config config) {
+      synchronized(Config.class) {
+         INSTANCE = config;
+      }
+      return INSTANCE;
    }
 
    public static void setProperty(@NonNull String name, Object value) {

@@ -61,7 +61,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
 
    @Override
    public boolean containsKey(Object key) {
-      if (key == null) {
+      if(key == null) {
          return false;
       }
       TrieNode<V> match = root.find(key.toString());
@@ -79,7 +79,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
 
          @Override
          public boolean contains(Object o) {
-            if (o instanceof Entry) {
+            if(o instanceof Entry) {
                Entry entry = Cast.as(o);
                return Trie.this.containsKey(entry.getKey()) && Trie.this.get(entry.getKey()).equals(entry.getValue());
             }
@@ -108,10 +108,10 @@ public class Trie<V> implements Serializable, Map<String, V> {
     * @return the list of matched elements
     */
    public List<TrieMatch<V>> find(String text, CharMatcher delimiter) {
-      if (Strings.isNullOrBlank(text)) {
+      if(Strings.isNullOrBlank(text)) {
          return Collections.emptyList();
       }
-      if (delimiter == null) {
+      if(delimiter == null) {
          delimiter = CharMatcher.Any;
       }
 
@@ -121,35 +121,34 @@ public class Trie<V> implements Serializable, Map<String, V> {
       int lastMatch = -1;
       List<TrieMatch<V>> results = new ArrayList<>();
 
-      for (int i = 0; i < len; i++) {
+      for(int i = 0; i < len; i++) {
 
          key.append(text.charAt(i));
 
          //We have a key match
-         if (containsKey(key.toString())) {
+         if(containsKey(key.toString())) {
             int nextI = lastMatch = i + 1;
 
             //There is something longer!
-            if (nextI < len && prefix(key.toString() + text.charAt(i + 1)).size() > 0) {
+            if(nextI < len && prefix(key.toString() + text.charAt(i + 1)).size() > 0) {
                continue;
             }
 
-
             lastMatch = -1;
             //check if we accept
-            if (nextI >= len || delimiter.test(text.charAt(nextI))) {
+            if(nextI >= len || delimiter.test(text.charAt(nextI))) {
                V value = get(key.toString());
                results.add(new TrieMatch<>(start, nextI, value));
                start = nextI;
             }
 
-         } else if (prefix(key.toString()).isEmpty()) {
+         } else if(prefix(key.toString()).isEmpty()) {
 
             //We cannot possibly match anything
-            if (lastMatch != -1) {
+            if(lastMatch != -1) {
                //We have a good match, so lets use it
                int nextI = lastMatch;
-               if (nextI >= 1 && delimiter.test(text.charAt(nextI))) {
+               if(nextI >= 1 && delimiter.test(text.charAt(nextI))) {
                   key = new StringBuilder(text.substring(start, nextI));
                   V value = get(key.toString());
                   results.add(new TrieMatch<>(start, nextI, value));
@@ -163,7 +162,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
                start = i;
             }
 
-            if (start < len) {
+            if(start < len) {
                key.setLength(1);
                key.setCharAt(0, text.charAt(start));
             } else {
@@ -179,11 +178,11 @@ public class Trie<V> implements Serializable, Map<String, V> {
 
    @Override
    public V get(Object key) {
-      if (key == null) {
+      if(key == null) {
          return null;
       }
       TrieNode<V> match = root.find(key.toString());
-      if (match != null) {
+      if(match != null) {
          return match.value;
       }
       return null;
@@ -203,7 +202,6 @@ public class Trie<V> implements Serializable, Map<String, V> {
             return Trie.this.containsKey(o);
          }
 
-
          @Override
          public Iterator<String> iterator() {
             return new KeyIterator<>(root);
@@ -213,7 +211,6 @@ public class Trie<V> implements Serializable, Map<String, V> {
          public int size() {
             return root.size;
          }
-
 
       };
    }
@@ -226,7 +223,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
     */
    public Map<String, V> prefix(String prefix) {
       final TrieNode<V> match = root.find(prefix);
-      if (match == null) {
+      if(match == null) {
          return Collections.emptyMap();
       }
       return new AbstractMap<String, V>() {
@@ -249,7 +246,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
 
    public Iterator<String> prefixKeyIterator(String prefix) {
       final TrieNode<V> match = root.find(prefix);
-      if (match == null) {
+      if(match == null) {
          return Collections.emptyIterator();
       }
       return Iterators.transform(Iterators.unmodifiableIterator(new EntryIterator<>(match)), Entry::getKey);
@@ -267,16 +264,16 @@ public class Trie<V> implements Serializable, Map<String, V> {
 
    @Override
    public V remove(Object key) {
-      if (key == null) {
+      if(key == null) {
          return null;
       }
       TrieNode<V> node = root.find(key.toString());
       V value = null;
-      if (node != null) {
+      if(node != null) {
          node.matches = null;
          value = node.value;
          node.value = null;
-         if (value != null) {
+         if(value != null) {
             node.size--;
          }
          node.prune();
@@ -296,24 +293,24 @@ public class Trie<V> implements Serializable, Map<String, V> {
       current[0] = previous[0] + 1;
       int rowMin = current[0];
 
-      for (int i = 1; i < columns; i++) {
+      for(int i = 1; i < columns; i++) {
          int insertCost = current[i - 1] + 1;
          int deleteCost = previous[i] + 1;
          int replaceCost = previous[i - 1];
-         if (word.charAt(i - 1) != letter) {
+         if(word.charAt(i - 1) != letter) {
             replaceCost += substitutionCost;
          }
          current[i] = Math.min(insertCost, Math.min(deleteCost, replaceCost));
          rowMin = Math.min(rowMin, current[i]);
       }
 
-      if (current[columns - 1] <= maxCost && node.matches != null) {
+      if(current[columns - 1] <= maxCost && node.matches != null) {
          results.put(node.matches, current[columns - 1]);
       }
 
-      if (rowMin <= maxCost) {
-         for (TrieNode<V> child : node.children) {
-            if (child != null) {
+      if(rowMin <= maxCost) {
+         for(TrieNode<V> child : node.children) {
+            if(child != null) {
                search(child, child.nodeChar, word, current, results, maxCost, substitutionCost);
             }
          }
@@ -356,18 +353,18 @@ public class Trie<V> implements Serializable, Map<String, V> {
     * @return the map
     */
    public Map<String, Integer> suggest(String string, int maxCost, int substitutionCost) {
-      if (Strings.isNullOrBlank(string)) {
+      if(Strings.isNullOrBlank(string)) {
          return Collections.emptyMap();
-      } else if (containsKey(string)) {
+      } else if(containsKey(string)) {
          return Maps.hashMapOf($(string, 0));
       }
       Map<String, Integer> results = new HashMap<>();
       int[] current = new int[string.length() + 1];
-      for (int i = 0; i < current.length; i++) {
+      for(int i = 0; i < current.length; i++) {
          current[i] = i;
       }
-      for (TrieNode<V> child : root.children) {
-         if (child != null) {
+      for(TrieNode<V> child : root.children) {
+         if(child != null) {
             search(child, child.nodeChar, string, current, results, maxCost, substitutionCost);
          }
       }
@@ -387,7 +384,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
    public Trie<V> trimToSize() {
       Queue<TrieNode<V>> queue = new LinkedList<>();
       queue.add(root);
-      while (!queue.isEmpty()) {
+      while(!queue.isEmpty()) {
          TrieNode<V> node = queue.remove();
          node.children.trimToSize();
          queue.addAll(node.children);
@@ -423,7 +420,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
 
             @Override
             public boolean equals(Object obj) {
-               if (obj == null || !(obj instanceof Entry)) {
+               if(obj == null || !(obj instanceof Entry)) {
                   return false;
                }
                Entry e = Cast.as(obj);
@@ -454,7 +451,6 @@ public class Trie<V> implements Serializable, Map<String, V> {
          };
       }
 
-
    }
 
    private static class KeyIterator<V> extends TrieIterator<V, String> {
@@ -476,7 +472,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
       private TrieNode<V> old = null;
 
       private TrieIterator(TrieNode<V> node) {
-         if (node.matches != null) {
+         if(node.matches != null) {
             queue.add(node);
          } else {
             queue.addAll(node.children);
@@ -497,8 +493,8 @@ public class Trie<V> implements Serializable, Map<String, V> {
       }
 
       private TrieNode<V> move() {
-         while (current == null || current.matches == null) {
-            if (queue.isEmpty()) {
+         while(current == null || current.matches == null) {
+            if(queue.isEmpty()) {
                return null;
             }
             current = queue.remove();
@@ -510,7 +506,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
       @Override
       public E next() {
          old = move();
-         if (old == null) {
+         if(old == null) {
             throw new NoSuchElementException();
          }
          current = null;
@@ -551,7 +547,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
       private TrieNode(Character nodeChar, TrieNode<V> parent) {
          this.nodeChar = nodeChar;
          this.parent = parent;
-         if (parent == null) {
+         if(parent == null) {
             this.depth = 0;
          } else {
             this.depth = parent.depth + 1;
@@ -575,16 +571,16 @@ public class Trie<V> implements Serializable, Map<String, V> {
 
       @Override
       public boolean equals(Object o) {
-         if (this == o) return true;
-         if (!(o instanceof TrieNode)) return false;
+         if(this == o) return true;
+         if(!(o instanceof TrieNode)) return false;
          TrieNode<?> trieNode = (TrieNode<?>) o;
          return depth == trieNode.depth &&
-            size == trieNode.size &&
-            Objects.equals(nodeChar, trieNode.nodeChar) &&
-            Objects.equals(parent, trieNode.parent) &&
-            Objects.equals(value, trieNode.value) &&
-            Objects.equals(matches, trieNode.matches) &&
-            Objects.equals(children, trieNode.children);
+               size == trieNode.size &&
+               Objects.equals(nodeChar, trieNode.nodeChar) &&
+               Objects.equals(parent, trieNode.parent) &&
+               Objects.equals(value, trieNode.value) &&
+               Objects.equals(matches, trieNode.matches) &&
+               Objects.equals(children, trieNode.children);
       }
 
       /**
@@ -597,11 +593,11 @@ public class Trie<V> implements Serializable, Map<String, V> {
        */
       V extend(char[] word, int start, V value) {
          TrieNode<V> node = this;
-         if (start == word.length) {
+         if(start == word.length) {
             V old = node.value;
             node.value = value;
             node.matches = new String(word);
-            if (old == null) {
+            if(old == null) {
                node.size++;
             }
             return old;
@@ -609,8 +605,8 @@ public class Trie<V> implements Serializable, Map<String, V> {
 
          TrieNode<V> cNode = new TrieNode<>(word[start], this);
          int index = Collections.binarySearch(children, cNode);
-         if (index < 0) {
-            if (children.isEmpty()) {
+         if(index < 0) {
+            if(children.isEmpty()) {
                children.add(cNode);
                index = 0;
             } else {
@@ -620,7 +616,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
          }
          cNode = children.get(index);
          V toReturn = cNode.extend(word, start + 1, value);
-         if (toReturn == null) {
+         if(toReturn == null) {
             size++;
          }
          return toReturn;
@@ -633,16 +629,16 @@ public class Trie<V> implements Serializable, Map<String, V> {
        * @return the trie node
        */
       TrieNode<V> find(String string) {
-         if (string == null || string.length() == 0) {
+         if(string == null || string.length() == 0) {
             return null;
          }
          TrieNode<V> node = this;
-         if (nodeChar == null) {
+         if(nodeChar == null) {
             node = get(string.charAt(0));
-         } else if (nodeChar != string.charAt(0)) {
+         } else if(nodeChar != string.charAt(0)) {
             return null;
          }
-         for (int i = 1; node != null && i < string.length(); i++) {
+         for(int i = 1; node != null && i < string.length(); i++) {
             node = node.get(string.charAt(i));
 //            node = node.children.get(string.charAt(i));
          }
@@ -652,7 +648,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
       private TrieNode<V> get(char c) {
          TrieNode<V> tnode = new TrieNode<>(c, parent);
          int index = Collections.binarySearch(children, tnode);
-         if (index < 0) {
+         if(index < 0) {
             return null;
          }
          return children.get(index);
@@ -667,10 +663,10 @@ public class Trie<V> implements Serializable, Map<String, V> {
        * Prune.
        */
       void prune() {
-         if (parent == null) {
+         if(parent == null) {
             return;
          }
-         if (matches == null && children.isEmpty()) {
+         if(matches == null && children.isEmpty()) {
             parent.children.remove(this);
          }
          parent.size--;
@@ -704,6 +700,5 @@ public class Trie<V> implements Serializable, Map<String, V> {
          return node.value;
       }
    }
-
 
 }// END OF Trie

@@ -68,7 +68,7 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
     * @throws IllegalArgumentException if the parm is unknown to this map
     */
    public <T> T get(@NonNull ParameterDef<T> param) {
-      if (map.containsKey(param.name)) {
+      if(map.containsKey(param.name)) {
          Parameter<?> parameter = map.get(param.name);
          parameter.param.checkType(param.type);
          return Cast.as(parameter.value);
@@ -85,7 +85,7 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
     * @throws IllegalArgumentException if the parm is unknown to this map
     */
    public <T> T get(String param) {
-      if (map.containsKey(param)) {
+      if(map.containsKey(param)) {
          return Cast.as(map.get(param).value);
       }
       throw new IllegalArgumentException("Unknown Parameter: " + param);
@@ -100,7 +100,7 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
     * @return the value of the param or the default value if the Param is not in the map
     */
    public <T> T getOrDefault(@NonNull ParameterDef<T> param, T defaultValue) {
-      if (map.containsKey(param.name)) {
+      if(map.containsKey(param.name)) {
          return get(param);
       }
       return defaultValue;
@@ -115,7 +115,7 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
     * @return the value of the param or the default value if the Param is not in the map
     */
    public <T> T getOrDefault(String param, T defaultValue) {
-      if (map.containsKey(param)) {
+      if(map.containsKey(param)) {
          Parameter<?> parameter = map.get(param);
          parameter.param.checkValue(defaultValue);
          return Cast.as(parameter.value);
@@ -132,7 +132,7 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
     * @throws IllegalArgumentException if the parm is unknown to this map
     */
    public <T> ParameterDef<T> getParam(String name) {
-      if (map.containsKey(name)) {
+      if(map.containsKey(name)) {
          return Cast.as(map.get(name).param);
       }
       throw new IllegalArgumentException("Unknown Parameter: " + name);
@@ -169,7 +169,7 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
     * @return this ParamMap
     */
    public <T> V set(@NonNull ParameterDef<T> param, T value) {
-      if (map.containsKey(param.name)) {
+      if(map.containsKey(param.name)) {
          return map.get(param.name).set(Cast.as(value));
       }
       throw new IllegalArgumentException("Unknown Parameter: " + param.name);
@@ -184,11 +184,11 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
     * @return this ParamMap
     */
    public <T> V set(String param, T value) {
-      if (map.containsKey(param)) {
+      if(map.containsKey(param)) {
          try {
             return map.get(param).set(Cast.as(Converter.convert(value, map.get(param).param.type)));
-         } catch (TypeConversionException e) {
-            throw new IllegalArgumentException("Unknown Parameter: " + param);
+         } catch(TypeConversionException e) {
+            throw new IllegalArgumentException(e);
          }
       }
       throw new IllegalArgumentException("Unknown Parameter: " + param);
@@ -243,13 +243,13 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
             ParamMap<?> map = Reflect.onClass(TypeUtils.asClass(type)).create().get();
             entry.propertyIterator().forEachRemaining(e -> {
                String key = e.getKey();
-               if (!key.equals("@type") && map.map.containsKey(key)) {
+               if(!key.equals("@type") && map.map.containsKey(key)) {
                   ParamMap.Parameter param = map.map.get(key);
                   param.set(e.getValue().getAs(param.param.type));
                }
             });
             return map;
-         } catch (ReflectionException e) {
+         } catch(ReflectionException e) {
             throw new RuntimeException(e);
          }
       }
@@ -293,7 +293,7 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
        * @return the param map the parameter belongs to
        */
       public V set(T value) {
-         if (value instanceof JsonEntry && param.type != JsonEntry.class) {
+         if(value instanceof JsonEntry && param.type != JsonEntry.class) {
             value = Cast.<JsonEntry>as(value).getAs(param.type);
          }
          param.checkValue(value);
@@ -313,6 +313,5 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
          return value;
       }
    }
-
 
 }//END OF ParamMap

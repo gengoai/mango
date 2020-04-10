@@ -41,7 +41,20 @@ public interface Tag {
     * @return True if this tag is an instance of the given tag
     */
    default boolean isInstance(@NonNull Tag tag) {
-      return getClass().isInstance(tag) && name().equals(tag.name());
+      if(getClass().isInstance(tag)) {
+         if(name().equalsIgnoreCase(tag.name())) {
+            return true;
+         }
+         Tag p = parent();
+         while(p != null) {
+            if(p.name().equalsIgnoreCase(tag.name())) {
+               return true;
+            }
+            p = p.parent();
+         }
+         return false;
+      }
+      return false;
    }
 
    /**
