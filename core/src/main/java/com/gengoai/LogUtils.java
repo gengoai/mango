@@ -24,6 +24,7 @@ import com.gengoai.io.Resources;
 import com.gengoai.string.Strings;
 import lombok.NonNull;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.*;
 
@@ -35,6 +36,9 @@ public final class LogUtils {
     * Instance of the MangoLogFormatter to share amongst Handlers.
     */
    public static final Formatter FORMATTER = new MangoLogFormatter();
+   public static final Filter LOG_FILTER = record -> !record.getSourceClassName().startsWith("java.") &&
+         !record.getSourceClassName().startsWith("sun.") &&
+         !record.getSourceClassName().startsWith("javax.");
    /**
     * The root logger
     */
@@ -52,7 +56,14 @@ public final class LogUtils {
       String dir = Strings.appendIfNotPresent(Config.get("com.gengoai.logging.dir")
                                                     .asString(SystemInfo.USER_HOME + "/logs/"), "/");
       Resources.from(dir).mkdirs();
-      FileHandler fh = new FileHandler(dir + basename + ".log", false);
+      int index = 1;
+      File f = new File(dir + basename + ".log");
+      while(f.exists()) {
+         f = new File(String.format("%s%s-%d.log", dir, basename, index));
+         index++;
+      }
+      FileHandler fh = new FileHandler(f.getAbsolutePath(), false);
+      fh.setFilter(LOG_FILTER);
       fh.setLevel(Config.get("com.gengoai.logging.fileLevel")
                         .as(Level.class, Level.FINE));
       fh.setFormatter(FORMATTER);

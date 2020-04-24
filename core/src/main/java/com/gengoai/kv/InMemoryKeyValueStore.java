@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * @author David B. Bracewell
  */
-class InMemoryKeyValueStore<K, V> extends AbstractKeyValueStore<K, V> {
+public class InMemoryKeyValueStore<K, V> extends AbstractKeyValueStore<K, V> {
    private static final long serialVersionUID = 1L;
    private transient volatile Map<K, V> map;
 
@@ -16,7 +16,7 @@ class InMemoryKeyValueStore<K, V> extends AbstractKeyValueStore<K, V> {
     * @param namespace the namespace
     * @param readOnly  the read only
     */
-   protected InMemoryKeyValueStore(String namespace, boolean readOnly) {
+   public InMemoryKeyValueStore(String namespace, boolean readOnly) {
       super(namespace, readOnly);
       delegate();
    }
@@ -33,11 +33,11 @@ class InMemoryKeyValueStore<K, V> extends AbstractKeyValueStore<K, V> {
 
    @Override
    protected Map<K, V> delegate() {
-      if (map == null) {
-         synchronized (this) {
-            if (map == null) {
+      if(map == null) {
+         synchronized(this) {
+            if(map == null) {
                map = MapRegistry.get(getNameSpace());
-               if (isReadOnly()) {
+               if(isReadOnly()) {
                   map = Collections.unmodifiableMap(map);
                }
             }

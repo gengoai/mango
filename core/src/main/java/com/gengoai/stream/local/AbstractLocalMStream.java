@@ -46,7 +46,6 @@ import static com.gengoai.tuple.Tuples.$;
 abstract class AbstractLocalMStream<T> implements MStream<T>, Serializable {
    private static final long serialVersionUID = 1L;
 
-
    public static void main(String[] args) {
       Iterator<String> si = new ShuffleIterator<>(
             IntStream.range(33, 126)

@@ -55,10 +55,6 @@ public final class Strings {
     */
    public static final String EMPTY = "";
 
-   private Strings() {
-      throw new IllegalAccessError();
-   }
-
    /**
     * <p>Abbreviates a string to a desired length and adds "..." at the end.</p>
     *
@@ -83,11 +79,7 @@ public final class Strings {
     * @param suffix the suffix
     * @return the string
     */
-   public static String appendIfNotPresent(String string, String suffix) {
-      notNullOrBlank(suffix, "The suffix must not be null or blank");
-      if(string == null) {
-         return null;
-      }
+   public static String appendIfNotPresent(@NonNull String string, @NonNull String suffix) {
       return string.endsWith(suffix)
              ? string
              : (string + suffix);
@@ -127,6 +119,18 @@ public final class Strings {
          count++;
       }
       return count;
+   }
+
+   /**
+    * Converts empty/bank strings to null
+    *
+    * @param input the input string
+    * @return the output string (null if input null or blank, input otherwise)
+    */
+   public static String emptyToNull(String input) {
+      return Strings.isNotNullOrBlank(input)
+             ? input
+             : null;
    }
 
    /**
@@ -236,6 +240,30 @@ public final class Strings {
 
    public static Iterator<IntPair> findIterator(@NonNull String input, @NonNull String target) {
       return new FindIterator(input, target);
+   }
+
+   public static String firstMatch(@NonNull Pattern pattern, @NonNull String input, int group) {
+      Matcher m = pattern.matcher(input);
+      if(m.find()) {
+         return m.group(group);
+      }
+      return Strings.EMPTY;
+   }
+
+   public static String firstMatch(@NonNull Pattern pattern, @NonNull String input, @NonNull String group) {
+      Matcher m = pattern.matcher(input);
+      if(m.find()) {
+         return m.group(group);
+      }
+      return Strings.EMPTY;
+   }
+
+   public static String firstMatch(@NonNull Pattern pattern, @NonNull String input) {
+      Matcher m = pattern.matcher(input);
+      if(m.find()) {
+         return m.group();
+      }
+      return Strings.EMPTY;
    }
 
    /**
@@ -692,6 +720,10 @@ public final class Strings {
          }
       }
       return builder.toString();
+   }
+
+   private Strings() {
+      throw new IllegalAccessError();
    }
 
    private static class FindIterator implements Iterator<IntPair> {

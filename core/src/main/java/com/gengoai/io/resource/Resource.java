@@ -30,9 +30,9 @@ import com.gengoai.io.FileUtils;
 import com.gengoai.io.Resources;
 import com.gengoai.json.JsonEntry;
 import com.gengoai.json.JsonMarshaller;
-import com.gengoai.stream.local.LocalStreamingContext;
 import com.gengoai.stream.MStream;
 import com.gengoai.stream.Streams;
+import com.gengoai.stream.local.LocalStreamingContext;
 import com.google.gson.annotations.JsonAdapter;
 
 import java.io.*;
@@ -187,8 +187,7 @@ public interface Resource {
             copyTo.getParent().mkdirs();
             child.copy(copyToChild);
          }
-      }
-      else {
+      } else {
          checkState(canRead(), "This resource cannot be read from.");
          try(InputStream is = inputStream();
              OutputStream os = copyTo.outputStream()) {
@@ -267,14 +266,6 @@ public interface Resource {
     * @return The charset used for writing and default when reading
     */
    Charset getCharset();
-
-   /**
-    * <p>Sets the charset for reading and writing.</p>
-    *
-    * @param charset The charset to use
-    * @return the charset
-    */
-   Resource setCharset(Charset charset);
 
    /**
     * <p> Creates a new Resource that is relative to this resource. </p>
@@ -458,13 +449,17 @@ public interface Resource {
     *
     * @param <T> the type parameter
     * @return the t
-    * @throws Exception the exception
+    * @throws IOException the exception
     */
-   default <T> T readObject() throws Exception {
+   default <T> T readObject() throws IOException {
       checkState(canRead(), "This is resource cannot be read from.");
       try(InputStream is = inputStream();
           ObjectInputStream ois = new ObjectInputStream(is)) {
-         return Cast.as(ois.readObject(), asClass(Object.class));
+         try {
+            return Cast.as(ois.readObject(), asClass(Object.class));
+         } catch(ClassNotFoundException e) {
+            throw new IOException(e);
+         }
       }
    }
 
@@ -489,6 +484,14 @@ public interface Resource {
       checkState(canRead(), () -> descriptor() + " cannot be read from.");
       return new CharsetDetectingReader(inputStream(), getCharset());
    }
+
+   /**
+    * <p>Sets the charset for reading and writing.</p>
+    *
+    * @param charset The charset to use
+    * @return the charset
+    */
+   Resource setCharset(Charset charset);
 
    /**
     * Sets the compression algorithm.
@@ -550,9 +553,9 @@ public interface Resource {
     *
     * @param object The object to serialize
     * @return the resource
-    * @throws Exception the exception
+    * @throws IOException the exception
     */
-   default Resource writeObject(Object object) throws Exception {
+   default Resource writeObject(Object object) throws IOException {
       checkState(canWrite(), "This is resource cannot be written to.");
       try(OutputStream os = outputStream();
           ObjectOutputStream oos = new ObjectOutputStream(os)) {
@@ -588,6 +591,5 @@ public interface Resource {
          return JsonEntry.from(resource.descriptor());
       }
    }
-
 
 }// END OF Resource

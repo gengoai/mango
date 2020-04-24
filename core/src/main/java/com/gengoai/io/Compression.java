@@ -23,6 +23,7 @@
 package com.gengoai.io;
 
 import com.gengoai.Validation;
+import lombok.NonNull;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
 
@@ -53,6 +54,17 @@ public enum Compression {
       @Override
       public OutputStream compressOutputStream(OutputStream outputStream) {
          return notNull(outputStream);
+      }
+   },
+   ZIP(new byte[]{0x50, 0x4B}) {
+      @Override
+      public OutputStream compressOutputStream(@NonNull OutputStream outputStream) throws IOException {
+         return outputStream;
+      }
+
+      @Override
+      public InputStream decompressInputStream(@NonNull InputStream inputStream) throws IOException {
+         return inputStream;
       }
    },
    /**
@@ -87,10 +99,6 @@ public enum Compression {
    private static final int LONGEST_MAGIC_NUMBER = 3;
    private final byte[] header;
 
-   Compression(byte[] header) {
-      this.header = header;
-   }
-
    /**
     * Detects the compression of the given InputStream returning a {@link CompressedInputStream} that allows for reading
     * from the compressed stream.
@@ -104,28 +112,49 @@ public enum Compression {
       byte[] buffer = new byte[LONGEST_MAGIC_NUMBER];
       PushbackInputStream pushbackInputStream = new PushbackInputStream(is, LONGEST_MAGIC_NUMBER);
       int read = pushbackInputStream.read(buffer);
-      if (read == -1) {
+      if(read == -1) {
          return new CompressedInputStream(is, NONE);
       }
       pushbackInputStream.unread(buffer, 0, read);
-      for (Compression value : values()) {
-         if (value != NONE && matches(value.header, buffer)) {
+      for(Compression value : values()) {
+         if(value != NONE && matches(value.header, buffer)) {
             return new CompressedInputStream(pushbackInputStream, value);
          }
       }
       return new CompressedInputStream(pushbackInputStream, NONE);
    }
 
+   public static Compression detectCompression(@NonNull InputStream is) throws IOException {
+      Validation.notNull(is);
+      byte[] buffer = new byte[LONGEST_MAGIC_NUMBER];
+      PushbackInputStream pushbackInputStream = new PushbackInputStream(is, LONGEST_MAGIC_NUMBER);
+      int read = pushbackInputStream.read(buffer);
+      if(read == -1) {
+         return Compression.NONE;
+      }
+      pushbackInputStream.unread(buffer, 0, read);
+      for(Compression value : values()) {
+         if(value != NONE && matches(value.header, buffer)) {
+            return value;
+         }
+      }
+      return NONE;
+   }
+
    private static boolean matches(byte[] a1, byte[] a2) {
-      if (a1.length > a2.length) {
+      if(a1.length > a2.length) {
          return false;
       }
-      for (int i = 0; i < a1.length; i++) {
-         if (a1[i] != a2[i]) {
+      for(int i = 0; i < a1.length; i++) {
+         if(a1[i] != a2[i]) {
             return false;
          }
       }
       return true;
+   }
+
+   Compression(byte[] header) {
+      this.header = header;
    }
 
    /**
@@ -147,6 +176,5 @@ public enum Compression {
     * @throws IOException Something went wrong wrapping the input stream
     */
    public abstract InputStream decompressInputStream(InputStream inputStream) throws IOException;
-
 
 }//END OF Compression

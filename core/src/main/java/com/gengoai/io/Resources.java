@@ -45,6 +45,16 @@ import java.util.regex.Pattern;
 public final class Resources {
 
    private static final Map<String, ResourceProvider> resourceProviders = new HashMap<>();
+   private static final Pattern protocolPattern = Pattern.compile(
+         "^(?<PROTOCOL>\\w+)(?<OPTIONS>\\[(?:[^\\]]+)\\])?:(?<PATH>.*)?");
+
+   static {
+      for(ResourceProvider provider : ServiceLoader.load(ResourceProvider.class)) {
+         for(String protocol : provider.getProtocols()) {
+            resourceProviders.put(protocol.toLowerCase(), provider);
+         }
+      }
+   }
 
    /**
     * Finds all resources with the given pattern across loaded ClassLoaders
@@ -59,7 +69,7 @@ public final class Resources {
          resources = Thread.currentThread()
                            .getContextClassLoader()
                            .getResources(pattern);
-      } catch (IOException e) {
+      } catch(IOException e) {
          throw new RuntimeException(e);
       }
       return new Iterator<Resource>() {
@@ -72,7 +82,7 @@ public final class Resources {
          @Override
          public Resource next() {
             URL next = resources.nextElement();
-            if (next.getProtocol().equalsIgnoreCase("jar")) {
+            if(next.getProtocol().equalsIgnoreCase("jar")) {
                int idx = next.getPath().indexOf("!");
                return new ZipResource(next.getPath().substring(0, idx),
                                       next.getPath().substring(idx + 1));
@@ -83,60 +93,35 @@ public final class Resources {
    }
 
    /**
-    * Gets the jar file that a class is stored in.
-    *
-    * @param clazz The class whose associated jar file is descried.
-    * @return The Resource (jar file) for the class
-    */
-   public static Resource getJar(@NonNull Class<?> clazz) {
-      URL fileURL = clazz.getProtectionDomain().getCodeSource().getLocation();
-      return new FileResource(fileURL.getFile());
-   }
-
-   static {
-      for (ResourceProvider provider : ServiceLoader.load(ResourceProvider.class)) {
-         for (String protocol : provider.getProtocols()) {
-            resourceProviders.put(protocol.toLowerCase(), provider);
-         }
-      }
-   }
-
-
-   private static final Pattern protocolPattern = Pattern.compile(
-      "^(?<PROTOCOL>\\w+)(?<OPTIONS>\\[(?:[^\\]]+)\\])?:(?<PATH>.*)?");
-
-   /**
     * Constructs a resource from a string representation. Defaults to a file based resource if no schema is present.
     *
     * @param resource The string representation of the resource
     * @return A resource representing the string representation
     */
    public static Resource from(String resource) {
-      if (Strings.isNullOrBlank(resource)) {
+      if(Strings.isNullOrBlank(resource)) {
          return new StringResource();
       }
       Matcher matcher = protocolPattern.matcher(resource);
-      if (matcher.find()) {
+      if(matcher.find()) {
          String schema = matcher.group("PROTOCOL");
          String options = matcher.group("OPTIONS");
          String path = matcher.group("PATH");
 
-         if (Strings.isNullOrBlank(options)) {
+         if(Strings.isNullOrBlank(options)) {
             options = "";
          }
          ResourceProvider provider = resourceProviders.get(schema.toLowerCase());
 
-
-         if (provider == null) {
+         if(provider == null) {
             try {
                return new URIResource(new URI(resource));
-            } catch (URISyntaxException e) {
+            } catch(URISyntaxException e) {
                throw new IllegalStateException(schema + " is an unknown protocol.");
             }
          }
 
-
-         if (provider.requiresProtocol()) {
+         if(provider.requiresProtocol()) {
             path = schema + ":" + path;
          }
          return provider.createResource(path,
@@ -147,54 +132,14 @@ public final class Resources {
    }
 
    /**
-    * Creates a <code>StringResource</code> from the given string.
+    * <p> Creases a new {@link ClasspathResource}. </p>
     *
-    * @param stringResource the string resource
-    * @return the resource
+    * @param resource The classpath making up the resource
+    * @return A new Resource associated with the classpath
     */
-   public static Resource fromString(String stringResource) {
-      return new StringResource(stringResource);
+   public static Resource fromClasspath(String resource) {
+      return new ClasspathResource(resource);
    }
-
-   /**
-    * Creates a <code>StringResource</code> that is empty.
-    *
-    * @return the resource
-    */
-   public static Resource fromString() {
-      return new StringResource();
-   }
-
-   /**
-    * <p> Creates a new {@link URLResource}. </p>
-    *
-    * @param resource The url to wrap.
-    * @return A new Resource wrapping a url.
-    */
-   public static URLResource fromUrl(URL resource) {
-      return new URLResource(resource);
-   }
-
-   /**
-    * <p> Creates a new {@link URIResource}. </p>
-    *
-    * @param resource The uri to wrap.
-    * @return A new Resource wrapping a uri.
-    */
-   public static URIResource fromURI(URI resource) {
-      return new URIResource(resource);
-   }
-
-   /**
-    * <p> Creates a new {@link URIResource}. </p>
-    *
-    * @param resource The uri to wrap.
-    * @return A new Resource wrapping a uri.
-    */
-   public static URIResource fromURI(String resource) {
-      return new URIResource(URI.create(resource));
-   }
-
 
    /**
     * <p> Creases a new {@link FileResource}. </p>
@@ -217,13 +162,33 @@ public final class Resources {
    }
 
    /**
-    * <p> Creases a new {@link ClasspathResource}. </p>
+    * From input stream resource.
     *
-    * @param resource The classpath making up the resource
-    * @return A new Resource associated with the classpath
+    * @param inputStream The input stream to wrap
+    * @return Resource that can read from given input stream
     */
-   public static Resource fromClasspath(String resource) {
-      return new ClasspathResource(resource);
+   public static Resource fromInputStream(InputStream inputStream) {
+      return new InputStreamResource(inputStream);
+   }
+
+   /**
+    * From output stream resource.
+    *
+    * @param outputStream The output stream to wrap
+    * @return Resource that can write to given output stream
+    */
+   public static Resource fromOutputStream(OutputStream outputStream) {
+      return new OutputStreamResource(outputStream);
+   }
+
+   /**
+    * Creates a new Resource that wraps the given reader
+    *
+    * @param reader The reader to wrap
+    * @return Resource that can read from given reader
+    */
+   public static Resource fromReader(Reader reader) {
+      return new ReaderResource(reader);
    }
 
    /**
@@ -245,33 +210,52 @@ public final class Resources {
    }
 
    /**
-    * From output stream resource.
+    * Creates a <code>StringResource</code> from the given string.
     *
-    * @param outputStream The output stream to wrap
-    * @return Resource that can write to given output stream
+    * @param stringResource the string resource
+    * @return the resource
     */
-   public static Resource fromOutputStream(OutputStream outputStream) {
-      return new OutputStreamResource(outputStream);
+   public static Resource fromString(String stringResource) {
+      return new StringResource(stringResource);
    }
 
    /**
-    * From input stream resource.
+    * Creates a <code>StringResource</code> that is empty.
     *
-    * @param inputStream The input stream to wrap
-    * @return Resource that can read from given input stream
+    * @return the resource
     */
-   public static Resource fromInputStream(InputStream inputStream) {
-      return new InputStreamResource(inputStream);
+   public static Resource fromString() {
+      return new StringResource();
    }
 
    /**
-    * Creates a new Resource that wraps the given reader
+    * <p> Creates a new {@link URIResource}. </p>
     *
-    * @param reader The reader to wrap
-    * @return Resource that can read from given reader
+    * @param resource The uri to wrap.
+    * @return A new Resource wrapping a uri.
     */
-   public static Resource fromReader(Reader reader) {
-      return new ReaderResource(reader);
+   public static URIResource fromURI(URI resource) {
+      return new URIResource(resource);
+   }
+
+   /**
+    * <p> Creates a new {@link URIResource}. </p>
+    *
+    * @param resource The uri to wrap.
+    * @return A new Resource wrapping a uri.
+    */
+   public static URIResource fromURI(String resource) {
+      return new URIResource(URI.create(resource));
+   }
+
+   /**
+    * <p> Creates a new {@link URLResource}. </p>
+    *
+    * @param resource The url to wrap.
+    * @return A new Resource wrapping a url.
+    */
+   public static URLResource fromUrl(URL resource) {
+      return new URLResource(resource);
    }
 
    /**
@@ -285,6 +269,17 @@ public final class Resources {
    }
 
    /**
+    * Gets the jar file that a class is stored in.
+    *
+    * @param clazz The class whose associated jar file is descried.
+    * @return The Resource (jar file) for the class
+    */
+   public static Resource getJar(@NonNull Class<?> clazz) {
+      URL fileURL = clazz.getProtectionDomain().getCodeSource().getLocation();
+      return new FileResource(fileURL.getFile());
+   }
+
+   /**
     * Creates a new Resource that points to a temporary directory.
     *
     * @return A resource which is a temporary directory on disk
@@ -292,9 +287,9 @@ public final class Resources {
    public static Resource temporaryDirectory() {
       File tempDir = new File(SystemInfo.JAVA_IO_TMPDIR);
       String baseName = System.currentTimeMillis() + "-";
-      for (int i = 0; i < 1_000_000; i++) {
+      for(int i = 0; i < 1_000_000; i++) {
          File tmp = new File(tempDir, baseName + i);
-         if (tmp.mkdir()) {
+         if(tmp.mkdir()) {
             return new FileResource(tmp);
          }
       }
@@ -309,7 +304,7 @@ public final class Resources {
    public static Resource temporaryFile() {
       try {
          return temporaryFile(UUID.randomUUID().toString(), "tmp");
-      } catch (IOException e) {
+      } catch(IOException e) {
          throw new RuntimeException(e);
       }
    }
@@ -324,6 +319,16 @@ public final class Resources {
     */
    public static Resource temporaryFile(String name, String extension) throws IOException {
       return new FileResource(File.createTempFile(name, extension));
+   }
+
+   public static Resource writeObject(Object o) throws IOException {
+      ByteArrayResource r = new ByteArrayResource();
+      try {
+         r.writeObject(o);
+      } catch(Exception e) {
+         throw new IOException(e);
+      }
+      return r;
    }
 
 }// END OF Resources

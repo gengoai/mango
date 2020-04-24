@@ -22,6 +22,12 @@ import java.util.*;
 public final class Json {
    private static final ExclusionStrategy EXCLUSION_STRATEGY = new ExclusionStrategy() {
       @Override
+      public boolean shouldSkipClass(Class<?> aClass) {
+         Expose expose = aClass.getAnnotation(Expose.class);
+         return expose != null && !expose.deserialize();
+      }
+
+      @Override
       public boolean shouldSkipField(FieldAttributes fieldAttributes) {
          if(fieldAttributes.hasModifier(Modifier.TRANSIENT)) {
             return true;
@@ -29,14 +35,10 @@ public final class Json {
          Expose expose = fieldAttributes.getAnnotation(Expose.class);
          return expose != null && !expose.deserialize();
       }
-
-      @Override
-      public boolean shouldSkipClass(Class<?> aClass) {
-         Expose expose = aClass.getAnnotation(Expose.class);
-         return expose != null && !expose.deserialize();
-      }
    };
+   public static final String CLASS_NAME_PROPERTY = "@class";
    public static final Gson MAPPER;
+   public static final String VALUE_PROPERTY = "@value";
 
    static {
       GsonBuilder builder = new GsonBuilder();
@@ -68,8 +70,7 @@ public final class Json {
                      }
                      if(isHier) {
                         builder.registerTypeHierarchyAdapter(type, adapter);
-                     }
-                     else {
+                     } else {
                         builder.registerTypeAdapter(type, adapter);
                      }
                   }
@@ -80,15 +81,11 @@ public final class Json {
          }
       }
 
-
+      builder.registerTypeAdapterFactory(TypeInfoAdapter.FACTORY);
       builder.registerTypeHierarchyAdapter(JsonEntry.class, new JsonEntryMarshaller());
       builder.registerTypeHierarchyAdapter(Enum.class, new EnumMarshaller());
       builder.registerTypeHierarchyAdapter(Type.class, new TypeMarshallar());
       MAPPER = builder.create();
-   }
-
-   private Json() {
-      throw new IllegalAccessError();
    }
 
    public static JsonEntry asJsonEntry(Object o) {
@@ -289,6 +286,10 @@ public final class Json {
     */
    public static Map<String, JsonEntry> parseObject(String json) throws IOException {
       return parseObject(Resources.fromString(json));
+   }
+
+   private Json() {
+      throw new IllegalAccessError();
    }
 
    protected static class EnumMarshaller extends JsonMarshaller<Enum> {

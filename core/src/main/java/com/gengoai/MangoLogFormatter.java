@@ -19,6 +19,8 @@
 
 package com.gengoai;
 
+import com.gengoai.string.Strings;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.ZoneId;
@@ -43,7 +45,9 @@ public class MangoLogFormatter extends Formatter {
       return String.format(FORMAT,
                            ZonedDateTime.ofInstant(record.getInstant(),
                                                    ZoneId.systemDefault()),
-                           record.getLoggerName(),
+                           Strings.isNotNullOrBlank(record.getLoggerName())
+                           ? record.getLoggerName()
+                           : record.getSourceClassName(),
                            record.getLevel(),
                            formatMessage(record),
                            throwable);

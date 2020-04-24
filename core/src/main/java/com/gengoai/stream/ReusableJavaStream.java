@@ -178,7 +178,6 @@ public final class ReusableJavaStream<T> implements Stream<T> {
       }
    }
 
-
    @Override
    public boolean noneMatch(Predicate<? super T> predicate) {
       try(Stream<T> s = streamSupplier.get()) {

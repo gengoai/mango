@@ -79,7 +79,7 @@ public abstract class BaseResource implements Resource, Serializable {
     * @throws IOException the io exception
     */
    protected InputStream createInputStream() throws IOException {
-      if (asFile().isPresent()) {
+      if(asFile().isPresent()) {
          return new FileInputStream(asFile().orElseThrow(NullPointerException::new));
       }
       throw new UnsupportedOperationException();
@@ -92,7 +92,7 @@ public abstract class BaseResource implements Resource, Serializable {
     * @throws IOException the io exception
     */
    protected OutputStream createOutputStream() throws IOException {
-      if (asFile().isPresent()) {
+      if(asFile().isPresent()) {
          return new FileOutputStream(asFile().orElseThrow(NullPointerException::new));
       }
       throw new UnsupportedOperationException();
@@ -105,7 +105,7 @@ public abstract class BaseResource implements Resource, Serializable {
 
    @Override
    public final Charset getCharset() {
-      if (charset == null) {
+      if(charset == null) {
          return StandardCharsets.UTF_8;
       }
       return Charset.forName(charset);
@@ -148,18 +148,18 @@ public abstract class BaseResource implements Resource, Serializable {
    }
 
    @Override
-   public final Resource setIsCompressed(boolean isCompressed) {
-      if (isCompressed) {
-         compression = Compression.GZIP;
-      } else {
-         compression = Compression.NONE;
-      }
+   public Resource setCompression(Compression compression) {
+      this.compression = Validation.notNull(compression);
       return this;
    }
 
    @Override
-   public Resource setCompression(Compression compression) {
-      this.compression = Validation.notNull(compression);
+   public final Resource setIsCompressed(boolean isCompressed) {
+      if(isCompressed) {
+         compression = Compression.GZIP;
+      } else {
+         compression = Compression.NONE;
+      }
       return this;
    }
 

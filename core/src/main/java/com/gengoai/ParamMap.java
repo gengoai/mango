@@ -50,13 +50,13 @@ import java.util.stream.Collectors;
  * @author David B. Bracewell
  */
 @JsonHandler(ParamMap.Marshaller.class)
-public class ParamMap<V extends ParamMap> implements Serializable, Copyable<ParamMap<V>> {
+public class ParamMap<V extends ParamMap<V>> implements Serializable, Copyable<V> {
    private static final long serialVersionUID = 1L;
    private final Map<String, Parameter<?>> map = new HashMap<>();
 
    @Override
-   public ParamMap<V> copy() {
-      return Copyable.deepCopy(this);
+   public V copy() {
+      return Cast.as(Copyable.deepCopy(this));
    }
 
    /**
@@ -202,24 +202,6 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
                               .collect(Collectors.joining(", ")) + "}";
    }
 
-//   /**
-//    * Updates the ParamMap using the given Map of param names and values
-//    *
-//    * @param parameters the parameters
-//    */
-//   public void update(@NonNull Map<String, ?> parameters) {
-//      parameters.forEach((k, v) -> {
-//         if (map.containsKey(k)) {
-//            Parameter<?> param = map.get(k);
-//            try {
-//               param.set(Cast.as(Converter.convert(v, param.param.type)));
-//            } catch (TypeConversionException e) {
-//               throw new RuntimeException(e);
-//            }
-//         }
-//      });
-//   }
-
    /**
     * Updates the ParamMap using the given consumer.
     *
@@ -307,9 +289,9 @@ public class ParamMap<V extends ParamMap> implements Serializable, Copyable<Para
        * @return the value
        */
       public T value() {
-//         if (Number.class.isAssignableFrom(param.type)) {
-//            return Converter.convertSilently(value, param.type);
-//         }
+         //         if (Number.class.isAssignableFrom(param.type)) {
+         //            return Converter.convertSilently(value, param.type);
+         //         }
          return value;
       }
    }

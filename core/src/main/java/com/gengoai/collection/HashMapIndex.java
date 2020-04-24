@@ -37,9 +37,9 @@ public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
 
    @Override
    public int add(TYPE item) {
-      if (!map.containsKey(item)) {
-         synchronized (map) {
-            if (!map.containsKey(item)) {
+      if(!map.containsKey(item)) {
+         synchronized(map) {
+            if(!map.containsKey(item)) {
                list.add(item);
                map.put(item, list.size() - 1);
             }
@@ -50,8 +50,8 @@ public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
 
    @Override
    public void addAll(Iterable<TYPE> items) {
-      if (items != null) {
-         for (TYPE item : items) {
+      if(items != null) {
+         for(TYPE item : items) {
             add(item);
          }
       }
@@ -83,15 +83,19 @@ public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
 
    @Override
    public boolean equals(Object obj) {
-      if (this == obj) {return true;}
-      if (obj == null || getClass() != obj.getClass()) {return false;}
+      if(this == obj) {
+         return true;
+      }
+      if(obj == null || getClass() != obj.getClass()) {
+         return false;
+      }
       final HashMapIndex<?> other = (HashMapIndex<?>) obj;
       return Objects.equals(this.list, other.list);
    }
 
    @Override
    public TYPE get(int id) {
-      if (id < 0 || id >= list.size()) {
+      if(id < 0 || id >= list.size()) {
          return null;
       }
       return list.get(id);
@@ -99,7 +103,7 @@ public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
 
    @Override
    public int getId(TYPE item) {
-      if (map.containsKey(item)) {
+      if(map.containsKey(item)) {
          return map.get(item);
       }
       return -1;
@@ -113,6 +117,11 @@ public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
    @Override
    public boolean isEmpty() {
       return list.isEmpty();
+   }
+
+   @Override
+   public Set<TYPE> itemSet() {
+      return map.keySet();
    }
 
    @Override

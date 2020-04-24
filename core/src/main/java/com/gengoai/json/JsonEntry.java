@@ -1,5 +1,6 @@
 package com.gengoai.json;
 
+import com.gengoai.collection.Iterables;
 import com.gengoai.collection.Iterators;
 import com.gengoai.collection.Lists;
 import com.gengoai.collection.Sets;
@@ -9,6 +10,7 @@ import com.gengoai.stream.Streams;
 import com.gengoai.string.Strings;
 import com.google.gson.*;
 import com.google.gson.stream.JsonWriter;
+import lombok.NonNull;
 
 import java.io.*;
 import java.lang.reflect.Type;
@@ -26,10 +28,6 @@ import static com.gengoai.tuple.Tuples.$;
  */
 public class JsonEntry implements Serializable {
    private JsonElement element;
-
-   private JsonEntry(JsonElement element) {
-      this.element = element;
-   }
 
    /**
     * Array json entry.
@@ -57,6 +55,10 @@ public class JsonEntry implements Serializable {
          }
       }
       return entry;
+   }
+
+   public static JsonEntry arrayOfTypedObjects(@NonNull Iterable<?> collection) {
+      return JsonEntry.array(Iterables.transform(collection, JsonEntry::object));
    }
 
    /**
@@ -96,14 +98,14 @@ public class JsonEntry implements Serializable {
          return new JsonEntry(JsonNull.INSTANCE);
       }
       return new JsonEntry(new JsonObject())
-            .addProperty("@class", object.getClass())
-            .addProperty("@value", object);
+            .addProperty(Json.CLASS_NAME_PROPERTY, object.getClass())
+            .addProperty(Json.VALUE_PROPERTY, object);
    }
 
    public static JsonEntry object(Class<?> clazz, Object value) {
       return new JsonEntry(new JsonObject())
-            .addProperty("@class", clazz)
-            .addProperty("@value", value);
+            .addProperty(Json.CLASS_NAME_PROPERTY, clazz)
+            .addProperty(Json.VALUE_PROPERTY, value);
    }
 
    private static JsonElement toElement(Object v) {
@@ -129,6 +131,10 @@ public class JsonEntry implements Serializable {
          }
       }
       return e;
+   }
+
+   private JsonEntry(JsonElement element) {
+      this.element = element;
    }
 
    /**
@@ -237,11 +243,11 @@ public class JsonEntry implements Serializable {
     * @return the value
     */
    public <T> T getAs(Type type) {
-      if(hasProperty("@class")) {
-         Type t = getProperty("@class").getAs(Type.class);
+      if(hasProperty(Json.CLASS_NAME_PROPERTY)) {
+         Type t = getProperty(Json.CLASS_NAME_PROPERTY).getAs(Type.class);
          if(t != null) {
-            if(hasProperty("@value")) {
-               return MAPPER.fromJson(getProperty("@value").element, t);
+            if(hasProperty(Json.VALUE_PROPERTY)) {
+               return MAPPER.fromJson(getProperty(Json.VALUE_PROPERTY).element, t);
             }
             return MAPPER.fromJson(element, t);
          }
@@ -433,7 +439,7 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry's element is not a json primitive
     */
    public String getAsString() {
-      if(element.isJsonNull()){
+      if(element.isJsonNull()) {
          return null;
       }
       return element.getAsString();
@@ -673,7 +679,10 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry is not a json object
     */
    public JsonEntry getProperty(String propertyName) {
-      return new JsonEntry(element.getAsJsonObject().get(propertyName));
+      if(element.isJsonObject()) {
+         return new JsonEntry(element.getAsJsonObject().get(propertyName));
+      }
+      throw new IllegalArgumentException("Trying to get '" + propertyName + "' from an array");
    }
 
    /**

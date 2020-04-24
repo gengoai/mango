@@ -1,8 +1,10 @@
 package com.gengoai;
 
+import com.gengoai.reflection.TypeUtils;
 import com.gengoai.string.Strings;
 import lombok.NonNull;
 
+import java.lang.reflect.Type;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -12,10 +14,6 @@ import java.util.function.Supplier;
  * @author David B. Bracewell
  */
 public final class Validation {
-
-   private Validation() {
-      throw new IllegalAccessError();
-   }
 
    /**
     * Throws a <code>IllegalArgumentException</code> if the given boolean evaluates to false.
@@ -52,10 +50,21 @@ public final class Validation {
       }
    }
 
-   private static IllegalArgumentException createIllegalArgumentException(String msg) {
-      return Strings.isNullOrBlank(msg)
-             ? new IllegalArgumentException()
-             : new IllegalArgumentException(msg);
+   public static void checkArgumentIsInstanceOf(Object p, Type... types) {
+      if(p != null && types != null && types.length > 0) {
+         Type pType = p.getClass();
+         boolean isInstance = false;
+         for(Type type : types) {
+            if(TypeUtils.isAssignable(type, pType)) {
+               isInstance = true;
+               break;
+            }
+         }
+         String typeStr = Strings.join(types, ",", "'", "'");
+         if(!isInstance) {
+            throw new IllegalArgumentException("Expecting an instance of " + typeStr + ", but found " + pType);
+         }
+      }
    }
 
    /**
@@ -190,6 +199,12 @@ public final class Validation {
             throw new IllegalStateException();
          }
       }
+   }
+
+   private static IllegalArgumentException createIllegalArgumentException(String msg) {
+      return Strings.isNullOrBlank(msg)
+             ? new IllegalArgumentException()
+             : new IllegalArgumentException(msg);
    }
 
    /**
@@ -333,6 +348,10 @@ public final class Validation {
     */
    public static <T> T validateArg(T value, @NonNull Predicate<T> predicate, String message, boolean nullable) {
       return validate(value, predicate, () -> new IllegalArgumentException(message), nullable);
+   }
+
+   private Validation() {
+      throw new IllegalAccessError();
    }
 
 }//END OF Validation

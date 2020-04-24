@@ -93,6 +93,7 @@ public final class Config implements Serializable {
                ROOT.removeHandler(handler);
             }
             final ConsoleHandler consoleHandler = new ConsoleHandler();
+            consoleHandler.setFilter(LOG_FILTER);
             consoleHandler.setLevel(Level.ALL);
             consoleHandler.setFormatter(FORMATTER);
             ROOT.addHandler(consoleHandler);

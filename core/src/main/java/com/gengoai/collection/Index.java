@@ -31,6 +31,7 @@ import com.gengoai.stream.Streams;
 
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -137,6 +138,12 @@ public interface Index<E> extends Iterable<E>, Copyable<Index<E>> {
     */
    int size();
 
+   /**
+    * Gets a set of the items in the Index
+    *
+    * @return the set
+    */
+   Set<E> itemSet();
 
    /**
     * Stream stream.
