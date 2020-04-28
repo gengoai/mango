@@ -1,10 +1,11 @@
 package com.gengoai;
 
+import com.gengoai.collection.Lists;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.Switch;
 import lombok.NonNull;
-import org.apache.mahout.math.list.*;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,8 +34,16 @@ public final class Primitives {
    private static final Map<Class<?>, Class<?>> primitiveToWrap = new HashMap<>(20);
    private static final Map<Class<?>, Class<?>> wrapToPrimitive = new HashMap<>(20);
 
-   private Primitives() {
-      throw new IllegalAccessError();
+   static {
+      add(int.class, Integer.class);
+      add(short.class, Short.class);
+      add(long.class, Long.class);
+      add(char.class, Character.class);
+      add(boolean.class, Boolean.class);
+      add(void.class, Void.class);
+      add(byte.class, Byte.class);
+      add(float.class, Float.class);
+      add(double.class, Double.class);
    }
 
    private static void add(Class<?> primitive, Class<?> wrap) {
@@ -60,12 +69,19 @@ public final class Primitives {
     * @return the byte array
     */
    public static byte[] toByteArray(@NonNull Iterable<? extends Number> numbers) {
-      ByteArrayList list = new ByteArrayList();
-      for (Number number : numbers) {
-         list.add(number.byteValue());
+      Collection<? extends Number> collection;
+      if(numbers instanceof Collection) {
+         collection = Cast.as(numbers);
+      } else {
+         collection = Lists.asArrayList(numbers);
       }
-      list.trimToSize();
-      return list.elements();
+      byte[] bytes = new byte[collection.size()];
+      int i = 0;
+      for(Number number : collection) {
+         bytes[i] = number.byteValue();
+         i++;
+      }
+      return bytes;
    }
 
    /**
@@ -75,12 +91,19 @@ public final class Primitives {
     * @return the char array
     */
    public static char[] toCharArray(@NonNull Iterable<Character> characters) {
-      CharArrayList list = new CharArrayList();
-      for (Character character : characters) {
-         list.add(character);
+      Collection<Character> collection;
+      if(characters instanceof Collection) {
+         collection = Cast.as(characters);
+      } else {
+         collection = Lists.asArrayList(characters);
       }
-      list.trimToSize();
-      return list.elements();
+      char[] chars = new char[collection.size()];
+      int i = 0;
+      for(Character c : collection) {
+         chars[i] = c;
+         i++;
+      }
+      return chars;
    }
 
    /**
@@ -90,12 +113,19 @@ public final class Primitives {
     * @return the double array
     */
    public static double[] toDoubleArray(@NonNull Iterable<? extends Number> numbers) {
-      DoubleArrayList list = new DoubleArrayList();
-      for (Number number : numbers) {
-         list.add(number.doubleValue());
+      Collection<? extends Number> collection;
+      if(numbers instanceof Collection) {
+         collection = Cast.as(numbers);
+      } else {
+         collection = Lists.asArrayList(numbers);
       }
-      list.trimToSize();
-      return list.elements();
+      double[] toReturn = new double[collection.size()];
+      int i = 0;
+      for(Number number : collection) {
+         toReturn[i] = number.doubleValue();
+         i++;
+      }
+      return toReturn;
    }
 
    /**
@@ -105,12 +135,19 @@ public final class Primitives {
     * @return the float array
     */
    public static float[] toFloatArray(@NonNull Iterable<? extends Number> numbers) {
-      FloatArrayList list = new FloatArrayList();
-      for (Number number : numbers) {
-         list.add(number.floatValue());
+      Collection<? extends Number> collection;
+      if(numbers instanceof Collection) {
+         collection = Cast.as(numbers);
+      } else {
+         collection = Lists.asArrayList(numbers);
       }
-      list.trimToSize();
-      return list.elements();
+      float[] toReturn = new float[collection.size()];
+      int i = 0;
+      for(Number number : collection) {
+         toReturn[i] = number.floatValue();
+         i++;
+      }
+      return toReturn;
    }
 
    /**
@@ -120,12 +157,19 @@ public final class Primitives {
     * @return the int array
     */
    public static int[] toIntArray(@NonNull Iterable<? extends Number> numbers) {
-      IntArrayList list = new IntArrayList();
-      for (Number number : numbers) {
-         list.add(number.intValue());
+      Collection<? extends Number> collection;
+      if(numbers instanceof Collection) {
+         collection = Cast.as(numbers);
+      } else {
+         collection = Lists.asArrayList(numbers);
       }
-      list.trimToSize();
-      return list.elements();
+      int[] toReturn = new int[collection.size()];
+      int i = 0;
+      for(Number number : collection) {
+         toReturn[i] = number.intValue();
+         i++;
+      }
+      return toReturn;
    }
 
    /**
@@ -135,12 +179,19 @@ public final class Primitives {
     * @return the long array
     */
    public static long[] toLongArray(@NonNull Iterable<? extends Number> numbers) {
-      LongArrayList list = new LongArrayList();
-      for (Number number : numbers) {
-         list.add(number.longValue());
+      Collection<? extends Number> collection;
+      if(numbers instanceof Collection) {
+         collection = Cast.as(numbers);
+      } else {
+         collection = Lists.asArrayList(numbers);
       }
-      list.trimToSize();
-      return list.elements();
+      long[] toReturn = new long[collection.size()];
+      int i = 0;
+      for(Number number : collection) {
+         toReturn[i] = number.longValue();
+         i++;
+      }
+      return toReturn;
    }
 
    /**
@@ -150,12 +201,19 @@ public final class Primitives {
     * @return the short array
     */
    public static short[] toShortArray(@NonNull Iterable<? extends Number> numbers) {
-      ShortArrayList list = new ShortArrayList();
-      for (Number number : numbers) {
-         list.add(number.shortValue());
+      Collection<? extends Number> collection;
+      if(numbers instanceof Collection) {
+         collection = Cast.as(numbers);
+      } else {
+         collection = Lists.asArrayList(numbers);
       }
-      list.trimToSize();
-      return list.elements();
+      short[] toReturn = new short[collection.size()];
+      int i = 0;
+      for(Number number : collection) {
+         toReturn[i] = number.shortValue();
+         i++;
+      }
+      return toReturn;
    }
 
    /**
@@ -181,17 +239,8 @@ public final class Primitives {
       return Cast.as(primitiveToWrap.getOrDefault(type, type));
    }
 
-   static {
-      add(int.class, Integer.class);
-      add(short.class, Short.class);
-      add(long.class, Long.class);
-      add(char.class, Character.class);
-      add(boolean.class, Boolean.class);
-      add(void.class, Void.class);
-      add(byte.class, Byte.class);
-      add(float.class, Float.class);
-      add(double.class, Double.class);
+   private Primitives() {
+      throw new IllegalAccessError();
    }
-
 
 }//END OF Primitives

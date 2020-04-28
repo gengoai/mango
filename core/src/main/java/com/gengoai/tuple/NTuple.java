@@ -2,30 +2,22 @@ package com.gengoai.tuple;
 
 import com.gengoai.conversion.Cast;
 import com.gengoai.string.Strings;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
 /**
- * Generic Tuple of any degree. 
+ * Generic Tuple of any degree.
  *
  * @author David B. Bracewell
  */
+@NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
 public class NTuple extends Tuple {
    private static final long serialVersionUID = 1L;
-
    private final Object[] array;
-
-   /**
-    * Instantiates a new N tuple.
-    *
-    * @param other the other
-    */
-   public NTuple(Object[] other) {
-      array = new Object[other.length];
-      System.arraycopy(other, 0, array, 0, other.length);
-   }
 
    /**
     * Of n tuple.
@@ -50,9 +42,35 @@ public class NTuple extends Tuple {
       return new NTuple(items.toArray());
    }
 
+   /**
+    * Instantiates a new N tuple.
+    *
+    * @param other the other
+    */
+   public NTuple(Object[] other) {
+      array = new Object[other.length];
+      System.arraycopy(other, 0, array, 0, other.length);
+   }
+
+   public Object[] getArray(){
+      return array();
+   }
+
+   @Override
+   public Object[] array() {
+      Object[] copy = new Object[array.length];
+      System.arraycopy(array, 0, copy, 0, array.length);
+      return copy;
+   }
+
    @Override
    public NTuple copy() {
       return new NTuple(array);
+   }
+
+   @Override
+   public int degree() {
+      return array.length;
    }
 
    @Override
@@ -63,18 +81,6 @@ public class NTuple extends Tuple {
    @Override
    public Iterator<Object> iterator() {
       return Arrays.asList(array).iterator();
-   }
-
-   @Override
-   public int degree() {
-      return array.length;
-   }
-
-   @Override
-   public Object[] array() {
-      Object[] copy = new Object[array.length];
-      System.arraycopy(array, 0, copy, 0, array.length);
-      return copy;
    }
 
    @Override

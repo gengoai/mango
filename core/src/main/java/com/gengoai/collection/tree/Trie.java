@@ -1,5 +1,7 @@
 package com.gengoai.collection.tree;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.gengoai.annotation.JsonHandler;
 import com.gengoai.collection.Iterators;
 import com.gengoai.collection.Maps;
@@ -50,6 +52,12 @@ public class Trie<V> implements Serializable, Map<String, V> {
       putAll(map);
    }
 
+   @JsonCreator
+   private Trie(Set<Map.Entry<String, V>> entrySet) {
+      this();
+      entrySet.forEach(e -> put(e.getKey(), e.getValue()));
+   }
+
    @Override
    public void clear() {
       root.children.clear();
@@ -74,6 +82,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
    }
 
    @Override
+   @JsonValue
    public Set<Entry<String, V>> entrySet() {
       return new AbstractSet<Entry<String, V>>() {
 
@@ -640,7 +649,7 @@ public class Trie<V> implements Serializable, Map<String, V> {
          }
          for(int i = 1; node != null && i < string.length(); i++) {
             node = node.get(string.charAt(i));
-//            node = node.children.get(string.charAt(i));
+            //            node = node.children.get(string.charAt(i));
          }
          return node;
       }

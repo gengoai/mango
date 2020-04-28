@@ -24,6 +24,7 @@ package com.gengoai.math;
 import com.gengoai.function.SerializableToDoubleFunction;
 import com.gengoai.stream.MStream;
 import com.gengoai.tuple.Tuple2;
+import lombok.NonNull;
 
 import java.util.Comparator;
 import java.util.Optional;
@@ -206,8 +207,23 @@ public enum Optimum implements Comparator<Double> {
     * @param array the array to select from
     * @return the most optimum value
     */
-   public double optimumValue(double[] array) {
-      notNull(array);
+   public double optimumValue(@NonNull double[] array) {
+      double val = startingValue();
+      for (double anArray : array) {
+         if (test(anArray, val)) {
+            val = anArray;
+         }
+      }
+      return val;
+   }
+
+   /**
+    * Selects the best value from the given array
+    *
+    * @param array the array to select from
+    * @return the most optimum value
+    */
+   public double optimumValue(@NonNull float[] array) {
       double val = startingValue();
       for (double anArray : array) {
          if (test(anArray, val)) {

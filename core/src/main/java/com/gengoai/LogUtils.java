@@ -56,13 +56,7 @@ public final class LogUtils {
       String dir = Strings.appendIfNotPresent(Config.get("com.gengoai.logging.dir")
                                                     .asString(SystemInfo.USER_HOME + "/logs/"), "/");
       Resources.from(dir).mkdirs();
-      int index = 1;
-      File f = new File(dir + basename + ".log");
-      while(f.exists()) {
-         f = new File(String.format("%s%s-%d.log", dir, basename, index));
-         index++;
-      }
-      FileHandler fh = new FileHandler(f.getAbsolutePath(), false);
+      FileHandler fh = new FileHandler(new File(dir + basename + ".log").getAbsolutePath(), false);
       fh.setFilter(LOG_FILTER);
       fh.setLevel(Config.get("com.gengoai.logging.fileLevel")
                         .as(Level.class, Level.FINE));

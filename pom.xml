@@ -62,10 +62,16 @@
     <modules>
         <module>core</module>
         <module>swing-ui</module>
+        <module>mango-annotations</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.9.10.4</version>
+            </dependency>
             <dependency>
                 <groupId>com.gengoai</groupId>
                 <artifactId>mango</artifactId>
@@ -106,11 +112,6 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.apache.mahout</groupId>
-                <artifactId>mahout-collections</artifactId>
-                <version>1.0</version>
-            </dependency>
-            <dependency>
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-core_2.12</artifactId>
                 <version>2.4.4</version>
@@ -139,12 +140,6 @@
                 <artifactId>flatlaf</artifactId>
                 <version>0.26</version>
             </dependency>
-            <dependency>
-                <groupId>commons-codec</groupId>
-                <artifactId>commons-codec</artifactId>
-                <version>1.14</version>
-            </dependency>
-
         </dependencies>
     </dependencyManagement>
 
@@ -169,7 +164,7 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <artifactId>maven-observationType-plugin</artifactId>
+                        <artifactId>maven-source-plugin</artifactId>
                         <version>3.2.0</version>
                         <executions>
                             <execution>

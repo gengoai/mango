@@ -22,6 +22,9 @@
 package com.gengoai.tuple;
 
 import com.gengoai.conversion.Cast;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 import java.util.Map;
 
@@ -32,6 +35,8 @@ import java.util.Map;
  * @param <V> the type parameter
  * @author David B. Bracewell
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
+@AllArgsConstructor
 public class Tuple2<K, V> extends Tuple implements Map.Entry<K, V> {
 
    private static final long serialVersionUID = 1L;
@@ -43,17 +48,6 @@ public class Tuple2<K, V> extends Tuple implements Map.Entry<K, V> {
     * The second value
     */
    public final V v2;
-
-   /**
-    * Instantiates a new Tuple 2.
-    *
-    * @param v1 the first value
-    * @param v2 the second value
-    */
-   public Tuple2(K v1, V v2) {
-      this.v1 = v1;
-      this.v2 = v2;
-   }
 
    /**
     * Of tuple 2.
@@ -95,7 +89,7 @@ public class Tuple2<K, V> extends Tuple implements Map.Entry<K, V> {
 
    @Override
    public <T> T get(int i) {
-      switch (i) {
+      switch(i) {
          case 0:
             return Cast.as(v1);
          case 1:
@@ -142,6 +136,5 @@ public class Tuple2<K, V> extends Tuple implements Map.Entry<K, V> {
    public String toString() {
       return "(" + v1 + ", " + v2 + ")";
    }
-
 
 }//END OF Tuple2

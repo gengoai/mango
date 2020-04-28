@@ -22,6 +22,8 @@
 package com.gengoai.tuple;
 
 import com.gengoai.conversion.Cast;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 /**
  * The type Tuple 3.
@@ -31,7 +33,7 @@ import com.gengoai.conversion.Cast;
  * @param <C> the type parameter
  * @author David B. Bracewell
  */
-
+@NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
 public class Tuple3<A, B, C> extends Tuple {
    private static final long serialVersionUID = 1L;
    /**
@@ -48,19 +50,6 @@ public class Tuple3<A, B, C> extends Tuple {
    public final C v3;
 
    /**
-    * Instantiates a new Tuple 3.
-    *
-    * @param v1 the first value
-    * @param v2 the second value
-    * @param v3 the third value
-    */
-   public Tuple3(A v1, B v2, C v3) {
-      this.v1 = v1;
-      this.v2 = v2;
-      this.v3 = v3;
-   }
-
-   /**
     * Of tuple 3.
     *
     * @param <A> the type parameter
@@ -75,6 +64,34 @@ public class Tuple3<A, B, C> extends Tuple {
       return new Tuple3<>(a, b, c);
    }
 
+   /**
+    * Instantiates a new Tuple 3.
+    *
+    * @param v1 the first value
+    * @param v2 the second value
+    * @param v3 the third value
+    */
+   public Tuple3(A v1, B v2, C v3) {
+      this.v1 = v1;
+      this.v2 = v2;
+      this.v3 = v3;
+   }
+
+   @Override
+   public <T> Tuple4<T, A, B, C> appendLeft(T object) {
+      return Tuple4.of(object, v1, v2, v3);
+   }
+
+   @Override
+   public <T> Tuple4<A, B, C, T> appendRight(T object) {
+      return Tuple4.of(v1, v2, v3, object);
+   }
+
+   @Override
+   public Object[] array() {
+      return new Object[]{v1, v2, v3};
+   }
+
    @Override
    public Tuple copy() {
       return new Tuple3<>(this.v1, this.v2, this.v3);
@@ -86,19 +103,17 @@ public class Tuple3<A, B, C> extends Tuple {
    }
 
    @Override
-   public Object[] array() {
-      return new Object[]{v1, v2, v3};
-   }
-
-
-   @Override
-   public <T> Tuple4<T, A, B, C> appendLeft(T object) {
-      return Tuple4.of(object, v1, v2, v3);
-   }
-
-   @Override
-   public <T> Tuple4<A, B, C, T> appendRight(T object) {
-      return Tuple4.of(v1, v2, v3, object);
+   public <T> T get(int i) {
+      switch(i) {
+         case 0:
+            return Cast.as(v1);
+         case 1:
+            return Cast.as(v2);
+         case 2:
+            return Cast.as(v3);
+         default:
+            throw new ArrayIndexOutOfBoundsException();
+      }
    }
 
    public A getV1() {
@@ -126,20 +141,6 @@ public class Tuple3<A, B, C> extends Tuple {
    @Override
    public String toString() {
       return "(" + v1 + ", " + v2 + ", " + v3 + ")";
-   }
-
-   @Override
-   public <T> T get(int i) {
-      switch (i) {
-         case 0:
-            return Cast.as(v1);
-         case 1:
-            return Cast.as(v2);
-         case 2:
-            return Cast.as(v3);
-         default:
-            throw new ArrayIndexOutOfBoundsException();
-      }
    }
 
 }//END OF Tuple2
