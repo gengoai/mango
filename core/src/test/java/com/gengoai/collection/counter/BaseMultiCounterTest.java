@@ -230,7 +230,7 @@ public abstract class BaseMultiCounterTest {
       Resource str = new StringResource();
       Json.dump(mc, str);
       MultiCounter<String, String> mcPrime = Json.parse(str.readToString())
-                                                 .getAs(
+                                                 .as(
                                                     parameterizedType(mc.getClass(), String.class, String.class));
       assertEquals(mc, mcPrime);
    }

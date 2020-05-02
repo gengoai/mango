@@ -23,13 +23,14 @@ import com.gengoai.cache.Cache;
 import com.gengoai.cache.LRUCache;
 import com.gengoai.conversion.Cast;
 import com.gengoai.reflection.Reflect;
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.TypeAdapter;
+import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * @author David B. Bracewell
@@ -49,39 +50,40 @@ public class TypeInfoAdapter<T> extends TypeAdapter<T> {
 
    @Override
    public T read(JsonReader jsonReader) throws IOException {
-      JsonObject obj = gson.fromJson(jsonReader, JsonObject.class);
-      try {
-         Class<?> clazz = Reflect.getClassForName(obj.get(Json.CLASS_NAME_PROPERTY).getAsString());
-         JsonElement derObject = obj;
-         if(obj.has(Json.VALUE_PROPERTY)) {
-            derObject = obj.get(Json.VALUE_PROPERTY);
-         }
-         if(clazz != typeToken.getRawType()) {
-            return Cast.as(gson.getAdapter(clazz).fromJsonTree(derObject));
-         }
-         return gson.getDelegateAdapter(adapterFactory, typeToken).fromJsonTree(derObject);
-      } catch(Exception e) {
-         throw new IOException(e);
-      }
+//      JsonObject obj = gson.fromJson(jsonReader, JsonObject.class);
+//      try {
+//         Class<?> clazz = Reflect.getClassForName(obj.get(Json.CLASS_NAME_PROPERTY).getAsString());
+//         JsonElement derObject = obj;
+//         if(obj.has(Json.VALUE_PROPERTY)) {
+//            derObject = obj.get(Json.VALUE_PROPERTY);
+//         }
+//         if(clazz != typeToken.getRawType()) {
+//            return Cast.as(gson.getAdapter(clazz).fromJsonTree(derObject));
+//         }
+//         return gson.getDelegateAdapter(adapterFactory, typeToken).fromJsonTree(derObject);
+//      } catch(Exception e) {
+//         throw new IOException(e);
+//      }
+      return null;
    }
 
    @Override
    public void write(JsonWriter jsonWriter, Object o) throws IOException {
-      if(o == null) {
-         jsonWriter.nullValue();
-         return;
-      }
-      JsonObject object = new JsonObject();
-      object.addProperty(Json.CLASS_NAME_PROPERTY, o.getClass().getName());
-      JsonElement e = gson.getAdapter(o.getClass()).toJsonTree(Cast.as(o));
-      if(e.isJsonObject()) {
-         for(Map.Entry<String, JsonElement> entry : e.getAsJsonObject().entrySet()) {
-            object.add(entry.getKey(), entry.getValue());
-         }
-      } else {
-         object.add(Json.VALUE_PROPERTY, e);
-      }
-      gson.toJson(object, jsonWriter);
+//      if(o == null) {
+      //         jsonWriter.nullValue();
+      //         return;
+      //      }
+      //      JsonObject object = new JsonObject();
+      //      object.addProperty(Json.CLASS_NAME_PROPERTY, o.getClass().getName());
+      //      JsonElement e = gson.getAdapter(o.getClass()).toJsonTree(Cast.as(o));
+      //      if(e.isJsonObject()) {
+      //         for(Map.Entry<String, JsonElement> entry : e.getAsJsonObject().entrySet()) {
+      //            object.add(entry.getKey(), entry.getValue());
+      //         }
+      //      } else {
+      //         object.add(Json.VALUE_PROPERTY, e);
+      //      }
+      //      gson.toJson(object, jsonWriter);
    }
 
    private static class TypeInfoAdapterFactory implements TypeAdapterFactory {

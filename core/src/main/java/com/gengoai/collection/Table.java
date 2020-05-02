@@ -1,18 +1,10 @@
 package com.gengoai.collection;
 
-import com.gengoai.annotation.JsonHandler;
-import com.gengoai.conversion.Cast;
-import com.gengoai.json.JsonEntry;
-import com.gengoai.reflection.Reflect;
-import com.gengoai.reflection.ReflectionException;
-import com.gengoai.reflection.TypeUtils;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
-import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-
-import static com.gengoai.reflection.TypeUtils.getOrObject;
 
 /**
  * A table is a two dimensional structure that associates a value with two keys (i.e. a row and column key). A table
@@ -24,57 +16,60 @@ import static com.gengoai.reflection.TypeUtils.getOrObject;
  * @param <V> the value type parameter
  * @author David B. Bracewell
  */
-@JsonHandler(Table.TableMarshaller.class)
+@JsonDeserialize(as = HashBasedTable.class)
 public interface Table<R, C, V> {
 
-   class TableMarshaller extends com.gengoai.json.JsonMarshaller<Table<?,?,?>> {
+   /**
+    * Clears the table.
+    */
+   void clear();
 
-      @Override
-      protected Table<?, ?, ?> deserialize(JsonEntry entry, Type type) {
-         Type[] params = TypeUtils.getActualTypeArguments(type);
-         final Table<?, ?, ?> table;
-         try {
-            table = Reflect.onClass(TypeUtils.asClass(type))
-                           .create().get();
-         } catch (ReflectionException e) {
-            throw new RuntimeException(e);
-         }
-         Type row = getOrObject(0, params);
-         Type col = getOrObject(1, params);
-         Type cell = getOrObject(2, params);
-         Index<Object> rowIndex = Indexes.indexOf(entry.getProperty("rowKeys").getAsArray(row));
-         Index<Object> colIndex = Indexes.indexOf(entry.getProperty("colKeys").getAsArray(col));
-         entry.getProperty("cells").propertyIterator().forEachRemaining(rowEntry -> {
-            Object rowV = rowIndex.get(Integer.parseInt(rowEntry.getKey()));
-            rowEntry.getValue().propertyIterator().forEachRemaining(colEntry -> {
-               Object colV = colIndex.get(Integer.parseInt(colEntry.getKey()));
-               table.put(Cast.as(rowV),
-                         Cast.as(colV), colEntry.getValue().getAs(cell));
-            });
-         });
-         return table;
-      }
+   /**
+    * Returns a map view for a column in the table
+    *
+    * @param column the column
+    * @return Map of row,value pairs
+    */
+   Map<R, V> column(C column);
 
-      @Override
-      protected JsonEntry serialize(Table<?, ?, ?> table, Type type) {
-         JsonEntry entry = JsonEntry.object();
-         Index<?> rowIndex = Indexes.indexOf(table.rowKeySet());
-         Index<?> colIndex = Indexes.indexOf(table.columnKeySet());
-         entry.addProperty("rowKeys", rowIndex);
-         entry.addProperty("colKeys", colIndex);
-         JsonEntry cells = JsonEntry.object();
-         table.rowKeySet().forEach(row -> {
-            JsonEntry rowObj = JsonEntry.object();
-            table.row(Cast.as(row)).forEach((c, v) -> {
-               int ci = colIndex.getId(Cast.as(c));
-               rowObj.addProperty(Integer.toString(ci), v);
-            });
-            cells.addProperty(Integer.toString(rowIndex.getId(Cast.as(row))), rowObj);
-         });
-         entry.addProperty("cells", cells);
-         return entry;
-      }
-   }
+   /**
+    * Returns a set of column keys that have one or more values associated
+    *
+    * @return the set of column keys that have one or more values associated
+    */
+   Set<C> columnKeySet();
+
+   /**
+    * Checks if a value exists for a given row and column
+    *
+    * @param row    the row
+    * @param column the column
+    * @return True if it exists, False otherwise
+    */
+   boolean contains(R row, C column);
+
+   /**
+    * Checks if column key exists in the table
+    *
+    * @param column the column
+    * @return True if it exists, False otherwise
+    */
+   boolean containsColumn(C column);
+
+   /**
+    * Checks if row key exists in the table
+    *
+    * @param row the row
+    * @return True if it exists, False otherwise
+    */
+   boolean containsRow(R row);
+
+   /**
+    * Gets the set of entries in the table
+    *
+    * @return the set of entries
+    */
+   Set<TableEntry<R, C, V>> entrySet();
 
    /**
     * Gets the value of the cell for the given row and column or null if not available.
@@ -85,9 +80,8 @@ public interface Table<R, C, V> {
     */
    V get(R row, C column);
 
-
    default V getOrDefault(R row, C column, V defaultValue) {
-      if (contains(row, column)) {
+      if(contains(row, column)) {
          return get(row, column);
       }
       return defaultValue;
@@ -129,14 +123,6 @@ public interface Table<R, C, V> {
    Map<C, V> removeRow(R row);
 
    /**
-    * Returns a map view for a column in the table
-    *
-    * @param column the column
-    * @return Map of row,value pairs
-    */
-   Map<R, V> column(C column);
-
-   /**
     * Returns a map view for a row in the table
     *
     * @param row the row
@@ -145,29 +131,11 @@ public interface Table<R, C, V> {
    Map<C, V> row(R row);
 
    /**
-    * Checks if column key exists in the table
+    * Returns a set of row keys that have one or more values associated
     *
-    * @param column the column
-    * @return True if it exists, False otherwise
+    * @return the set of row keys that have one or more values associated
     */
-   boolean containsColumn(C column);
-
-   /**
-    * Checks if row key exists in the table
-    *
-    * @param row the row
-    * @return True if it exists, False otherwise
-    */
-   boolean containsRow(R row);
-
-   /**
-    * Checks if a value exists for a given row and column
-    *
-    * @param row    the row
-    * @param column the column
-    * @return True if it exists, False otherwise
-    */
-   boolean contains(R row, C column);
+   Set<R> rowKeySet();
 
    /**
     * The size in number of row and column mappings
@@ -182,24 +150,5 @@ public interface Table<R, C, V> {
     * @return the collection of cell values in the table
     */
    Collection<V> values();
-
-   /**
-    * Returns a set of column keys that have one or more values associated
-    *
-    * @return the set of column keys that have one or more values associated
-    */
-   Set<C> columnKeySet();
-
-   /**
-    * Returns a set of row keys that have one or more values associated
-    *
-    * @return the set of row keys that have one or more values associated
-    */
-   Set<R> rowKeySet();
-
-   /**
-    * Clears the table.
-    */
-   void clear();
 
 }//END OF Table

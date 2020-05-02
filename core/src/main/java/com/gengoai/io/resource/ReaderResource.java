@@ -48,8 +48,8 @@ public class ReaderResource extends BaseResource implements ReadOnlyResource, No
 
    @Override
    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (!(o instanceof ReaderResource)) return false;
+      if(this == o) return true;
+      if(!(o instanceof ReaderResource)) return false;
       ReaderResource that = (ReaderResource) o;
       return Objects.equals(reader, that.reader);
    }
@@ -71,11 +71,11 @@ public class ReaderResource extends BaseResource implements ReadOnlyResource, No
 
    @Override
    public byte[] readBytes() throws IOException {
-      try (BufferedReader bufferedReader = new BufferedReader(reader)) {
+      try(BufferedReader bufferedReader = new BufferedReader(reader)) {
          StringBuilder builder = new StringBuilder();
          char[] buffer = new char[1024];
          int read;
-         while ((read = bufferedReader.read(buffer, 0, buffer.length)) > 0) {
+         while((read = bufferedReader.read(buffer, 0, buffer.length)) > 0) {
             builder.append(buffer, 0, read);
          }
          return builder.toString().getBytes(StandardCharsets.UTF_8);

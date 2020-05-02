@@ -114,13 +114,11 @@ public class ApplicationTest {
          //Make sure config was loaded
          assertEquals("up", Config.get("direction").asString());
 
-
          assertArrayEquals(
-            new String[]{"--name=John", "--age=", "35", "--map", "{\"ALPHA\":23}", "--action", "update", "-abc"},
-            getAllArguments());
+               new String[]{"--name=John", "--age=", "35", "--map", "{\"ALPHA\":23}", "--action", "update", "-abc"},
+               getAllArguments());
          assertArrayEquals(new String[]{"--action", "update"}, getPositionalArgs());
       }
    }
-
 
 }

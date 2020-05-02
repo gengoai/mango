@@ -58,7 +58,7 @@ public class CSVWriter implements AutoCloseable {
    public CSVWriter(CSV csv, Writer writer) throws IOException {
       this.formatter = csv.formatter();
       this.writer = new BufferedWriter(writer);
-      if (csv.getHeader() != null && !csv.getHeader().isEmpty()) {
+      if(csv.getHeader() != null && !csv.getHeader().isEmpty()) {
          writer.write(formatter.format(csv.getHeader()));
          writer.write(SystemInfo.LINE_SEPARATOR);
          header.addAll(csv.getHeader());
@@ -72,7 +72,7 @@ public class CSVWriter implements AutoCloseable {
     * @throws IOException Signals that an I/O exception has occurred.
     */
    public void write(Iterable<?> row) throws IOException {
-      if (row != null) {
+      if(row != null) {
          writer.write(formatter.format(row));
       }
       writer.write(SystemInfo.LINE_SEPARATOR);
@@ -85,7 +85,7 @@ public class CSVWriter implements AutoCloseable {
     * @throws IOException Signals that an I/O exception has occurred.
     */
    public void write(Iterator<?> row) throws IOException {
-      if (row != null) {
+      if(row != null) {
          writer.write(formatter.format(row));
       }
       writer.write(SystemInfo.LINE_SEPARATOR);
@@ -98,28 +98,28 @@ public class CSVWriter implements AutoCloseable {
     * @throws IOException Signals that an I/O exception has occurred.
     */
    public void write(Map<?, ?> row) throws IOException {
-      if (row != null) {
-         if (header.isEmpty()) {
+      if(row != null) {
+         if(header.isEmpty()) {
             List<?> entries = row.values().stream().map(o -> Converter.convertSilently(o, String.class)).collect(
-               Collectors.toList());
+                  Collectors.toList());
             writer.write(formatter.format(entries));
             writer.write(SystemInfo.LINE_SEPARATOR);
          } else {
             writer.write(
-               formatter.format(
-                  Stream.concat(
-                     header.stream()
-                           .map(
-                              h -> row.containsKey(h)
-                                   ? Converter.convertSilently(row.get(h), String.class)
-                                   : Strings.EMPTY),
-                     row.keySet().stream()
-                        .map(k -> Converter.convertSilently(k, String.class))
-                        .filter(h -> !header.contains(h))
-                        .map(h -> Converter.convertSilently(row.get(h), String.class))
-                               )
-                        .collect(Collectors.toList())
-                               )
+                  formatter.format(
+                        Stream.concat(
+                              header.stream()
+                                    .map(
+                                          h -> row.containsKey(h)
+                                               ? Converter.convertSilently(row.get(h), String.class)
+                                               : Strings.EMPTY),
+                              row.keySet().stream()
+                                 .map(k -> Converter.convertSilently(k, String.class))
+                                 .filter(h -> !header.contains(h))
+                                 .map(h -> Converter.convertSilently(row.get(h), String.class))
+                                     )
+                              .collect(Collectors.toList())
+                                  )
                         );
             writer.write(SystemInfo.LINE_SEPARATOR);
          }
@@ -136,21 +136,22 @@ public class CSVWriter implements AutoCloseable {
     * @throws IOException Signals that an I/O exception has occurred.
     */
    public void write(Map<?, ?> row, char keyValueSeparator) throws IOException {
-      if (row != null) {
-         if (header.isEmpty()) {
+      if(row != null) {
+         if(header.isEmpty()) {
             writer.write(formatter.format(row, keyValueSeparator));
          } else {
             writer.write(formatter.format(Stream.concat(header.stream()
                                                               .map(
-                                                                 h -> row.containsKey(h)
-                                                                      ? Converter.convertSilently(row.get(h),
-                                                                                                  String.class)
-                                                                      : Strings.EMPTY),
+                                                                    h -> row.containsKey(h)
+                                                                         ? Converter.convertSilently(row.get(h),
+                                                                                                     String.class)
+                                                                         : Strings.EMPTY),
                                                         row.keySet().stream()
                                                            .map(k -> Converter.convertSilently(k, String.class))
                                                            .filter(h -> !header.contains(h))
                                                            .map(
-                                                              h -> Converter.convertSilently(row.get(h), String.class))
+                                                                 h -> Converter.convertSilently(row.get(h),
+                                                                                                String.class))
                                                        )
                                                 .collect(Collectors.toList())
                                          )
@@ -167,7 +168,7 @@ public class CSVWriter implements AutoCloseable {
     * @throws IOException Signals that an I/O exception has occurred.
     */
    public void write(Object... row) throws IOException {
-      if (row != null) {
+      if(row != null) {
          writer.write(formatter.format(row));
       }
       writer.write(SystemInfo.LINE_SEPARATOR);
@@ -177,6 +178,5 @@ public class CSVWriter implements AutoCloseable {
    public void close() throws IOException {
       writer.close();
    }
-
 
 }//END OF CSVWriter

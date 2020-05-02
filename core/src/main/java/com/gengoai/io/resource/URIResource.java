@@ -57,7 +57,7 @@ public class URIResource extends BaseResource {
 
    @Override
    public Optional<File> asFile() {
-      if (uri.getScheme().equalsIgnoreCase("file")) {
+      if(uri.getScheme().equalsIgnoreCase("file")) {
          return Optional.of(new File(uri.getPath()));
       }
       return super.asFile();
@@ -72,7 +72,7 @@ public class URIResource extends BaseResource {
    protected InputStream createInputStream() throws IOException {
       try {
          return super.createInputStream();
-      } catch (UnsupportedOperationException ue) {
+      } catch(UnsupportedOperationException ue) {
          return uri.toURL().openConnection().getInputStream();
       }
    }
@@ -81,7 +81,7 @@ public class URIResource extends BaseResource {
    protected OutputStream createOutputStream() throws IOException {
       try {
          return super.createOutputStream();
-      } catch (UnsupportedOperationException ue) {
+      } catch(UnsupportedOperationException ue) {
          return uri.toURL().openConnection().getOutputStream();
       }
    }
@@ -93,17 +93,17 @@ public class URIResource extends BaseResource {
 
    @Override
    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (!(o instanceof URIResource)) return false;
+      if(this == o) return true;
+      if(!(o instanceof URIResource)) return false;
       URIResource that = (URIResource) o;
       return Objects.equals(uri, that.uri);
    }
 
    @Override
    public boolean exists() {
-      try (InputStream is = createInputStream()) {
+      try(InputStream is = createInputStream()) {
          return true;
-      } catch (IOException e) {
+      } catch(IOException e) {
          return false;
       }
    }
@@ -117,7 +117,7 @@ public class URIResource extends BaseResource {
    public Resource getParent() {
       try {
          return new URIResource(new URI(FileUtils.parent(uri.toString())));
-      } catch (URISyntaxException e) {
+      } catch(URISyntaxException e) {
          throw new RuntimeException(e);
       }
    }
@@ -131,6 +131,5 @@ public class URIResource extends BaseResource {
    public String path() {
       return uri.getPath();
    }
-
 
 }//END OF URIResource

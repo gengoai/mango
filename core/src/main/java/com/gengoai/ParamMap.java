@@ -22,20 +22,18 @@
 
 package com.gengoai;
 
-import com.gengoai.annotation.JsonHandler;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Converter;
 import com.gengoai.conversion.TypeConversionException;
 import com.gengoai.json.JsonEntry;
-import com.gengoai.reflection.Reflect;
-import com.gengoai.reflection.ReflectionException;
-import com.gengoai.reflection.TypeUtils;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.ToString;
 
 import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,7 +47,7 @@ import java.util.stream.Collectors;
  * @param <V> the type parameter
  * @author David B. Bracewell
  */
-@JsonHandler(ParamMap.Marshaller.class)
+@NoArgsConstructor
 public class ParamMap<V extends ParamMap<V>> implements Serializable, Copyable<V> {
    private static final long serialVersionUID = 1L;
    private final Map<String, Parameter<?>> map = new HashMap<>();
@@ -57,6 +55,13 @@ public class ParamMap<V extends ParamMap<V>> implements Serializable, Copyable<V
    @Override
    public V copy() {
       return Cast.as(Copyable.deepCopy(this));
+   }
+
+   @JsonValue
+   private Map<String, Object> entryList() {
+      return map.entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().value));
    }
 
    /**
@@ -183,6 +188,7 @@ public class ParamMap<V extends ParamMap<V>> implements Serializable, Copyable<V
     * @param value the value
     * @return this ParamMap
     */
+   @JsonAnySetter
    public <T> V set(String param, T value) {
       if(map.containsKey(param)) {
          try {
@@ -211,37 +217,6 @@ public class ParamMap<V extends ParamMap<V>> implements Serializable, Copyable<V
    public V update(@NonNull Consumer<V> updater) {
       updater.accept(Cast.as(this));
       return Cast.as(this);
-   }
-
-   /**
-    * The type Marshaller.
-    */
-   public static class Marshaller extends com.gengoai.json.JsonMarshaller<ParamMap<?>> {
-
-      @Override
-      @SuppressWarnings("unchecked")
-      protected ParamMap<?> deserialize(JsonEntry entry, Type type) {
-         try {
-            ParamMap<?> map = Reflect.onClass(TypeUtils.asClass(type)).create().get();
-            entry.propertyIterator().forEachRemaining(e -> {
-               String key = e.getKey();
-               if(!key.equals("@type") && map.map.containsKey(key)) {
-                  ParamMap.Parameter param = map.map.get(key);
-                  param.set(e.getValue().getAs(param.param.type));
-               }
-            });
-            return map;
-         } catch(ReflectionException e) {
-            throw new RuntimeException(e);
-         }
-      }
-
-      @Override
-      protected JsonEntry serialize(ParamMap<?> paramMap, Type type) {
-         JsonEntry object = JsonEntry.object();
-         paramMap.map.forEach((k, v) -> object.addProperty(k, v.value));
-         return object;
-      }
    }
 
    /**
@@ -276,7 +251,7 @@ public class ParamMap<V extends ParamMap<V>> implements Serializable, Copyable<V
        */
       public V set(T value) {
          if(value instanceof JsonEntry && param.type != JsonEntry.class) {
-            value = Cast.<JsonEntry>as(value).getAs(param.type);
+            value = Cast.<JsonEntry>as(value).as(param.type);
          }
          param.checkValue(value);
          this.value = Cast.as(value);

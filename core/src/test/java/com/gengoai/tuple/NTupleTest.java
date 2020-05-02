@@ -16,18 +16,19 @@ public class NTupleTest {
 
    NTuple tuple;
 
-   @Before
-   public void setUp() throws Exception {
-      tuple = NTuple.of("A", "A", "A", "A");
+   @Test
+   public void appendLeft() throws Exception {
+      assertEquals(Tuples.$("A", "A", "A", "A", "A"), tuple.appendLeft("A"));
    }
 
+   @Test
+   public void appendRight() throws Exception {
+      assertEquals(Tuples.$("A", "A", "A", "A", "A"), tuple.appendRight("A"));
+   }
 
    @Test
-   public void json() throws Exception {
-      String json = Json.dumps(tuple);
-      assertEquals(tuple.stream().map(a -> "\"" + a + "\"").collect(Collectors.joining(",", "[", "]")), json);
-      Tuple t = Json.parseObject(json, Tuple.class);
-      assertEquals(tuple, t);
+   public void array() throws Exception {
+      assertArrayEquals(new Object[]{"A", "A", "A", "A"}, tuple.array());
    }
 
    @Test
@@ -41,13 +42,36 @@ public class NTupleTest {
    }
 
    @Test
-   public void array() throws Exception {
-      assertArrayEquals(new Object[]{"A", "A", "A", "A"}, tuple.array());
+   public void get() throws Exception {
+      assertEquals("A", tuple.get(0));
+   }
+
+   @Test(expected = ArrayIndexOutOfBoundsException.class)
+   public void getErr() throws Exception {
+      tuple.get(100);
+   }
+
+   @Test
+   public void json() throws Exception {
+      String json = Json.dumps(tuple);
+      assertEquals(tuple.stream().map(a -> "\"" + a + "\"").collect(Collectors.joining(",", "[", "]")), json);
+      Tuple t = Json.parse(json, Tuple.class);
+      assertEquals(tuple, t);
+   }
+
+   @Test
+   public void list() throws Exception {
+      assertTrue(Tuples.$(Arrays.asList("A", "A", "A", "A", "A", "A")) instanceof NTuple);
    }
 
    @Test
    public void mapValues() throws Exception {
       assertEquals(Tuples.$("a", "a", "a", "a"), tuple.mapValues(o -> o.toString().toLowerCase()));
+   }
+
+   @Before
+   public void setUp() throws Exception {
+      tuple = NTuple.of("A", "A", "A", "A");
    }
 
    @Test
@@ -61,33 +85,8 @@ public class NTupleTest {
    }
 
    @Test
-   public void appendRight() throws Exception {
-      assertEquals(Tuples.$("A", "A", "A", "A", "A"), tuple.appendRight("A"));
-   }
-
-   @Test
-   public void appendLeft() throws Exception {
-      assertEquals(Tuples.$("A", "A", "A", "A", "A"), tuple.appendLeft("A"));
-   }
-
-   @Test
    public void slice() throws Exception {
       assertEquals(tuple, tuple.slice(0, 100));
-   }
-
-   @Test(expected = ArrayIndexOutOfBoundsException.class)
-   public void getErr() throws Exception {
-      tuple.get(100);
-   }
-
-   @Test
-   public void get() throws Exception {
-      assertEquals("A", tuple.get(0));
-   }
-
-   @Test
-   public void list() throws Exception {
-      assertTrue(Tuples.$(Arrays.asList("A", "A", "A", "A", "A", "A")) instanceof NTuple);
    }
 
 }

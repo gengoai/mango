@@ -48,7 +48,6 @@ public class CSV implements Serializable {
    private boolean hasHeader = false;
    private List<String> header = null;
 
-
    /**
     * <p>Convenience method for quickly retrieving a csv version of a CSV builder</p>
     *
@@ -103,8 +102,10 @@ public class CSV implements Serializable {
     * @return the csv builder
     */
    public CSV header(String... items) {
-      this.header = (items == null ? null : Arrays.asList(items));
-      if (header != null && header.size() > 0) {
+      this.header = (items == null
+                     ? null
+                     : Arrays.asList(items));
+      if(header != null && header.size() > 0) {
          this.hasHeader = true;
       }
       return this;
@@ -118,7 +119,7 @@ public class CSV implements Serializable {
     */
    public CSV header(List<String> items) {
       this.header = items;
-      if (header != null && header.size() > 0) {
+      if(header != null && header.size() > 0) {
          this.hasHeader = true;
       }
       return this;

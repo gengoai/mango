@@ -48,5 +48,4 @@ public class MonitoredObject<T> implements Serializable {
       this.object = ResourceMonitor.MONITOR.addResource(this, object, onClose);
    }
 
-
 }//END OF MonitoredObject

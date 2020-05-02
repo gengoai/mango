@@ -1,6 +1,4 @@
 /*
- * (c) 2005 David B. Bracewell
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,28 +17,21 @@
  * under the License.
  */
 
-package com.gengoai.io.resource;
+package com.gengoai.collection;
 
-import java.io.IOException;
-import java.io.InputStream;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.Value;
 
 /**
- * Resource that wraps standard in
- *
  * @author David B. Bracewell
  */
-public class StdinResource extends BaseResource implements NonTraversableResource, ReadOnlyResource {
-
-   private static final long serialVersionUID = 1373981063391575745L;
-
-   @Override
-   public InputStream createInputStream() throws IOException {
-      return System.in;
-   }
-
-   @Override
-   public boolean exists() {
-      return true;
-   }
-
-}//END OF StdinResource
+@NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
+@AllArgsConstructor
+@Value
+public class TableEntry<R, C, V> {
+   R row;
+   C col;
+   V value;
+}//END OF TableEntry

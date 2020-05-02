@@ -21,6 +21,13 @@
 
 package com.gengoai.io.resource;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.SerializableConsumer;
 import com.gengoai.function.Unchecked;
@@ -28,15 +35,11 @@ import com.gengoai.io.CharsetDetectingReader;
 import com.gengoai.io.Compression;
 import com.gengoai.io.FileUtils;
 import com.gengoai.io.Resources;
-import com.gengoai.json.JsonEntry;
-import com.gengoai.json.JsonMarshaller;
 import com.gengoai.stream.MStream;
 import com.gengoai.stream.Streams;
 import com.gengoai.stream.local.LocalStreamingContext;
-import com.google.gson.annotations.JsonAdapter;
 
 import java.io.*;
-import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -58,7 +61,14 @@ import static com.gengoai.reflection.TypeUtils.asClass;
  *
  * @author David Bracewell
  */
-@JsonAdapter(Resource.ResourceMarshaller.class)
+@JsonAutoDetect(
+      fieldVisibility = JsonAutoDetect.Visibility.NONE,
+      setterVisibility = JsonAutoDetect.Visibility.NONE,
+      getterVisibility = JsonAutoDetect.Visibility.NONE,
+      isGetterVisibility = JsonAutoDetect.Visibility.NONE,
+      creatorVisibility = JsonAutoDetect.Visibility.NONE
+)
+@JsonDeserialize(using = Resource.Deserializer.class)
 public interface Resource {
 
    /**
@@ -233,6 +243,7 @@ public interface Resource {
     *
     * @return The string representation of the resource with protocol
     */
+   @JsonValue
    String descriptor();
 
    /**
@@ -576,20 +587,13 @@ public interface Resource {
       return new OutputStreamWriter(outputStream(), getCharset());
    }
 
-   /**
-    * The type Resource marshaller.
-    */
-   class ResourceMarshaller extends JsonMarshaller<Resource> {
+   class Deserializer extends JsonDeserializer<Resource> {
 
       @Override
-      protected Resource deserialize(JsonEntry entry, Type typeOfT) {
-         return Resources.from(entry.getAsString());
-      }
-
-      @Override
-      public JsonEntry serialize(Resource resource, Type type) {
-         return JsonEntry.from(resource.descriptor());
+      public Resource deserialize(JsonParser p, DeserializationContext ctxt) throws
+                                                                             IOException,
+                                                                             JsonProcessingException {
+         return Resources.from(p.getText());
       }
    }
-
 }// END OF Resource

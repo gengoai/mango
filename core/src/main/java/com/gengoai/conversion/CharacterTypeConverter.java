@@ -22,21 +22,21 @@ public class CharacterTypeConverter implements TypeConverter {
 
    @Override
    public Object convert(Object object, Type... parameters) throws TypeConversionException {
-      if (object instanceof Character) {
+      if(object instanceof Character) {
          return Cast.as(object);
-      } else if (object instanceof Number) {
+      } else if(object instanceof Number) {
          return (char) Cast.as(object, Number.class).longValue();
-      } else if (object instanceof CharSequence) {
+      } else if(object instanceof CharSequence) {
          CharSequence sequence = Cast.as(object);
-         if (sequence.length() == 1) {
+         if(sequence.length() == 1) {
             return sequence.charAt(0);
          }
-      } else if (object instanceof JsonEntry) {
+      } else if(object instanceof JsonEntry) {
          JsonEntry e = Cast.as(object);
-         if (e.isString()) {
-            return convert(e.getAsString());
-         } else if (e.isNumber()) {
-            return convert(e.getAsNumber());
+         if(e.isString()) {
+            return convert(e.asString());
+         } else if(e.isNumber()) {
+            return convert(e.asNumber());
          }
       }
       throw new TypeConversionException(object, Character.class);

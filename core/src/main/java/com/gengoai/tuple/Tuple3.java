@@ -21,6 +21,10 @@
 
 package com.gengoai.tuple;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gengoai.conversion.Cast;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -34,6 +38,7 @@ import lombok.NoArgsConstructor;
  * @author David B. Bracewell
  */
 @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
+@JsonDeserialize(as = Tuple3.class)
 public class Tuple3<A, B, C> extends Tuple {
    private static final long serialVersionUID = 1L;
    /**
@@ -64,6 +69,13 @@ public class Tuple3<A, B, C> extends Tuple {
       return new Tuple3<>(a, b, c);
    }
 
+   @JsonCreator
+   protected Tuple3(@JsonProperty Object[] array) {
+      this.v1 = Cast.as(array[0]);
+      this.v2 = Cast.as(array[1]);
+      this.v3 = Cast.as(array[2]);
+   }
+
    /**
     * Instantiates a new Tuple 3.
     *
@@ -88,6 +100,7 @@ public class Tuple3<A, B, C> extends Tuple {
    }
 
    @Override
+   @JsonValue
    public Object[] array() {
       return new Object[]{v1, v2, v3};
    }

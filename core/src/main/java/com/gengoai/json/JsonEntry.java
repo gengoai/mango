@@ -1,19 +1,30 @@
 package com.gengoai.json;
 
-import com.gengoai.collection.Iterables;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.gengoai.collection.IteratorSet;
 import com.gengoai.collection.Iterators;
 import com.gengoai.collection.Lists;
-import com.gengoai.collection.Sets;
 import com.gengoai.conversion.Cast;
 import com.gengoai.conversion.Val;
 import com.gengoai.stream.Streams;
-import com.gengoai.string.Strings;
-import com.google.gson.*;
-import com.google.gson.stream.JsonWriter;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -26,8 +37,16 @@ import static com.gengoai.tuple.Tuples.$;
  * <p>A convenience wrapper around <code>JsonElement</code> allowing a single interface for objects, arrays, and
  * primitives</p>
  */
+@JsonAutoDetect(
+      fieldVisibility = JsonAutoDetect.Visibility.NONE,
+      setterVisibility = JsonAutoDetect.Visibility.NONE,
+      getterVisibility = JsonAutoDetect.Visibility.NONE,
+      isGetterVisibility = JsonAutoDetect.Visibility.NONE,
+      creatorVisibility = JsonAutoDetect.Visibility.NONE
+)
 public class JsonEntry implements Serializable {
-   private JsonElement element;
+   @JsonValue
+   private JsonNode element;
 
    /**
     * Array json entry.
@@ -36,7 +55,7 @@ public class JsonEntry implements Serializable {
     * @return the json entry
     */
    public static JsonEntry array(Iterable<?> items) {
-      JsonEntry entry = new JsonEntry(new JsonArray());
+      JsonEntry entry = new JsonEntry(JsonNodeFactory.instance.arrayNode());
       items.forEach(entry::addValue);
       return entry;
    }
@@ -48,17 +67,13 @@ public class JsonEntry implements Serializable {
     * @return the json entry
     */
    public static JsonEntry array(Object... items) {
-      JsonEntry entry = new JsonEntry(new JsonArray());
+      JsonEntry entry = new JsonEntry(JsonNodeFactory.instance.arrayNode());
       if(items != null) {
          for(Object item : items) {
             entry.addValue(item);
          }
       }
       return entry;
-   }
-
-   public static JsonEntry arrayOfTypedObjects(@NonNull Iterable<?> collection) {
-      return JsonEntry.array(Iterables.transform(collection, JsonEntry::object));
    }
 
    /**
@@ -77,7 +92,7 @@ public class JsonEntry implements Serializable {
     * @return the null valued entry
     */
    public static JsonEntry nullValue() {
-      return new JsonEntry(JsonNull.INSTANCE);
+      return new JsonEntry(JsonNodeFactory.instance.nullNode());
    }
 
    /**
@@ -86,54 +101,18 @@ public class JsonEntry implements Serializable {
     * @return the json entry
     */
    public static JsonEntry object() {
-      return new JsonEntry(new JsonObject());
+      return new JsonEntry(JsonNodeFactory.instance.objectNode());
    }
 
-   public static JsonEntry object(Class<?> clazz) {
-      return new JsonEntry(new JsonObject()).addProperty("@class", clazz);
-   }
-
-   public static JsonEntry object(Object object) {
-      if(object == null) {
-         return new JsonEntry(JsonNull.INSTANCE);
-      }
-      return new JsonEntry(new JsonObject())
-            .addProperty(Json.CLASS_NAME_PROPERTY, object.getClass())
-            .addProperty(Json.VALUE_PROPERTY, object);
-   }
-
-   public static JsonEntry object(Class<?> clazz, Object value) {
-      return new JsonEntry(new JsonObject())
-            .addProperty(Json.CLASS_NAME_PROPERTY, clazz)
-            .addProperty(Json.VALUE_PROPERTY, value);
-   }
-
-   private static JsonElement toElement(Object v) {
+   private static JsonNode toElement(Object v) {
       if(v == null) {
-         return JsonNull.INSTANCE;
+         return JsonNodeFactory.instance.nullNode();
       }
-      JsonElement e = MAPPER.toJsonTree(v);
-      if(e.isJsonNull()) {
-         if(v instanceof Iterable) {
-            JsonArray array = new JsonArray();
-            for(Object o : Cast.<Iterable>as(v)) {
-               array.add(toElement(o));
-            }
-            return array;
-         }
-         if(v instanceof Iterator) {
-            JsonArray array = new JsonArray();
-            for(Iterator it = Cast.as(v); it.hasNext(); ) {
-               Object o = it.next();
-               array.add(toElement(o));
-            }
-            return array;
-         }
-      }
-      return e;
+      return MAPPER.valueToTree(v);
    }
 
-   private JsonEntry(JsonElement element) {
+   @JsonCreator
+   public JsonEntry(@JsonProperty @NonNull JsonNode element) {
       this.element = element;
    }
 
@@ -145,8 +124,86 @@ public class JsonEntry implements Serializable {
     * @return this json entry
     * @throws IllegalStateException if the entry's element is not a json object
     */
-   public JsonEntry addProperty(String name, Object value) {
-      element.getAsJsonObject().add(name, toElement(value));
+   public JsonEntry addProperty(@NonNull String name, Object value) {
+      ObjectNode n = asObjectNode();
+      if(value == null) {
+         n.set(name, JsonNodeFactory.instance.nullNode());
+      } else if(value instanceof String) {
+         n.put(name, (String) value);
+      } else if(value instanceof Integer) {
+         n.put(name, (Integer) value);
+      } else if(value instanceof Double) {
+         n.put(name, (Double) value);
+      } else if(value instanceof Long) {
+         n.put(name, (Long) value);
+      } else if(value instanceof Float) {
+         n.put(name, (Float) value);
+      } else if(value instanceof Short) {
+         n.put(name, (Short) value);
+      } else if(value instanceof Byte) {
+         n.put(name, (Byte) value);
+      } else if(value instanceof byte[]) {
+         n.put(name, (byte[]) value);
+      } else if(value instanceof Boolean) {
+         n.put(name, (Boolean) value);
+      } else if(value instanceof BigDecimal) {
+         n.put(name, (BigDecimal) value);
+      } else if(value instanceof BigInteger) {
+         n.put(name, (BigInteger) value);
+      } else if(value.getClass().isArray()) {
+         ArrayNode array = n.putArray(name);
+         int length = Array.getLength(value);
+         for(int i = 0; i < length; i++) {
+            addValue(array, Array.get(value, i));
+         }
+      } else if(value instanceof JsonEntry) {
+         n.set(name, Cast.<JsonEntry>as(value).element);
+      } else if(value instanceof JsonNode) {
+         n.set(name, (JsonNode) value);
+      } else {
+         n.putPOJO(name, value);
+      }
+      return this;
+   }
+
+   private JsonEntry addValue(ArrayNode n, Object o) {
+      if(o == null) {
+         n.add(JsonNodeFactory.instance.nullNode());
+      } else if(o instanceof String) {
+         n.add((String) o);
+      } else if(o instanceof Integer) {
+         n.add((Integer) o);
+      } else if(o instanceof Double) {
+         n.add((Double) o);
+      } else if(o instanceof Long) {
+         n.add((Long) o);
+      } else if(o instanceof Float) {
+         n.add((Float) o);
+      } else if(o instanceof Short) {
+         n.add((Short) o);
+      } else if(o instanceof Byte) {
+         n.add((Byte) o);
+      } else if(o instanceof byte[]) {
+         n.add((byte[]) o);
+      } else if(o instanceof Boolean) {
+         n.add((Boolean) o);
+      } else if(o instanceof BigDecimal) {
+         n.add((BigDecimal) o);
+      } else if(o instanceof BigInteger) {
+         n.add((BigInteger) o);
+      } else if(o.getClass().isArray()) {
+         int length = Array.getLength(o);
+         ArrayNode array = JsonNodeFactory.instance.arrayNode(length);
+         for(int i = 0; i < length; i++) {
+            addValue(n, Array.get(o, i));
+         }
+      } else if(o instanceof JsonEntry) {
+         n.add(Cast.<JsonEntry>as(o).element);
+      } else if(o instanceof JsonNode) {
+         n.add((JsonNode) o);
+      } else {
+         n.addPOJO(o);
+      }
       return this;
    }
 
@@ -158,8 +215,244 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry's element is not a json array
     */
    public JsonEntry addValue(Object value) {
-      element.getAsJsonArray().add(toElement(value));
+      addValue(asArrayNode(), value);
       return this;
+   }
+
+   /**
+    * Gets the value of this entry as the given class.
+    *
+    * @param <T>  the type parameter
+    * @param type the type information for the type to be generated
+    * @return the value
+    */
+   @SneakyThrows
+   public <T> T as(@NonNull Class<T> type) {
+      return Json.parse(element.toString(), type);
+   }
+
+   /**
+    * Gets the value of this entry as the given class.
+    *
+    * @param <T>  the type parameter
+    * @param type the type information for the type to be generated
+    * @return the value
+    */
+   @SneakyThrows
+   public <T> T as(@NonNull Type type) {
+      return Json.parse(toString(), type);
+   }
+
+   /**
+    * Converts the entry into a list of elements checking if the underlying entry is a json array.
+    *
+    * @return the list
+    * @throws IllegalStateException if the entry's element is not a json array
+    */
+   public List<JsonEntry> asArray() {
+      return new ElementList(asArrayNode());
+   }
+
+   /**
+    * Converts the entry into a list of elements checking if the underlying entry is a json array.
+    *
+    * @param <T>   the type parameter
+    * @param clazz the clazz
+    * @return the list
+    * @throws IllegalStateException if the entry's element is not a json array
+    */
+   public <T> List<T> asArray(@NonNull Class<? extends T> clazz) {
+      return Lists.transform(asArray(), entry -> entry.as(clazz));
+   }
+
+   /**
+    * Converts the entry into a list of elements checking if the underlying entry is a json array.
+    *
+    * @param <T>   the type parameter
+    * @param clazz the clazz
+    * @return the list
+    * @throws IllegalStateException if the entry's element is not a json array
+    */
+   public <T> List<T> asArray(@NonNull Type clazz) {
+      return Lists.transform(asArray(), entry -> entry.as(clazz));
+   }
+
+   public <T, E extends Collection<T>> E asArray(@NonNull Class<? extends T> clazz, @NonNull E collection) {
+      elementIterator().forEachRemaining(je -> collection.add(je.as(clazz)));
+      return collection;
+   }
+
+   private ArrayNode asArrayNode() {
+      return Cast.as(element, ArrayNode.class);
+   }
+
+   /**
+    * Gets this entry as a boolean value.
+    *
+    * @return the as boolean value
+    * @throws IllegalStateException if the entry's element is not a json primitive
+    */
+   public boolean asBoolean() {
+      return element.asBoolean();
+   }
+
+   public boolean[] asBooleanArray() {
+      return as(boolean[].class);
+   }
+
+   /**
+    * Gets this entry as a byte value.
+    *
+    * @return the as byte value
+    * @throws IllegalStateException if the entry's element is not a json primitive
+    */
+   public byte asByte() {
+      return (byte) element.asInt();
+   }
+
+   /**
+    * Gets this entry as a Character value.
+    *
+    * @return the as Character value
+    * @throws IllegalStateException if the entry's element is not a json primitive
+    */
+   public Character asCharacter() {
+      return element.asText().charAt(0);
+   }
+
+   /**
+    * Gets this entry as a double value.
+    *
+    * @return the as double value
+    * @throws IllegalStateException if the entry's element is not a json primitive
+    */
+   public double asDouble() {
+      return element.doubleValue();
+   }
+
+   public double[] asDoubleArray() {
+      return as(double[].class);
+   }
+
+   /**
+    * Gets this entry as a float value.
+    *
+    * @return the as float value
+    * @throws IllegalStateException if the entry's element is not a json primitive
+    */
+   public float asFloat() {
+      return (float) element.doubleValue();
+   }
+
+   /**
+    * Gets this entry as a int value.
+    *
+    * @return the as int value
+    * @throws IllegalStateException if the entry's element is not a json primitive
+    */
+   public int asInt() {
+      return element.intValue();
+   }
+
+   public int[] asIntArray() {
+      return as(int[].class);
+   }
+
+   /**
+    * Gets this entry as a long value.
+    *
+    * @return the as long value
+    * @throws IllegalStateException if the entry's element is not a json primitive
+    */
+   public long asLong() {
+      return element.longValue();
+   }
+
+   /**
+    * Converts the entry into a map of string keys and entry elements checking if the underlying entry is a json
+    * object.
+    *
+    * @return the map
+    * @throws IllegalStateException if the entry's element is not a json object
+    */
+   public Map<String, JsonEntry> asMap() {
+      return new ElementMap(asObjectNode());
+   }
+
+   /**
+    * Converts the entry into a map of string keys and entry elements checking if the underlying entry is a json
+    * object.
+    *
+    * @param <T>   the type parameter
+    * @param clazz the clazz
+    * @return the map
+    * @throws IllegalStateException if the entry's element is not a json object
+    */
+   public <T> Map<String, T> asMap(@NonNull Class<? extends T> clazz) {
+      Map<String, T> map = new HashMap<>();
+      propertyIterator().forEachRemaining(e -> map.put(e.getKey(), e.getValue().as(clazz)));
+      return map;
+   }
+
+   /**
+    * Gets this entry as a Number value.
+    *
+    * @return the as Number value
+    * @throws IllegalStateException if the entry's element is not a json primitive
+    */
+   public Number asNumber() {
+      return element.asDouble();
+   }
+
+   private ObjectNode asObjectNode() {
+      return Cast.as(element, ObjectNode.class);
+   }
+
+   /**
+    * Gets this entry as a short value.
+    *
+    * @return the as short value
+    * @throws IllegalStateException if the entry's element is not a json primitive
+    */
+   public short asShort() {
+      return (short) element.asInt();
+   }
+
+   /**
+    * Gets this entry as a String value.
+    *
+    * @return the as String value
+    * @throws IllegalStateException if the entry's element is not a json primitive
+    */
+   public String asString() {
+      if(element.isNull()) {
+         return null;
+      }
+      return element.textValue();
+   }
+
+   /**
+    * Gets this entry as a Val value.
+    *
+    * @return the as Val value
+    */
+   public Val asVal() {
+      if(element.isNull()) {
+         return Val.NULL;
+      } else if(element.isTextual()) {
+         return Val.of(element.textValue());
+      } else if(element.isInt() || element.isShort()) {
+         return Val.of(element.intValue());
+      } else if(element.isLong()) {
+         return Val.of(element.longValue());
+      } else if(element.isNumber()) {
+         return Val.of(element.doubleValue());
+      } else if(element.isBoolean()) {
+         return Val.of(element.booleanValue());
+      } else if(element.isArray()) {
+         return Val.of(asArray());
+      }
+      return Val.of(asMap());
    }
 
    /**
@@ -169,7 +462,7 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry's element is not a json array
     */
    public Iterator<JsonEntry> elementIterator() {
-      return Iterators.transform(element.getAsJsonArray().iterator(), JsonEntry::new);
+      return Iterators.transform(element.iterator(), JsonEntry::new);
    }
 
    public Stream<JsonEntry> elementStream() {
@@ -209,265 +502,25 @@ public class JsonEntry implements Serializable {
    }
 
    public Object get() {
-      if(hasProperty("@class")) {
-         if(hasProperty("@value")) {
-            return getProperty("@value").getAs(getProperty("@class").getAs(Type.class));
-         }
-      }
       if(isString()) {
-         return getAsString();
+         return asString();
       }
       if(isNumber()) {
-         return getAsNumber();
+         return asNumber();
       }
       if(isBoolean()) {
-         return getAsBoolean();
+         return asBoolean();
       }
       if(isNull()) {
-         return getAsNumber();
+         return asNumber();
       }
       if(isObject()) {
-         return getAsMap();
+         return asMap();
       }
       if(isArray()) {
-         return getAsArray();
+         return asArray();
       }
-      return getAs(Object.class);
-   }
-
-   /**
-    * Gets the value of this entry as the given class.
-    *
-    * @param <T>  the type parameter
-    * @param type the type information for the type to be generated
-    * @return the value
-    */
-   public <T> T getAs(Type type) {
-      if(hasProperty(Json.CLASS_NAME_PROPERTY)) {
-         Type t = getProperty(Json.CLASS_NAME_PROPERTY).getAs(Type.class);
-         if(t != null) {
-            if(hasProperty(Json.VALUE_PROPERTY)) {
-               return MAPPER.fromJson(getProperty(Json.VALUE_PROPERTY).element, t);
-            }
-            return MAPPER.fromJson(element, t);
-         }
-      }
-      return MAPPER.fromJson(element, type);
-   }
-
-   /**
-    * Converts the entry into a list of elements checking if the underlying entry is a json array.
-    *
-    * @return the list
-    * @throws IllegalStateException if the entry's element is not a json array
-    */
-   public List<JsonEntry> getAsArray() {
-      return new ElementList(element.getAsJsonArray());
-   }
-
-   /**
-    * Converts the entry into a list of elements checking if the underlying entry is a json array.
-    *
-    * @param <T>   the type parameter
-    * @param clazz the clazz
-    * @return the list
-    * @throws IllegalStateException if the entry's element is not a json array
-    */
-   public <T> List<T> getAsArray(Type clazz) {
-      return Lists.transform(getAsArray(), entry -> entry.getAs(clazz));
-   }
-
-   public <T> List<T> getAsArray(Class<? extends T> clazz) {
-      return Cast.as(getAsArray(Cast.<Type>as(clazz)));
-   }
-
-   public <T, E extends Collection<T>> E getAsArray(Type clazz, E collection) {
-      elementIterator().forEachRemaining(je -> collection.add(je.getAs(clazz)));
-      return collection;
-   }
-
-   /**
-    * Gets this entry as a boolean value.
-    *
-    * @return the as boolean value
-    * @throws IllegalStateException if the entry's element is not a json primitive
-    */
-   public boolean getAsBoolean() {
-      return element.getAsBoolean();
-   }
-
-   public boolean[] getAsBooleanArray() {
-      boolean[] out = new boolean[element.getAsJsonArray().size()];
-      int i = 0;
-      for(JsonElement jsonElement : element.getAsJsonArray()) {
-         out[i] = jsonElement.getAsBoolean();
-         i++;
-      }
-      return out;
-   }
-
-   /**
-    * Gets this entry as a byte value.
-    *
-    * @return the as byte value
-    * @throws IllegalStateException if the entry's element is not a json primitive
-    */
-   public byte getAsByte() {
-      return element.getAsByte();
-   }
-
-   /**
-    * Gets this entry as a Character value.
-    *
-    * @return the as Character value
-    * @throws IllegalStateException if the entry's element is not a json primitive
-    */
-   public Character getAsCharacter() {
-      return element.getAsString().charAt(0);
-   }
-
-   /**
-    * Gets this entry as a double value.
-    *
-    * @return the as double value
-    * @throws IllegalStateException if the entry's element is not a json primitive
-    */
-   public double getAsDouble() {
-      return element.getAsDouble();
-   }
-
-   public double[] getAsDoubleArray() {
-      double[] out = new double[element.getAsJsonArray().size()];
-      int i = 0;
-      for(JsonElement jsonElement : element.getAsJsonArray()) {
-         out[i] = jsonElement.getAsDouble();
-         i++;
-      }
-      return out;
-   }
-
-   /**
-    * Gets this entry as a float value.
-    *
-    * @return the as float value
-    * @throws IllegalStateException if the entry's element is not a json primitive
-    */
-   public float getAsFloat() {
-      return element.getAsFloat();
-   }
-
-   /**
-    * Gets this entry as a int value.
-    *
-    * @return the as int value
-    * @throws IllegalStateException if the entry's element is not a json primitive
-    */
-   public int getAsInt() {
-      return element.getAsInt();
-   }
-
-   public int[] getAsIntArray() {
-      int[] out = new int[element.getAsJsonArray().size()];
-      int i = 0;
-      for(JsonElement jsonElement : element.getAsJsonArray()) {
-         out[i] = jsonElement.getAsInt();
-         i++;
-      }
-      return out;
-   }
-
-   /**
-    * Gets this entry as a long value.
-    *
-    * @return the as long value
-    * @throws IllegalStateException if the entry's element is not a json primitive
-    */
-   public long getAsLong() {
-      return element.getAsLong();
-   }
-
-   /**
-    * Converts the entry into a map of string keys and entry elements checking if the underlying entry is a json
-    * object.
-    *
-    * @return the map
-    * @throws IllegalStateException if the entry's element is not a json object
-    */
-   public Map<String, JsonEntry> getAsMap() {
-      return new ElementMap(element.getAsJsonObject());
-   }
-
-   /**
-    * Converts the entry into a map of string keys and entry elements checking if the underlying entry is a json
-    * object.
-    *
-    * @param <T>   the type parameter
-    * @param clazz the clazz
-    * @return the map
-    * @throws IllegalStateException if the entry's element is not a json object
-    */
-   public <T> Map<String, T> getAsMap(Type clazz) {
-      Map<String, T> map = new HashMap<>();
-      propertyIterator().forEachRemaining(e -> map.put(e.getKey(), e.getValue().getAs(clazz)));
-      return map;
-   }
-
-   /**
-    * Gets this entry as a Number value.
-    *
-    * @return the as Number value
-    * @throws IllegalStateException if the entry's element is not a json primitive
-    */
-   public Number getAsNumber() {
-      return element.getAsNumber();
-   }
-
-   /**
-    * Gets this entry as a short value.
-    *
-    * @return the as short value
-    * @throws IllegalStateException if the entry's element is not a json primitive
-    */
-   public short getAsShort() {
-      return element.getAsShort();
-   }
-
-   /**
-    * Gets this entry as a String value.
-    *
-    * @return the as String value
-    * @throws IllegalStateException if the entry's element is not a json primitive
-    */
-   public String getAsString() {
-      if(element.isJsonNull()) {
-         return null;
-      }
-      return element.getAsString();
-   }
-
-   /**
-    * Gets this entry as a Val value.
-    *
-    * @return the as Val value
-    */
-   public Val getAsVal() {
-      if(element.isJsonNull()) {
-         return Val.NULL;
-      }
-      if(element.isJsonPrimitive()) {
-         JsonPrimitive primitive = Cast.as(element);
-         if(primitive.isBoolean()) {
-            return Val.of(primitive.getAsBoolean());
-         }
-         if(primitive.isNumber()) {
-            return Val.of(primitive.getAsNumber());
-         }
-         return Val.of(primitive.getAsString());
-      }
-      if(element.isJsonArray()) {
-         return Val.of(getAsArray());
-      }
-      return Val.of(getAsMap());
+      return as(Object.class);
    }
 
    /**
@@ -478,7 +531,7 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry is not a json object
     */
    public boolean getBooleanProperty(String propertyName) {
-      return getProperty(propertyName).element.getAsBoolean();
+      return getProperty(propertyName).element.asBoolean();
    }
 
    /**
@@ -490,8 +543,8 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry is not a json object
     */
    public boolean getBooleanProperty(String propertyName, boolean defaultValue) {
-      if(element.getAsJsonObject().has(propertyName)) {
-         return element.getAsJsonObject().get(propertyName).getAsBoolean();
+      if(element.has(propertyName)) {
+         return getProperty(propertyName).asBoolean();
       }
       return defaultValue;
    }
@@ -504,7 +557,7 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry is not a json object
     */
    public Character getCharacterProperty(String propertyName) {
-      return getProperty(propertyName).element.getAsString().charAt(0);
+      return getProperty(propertyName).asCharacter();
    }
 
    /**
@@ -516,8 +569,8 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry is not a json object
     */
    public Character getCharacterProperty(String propertyName, Character defaultValue) {
-      if(element.getAsJsonObject().has(propertyName)) {
-         return element.getAsJsonObject().get(propertyName).getAsString().charAt(0);
+      if(element.has(propertyName)) {
+         return getProperty(propertyName).asCharacter();
       }
       return defaultValue;
    }
@@ -530,7 +583,7 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry is not a json object
     */
    public double getDoubleProperty(String propertyName) {
-      return getProperty(propertyName).element.getAsDouble();
+      return getProperty(propertyName).asDouble();
    }
 
    /**
@@ -542,8 +595,8 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry is not a json object
     */
    public double getDoubleProperty(String propertyName, double defaultValue) {
-      if(element.getAsJsonObject().has(propertyName)) {
-         return element.getAsJsonObject().get(propertyName).getAsDouble();
+      if(element.has(propertyName)) {
+         return getProperty(propertyName).asDouble();
       }
       return defaultValue;
    }
@@ -553,7 +606,7 @@ public class JsonEntry implements Serializable {
     *
     * @return the element
     */
-   public JsonElement getElement() {
+   public JsonNode getElement() {
       return element;
    }
 
@@ -565,7 +618,7 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry is not a json object
     */
    public float getFloatProperty(String propertyName) {
-      return getProperty(propertyName).element.getAsFloat();
+      return getProperty(propertyName).asFloat();
    }
 
    /**
@@ -577,8 +630,8 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry is not a json object
     */
    public float getFloatProperty(String propertyName, float defaultValue) {
-      if(element.getAsJsonObject().has(propertyName)) {
-         return element.getAsJsonObject().get(propertyName).getAsFloat();
+      if(element.has(propertyName)) {
+         return getProperty(propertyName).asFloat();
       }
       return defaultValue;
    }
@@ -591,7 +644,7 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry is not a json object
     */
    public int getIntProperty(String propertyName) {
-      return getProperty(propertyName).element.getAsInt();
+      return getProperty(propertyName).asInt();
    }
 
    /**
@@ -603,8 +656,8 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry is not a json object
     */
    public int getIntProperty(String propertyName, int defaultValue) {
-      if(element.getAsJsonObject().has(propertyName)) {
-         return element.getAsJsonObject().get(propertyName).getAsInt();
+      if(element.has(propertyName)) {
+         return getProperty(propertyName).asInt();
       }
       return defaultValue;
    }
@@ -617,7 +670,7 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry is not a json object
     */
    public long getLongProperty(String propertyName) {
-      return getProperty(propertyName).element.getAsLong();
+      return getProperty(propertyName).asLong();
    }
 
    /**
@@ -629,8 +682,8 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry is not a json object
     */
    public long getLongProperty(String propertyName, long defaultValue) {
-      if(element.getAsJsonObject().has(propertyName)) {
-         return element.getAsJsonObject().get(propertyName).getAsLong();
+      if(element.has(propertyName)) {
+         return getProperty(propertyName).asLong();
       }
       return defaultValue;
    }
@@ -643,7 +696,7 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry is not a json object
     */
    public Number getNumberProperty(String propertyName) {
-      return getProperty(propertyName).element.getAsNumber();
+      return getProperty(propertyName).asNumber();
    }
 
    /**
@@ -655,8 +708,8 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry is not a json object
     */
    public Number getNumberProperty(String propertyName, Number defaultValue) {
-      if(element.getAsJsonObject().has(propertyName)) {
-         return element.getAsJsonObject().get(propertyName).getAsNumber();
+      if(element.has(propertyName)) {
+         return getProperty(propertyName).asNumber();
       }
       return defaultValue;
    }
@@ -679,8 +732,8 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry is not a json object
     */
    public JsonEntry getProperty(String propertyName) {
-      if(element.isJsonObject()) {
-         return new JsonEntry(element.getAsJsonObject().get(propertyName));
+      if(element.isObject()) {
+         return new JsonEntry(element.get(propertyName));
       }
       throw new IllegalArgumentException("Trying to get '" + propertyName + "' from an array");
    }
@@ -694,8 +747,8 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry is not a json object
     */
    public JsonEntry getProperty(String propertyName, Object defaultValue) {
-      if(element.getAsJsonObject().has(propertyName)) {
-         return new JsonEntry(element.getAsJsonObject().get(propertyName));
+      if(element.has(propertyName)) {
+         return new JsonEntry(element.get(propertyName));
       }
       return from(defaultValue);
    }
@@ -709,8 +762,8 @@ public class JsonEntry implements Serializable {
     * @return the property value
     * @throws IllegalStateException if the entry is not a json object
     */
-   public <T> T getProperty(String propertyName, Class<T> clazz) {
-      return new JsonEntry(element.getAsJsonObject().get(propertyName)).getAs(clazz);
+   public <T> T getProperty(@NonNull String propertyName, @NonNull Class<T> clazz) {
+      return getProperty(propertyName).as(clazz);
    }
 
    /**
@@ -724,8 +777,8 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry is not a json object
     */
    public <T> T getProperty(String propertyName, Class<T> clazz, T defaultValue) {
-      if(element.getAsJsonObject().has(propertyName)) {
-         return new JsonEntry(element.getAsJsonObject().get(propertyName)).getAs(clazz);
+      if(element.has(propertyName)) {
+         return new JsonEntry(element.get(propertyName)).as(clazz);
       }
       return defaultValue;
    }
@@ -738,7 +791,7 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry is not a json object
     */
    public String getStringProperty(String propertyName) {
-      return getProperty(propertyName).element.getAsString();
+      return getProperty(propertyName).asString();
    }
 
    /**
@@ -750,8 +803,8 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry is not a json object
     */
    public String getStringProperty(String propertyName, String defaultValue) {
-      if(element.getAsJsonObject().has(propertyName)) {
-         return element.getAsJsonObject().get(propertyName).getAsString();
+      if(element.has(propertyName)) {
+         return getProperty(propertyName).asString();
       }
       return defaultValue;
    }
@@ -764,8 +817,8 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry is not a json object
     */
    public Val getValProperty(String propertyName) {
-      if(element.getAsJsonObject().has(propertyName)) {
-         return new JsonEntry(element.getAsJsonObject().get(propertyName)).getAsVal();
+      if(element.has(propertyName)) {
+         return getProperty(propertyName).asVal();
       }
       return Val.NULL;
    }
@@ -779,8 +832,8 @@ public class JsonEntry implements Serializable {
     * @throws IllegalStateException if the entry is not a json object
     */
    public Val getValProperty(String propertyName, Object defaultValue) {
-      if(element.getAsJsonObject().has(propertyName)) {
-         return new JsonEntry(element.getAsJsonObject().get(propertyName)).getAsVal();
+      if(element.has(propertyName)) {
+         return getProperty(propertyName).asVal();
       }
       return Val.of(defaultValue);
    }
@@ -792,10 +845,7 @@ public class JsonEntry implements Serializable {
     * @return true if this is an object and has the property otherwise false
     */
    public boolean hasProperty(String propertyName) {
-      if(element.isJsonObject()) {
-         return element.getAsJsonObject().has(propertyName);
-      }
-      return false;
+      return element.has(propertyName);
    }
 
    @Override
@@ -809,7 +859,7 @@ public class JsonEntry implements Serializable {
     * @return true if a json array, false otherwise
     */
    public boolean isArray() {
-      return element.isJsonArray();
+      return element.isArray();
    }
 
    /**
@@ -818,7 +868,7 @@ public class JsonEntry implements Serializable {
     * @return the boolean
     */
    public boolean isBoolean() {
-      return isPrimitive() && element.getAsJsonPrimitive().isBoolean();
+      return element.isBoolean();
    }
 
    /**
@@ -827,7 +877,7 @@ public class JsonEntry implements Serializable {
     * @return true if a json null value, false otherwise
     */
    public boolean isNull() {
-      return element.isJsonNull();
+      return element.isNull();
    }
 
    /**
@@ -836,7 +886,7 @@ public class JsonEntry implements Serializable {
     * @return the boolean
     */
    public boolean isNumber() {
-      return isPrimitive() && element.getAsJsonPrimitive().isNumber();
+      return element.isNumber();
    }
 
    /**
@@ -845,16 +895,11 @@ public class JsonEntry implements Serializable {
     * @return true if a json object, false otherwise
     */
    public boolean isObject() {
-      return element.isJsonObject();
+      return element.isObject();
    }
 
-   /**
-    * Checks if this entry is a json primitive
-    *
-    * @return true if a json primitive value, false otherwise
-    */
    public boolean isPrimitive() {
-      return element.isJsonPrimitive();
+      return isNumber() || isBoolean() || isString();
    }
 
    /**
@@ -863,7 +908,7 @@ public class JsonEntry implements Serializable {
     * @return the boolean
     */
    public boolean isString() {
-      return isPrimitive() && element.getAsJsonPrimitive().isString();
+      return element.isTextual();
    }
 
    /**
@@ -872,10 +917,7 @@ public class JsonEntry implements Serializable {
     * @return the set of property names (keys) or empty set if not an object
     */
    public Set<String> keySet() {
-      if(element.isJsonObject()) {
-         return element.getAsJsonObject().keySet();
-      }
-      return Collections.emptySet();
+      return new IteratorSet<>(() -> element.fieldNames());
    }
 
    public JsonEntry mergeObject(JsonEntry entry) {
@@ -887,25 +929,25 @@ public class JsonEntry implements Serializable {
       throw new IllegalArgumentException("Object expected");
    }
 
-   public String pprint() {
-      return pprint(3);
-   }
+   //   public String pprint() {
+   //      return pprint(3);
+   //   }
 
-   public String pprint(int indent) {
-      StringWriter sw = new StringWriter();
-      try(JsonWriter jw = MAPPER.newJsonWriter(sw)) {
-         jw.setIndent(Strings.repeat(' ', indent));
-         MAPPER.toJson(element, jw);
-      } catch(Exception e) {
-         throw new RuntimeException(e);
-      }
-      try {
-         sw.close();
-         return sw.getBuffer().toString();
-      } catch(IOException e) {
-         throw new RuntimeException(e);
-      }
-   }
+   //   public String pprint(int indent) {
+   //      StringWriter sw = new StringWriter();
+   //      try(JsonWriter jw = MAPPER.newJsonWriter(sw)) {
+   //         jw.setIndent(Strings.repeat(' ', indent));
+   //         MAPPER.toJson(element, jw);
+   //      } catch(Exception e) {
+   //         throw new RuntimeException(e);
+   //      }
+   //      try {
+   //         sw.close();
+   //         return sw.getBuffer().toString();
+   //      } catch(IOException e) {
+   //         throw new RuntimeException(e);
+   //      }
+   //   }
 
    /**
     * Gets an iterator over the elements in this element.
@@ -913,11 +955,7 @@ public class JsonEntry implements Serializable {
     * @return the iterator of properties if an object, empty iterator otherwise
     */
    public Iterator<Map.Entry<String, JsonEntry>> propertyIterator() {
-      if(element.isJsonObject()) {
-         return Iterators.transform(element.getAsJsonObject().entrySet().iterator(),
-                                    e -> $(e.getKey(), new JsonEntry(e.getValue())));
-      }
-      return Collections.emptyIterator();
+      return Iterators.transform(element.fieldNames(), n -> $(n, getProperty(n)));
    }
 
    private void readObject(ObjectInputStream ois) throws IOException {
@@ -925,29 +963,24 @@ public class JsonEntry implements Serializable {
    }
 
    public int size() {
-      if(element.isJsonObject()) {
-         return element.getAsJsonObject().size();
-      } else if(element.isJsonArray()) {
-         return element.getAsJsonArray().size();
-      } else if(element.isJsonNull()) {
-         return 0;
-      }
-      return 1;
+      return element.size();
    }
 
    @Override
+   @SneakyThrows
    public String toString() {
-      return element.toString();
+      return MAPPER.writeValueAsString(element);
    }
 
    private void writeObject(ObjectOutputStream oos) throws IOException {
       oos.writeUTF(element.toString());
    }
 
-   private static class ElementList extends AbstractList<JsonEntry> {
-      private final JsonArray array;
+   private static class ElementList extends AbstractList<JsonEntry> implements Serializable {
+      private static final long serialVersionUID = 1L;
+      private final ArrayNode array;
 
-      private ElementList(JsonArray array) {
+      private ElementList(ArrayNode array) {
          this.array = array;
       }
 
@@ -989,9 +1022,6 @@ public class JsonEntry implements Serializable {
 
       @Override
       public boolean remove(Object o) {
-         if(o instanceof JsonEntry) {
-            return array.remove(Cast.<JsonEntry>as(o).element);
-         }
          return false;
       }
 
@@ -1006,15 +1036,16 @@ public class JsonEntry implements Serializable {
       }
    }
 
-   private static class ElementMap extends AbstractMap<String, JsonEntry> {
-      private final JsonObject object;
+   private static class ElementMap extends AbstractMap<String, JsonEntry> implements Serializable {
+      private static final long serialVersionUID = 1L;
+      private final ObjectNode object;
 
       /**
        * Instantiates a new Element map.
        *
        * @param object the object
        */
-      ElementMap(JsonObject object) {
+      ElementMap(ObjectNode object) {
          this.object = object;
       }
 
@@ -1025,8 +1056,8 @@ public class JsonEntry implements Serializable {
 
       @Override
       public Set<Entry<String, JsonEntry>> entrySet() {
-         return Sets.transform(object.entrySet(),
-                               e -> $(e.getKey(), new JsonEntry(e.getValue())));
+         return new IteratorSet<>(() -> Iterators.transform(object.fieldNames(),
+                                                            n -> $(n, new JsonEntry(object.get(n)))));
       }
 
       @Override
@@ -1064,13 +1095,13 @@ public class JsonEntry implements Serializable {
 
       @Override
       public Set<String> keySet() {
-         return object.keySet();
+         return new IteratorSet<>(object::fieldNames);
       }
 
       @Override
       public JsonEntry put(String key, JsonEntry value) {
          JsonEntry toReturn = get(key);
-         object.add(key, value.element);
+         object.set(key, value.element);
          return toReturn;
       }
 

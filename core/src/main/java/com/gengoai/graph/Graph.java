@@ -21,26 +21,18 @@
 
 package com.gengoai.graph;
 
-
-import com.gengoai.annotation.JsonHandler;
-import com.gengoai.collection.Index;
-import com.gengoai.collection.Indexes;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gengoai.collection.Sets;
-import com.gengoai.stream.Streams;
 import com.gengoai.collection.counter.Counter;
 import com.gengoai.collection.counter.Counters;
 import com.gengoai.conversion.Cast;
-import com.gengoai.conversion.Converter;
-import com.gengoai.conversion.TypeConversionException;
-import com.gengoai.json.JsonEntry;
-import com.gengoai.reflection.TypeUtils;
+import com.gengoai.stream.Streams;
 
-import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Stream;
-
-import static com.gengoai.reflection.TypeUtils.getOrObject;
 
 /**
  * <p>Interface defining a graph data structure.</p>
@@ -48,50 +40,8 @@ import static com.gengoai.reflection.TypeUtils.getOrObject;
  * @param <V> the vertex type
  * @author David B. Bracewell
  */
-@JsonHandler(Graph.GraphMarshaller.class)
+@JsonDeserialize(as = DefaultGraphImpl.class)
 public interface Graph<V> extends Iterable<V> {
-
-   class GraphMarshaller<V> extends com.gengoai.json.JsonMarshaller<Graph<V>> {
-
-      @Override
-      protected Graph<V> deserialize(JsonEntry entry, Type type) {
-         Type[] params = TypeUtils.getActualTypeArguments(type);
-         Index<V> vertexIndex = Indexes.indexOf(entry.getProperty("v").getAsArray(getOrObject(0, params)));
-         EdgeFactory<V> factory;
-         try {
-            factory = Cast.as(Converter.convert(entry.getProperty("edgeFactory"), EdgeFactory.class));
-         } catch (TypeConversionException e) {
-            throw new RuntimeException(e);
-         }
-         Graph<V> g = new DefaultGraphImpl<>(factory);
-         entry.getProperty("e").elementIterator().forEachRemaining(edge -> {
-            V v1 = vertexIndex.get(Integer.parseInt(edge.getStringProperty("vertex1").substring(1)));
-            V v2 = vertexIndex.get(Integer.parseInt(edge.getStringProperty("vertex2").substring(1)));
-            g.addVertex(v1);
-            g.addVertex(v2);
-            g.addEdge(factory.createEdge(v1, v2, edge));
-         });
-         return g;
-      }
-
-      @Override
-      protected JsonEntry serialize(Graph<V> vs, Type type) {
-         JsonEntry graphJson = JsonEntry.object()
-                                        .addProperty("edgeFactory", vs.getEdgeFactory().getClass().getName());
-         Index<V> vertexIndex = Indexes.indexOf(vs.vertices());
-         graphJson.addProperty("v", vertexIndex);
-         JsonEntry edges = JsonEntry.array();
-         for (Edge<V> edge : vs.edges()) {
-            JsonEntry jsonE = JsonEntry.from(edge);
-            jsonE.addProperty("vertex1", "@" + vertexIndex.getId(edge.vertex1));
-            jsonE.addProperty("vertex2", "@" + vertexIndex.getId(edge.vertex2));
-            edges.addValue(jsonE);
-         }
-         graphJson.addProperty("e", edges);
-         return graphJson;
-      }
-   }
-
 
    /**
     * Creates a graph with vertices <code>V</code> and edges defined by the given {@link EdgeFactory}.
@@ -113,7 +63,6 @@ public interface Graph<V> extends Iterable<V> {
    static <V> Graph<V> directed() {
       return new DefaultGraphImpl<>(new DirectedEdgeFactory<>());
    }
-
 
    /**
     * Creates a graph with vertices <code>V</code> and edges defined by {@link UndirectedEdgeFactory}.
@@ -157,7 +106,7 @@ public interface Graph<V> extends Iterable<V> {
     * @param edges the edges
     */
    default void addEdges(Collection<? extends Edge<V>> edges) {
-      if (edges != null) {
+      if(edges != null) {
          edges.stream().filter(e -> !containsEdge(e)).forEach(this::addEdge);
       }
    }
@@ -193,7 +142,7 @@ public interface Graph<V> extends Iterable<V> {
     * @return True if the edge is in the graph, false if not
     */
    default boolean containsEdge(Edge<V> edge) {
-      if (edge != null) {
+      if(edge != null) {
          return containsEdge(edge.vertex1, edge.vertex2);
       }
       return false;
@@ -236,6 +185,7 @@ public interface Graph<V> extends Iterable<V> {
     *
     * @return The edge factory
     */
+   @JsonProperty("ef")
    EdgeFactory<V> getEdgeFactory();
 
    /**
@@ -290,7 +240,7 @@ public interface Graph<V> extends Iterable<V> {
     */
    default Counter<V> getPredecessorsWeights(V vertex) {
       Counter<V> counter = Counters.newCounter();
-      for (V v2 : getPredecessors(vertex)) {
+      for(V v2 : getPredecessors(vertex)) {
          counter.set(v2, getEdge(vertex, v2).getWeight());
       }
       return counter;
@@ -304,7 +254,7 @@ public interface Graph<V> extends Iterable<V> {
     */
    default Counter<V> getSuccessorWeights(V vertex) {
       Counter<V> counter = Counters.newCounter();
-      for (V v2 : getSuccessors(vertex)) {
+      for(V v2 : getSuccessors(vertex)) {
          counter.set(v2, getEdge(vertex, v2).getWeight());
       }
       return counter;
@@ -327,7 +277,9 @@ public interface Graph<V> extends Iterable<V> {
     */
    default double getWeight(V v1, V v2) {
       Edge<V> edge = getEdge(v1, v2);
-      return edge == null ? 0 : edge.getWeight();
+      return edge == null
+             ? 0
+             : edge.getWeight();
    }
 
    /**
@@ -338,7 +290,7 @@ public interface Graph<V> extends Iterable<V> {
     */
    default Counter<V> getWeights(V vertex) {
       Counter<V> weights = getSuccessorWeights(vertex);
-      if (isDirected()) {
+      if(isDirected()) {
          weights.merge(getPredecessorsWeights(vertex));
       }
       return weights;
@@ -357,6 +309,7 @@ public interface Graph<V> extends Iterable<V> {
     *
     * @return True if the graph is directed, false if it is undirected
     */
+   @JsonIgnore
    boolean isDirected();
 
    /**
@@ -364,6 +317,7 @@ public interface Graph<V> extends Iterable<V> {
     *
     * @return True if the graph is empty
     */
+   @JsonIgnore
    boolean isEmpty();
 
    /**
@@ -382,16 +336,16 @@ public interface Graph<V> extends Iterable<V> {
     * @param mergeFunction The function to use to merge duplicate edges
     */
    default void merge(Graph<V> other, EdgeMergeFunction<V> mergeFunction) {
-      if (other == null || other.isEmpty()) {
+      if(other == null || other.isEmpty()) {
          return;
       }
-      if (this.isEmpty()) {
+      if(this.isEmpty()) {
          this.addVertices(other.vertices());
          this.addEdges(other.edges());
       } else {
          this.addVertices(other.vertices());
-         for (Edge<V> edge : other.edges()) {
-            if (this.containsEdge(edge)) {
+         for(Edge<V> edge : other.edges()) {
+            if(this.containsEdge(edge)) {
                Edge<V> orig = this.removeEdge(edge.getFirstVertex(), edge.getSecondVertex());
                this.addEdge(mergeFunction.merge(orig, edge, getEdgeFactory()));
             } else {

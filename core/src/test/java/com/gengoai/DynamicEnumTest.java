@@ -30,15 +30,9 @@ public class DynamicEnumTest {
 
    public static final NamesEnum WITH_SPACE = NamesEnum.make("WITH spAce");
 
-   @Test
-   public void testName() throws Exception {
-      assertEquals("WITH_SPACE", WITH_SPACE.name());
-      assertEquals(NamesEnum.class.getCanonicalName() + ".WITH_SPACE", WITH_SPACE.canonicalName());
-   }
-
    @Test(expected = IllegalArgumentException.class)
-   public void testBadPeriod() throws Exception {
-      NamesEnum.make(".");
+   public void testBadBlank() throws Exception {
+      NamesEnum.make("   ");
    }
 
    @Test(expected = IllegalArgumentException.class)
@@ -47,14 +41,33 @@ public class DynamicEnumTest {
    }
 
    @Test(expected = IllegalArgumentException.class)
-   public void testBadBlank() throws Exception {
-      NamesEnum.make("   ");
+   public void testBadPeriod() throws Exception {
+      NamesEnum.make(".");
+   }
+
+   @Test
+   public void testCompare() throws Exception {
+      assertTrue(WITH_SPACE.compareTo(NamesEnum.make("ZEBRA")) < 0);
    }
 
    @Test
    public void testIsInstance() throws Exception {
       assertTrue(WITH_SPACE.isInstance(WITH_SPACE));
       assertFalse(WITH_SPACE.isInstance(NamesEnum.make("NOT A SPACE")));
+   }
+
+   @Test
+   public void testJson() throws Exception {
+      NamesEnum name = NamesEnum.make("name");
+      String json = Json.dumps(name);
+      NamesEnum nameDes = Json.parse(json, NamesEnum.class);
+      assertEquals(name, nameDes);
+   }
+
+   @Test
+   public void testName() throws Exception {
+      assertEquals("WITH_SPACE", WITH_SPACE.name());
+      assertEquals(NamesEnum.class.getCanonicalName() + ".WITH_SPACE", WITH_SPACE.canonicalName());
    }
 
    @Test
@@ -67,23 +80,9 @@ public class DynamicEnumTest {
       assertSame(WITH_SPACE, NamesEnum.make("with space"));
    }
 
-
    @Test
    public void testValues() throws Exception {
       assertTrue(NamesEnum.values().contains(WITH_SPACE));
-   }
-
-   @Test
-   public void testCompare() throws Exception {
-      assertTrue(WITH_SPACE.compareTo(NamesEnum.make("ZEBRA")) < 0);
-   }
-
-   @Test
-   public void testJson() throws Exception {
-      NamesEnum name = NamesEnum.make("name");
-      String json = Json.dumps(name);
-      NamesEnum nameDes = Json.parse(json, NamesEnum.class);
-      assertEquals(name, nameDes);
    }
 
 }

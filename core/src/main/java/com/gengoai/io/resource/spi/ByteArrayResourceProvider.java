@@ -48,7 +48,7 @@ public class ByteArrayResourceProvider implements ResourceProvider {
    @Override
    public Resource createResource(String specification, Map<String, String> properties) {
       BeanMap beanMap;
-      if (Strings.isNullOrBlank(specification)) {
+      if(Strings.isNullOrBlank(specification)) {
          beanMap = new BeanMap(new ByteArrayResource());
       } else {
          beanMap = new BeanMap(new ByteArrayResource(specification.getBytes()));

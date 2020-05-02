@@ -1,5 +1,6 @@
 package com.gengoai.collection.multimap;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gengoai.conversion.Cast;
 import com.gengoai.function.SerializableSupplier;
 
@@ -12,6 +13,7 @@ import java.util.List;
  * @param <V> the type parameter
  * @author David B. Bracewell
  */
+@JsonDeserialize(as = ArrayListMultimap.class)
 public abstract class ListMultimap<K, V> extends BaseMultimap<K, V, List<V>> {
    private static final long serialVersionUID = 1L;
    private final SerializableSupplier<List<V>> listSupplier;

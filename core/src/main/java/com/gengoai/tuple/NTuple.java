@@ -1,5 +1,8 @@
 package com.gengoai.tuple;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.gengoai.conversion.Cast;
 import com.gengoai.string.Strings;
 import lombok.AccessLevel;
@@ -47,16 +50,14 @@ public class NTuple extends Tuple {
     *
     * @param other the other
     */
-   public NTuple(Object[] other) {
+   @JsonCreator
+   public NTuple(@JsonProperty Object[] other) {
       array = new Object[other.length];
       System.arraycopy(other, 0, array, 0, other.length);
    }
 
-   public Object[] getArray(){
-      return array();
-   }
-
    @Override
+   @JsonValue
    public Object[] array() {
       Object[] copy = new Object[array.length];
       System.arraycopy(array, 0, copy, 0, array.length);
@@ -76,6 +77,10 @@ public class NTuple extends Tuple {
    @Override
    public <T> T get(int i) {
       return Cast.as(array[i]);
+   }
+
+   public Object[] getArray() {
+      return array();
    }
 
    @Override

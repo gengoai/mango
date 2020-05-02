@@ -68,12 +68,12 @@ public class URLResource extends BaseResource {
 
    @Override
    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (!(o instanceof URLResource)) return false;
+      if(this == o) return true;
+      if(!(o instanceof URLResource)) return false;
       URLResource that = (URLResource) o;
       return connectionTimeOut == that.connectionTimeOut &&
-         Objects.equals(url, that.url) &&
-         Objects.equals(userAgent, that.userAgent);
+            Objects.equals(url, that.url) &&
+            Objects.equals(userAgent, that.userAgent);
    }
 
    @Override
@@ -88,7 +88,7 @@ public class URLResource extends BaseResource {
 
    @Override
    public Optional<File> asFile() {
-      if (url.getProtocol().equalsIgnoreCase("file")) {
+      if(url.getProtocol().equalsIgnoreCase("file")) {
          return Optional.of(new File(url.getFile()));
       }
       return super.asFile();
@@ -109,7 +109,6 @@ public class URLResource extends BaseResource {
       return url.getFile();
    }
 
-
    @Override
    public Optional<URL> asURL() {
       return Optional.of(url);
@@ -119,7 +118,7 @@ public class URLResource extends BaseResource {
    public Resource getChild(String relativePath) {
       try {
          return new URLResource(new URL(url, relativePath));
-      } catch (MalformedURLException e) {
+      } catch(MalformedURLException e) {
          return EmptyResource.INSTANCE;
       }
    }
@@ -128,7 +127,7 @@ public class URLResource extends BaseResource {
    public Resource getParent() {
       try {
          return new URLResource(FileUtils.parent(url.toString()));
-      } catch (MalformedURLException e) {
+      } catch(MalformedURLException e) {
          return EmptyResource.INSTANCE;
       }
    }
@@ -151,7 +150,7 @@ public class URLResource extends BaseResource {
          URLConnection connection = createConnection();
          connection.setConnectTimeout(5 * 1000);
          is = connection.getInputStream();
-      } catch (Exception e) {
+      } catch(Exception e) {
          exists = false;
       } finally {
          QuietIO.closeQuietly(is);
@@ -176,7 +175,7 @@ public class URLResource extends BaseResource {
 
    private URLConnection createConnection() throws IOException {
       URLConnection connection = url.openConnection();
-      if (!Strings.isNullOrBlank(userAgent)) {
+      if(!Strings.isNullOrBlank(userAgent)) {
          connection.setRequestProperty("User-Agent", userAgent);
       }
       connection.setConnectTimeout(connectionTimeOut);

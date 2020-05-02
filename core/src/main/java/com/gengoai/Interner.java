@@ -21,15 +21,17 @@
 
 package com.gengoai;
 
-import com.gengoai.annotation.JsonHandler;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.gengoai.stream.Streams;
-import com.gengoai.json.JsonEntry;
-import com.gengoai.reflection.TypeUtils;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.util.Collection;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 
@@ -42,11 +44,21 @@ import static com.gengoai.Validation.notNull;
  * @param <E> the type parameter
  * @author David B. Bracewell
  */
-@JsonHandler(Interner.InternerMarshaller.class)
 @EqualsAndHashCode(callSuper = false)
+@NoArgsConstructor
 public final class Interner<E> implements Serializable {
    private static final long serialVersionUID = 1L;
    private volatile WeakHashMap<E, E> map = new WeakHashMap<>();
+
+   /**
+    * Instantiates a new Interner initializing it with the given items.
+    *
+    * @param items the items
+    */
+   @JsonCreator
+   public Interner(@JsonProperty @NonNull Collection<? extends E> items) {
+      internAll(items);
+   }
 
    /**
     * <p>Adds or gets the canonical version of the incoming object.</p>
@@ -66,10 +78,15 @@ public final class Interner<E> implements Serializable {
     * @return the interned elements.
     * @throws NullPointerException if the collection is null
     */
-   public Collection<E> internAll(Iterable<? extends E> iterable) {
+   public Collection<E> internAll(@JsonProperty @NonNull Iterable<? extends E> iterable) {
       return Streams.asStream(notNull(iterable))
                     .map(this::intern)
                     .collect(Collectors.toList());
+   }
+
+   @JsonValue
+   private Set<E> keySet() {
+      return map.keySet();
    }
 
    /**
@@ -84,26 +101,6 @@ public final class Interner<E> implements Serializable {
    @Override
    public String toString() {
       return "Interner{size=" + size() + "}";
-   }
-
-   /**
-    * Json marshaling for Interner
-    */
-   public static class InternerMarshaller extends com.gengoai.json.JsonMarshaller<Interner> {
-
-      @Override
-      protected Interner deserialize(JsonEntry entry, Type type) {
-         Type[] parameters = TypeUtils.getActualTypeArguments(type);
-         Interner<?> interner = new Interner<>();
-         entry.elementIterator()
-              .forEachRemaining(e -> interner.intern(e.getAs(TypeUtils.getOrObject(0, parameters))));
-         return interner;
-      }
-
-      @Override
-      protected JsonEntry serialize(Interner interner, Type type) {
-         return JsonEntry.array(interner.map.keySet());
-      }
    }
 
 }//END OF Interner

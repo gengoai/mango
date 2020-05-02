@@ -36,7 +36,6 @@ public class ByteArrayResource extends BaseResource implements NonTraversableRes
    private static final long serialVersionUID = 9152033221857665242L;
    private final ByteArrayOutputStream buffer;
 
-
    /**
     * Instantiates a new Byte array resource.
     */
@@ -65,7 +64,6 @@ public class ByteArrayResource extends BaseResource implements NonTraversableRes
       this.buffer.write(b, offset, len);
    }
 
-
    @Override
    public Resource append(byte[] byteArray) throws IOException {
       buffer.write(byteArray);
@@ -79,8 +77,8 @@ public class ByteArrayResource extends BaseResource implements NonTraversableRes
 
    @Override
    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (!(o instanceof ByteArrayResource)) return false;
+      if(this == o) return true;
+      if(!(o instanceof ByteArrayResource)) return false;
       ByteArrayResource that = (ByteArrayResource) o;
       return Objects.equals(buffer, that.buffer);
    }

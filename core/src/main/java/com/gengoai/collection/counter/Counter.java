@@ -21,27 +21,21 @@
 
 package com.gengoai.collection.counter;
 
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gengoai.Copyable;
-import com.gengoai.annotation.JsonHandler;
 import com.gengoai.conversion.Converter;
 import com.gengoai.io.CSV;
 import com.gengoai.io.CSVWriter;
 import com.gengoai.io.resource.Resource;
-import com.gengoai.json.JsonEntry;
 import com.gengoai.math.Math2;
-import com.gengoai.reflection.Reflect;
-import com.gengoai.reflection.ReflectionException;
-import com.gengoai.reflection.TypeUtils;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.function.*;
 import java.util.stream.Collectors;
-
-import static com.gengoai.reflection.TypeUtils.getOrObject;
 
 /**
  * <p>A specialized object to double map that allows basic statistics over the objects and their values.</p>
@@ -49,7 +43,7 @@ import static com.gengoai.reflection.TypeUtils.getOrObject;
  * @param <T> Component type being counted.
  * @author David B. Bracewell
  */
-@JsonHandler(Counter.CounterMarshaller.class)
+@JsonDeserialize(as = HashMapCounter.class)
 public interface Counter<T> extends Copyable<Counter<T>> {
 
    /**
@@ -75,6 +69,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
     *
     * @return The counter as a <code>Map</code>
     */
+   @JsonValue
    Map<T, Double> asMap();
 
    /**
@@ -135,7 +130,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
     * @return the counter
     */
    default Counter<T> decrementAll(Iterable<? extends T> iterable) {
-      if (iterable != null) {
+      if(iterable != null) {
          iterable.forEach(this::decrement);
       }
       return this;
@@ -149,7 +144,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
     * @return the counter
     */
    default Counter<T> decrementAll(Iterable<? extends T> iterable, double amount) {
-      if (iterable != null) {
+      if(iterable != null) {
          iterable.forEach(i -> decrement(i, amount));
       }
       return this;
@@ -231,7 +226,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
     * @return the counter
     */
    default Counter<T> incrementAll(Iterable<? extends T> iterable) {
-      if (iterable != null) {
+      if(iterable != null) {
          iterable.forEach(this::increment);
       }
       return this;
@@ -245,7 +240,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
     * @return the counter
     */
    default Counter<T> incrementAll(Iterable<? extends T> iterable, double amount) {
-      if (iterable != null) {
+      if(iterable != null) {
          iterable.forEach(i -> increment(i, amount));
       }
       return this;
@@ -256,6 +251,7 @@ public interface Counter<T> extends Copyable<Counter<T>> {
     *
     * @return True if the counter is empty
     */
+   @JsonIgnore
    boolean isEmpty();
 
    /**
@@ -273,7 +269,9 @@ public interface Counter<T> extends Copyable<Counter<T>> {
     */
    default List<T> itemsByCount(boolean ascending) {
       return entries().parallelStream()
-                      .sorted((e1, e2) -> (ascending ? 1 : -1) * Double.compare(e1.getValue(), e2.getValue()))
+                      .sorted((e1, e2) -> (ascending
+                                           ? 1
+                                           : -1) * Double.compare(e1.getValue(), e2.getValue()))
                       .map(Map.Entry::getKey)
                       .collect(Collectors.toList());
    }
@@ -303,10 +301,10 @@ public interface Counter<T> extends Copyable<Counter<T>> {
     */
    default T max() {
       return entries()
-         .parallelStream()
-         .max(Comparator.comparingDouble(Map.Entry::getValue))
-         .map(Map.Entry::getKey)
-         .orElse(null);
+            .parallelStream()
+            .max(Comparator.comparingDouble(Map.Entry::getValue))
+            .map(Map.Entry::getKey)
+            .orElse(null);
    }
 
    /**
@@ -315,14 +313,14 @@ public interface Counter<T> extends Copyable<Counter<T>> {
     * @return The maximum count in the counter
     */
    default double maximumCount() {
-      if (isEmpty()) {
+      if(isEmpty()) {
          return 0d;
       }
       return entries()
-         .parallelStream()
-         .max(Comparator.comparingDouble(Map.Entry::getValue))
-         .map(Map.Entry::getValue)
-         .orElse(0d);
+            .parallelStream()
+            .max(Comparator.comparingDouble(Map.Entry::getValue))
+            .map(Map.Entry::getValue)
+            .orElse(0d);
    }
 
    /**
@@ -348,10 +346,10 @@ public interface Counter<T> extends Copyable<Counter<T>> {
     */
    default T min() {
       return entries()
-         .parallelStream()
-         .min(Comparator.comparingDouble(Map.Entry::getValue))
-         .map(Map.Entry::getKey)
-         .orElse(null);
+            .parallelStream()
+            .min(Comparator.comparingDouble(Map.Entry::getValue))
+            .map(Map.Entry::getKey)
+            .orElse(null);
    }
 
    /**
@@ -360,14 +358,14 @@ public interface Counter<T> extends Copyable<Counter<T>> {
     * @return The minimum count in the counter
     */
    default double minimumCount() {
-      if (isEmpty()) {
+      if(isEmpty()) {
          return 0d;
       }
       return entries()
-         .parallelStream()
-         .min(Comparator.comparingDouble(Map.Entry::getValue))
-         .map(Map.Entry::getValue)
-         .orElse(0d);
+            .parallelStream()
+            .min(Comparator.comparingDouble(Map.Entry::getValue))
+            .map(Map.Entry::getValue)
+            .orElse(0d);
    }
 
    /**
@@ -396,9 +394,9 @@ public interface Counter<T> extends Copyable<Counter<T>> {
       double target = rnd.nextDouble() * sum();
       double runningSum = 0;
       T lastEntry = null;
-      for (Map.Entry<T, Double> entry : entries()) {
+      for(Map.Entry<T, Double> entry : entries()) {
          runningSum += entry.getValue();
-         if (target <= runningSum) {
+         if(target <= runningSum) {
             return entry.getKey();
          }
          lastEntry = entry.getKey();
@@ -470,43 +468,12 @@ public interface Counter<T> extends Copyable<Counter<T>> {
     */
    default void writeCsv(Resource output) throws IOException {
       DecimalFormat decimalFormat = new DecimalFormat("#.#####");
-      try (CSVWriter writer = CSV.builder().writer(output)) {
-         for (Map.Entry<T, Double> entry : entries()) {
+      try(CSVWriter writer = CSV.builder().writer(output)) {
+         for(Map.Entry<T, Double> entry : entries()) {
             writer.write(Converter.convertSilently(entry.getKey(), String.class),
                          decimalFormat.format(entry.getValue())
                         );
          }
-      }
-   }
-
-   class CounterMarshaller<T> extends com.gengoai.json.JsonMarshaller<Counter<T>> {
-
-      @Override
-      protected Counter<T> deserialize(JsonEntry entry, Type type) {
-         Class<?> cntrClass = TypeUtils.asClass(type);
-         if (cntrClass == Counter.class) {
-            cntrClass = HashMapCounter.class;
-         }
-         final Counter<T> counter;
-         try {
-            counter = Reflect.onClass(cntrClass).create().get();
-         } catch (ReflectionException e) {
-            throw new RuntimeException(e);
-         }
-         Type keyType = getOrObject(0, TypeUtils.getActualTypeArguments(type));
-         entry.elementIterator()
-              .forEachRemaining(a -> {
-                 List<JsonEntry> av = a.getAsArray();
-                 counter.increment(av.get(0).getAs(keyType), av.get(1).getAsDouble());
-              });
-         return counter;
-      }
-
-      @Override
-      protected JsonEntry serialize(Counter<T> counter, Type type) {
-         JsonEntry entry = JsonEntry.array();
-         counter.forEach((k, v) -> entry.addValue(JsonEntry.array(k, v)));
-         return entry;
       }
    }
 

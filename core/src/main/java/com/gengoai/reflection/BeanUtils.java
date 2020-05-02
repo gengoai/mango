@@ -26,6 +26,7 @@ import com.gengoai.config.Config;
 import com.gengoai.conversion.Cast;
 import com.gengoai.json.Json;
 import com.gengoai.json.JsonEntry;
+import lombok.NonNull;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -49,16 +50,16 @@ public class BeanUtils {
              .forEach(propertyName -> {
                 String property = targetName + "." + propertyName;
                 Object val;
-                if (Config.isBean(property)) {
+                if(Config.isBean(property)) {
                    val = Config.get(property);
                 } else {
                    Type type = beanMap.getType(propertyName);
-                   if (Config.hasProperty(property + ".@type")) {
+                   if(Config.hasProperty(property + ".@type")) {
                       type = TypeUtils.parse(Config.get(property + ".@type").asString());
                    }
                    try {
-                      val = Json.parse(Config.get(targetName, propertyName).asString()).getAs(type);
-                   } catch (Exception e) {
+                      val = Json.parse(Config.get(targetName, propertyName).asString(), type);
+                   } catch(Exception e) {
                       val = Config.get(targetName, propertyName).as(type);
                    }
                 }
@@ -72,7 +73,7 @@ public class BeanUtils {
     * @param clazz The class that we want to instantiate
     * @return A new instance of the given class
     */
-   public static <T> T getBean(Class<T> clazz) throws ReflectionException {
+   public static <T> T getBean(@NonNull Class<T> clazz) throws ReflectionException {
       return parameterizeObject(Reflect.onClass(clazz).create().get());
    }
 
@@ -83,14 +84,13 @@ public class BeanUtils {
     * @param clazz The class type of the bean
     * @return The named bean
     */
-   public static <T> T getNamedBean(String name, Class<T> clazz) throws ReflectionException {
-      if (SINGLETONS.containsKey(name)) {
+   public static <T> T getNamedBean(@NonNull String name, @NonNull Class<T> clazz) throws ReflectionException {
+      if(SINGLETONS.containsKey(name)) {
          return Cast.as(SINGLETONS.get(name));
       }
 
-
       Reflect reflect;
-      if (Config.hasProperty(name + ".@type")) {
+      if(Config.hasProperty(name + ".@type")) {
          reflect = Reflect.onClass(Config.get(name + ".@type").asClass()).allowPrivilegedAccess();
       } else {
          reflect = Reflect.onClass(clazz).allowPrivilegedAccess();
@@ -101,31 +101,31 @@ public class BeanUtils {
       List<Class<?>> paramTypes = new ArrayList<>();
       List<Object> values = new ArrayList<>();
 
-      if (Config.hasProperty(name + ".@constructor")) {
+      if(Config.hasProperty(name + ".@constructor")) {
          try {
             JsonEntry cons = Json.parse(Config.get(name + ".@constructor").asString());
-            if (cons.isArray()) {
+            if(cons.isArray()) {
                cons.elementIterator().forEachRemaining(j -> {
                   Map.Entry<String, JsonEntry> e = j.propertyIterator().next();
                   Type type = TypeUtils.parse(e.getKey());
-                  values.add(e.getValue().getAs(type));
+                  values.add(e.getValue().as(type));
                   paramTypes.add(TypeUtils.asClass(type));
 
                });
             } else {
-               for (Map.Entry<String, JsonEntry> e : Iterables.asIterable(cons.propertyIterator())) {
+               for(Map.Entry<String, JsonEntry> e : Iterables.asIterable(cons.propertyIterator())) {
                   Type type = TypeUtils.parse(e.getKey());
-                  values.add(e.getValue().getAs(type));
+                  values.add(e.getValue().as(type));
                   paramTypes.add(TypeUtils.asClass(type));
                }
             }
-         } catch (IOException e) {
+         } catch(IOException e) {
             throw new RuntimeException(e);
          }
       }
 
       Object bean;
-      if (values.isEmpty()) {
+      if(values.isEmpty()) {
          bean = reflect.create().get();
       } else {
          bean = reflect.create(paramTypes.toArray(new Class[1]),
@@ -134,7 +134,7 @@ public class BeanUtils {
 
       bean = parameterizeObject(bean);
       bean = parameterizeObject(name, bean);
-      if (isSingleton) {
+      if(isSingleton) {
          SINGLETONS.putIfAbsent(name, bean);
          bean = SINGLETONS.get(name);
       }
@@ -160,7 +160,7 @@ public class BeanUtils {
     * @return The object
     */
    private static <T> T parameterizeObject(String configPrefix, T object) {
-      if (object == null) {
+      if(object == null) {
          return null;
       }
       BeanMap beanMap = new BeanMap(object);
@@ -170,6 +170,5 @@ public class BeanUtils {
       doParametrization(configPrefix, beanMap);
       return object;
    }
-
 
 }// END OF CLASS BeanUtils

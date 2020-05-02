@@ -21,9 +21,12 @@
 
 package com.gengoai.collection.counter;
 
-import com.gengoai.json.JsonEntry;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gengoai.tuple.Tuple3;
+import lombok.NonNull;
 
-import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.HashMap;
 
 /**
@@ -37,10 +40,21 @@ public class HashMapMultiCounter<K, V> extends BaseMultiCounter<K, V> {
    private static final long serialVersionUID = 1L;
 
    /**
-    * Instantiates a new Hash map multi counter.
+    * Instantiates a new HashMapMultiCounter.
     */
    public HashMapMultiCounter() {
       super(new HashMap<>());
+   }
+
+   /**
+    * Instantiates a new HashMapMultiCounter initializing it with the given values.
+    *
+    * @param items the items
+    */
+   @JsonCreator
+   public HashMapMultiCounter(@JsonProperty @NonNull Collection<Tuple3<K, V, Double>> items) {
+      this();
+      items.forEach(t -> set(t.v1, t.v2, t.v3));
    }
 
    @Override
@@ -51,19 +65,6 @@ public class HashMapMultiCounter<K, V> extends BaseMultiCounter<K, V> {
    @Override
    protected MultiCounter<K, V> newInstance() {
       return new HashMapMultiCounter<>();
-   }
-
-   /**
-    * Deserializes a <code>HashMapMultiCounter</code> from Json
-    *
-    * @param <K>   the key type parameter
-    * @param <V>   the value type parameter
-    * @param entry the json entry
-    * @param types the key and value types
-    * @return the multi counter
-    */
-   static <K, V> MultiCounter<K, V> fromJson(JsonEntry entry, Type... types) {
-      return MultiCounter.fromJson(new HashMapMultiCounter<>(), entry, types);
    }
 
 }//END OF HashMapMultiCounter

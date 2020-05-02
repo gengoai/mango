@@ -45,7 +45,7 @@ public class StdoutResource extends BaseResource implements NonTraversableResour
 
    @Override
    public Resource append(byte[] byteArray) throws IOException {
-      try (OutputStream os = createOutputStream()) {
+      try(OutputStream os = createOutputStream()) {
          os.write(byteArray);
       }
       return this;

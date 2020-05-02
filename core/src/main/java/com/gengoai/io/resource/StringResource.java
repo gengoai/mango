@@ -54,8 +54,12 @@ public class StringResource extends BaseResource implements NonTraversableResour
 
    @Override
    public boolean equals(Object obj) {
-      if (this == obj) {return true;}
-      if (obj == null || getClass() != obj.getClass()) {return false;}
+      if(this == obj) {
+         return true;
+      }
+      if(obj == null || getClass() != obj.getClass()) {
+         return false;
+      }
       final StringResource other = (StringResource) obj;
       return Objects.equals(this.resource.toString(), other.resource.toString());
    }
@@ -86,7 +90,7 @@ public class StringResource extends BaseResource implements NonTraversableResour
     * @param resource The string contents.
     */
    public StringResource(String resource) {
-      if (resource == null) {
+      if(resource == null) {
          this.resource = new StringBuilder();
       } else {
          this.resource = new StringBuilder(resource);
@@ -101,7 +105,9 @@ public class StringResource extends BaseResource implements NonTraversableResour
 
    @Override
    public Resource append(byte[] byteArray) throws IOException {
-      return append(byteArray == null ? null : new String(byteArray, getCharset()));
+      return append(byteArray == null
+                    ? null
+                    : new String(byteArray, getCharset()));
    }
 
    @Override

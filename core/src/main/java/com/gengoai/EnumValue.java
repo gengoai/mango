@@ -22,20 +22,16 @@
 
 package com.gengoai;
 
-import com.gengoai.annotation.JsonHandler;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.gengoai.application.CommandLineParser;
 import com.gengoai.application.NamedOption;
 import com.gengoai.config.Preloader;
 import com.gengoai.conversion.Cast;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
-import com.gengoai.json.JsonEntry;
-import com.gengoai.reflection.RMethod;
-import com.gengoai.reflection.Reflect;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
-import java.lang.reflect.Type;
 
 /**
  * <p>A enum like object that can have elements created at runtime as needed. Elements are singleton objects and can
@@ -70,22 +66,11 @@ import java.lang.reflect.Type;
  * @param <T> the type parameter
  * @author David B. Bracewell
  */
-@JsonHandler(EnumValue.Marshaller.class)
-public abstract class EnumValue<T extends EnumValue> implements Tag, Serializable, Cloneable, Comparable<T> {
+public abstract class EnumValue<T extends EnumValue<T>> implements Tag, Serializable, Cloneable, Comparable<T> {
    private static final long serialVersionUID = 1L;
    private final String canonicalName;
+   @JsonValue
    private final String name;
-
-
-   /**
-    * Instantiates a new enum value.
-    *
-    * @param name the name of the enum value
-    */
-   protected EnumValue(String name) {
-      this.name = name;
-      this.canonicalName = getClass().getCanonicalName() + "." + this.name;
-   }
 
    /**
     * The entry point of application.
@@ -146,6 +131,16 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
    }
 
    /**
+    * Instantiates a new enum value.
+    *
+    * @param name the name of the enum value
+    */
+   protected EnumValue(String name) {
+      this.name = name;
+      this.canonicalName = getClass().getCanonicalName() + "." + this.name;
+   }
+
+   /**
     * <p>Retrieves the canonical name of the enum value, which is the canonical name of the enum class and the
     * specified name of the enum value.</p>
     *
@@ -200,41 +195,6 @@ public abstract class EnumValue<T extends EnumValue> implements Tag, Serializabl
    @Override
    public final String toString() {
       return name;
-   }
-
-   /**
-    * Json Marshaller for EnumValues and sub-classes
-    */
-   public static class Marshaller extends com.gengoai.json.JsonMarshaller<EnumValue<?>> {
-
-      @Override
-      public EnumValue<?> deserialize(JsonEntry jsonElement, Type type) {
-         String name = jsonElement.getAsString();
-         if(type == EnumValue.class) {
-            //We have been told to create an EnumValue class, so we need the full canonical name
-            //to determine what type of enum to get.
-            int lastIndex = name.lastIndexOf('.');
-            if(lastIndex >= 0) {
-               type = Reflect.getClassForNameQuietly(name.substring(0, lastIndex));
-            }
-         }
-         try {
-            //We assume that all EnumValues have a "make" method that takes a string
-            // or a valueof method
-            Reflect r = Reflect.onClass(type);
-            RMethod toInvoke = r.containsMethod("make", String.class)
-                               ? r.getMethod("make", String.class)
-                               : r.getMethod("valueOf", String.class);
-            return toInvoke.invoke(name);
-         } catch(Exception e) {
-            throw new RuntimeException(e);
-         }
-      }
-
-      @Override
-      public JsonEntry serialize(EnumValue enumValue, Type type) {
-         return JsonEntry.from(enumValue.name());
-      }
    }
 
 }//END OF EnumValue

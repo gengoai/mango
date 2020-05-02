@@ -21,7 +21,6 @@
 
 package com.gengoai.io;
 
-
 import lombok.extern.java.Log;
 
 import java.io.Closeable;
@@ -67,6 +66,5 @@ public class QuietIO {
          logWarning(log, e);
       }
    }
-
 
 }// END OF QuietIO

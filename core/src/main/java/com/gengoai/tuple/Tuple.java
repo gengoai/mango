@@ -21,19 +21,19 @@
 
 package com.gengoai.tuple;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gengoai.Copyable;
 import com.gengoai.Validation;
-import com.gengoai.annotation.JsonHandler;
 import com.gengoai.collection.Arrays2;
 import com.gengoai.collection.Sorting;
 import com.gengoai.conversion.Cast;
-import com.gengoai.json.JsonEntry;
-import com.gengoai.reflection.TypeUtils;
 import com.gengoai.string.Strings;
 
 import java.io.Serializable;
-import java.lang.reflect.Type;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,7 +44,7 @@ import java.util.stream.Stream;
  *
  * @author David B. Bracewell
  */
-@JsonHandler(Tuple.TupleMarshaller.class)
+@JsonDeserialize(as = NTuple.class)
 public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copyable<Tuple>, Serializable {
    private static final long serialVersionUID = 1L;
 
@@ -218,27 +218,5 @@ public abstract class Tuple implements Iterable<Object>, Comparable<Tuple>, Copy
    public String toString() {
       return Strings.join(array(), ", ", "(", ")");
    }
-
-   public static class TupleMarshaller extends com.gengoai.json.JsonMarshaller<Tuple> {
-
-      @Override
-      protected Tuple deserialize(JsonEntry entry, Type typeOfT) {
-         List<Object> elements = new ArrayList<>();
-         int index = 0;
-         Type[] types = TypeUtils.getActualTypeArguments(typeOfT);
-         for(Iterator<JsonEntry> itr = entry.elementIterator(); itr.hasNext(); ) {
-            Type type = TypeUtils.getOrObject(index, types);
-            elements.add(itr.next().getAs(type));
-            index++;
-         }
-         return new NTuple(elements.toArray());
-      }
-
-      @Override
-      public JsonEntry serialize(Tuple objects, Type type) {
-         return JsonEntry.array(objects.array());
-      }
-   }
-
 
 }//END OF Tuple

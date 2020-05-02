@@ -84,7 +84,7 @@ import java.util.stream.Collectors;
  *
  * @author David B. Bracewell
  */
-public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue> extends EnumValue<T> {
+public abstract class HierarchicalEnumValue<T extends HierarchicalEnumValue<T>> extends EnumValue<T> {
    public static final char SEPARATOR = '$';
    private final int depth;
 

@@ -21,7 +21,6 @@
 
 package com.gengoai.io.resource.spi;
 
-
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.reflection.BeanMap;
@@ -42,8 +41,7 @@ public interface ResourceProvider {
    String[] getProtocols();
 
    /**
-    * Creates a resource with the given specification and properties using a {@link
-    * BeanMap}.
+    * Creates a resource with the given specification and properties using a {@link BeanMap}.
     *
     * @param specification The specification
     * @param properties    The properties

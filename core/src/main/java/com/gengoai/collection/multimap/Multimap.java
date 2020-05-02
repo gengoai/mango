@@ -1,14 +1,11 @@
 package com.gengoai.collection.multimap;
 
-import com.gengoai.annotation.JsonHandler;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gengoai.collection.Collect;
 import com.gengoai.collection.Iterables;
-import com.gengoai.json.JsonEntry;
-import com.gengoai.reflection.Reflect;
-import com.gengoai.reflection.ReflectionException;
-import com.gengoai.reflection.TypeUtils;
+import lombok.NonNull;
 
-import java.lang.reflect.Type;
 import java.util.*;
 
 /**
@@ -19,7 +16,7 @@ import java.util.*;
  * @param <V> the value type parameter
  * @author David B. Bracewell
  */
-@JsonHandler(Multimap.MultimapMarshaller.class)
+@JsonDeserialize(as = ArrayListMultimap.class)
 public interface Multimap<K, V> {
 
    /**
@@ -27,6 +24,7 @@ public interface Multimap<K, V> {
     *
     * @return the map
     */
+   @JsonValue
    Map<K, Collection<V>> asMap();
 
    /**
@@ -129,7 +127,7 @@ public interface Multimap<K, V> {
     *
     * @param map the map of key value pairs to add
     */
-   default void putAll(Map<? extends K, ? extends Collection<? extends V>> map) {
+   default void putAll(@NonNull Map<? extends K, ? extends Collection<? extends V>> map) {
       map.forEach(this::putAll);
    }
 
@@ -138,7 +136,7 @@ public interface Multimap<K, V> {
     *
     * @param multimap the map of key value pairs to add
     */
-   default void putAll(Multimap<? extends K, ? extends V> multimap) {
+   default void putAll(@NonNull Multimap<? extends K, ? extends V> multimap) {
       putAll(multimap.asMap());
    }
 
@@ -197,44 +195,5 @@ public interface Multimap<K, V> {
    default Collection<V> values() {
       return Collect.asCollection(Iterables.flatten(asMap().values()));
    }
-
-   class MultimapMarshaller<K, V> extends com.gengoai.json.JsonMarshaller<Multimap<K, V>> {
-
-      @Override
-      protected Multimap<K, V> deserialize(JsonEntry entry, Type type) {
-         Type[] params = TypeUtils.getActualTypeArguments(type);
-         Type keyType = TypeUtils.getOrObject(0, params);
-         Type valueType = TypeUtils.getOrObject(1, params);
-
-         Class<?> mClass = TypeUtils.asClass(type);
-         if (mClass == Multimap.class) {
-            mClass = ArrayListMultimap.class;
-         }
-         final Multimap<K, V> map;
-         try {
-            map = Reflect.onClass(mClass).create().get();
-         } catch (ReflectionException e) {
-            throw new RuntimeException(e);
-         }
-         entry.elementIterator()
-              .forEachRemaining(obj -> {
-                 K key = obj.getProperty("key").getAs(keyType);
-                 obj.getProperty("values")
-                    .elementIterator()
-                    .forEachRemaining(v -> map.put(key, v.getAs(valueType)));
-              });
-         return map;
-      }
-
-      @Override
-      protected JsonEntry serialize(Multimap<K, V> map, Type type) {
-         JsonEntry out = JsonEntry.array();
-         map.keySet().forEach(key -> out.addValue(JsonEntry.object()
-                                                           .addProperty("key", key)
-                                                           .addProperty("values", map.get(key))));
-         return out;
-      }
-   }
-
 
 }//END OF Multimap

@@ -32,7 +32,7 @@ public class GraphJson<V> implements GraphReader<V>, GraphWriter<V> {
 
    @Override
    public Graph<V> read(Resource location) throws IOException {
-      return Json.parse(location).getAs(parameterizedType(Graph.class, vertexClass));
+      return Json.parse(location).as(parameterizedType(Graph.class, vertexClass));
    }
 
    @Override

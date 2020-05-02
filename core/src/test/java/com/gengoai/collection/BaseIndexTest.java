@@ -55,7 +55,7 @@ public abstract class BaseIndexTest {
    public void testJson() throws Exception {
       Index<String> index = getIndex();
       JsonEntry entry = JsonEntry.from(index);
-      Index<String> fromJson = entry.getAs(TypeUtils.parameterizedType(index.getClass(), String.class));
+      Index<String> fromJson = entry.as(TypeUtils.parameterizedType(index.getClass(), String.class));
       assertEquals(index, fromJson);
    }
 

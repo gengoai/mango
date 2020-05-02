@@ -21,6 +21,10 @@
 
 package com.gengoai.tuple;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gengoai.conversion.Cast;
 
 /**
@@ -32,6 +36,7 @@ import com.gengoai.conversion.Cast;
  * @param <D> the type parameter
  * @author David B. Bracewell
  */
+@JsonDeserialize(as = Tuple4.class)
 public class Tuple4<A, B, C, D> extends Tuple {
    private static final long serialVersionUID = 1L;
    /**
@@ -52,21 +57,6 @@ public class Tuple4<A, B, C, D> extends Tuple {
    public final D v4;
 
    /**
-    * Instantiates a new Tuple 4.
-    *
-    * @param a the first value
-    * @param b the second value
-    * @param c the third value
-    * @param d the fourth value
-    */
-   public Tuple4(A a, B b, C c, D d) {
-      this.v1 = a;
-      this.v2 = b;
-      this.v3 = c;
-      this.v4 = d;
-   }
-
-   /**
     * Of tuple 4.
     *
     * @param <A> the type parameter
@@ -83,6 +73,35 @@ public class Tuple4<A, B, C, D> extends Tuple {
       return new Tuple4<>(a, b, c, d);
    }
 
+   /**
+    * Instantiates a new Tuple 4.
+    *
+    * @param a the first value
+    * @param b the second value
+    * @param c the third value
+    * @param d the fourth value
+    */
+   public Tuple4(A a, B b, C c, D d) {
+      this.v1 = a;
+      this.v2 = b;
+      this.v3 = c;
+      this.v4 = d;
+   }
+
+   @JsonCreator
+   protected Tuple4(@JsonProperty Object[] array) {
+      this.v1 = Cast.as(array[0]);
+      this.v2 = Cast.as(array[1]);
+      this.v3 = Cast.as(array[2]);
+      this.v4 = Cast.as(array[3]);
+   }
+
+   @Override
+   @JsonValue
+   public Object[] array() {
+      return new Object[]{v1, v2, v3, v4};
+   }
+
    @Override
    public Tuple4<A, B, C, D> copy() {
       return new Tuple4<>(this.v1, this.v2, this.v3, this.v4);
@@ -94,13 +113,8 @@ public class Tuple4<A, B, C, D> extends Tuple {
    }
 
    @Override
-   public Object[] array() {
-      return new Object[]{v1, v2, v3, v4};
-   }
-
-   @Override
    public <T> T get(int i) {
-      switch (i) {
+      switch(i) {
          case 0:
             return Cast.as(v1);
          case 1:
@@ -131,11 +145,6 @@ public class Tuple4<A, B, C, D> extends Tuple {
    }
 
    @Override
-   public String toString() {
-      return "(" + v1 + ", " + v2 + "," + v3 + "," + v4 + ")";
-   }
-
-   @Override
    public Tuple3<B, C, D> shiftLeft() {
       return Tuple3.of(v2, v3, v4);
    }
@@ -143,6 +152,11 @@ public class Tuple4<A, B, C, D> extends Tuple {
    @Override
    public Tuple3<A, B, C> shiftRight() {
       return Tuple3.of(v1, v2, v3);
+   }
+
+   @Override
+   public String toString() {
+      return "(" + v1 + ", " + v2 + "," + v3 + "," + v4 + ")";
    }
 
 }//END OF Tuple2

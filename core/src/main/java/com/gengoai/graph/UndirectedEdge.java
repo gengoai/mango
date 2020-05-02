@@ -1,5 +1,8 @@
 package com.gengoai.graph;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 
 /**
@@ -9,18 +12,30 @@ import java.util.Objects;
  */
 public class UndirectedEdge<V> extends Edge<V> {
    private static final long serialVersionUID = 961303328216002925L;
-
    private double weight;
 
-//   @Override
-//   public JsonEntry toJson() {
-//      return JsonEntry.object()
-//                      .addProperty("weight", weight);
-//   }
-
-   protected UndirectedEdge(V vertex1, V vertex2, double weight) {
+   @JsonCreator
+   protected UndirectedEdge(@JsonProperty("firstVertex") V vertex1,
+                            @JsonProperty("secondVertex") V vertex2,
+                            @JsonProperty("weight") double weight) {
       super(vertex1, vertex2);
       this.weight = weight;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if(obj == null) {
+         return false;
+      }
+      if(obj == this) {
+         return true;
+      }
+      if(obj instanceof UndirectedEdge) {
+         UndirectedEdge otherEdge = (UndirectedEdge) obj;
+         return (Objects.equals(vertex1, otherEdge.vertex1) && Objects.equals(vertex2, otherEdge.vertex2)) ||
+               (Objects.equals(vertex1, otherEdge.vertex2) && Objects.equals(vertex2, otherEdge.vertex1));
+      }
+      return false;
    }
 
    @Override
@@ -29,13 +44,8 @@ public class UndirectedEdge<V> extends Edge<V> {
    }
 
    @Override
-   public void setWeight(double weight) {
-      this.weight = weight;
-   }
-
-   @Override
-   public boolean isWeighted() {
-      return true;
+   public int hashCode() {
+      return 31 * (vertex1.hashCode()) + 31 * (vertex2.hashCode());
    }
 
    @Override
@@ -44,28 +54,19 @@ public class UndirectedEdge<V> extends Edge<V> {
    }
 
    @Override
-   public int hashCode() {
-      return 31 * (vertex1.hashCode()) + 31 * (vertex2.hashCode());
+   public boolean isWeighted() {
+      return true;
    }
 
    @Override
-   public boolean equals(Object obj) {
-      if (obj == null) {
-         return false;
-      }
-      if (obj == this) {
-         return true;
-      }
-      if (obj instanceof UndirectedEdge) {
-         UndirectedEdge otherEdge = (UndirectedEdge) obj;
-         return (Objects.equals(vertex1, otherEdge.vertex1) && Objects.equals(vertex2, otherEdge.vertex2)) ||
-                   (Objects.equals(vertex1, otherEdge.vertex2) && Objects.equals(vertex2, otherEdge.vertex1));
-      }
-      return false;
+   public void setWeight(double weight) {
+      this.weight = weight;
    }
 
    @Override
    public String toString() {
-      return "UndirectedEdge{ " + vertex1 + " - " + vertex2 + (isWeighted() ? " : " + getWeight() : "") + "}";
+      return "UndirectedEdge{ " + vertex1 + " - " + vertex2 + (isWeighted()
+                                                               ? " : " + getWeight()
+                                                               : "") + "}";
    }
 }// END OF UndirectedEdge

@@ -53,11 +53,11 @@ public class ResourceChildIterator implements Iterator<Resource> {
    }
 
    private void advance() {
-      if (queue.isEmpty()) {
+      if(queue.isEmpty()) {
          return;
       }
-      if (queue.peek().isDirectory()) {
-         if (recursive) {
+      if(queue.peek().isDirectory()) {
+         if(recursive) {
             queue.addAll(queue.peek().getChildren(filePattern, false));
          }
       }
@@ -70,7 +70,7 @@ public class ResourceChildIterator implements Iterator<Resource> {
 
    @Override
    public Resource next() {
-      if (queue.isEmpty()) {
+      if(queue.isEmpty()) {
          throw new NoSuchElementException();
       }
       Resource next = queue.remove();

@@ -21,7 +21,12 @@
 
 package com.gengoai.collection.counter;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.NonNull;
+
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Implementation of a Counter using a HashMap
@@ -35,25 +40,18 @@ public class HashMapCounter<T> extends BaseMapCounter<T> {
    /**
     * Instantiates a new Hash map counter.
     */
-   public HashMapCounter(){
+   public HashMapCounter() {
       super(new HashMap<>());
+   }
+
+   @JsonCreator
+   public HashMapCounter(@JsonProperty @NonNull Map<T, Double> map) {
+      super(new HashMap<>(map));
    }
 
    @Override
    protected <R> Counter<R> newInstance() {
       return new HashMapCounter<>();
    }
-
-//   /**
-//    * Static method for deserializing a <code>HashMapCounter</code> from json.
-//    *
-//    * @param <T>   the key type parameter
-//    * @param entry the json entry
-//    * @param types the key type parameter information
-//    * @return the counter
-//    */
-//   static <T> Counter<T> fromJson(JsonEntry entry, Type... types) {
-//      return Counter.fromJson(new HashMapCounter<>(), entry, types);
-//   }
 
 }//END OF HashMapCounter

@@ -33,7 +33,6 @@ import java.nio.charset.Charset;
  */
 public class CharsetDetector {
 
-
    /**
     * Detects the character set for the buffer.
     *
@@ -51,7 +50,7 @@ public class CharsetDetector {
          detector.handleData(buffer, offset, length);
          detector.dataEnd();
          return Charset.forName(detector.getDetectedCharset());
-      } catch (Exception e) {
+      } catch(Exception e) {
          return null;
       }
    }

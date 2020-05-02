@@ -21,15 +21,11 @@
 
 package com.gengoai.collection;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gengoai.Copyable;
-import com.gengoai.annotation.JsonHandler;
-import com.gengoai.json.JsonEntry;
-import com.gengoai.reflection.Reflect;
-import com.gengoai.reflection.ReflectionException;
-import com.gengoai.reflection.TypeUtils;
 import com.gengoai.stream.Streams;
 
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -40,37 +36,8 @@ import java.util.stream.Stream;
  * @param <E> the type parameter
  * @author David B. Bracewell
  */
-@JsonHandler(Index.IndexMarshaller.class)
+@JsonDeserialize(as = HashMapIndex.class)
 public interface Index<E> extends Iterable<E>, Copyable<Index<E>> {
-
-   /**
-    * Json Marshaller
-    */
-   class IndexMarshaller extends com.gengoai.json.JsonMarshaller<Index> {
-
-      @Override
-      protected Index deserialize(JsonEntry entry, Type type) {
-         Class<?> indexType = TypeUtils.asClass(type);
-         if (indexType == Index.class) {
-            indexType = HashMapIndex.class;
-         }
-         try {
-            Type eType = TypeUtils.getOrObject(0, TypeUtils.getActualTypeArguments(type));
-            Index<?> index = Reflect.onClass(indexType).create().get();
-            entry.elementIterator()
-                 .forEachRemaining(e -> index.add(e.getAs(eType)));
-            return index;
-         } catch (ReflectionException e) {
-            throw new RuntimeException(e);
-         }
-      }
-
-      @Override
-      protected JsonEntry serialize(Index index, Type type) {
-         return JsonEntry.array(index);
-      }
-   }
-
 
    /**
     * <p>Adds an item to the index. If the item is already in the index, the item's id is returned otherwise the newly
@@ -129,14 +96,8 @@ public interface Index<E> extends Iterable<E>, Copyable<Index<E>> {
     *
     * @return True if there are no items in the index
     */
+   @JsonIgnore
    boolean isEmpty();
-
-   /**
-    * The number of items in the index
-    *
-    * @return The number of items in the index
-    */
-   int size();
 
    /**
     * Gets a set of the items in the Index
@@ -144,6 +105,13 @@ public interface Index<E> extends Iterable<E>, Copyable<Index<E>> {
     * @return the set
     */
    Set<E> itemSet();
+
+   /**
+    * The number of items in the index
+    *
+    * @return The number of items in the index
+    */
+   int size();
 
    /**
     * Stream stream.

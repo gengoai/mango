@@ -14,16 +14,6 @@ public final class NamesEnum extends EnumValue<NamesEnum> {
    private static final Set<NamesEnum> values = Sets.newConcurrentHashSet();
    private static final Registry<NamesEnum> registry = new Registry<>(NamesEnum::new, NamesEnum.class);
 
-
-   private NamesEnum(String name) {
-      super(name);
-   }
-
-   @Override
-   protected Registry<NamesEnum> registry() {
-      return registry;
-   }
-
    /**
     * <p>Creates a new or retrieves an existing instance of NamesEnum with the given name.</p>
     *
@@ -35,7 +25,6 @@ public final class NamesEnum extends EnumValue<NamesEnum> {
       return toReturn;
    }
 
-
    /**
     * <p>Retrieves all currently known values of NamesEnum.</p>
     *
@@ -45,6 +34,13 @@ public final class NamesEnum extends EnumValue<NamesEnum> {
       return Collections.unmodifiableSet(values);
    }
 
+   private NamesEnum(String name) {
+      super(name);
+   }
 
+   @Override
+   protected Registry<NamesEnum> registry() {
+      return registry;
+   }
 
 }//END OF NamesEnum

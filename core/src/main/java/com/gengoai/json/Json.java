@@ -1,17 +1,25 @@
 package com.gengoai.json;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.gengoai.conversion.Cast;
 import com.gengoai.io.Resources;
 import com.gengoai.io.resource.Resource;
-import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.TypeUtils;
-import com.google.gson.*;
-import com.google.gson.annotations.Expose;
+import lombok.NonNull;
 
 import java.io.IOException;
-import java.lang.reflect.Modifier;
+import java.io.Reader;
+import java.io.Writer;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 /**
  * <p>Convenience methods for serializing and deserializing objects to and from json and creating json reader and
@@ -20,72 +28,15 @@ import java.util.*;
  * @author David B. Bracewell
  */
 public final class Json {
-   private static final ExclusionStrategy EXCLUSION_STRATEGY = new ExclusionStrategy() {
-      @Override
-      public boolean shouldSkipClass(Class<?> aClass) {
-         Expose expose = aClass.getAnnotation(Expose.class);
-         return expose != null && !expose.deserialize();
-      }
 
-      @Override
-      public boolean shouldSkipField(FieldAttributes fieldAttributes) {
-         if(fieldAttributes.hasModifier(Modifier.TRANSIENT)) {
-            return true;
-         }
-         Expose expose = fieldAttributes.getAnnotation(Expose.class);
-         return expose != null && !expose.deserialize();
-      }
-   };
-   public static final String CLASS_NAME_PROPERTY = "@class";
-   public static final Gson MAPPER;
-   public static final String VALUE_PROPERTY = "@value";
+   public static final ObjectMapper MAPPER = new ObjectMapper()
+         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
    static {
-      GsonBuilder builder = new GsonBuilder();
-      Set<String> processed = new HashSet<>();
-      builder.addDeserializationExclusionStrategy(EXCLUSION_STRATEGY);
-      builder.addSerializationExclusionStrategy(EXCLUSION_STRATEGY);
-      for(Iterator<Resource> marshallers = Resources.findAllClasspathResources("META-INF/marshallers.json");
-          marshallers.hasNext(); ) {
-         Resource r = marshallers.next();
-         if(r.exists()) {
-            try {
-               for(String line : r.readLines()) {
-                  if(processed.contains(line)) {
-                     continue;
-                  }
-                  processed.add(line);
-                  String[] parts = line.split("\t");
-                  if(parts.length == 3) {
-                     Class<?> type = Reflect.getClassForNameQuietly(parts[0]);
-                     boolean isHier = Boolean.parseBoolean(parts[1]);
-                     Object adapter;
-                     try {
-                        adapter = Reflect.onClass(parts[2])
-                                         .allowPrivilegedAccess()
-                                         .create()
-                                         .get();
-                     } catch(Exception e) {
-                        throw new RuntimeException(e);
-                     }
-                     if(isHier) {
-                        builder.registerTypeHierarchyAdapter(type, adapter);
-                     } else {
-                        builder.registerTypeAdapter(type, adapter);
-                     }
-                  }
-               }
-            } catch(IOException e) {
-               throw new RuntimeException(e);
-            }
-         }
-      }
-
-      builder.registerTypeAdapterFactory(TypeInfoAdapter.FACTORY);
-      builder.registerTypeHierarchyAdapter(JsonEntry.class, new JsonEntryMarshaller());
-      builder.registerTypeHierarchyAdapter(Enum.class, new EnumMarshaller());
-      builder.registerTypeHierarchyAdapter(Type.class, new TypeMarshallar());
-      MAPPER = builder.create();
+      MAPPER.registerModule(new Jdk8Module());
+      MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+      MAPPER.addMixIn(Type.class, Mixins.TypeMixin.class);
+      MAPPER.addMixIn(ParameterizedType.class, Mixins.TypeMixin.class);
    }
 
    public static JsonEntry asJsonEntry(Object o) {
@@ -99,8 +50,8 @@ public final class Json {
     * @return the json reader
     * @throws IOException Something went wrong creating the reader
     */
-   public static JsonReader createReader(Resource resource) throws IOException {
-      return new JsonReader(resource);
+   public static JsonReader createReader(@NonNull Resource resource) throws IOException {
+      return null;// new JsonReader(resource);
    }
 
    /**
@@ -110,8 +61,8 @@ public final class Json {
     * @return the json writer
     * @throws IOException something went wrong creating the writer
     */
-   public static JsonWriter createWriter(Resource resource) throws IOException {
-      return new JsonWriter(resource);
+   public static JsonWriter createWriter(@NonNull Resource resource) throws IOException {
+      return null;// new JsonWriter(resource);
    }
 
    /**
@@ -122,32 +73,36 @@ public final class Json {
     * @return the resource
     * @throws IOException Something went wrong writing to the given resource
     */
-   public static Resource dump(Object object, Resource resource) throws IOException {
-      return dump(object, resource, 0);
+   public static Resource dump(Object object, @NonNull Resource resource) throws IOException {
+      try(Writer writer = resource.writer()) {
+         if(object instanceof JsonEntry) {
+            MAPPER.writeValue(writer, ((JsonEntry) object).getElement());
+         } else {
+            MAPPER.writeValue(writer, object);
+         }
+      } catch(JsonProcessingException e) {
+         throw new RuntimeException(e);
+      }
+      return resource;
    }
 
    /**
     * Dumps the given object to the given output location in json format.
     *
-    * @param object       the object to dump
-    * @param resource     the resource to write the dumped object in json format to.
-    * @param indentLength The amount of space to indent
+    * @param object   the object to dump
+    * @param resource the resource to write the dumped object in json format to.
     * @return the resource
     * @throws IOException Something went wrong writing to the given resource
     */
-   public static Resource dump(Object object, Resource resource, int indentLength) throws IOException {
-      try(JsonWriter writer = new JsonWriter(resource)) {
-         if(indentLength > 0) {
-            writer.spaceIndent(indentLength);
+   public static Resource dumpPretty(Object object, @NonNull Resource resource) throws IOException {
+      try(Writer writer = resource.writer()) {
+         if(object instanceof JsonEntry) {
+            MAPPER.writerWithDefaultPrettyPrinter().writeValue(writer, ((JsonEntry) object).getElement());
+         } else {
+            MAPPER.writerWithDefaultPrettyPrinter().writeValue(writer, object);
          }
-         JsonEntry objJson = JsonEntry.from(object);
-         if(objJson.isPrimitive()) {
-            writer.beginDocument(true);
-         }
-         writer.write(objJson);
-         if(objJson.isPrimitive()) {
-            writer.endDocument();
-         }
+      } catch(JsonProcessingException e) {
+         throw new RuntimeException(e);
       }
       return resource;
    }
@@ -160,8 +115,28 @@ public final class Json {
     */
    public static String dumps(Object object) {
       try {
-         return dump(object, Resources.fromString()).readToString();
-      } catch(IOException e) {
+         if(object instanceof JsonEntry) {
+            return MAPPER.writeValueAsString(((JsonEntry) object).getElement());
+         }
+         return MAPPER.writeValueAsString(object);
+      } catch(JsonProcessingException e) {
+         throw new RuntimeException(e);
+      }
+   }
+
+   /**
+    * Dumps the given object to a string in json format.
+    *
+    * @param object the object to dump
+    * @return the object as a json string
+    */
+   public static String dumpsPretty(Object object) {
+      try {
+         if(object instanceof JsonEntry) {
+            return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(((JsonEntry) object).getElement());
+         }
+         return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(object);
+      } catch(JsonProcessingException e) {
          throw new RuntimeException(e);
       }
    }
@@ -178,16 +153,30 @@ public final class Json {
    }
 
    /**
-    * Parse the json in the given string returning the given type.
+    * Parses the json in the given resource creating an object of the given class type.
     *
-    * @param <T>  the type parameter
-    * @param json the json
-    * @param type the type
-    * @return the parsed object
-    * @throws IOException Something went wrong parsing the json.
+    * @param <T>  the class type parameter
+    * @param json the json to parse
+    * @param type the class information for the object to deserialized
+    * @return the deserialized object
+    * @throws IOException something went wrong reading the json
     */
-   public static <T> T parse(String json, Type type) throws IOException {
-      return parse(Resources.fromString(json)).getAs(type);
+   public static <T> T parse(@NonNull String json, @NonNull Type type) throws IOException {
+      try {
+         if(type instanceof ParameterizedType) {
+            ParameterizedType pt = Cast.as(type);
+            Class<?> baseClass = TypeUtils.asClass(pt.getRawType());
+            Class<?>[] params = new Class[pt.getActualTypeArguments().length];
+            for(int i = 0; i < params.length; i++) {
+               params[i] = TypeUtils.asClass(pt.getActualTypeArguments()[i]);
+            }
+            return MAPPER.readValue(json, TypeFactory.defaultInstance()
+                                                     .constructParametricType(baseClass, params));
+         }
+         return MAPPER.readValue(json, TypeUtils.asClass(type));
+      } catch(IOException e) {
+         throw new RuntimeException(e);
+      }
    }
 
    /**
@@ -197,23 +186,23 @@ public final class Json {
     * @return the parsed resource as a json entry
     * @throws IOException Something went wrong parsing the resource
     */
-   public static JsonEntry parse(Resource json) throws IOException {
-      try(JsonReader reader = createReader(json)) {
-         return reader.nextElement();
+   public static JsonEntry parse(@NonNull Resource json) throws IOException {
+      try(Reader reader = json.reader()) {
+         return new JsonEntry(MAPPER.readTree(reader));
       }
    }
 
    /**
-    * Parse t.
+    * Parses the json in the given resource creating an object of the given class type.
     *
-    * @param <T>  the type parameter
-    * @param json the json
-    * @param type the type
-    * @return the t
-    * @throws IOException the io exception
+    * @param <T>      the class type parameter
+    * @param resource the resource to read from
+    * @param type     the class information for the object to deserialized
+    * @return the deserialized object
+    * @throws IOException something went wrong reading the json
     */
-   public static <T> T parse(Resource json, Type type) throws IOException {
-      return parse(json).getAs(type);
+   public static <T> T parse(@NonNull Resource resource, @NonNull Type type) throws IOException {
+      return parse(resource.readToString(), type);
    }
 
    /**
@@ -223,8 +212,8 @@ public final class Json {
     * @return the list of objects read in from the resource
     * @throws IOException Something went wrong reading from the resource
     */
-   public static List<JsonEntry> parseArray(Resource resource) throws IOException {
-      return parse(resource).getAsArray();
+   public static List<JsonEntry> parseArray(@NonNull Resource resource) throws IOException {
+      return parse(resource).asArray();
    }
 
    /**
@@ -234,8 +223,8 @@ public final class Json {
     * @return the list of objects parsed from the string
     * @throws IOException Something went wrong parsing the json string
     */
-   public static List<JsonEntry> parseArray(String json) throws IOException {
-      return parse(json).getAsArray();
+   public static List<JsonEntry> parseArray(@NonNull String json) throws IOException {
+      return parse(json).asArray();
    }
 
    /**
@@ -247,33 +236,7 @@ public final class Json {
     * @throws IOException Something went wrong parsing the json in the resource
     */
    public static Map<String, JsonEntry> parseObject(Resource json) throws IOException {
-      return parse(json).getAsMap();
-   }
-
-   /**
-    * Parses the json in the given resource creating an object of the given class type.
-    *
-    * @param <T>      the class type parameter
-    * @param resource the resource to read from
-    * @param clazz    the class information for the object to deserialized
-    * @return the deserialized object
-    * @throws IOException something went wrong reading the json
-    */
-   public static <T> T parseObject(Resource resource, Type clazz) throws IOException {
-      return parse(resource).getAs(clazz);
-   }
-
-   /**
-    * Parses the json in the given json string creating an object of the given class type.
-    *
-    * @param <T>   the class type parameter
-    * @param json  the json to read
-    * @param clazz the class information for the object to deserialized
-    * @return the deserialized object
-    * @throws IOException something went wrong reading the json
-    */
-   public static <T> T parseObject(String json, Type clazz) throws IOException {
-      return parse(json).getAs(clazz);
+      return parse(json).asMap();
    }
 
    /**
@@ -288,65 +251,21 @@ public final class Json {
       return parseObject(Resources.fromString(json));
    }
 
+   public static JavaType typeToJavaType(Type type) {
+      if(type instanceof ParameterizedType) {
+         ParameterizedType pt = Cast.as(type);
+         Class<?> baseClass = TypeUtils.asClass(pt.getRawType());
+         Class<?>[] params = new Class[pt.getActualTypeArguments().length];
+         for(int i = 0; i < params.length; i++) {
+            params[i] = TypeUtils.asClass(pt.getActualTypeArguments()[i]);
+         }
+         return TypeFactory.defaultInstance().constructParametricType(baseClass, params);
+      }
+      return TypeFactory.defaultInstance().constructType(type);
+   }
+
    private Json() {
       throw new IllegalAccessError();
-   }
-
-   protected static class EnumMarshaller extends JsonMarshaller<Enum> {
-
-      @Override
-      @SuppressWarnings("unchecked")
-      protected Enum deserialize(JsonEntry entry, Type type) {
-         Class<Enum> c = TypeUtils.asClass(type);
-         return Enum.valueOf(c, entry.getAsString());
-      }
-
-      @Override
-      protected JsonEntry serialize(Enum anEnum, Type type) {
-         return JsonEntry.from(anEnum.name());
-      }
-   }
-
-   protected static class JsonEntryMarshaller implements JsonSerializer<JsonEntry>, JsonDeserializer<JsonEntry> {
-
-      @Override
-      public JsonEntry deserialize(JsonElement jsonElement,
-                                   Type type,
-                                   JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-         return JsonEntry.from(jsonElement);
-      }
-
-      @Override
-      public JsonElement serialize(JsonEntry entry, Type type, JsonSerializationContext jsonSerializationContext) {
-         return entry.getElement();
-      }
-   }
-
-   protected static class TypeMarshallar extends JsonMarshaller<Type> {
-
-      @Override
-      protected Type deserialize(JsonEntry entry, Type type) {
-         try {
-            return entry.isObject()
-                   ? TypeUtils.parameterizedType(entry.getProperty("rawType").getAs(Type.class),
-                                                 entry.getProperty("parameters")
-                                                      .getAsArray(Type.class)
-                                                      .toArray(new Type[1]))
-                   : Reflect.getClassForName(entry.getAsString());
-         } catch(Exception e) {
-            throw new RuntimeException(e);
-         }
-      }
-
-      @Override
-      protected JsonEntry serialize(Type type, Type type2) {
-         if(type instanceof ParameterizedType) {
-            return JsonEntry.object()
-                            .addProperty("rawType", TypeUtils.asClass(type))
-                            .addProperty("parameters", TypeUtils.parameterizedType(type));
-         }
-         return JsonEntry.from(type.getTypeName());
-      }
    }
 
 }//END OF Json

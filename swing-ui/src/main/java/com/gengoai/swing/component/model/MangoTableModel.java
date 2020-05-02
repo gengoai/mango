@@ -30,18 +30,34 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.stream.Stream;
 
+/**
+ * The type Mango table model.
+ */
 public class MangoTableModel extends DefaultTableModel {
    private Map<Integer, Class<?>> columnClasses = new HashMap<>();
    private Map<Integer, Boolean> columnEditable = new HashMap<>();
 
+   /**
+    * Instantiates a new Mango table model.
+    */
    public MangoTableModel() {
       super();
    }
 
+   /**
+    * Instantiates a new Mango table model.
+    *
+    * @param columnNames the column names
+    */
    public MangoTableModel(@NonNull String... columnNames) {
       super(columnNames, 0);
    }
 
+   /**
+    * Instantiates a new Mango table model.
+    *
+    * @param columns the columns
+    */
    @SafeVarargs
    public MangoTableModel(@NonNull Tuple2<String, Class<?>>... columns) {
       super(Stream.of(columns).map(Tuple2::getKey).toArray(), 0);
@@ -50,6 +66,11 @@ public class MangoTableModel extends DefaultTableModel {
       }
    }
 
+   /**
+    * Instantiates a new Mango table model.
+    *
+    * @param columns the columns
+    */
    @SafeVarargs
    public MangoTableModel(@NonNull Tuple3<String, Class<?>, Boolean>... columns) {
       super(Stream.of(columns).map(Tuple3::getV1).toArray(), 0);
@@ -59,16 +80,33 @@ public class MangoTableModel extends DefaultTableModel {
       }
    }
 
+
+
+   /**
+    * Add all rows.
+    *
+    * @param rows the rows
+    */
    public void addAllRows(Object[][] rows) {
       for(Object[] row : rows) {
          addRow(row);
       }
    }
 
+   /**
+    * Add all rows.
+    *
+    * @param rows the rows
+    */
    public void addAllRows(List<List<?>> rows) {
       rows.forEach(this::addRow);
    }
 
+   /**
+    * Add row.
+    *
+    * @param row the row
+    */
    public void addRow(List<?> row) {
       super.addRow(new Vector<>(row));
    }
@@ -87,10 +125,22 @@ public class MangoTableModel extends DefaultTableModel {
       return columnEditable.getOrDefault(column, false);
    }
 
+   /**
+    * Sets column class.
+    *
+    * @param column the column
+    * @param clazz  the clazz
+    */
    public void setColumnClass(int column, Class<?> clazz) {
       columnClasses.put(column, clazz);
    }
 
+   /**
+    * Sets column editable.
+    *
+    * @param column     the column
+    * @param isEditable the is editable
+    */
    public void setColumnEditable(int column, boolean isEditable) {
       this.columnEditable.put(column, isEditable);
    }

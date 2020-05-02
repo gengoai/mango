@@ -21,6 +21,5 @@
 
 /**
  * A mix between Java's FileSystem and Spring's Resource
- * @author David B. Bracewell
  */
 package com.gengoai.io.resource;

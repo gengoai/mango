@@ -40,7 +40,6 @@ public class CharsetDetectingReader extends Reader {
    private final Charset defaultCharset;
    private Charset charset = null;
 
-
    /**
     * Instantiates a new Espresso reader.
     *
@@ -62,32 +61,31 @@ public class CharsetDetectingReader extends Reader {
       this.charset = null;
    }
 
-
    private void determineCharset() throws IOException {
       PushbackInputStream pbIStream = new PushbackInputStream(inStream, BUFFER_SIZE);
 
       byte[] buffer = new byte[BUFFER_SIZE];
       int read = pbIStream.read(buffer, 0, buffer.length);
-      if (read == -1) {
+      if(read == -1) {
          return;
       }
 
       int bomOffset = 0;
 
-      for (CommonBOM bom : CommonBOM.values()) {
-         if (bom.matches(buffer)) {
+      for(CommonBOM bom : CommonBOM.values()) {
+         if(bom.matches(buffer)) {
             charset = bom.getCharset();
             bomOffset = bom.length();
             break;
          }
       }
 
-      if (charset == null && defaultCharset == null) {
+      if(charset == null && defaultCharset == null) {
          charset = CharsetDetector.detect(buffer, 0, read);
-         if (charset == null) {
+         if(charset == null) {
             charset = StandardCharsets.UTF_8;
          }
-      } else if (charset == null) {
+      } else if(charset == null) {
          charset = defaultCharset;
       }
 
@@ -96,13 +94,12 @@ public class CharsetDetectingReader extends Reader {
       backing = new InputStreamReader(pbIStream, charset);
    }
 
-
    @Override
    public int read(char[] cbuf, int off, int len) throws IOException {
-      if (backing == null) {
+      if(backing == null) {
          determineCharset();
       }
-      if (backing == null) {
+      if(backing == null) {
          return -1;
       }
       return backing.read(cbuf, off, len);
@@ -110,7 +107,7 @@ public class CharsetDetectingReader extends Reader {
 
    @Override
    public void close() throws IOException {
-      if (backing != null) {
+      if(backing != null) {
          backing.close();
       }
    }

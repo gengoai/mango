@@ -59,8 +59,8 @@ public enum CommonBOM {
    //Determine the max BOM size based on the current items in the enum
    static {
       int max = 0;
-      for (CommonBOM bom : CommonBOM.values()) {
-         if (bom.length() > max) {
+      for(CommonBOM bom : CommonBOM.values()) {
+         if(bom.length() > max) {
             max = bom.length();
          }
       }
@@ -100,11 +100,11 @@ public enum CommonBOM {
     * @return True if the BOM is present, false otherwise
     */
    public boolean matches(byte[] rhs) {
-      if (rhs == null || rhs.length < bom.length) {
+      if(rhs == null || rhs.length < bom.length) {
          return false;
       }
-      for (int i = 0; i < bom.length; i++) {
-         if (bom[i] != rhs[i]) {
+      for(int i = 0; i < bom.length; i++) {
+         if(bom[i] != rhs[i]) {
             return false;
          }
       }

@@ -8,7 +8,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import static com.gengoai.collection.Arrays2.arrayOf;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * @author David B. Bracewell
@@ -16,16 +17,30 @@ import static org.junit.Assert.*;
 public abstract class BaseNumberConversionTest {
    private final Class<?> aClass;
 
-
-   protected abstract Number convert(Number in);
-
    protected BaseNumberConversionTest(Class<?> aClass) {
       this.aClass = aClass;
    }
 
+   @Test(expected = TypeConversionException.class)
+   public void badJson() throws TypeConversionException {
+      Converter.convert(JsonEntry.array("1", "2"), aClass);
+   }
+
+   @Test(expected = TypeConversionException.class)
+   public void badParse() throws TypeConversionException {
+      Converter.convert("This is not a number", aClass);
+   }
+
+   protected abstract Number convert(Number in);
+
+   @Test(expected = TypeConversionException.class)
+   public void notSupported() throws TypeConversionException {
+      Converter.convert(arrayOf(1, 2, 3, 4), aClass);
+   }
+
    @Test
    public void nullValue() throws TypeConversionException {
-      if (aClass.isPrimitive()) {
+      if(aClass.isPrimitive()) {
          assertEquals(Primitives.defaultValue(aClass), Converter.convert(null, aClass));
       } else {
          assertNull(Converter.convert(null, aClass));
@@ -47,22 +62,6 @@ public abstract class BaseNumberConversionTest {
       assertEquals(convert(42.0), Converter.convertSilently(BigInteger.valueOf(42), aClass));
 
       assertNull(Converter.convertSilently("This is not a number", aClass));
-   }
-
-
-   @Test(expected = TypeConversionException.class)
-   public void badParse() throws TypeConversionException {
-      Converter.convert("This is not a number", aClass);
-   }
-
-   @Test(expected = TypeConversionException.class)
-   public void badJson() throws TypeConversionException {
-      Converter.convert(JsonEntry.array("1", "2"), aClass);
-   }
-
-   @Test(expected = TypeConversionException.class)
-   public void notSupported() throws TypeConversionException {
-      Converter.convert(arrayOf(1, 2, 3, 4), aClass);
    }
 
 }//END OF BaseNumberConversionTest

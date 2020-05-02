@@ -1,5 +1,8 @@
 package com.gengoai.collection.tree;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 import java.io.Serializable;
 
 /**
@@ -7,6 +10,7 @@ import java.io.Serializable;
  *
  * @author David B. Bracewell
  */
+@JsonDeserialize(as = SimpleSpan.class)
 public interface Span extends Serializable, Comparable<Span> {
 
    /**
@@ -22,11 +26,11 @@ public interface Span extends Serializable, Comparable<Span> {
 
    @Override
    default int compareTo(Span o) {
-      if (o == null) {
+      if(o == null) {
          return -1;
       }
       int cmp = Integer.compare(start(), o.start());
-      if (cmp == 0) {
+      if(cmp == 0) {
          cmp = Integer.compare(end(), o.end());
       }
       return cmp;
@@ -54,6 +58,7 @@ public interface Span extends Serializable, Comparable<Span> {
     *
     * @return True if the span is empty, False if not
     */
+   @JsonIgnore
    default boolean isEmpty() {
       return length() == 0 || start() < 0 || end() < 0;
    }

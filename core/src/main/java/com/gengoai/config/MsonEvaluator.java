@@ -137,7 +137,7 @@ class MsonEvaluator extends Evaluator<Expression> {
 
    private void handleProperty(BinaryInfixOperatorExpression exp) throws ParseException {
       logFinest(log, "Handling property: {0}", exp);
-      String key = effectiveKey(convertExpression(exp.getLeft()).getAsString());
+      String key = effectiveKey(convertExpression(exp.getLeft()).asString());
       logFinest(log, "Effective key: {0}", key);
       JsonEntry value = convertExpression(exp.getRight());
       String stringValue = value.isPrimitive()
@@ -169,7 +169,7 @@ class MsonEvaluator extends Evaluator<Expression> {
       } else if(entry.isPrimitive()) {
          list.add(entry.get());
       } else if(entry.isObject()) {
-         list.add(entry.getAsMap());
+         list.add(entry.asMap());
       } else if(entry.isArray()) {
          for(JsonEntry e : Iterables.asIterable(entry.elementIterator())) {
             processJson(list, e);

@@ -199,8 +199,8 @@ public final class Config implements Serializable {
     */
    public static Config fromJson(JsonEntry entry, Type... params) {
       clear();
-      getInstance().loaded.addAll(entry.getProperty("loaded").getAsArray(String.class));
-      getInstance().properties.putAll(entry.getProperty("properties").getAsMap(String.class));
+      getInstance().loaded.addAll(entry.getProperty("loaded").asArray(String.class));
+      getInstance().properties.putAll(entry.getProperty("properties").asMap(String.class));
       return getInstance();
    }
 

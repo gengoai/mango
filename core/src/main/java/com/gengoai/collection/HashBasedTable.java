@@ -1,6 +1,9 @@
 package com.gengoai.collection;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.gengoai.conversion.Cast;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.*;
@@ -17,9 +20,16 @@ import static com.gengoai.tuple.Tuples.$;
  * @param <V> the value type parameter
  * @author David B. Bracewell
  */
+@NoArgsConstructor
 public class HashBasedTable<R, C, V> implements Table<R, C, V>, Serializable {
-
    private final Map<R, Map<C, V>> map = new HashMap<>();
+
+   @JsonCreator
+   protected HashBasedTable(List<TableEntry<R, C, V>> entryList) {
+      for(TableEntry<R, C, V> rcvTableEntry : entryList) {
+         put(rcvTableEntry.getRow(), rcvTableEntry.getCol(), rcvTableEntry.getValue());
+      }
+   }
 
    @Override
    public void clear() {
@@ -52,28 +62,40 @@ public class HashBasedTable<R, C, V> implements Table<R, C, V>, Serializable {
    }
 
    private void createRowIfNeeded(R row) {
-      if (!map.containsKey(row)) {
+      if(!map.containsKey(row)) {
          map.put(row, new HashMap<>());
       }
    }
 
    private void deleteRowIfEmpty(R row) {
-      if (map.get(row).isEmpty()) {
+      if(map.get(row).isEmpty()) {
          map.remove(row);
       }
    }
 
    @Override
+   @JsonValue
+   public Set<TableEntry<R, C, V>> entrySet() {
+      return map.entrySet().stream()
+                .flatMap(e -> e.getValue().entrySet()
+                               .stream()
+                               .map(c -> new TableEntry<>(e.getKey(), c.getKey(), c.getValue())))
+                .collect(Collectors.toSet());
+   }
+
+   @Override
    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (!(o instanceof HashBasedTable)) return false;
+      if(this == o) return true;
+      if(!(o instanceof HashBasedTable)) return false;
       HashBasedTable<?, ?, ?> that = (HashBasedTable<?, ?, ?>) o;
       return Objects.equals(map, that.map);
    }
 
    @Override
    public V get(R row, C column) {
-      return map.containsKey(row) ? map.get(row).get(column) : null;
+      return map.containsKey(row)
+             ? map.get(row).get(column)
+             : null;
    }
 
    @Override
@@ -89,7 +111,7 @@ public class HashBasedTable<R, C, V> implements Table<R, C, V>, Serializable {
 
    @Override
    public V remove(R row, C column) {
-      if (map.containsKey(row)) {
+      if(map.containsKey(row)) {
          V value = map.get(row).remove(column);
          deleteRowIfEmpty(row);
          return value;
@@ -152,7 +174,9 @@ public class HashBasedTable<R, C, V> implements Table<R, C, V>, Serializable {
 
       @Override
       public Set<Entry<C, V>> entrySet() {
-         return map.containsKey(row) ? map.get(row).entrySet() : Collections.emptySet();
+         return map.containsKey(row)
+                ? map.get(row).entrySet()
+                : Collections.emptySet();
       }
 
       @Override
@@ -172,7 +196,9 @@ public class HashBasedTable<R, C, V> implements Table<R, C, V>, Serializable {
 
       @Override
       public int size() {
-         return map.containsKey(row) ? map.get(row).size() : 0;
+         return map.containsKey(row)
+                ? map.get(row).size()
+                : 0;
       }
    }
 
@@ -184,16 +210,16 @@ public class HashBasedTable<R, C, V> implements Table<R, C, V>, Serializable {
       private C lastColumn;
 
       private boolean advance() {
-         while (column == null) {
-            while (colValueIterator != null && colValueIterator.hasNext()) {
+         while(column == null) {
+            while(colValueIterator != null && colValueIterator.hasNext()) {
                C nc = colValueIterator.next().getKey();
-               if (!seen.contains(nc)) {
+               if(!seen.contains(nc)) {
                   column = nc;
                   seen.add(nc);
                   return true;
                }
             }
-            if (!rowEntryIterator.hasNext()) {
+            if(!rowEntryIterator.hasNext()) {
                return false;
             }
             colValueIterator = rowEntryIterator.next().getValue().entrySet().iterator();

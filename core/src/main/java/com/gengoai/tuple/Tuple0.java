@@ -21,6 +21,11 @@
 
 package com.gengoai.tuple;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 import java.io.ObjectStreamException;
 import java.util.function.Function;
 
@@ -29,15 +34,26 @@ import java.util.function.Function;
  *
  * @author David B. Bracewell
  */
+@JsonDeserialize(as = Tuple0.class)
 public final class Tuple0 extends Tuple {
    private static final long serialVersionUID = 1L;
-
    /**
     * The constant INSTANCE.
     */
    public static Tuple0 INSTANCE = new Tuple0();
 
+   @JsonCreator
+   private static Tuple0 getInstance(@JsonProperty Object o) {
+      return INSTANCE;
+   }
+
    private Tuple0() {
+   }
+
+   @Override
+   @JsonValue
+   public Object[] array() {
+      return new Object[0];
    }
 
    @Override
@@ -51,8 +67,8 @@ public final class Tuple0 extends Tuple {
    }
 
    @Override
-   public Object[] array() {
-      return new Object[0];
+   public int hashCode() {
+      return 1;
    }
 
    @Override
@@ -60,18 +76,13 @@ public final class Tuple0 extends Tuple {
       return this;
    }
 
-   @Override
-   public int hashCode() {
-      return 1;
+   protected Object readResolve() throws ObjectStreamException {
+      return INSTANCE;
    }
 
    @Override
    public String toString() {
       return "()";
-   }
-
-   protected Object readResolve() throws ObjectStreamException {
-      return INSTANCE;
    }
 
 }//END OF Tuple0

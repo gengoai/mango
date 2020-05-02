@@ -82,7 +82,6 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
     */
    StringMatcher UpperCase = NotNullOrBlank.and(CharMatcher.UpperCase::matchesAllOf);
 
-
    /**
     * String matcher that evaluates true if the CharSequence contains the given string to match.
     *
@@ -101,9 +100,12 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
     * @return the string matcher
     */
    static StringMatcher contains(String match, boolean caseSensitive) {
-      final String prefix = caseSensitive ? match : match.toLowerCase();
-      return sequence -> sequence != null && (caseSensitive ? sequence.toString().contains(prefix)
-                                                            : sequence.toString().toLowerCase().contains(prefix));
+      final String prefix = caseSensitive
+                            ? match
+                            : match.toLowerCase();
+      return sequence -> sequence != null && (caseSensitive
+                                              ? sequence.toString().contains(prefix)
+                                              : sequence.toString().toLowerCase().contains(prefix));
    }
 
    /**
@@ -124,9 +126,12 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
     * @return the string matcher
     */
    static StringMatcher endsWith(String match, boolean caseSensitive) {
-      final String suffix = caseSensitive ? match : match.toLowerCase();
-      return sequence -> sequence != null && (caseSensitive ? sequence.toString().endsWith(suffix)
-                                                            : sequence.toString().toLowerCase().endsWith(suffix));
+      final String suffix = caseSensitive
+                            ? match
+                            : match.toLowerCase();
+      return sequence -> sequence != null && (caseSensitive
+                                              ? sequence.toString().endsWith(suffix)
+                                              : sequence.toString().toLowerCase().endsWith(suffix));
    }
 
    /**
@@ -147,8 +152,9 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
     * @return the string matcher
     */
    static StringMatcher matches(String match, boolean caseSensitive) {
-      return sequence -> sequence != null && (caseSensitive ? match.equals(sequence.toString())
-                                                            : match.equalsIgnoreCase(sequence.toString()));
+      return sequence -> sequence != null && (caseSensitive
+                                              ? match.equals(sequence.toString())
+                                              : match.equalsIgnoreCase(sequence.toString()));
    }
 
    /**
@@ -174,7 +180,7 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
    /**
     * String matcher that evaluates true if the CharSequence starts with the given string to match.
     *
-    * @param match         the string to match
+    * @param match the string to match
     * @return the string matcher
     */
    static StringMatcher startsWith(String match) {
@@ -189,9 +195,12 @@ public interface StringMatcher extends SerializablePredicate<CharSequence> {
     * @return the string matcher
     */
    static StringMatcher startsWith(String match, boolean caseSensitive) {
-      final String prefix = caseSensitive ? match : match.toLowerCase();
-      return sequence -> sequence != null && (caseSensitive ? sequence.toString().startsWith(prefix)
-                                                            : sequence.toString().toLowerCase().startsWith(prefix));
+      final String prefix = caseSensitive
+                            ? match
+                            : match.toLowerCase();
+      return sequence -> sequence != null && (caseSensitive
+                                              ? sequence.toString().startsWith(prefix)
+                                              : sequence.toString().toLowerCase().startsWith(prefix));
    }
 
    @Override

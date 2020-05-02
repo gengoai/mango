@@ -1,16 +1,22 @@
 package com.gengoai.collection.tree;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gengoai.Validation;
+import lombok.ToString;
 
 import java.util.Objects;
 
 /**
  * The type Simple span.
  */
+@ToString
 public class SimpleSpan implements Span {
    private static final long serialVersionUID = 1L;
-   private int end;
+   @JsonProperty("start")
    private int start;
+   @JsonProperty("end")
+   private int end;
 
    /**
     * Instantiates a new Simple span.
@@ -18,7 +24,8 @@ public class SimpleSpan implements Span {
     * @param start the start
     * @param end   the end
     */
-   protected SimpleSpan(int start, int end) {
+   @JsonCreator
+   protected SimpleSpan(@JsonProperty("start") int start, @JsonProperty("end") int end) {
       Validation.checkArgument(end >= start, "Ending offset must be >= Starting offset");
       this.end = end;
       this.start = start;
@@ -31,8 +38,8 @@ public class SimpleSpan implements Span {
 
    @Override
    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (!(o instanceof Span)) return false;
+      if(this == o) return true;
+      if(!(o instanceof Span)) return false;
       Span that = (Span) o;
       return end == that.end() && start == that.start();
    }
@@ -70,11 +77,4 @@ public class SimpleSpan implements Span {
       return start;
    }
 
-   @Override
-   public String toString() {
-      return "Span{" +
-         "end=" + end +
-         ", start=" + start +
-         '}';
-   }
 }//END OF SimpleSpan

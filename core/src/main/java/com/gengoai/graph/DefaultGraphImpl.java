@@ -21,7 +21,7 @@
 
 package com.gengoai.graph;
 
-
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gengoai.collection.HashBasedTable;
 import com.gengoai.collection.Iterators;
 import com.gengoai.collection.Sets;
@@ -44,9 +44,9 @@ public class DefaultGraphImpl<V> implements com.gengoai.graph.Graph<V>, Serializ
 
    private static final long serialVersionUID = 2648221581604458992L;
    private final com.gengoai.graph.EdgeFactory<V> edgeFactory;
+   @JsonProperty("v")
    private final Set<V> vertices;
    private final Table<V, V, com.gengoai.graph.Edge<V>> matrix;
-
 
    /**
     * Instantiates a new Adjacency matrix.
@@ -63,12 +63,23 @@ public class DefaultGraphImpl<V> implements com.gengoai.graph.Graph<V>, Serializ
     * @param edgeFactory the edge factory
     * @param matrix      the matrix to use to back the map
     */
-   private DefaultGraphImpl(com.gengoai.graph.EdgeFactory<V> edgeFactory, Set<V> vertices, Table<V, V, com.gengoai.graph.Edge<V>> matrix) {
+   private DefaultGraphImpl(com.gengoai.graph.EdgeFactory<V> edgeFactory,
+                            Set<V> vertices,
+                            Table<V, V, com.gengoai.graph.Edge<V>> matrix) {
       this.edgeFactory = notNull(edgeFactory);
       this.matrix = notNull(matrix);
       this.vertices = notNull(vertices);
    }
 
+   private DefaultGraphImpl(@JsonProperty("ef") com.gengoai.graph.EdgeFactory<V> edgeFactory,
+                            @JsonProperty("v") Set<V> vertices,
+                            @JsonProperty("e") List<? extends Edge<V>> edges
+                           ) {
+      this(edgeFactory, vertices, new HashBasedTable<>());
+      for(Edge<V> edge : edges) {
+         addEdge(edge);
+      }
+   }
 
    @Override
    public com.gengoai.graph.Edge<V> addEdge(V fromVertex, V toVertex) {
@@ -95,7 +106,7 @@ public class DefaultGraphImpl<V> implements com.gengoai.graph.Graph<V>, Serializ
       V fromVertex = edge.getFirstVertex();
       V toVertex = edge.getSecondVertex();
       matrix.put(fromVertex, toVertex, edge);
-      if (!edge.isDirected()) {
+      if(!edge.isDirected()) {
          matrix.put(toVertex, fromVertex, edge);
       }
    }
@@ -120,28 +131,28 @@ public class DefaultGraphImpl<V> implements com.gengoai.graph.Graph<V>, Serializ
       return vertices.contains(vertex);
    }
 
-
    @Override
    public int degree(V vertex) {
-      if (isDirected()) {
+      if(isDirected()) {
          return matrix.row(vertex).size() + matrix.column(vertex).size();
       }
       return matrix.row(vertex).size();
    }
 
    @Override
+   @JsonProperty("e")
    public Set<? extends com.gengoai.graph.Edge<V>> edges() {
       return Sets.asHashSet(matrix.values());
    }
 
    @Override
    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (!(o instanceof DefaultGraphImpl)) return false;
+      if(this == o) return true;
+      if(!(o instanceof DefaultGraphImpl)) return false;
       DefaultGraphImpl<?> that = (DefaultGraphImpl<?>) o;
       return Objects.equals(edgeFactory.getClass(), that.edgeFactory.getClass())
-                && Objects.equals(vertices, that.vertices) &&
-                Objects.equals(matrix, that.matrix);
+            && Objects.equals(vertices, that.vertices) &&
+            Objects.equals(matrix, that.matrix);
    }
 
    @Override
@@ -202,7 +213,9 @@ public class DefaultGraphImpl<V> implements com.gengoai.graph.Graph<V>, Serializ
 
    @Override
    public int numberOfEdges() {
-      return isDirected() ? matrix.size() : matrix.size() / 2;
+      return isDirected()
+             ? matrix.size()
+             : matrix.size() / 2;
    }
 
    @Override
@@ -218,7 +231,7 @@ public class DefaultGraphImpl<V> implements com.gengoai.graph.Graph<V>, Serializ
    @Override
    public com.gengoai.graph.Edge<V> removeEdge(V fromVertex, V toVertex) {
       com.gengoai.graph.Edge<V> edge = Cast.as(matrix.remove(fromVertex, toVertex));
-      if (edge != null && !isDirected()) {
+      if(edge != null && !isDirected()) {
          matrix.remove(toVertex, fromVertex);
       }
       return edge;
@@ -232,7 +245,7 @@ public class DefaultGraphImpl<V> implements com.gengoai.graph.Graph<V>, Serializ
 
    @Override
    public boolean removeVertex(V vertex) {
-      if (vertices.contains(vertex)) {
+      if(vertices.contains(vertex)) {
          vertices.remove(vertex);
          matrix.row(vertex).clear();
          matrix.column(vertex).clear();

@@ -21,6 +21,9 @@
 
 package com.gengoai.graph;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import java.io.Serializable;
 
 /**
@@ -28,17 +31,11 @@ import java.io.Serializable;
  *
  * @author David B. Bracewell
  */
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
 public abstract class Edge<V> implements Serializable {
-
    private static final long serialVersionUID = -6040455464153202892L;
-
    protected final V vertex1;
    protected final V vertex2;
-
-   protected Edge(V vertex1, V vertex2) {
-      this.vertex1 = vertex1;
-      this.vertex2 = vertex2;
-   }
 
    /**
     * Creates a new directed edge
@@ -90,6 +87,11 @@ public abstract class Edge<V> implements Serializable {
       return new UndirectedEdge<>(from, to, weight);
    }
 
+   protected Edge(V vertex1, V vertex2) {
+      this.vertex1 = vertex1;
+      this.vertex2 = vertex2;
+   }
+
    /**
     * @return The first (from) vertex
     */
@@ -104,9 +106,9 @@ public abstract class Edge<V> implements Serializable {
     * @return The other vertex in the edge
     */
    public V getOppositeVertex(V vertex) {
-      if (vertex1.equals(vertex)) {
+      if(vertex1.equals(vertex)) {
          return vertex2;
-      } else if (vertex2.equals(vertex)) {
+      } else if(vertex2.equals(vertex)) {
          return vertex1;
       }
       throw new IllegalArgumentException("Vertex is not in the edge.");
@@ -127,6 +129,20 @@ public abstract class Edge<V> implements Serializable {
    }
 
    /**
+    * @return True if the edge is directed, False if not
+    */
+   @JsonIgnore
+   public abstract boolean isDirected();
+
+   /**
+    * @return True if the edge has a weight, false otherwise
+    */
+   @JsonIgnore
+   public boolean isWeighted() {
+      return false;
+   }
+
+   /**
     * Sets the weight of the edge
     *
     * @param weight the weight
@@ -134,18 +150,5 @@ public abstract class Edge<V> implements Serializable {
    public void setWeight(double weight) {
 
    }
-
-   /**
-    * @return True if the edge is directed, False if not
-    */
-   public abstract boolean isDirected();
-
-   /**
-    * @return True if the edge has a weight, false otherwise
-    */
-   public boolean isWeighted() {
-      return false;
-   }
-
 
 }//END OF Edge

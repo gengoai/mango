@@ -21,6 +21,12 @@
 
 package com.gengoai.collection.counter;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.NonNull;
+
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -29,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @param <T> the component type of the counter
  * @author David B. Bracewell
  */
+@JsonDeserialize(as = ConcurrentHashMapCounter.class)
 public class ConcurrentHashMapCounter<T> extends BaseMapCounter<T> {
    private static final long serialVersionUID = 1L;
 
@@ -39,22 +46,14 @@ public class ConcurrentHashMapCounter<T> extends BaseMapCounter<T> {
       super(new ConcurrentHashMap<>());
    }
 
+   @JsonCreator
+   public ConcurrentHashMapCounter(@JsonProperty @NonNull Map<T, Double> map) {
+      super(new ConcurrentHashMap<>(map));
+   }
+
    @Override
    protected <R> Counter<R> newInstance() {
       return new ConcurrentHashMapCounter<>();
    }
-
-
-//   /**
-//    * Static method for deserializing a <code>ConcurrentHashMapCounter</code> from json.
-//    *
-//    * @param <T>   the key type parameter
-//    * @param entry the json entry
-//    * @param types the key type parameter information
-//    * @return the counter
-//    */
-//   static <T> Counter<T> fromJson(JsonEntry entry, Type... types) {
-//      return Counter.fromJson(new ConcurrentHashMapCounter<>(), entry, types);
-//   }
 
 }//END OF ConcurrentHashMapCounter

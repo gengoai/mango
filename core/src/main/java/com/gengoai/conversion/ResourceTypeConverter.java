@@ -49,7 +49,7 @@ public class ResourceTypeConverter implements TypeConverter {
       } else if (source instanceof JsonEntry) {
          JsonEntry e = Cast.as(source);
          if (e.isString()) {
-            return Resources.from(e.getAsString());
+            return Resources.from(e.asString());
          }
       }
 

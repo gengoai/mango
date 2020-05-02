@@ -48,7 +48,7 @@ public class URLResourceProvider implements ResourceProvider {
       BeanMap beanMap = null;
       try {
          beanMap = new BeanMap(new URLResource(specification));
-      } catch (MalformedURLException e) {
+      } catch(MalformedURLException e) {
          throw new RuntimeException(e);
       }
       beanMap.putAll(properties);

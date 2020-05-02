@@ -52,7 +52,6 @@ public class ClasspathResource extends BaseResource {
    private final String resource;
    private final ClassLoader classLoader;
 
-
    /**
     * Constructs a ClasspathResource resource with a given charset, compression and encoding setting
     *
@@ -187,7 +186,6 @@ public class ClasspathResource extends BaseResource {
    @Override
    public List<Resource> getChildren(Pattern filePattern, boolean recursive) {
       List<Resource> rval = new ArrayList<>();
-
 
       if(!isDirectory()) {
          return rval;

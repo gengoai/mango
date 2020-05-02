@@ -21,6 +21,11 @@
 
 package com.gengoai.collection;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.NonNull;
+
 import java.io.Serializable;
 import java.util.*;
 
@@ -32,8 +37,18 @@ import java.util.*;
  */
 public class HashMapIndex<TYPE> implements Index<TYPE>, Serializable {
    private static final long serialVersionUID = 1L;
+   @JsonValue()
    private final List<TYPE> list = new ArrayList<>();
    private final Map<TYPE, Integer> map = new HashMap<>();
+
+   public HashMapIndex() {
+
+   }
+
+   @JsonCreator
+   public HashMapIndex(@JsonProperty @NonNull Iterable<TYPE> items) {
+      addAll(items);
+   }
 
    @Override
    public int add(TYPE item) {

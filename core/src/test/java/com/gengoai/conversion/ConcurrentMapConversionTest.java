@@ -1,8 +1,7 @@
 package com.gengoai.conversion;
 
-import org.jboss.netty.util.internal.ConcurrentHashMap;
-
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**

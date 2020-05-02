@@ -47,5 +47,4 @@ public interface WriteOnlyResource extends Resource {
       throw new IllegalStateException("This is resource cannot be read from.");
    }
 
-
 }//END OF WriteOnlyResource

@@ -36,7 +36,7 @@ public class MultiFileWriter extends Writer implements Serializable, AutoCloseab
       baseDirectory.mkdirs();
       this.writers = new Writer[numberOfFiles];
       this.numberOfFiles = numberOfFiles;
-      for (int i = 0; i < numberOfFiles; i++) {
+      for(int i = 0; i < numberOfFiles; i++) {
          String name = filePrefix + Strings.padStart(Integer.toString(i), 5, '0');
          this.writers[i] = new AsyncWriter(baseDirectory.getChild(name).writer());
       }
@@ -45,7 +45,7 @@ public class MultiFileWriter extends Writer implements Serializable, AutoCloseab
    @Override
    public void write(char[] cbuf, int off, int len) throws IOException {
       int lock = lockId.accumulateAndGet(1, (x1, x2) -> {
-         if (x1 + x2 >= numberOfFiles) {
+         if(x1 + x2 >= numberOfFiles) {
             return 0;
          }
          return x1 + x2;
@@ -56,14 +56,14 @@ public class MultiFileWriter extends Writer implements Serializable, AutoCloseab
    @Override
    public void flush() throws IOException {
       IOException ioe = null;
-      for (int i = 0; i < numberOfFiles; i++) {
+      for(int i = 0; i < numberOfFiles; i++) {
          try {
             this.writers[i].flush();
-         } catch (IOException e) {
+         } catch(IOException e) {
             ioe = e;
          }
       }
-      if (ioe != null) {
+      if(ioe != null) {
          throw ioe;
       }
    }
@@ -71,14 +71,14 @@ public class MultiFileWriter extends Writer implements Serializable, AutoCloseab
    @Override
    public void close() throws IOException {
       IOException ioe = null;
-      for (int i = 0; i < numberOfFiles; i++) {
+      for(int i = 0; i < numberOfFiles; i++) {
          try {
             this.writers[i].close();
-         } catch (IOException e) {
+         } catch(IOException e) {
             ioe = e;
          }
       }
-      if (ioe != null) {
+      if(ioe != null) {
          throw ioe;
       }
    }

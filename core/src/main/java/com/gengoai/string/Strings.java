@@ -377,6 +377,23 @@ public final class Strings {
    }
 
    /**
+    * Determines if an entire string is title case or not
+    *
+    * @param input The input string
+    * @return True if the string is title case, False if not
+    */
+   public static boolean isTitleCase(@NonNull CharSequence input) {
+      if(input.length() == 0) {
+         return false;
+      }
+      if(input.length() == 1) {
+         return Character.isUpperCase(input.charAt(0));
+      }
+      return Character.isUpperCase(input.charAt(0)) && StringMatcher.LowerCase.test(input.subSequence(1,
+                                                                                                      input.length()));
+   }
+
+   /**
     * Determines if an entire string is upper case or not
     *
     * @param input The input string

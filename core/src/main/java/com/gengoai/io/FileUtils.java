@@ -21,7 +21,6 @@
 
 package com.gengoai.io;
 
-
 import com.gengoai.SystemInfo;
 import com.gengoai.io.resource.Resource;
 import com.gengoai.io.resource.ZipResource;
@@ -59,15 +58,19 @@ public final class FileUtils {
     * @return A directory name with a trailing slash
     */
    public static String addTrailingSlashIfNeeded(String directory) {
-      if (Strings.isNullOrBlank(directory)) {
+      if(Strings.isNullOrBlank(directory)) {
          return Strings.EMPTY;
       }
       int separator = indexOfLastSeparator(directory);
-      String slash = SystemInfo.isUnix() ? Character.toString(UNIX_SEPARATOR) : Character.toString(WINDOWS_SEPARATOR);
-      if (separator != -1) {
+      String slash = SystemInfo.isUnix()
+                     ? Character.toString(UNIX_SEPARATOR)
+                     : Character.toString(WINDOWS_SEPARATOR);
+      if(separator != -1) {
          slash = Character.toString(directory.charAt(separator));
       }
-      return directory.endsWith(slash) ? directory : directory + slash;
+      return directory.endsWith(slash)
+             ? directory
+             : directory + slash;
    }
 
    /**
@@ -92,14 +95,14 @@ public final class FileUtils {
     * string.
     */
    public static String baseName(String file, String suffix) {
-      if (Strings.isNullOrBlank(file)) {
+      if(Strings.isNullOrBlank(file)) {
          return Strings.EMPTY;
       }
       file = file.strip();
       int index = indexOfLastSeparator(file);
-      if (index == -1) {
+      if(index == -1) {
          return file.replaceAll(Pattern.quote(suffix) + "$", "");
-      } else if (index == file.length() - 1) {
+      } else if(index == file.length() - 1) {
          return baseName(file.substring(0, file.length() - 1));
       }
       return file.substring(index + 1).replaceAll(Pattern.quote(suffix) + "$", "");
@@ -112,7 +115,9 @@ public final class FileUtils {
     * @return the pattern
     */
    public static Pattern createFilePattern(String filePattern) {
-      filePattern = Strings.isNullOrBlank(filePattern) ? "\\*" : filePattern;
+      filePattern = Strings.isNullOrBlank(filePattern)
+                    ? "\\*"
+                    : filePattern;
       filePattern = filePattern.replaceAll("\\.", "\\.");
       filePattern = filePattern.replaceAll("\\*", ".*");
       return Pattern.compile("^" + filePattern + "$");
@@ -126,16 +131,16 @@ public final class FileUtils {
     * @return The path of the file spec or null if it is null
     */
    public static String directory(String file) {
-      if (Strings.isNullOrBlank(file)) {
+      if(Strings.isNullOrBlank(file)) {
          return Strings.EMPTY;
       }
       file = file.strip();
       int separator = indexOfLastSeparator(file);
       int extension = indexOfFileExtension(file);
 
-      if (extension == -1) {
+      if(extension == -1) {
          return addTrailingSlashIfNeeded(file);
-      } else if (separator == -1) {
+      } else if(separator == -1) {
          return Strings.EMPTY;
       }
 
@@ -149,41 +154,40 @@ public final class FileUtils {
     * @return The file extension of the file spec or null if it is null
     */
    public static String extension(String file) {
-      if (Strings.isNullOrBlank(file)) {
+      if(Strings.isNullOrBlank(file)) {
          return Strings.EMPTY;
       }
       file = file.strip();
       int index = indexOfFileExtension(file);
-      if (index == -1) {
+      if(index == -1) {
          return Strings.EMPTY;
       }
       return file.substring(index + 1);
    }
 
    private static int indexOfFileExtension(String spec) {
-      if (spec == null) {
+      if(spec == null) {
          return -1;
       }
 
       int dotIndex = spec.lastIndexOf(EXTENSION_SEPARATOR);
-      if (dotIndex == -1) {
+      if(dotIndex == -1) {
          return -1;
       }
 
       int pathIndex = indexOfLastSeparator(spec);
-      if (pathIndex > dotIndex) {
+      if(pathIndex > dotIndex) {
          return -1;
       }
       return dotIndex;
    }
 
    private static int indexOfLastSeparator(String spec) {
-      if (spec == null) {
+      if(spec == null) {
          return -1;
       }
       return Math.max(spec.lastIndexOf(UNIX_SEPARATOR), spec.lastIndexOf(WINDOWS_SEPARATOR));
    }
-
 
    /**
     * Returns the parent directory for the given file. If the file passed in is actually a directory it will get the
@@ -193,14 +197,16 @@ public final class FileUtils {
     * @return The parent or null if the file is null or empty
     */
    public static String parent(String file) {
-      if (Strings.isNullOrBlank(file)) {
+      if(Strings.isNullOrBlank(file)) {
          return Strings.EMPTY;
       }
       file = file.strip();
       String path = path(file);
       int index = indexOfLastSeparator(path);
-      if (index <= 0) {
-         return SystemInfo.isUnix() ? Character.toString(UNIX_SEPARATOR) : Character.toString(WINDOWS_SEPARATOR);
+      if(index <= 0) {
+         return SystemInfo.isUnix()
+                ? Character.toString(UNIX_SEPARATOR)
+                : Character.toString(WINDOWS_SEPARATOR);
       }
       return path.substring(0, index);
    }
@@ -212,12 +218,14 @@ public final class FileUtils {
     * @return The path or null if the file is null or empty
     */
    public static String path(String file) {
-      if (Strings.isNullOrBlank(file)) {
+      if(Strings.isNullOrBlank(file)) {
          return Strings.EMPTY;
       }
       file = file.strip();
       int pos = indexOfLastSeparator(file);
-      return pos == file.length() - 1 ? file.substring(0, file.length() - 1) : file;
+      return pos == file.length() - 1
+             ? file.substring(0, file.length() - 1)
+             : file;
    }
 
    /**
@@ -227,7 +235,7 @@ public final class FileUtils {
     * @return Unix style path spec
     */
    public static String toUnix(String spec) {
-      if (spec == null) {
+      if(spec == null) {
          return Strings.EMPTY;
       }
       return spec.replaceAll("\\\\+", "/");
@@ -240,7 +248,7 @@ public final class FileUtils {
     * @return windows style path spec
     */
    public static String toWindows(String spec) {
-      if (spec == null) {
+      if(spec == null) {
          return Strings.EMPTY;
       }
       return spec.replaceAll("/+", "\\\\");
@@ -257,13 +265,13 @@ public final class FileUtils {
     */
    public static Resource zip(File zipFile, Resource... entries) throws IOException {
       Set<String> usedNames = new HashSet<>();
-      try (ZipOutputStream zipOutputStream = new ZipOutputStream(Resources.fromFile(zipFile).outputStream())) {
-         for (Resource entry : entries) {
+      try(ZipOutputStream zipOutputStream = new ZipOutputStream(Resources.fromFile(zipFile).outputStream())) {
+         for(Resource entry : entries) {
             String entryName = entry.baseName();
-            if (Strings.isNullOrBlank(entryName)) {
+            if(Strings.isNullOrBlank(entryName)) {
                do {
                   entryName = Strings.randomHexString(10);
-               } while (usedNames.contains(entryName));
+               } while(usedNames.contains(entryName));
                usedNames.add(entryName);
             }
             ZipEntry e = new ZipEntry(entryName);
@@ -287,8 +295,8 @@ public final class FileUtils {
     */
    @SafeVarargs
    public static Resource zip(File zipFile, Map.Entry<String, Resource>... entries) throws IOException {
-      try (ZipOutputStream zipOutputStream = new ZipOutputStream(Resources.fromFile(zipFile).outputStream())) {
-         for (Map.Entry<String, Resource> entry : entries) {
+      try(ZipOutputStream zipOutputStream = new ZipOutputStream(Resources.fromFile(zipFile).outputStream())) {
+         for(Map.Entry<String, Resource> entry : entries) {
             String name = entry.getKey() == null
                           ? entry.getValue().baseName()
                           : entry.getKey();
@@ -300,6 +308,5 @@ public final class FileUtils {
       }
       return new ZipResource(zipFile.getAbsolutePath(), null);
    }
-
 
 }//END OF FileUtils

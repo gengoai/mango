@@ -21,9 +21,13 @@
 
 package com.gengoai.collection.counter;
 
-import com.gengoai.json.JsonEntry;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.gengoai.tuple.Tuple3;
+import lombok.NonNull;
 
-import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -34,11 +38,23 @@ import java.util.concurrent.ConcurrentHashMap;
  * @param <V> the second type
  * @author David B. Bracewell
  */
+@JsonDeserialize(as = ConcurrentHashMapMultiCounter.class)
 public class ConcurrentHashMapMultiCounter<K, V> extends BaseMultiCounter<K, V> {
    private static final long serialVersionUID = 1L;
 
    /**
-    * Instantiates a new Concurrent hash map multi counter.
+    * Instantiates a new ConcurrentHashMapMultiCounter initializing it with the given values.
+    *
+    * @param items the items
+    */
+   @JsonCreator
+   public ConcurrentHashMapMultiCounter(@JsonProperty @NonNull Collection<Tuple3<K, V, Double>> items) {
+      this();
+      items.forEach(t -> set(t.v1, t.v2, t.v3));
+   }
+
+   /**
+    * Instantiates a new ConcurrentHashMapMultiCounter.
     */
    public ConcurrentHashMapMultiCounter() {
       super(new ConcurrentHashMap<>());
@@ -52,19 +68,6 @@ public class ConcurrentHashMapMultiCounter<K, V> extends BaseMultiCounter<K, V> 
    @Override
    protected MultiCounter<K, V> newInstance() {
       return new ConcurrentHashMapMultiCounter<>();
-   }
-
-   /**
-    * Deserializes a <code>ConcurrentHashMapMultiCounter</code> from Json
-    *
-    * @param <K>   the key type parameter
-    * @param <V>   the value type parameter
-    * @param entry the json entry
-    * @param types the key and value types
-    * @return the multi counter
-    */
-   static <K, V> MultiCounter<K, V> fromJson(JsonEntry entry, Type... types) {
-      return MultiCounter.fromJson(new ConcurrentHashMapMultiCounter<>(), entry, types);
    }
 
 }//END OF HashMapMultiCounter

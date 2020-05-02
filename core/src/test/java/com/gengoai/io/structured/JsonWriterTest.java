@@ -21,57 +21,48 @@
 
 package com.gengoai.io.structured;
 
-import com.gengoai.io.Resources;
-import com.gengoai.io.resource.Resource;
-import com.gengoai.io.resource.StringResource;
-import com.gengoai.json.JsonWriter;
-import com.gengoai.tuple.Tuple2;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
 /**
  * @author David B. Bracewell
  */
 public class JsonWriterTest {
 
-
-
-
-  @Test
-  public void writerTest() throws Exception {
-    Resource resource = Resources.fromString("");
-    try (JsonWriter writer = new JsonWriter(resource)) {
-      writer.beginDocument();
-      writer.property("name", "value");
-      writer.beginArray("array").value("value1").endArray();
-      writer.beginObject("innerObject");
-      writer.property("arg", null);
-      writer.endObject();
-      writer.property("int", 3);
-      writer.endDocument();
-    }
-
-    assertEquals("{\"name\":\"value\",\"array\":[\"value1\"],\"innerObject\":{\"arg\":null},\"int\":3}", resource.readToString().trim());
-
-
-    resource = new StringResource();
-    try (JsonWriter writer = new JsonWriter(resource)) {
-      writer.beginDocument();
-      writer.property("List", Tuple2.of("String1", 34d));
-      writer.endDocument();
-    }
-    assertEquals("{\"List\":[\"String1\",34.0]}", resource.readToString().trim());
-
-
-//    try (JsonReader reader = new JsonReader(resource)) {
-//      reader.beginDocument();
-//      List<Val> list = reader.nextCollection(ArrayList::new);
-//      assertTrue(list.size() == 2);
-//      assertEquals("String1", list.get(0).asString());
-//      assertEquals(34.0d, list.get(1).asDoubleValue(), 0d);
-//      reader.endDocument();
-//    }
-  }
+//
+  //
+  //
+  //  @Test
+  //  public void writerTest() throws Exception {
+  //    Resource resource = Resources.fromString("");
+  //    try (JsonWriter writer = new JsonWriter(resource)) {
+  //      writer.beginDocument();
+  //      writer.property("name", "value");
+  //      writer.beginArray("array").value("value1").endArray();
+  //      writer.beginObject("innerObject");
+  //      writer.property("arg", null);
+  //      writer.endObject();
+  //      writer.property("int", 3);
+  //      writer.endDocument();
+  //    }
+  //
+  //    assertEquals("{\"name\":\"value\",\"array\":[\"value1\"],\"innerObject\":{\"arg\":null},\"int\":3}", resource.readToString().trim());
+  //
+  //
+  //    resource = new StringResource();
+  //    try (JsonWriter writer = new JsonWriter(resource)) {
+  //      writer.beginDocument();
+  //      writer.property("List", Tuple2.of("String1", 34d));
+  //      writer.endDocument();
+  //    }
+  //    assertEquals("{\"List\":[\"String1\",34.0]}", resource.readToString().trim());
+  //
+  //
+  ////    try (JsonReader reader = new JsonReader(resource)) {
+  ////      reader.beginDocument();
+  ////      List<Val> list = reader.nextCollection(ArrayList::new);
+  ////      assertTrue(list.size() == 2);
+  ////      assertEquals("String1", list.get(0).asString());
+  ////      assertEquals(34.0d, list.get(1).asDoubleValue(), 0d);
+  ////      reader.endDocument();
+  ////    }
+  //  }
 
 }

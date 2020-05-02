@@ -1,18 +1,16 @@
 package com.gengoai.collection.tree;
 
-import com.gengoai.annotation.JsonHandler;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.gengoai.collection.Lists;
 import com.gengoai.collection.Sets;
 import com.gengoai.conversion.Cast;
-import com.gengoai.json.JsonEntry;
-import com.gengoai.reflection.Reflect;
-import com.gengoai.reflection.ReflectionException;
-import com.gengoai.reflection.TypeUtils;
 import com.gengoai.stream.Streams;
 import lombok.NonNull;
 
 import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -23,7 +21,6 @@ import java.util.stream.Collectors;
  * @param <T> the element type parameter
  * @author David B. Bracewell
  */
-@JsonHandler(IntervalTree.IntervalTreeMarshaller.class)
 public class IntervalTree<T extends Span> implements Collection<T>, Serializable {
    private static final boolean BLACK = false;
    private static final boolean RED = true;
@@ -44,7 +41,8 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
     *
     * @param collection the collection of items to initialize the IntervalTree with
     */
-   public IntervalTree(@NonNull Collection<T> collection) {
+   @JsonCreator
+   public IntervalTree(@JsonProperty @NonNull Collection<T> collection) {
       addAll(collection);
    }
 
@@ -100,6 +98,11 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
          }
       }
       return addAll;
+   }
+
+   @JsonValue
+   private Collection<T> asCollection() {
+      return Streams.asStream(iterator()).collect(Collectors.toList());
    }
 
    /**
@@ -255,6 +258,7 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
    }
 
    @Override
+   @JsonIgnore
    public boolean isEmpty() {
       return root.isNil();
    }
@@ -375,32 +379,6 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
       return Streams.asStream(this)
                     .map(Object::toString)
                     .collect(Collectors.joining(", ", "[", "]"));
-   }
-
-   /**
-    * Json Marshaller for {@link IntervalTree}
-    *
-    * @param <T> the type parameter
-    */
-   public static class IntervalTreeMarshaller<T extends Span> extends com.gengoai.json.JsonMarshaller<IntervalTree<T>> {
-
-      @Override
-      protected IntervalTree<T> deserialize(JsonEntry entry, Type type) {
-         try {
-            IntervalTree<T> tree = Reflect.onClass(type).create().get();
-            Type tType = TypeUtils.getOrObject(0, TypeUtils.getActualTypeArguments(type));
-            entry.elementIterator()
-                 .forEachRemaining(e -> tree.add(e.getAs(tType)));
-            return tree;
-         } catch(ReflectionException e) {
-            throw new RuntimeException(e);
-         }
-      }
-
-      @Override
-      protected JsonEntry serialize(IntervalTree<T> ts, Type type) {
-         return JsonEntry.array(ts);
-      }
    }
 
    private class DescendingIterator implements Iterator<T> {
@@ -821,7 +799,6 @@ public class IntervalTree<T extends Span> implements Collection<T>, Serializable
          update();
          newRoot.update();
       }
-
 
       private void update() {
          int newMax = end();

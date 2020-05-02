@@ -65,7 +65,7 @@ public class InternerTest {
    @Test
    public void json() {
       JsonEntry entry = JsonEntry.from(interner);
-      Interner<String> des = entry.getAs(TypeUtils.parameterizedType(Interner.class, String.class));
+      Interner<String> des = entry.as(TypeUtils.parameterizedType(Interner.class, String.class));
       assertEquals(interner, des);
    }
 }

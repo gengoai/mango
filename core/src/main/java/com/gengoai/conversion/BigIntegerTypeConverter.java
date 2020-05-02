@@ -16,7 +16,7 @@ public class BigIntegerTypeConverter extends BaseNumberTypeConverter {
 
    @Override
    protected Object convertNumber(Number number) {
-      if (number instanceof BigInteger) {
+      if(number instanceof BigInteger) {
          return number;
       }
       return BigInteger.valueOf(number.longValue());

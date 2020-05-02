@@ -54,7 +54,6 @@ public class ResourceMonitor extends Thread {
    private final ConcurrentHashMap<Object, KeyedWeakReference> map = new ConcurrentHashMap<>();
    private final ReferenceQueue<Object> referenceQueue = new ReferenceQueue<>();
 
-
    private ResourceMonitor() {
       setPriority(Thread.MAX_PRIORITY);
       setName("GarbageCollectingConcurrentMap-cleanupthread");
@@ -112,7 +111,6 @@ public class ResourceMonitor extends Thread {
                                             new Class[]{LongStream.class},
                                             new LongStreamInvocationHandler(notNull(stream))));
    }
-
 
    public static <T> MonitoredObject<T> monitor(T object) {
       return new MonitoredObject<>(object);

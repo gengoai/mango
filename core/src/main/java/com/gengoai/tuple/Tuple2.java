@@ -21,6 +21,11 @@
 
 package com.gengoai.tuple;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gengoai.conversion.Cast;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -36,7 +41,8 @@ import java.util.Map;
  * @author David B. Bracewell
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@JsonDeserialize(as = Tuple2.class)
 public class Tuple2<K, V> extends Tuple implements Map.Entry<K, V> {
 
    private static final long serialVersionUID = 1L;
@@ -62,6 +68,12 @@ public class Tuple2<K, V> extends Tuple implements Map.Entry<K, V> {
       return new Tuple2<>(key, value);
    }
 
+   @JsonCreator
+   private Tuple2(@JsonProperty Object[] array) {
+      this.v1 = Cast.as(array[0]);
+      this.v2 = Cast.as(array[1]);
+   }
+
    @Override
    public <T> Tuple3<T, K, V> appendLeft(T object) {
       return Tuple3.of(object, v1, v2);
@@ -73,6 +85,7 @@ public class Tuple2<K, V> extends Tuple implements Map.Entry<K, V> {
    }
 
    @Override
+   @JsonValue
    public Object[] array() {
       return new Object[]{v1, v2};
    }
@@ -100,6 +113,7 @@ public class Tuple2<K, V> extends Tuple implements Map.Entry<K, V> {
    }
 
    @Override
+   @JsonIgnore
    public K getKey() {
       return v1;
    }
@@ -113,6 +127,7 @@ public class Tuple2<K, V> extends Tuple implements Map.Entry<K, V> {
    }
 
    @Override
+   @JsonIgnore
    public V getValue() {
       return v2;
    }

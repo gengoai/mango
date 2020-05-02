@@ -22,10 +22,11 @@
 package com.gengoai.collection.counter;
 
 import com.gengoai.collection.Iterators;
-import com.gengoai.stream.Streams;
 import com.gengoai.conversion.Cast;
+import com.gengoai.stream.Streams;
 import com.gengoai.tuple.Tuple2;
 import com.gengoai.tuple.Tuple3;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 import java.util.*;
@@ -44,6 +45,7 @@ import static com.gengoai.tuple.Tuples.$;
  * @param <V> the second V
  * @author David B. Bracewell
  */
+@EqualsAndHashCode(callSuper = false)
 public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Serializable {
    private static final long serialVersionUID = 1L;
    private final Map<K, Counter<V>> map;
@@ -57,13 +59,6 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
       this.map = backingMap;
    }
 
-   /**
-    * Creates a new counter.
-    *
-    * @return the counter
-    */
-   protected abstract Counter<V> createCounter();
-
    @Override
    public MultiCounter<K, V> adjustValues(DoubleUnaryOperator function) {
       MultiCounter<K, V> tmp = newInstance();
@@ -75,19 +70,6 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
    public MultiCounter<K, V> adjustValuesSelf(DoubleUnaryOperator function) {
       firstKeys().forEach(key -> get(key).adjustValuesSelf(function));
       return this;
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(map);
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {return true;}
-      if (obj == null || getClass() != obj.getClass()) {return false;}
-      final BaseMultiCounter other = (BaseMultiCounter) obj;
-      return Objects.equals(this.map, other.map);
    }
 
    @Override
@@ -105,20 +87,12 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
       return map.containsKey(item1) && map.get(item1).contains(item2);
    }
 
-   @Override
-   public Collection<Double> values() {
-      return new AbstractCollection<Double>() {
-         @Override
-         public Iterator<Double> iterator() {
-            return Iterators.transform(new KeyKeyValueIterator(), Tuple3::getV3);
-         }
-
-         @Override
-         public int size() {
-            return BaseMultiCounter.this.size();
-         }
-      };
-   }
+   /**
+    * Creates a new counter.
+    *
+    * @return the counter
+    */
+   protected abstract Counter<V> createCounter();
 
    @Override
    public Set<Tuple3<K, V, Double>> entries() {
@@ -164,6 +138,11 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
    }
 
    @Override
+   public Set<K> firstKeys() {
+      return map.keySet();
+   }
+
+   @Override
    public Counter<V> get(K firstKey) {
       return new ForwardingCounter(firstKey);
    }
@@ -174,70 +153,13 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
    }
 
    @Override
-   public Set<K> firstKeys() {
-      return map.keySet();
-   }
-
-   @Override
    public List<Map.Entry<K, V>> itemsByCount(boolean ascending) {
       return Streams.asStream(new KeyKeyValueIterator())
-                    .sorted((c1, c2) -> (ascending ? 1 : -1) * Double.compare(c1.getV3(), c2.getV3()))
+                    .sorted((c1, c2) -> (ascending
+                                         ? 1
+                                         : -1) * Double.compare(c1.getV3(), c2.getV3()))
                     .map(t -> Cast.<Map.Entry<K, V>>as(Tuple2.of(t.getV1(), t.getV2())))
                     .collect(Collectors.toList());
-   }
-
-   @Override
-   public MultiCounter<K, V> merge(MultiCounter<K, V> other) {
-      if (other != null) {
-         other.entries().forEach(e -> increment(e.v1, e.v2, e.v3));
-      }
-      return this;
-   }
-
-   /**
-    * New instance.
-    *
-    * @return the multi counter
-    */
-   protected abstract MultiCounter<K, V> newInstance();
-
-   @Override
-   public Counter<V> remove(K item) {
-      if (map.containsKey(item)) {
-         return map.remove(item);
-      }
-      return createCounter();
-   }
-
-   @Override
-   public double remove(K item1, V item2) {
-      return get(item1).remove(item2);
-   }
-
-   @Override
-   public MultiCounter<K, V> set(K item1, V item2, double amount) {
-      get(item1).set(item2, amount);
-      return this;
-   }
-
-   @Override
-   public MultiCounter<K, V> set(K item, Counter<V> counter) {
-      if (counter == null || counter.isEmpty()) {
-         map.remove(item);
-      } else {
-         map.put(item, counter);
-      }
-      return this;
-   }
-
-   @Override
-   public int size() {
-      return map.values().parallelStream().mapToInt(Counter::size).sum();
-   }
-
-   @Override
-   public String toString() {
-      return map.toString();
    }
 
    @Override
@@ -246,7 +168,7 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
 
          @Override
          public boolean contains(Object o) {
-            if (o instanceof Map.Entry) {
+            if(o instanceof Map.Entry) {
                Map.Entry<K, V> e = Cast.as(o);
                return BaseMultiCounter.this.contains(e.getKey(), e.getValue());
             }
@@ -266,6 +188,75 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
       };
    }
 
+   @Override
+   public MultiCounter<K, V> merge(MultiCounter<K, V> other) {
+      if(other != null) {
+         other.entries().forEach(e -> increment(e.v1, e.v2, e.v3));
+      }
+      return this;
+   }
+
+   /**
+    * New instance.
+    *
+    * @return the multi counter
+    */
+   protected abstract MultiCounter<K, V> newInstance();
+
+   @Override
+   public Counter<V> remove(K item) {
+      if(map.containsKey(item)) {
+         return map.remove(item);
+      }
+      return createCounter();
+   }
+
+   @Override
+   public double remove(K item1, V item2) {
+      return get(item1).remove(item2);
+   }
+
+   @Override
+   public MultiCounter<K, V> set(K item1, V item2, double amount) {
+      get(item1).set(item2, amount);
+      return this;
+   }
+
+   @Override
+   public MultiCounter<K, V> set(K item, Counter<V> counter) {
+      if(counter == null || counter.isEmpty()) {
+         map.remove(item);
+      } else {
+         map.put(item, counter);
+      }
+      return this;
+   }
+
+   @Override
+   public int size() {
+      return map.values().parallelStream().mapToInt(Counter::size).sum();
+   }
+
+   @Override
+   public String toString() {
+      return map.toString();
+   }
+
+   @Override
+   public Collection<Double> values() {
+      return new AbstractCollection<Double>() {
+         @Override
+         public Iterator<Double> iterator() {
+            return Iterators.transform(new KeyKeyValueIterator(), Tuple3::getV3);
+         }
+
+         @Override
+         public int size() {
+            return BaseMultiCounter.this.size();
+         }
+      };
+   }
+
    private class KeyKeyValueIterator implements Iterator<Tuple3<K, V, Double>> {
 
       private Iterator<Map.Entry<K, Counter<V>>> entryIterator = map.entrySet().iterator();
@@ -273,8 +264,8 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
       private Iterator<V> key2Iterator = null;
 
       private boolean advance() {
-         while (key2Iterator == null || !key2Iterator.hasNext()) {
-            if (entryIterator.hasNext()) {
+         while(key2Iterator == null || !key2Iterator.hasNext()) {
+            if(entryIterator.hasNext()) {
                entry = entryIterator.next();
                key2Iterator = entry.getValue().items().iterator();
             } else {
@@ -284,7 +275,6 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
          return true;
       }
 
-
       @Override
       public boolean hasNext() {
          return advance();
@@ -292,7 +282,7 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
 
       @Override
       public Tuple3<K, V, Double> next() {
-         if (!advance()) {
+         if(!advance()) {
             throw new NoSuchElementException();
          }
          V key2 = key2Iterator.next();
@@ -302,7 +292,7 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
       @Override
       public void remove() {
          key2Iterator.remove();
-         if (entry.getValue().isEmpty()) {
+         if(entry.getValue().isEmpty()) {
             entryIterator.remove();
          }
       }
@@ -316,25 +306,9 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
          this.key = key;
       }
 
-
-      protected Counter<V> delegate() {
-         return map.get(key);
-      }
-
-      protected Counter<V> createIfNeeded() {
-         return map.computeIfAbsent(key, k -> createCounter());
-      }
-
-
-      private void removeIfEmpty() {
-         if (delegate() == null || delegate().isEmpty()) {
-            map.remove(key);
-         }
-      }
-
       @Override
       public Counter<V> adjustValues(DoubleUnaryOperator function) {
-         if( map.containsKey(key)){
+         if(map.containsKey(key)) {
             return map.get(key).adjustValues(function);
          }
          return createCounter();
@@ -363,7 +337,7 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
 
       @Override
       public Counter<V> bottomN(int n) {
-         if (map.containsKey(key)) {
+         if(map.containsKey(key)) {
             return map.get(key).bottomN(n);
          }
          return createCounter();
@@ -380,10 +354,14 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
       }
 
       @Override
-      public Collection<Double> values() {
-         return delegate() == null
-                ? Collections.emptyList()
-                : delegate().values();
+      public Counter<V> copy() {
+         Counter<V> toReturn = createIfNeeded().copy();
+         removeIfEmpty();
+         return toReturn;
+      }
+
+      protected Counter<V> createIfNeeded() {
+         return map.computeIfAbsent(key, k -> createCounter());
       }
 
       @Override
@@ -403,19 +381,43 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
 
       @Override
       public Counter<V> decrementAll(Iterable<? extends V> iterable, double amount) {
-         if (iterable != null) {
+         if(iterable != null) {
             iterable.forEach(i -> decrement(i, amount));
             removeIfEmpty();
          }
          return this;
       }
 
+      protected Counter<V> delegate() {
+         return map.get(key);
+      }
 
       @Override
       public Counter<V> divideBySum() {
          createIfNeeded().divideBySum();
          removeIfEmpty();
          return this;
+      }
+
+      @Override
+      public Set<Map.Entry<V, Double>> entries() {
+         return delegate() == null
+                ? Collections.emptySet()
+                : delegate().entries();
+      }
+
+      @Override
+      public Counter<V> filterByKey(Predicate<? super V> predicate) {
+         Counter<V> toReturn = createIfNeeded().filterByKey(predicate);
+         removeIfEmpty();
+         return toReturn;
+      }
+
+      @Override
+      public Counter<V> filterByValue(DoublePredicate doublePredicate) {
+         Counter<V> toReturn = createIfNeeded().filterByValue(doublePredicate);
+         removeIfEmpty();
+         return toReturn;
       }
 
       @Override
@@ -444,7 +446,7 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
 
       @Override
       public Counter<V> incrementAll(Iterable<? extends V> iterable, double amount) {
-         if (iterable != null) {
+         if(iterable != null) {
             iterable.forEach(i -> increment(i, amount));
             removeIfEmpty();
          }
@@ -468,13 +470,6 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
          return delegate() == null
                 ? Collections.emptyList()
                 : delegate().itemsByCount(ascending);
-      }
-
-      @Override
-      public Set<Map.Entry<V, Double>> entries() {
-         return delegate() == null
-                ? Collections.emptySet()
-                : delegate().entries();
       }
 
       @Override
@@ -549,6 +544,11 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
          return toReturn;
       }
 
+      private void removeIfEmpty() {
+         if(delegate() == null || delegate().isEmpty()) {
+            map.remove(key);
+         }
+      }
 
       @Override
       public V sample() {
@@ -586,27 +586,6 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
       }
 
       @Override
-      public Counter<V> topN(int n) {
-         Counter<V> toReturn = createIfNeeded().topN(n);
-         removeIfEmpty();
-         return toReturn;
-      }
-
-      @Override
-      public Counter<V> filterByKey(Predicate<? super V> predicate) {
-         Counter<V> toReturn = createIfNeeded().filterByKey(predicate);
-         removeIfEmpty();
-         return toReturn;
-      }
-
-      @Override
-      public Counter<V> filterByValue(DoublePredicate doublePredicate) {
-         Counter<V> toReturn = createIfNeeded().filterByValue(doublePredicate);
-         removeIfEmpty();
-         return toReturn;
-      }
-
-      @Override
       public String toString() {
          return delegate() == null
                 ? "{}"
@@ -614,10 +593,17 @@ public abstract class BaseMultiCounter<K, V> implements MultiCounter<K, V>, Seri
       }
 
       @Override
-      public Counter<V> copy() {
-         Counter<V> toReturn = createIfNeeded().copy();
+      public Counter<V> topN(int n) {
+         Counter<V> toReturn = createIfNeeded().topN(n);
          removeIfEmpty();
          return toReturn;
+      }
+
+      @Override
+      public Collection<Double> values() {
+         return delegate() == null
+                ? Collections.emptyList()
+                : delegate().values();
       }
 
    }//END OF ForwardingCounter

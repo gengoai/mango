@@ -33,7 +33,7 @@ public abstract class MapTypeConverter implements TypeConverter {
          for (Iterator<Map.Entry<String, JsonEntry>> itr = json.propertyIterator(); itr.hasNext(); ) {
             Map.Entry<String, JsonEntry> entry = itr.next();
             map.put(Converter.convert(entry.getKey(), keyType),
-                    entry.getValue().getAs(valueType));
+                    entry.getValue().as(valueType));
          }
       } catch (Exception e) {
          throw new TypeConversionException(source, parameterizedType(Map.class, keyType, valueType), e.getCause());

@@ -35,6 +35,9 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+/**
+ * The type Mango table.
+ */
 public class MangoTable extends JTable {
    @Getter
    private Color alternateRowColor;
@@ -42,53 +45,116 @@ public class MangoTable extends JTable {
    private Color rowColor;
    private MangoTableModel model;
 
+   /**
+    * Instantiates a new Mango table.
+    */
    public MangoTable() {
       this(new MangoTableModel());
    }
 
+   /**
+    * Instantiates a new Mango table.
+    *
+    * @param columns the columns
+    */
    public MangoTable(@NonNull String... columns) {
       this(new MangoTableModel(columns));
    }
 
+   /**
+    * Instantiates a new Mango table.
+    *
+    * @param columns the columns
+    */
    @SafeVarargs
    public MangoTable(@NonNull Tuple2<String, Class<?>>... columns) {
       this(new MangoTableModel(columns));
    }
 
+   /**
+    * Instantiates a new Mango table.
+    *
+    * @param dm the dm
+    */
    public MangoTable(@NonNull MangoTableModel dm) {
       super(dm);
       this.model = dm;
    }
 
+
+
+
+   /**
+    * Add all rows.
+    *
+    * @param rows the rows
+    */
    public void addAllRows(Object[][] rows) {
       model.addAllRows(rows);
    }
 
+   /**
+    * Add all rows.
+    *
+    * @param rows the rows
+    */
    public void addAllRows(List<List<?>> rows) {
       model.addAllRows(rows);
    }
 
+   /**
+    * Add row.
+    *
+    * @param row the row
+    */
    public void addRow(Object... row) {
       model.addRow(row);
    }
 
+   /**
+    * Add row.
+    *
+    * @param row the row
+    */
    public void addRow(List<?> row) {
       model.addRow(row);
    }
 
+   /**
+    * Clear.
+    */
    public void clear() {
       model.setRowCount(0);
    }
 
+   /**
+    * Gets value at index.
+    *
+    * @param row    the row
+    * @param column the column
+    * @return the value at index
+    */
    public Object getValueAtIndex(int row, int column) {
       return getModel().getValueAt(convertRowIndexToModel(row),
                                    convertColumnIndexToModel(column));
    }
 
+   /**
+    * Gets value at model.
+    *
+    * @param row    the row
+    * @param column the column
+    * @return the value at model
+    */
    public Object getValueAtModel(int row, int column) {
       return getModel().getValueAt(row, column);
    }
 
+   /**
+    * On selection changed.
+    *
+    * @param consumer the consumer
+    */
    public void onSelectionChanged(@NonNull ListSelectionListener consumer) {
       this.getSelectionModel().addListSelectionListener(consumer);
    }
@@ -118,6 +184,11 @@ public class MangoTable extends JTable {
       return comp;
    }
 
+   /**
+    * Resize column width.
+    *
+    * @param minWidth the min width
+    */
    public void resizeColumnWidth(int minWidth) {
       final TableColumnModel columnModel = getColumnModel();
       for(int column = 0; column < getColumnCount(); column++) {
@@ -131,16 +202,33 @@ public class MangoTable extends JTable {
       }
    }
 
+   /**
+    * Sets alternate row color.
+    *
+    * @param colorConverter the color converter
+    * @return the alternate row color
+    */
    public MangoTable setAlternateRowColor(@NonNull Function<Color, Color> colorConverter) {
       this.alternateRowColor = colorConverter.apply(getBackground());
       return this;
    }
 
+   /**
+    * Sets alternate row color.
+    *
+    * @param color the color
+    * @return the alternate row color
+    */
    public MangoTable setAlternateRowColor(Color color) {
       this.alternateRowColor = color;
       return this;
    }
 
+   /**
+    * Sets header is visible.
+    *
+    * @param isVisible the is visible
+    */
    public void setHeaderIsVisible(boolean isVisible) {
       if(isVisible && getTableHeader() == null) {
          setTableHeader(new JTableHeader());
@@ -158,20 +246,41 @@ public class MangoTable extends JTable {
       }
    }
 
+   /**
+    * Sets reordering allowed.
+    *
+    * @param isReorderingAllowed the is reordering allowed
+    */
    public void setReorderingAllowed(boolean isReorderingAllowed) {
       if(getTableHeader() != null) {
          this.getTableHeader().setReorderingAllowed(isReorderingAllowed);
       }
    }
 
+   /**
+    * Sets row color.
+    *
+    * @param color the color
+    */
    public void setRowColor(Color color) {
       this.rowColor = color;
    }
 
+   /**
+    * Sets row height padding.
+    *
+    * @param amount the amount
+    */
    public void setRowHeightPadding(int amount) {
       this.setRowHeight(Fonts.getFontHeight(this) + amount);
    }
 
+   /**
+    * With column.
+    *
+    * @param index    the index
+    * @param consumer the consumer
+    */
    public void withColumn(int index, @NonNull Consumer<TableColumn> consumer) {
       consumer.accept(getColumnModel().getColumn(index));
    }

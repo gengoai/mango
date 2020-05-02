@@ -2,17 +2,13 @@ package com.gengoai.collection.tree;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.gengoai.annotation.JsonHandler;
 import com.gengoai.collection.Iterators;
 import com.gengoai.collection.Maps;
 import com.gengoai.conversion.Cast;
-import com.gengoai.json.JsonEntry;
-import com.gengoai.reflection.TypeUtils;
 import com.gengoai.string.CharMatcher;
 import com.gengoai.string.Strings;
 
 import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,7 +26,6 @@ import static com.gengoai.tuple.Tuples.$;
  * @param <V> the value type of the trie.
  * @author David B. Bracewell
  */
-@JsonHandler(Trie.TrieMarshaller.class)
 public class Trie<V> implements Serializable, Map<String, V> {
    private static final long serialVersionUID = 1L;
    private final TrieNode<V> root;
@@ -522,25 +517,6 @@ public class Trie<V> implements Serializable, Map<String, V> {
          return convert(old);
       }
 
-   }
-
-   public static class TrieMarshaller<T> extends com.gengoai.json.JsonMarshaller<Trie<T>> {
-
-      @Override
-      protected Trie<T> deserialize(JsonEntry entry, Type type) {
-         Trie<T> trie = new Trie<>();
-         Type typeOfT = TypeUtils.getOrObject(0, TypeUtils.getActualTypeArguments(type));
-         entry.propertyIterator()
-              .forEachRemaining(e -> trie.put(e.getKey(), e.getValue().getAs(typeOfT)));
-         return trie;
-      }
-
-      @Override
-      protected JsonEntry serialize(Trie<T> t, Type type) {
-         JsonEntry object = JsonEntry.object();
-         t.forEach(object::addProperty);
-         return object;
-      }
    }
 
    private static class TrieNode<V> implements Serializable, Comparable<TrieNode<V>> {

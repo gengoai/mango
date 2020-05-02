@@ -21,6 +21,9 @@
 
 package com.gengoai.collection.counter;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gengoai.collection.Index;
 import com.gengoai.collection.Indexes;
 import com.gengoai.conversion.Converter;
@@ -32,9 +35,11 @@ import com.gengoai.math.Math2;
 import com.gengoai.tuple.Tuple3;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
@@ -49,52 +54,8 @@ import java.util.stream.Collectors;
  * @param <V> component type of the second key in the pair
  * @author David B. Bracewell
  */
+@JsonDeserialize(as = HashMapMultiCounter.class)
 public interface MultiCounter<K, V> {
-
-   /**
-    * Common methodology for deserializing a MultiCounter from json
-    *
-    * @param <K>     the key type parameter
-    * @param <V>     the value type parameter
-    * @param counter the counter to fill
-    * @param entry   the json entry
-    * @param types   the key and value types
-    * @return the multi counter
-    */
-   static <K, V> MultiCounter<K, V> fromJson(MultiCounter<K, V> counter, JsonEntry entry, Type... types) {
-      Type keyType = types.length > 0 ? types[0] : Object.class;
-      Type valueType = types.length > 1 ? types[1] : Object.class;
-      Index<K> firstKeys = Indexes.indexOf(entry.getProperty("firstKeys").getAsArray(keyType));
-      Index<V> secondKeys = Indexes.indexOf(entry.getProperty("secondKeys").getAsArray(valueType));
-      int index = 0;
-      for (Iterator<JsonEntry> iterator = entry.getProperty("values").elementIterator(); iterator.hasNext(); ) {
-         JsonEntry e = iterator.next();
-         K fKey = firstKeys.get(index);
-         e.propertyIterator().forEachRemaining(pe -> counter.set(fKey,
-                                                                 secondKeys.get(Integer.parseInt(pe.getKey())),
-                                                                 pe.getValue().getAsDouble()
-                                                                ));
-         index++;
-      }
-      return counter;
-   }
-
-   /**
-    * Deserializes a <code>MultiCounter</code> from Json
-    *
-    * @param <K>   the key type parameter
-    * @param <V>   the value type parameter
-    * @param entry the json entry
-    * @param types the key and value types
-    * @return the multi counter
-    */
-   static <K, V> MultiCounter<K, V> fromJson(JsonEntry entry, Type... types) {
-      return fromJson(MultiCounters.newMultiCounter(), entry, types);
-   }
-
-   default double setIfAbsent(K key1, V key2, BiFunction<K, V, Double> function) {
-      return get(key1).asMap().computeIfAbsent(key2, v -> function.apply(key1, v));
-   }
 
    /**
     * Constructs a new multi-counter made up of counts that are adjusted using the supplied function.
@@ -173,7 +134,7 @@ public interface MultiCounter<K, V> {
     * @return This multi-counter (for fluent design)
     */
    default MultiCounter<K, V> decrementAll(Iterable<? extends Map.Entry<K, V>> iterable) {
-      if (iterable != null) {
+      if(iterable != null) {
          iterable.forEach(e -> decrement(e.getKey(), e.getValue()));
       }
       return this;
@@ -217,6 +178,7 @@ public interface MultiCounter<K, V> {
     *
     * @return the set of entries
     */
+   @JsonValue
    Set<Tuple3<K, V, Double>> entries();
 
    /**
@@ -258,7 +220,7 @@ public interface MultiCounter<K, V> {
     * @return the count of the pair
     */
    default double get(K item1, V item2) {
-      if (contains(item1)) {
+      if(contains(item1)) {
          return get(item1).get(item2);
       }
       return 0d;
@@ -316,7 +278,7 @@ public interface MultiCounter<K, V> {
     * @return This multi-counter (for fluent design)
     */
    default MultiCounter<K, V> incrementAll(Iterable<? extends Map.Entry<K, V>> iterable) {
-      if (iterable != null) {
+      if(iterable != null) {
          iterable.forEach(e -> increment(e.getKey(), e.getValue()));
       }
       return this;
@@ -327,6 +289,7 @@ public interface MultiCounter<K, V> {
     *
     * @return True if the counter is empty
     */
+   @JsonIgnore
    boolean isEmpty();
 
    /**
@@ -403,7 +366,7 @@ public interface MultiCounter<K, V> {
     * @return the multi counter
     */
    default MultiCounter<K, V> removeAll(Iterable<K> items) {
-      if (items != null) {
+      if(items != null) {
          items.forEach(this::remove);
       }
       return this;
@@ -437,6 +400,10 @@ public interface MultiCounter<K, V> {
     */
    MultiCounter<K, V> set(K item, Counter<V> counter);
 
+   default double setIfAbsent(K key1, V key2, BiFunction<K, V, Double> function) {
+      return get(key1).asMap().computeIfAbsent(key2, v -> function.apply(key1, v));
+   }
+
    /**
     * The total number of items in the counter
     *
@@ -469,7 +436,7 @@ public interface MultiCounter<K, V> {
       final Index<V> secondKeys = Indexes.indexOf(secondKeys());
       entry.addProperty("secondKeys", secondKeys.asList());
       JsonEntry values = JsonEntry.array();
-      for (int i = 0; i < firstKeys.size(); i++) {
+      for(int i = 0; i < firstKeys.size(); i++) {
          JsonEntry value = JsonEntry.object();
          get(firstKeys.get(i)).forEach((k, v) -> value.addProperty(Integer.toString(secondKeys.getId(k)), v));
          values.addValue(value);
@@ -504,8 +471,8 @@ public interface MultiCounter<K, V> {
     */
    default void writeCsv(Resource output) throws IOException {
       DecimalFormat decimalFormat = new DecimalFormat("#.#####");
-      try (CSVWriter writer = CSV.builder().writer(output)) {
-         for (Tuple3<K, V, Double> entry : entries()) {
+      try(CSVWriter writer = CSV.builder().writer(output)) {
+         for(Tuple3<K, V, Double> entry : entries()) {
             writer.write(Converter.convertSilently(entry.v1, String.class),
                          Converter.convertSilently(entry.v2, String.class),
                          decimalFormat.format(entry.v3)

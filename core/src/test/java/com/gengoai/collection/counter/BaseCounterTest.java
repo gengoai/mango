@@ -353,7 +353,7 @@ public abstract class BaseCounterTest {
    public void testJson() throws Exception {
       Counter<String> counter = getCounter2();
       String str = Json.dumps(counter);
-      Counter<String> des = Json.parse(str).getAs(parameterizedType(counter.getClass(), String.class));
+      Counter<String> des = Json.parse(str).as(parameterizedType(counter.getClass(), String.class));
       assertEquals(counter, des);
    }
 

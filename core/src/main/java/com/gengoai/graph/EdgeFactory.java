@@ -21,6 +21,7 @@
 
 package com.gengoai.graph;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.gengoai.json.JsonEntry;
 
 import java.io.Serializable;
@@ -31,6 +32,7 @@ import java.io.Serializable;
  * @param <V> the type parameter
  * @author David B. Bracewell
  */
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
 public interface EdgeFactory<V> extends Serializable {
 
    /**
@@ -44,14 +46,6 @@ public interface EdgeFactory<V> extends Serializable {
    Edge<V> createEdge(V from, V to, double weight);
 
    /**
-    * Indicates whether the factor produces directed or undirected edges.
-    *
-    * @return True if the edges constructed in this factory are directed, False indicates undirected
-    */
-   boolean isDirected();
-
-
-   /**
     * Creates an edge between the from and to vertices filling in any given edge properties (e.g. weight) using the
     * {@link JsonEntry}. This method is used for deserializing a graph from json.
     *
@@ -62,7 +56,6 @@ public interface EdgeFactory<V> extends Serializable {
     */
    Edge<V> createEdge(V from, V to, JsonEntry entry);
 
-
    /**
     * Gets the type of edge this factory generates (used to validate edges being added to the graph).
     *
@@ -70,5 +63,11 @@ public interface EdgeFactory<V> extends Serializable {
     */
    Class<? extends Edge> getEdgeClass();
 
+   /**
+    * Indicates whether the factor produces directed or undirected edges.
+    *
+    * @return True if the edges constructed in this factory are directed, False indicates undirected
+    */
+   boolean isDirected();
 
 }//END OF EdgeFactory
