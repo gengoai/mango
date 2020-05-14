@@ -200,6 +200,15 @@ public class ParamMap<V extends ParamMap<V>> implements Serializable, Copyable<V
       throw new IllegalArgumentException("Unknown Parameter: " + param);
    }
 
+   public <T> T setAll(@NonNull ParamMap<V> paramMap) {
+      paramMap.map.forEach((k, v) -> {
+         if(this.map.containsKey(k)) {
+            this.map.get(k).set(Cast.as(v.value));
+         }
+      });
+      return Cast.as(this);
+   }
+
    @Override
    public String toString() {
       return "ParamMap{" + map.values()

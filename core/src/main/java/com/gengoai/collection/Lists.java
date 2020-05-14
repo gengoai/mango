@@ -23,6 +23,8 @@ package com.gengoai.collection;
 
 import com.gengoai.function.SerializableFunction;
 import com.gengoai.stream.Streams;
+import com.gengoai.tuple.NTuple;
+import com.gengoai.tuple.Tuple;
 import lombok.NonNull;
 
 import java.util.*;
@@ -39,10 +41,6 @@ import static com.gengoai.collection.Collect.createCollection;
  * @author David B. Bracewell
  */
 public final class Lists {
-
-   private Lists() {
-      throw new IllegalAccessError();
-   }
 
    /**
     * Creates an array list of the supplied elements
@@ -154,6 +152,47 @@ public final class Lists {
     */
    public static <T> LinkedList<T> asLinkedList(@NonNull Iterable<? extends T> iterable) {
       return createCollection(LinkedList::new, Streams.asStream(iterable));
+   }
+
+   public static <T> Iterable<Tuple> combinations(@NonNull List<T> iterable, int size) {
+      return Iterables.asIterable(new Iterator<Tuple>() {
+         int index = -1;
+         ListIterator<T> listIterator;
+
+         protected boolean advance() {
+            if(listIterator != null) {
+               return true;
+            }
+            index++;
+            if(index + size - 1 >= iterable.size()) {
+               return false;
+            }
+            listIterator = iterable.listIterator(index + 1);
+            return true;
+         }
+
+         @Override
+         public boolean hasNext() {
+            return advance();
+         }
+
+         @Override
+         public Tuple next() {
+            advance();
+            int n = listIterator.nextIndex() + 1;
+            List<T> items = new ArrayList<>();
+            items.add(iterable.get(index));
+            for(int i = 0; i < size - 1; i++) {
+               items.add(listIterator.next());
+            }
+            if(n + size - 2 >= iterable.size()) {
+               listIterator = null;
+            } else {
+               listIterator = iterable.listIterator(n);
+            }
+            return new NTuple(items.toArray());
+         }
+      });
    }
 
    /**
@@ -272,6 +311,10 @@ public final class Lists {
    public static <E> List<E> union(@NonNull Collection<? extends E> collection1,
                                    @NonNull Collection<? extends E> collection2) {
       return Streams.union(collection1, collection2).collect(Collectors.toList());
+   }
+
+   private Lists() {
+      throw new IllegalAccessError();
    }
 
    private static class TransformedList<I, O> extends AbstractList<O> {

@@ -1,5 +1,6 @@
 package com.gengoai.io.resource;
 
+import com.gengoai.io.FileUtils;
 import com.gengoai.string.Strings;
 
 import java.io.IOException;
@@ -42,8 +43,29 @@ public class ZipResource extends BaseResource implements ReadOnlyResource {
    }
 
    @Override
+   public String baseName() {
+      return entry == null
+             ? Strings.EMPTY
+             : FileUtils.baseName(entry.getName());
+   }
+
+   @Override
    protected InputStream createInputStream() throws IOException {
       return zipFile.getInputStream(entry);
+   }
+
+   private int depth(String s) {
+      if(s.endsWith("/")) {
+         return Strings.count(s, "/") - 1;
+      }
+      return Strings.count(s, "/");
+   }
+
+   @Override
+   public String descriptor() {
+      return zipFile.getName() + (entry == null
+                                  ? ""
+                                  : "!" + entry.getName());
    }
 
    @Override
@@ -64,26 +86,7 @@ public class ZipResource extends BaseResource implements ReadOnlyResource {
       if(entry == null) {
          return new ZipResource(zipFile.getName(), relativePath);
       }
-      return new ZipResource(zipFile.getName(), entry.getName() + "/" + relativePath);
-   }
-
-   @Override
-   public Resource getParent() {
-      return new ZipResource(zipFile.getName(), entry.getName());
-   }
-
-   @Override
-   public String descriptor() {
-      return zipFile.getName() + (entry == null
-                                  ? ""
-                                  : "!" + entry.getName());
-   }
-
-   private int depth(String s) {
-      if(s.endsWith("/")) {
-         return Strings.count(s, "/") - 1;
-      }
-      return Strings.count(s, "/");
+      return new ZipResource(zipFile.getName(), Strings.appendIfNotPresent(entry.getName(), "/") + relativePath);
    }
 
    @Override
@@ -105,5 +108,15 @@ public class ZipResource extends BaseResource implements ReadOnlyResource {
          }
       }
       return resources;
+   }
+
+   @Override
+   public Resource getParent() {
+      return new ZipResource(zipFile.getName(), entry.getName());
+   }
+
+   @Override
+   public boolean isDirectory() {
+      return entry != null && entry.isDirectory();
    }
 }//END OF ZipResource

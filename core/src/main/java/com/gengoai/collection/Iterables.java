@@ -23,22 +23,18 @@ import static com.gengoai.stream.Streams.asStream;
  */
 public final class Iterables {
 
-   private Iterables() {
-      throw new IllegalAccessError();
-   }
-
    /**
     * Wraps an <code>array</code> as an <code>Iterable</code>
     *
-    * @param <T>       the component type of the array
-    * @param array     The array to wrap
+    * @param <T>   the component type of the array
+    * @param array The array to wrap
     * @return An Iterable wrapping the iterator.
     */
    public static <T> Iterable<T> asIterable(final Object array) {
-      if (array == null) {
+      if(array == null) {
          return Collections.emptyList();
       }
-      if (!array.getClass().isArray()) {
+      if(!array.getClass().isArray()) {
          return Cast.as(Collections.singleton(array));
       }
       checkArgument(array.getClass().isArray());
@@ -104,7 +100,7 @@ public final class Iterables {
     */
    public static <T> Iterable<T> flatten(Iterable<? extends Iterable<? extends T>> iterable) {
       final SerializableSupplier<Iterator<T>> supplier = () -> Iterators.flatten(
-         Iterators.transform(iterable.iterator(), Iterable::iterator));
+            Iterators.transform(iterable.iterator(), Iterable::iterator));
       return new IteratorIterable<>(Cast.as(supplier));
    }
 
@@ -120,9 +116,9 @@ public final class Iterables {
    public static <T> Optional<T> get(Iterable<? extends T> iterable, int index) {
       notNull(iterable);
       checkArgument(index >= 0, "index must be >= 0");
-      if (iterable instanceof List) {
+      if(iterable instanceof List) {
          List<T> list = Cast.as(iterable);
-         if (index > 0 && index < list.size()) {
+         if(index > 0 && index < list.size()) {
             return Optional.ofNullable(list.get(index));
          }
          return Optional.empty();
@@ -176,7 +172,7 @@ public final class Iterables {
     */
    public static <T> Optional<T> getLast(Iterable<? extends T> iterable) {
       notNull(iterable);
-      if (iterable instanceof List) {
+      if(iterable instanceof List) {
          List<T> list = Cast.as(iterable);
          return Optional.ofNullable(list.get(list.size() - 1));
       }
@@ -208,7 +204,7 @@ public final class Iterables {
     */
    public static int size(Iterable<?> iterable) {
       notNull(iterable);
-      if (iterable instanceof Collection) {
+      if(iterable instanceof Collection) {
          return ((Collection) iterable).size();
       }
       return Iterators.size(iterable.iterator());
@@ -280,6 +276,10 @@ public final class Iterables {
       return new IteratorIterable<>(() -> Iterators.zipWithIndex(notNull(iterable).iterator()));
    }
 
+   private Iterables() {
+      throw new IllegalAccessError();
+   }
+
    private static class IteratorIterable<T> implements Iterable<T> {
       private final Supplier<Iterator<? extends T>> supplier;
 
@@ -289,8 +289,8 @@ public final class Iterables {
 
       @Override
       public boolean equals(Object o) {
-         if (this == o) return true;
-         if (!(o instanceof Iterable)) return false;
+         if(this == o) return true;
+         if(!(o instanceof Iterable)) return false;
          Iterable<?> that = (Iterable<?>) o;
          return Objects.equals(supplier.get(), that);
       }
