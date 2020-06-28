@@ -21,15 +21,21 @@
 
 package com.gengoai.io;
 
+import com.gengoai.function.Unchecked;
 import com.gengoai.io.resource.Resource;
+import com.gengoai.stream.Streams;
 import com.gengoai.string.CSVFormatter;
+import lombok.NonNull;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.Writer;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * <p>Specification of a delimited separated file, or more commonly refereed to as CSV. Provides methods to build a CSV
@@ -47,6 +53,15 @@ public class CSV implements Serializable {
    private char quote = '\"';
    private boolean hasHeader = false;
    private List<String> header = null;
+
+   /**
+    * <p>Creates a CSV builder object</p>
+    *
+    * @return the csv builder builder object
+    */
+   public static CSV builder() {
+      return new CSV();
+   }
 
    /**
     * <p>Convenience method for quickly retrieving a csv version of a CSV builder</p>
@@ -67,12 +82,99 @@ public class CSV implements Serializable {
    }
 
    /**
-    * <p>Creates a CSV builder object</p>
+    * Sets the character that signifies a comment
     *
-    * @return the csv builder builder object
+    * @param commentChar the comment char
+    * @return the csv builder
     */
-   public static CSV builder() {
-      return new CSV();
+   public CSV comment(char commentChar) {
+      this.comment = commentChar;
+      return this;
+   }
+
+   /**
+    * Sets the delimiter character
+    *
+    * @param delimiter the delimiter
+    * @return the csv builder
+    */
+   public CSV delimiter(char delimiter) {
+      this.delimiter = delimiter;
+      return this;
+   }
+
+   /**
+    * Sets the escape character
+    *
+    * @param escape the escape
+    * @return the csv builder
+    */
+   public CSV escape(char escape) {
+      this.escape = escape;
+      return this;
+   }
+
+   /**
+    * Creates a CSVFormatter using this specification
+    *
+    * @return the CSVFormatter
+    */
+   public CSVFormatter formatter() {
+      return new CSVFormatter(this);
+   }
+
+   /**
+    * Gets the comment character.
+    *
+    * @return the comment character.
+    */
+   public char getComment() {
+      return comment;
+   }
+
+   /**
+    * Gets the delimiter character.
+    *
+    * @return the delimiter character
+    */
+   public char getDelimiter() {
+      return delimiter;
+   }
+
+   /**
+    * Gets the escape character.
+    *
+    * @return the escape character
+    */
+   public char getEscape() {
+      return escape;
+   }
+
+   /**
+    * Determines if the CSV file is expected to have a header or not
+    *
+    * @return True if the first line of the csv file is the header, false if there is no header
+    */
+   public boolean getHasHeader() {
+      return hasHeader;
+   }
+
+   /**
+    * Gets the name of the column headers.
+    *
+    * @return the names of the column headers
+    */
+   public List<String> getHeader() {
+      return header;
+   }
+
+   /**
+    * Gets the quote character.
+    *
+    * @return the quote character
+    */
+   public char getQuote() {
+      return quote;
    }
 
    /**
@@ -126,65 +228,23 @@ public class CSV implements Serializable {
    }
 
    /**
-    * Determines if the CSV file is expected to have a header or not
+    * Determines if empty cells should be kept or not
     *
-    * @return True if the first line of the csv file is the header, false if there is no header
+    * @return True if empty cells are kept, False if they are removed
     */
-   public boolean getHasHeader() {
-      return hasHeader;
+   public boolean isKeepEmptyCells() {
+      return keepEmptyCells;
    }
 
    /**
-    * Gets the name of the column headers.
+    * Creates an iterator  over the rows of the csv file
     *
-    * @return the names of the column headers
+    * @param resource the resource to read from
+    * @return the stream of items in the csv file
+    * @throws IOException Something went wrong reading the file
     */
-   public List<String> getHeader() {
-      return header;
-   }
-
-   /**
-    * Sets the character that signifies a comment
-    *
-    * @param commentChar the comment char
-    * @return the csv builder
-    */
-   public CSV comment(char commentChar) {
-      this.comment = commentChar;
-      return this;
-   }
-
-   /**
-    * Sets the delimiter character
-    *
-    * @param delimiter the delimiter
-    * @return the csv builder
-    */
-   public CSV delimiter(char delimiter) {
-      this.delimiter = delimiter;
-      return this;
-   }
-
-   /**
-    * Sets the escape character
-    *
-    * @param escape the escape
-    * @return the csv builder
-    */
-   public CSV escape(char escape) {
-      this.escape = escape;
-      return this;
-   }
-
-   /**
-    * Sets the quote character
-    *
-    * @param quote the quote
-    * @return the csv builder
-    */
-   public CSV quote(char quote) {
-      this.quote = quote;
-      return this;
+   public Iterator<List<String>> iterator(@NonNull Resource resource) throws IOException {
+      return new CSVRowListIterator(reader(resource));
    }
 
    /**
@@ -198,12 +258,13 @@ public class CSV implements Serializable {
    }
 
    /**
-    * Specifies that empty cells should be removed
+    * Sets the quote character
     *
+    * @param quote the quote
     * @return the csv builder
     */
-   public CSV removeEmptyCells() {
-      this.keepEmptyCells = false;
+   public CSV quote(char quote) {
+      this.quote = quote;
       return this;
    }
 
@@ -230,6 +291,39 @@ public class CSV implements Serializable {
    }
 
    /**
+    * Specifies that empty cells should be removed
+    *
+    * @return the csv builder
+    */
+   public CSV removeEmptyCells() {
+      this.keepEmptyCells = false;
+      return this;
+   }
+
+   /**
+    * Creates a reusable Java Stream over the rows of the csv file
+    *
+    * @param resource the resource to read from
+    * @return the stream of items in the csv file
+    * @throws IOException Something went wrong reading the file
+    */
+   public Stream<List<String>> rowListStream(@NonNull Resource resource) throws IOException {
+      return Streams.reusableStream(Unchecked.supplier(() -> Streams.asStream(new CSVRowListIterator(reader(resource)))));
+   }
+
+   /**
+    * Creates a reusable Java Stream over the rows of the csv file returning them as map with key as the column name and
+    * value as the value. When the column is not in the header the column name will be "AutoColumn-" and column number.
+    *
+    * @param resource the resource to read from
+    * @return the stream of items in the csv file
+    * @throws IOException Something went wrong reading the file
+    */
+   public Stream<Map<String, String>> rowMapStream(@NonNull Resource resource) throws IOException {
+      return Streams.reusableStream(Unchecked.supplier(() -> Streams.asStream(new CSVRowMapIterator(reader(resource)))));
+   }
+
+   /**
     * Creates a CSVWriter using this specification from a given writer
     *
     * @param writer the writer to wrap
@@ -249,59 +343,5 @@ public class CSV implements Serializable {
     */
    public CSVWriter writer(Resource resource) throws IOException {
       return writer(resource.writer());
-   }
-
-   /**
-    * Creates a CSVFormatter using this specification
-    *
-    * @return the CSVFormatter
-    */
-   public CSVFormatter formatter() {
-      return new CSVFormatter(this);
-   }
-
-   /**
-    * Gets the comment character.
-    *
-    * @return the comment character.
-    */
-   public char getComment() {
-      return comment;
-   }
-
-   /**
-    * Gets the delimiter character.
-    *
-    * @return the delimiter character
-    */
-   public char getDelimiter() {
-      return delimiter;
-   }
-
-   /**
-    * Gets the escape character.
-    *
-    * @return the escape character
-    */
-   public char getEscape() {
-      return escape;
-   }
-
-   /**
-    * Determines if empty cells should be kept or not
-    *
-    * @return True if empty cells are kept, False if they are removed
-    */
-   public boolean isKeepEmptyCells() {
-      return keepEmptyCells;
-   }
-
-   /**
-    * Gets the quote character.
-    *
-    * @return the quote character
-    */
-   public char getQuote() {
-      return quote;
    }
 }//END OF CSV
