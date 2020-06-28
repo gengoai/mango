@@ -233,7 +233,8 @@ public abstract class SwingApplication extends Application {
    public final void setup() throws Exception {
       int width = properties.get("window.width").asIntegerValue(800);
       int height = properties.get("window.height").asIntegerValue(600);
-      mainWindowFrame.setMinimumSize(new Dimension(width, height));
+      mainWindowFrame.setMinimumSize(new Dimension(800, 600));
+      mainWindowFrame.setSize(new Dimension(width, height));
 
       if(properties.get("window.maximized").asBooleanValue(false)) {
          mainWindowFrame.setExtendedState(mainWindowFrame.getExtendedState() | JFrame.MAXIMIZED_BOTH);

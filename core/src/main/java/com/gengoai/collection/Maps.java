@@ -39,10 +39,6 @@ import java.util.stream.Collectors;
  */
 public final class Maps {
 
-   private Maps() {
-      throw new IllegalAccessError();
-   }
-
    /**
     * Creates a map from an iterable of keys and a function that returns a value given the key.
     *
@@ -67,18 +63,18 @@ public final class Maps {
     * @return An instance of the specified map class
     */
    public static <K, V> Map<K, V> create(Class<? extends Map> clazz) {
-      if (clazz == Map.class || clazz == HashMap.class) {
+      if(clazz == Map.class || clazz == HashMap.class) {
          return new HashMap<>();
-      } else if (clazz == LinkedHashMap.class) {
+      } else if(clazz == LinkedHashMap.class) {
          return new LinkedHashMap<>();
-      } else if (clazz == TreeMap.class || clazz == SortedMap.class) {
+      } else if(clazz == TreeMap.class || clazz == SortedMap.class) {
          return new TreeMap<>();
-      } else if (clazz == ConcurrentMap.class || clazz == ConcurrentHashMap.class) {
+      } else if(clazz == ConcurrentMap.class || clazz == ConcurrentHashMap.class) {
          return new ConcurrentHashMap<>();
       }
       try {
          return Reflect.onClass(clazz).create().get();
-      } catch (ReflectionException e) {
+      } catch(ReflectionException e) {
          throw new RuntimeException(e);
       }
    }
@@ -96,27 +92,6 @@ public final class Maps {
       return mapOf(HashMap::new, objects);
    }
 
-   public static <K> Iterator<K> tailKeyIterator(@NonNull final NavigableMap<K, ?> map, @NonNull K key) {
-      return new Iterator<K>() {
-         private K ck = map.ceilingKey(key);
-
-         @Override
-         public boolean hasNext() {
-            return ck != null;
-         }
-
-         @Override
-         public K next() {
-            if (ck == null) {
-               throw new NoSuchElementException();
-            }
-            K n = ck;
-            ck = map.higherKey(n);
-            return n;
-         }
-      };
-   }
-
    /**
     * Creates a map of type returned via the givne supplier from the given entries
     *
@@ -131,7 +106,7 @@ public final class Maps {
                                         Map.Entry<? extends K, ? extends V>... objects
                                        ) {
       Map<K, V> map = supplier.get();
-      for (Map.Entry<? extends K, ? extends V> entry : objects) {
+      for(Map.Entry<? extends K, ? extends V> entry : objects) {
          map.put(entry.getKey(), entry.getValue());
       }
       return map;
@@ -147,7 +122,7 @@ public final class Maps {
     */
    @SafeVarargs
    public static <K, V> Map<K, V> putAll(Map<K, V> map, Map.Entry<? extends K, ? extends V>... entries) {
-      for (Map.Entry<? extends K, ? extends V> entry : entries) {
+      for(Map.Entry<? extends K, ? extends V> entry : entries) {
          map.put(entry.getKey(), entry.getValue());
       }
       return map;
@@ -214,6 +189,31 @@ public final class Maps {
    @SafeVarargs
    public static <K, V> Map<K, V> sortedMapOf(Map.Entry<? extends K, ? extends V>... objects) {
       return mapOf(TreeMap::new, objects);
+   }
+
+   public static <K> Iterator<K> tailKeyIterator(@NonNull final NavigableMap<K, ?> map, @NonNull K key) {
+      return new Iterator<K>() {
+         private K ck = map.ceilingKey(key);
+
+         @Override
+         public boolean hasNext() {
+            return ck != null;
+         }
+
+         @Override
+         public K next() {
+            if(ck == null) {
+               throw new NoSuchElementException();
+            }
+            K n = ck;
+            ck = map.higherKey(n);
+            return n;
+         }
+      };
+   }
+
+   private Maps() {
+      throw new IllegalAccessError();
    }
 
 }//END OF Maps

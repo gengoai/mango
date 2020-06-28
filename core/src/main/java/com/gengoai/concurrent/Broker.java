@@ -199,7 +199,7 @@ public class Broker<V> implements Serializable {
        * @param consumers the consumers
        * @return the builder
        */
-      public Builder<V> addConsumers(Collection<java.util.function.Consumer<? super V>> consumers) {
+      public Builder<V> addConsumers(Collection<? extends java.util.function.Consumer<? super V>> consumers) {
          this.consumers.addAll(consumers);
          return this;
       }

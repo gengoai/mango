@@ -54,12 +54,6 @@ public class ResourceMonitor extends Thread {
    private final ConcurrentHashMap<Object, KeyedWeakReference> map = new ConcurrentHashMap<>();
    private final ReferenceQueue<Object> referenceQueue = new ReferenceQueue<>();
 
-   private ResourceMonitor() {
-      setPriority(Thread.MAX_PRIORITY);
-      setName("GarbageCollectingConcurrentMap-cleanupthread");
-      setDaemon(true);
-   }
-
    public static Connection monitor(Connection connection) {
       return Cast.as(Proxy.newProxyInstance(notNull(connection).getClass().getClassLoader(),
                                             new Class[]{Connection.class},
@@ -118,6 +112,12 @@ public class ResourceMonitor extends Thread {
 
    public static <T> MonitoredObject<T> monitor(T object, Consumer<T> onClose) {
       return new MonitoredObject<>(object, onClose);
+   }
+
+   private ResourceMonitor() {
+      setPriority(Thread.MAX_PRIORITY);
+      setName("GarbageCollectingConcurrentMap-cleanupthread");
+      setDaemon(true);
    }
 
    protected <T> T addResource(final Object referent, T resource) {

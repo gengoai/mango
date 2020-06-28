@@ -21,6 +21,7 @@
 
 package com.gengoai;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.NonNull;
 
 import java.util.Arrays;
@@ -32,6 +33,7 @@ import java.util.Arrays;
  *
  * @author David B. Bracewell
  */
+@JsonDeserialize(as = StringTag.class)
 public interface Tag {
 
    /**

@@ -134,9 +134,8 @@ abstract class AbstractLocalMStream<T> implements MStream<T>, Serializable {
 
    @Override
    public <U> MPairStream<U, Iterable<T>> groupBy(SerializableFunction<? super T, ? extends U> function) {
-      return new LocalDefaultMPairStream<>(Cast.as(new LocalReusableMStream<>(() -> javaStream().collect(Collectors.groupingBy(
-            function))
-                                                                                                .entrySet().stream())));
+      return new LocalDefaultMPairStream<>(Cast.as(new LocalReusableMStream<>(() -> javaStream().collect(
+            Collectors.groupingBy(function)).entrySet().stream())));
    }
 
    @Override

@@ -742,9 +742,11 @@ public final class Xml {
             return false;
          }
          XMLEvent event;
-         if((event = reader.nextEvent()).getEventType() != XMLEvent.END_DOCUMENT) {
+         while(reader.hasNext() && (event = reader.nextEvent()).getEventType() != XMLEvent.END_DOCUMENT) {
             if(getTagName(event).map(n -> n.equals(tag)).orElse(false)) {
-               document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+               document = DocumentBuilderFactory.newInstance()
+                                                .newDocumentBuilder()
+                                                .newDocument();
                final XMLEventWriter writer = XMLOutputFactory.newInstance()
                                                              .createXMLEventWriter(new DOMResult(document));
                writer.add(event);
@@ -758,7 +760,7 @@ public final class Xml {
                return true;
             }
          }
-         return document == null;
+         return document != null;
       }
 
       @Override

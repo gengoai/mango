@@ -659,7 +659,7 @@ public final class Config implements Serializable {
    public static void setProperty(@NonNull String name, String value) {
       getInstance().properties.put(name, value);
       if(name.toLowerCase().endsWith(".level")) {
-         String className = name.substring(0, name.length() - ".level".length());
+         String className = name.substring(0, name.length() - ".level" .length());
          LogUtils.setLevel(className, Level.parse(value.trim().toUpperCase()));
       }
       if(name.equals("com.gengoai.logging.logfile")) {

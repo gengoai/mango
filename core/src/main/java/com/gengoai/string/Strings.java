@@ -529,6 +529,19 @@ public final class Strings {
    }
 
    /**
+    * Prepend if not present string.
+    *
+    * @param string the string
+    * @param prefix the prefix
+    * @return the string
+    */
+   public static String prependIfNotPresent(@NonNull String string, @NonNull String prefix) {
+      return string.startsWith(prefix)
+             ? string
+             : (prefix + string);
+   }
+
+   /**
     * Generates a random string of given length made up of valid hexadecimal characters.
     *
     * @param length the length of the string

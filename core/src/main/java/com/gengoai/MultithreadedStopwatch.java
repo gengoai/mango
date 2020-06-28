@@ -17,7 +17,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.gengoai.Validation.checkState;
 import static com.gengoai.tuple.Tuples.$;
 
 /**
@@ -47,6 +46,17 @@ public class MultithreadedStopwatch implements Serializable {
    private Duration elapsedTime = Duration.ofNanos(0);
    private AtomicLong calls = new AtomicLong();
 
+   private static Level determineLevel(String name) {
+      String[] parts = name.split("\\.");
+      for(int length = parts.length; length > 0; length--) {
+         String key = "Stopwatch." + String.join(".", Arrays.copyOfRange(parts, 0, length)) + ".level";
+         if(Config.hasProperty(key)) {
+            return Config.get(key).as(Level.class);
+         }
+      }
+      return Config.get("Stopwatch.level").as(Level.class, Level.OFF);
+   }
+
    public MultithreadedStopwatch(String name) {
       this(name, determineLevel(name));
    }
@@ -67,17 +77,6 @@ public class MultithreadedStopwatch implements Serializable {
             }
          }, 30000, 30000);
       }
-   }
-
-   private static Level determineLevel(String name) {
-      String[] parts = name.split("\\.");
-      for(int length = parts.length; length > 0; length--) {
-         String key = "Stopwatch." + String.join(".", Arrays.copyOfRange(parts, 0, length)) + ".level";
-         if(Config.hasProperty(key)) {
-            return Config.get(key).as(Level.class);
-         }
-      }
-      return Config.get("Stopwatch.level").as(Level.class, Level.OFF);
    }
 
    /**
@@ -159,7 +158,9 @@ public class MultithreadedStopwatch implements Serializable {
     */
    public void start() {
       long threadId = Thread.currentThread().getId();
-      checkState(!runningStarts.containsKey(threadId), "Cannot start an already started Stopwatch");
+      if(runningStarts.containsKey(threadId)) {
+         return;
+      }
       calls.incrementAndGet();
       runningStarts.put(threadId, Instant.now());
    }
@@ -169,8 +170,9 @@ public class MultithreadedStopwatch implements Serializable {
     */
    public void stop() {
       long threadId = Thread.currentThread().getId();
-      checkState(runningStarts.containsKey(threadId), "Cannot stop an already stopped Stopwatch");
-      durations.add($(runningStarts.remove(threadId), Instant.now()));
+      if(runningStarts.containsKey(threadId)) {
+         durations.add($(runningStarts.remove(threadId), Instant.now()));
+      }
    }
 
    @Override

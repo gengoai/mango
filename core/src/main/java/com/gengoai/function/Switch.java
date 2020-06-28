@@ -64,7 +64,7 @@ public final class Switch<T> implements SerializableFunction<Object, T> {
     * @param consumer the consumer
     * @return the switch
     */
-   public static <V> Switch<V> $switch(Consumer<SwitchBuilder<V>> consumer) {
+   public static <V> Switch<V> $switch(@NonNull Consumer<SwitchBuilder<V>> consumer) {
       SwitchBuilder<V> switchBuilder = new SwitchBuilder<>();
       consumer.accept(switchBuilder);
       return switchBuilder.build();

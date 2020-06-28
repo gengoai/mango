@@ -22,8 +22,12 @@
 
 package com.gengoai;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.gengoai.string.Strings;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.Value;
 
 import java.io.Serializable;
 
@@ -34,9 +38,12 @@ import java.io.Serializable;
  * @author David B. Bracewell
  */
 @EqualsAndHashCode(callSuper = false)
+@NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
+@Value
 public class StringTag implements Tag, Serializable {
    private static final long serialVersionUID = 1L;
-   private final String tag;
+   @JsonValue
+   String tag;
 
    /**
     * Default Constructor
@@ -62,6 +69,5 @@ public class StringTag implements Tag, Serializable {
    public String toString() {
       return tag;
    }
-
 
 }//END OF StringTag
