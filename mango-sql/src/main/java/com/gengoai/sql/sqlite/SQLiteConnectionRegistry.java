@@ -53,7 +53,7 @@ public final class SQLiteConnectionRegistry {
     */
    public static Connection getConnection(@NonNull String jdbc) throws SQLException {
       lock.lock();
-      try {
+      try
          WeakReference<Connection> reference = registry.get(jdbc);
          if(reference == null || reference.get() == null) {
             reference = new WeakReference<>(ResourceMonitor.monitor(DriverManager.getConnection(jdbc)));
