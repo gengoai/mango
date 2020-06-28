@@ -93,6 +93,15 @@ public final class LogUtils {
    }
 
    /**
+    * Gets the root logger.
+    *
+    * @return the root logger
+    */
+   public static Logger getRootLogger() {
+      return Logger.getLogger("");
+   }
+
+   /**
     * Logs a message at a given level.
     *
     * @param logger  the logger
