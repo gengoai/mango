@@ -1,6 +1,7 @@
 package com.gengoai.stream;
 
 import com.gengoai.io.ResourceMonitor;
+import lombok.NonNull;
 
 import java.util.Comparator;
 import java.util.Iterator;
@@ -15,7 +16,7 @@ import java.util.stream.*;
 public final class ReusableJavaStream<T> implements Stream<T> {
    final Supplier<Stream<T>> streamSupplier;
 
-   ReusableJavaStream(Supplier<Stream<T>> streamSupplier) {
+   ReusableJavaStream(@NonNull Supplier<Stream<T>> streamSupplier) {
       this.streamSupplier = streamSupplier;
    }
 
