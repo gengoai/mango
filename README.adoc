@@ -1,2 +1,2 @@
 = Mango
-image::https://raw.githubusercontent.com/gengoai/mango/master/docs/mango.png?raw=true[align="center"]
+image::https://raw.githubusercontent.com/gengoai/mango/master/docs/mango.png[align="center"]
