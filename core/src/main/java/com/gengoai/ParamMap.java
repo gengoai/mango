@@ -42,7 +42,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * A Map containing {@link ParameterDef}s and their values
+ * <p>A parameter m</p>
  *
  * @param <V> the type parameter
  * @author David B. Bracewell
@@ -51,6 +51,24 @@ import java.util.stream.Collectors;
 public class ParamMap<V extends ParamMap<V>> implements Serializable, Copyable<V> {
    private static final long serialVersionUID = 1L;
    private final Map<String, Parameter<?>> map = new HashMap<>();
+
+   /**
+    * Attempts to cast this ParamMap as child class.
+    *
+    * @param <Z>    the child type parameter
+    * @param zClass the child class
+    * @return this map as the given Child class
+    * @throws IllegalArgumentException if this class is not an instance of the given child class
+    */
+   public <Z extends V> Z as(@NonNull Class<Z> zClass) {
+      if(zClass.isAssignableFrom(this.getClass())) {
+         return Cast.as(this);
+      }
+      throw new IllegalArgumentException("Cannot cast this object of type " +
+                                               getClass() +
+                                               " to an object of type " +
+                                               zClass);
+   }
 
    @Override
    public V copy() {
@@ -200,6 +218,14 @@ public class ParamMap<V extends ParamMap<V>> implements Serializable, Copyable<V
       throw new IllegalArgumentException("Unknown Parameter: " + param);
    }
 
+   /**
+    * Sets all values on this parameter map to those on the given parameter. It will ignore any parameters not defined
+    * on this parameter map.
+    *
+    * @param <T>      the parameter map type parameter
+    * @param paramMap the parameter map
+    * @return this ParameterMap
+    */
    public <T> T setAll(@NonNull ParamMap<V> paramMap) {
       paramMap.map.forEach((k, v) -> {
          if(this.map.containsKey(k)) {
@@ -273,9 +299,6 @@ public class ParamMap<V extends ParamMap<V>> implements Serializable, Copyable<V
        * @return the value
        */
       public T value() {
-         //         if (Number.class.isAssignableFrom(param.type)) {
-         //            return Converter.convertSilently(value, param.type);
-         //         }
          return value;
       }
    }
