@@ -75,6 +75,9 @@ Mango requires Java 11 and is available via the maven central repository.
 </dependency>
 ----
 
+=== Dependencies
+
+
 == Collections
 
 === Maps
