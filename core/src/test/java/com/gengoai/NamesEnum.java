@@ -1,5 +1,8 @@
 package com.gengoai;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gengoai.collection.Sets;
 
 import java.util.Collection;
@@ -9,6 +12,7 @@ import java.util.Set;
 /**
  * The type NamesEnum.
  */
+@JsonDeserialize(as = NamesEnum.class)
 public final class NamesEnum extends EnumValue<NamesEnum> {
    private static final long serialVersionUID = 1L;
    private static final Set<NamesEnum> values = Sets.newConcurrentHashSet();
@@ -19,7 +23,8 @@ public final class NamesEnum extends EnumValue<NamesEnum> {
     *
     * @return The instance of NamesEnum corresponding th the give name.
     */
-   public static NamesEnum make(String name) {
+   @JsonCreator
+   public static NamesEnum make(@JsonProperty String name) {
       NamesEnum toReturn = registry.make(name);
       values.add(toReturn);
       return toReturn;

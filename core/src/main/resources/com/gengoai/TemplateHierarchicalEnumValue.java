@@ -34,6 +34,18 @@ public class ${TEMPLATE} extends HierarchicalEnumValue<${TEMPLATE}> {
       return registry.make(name);
    }
 
+
+   /**
+    * Retrieves an already defined element with the given
+    *
+    * @param name the name (or label) of the ${TEMPLATE} to retrieve
+    * @return the ${TEMPLATE}
+    * @throws java.lang.IllegalArgumentException if the name does not correspond to an already defined element
+    */
+   public static ${TEMPLATE} valueOf(String name) {
+      return registry.valueOf(name);
+      }
+
    /**
     * Returns a collection of all currently registered ${TEMPLATE}
     *
