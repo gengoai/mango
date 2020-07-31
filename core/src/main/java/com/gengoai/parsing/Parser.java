@@ -235,8 +235,10 @@ public class Parser implements TokenStream, Serializable {
     * Parses a list of tokens ending with the <code>endOfList</code> tag and values separated using the
     * <code>separator</code> tag.
     *
-    * @param endOfList the {@link Tag} indicating the end of the list has been reached.
-    * @param separator the {@link Tag} separating values of the list (null value means no separator).
+    * @param <T>         the type parameter
+    * @param startOfList the start of list
+    * @param endOfList   the {@link Tag} indicating the end of the list has been reached.
+    * @param separator   the {@link Tag} separating values of the list (null value means no separator).
     * @return the list of parsed expressions
     * @throws ParseException Something went wrong parsing the token stream
     */

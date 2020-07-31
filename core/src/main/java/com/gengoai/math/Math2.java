@@ -51,6 +51,8 @@ public final class Math2 {
    /**
     * Calculates the AUC (Area Under the Curve)
     *
+    * @param x the x
+    * @param y the y
     * @return the AUC
     */
    public static double auc(double[] x, double[] y) {

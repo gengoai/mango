@@ -21,6 +21,7 @@
 
 package com.gengoai.collection;
 
+import com.gengoai.conversion.Cast;
 import com.gengoai.reflection.Reflect;
 import com.gengoai.reflection.ReflectionException;
 import lombok.NonNull;
@@ -39,6 +40,10 @@ import java.util.stream.Collectors;
  */
 public final class Maps {
 
+   private Maps() {
+      throw new IllegalAccessError();
+   }
+
    /**
     * Creates a map from an iterable of keys and a function that returns a value given the key.
     *
@@ -48,7 +53,7 @@ public final class Maps {
     * @param valueMapper the function to use to generate values from keys
     * @return the map
     */
-   public static <K, V> Map<K, V> asHashMap(Iterable<? extends K> keys, Function<? super K, ? extends V> valueMapper) {
+   public static <K, V> Map<K, V> asHashMap(@NonNull Iterable<? extends K> keys, @NonNull Function<? super K, ? extends V> valueMapper) {
       Map<K, V> map = new HashMap<>();
       keys.forEach(key -> map.put(key, valueMapper.apply(key)));
       return map;
@@ -62,19 +67,19 @@ public final class Maps {
     * @param clazz the map class
     * @return An instance of the specified map class
     */
-   public static <K, V> Map<K, V> create(Class<? extends Map> clazz) {
-      if(clazz == Map.class || clazz == HashMap.class) {
+   public static <K, V> Map<K, V> create(@NonNull Class<? extends Map> clazz) {
+      if (clazz == Map.class || clazz == HashMap.class) {
          return new HashMap<>();
-      } else if(clazz == LinkedHashMap.class) {
+      } else if (clazz == LinkedHashMap.class) {
          return new LinkedHashMap<>();
-      } else if(clazz == TreeMap.class || clazz == SortedMap.class) {
+      } else if (clazz == TreeMap.class || clazz == SortedMap.class) {
          return new TreeMap<>();
-      } else if(clazz == ConcurrentMap.class || clazz == ConcurrentHashMap.class) {
+      } else if (clazz == ConcurrentMap.class || clazz == ConcurrentHashMap.class) {
          return new ConcurrentHashMap<>();
       }
       try {
          return Reflect.onClass(clazz).create().get();
-      } catch(ReflectionException e) {
+      } catch (ReflectionException e) {
          throw new RuntimeException(e);
       }
    }
@@ -88,7 +93,7 @@ public final class Maps {
     * @return the map
     */
    @SafeVarargs
-   public static <K, V> Map<K, V> hashMapOf(Map.Entry<? extends K, ? extends V>... objects) {
+   public static <K, V> Map<K, V> hashMapOf(@NonNull Map.Entry<? extends K, ? extends V>... objects) {
       return mapOf(HashMap::new, objects);
    }
 
@@ -102,11 +107,11 @@ public final class Maps {
     * @return the map
     */
    @SafeVarargs
-   public static <K, V> Map<K, V> mapOf(Supplier<? extends Map<K, V>> supplier,
-                                        Map.Entry<? extends K, ? extends V>... objects
-                                       ) {
+   public static <K, V> Map<K, V> mapOf(@NonNull Supplier<? extends Map<K, V>> supplier,
+                                        @NonNull Map.Entry<? extends K, ? extends V>... objects
+   ) {
       Map<K, V> map = supplier.get();
-      for(Map.Entry<? extends K, ? extends V> entry : objects) {
+      for (Map.Entry<? extends K, ? extends V> entry : objects) {
          map.put(entry.getKey(), entry.getValue());
       }
       return map;
@@ -121,8 +126,8 @@ public final class Maps {
     * @param entries the entries to add
     */
    @SafeVarargs
-   public static <K, V> Map<K, V> putAll(Map<K, V> map, Map.Entry<? extends K, ? extends V>... entries) {
-      for(Map.Entry<? extends K, ? extends V> entry : entries) {
+   public static <K, V> Map<K, V> putAll(@NonNull Map<K, V> map, @NonNull Map.Entry<? extends K, ? extends V>... entries) {
+      for (Map.Entry<? extends K, ? extends V> entry : entries) {
          map.put(entry.getKey(), entry.getValue());
       }
       return map;
@@ -137,7 +142,7 @@ public final class Maps {
     * @param comparator The comparator to use when comparing entries.
     * @return the list of sorted map entries
     */
-   public static <K, V> List<Map.Entry<K, V>> sortEntries(Map<K, V> map, Comparator<Map.Entry<K, V>> comparator) {
+   public static <K, V> List<Map.Entry<K, V>> sortEntries(@NonNull Map<K, V> map, @NonNull Comparator<Map.Entry<K, V>> comparator) {
       return map.entrySet()
                 .parallelStream()
                 .sorted(comparator)
@@ -153,11 +158,11 @@ public final class Maps {
     * @param ascending True sort in ascending order, False in descending order
     * @return the list of sorted map entries
     */
-   public static <K extends Comparable<? super K>, V> List<Map.Entry<K, V>> sortEntriesByKey(Map<K, V> map,
+   public static <K extends Comparable<? super K>, V> List<Map.Entry<K, V>> sortEntriesByKey(@NonNull Map<K, V> map,
                                                                                              boolean ascending) {
       final Comparator<Map.Entry<K, V>> comparator = ascending
-                                                     ? Map.Entry.comparingByKey()
-                                                     : Map.Entry.<K, V>comparingByKey().reversed();
+            ? Map.Entry.comparingByKey()
+            : Map.Entry.<K, V>comparingByKey().reversed();
       return sortEntries(map, comparator);
    }
 
@@ -170,11 +175,11 @@ public final class Maps {
     * @param ascending True sort in ascending order, False in descending order
     * @return the list of sorted map entries
     */
-   public static <K, V extends Comparable<? super V>> List<Map.Entry<K, V>> sortEntriesByValue(Map<K, V> map,
+   public static <K, V extends Comparable<? super V>> List<Map.Entry<K, V>> sortEntriesByValue(@NonNull Map<K, V> map,
                                                                                                boolean ascending) {
       final Comparator<Map.Entry<K, V>> comparator = ascending
-                                                     ? Map.Entry.comparingByValue()
-                                                     : Map.Entry.<K, V>comparingByValue().reversed();
+            ? Map.Entry.comparingByValue()
+            : Map.Entry.<K, V>comparingByValue().reversed();
       return sortEntries(map, comparator);
    }
 
@@ -187,10 +192,23 @@ public final class Maps {
     * @return the map
     */
    @SafeVarargs
-   public static <K, V> Map<K, V> sortedMapOf(Map.Entry<? extends K, ? extends V>... objects) {
+   public static <K, V> Map<K, V> sortedMapOf(@NonNull Map.Entry<? extends K, ? extends V>... objects) {
       return mapOf(TreeMap::new, objects);
    }
 
+   @SafeVarargs
+   public static <K, V> LinkedHashMap<K, V> linkedHashMapOf(@NonNull Map.Entry<? extends K, ? extends V>... objects) {
+      return Cast.as(mapOf(LinkedHashMap::new, objects));
+   }
+
+   /**
+    * Creates an iterator that traverses a NavigableMap using <code>ceilingKey</code> starting from the given key.
+    *
+    * @param <K> the type parameter
+    * @param map the map
+    * @param key the starting point key
+    * @return the iterator
+    */
    public static <K> Iterator<K> tailKeyIterator(@NonNull final NavigableMap<K, ?> map, @NonNull K key) {
       return new Iterator<K>() {
          private K ck = map.ceilingKey(key);
@@ -202,7 +220,7 @@ public final class Maps {
 
          @Override
          public K next() {
-            if(ck == null) {
+            if (ck == null) {
                throw new NoSuchElementException();
             }
             K n = ck;
@@ -210,10 +228,6 @@ public final class Maps {
             return n;
          }
       };
-   }
-
-   private Maps() {
-      throw new IllegalAccessError();
    }
 
 }//END OF Maps

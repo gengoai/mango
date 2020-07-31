@@ -26,25 +26,23 @@ import java.io.Serializable;
 import java.util.function.Consumer;
 
 import static com.gengoai.Validation.checkArgument;
-import static com.gengoai.Validation.notNull;
 
 /**
+ * <p>A wrapper around an Object whose resources are being monitored by {@link ResourceMonitor}</p>
+ *
+ * @param <T> the type parameter
  * @author David B. Bracewell
  */
 public class MonitoredObject<T> implements Serializable {
    private static final long serialVersionUID = 1L;
-   protected final Object referent = new Object();
    public final T object;
 
    protected MonitoredObject(T object) {
-      notNull(object);
       checkArgument(object instanceof AutoCloseable, "Object must be AutoCloseable");
       this.object = ResourceMonitor.MONITOR.addResource(this, object);
    }
 
    protected MonitoredObject(T object, Consumer<T> onClose) {
-      notNull(object);
-      notNull(onClose);
       this.object = ResourceMonitor.MONITOR.addResource(this, object, onClose);
    }
 

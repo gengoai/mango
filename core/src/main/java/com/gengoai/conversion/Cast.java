@@ -21,6 +21,8 @@
 
 package com.gengoai.conversion;
 
+import lombok.NonNull;
+
 import java.io.Serializable;
 import java.util.*;
 
@@ -35,36 +37,35 @@ import java.util.*;
  */
 public final class Cast {
 
-   private Cast() {
-      throw new IllegalAccessError();
-   }
-
    /**
-    * Casts an object in an unchecked manner.
+    * Casts an object to the desired return throwing a <code>java.lang.ClassCastException</code> if the given object
+    * cannot be cast as the desired type.
     *
     * @param <T> the type parameter
     * @param o   the object
     * @return the casted object or null if the object was null
+    * @throws java.lang.ClassCastException If the given object cannot be cast as the return type
     */
    @SuppressWarnings("unchecked")
    public static <T> T as(Object o) {
-      return o == null ? null : (T) o;
+      return o == null
+             ? null
+             : (T) o;
    }
 
    /**
-    * Casts an object in a checked manner.
+    * Casts an object to a given type throwing a <code>java.lang.ClassCastException</code> if the given object cannot be
+    * cast as the desired type.
     *
     * @param <T>   the type parameter
     * @param o     the object
     * @param clazz The class to cast to
     * @return the casted object or null if the object was null or the object was not of the desired type
     */
-   public static <T> T as(Object o, Class<T> clazz) {
-      try {
-         return o == null ? null : clazz.cast(o);
-      } catch (Exception e) {
-         throw new ClassCastException("Cannot cast " + o.getClass() + " as " + clazz);
-      }
+   public static <T> T as(Object o, @NonNull Class<T> clazz) {
+      return o == null
+             ? null
+             : clazz.cast(o);
    }
 
    /**
@@ -76,7 +77,9 @@ public final class Cast {
     * @return the casted iterable or null if the given iterable is null
     */
    public static <T> Iterable<T> cast(Iterable<?> iterable) {
-      return iterable == null ? null : new CastingIterable<>(iterable);
+      return iterable == null
+             ? null
+             : new CastingIterable<>(iterable);
    }
 
    /**
@@ -88,7 +91,9 @@ public final class Cast {
     * @return the casted set or null if the given set is null
     */
    public static <T> Set<T> cast(Set<?> set) {
-      return set == null ? null : new CastingSet<>(set);
+      return set == null
+             ? null
+             : new CastingSet<>(set);
    }
 
    /**
@@ -100,7 +105,9 @@ public final class Cast {
     * @return the casted list or null if the given list is null
     */
    public static <T> List<T> cast(List<?> list) {
-      return list == null ? null : new CastingList<>(list);
+      return list == null
+             ? null
+             : new CastingList<>(list);
    }
 
    /**
@@ -112,7 +119,9 @@ public final class Cast {
     * @return the casted iterator or null if the given iterator was null
     */
    public static <T> Iterator<T> cast(Iterator<?> iterator) {
-      return iterator == null ? null : new CastingIterator<>(iterator);
+      return iterator == null
+             ? null
+             : new CastingIterator<>(iterator);
    }
 
    /**
@@ -124,7 +133,9 @@ public final class Cast {
     * @return the casted collection or null if the collection is null
     */
    public static <T> Collection<T> cast(Collection<?> collection) {
-      return collection == null ? null : new CastingCollection<>(collection);
+      return collection == null
+             ? null
+             : new CastingCollection<>(collection);
    }
 
    /**
@@ -137,7 +148,13 @@ public final class Cast {
     * @return the casted map or null if the map is null
     */
    public static <K, V> Map<K, V> cast(Map<?, ?> map) {
-      return map == null ? null : new CastingMap<>(map);
+      return map == null
+             ? null
+             : new CastingMap<>(map);
+   }
+
+   private Cast() {
+      throw new IllegalAccessError();
    }
 
    private static class CastingMap<K, V> extends AbstractMap<K, V> implements Serializable {

@@ -34,26 +34,26 @@ import com.gengoai.io.resource.ByteArrayResource;
  */
 public interface Copyable<E> {
 
-   /**
-    * Deep copies an object using serialization.
-    *
-    * @param <T>    the serializable type parameter
-    * @param object the object to copy
-    * @return the copied object
-    */
-   static <T> T deepCopy(T object) {
-      try {
-         return new ByteArrayResource().writeObject(object).readObject();
-      } catch (Exception e) {
-         throw new RuntimeException(e);
-      }
-   }
+    /**
+     * Deep copies an object using serialization.
+     *
+     * @param <T>    the serializable type parameter
+     * @param object the object to copy
+     * @return the copied object
+     */
+    static <T> T deepCopy(T object) {
+        try {
+            return new ByteArrayResource().writeObject(object).readObject();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-   /**
-    * <p> Makes a copy of this object. </p>
-    *
-    * @return A copy of this object.
-    */
-   E copy();
+    /**
+     * <p> Makes a copy of this object. </p>
+     *
+     * @return A copy of this object.
+     */
+    E copy();
 
 }// END OF INTERFACE Copyable

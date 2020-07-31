@@ -149,6 +149,7 @@ public class Grammar implements Serializable {
    /**
     * Registers a {@link PostfixHandler} with the given precedence for the given {@link Tag}
     *
+    * @param <E>        the type parameter
     * @param tag        the tag for which the handler will be registered
     * @param handler    the handler to associate with the given tag
     * @param precedence the precedence of the tag (operator). Note that precedence will be the given value or 1 if the

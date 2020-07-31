@@ -49,7 +49,7 @@ import static com.gengoai.string.Re.*;
 /**
  * A specification defines a <code>Schema</code>, <code>Protocol</code>, <code>SubProtocols</code>, <code>Path</code>,
  * and <code>Query Parameters</code> that define a resource, connection, etc. The specification form is as follows:
- * <code>SCHEMA:(PROTOCOL(:SUB-PROTOCOL)*)?(::PATH)?(;query=value)*</code> and example is:
+ * <code>SCHEMA:(PROTOCOL(:SUB-PROTOCOL)*)?(::PATH)?(;query=value)</code> and example is:
  * <code>kv:mem:people</code> defining an in-memory key-value store with the namespace "people" or
  * <code>kv:disk:people::~/people.db;readOnly=true</code> defining a disk-based key-value store with the namespace
  * "people" stored at ~/people.db and being accessed as read only. Note that the Path and Query Arguments can will be
@@ -63,25 +63,25 @@ import static com.gengoai.string.Re.*;
 @Builder
 public final class Specification implements Serializable {
    private static final Pattern SPEC_PATTERN = Pattern.compile(line(namedGroup("SCHEMA",
-                                                                               oneOrMore(chars("\\w", "_"))),
+         oneOrMore(chars("\\w", "_"))),
 
-                                                                    zeroOrOne(":",
-                                                                              negLookahead(chars("\\w", "_", ":"))),
+         zeroOrOne(":",
+               negLookahead(chars("\\w", "_", ":"))),
 
-                                                                    namedGroup("PROTOCOL",
-                                                                               zeroOrMore(q(":"),
-                                                                                          oneOrMore(
-                                                                                                chars("\\w", "_")))),
+         namedGroup("PROTOCOL",
+               zeroOrMore(q(":"),
+                     oneOrMore(
+                           chars("\\w", "_")))),
 
-                                                                    zeroOrOne(q("::"),
-                                                                              namedGroup("PATH",
-                                                                                         oneOrMore(notChars(q(";"))))),
+         zeroOrOne(q("::"),
+               namedGroup("PATH",
+                     oneOrMore(notChars(q(";"))))),
 
-                                                                    zeroOrOne(namedGroup("QUERY",
-                                                                                         oneOrMore(q(";"),
-                                                                                                   oneOrMore(ANY))))
-                                                                   ),
-                                                               Pattern.CASE_INSENSITIVE);
+         zeroOrOne(namedGroup("QUERY",
+               oneOrMore(q(";"),
+                     oneOrMore(ANY))))
+         ),
+         Pattern.CASE_INSENSITIVE);
    private static final long serialVersionUID = 1L;
    @Getter
    private final String path;
@@ -107,11 +107,11 @@ public final class Specification implements Serializable {
    }
 
    private static void getQueryParameters(String query, Multimap<String, String> map) {
-      if(Strings.isNotNullOrBlank(query)) {
+      if (Strings.isNotNullOrBlank(query)) {
          Pattern.compile(";")
-                .splitAsStream(query.substring(1))
-                .map(s -> Arrays.copyOf(s.split("="), 2))
-                .forEach(s -> map.put(s[0].trim(), Config.resolveVariables(s[1])));
+               .splitAsStream(query.substring(1))
+               .map(s -> Arrays.copyOf(s.split("="), 2))
+               .forEach(s -> map.put(s[0].trim(), Config.resolveVariables(s[1])));
       }
    }
 
@@ -127,44 +127,44 @@ public final class Specification implements Serializable {
       Specification spec = parse(specification);
       try {
          Reflect r = Reflect.onClass(tClass)
-                            .allowPrivilegedAccess()
-                            .create();
+               .allowPrivilegedAccess()
+               .create();
          Validation.checkArgument(r.<Specifiable>get().getSchema().equals(spec.getSchema()),
-                                  "Invalid Schema: " + specification);
+               "Invalid Schema: " + specification);
 
-         for(RField field : r.getFieldsWithAnnotation(Protocol.class, SubProtocol.class,
-                                                      Path.class, QueryParameter.class)) {
+         for (RField field : r.getFieldsWithAnnotation(Protocol.class, SubProtocol.class,
+               Path.class, QueryParameter.class)) {
             field.withAnnotation(Protocol.class,
-                                 p -> field.set(spec.getProtocol()))
-                 .withAnnotation(Path.class,
-                                 p -> field.set(spec.getPath()))
-                 .withAnnotation(SubProtocol.class,
-                                 p -> {
-                                    if(p.value() >= 0) {
-                                       field.set(spec.getSubProtocol(p.value()));
-                                    } else {
-                                       field.set(spec.getAllSubProtocol());
-                                    }
-                                 })
-                 .withAnnotation(QueryParameter.class,
-                                 qp -> {
-                                    String key = Strings.isNullOrBlank(qp.value())
-                                                 ? field.getName()
-                                                 : qp.value();
-                                    Type type = field.getType();
-                                    if(TypeUtils.isAssignable(Iterable.class, type) || TypeUtils.asClass(type)
-                                                                                                .isArray()) {
-                                       field.set(spec.getAllQueryValues(key));
-                                    } else {
-                                       Object val = spec.getQueryValue(key, null);
-                                       if(val != null) {
-                                          field.set(val);
-                                       }
-                                    }
-                                 });
+                  p -> field.set(spec.getProtocol()))
+                  .withAnnotation(Path.class,
+                        p -> field.set(spec.getPath()))
+                  .withAnnotation(SubProtocol.class,
+                        p -> {
+                           if (p.value() >= 0) {
+                              field.set(spec.getSubProtocol(p.value()));
+                           } else {
+                              field.set(spec.getAllSubProtocol());
+                           }
+                        })
+                  .withAnnotation(QueryParameter.class,
+                        qp -> {
+                           String key = Strings.isNullOrBlank(qp.value())
+                                 ? field.getName()
+                                 : qp.value();
+                           Type type = field.getType();
+                           if (TypeUtils.isAssignable(Iterable.class, type) || TypeUtils.asClass(type)
+                                 .isArray()) {
+                              field.set(spec.getAllQueryValues(key));
+                           } else {
+                              Object val = spec.getQueryValue(key, null);
+                              if (val != null) {
+                                 field.set(val);
+                              }
+                           }
+                        });
          }
          return r.get();
-      } catch(ReflectionException e) {
+      } catch (ReflectionException e) {
          throw new RuntimeException(e);
       }
    }
@@ -177,25 +177,25 @@ public final class Specification implements Serializable {
     */
    public static Specification parse(String specificationString) {
       Matcher m = SPEC_PATTERN.matcher(Validation.notNullOrBlank(specificationString));
-      if(m.find()) {
+      if (m.find()) {
          String schema = m.group("SCHEMA");
          String protocolSpec = m.group("PROTOCOL");
-         if(Strings.isNullOrBlank(protocolSpec)) {
+         if (Strings.isNullOrBlank(protocolSpec)) {
             protocolSpec = Strings.EMPTY;
          } else {
             protocolSpec = protocolSpec.substring(1);
          }
          String[] protocols = protocolSpec.split(":");
          String protocol = protocols.length > 0
-                           ? protocols[0]
-                           : null;
+               ? protocols[0]
+               : null;
          List<String> subProtocol = protocols.length >= 2
-                                    ? Arrays.asList(Arrays.copyOfRange(protocols, 1, protocols.length))
-                                    : Collections.emptyList();
+               ? Arrays.asList(Arrays.copyOfRange(protocols, 1, protocols.length))
+               : Collections.emptyList();
          Specification specification = new Specification(schema,
-                                                         protocol,
-                                                         subProtocol,
-                                                         Config.resolveVariables(m.group("PATH")));
+               protocol,
+               subProtocol,
+               Config.resolveVariables(m.group("PATH")));
          getQueryParameters(m.group("QUERY"), specification.queryParameters);
          return specification;
       }
@@ -250,8 +250,8 @@ public final class Specification implements Serializable {
     */
    public String getSubProtocol(int index) {
       return index >= 0 && index < subProtocol.size()
-             ? subProtocol.get(index)
-             : null;
+            ? subProtocol.get(index)
+            : null;
    }
 
    public Specification setQueryParameter(@NonNull String name, @NonNull Object value) {
@@ -262,16 +262,16 @@ public final class Specification implements Serializable {
    @Override
    public String toString() {
       StringBuilder builder = new StringBuilder(schema);
-      if(Strings.isNotNullOrBlank(protocol)) {
+      if (Strings.isNotNullOrBlank(protocol)) {
          builder.append(":").append(protocol);
       }
-      if(subProtocol != null) {
+      if (subProtocol != null) {
          subProtocol.forEach(sp -> builder.append(":").append(sp));
       }
-      if(Strings.isNotNullOrBlank(path)) {
+      if (Strings.isNotNullOrBlank(path)) {
          builder.append("::").append(path);
       }
-      for(Map.Entry<String, String> entry : queryParameters.entries()) {
+      for (Map.Entry<String, String> entry : queryParameters.entries()) {
          builder.append(";").append(entry.getKey()).append("=").append(entry.getValue());
       }
       return builder.toString();
@@ -326,10 +326,10 @@ public final class Specification implements Serializable {
        * @return this specification builder
        */
       public SpecificationBuilder subProtocol(int index, String subProtocol) {
-         if(Strings.isNullOrBlank(subProtocol)) {
+         if (Strings.isNullOrBlank(subProtocol)) {
             return this;
          }
-         while(index >= this.subProtocol.size()) {
+         while (index >= this.subProtocol.size()) {
             this.subProtocol.add(null);
          }
          this.subProtocol.add(index, subProtocol);

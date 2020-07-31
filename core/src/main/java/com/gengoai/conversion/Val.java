@@ -35,6 +35,7 @@ import static com.gengoai.reflection.TypeUtils.parameterizedType;
  * @author David B. Bracewell
  */
 public class Val implements Serializable {
+   private static final long serialVersionUID = 1303236922605307700L;
    /**
     * False value
     */
@@ -47,17 +48,7 @@ public class Val implements Serializable {
     * True value
     */
    public static final Val TRUE = Val.of(true);
-   private static final long serialVersionUID = 1303236922605307700L;
    private final Object toConvert;
-
-   /**
-    * Default Constructor
-    *
-    * @param toConvert The object to convert
-    */
-   protected Val(Object toConvert) {
-      this.toConvert = toConvert;
-   }
 
    /**
     * Convenience method for creating a Convertible Object
@@ -66,10 +57,19 @@ public class Val implements Serializable {
     * @return The ConvertibleObject wrapping the given object
     */
    public static Val of(Object o) {
-      if (o instanceof Val) {
+      if(o instanceof Val) {
          return Cast.as(o);
       }
       return new Val(o);
+   }
+
+   /**
+    * Default Constructor
+    *
+    * @param toConvert The object to convert
+    */
+   protected Val(Object toConvert) {
+      this.toConvert = toConvert;
    }
 
    /**
@@ -92,11 +92,11 @@ public class Val implements Serializable {
     * @return the t
     */
    public <T> T as(Type type, T defaultValue) {
-      if (isNull()) {
+      if(isNull()) {
          return defaultValue;
       }
       T toReturn = Converter.convertSilently(toConvert, type);
-      if (toReturn == null) {
+      if(toReturn == null) {
          return defaultValue;
       }
       return toReturn;
@@ -335,7 +335,6 @@ public class Val implements Serializable {
    public <T> Class<T> asClass(Class<T> defaultValue) {
       return as(Class.class, defaultValue);
    }
-
 
    /**
     * As double.
@@ -711,13 +710,13 @@ public class Val implements Serializable {
 
    @Override
    public boolean equals(Object o) {
-      if (o == null) {
+      if(o == null) {
          return false;
       }
-      if (this == o) {
+      if(this == o) {
          return true;
       }
-      if (o instanceof Val) {
+      if(o instanceof Val) {
          return Objects.equals(this.toConvert, ((Val) o).toConvert);
       }
       return Objects.equals(this.toConvert, o);
@@ -738,7 +737,69 @@ public class Val implements Serializable {
     * @return the class
     */
    public Class<?> getWrappedClass() {
-      return toConvert == null ? null : toConvert.getClass();
+      return toConvert == null
+             ? null
+             : toConvert.getClass();
+   }
+
+   /**
+    * Determines if the wrapped object is an array
+    *
+    * @return True if it the wrapped object is an array
+    */
+   public boolean isArray() {
+      if(toConvert == null) {
+         return false;
+      }
+      return toConvert.getClass().isArray();
+   }
+
+   /**
+    * Determines if the wrapped object is a Collection
+    *
+    * @return True if it the wrapped object is a Collection
+    */
+   public boolean isCollection() {
+      if(toConvert == null) {
+         return false;
+      }
+      return Collection.class.isAssignableFrom(toConvert.getClass());
+   }
+
+   /**
+    * Determines if the wrapped object is an Iterable
+    *
+    * @return True if it the wrapped object is an Iterable
+    */
+   public boolean isIterable() {
+      if(toConvert == null) {
+         return false;
+      }
+      return Iterable.class.isAssignableFrom(toConvert.getClass());
+   }
+
+   /**
+    * Determines if the wrapped object is an Iterator
+    *
+    * @return True if it the wrapped object is an Iterator
+    */
+   public boolean isIterator() {
+      if(toConvert == null) {
+         return false;
+      }
+      return Iterator.class.isAssignableFrom(toConvert.getClass());
+   }
+
+   /**
+    * Determines if the wrapped object is a Map
+    *
+    * @return True if it the wrapped object is a Map
+    */
+   public boolean isMap() {
+      if(toConvert == null) {
+         return false;
+      }
+      return Map.class.isAssignableFrom(toConvert.getClass());
    }
 
    /**
@@ -748,6 +809,18 @@ public class Val implements Serializable {
     */
    public boolean isNull() {
       return toConvert == null;
+   }
+
+   /**
+    * Determines if the wrapped object is a primitive array
+    *
+    * @return True if it the wrapped object is a primitive array
+    */
+   public boolean isPrimitiveArray() {
+      if(toConvert == null) {
+         return false;
+      }
+      return toConvert.getClass().isArray() && toConvert.getClass().getComponentType().isPrimitive();
    }
 
    @Override

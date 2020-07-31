@@ -38,6 +38,7 @@ import com.gengoai.io.Resources;
 import com.gengoai.stream.MStream;
 import com.gengoai.stream.Streams;
 import com.gengoai.stream.local.LocalStreamingContext;
+import lombok.NonNull;
 
 import java.io.*;
 import java.net.URI;
@@ -77,7 +78,7 @@ public interface Resource {
    Pattern ALL_FILE_PATTERN = Pattern.compile(".*");
 
    /**
-    * <p> Appends content to this resource. </p>
+    * <p> Appends the given string content to the resource. </p>
     *
     * @param content The content to append
     * @return the resource
@@ -92,7 +93,7 @@ public interface Resource {
    }
 
    /**
-    * <p> Appends content to this resource. </p>
+    * <p> Appends the given byte array content to the resource. </p>
     *
     * @param byteArray The content to append
     * @return the resource
@@ -140,14 +141,14 @@ public interface Resource {
    String baseName();
 
    /**
-    * Can read.
+    * Returns <code>true</code> if the resource is readable, <code>false</code> if not.
     *
     * @return True if can read from the resource
     */
    boolean canRead();
 
    /**
-    * Can write.
+    * Returns <code>true</code> if the resource is writable, <code>false</code> if not.
     *
     * @return True if can write to the resource
     */
@@ -259,7 +260,7 @@ public interface Resource {
     * @param consumer the consumer
     * @throws IOException the io exception
     */
-   default void forEach(SerializableConsumer<String> consumer) throws IOException {
+   default void forEach(@NonNull SerializableConsumer<String> consumer) throws IOException {
       checkState(canRead(), "This is resource cannot be read from.");
       try(MStream<String> stream = lines()) {
          stream.forEach(consumer);
@@ -367,10 +368,10 @@ public interface Resource {
    boolean isDirectory();
 
    /**
-    * Lines m stream.
+    * Creates an {@link MStream} over the lines in the resource.
     *
-    * @return the m stream
-    * @throws IOException the io exception
+    * @return the stream of lines
+    * @throws IOException Something went wrong reading from the resource
     */
    default MStream<String> lines() throws IOException {
       if(asFile().isPresent()) {
@@ -439,7 +440,7 @@ public interface Resource {
    }
 
    /**
-    * Reads lines in the resource to a list of string
+    * Reads the complete resource in as text breaking it into lines based on the newline character
     *
     * @return A list of string representing the contents of the file.
     * @throws IOException the io exception
@@ -486,7 +487,7 @@ public interface Resource {
    }
 
    /**
-    * Opens a reader using UTF-8 encoding
+    * Opens a reader using guessing the encoding and falling back to the default on the resource.
     *
     * @return A reader
     * @throws IOException the io exception
@@ -528,7 +529,7 @@ public interface Resource {
    Resource uncompressed();
 
    /**
-    * <p> Writes a byte array to the resource. </p>
+    * <p> Writes the given byte array to the resource overwriting any existing content. </p>
     *
     * @param content The content to write.
     * @return the resource
@@ -545,7 +546,7 @@ public interface Resource {
    }
 
    /**
-    * <p> Writes a string to the resource using UTF-8. </p>
+    * <p> Writes the given string to the resource overwriting any existing content. </p>
     *
     * @param content The content to write.
     * @return the resource
@@ -560,7 +561,7 @@ public interface Resource {
    }
 
    /**
-    * Serializes an object to the resource
+    * Serializes an object to the resource using Java Serialization.
     *
     * @param object The object to serialize
     * @return the resource
@@ -577,7 +578,7 @@ public interface Resource {
    }
 
    /**
-    * Opens a writer for writing
+    * Opens a writer for writing for writing to the resource
     *
     * @return A writer
     * @throws IOException the io exception

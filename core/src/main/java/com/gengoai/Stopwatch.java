@@ -33,7 +33,7 @@ import static com.gengoai.Validation.notNull;
  * </pre>
  * </p>
  * <p> In cases where you do not want the stopwatch to start on creation you can use {@link #createStopped()}.
- * Additionally, you can use the Stopwatch as a resource to automatically log the timing on close as follows:
+ * Additionally, you can use the Stopwatch as a resource to automatically log the timing on close as follows:</p>
  * <pre>
  * {@code
  *    //By default the log level is set to OFF and the Logger is the global logger
@@ -43,7 +43,7 @@ import static com.gengoai.Validation.notNull;
  *    }
  * }
  * </pre>
- * </p>
+ *
  *
  * @author David B. Bracewell
  */

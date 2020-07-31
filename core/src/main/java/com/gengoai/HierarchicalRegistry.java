@@ -37,6 +37,7 @@ import static com.gengoai.HierarchicalEnumValue.SEPARATOR;
  * @author David B. Bracewell
  */
 public final class HierarchicalRegistry<T extends HierarchicalEnumValue> extends Registry<T> {
+   private static final long serialVersionUID = 1L;
    /**
     * The Root.
     */

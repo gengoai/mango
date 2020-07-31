@@ -27,7 +27,6 @@ import com.gengoai.conversion.Cast;
 import java.util.function.Consumer;
 
 import static com.gengoai.Validation.checkArgument;
-import static com.gengoai.Validation.notNull;
 
 /**
  * @author David B. Bracewell
@@ -41,14 +40,11 @@ abstract class KeyedObject<T> implements AutoCloseable {
    }
 
    public static <T> KeyedObject<T> create(T object) {
-      notNull(object);
       checkArgument(object instanceof AutoCloseable, "Object must be AutoCloseable");
       return Cast.as(new KeyedAutoCloseable<>(Cast.as(object)));
    }
 
    public static <T> KeyedObject<T> create(T object, Consumer<T> onClose) {
-      notNull(object);
-      notNull(onClose);
       return new KeyedOther<>(object, onClose);
    }
 

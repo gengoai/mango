@@ -171,6 +171,7 @@
                         </executions>
                     </plugin>
                     <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
                         <version>3.2.0</version>
                         <executions>
@@ -183,6 +184,7 @@
                         </executions>
                     </plugin>
                     <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <version>3.1.1</version>
                         <configuration>
@@ -195,6 +197,13 @@
                                 <goals>
                                     <goal>jar</goal>
                                 </goals>
+                            </execution>
+                            <execution>
+                                <id>aggregate</id>
+                                <goals>
+                                    <goal>aggregate</goal>
+                                </goals>
+                                <phase>site</phase>
                             </execution>
                         </executions>
                     </plugin>

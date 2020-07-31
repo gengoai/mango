@@ -58,6 +58,7 @@ public interface SerializableConsumer<T> extends Consumer<T>, Serializable {
    /**
     * As consumer serializable consumer.
     *
+    * @param <R> the type parameter
     * @return the serializable consumer
     */
    default <R> SerializableFunction<T, R> asFunction() {

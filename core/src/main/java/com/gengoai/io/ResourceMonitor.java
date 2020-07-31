@@ -24,6 +24,7 @@ package com.gengoai.io;
 
 import com.gengoai.conversion.Cast;
 import com.gengoai.stream.MStream;
+import lombok.NonNull;
 
 import java.io.*;
 import java.lang.ref.ReferenceQueue;
@@ -39,9 +40,14 @@ import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
-import static com.gengoai.Validation.notNull;
-
 /**
+ * <p>
+ * A common pitfall in Java is not properly closing resources. This can become especially tricky when dealing with
+ * concurrency and the new Java stream framework. Mango provides a `ResourceMonitor` which tracks `MonitoredObjects` and
+ * automatically closes (frees) them when they are no longer referenced. The `ResourceMonitor` is basically a garbage
+ * collector for resources!
+ * </p>
+ *
  * @author David B. Bracewell
  */
 public class ResourceMonitor extends Thread {
@@ -54,73 +60,151 @@ public class ResourceMonitor extends Thread {
    private final ConcurrentHashMap<Object, KeyedWeakReference> map = new ConcurrentHashMap<>();
    private final ReferenceQueue<Object> referenceQueue = new ReferenceQueue<>();
 
-   public static Connection monitor(Connection connection) {
-      return Cast.as(Proxy.newProxyInstance(notNull(connection).getClass().getClassLoader(),
-                                            new Class[]{Connection.class},
-                                            new ConnectionInvocationHandler(connection)));
-   }
-
-   public static InputStream monitor(InputStream stream) {
-      return new MonitoredInputStream(notNull(stream));
-   }
-
-   public static OutputStream monitor(OutputStream stream) {
-      return new MonitoredOutputStream(notNull(stream));
-   }
-
-   public static Reader monitor(Reader reader) {
-      return new MonitoredReader(notNull(reader));
-   }
-
-   public static Writer monitor(Writer writer) {
-      return new MonitoredWriter(notNull(writer));
-   }
-
-   public static <T> Stream<T> monitor(Stream<T> stream) {
-      return Cast.as(Proxy.newProxyInstance(Stream.class.getClassLoader(),
-                                            new Class[]{Stream.class},
-                                            new StreamInvocationHandler<>(notNull(stream))));
-   }
-
-   public static <T> MStream<T> monitor(MStream<T> stream) {
-      return Cast.as(Proxy.newProxyInstance(MStream.class.getClassLoader(),
-                                            new Class[]{MStream.class},
-                                            new MStreamInvocationHandler<>(notNull(stream))));
-   }
-
-   public static DoubleStream monitor(DoubleStream stream) {
-      return Cast.as(Proxy.newProxyInstance(DoubleStream.class.getClassLoader(),
-                                            new Class[]{DoubleStream.class},
-                                            new DoubleStreamInvocationHandler(notNull(stream))));
-   }
-
-   public static IntStream monitor(IntStream stream) {
-      return Cast.as(Proxy.newProxyInstance(IntStream.class.getClassLoader(),
-                                            new Class[]{IntStream.class},
-                                            new IntStreamInvocationHandler(notNull(stream))));
-   }
-
-   public static LongStream monitor(LongStream stream) {
-      return Cast.as(Proxy.newProxyInstance(DoubleStream.class.getClassLoader(),
-                                            new Class[]{LongStream.class},
-                                            new LongStreamInvocationHandler(notNull(stream))));
-   }
-
-   public static <T> MonitoredObject<T> monitor(T object) {
-      return new MonitoredObject<>(object);
-   }
-
-   public static <T> MonitoredObject<T> monitor(T object, Consumer<T> onClose) {
-      return new MonitoredObject<>(object, onClose);
-   }
-
    private ResourceMonitor() {
       setPriority(Thread.MAX_PRIORITY);
       setName("GarbageCollectingConcurrentMap-cleanupthread");
       setDaemon(true);
    }
 
-   protected <T> T addResource(final Object referent, T resource) {
+   /**
+    * Monitors the given SQL Connection closing it when it is no longer referenced. Note that connection is only closed
+    * and not committed.
+    *
+    * @param connection the connection
+    * @return the connection
+    */
+   public static Connection monitor(@NonNull Connection connection) {
+      return Cast.as(Proxy.newProxyInstance(connection.getClass().getClassLoader(),
+            new Class[]{Connection.class},
+            new ConnectionInvocationHandler(connection)));
+   }
+
+   /**
+    * Monitors the given InputStream.
+    *
+    * @param stream the stream
+    * @return the input stream
+    */
+   public static InputStream monitor(@NonNull InputStream stream) {
+      return new MonitoredInputStream(stream);
+   }
+
+   /**
+    * Monitors the given OutputStream.
+    *
+    * @param stream the stream
+    * @return the output stream
+    */
+   public static OutputStream monitor(@NonNull OutputStream stream) {
+      return new MonitoredOutputStream(stream);
+   }
+
+   /**
+    * Monitors the given Reader.
+    *
+    * @param reader the reader
+    * @return the reader
+    */
+   public static Reader monitor(@NonNull Reader reader) {
+      return new MonitoredReader(reader);
+   }
+
+   /**
+    * Monitors the given Writer.
+    *
+    * @param writer the writer
+    * @return the writer
+    */
+   public static Writer monitor(@NonNull Writer writer) {
+      return new MonitoredWriter(writer);
+   }
+
+   /**
+    * Monitors the given Stream.
+    *
+    * @param <T>    the type parameter
+    * @param stream the stream
+    * @return the stream
+    */
+   public static <T> Stream<T> monitor(@NonNull Stream<T> stream) {
+      return Cast.as(Proxy.newProxyInstance(Stream.class.getClassLoader(),
+            new Class[]{Stream.class},
+            new StreamInvocationHandler<>(stream)));
+   }
+
+   /**
+    * Monitors the given MStream
+    *
+    * @param <T>    the type parameter
+    * @param stream the stream
+    * @return the m stream
+    */
+   public static <T> MStream<T> monitor(@NonNull MStream<T> stream) {
+      return Cast.as(Proxy.newProxyInstance(MStream.class.getClassLoader(),
+            new Class[]{MStream.class},
+            new MStreamInvocationHandler<>(stream)));
+   }
+
+   /**
+    * Monitors the given DoubleStream
+    *
+    * @param stream the stream
+    * @return the double stream
+    */
+   public static DoubleStream monitor(@NonNull DoubleStream stream) {
+      return Cast.as(Proxy.newProxyInstance(DoubleStream.class.getClassLoader(),
+            new Class[]{DoubleStream.class},
+            new DoubleStreamInvocationHandler(stream)));
+   }
+
+   /**
+    * Monitors the given IntStream
+    *
+    * @param stream the stream
+    * @return the int stream
+    */
+   public static IntStream monitor(@NonNull IntStream stream) {
+      return Cast.as(Proxy.newProxyInstance(IntStream.class.getClassLoader(),
+            new Class[]{IntStream.class},
+            new IntStreamInvocationHandler(stream)));
+   }
+
+   /**
+    * Monitors the given LongStream
+    *
+    * @param stream the stream
+    * @return the long stream
+    */
+   public static LongStream monitor(@NonNull LongStream stream) {
+      return Cast.as(Proxy.newProxyInstance(DoubleStream.class.getClassLoader(),
+            new Class[]{LongStream.class},
+            new LongStreamInvocationHandler(stream)));
+   }
+
+   /**
+    * Monitors the given Object
+    *
+    * @param <T>    the type parameter
+    * @param object the object
+    * @return the monitored object
+    */
+   public static <T> MonitoredObject<T> monitor(@NonNull T object) {
+      return new MonitoredObject<>(object);
+   }
+
+   /**
+    * Monitors the given Object using the given onClose command
+    *
+    * @param <T>     the type parameter
+    * @param object  the object
+    * @param onClose the on close
+    * @return the monitored object
+    */
+   public static <T> MonitoredObject<T> monitor(@NonNull T object, @NonNull Consumer<T> onClose) {
+      return new MonitoredObject<>(object, onClose);
+   }
+
+   protected  <T> T addResource(@NonNull final Object referent, @NonNull T resource) {
       KeyedObject<T> monitoredResource = KeyedObject.create(resource);
       map.put(monitoredResource.key, new KeyedWeakReference(referent, monitoredResource));
       return resource;
@@ -135,23 +219,26 @@ public class ResourceMonitor extends Thread {
    @Override
    public void run() {
       try {
-         while(true) {
+         while (true) {
             KeyedWeakReference ref = (KeyedWeakReference) referenceQueue.remove();
             try {
                map.remove(ref.monitoredResource.key);
                ref.monitoredResource.close();
-            } catch(Exception e) {
-               if(!e.getMessage().toLowerCase().contains("already closed")) {
+            } catch (Exception e) {
+               if (!e.getMessage().toLowerCase().contains("already closed")) {
                   e.printStackTrace();
                }
             }
          }
-      } catch(InterruptedException e) {
+      } catch (InterruptedException e) {
          //
       }
    }
 
    private static class ConnectionInvocationHandler implements InvocationHandler {
+      /**
+       * The Backing.
+       */
       final Connection backing;
 
       private ConnectionInvocationHandler(Connection backing) {
@@ -165,6 +252,9 @@ public class ResourceMonitor extends Thread {
    }
 
    private static class MStreamInvocationHandler<T> implements InvocationHandler {
+      /**
+       * The Backing.
+       */
       final MStream<T> backing;
 
       private MStreamInvocationHandler(MStream<T> backing) {
@@ -178,6 +268,9 @@ public class ResourceMonitor extends Thread {
    }
 
    private static class MonitoredInputStream extends InputStream {
+      /**
+       * The Backing.
+       */
       final InputStream backing;
 
       private MonitoredInputStream(InputStream backing) {
@@ -196,6 +289,9 @@ public class ResourceMonitor extends Thread {
    }
 
    private static class MonitoredOutputStream extends OutputStream {
+      /**
+       * The Backing.
+       */
       final OutputStream backing;
 
       private MonitoredOutputStream(OutputStream backing) {
@@ -214,6 +310,9 @@ public class ResourceMonitor extends Thread {
    }
 
    private static class MonitoredReader extends Reader {
+      /**
+       * The Backing.
+       */
       final Reader backing;
 
       private MonitoredReader(Reader backing) {
@@ -233,6 +332,9 @@ public class ResourceMonitor extends Thread {
    }
 
    private static class MonitoredWriter extends Writer {
+      /**
+       * The Backing.
+       */
       final Writer backing;
 
       private MonitoredWriter(Writer backing) {
@@ -256,6 +358,9 @@ public class ResourceMonitor extends Thread {
    }
 
    private static class StreamInvocationHandler<T> implements InvocationHandler {
+      /**
+       * The Backing stream.
+       */
       final Stream<T> backingStream;
 
       private StreamInvocationHandler(Stream<T> backingStream) {
@@ -269,6 +374,9 @@ public class ResourceMonitor extends Thread {
    }
 
    private static class DoubleStreamInvocationHandler implements InvocationHandler {
+      /**
+       * The Backing stream.
+       */
       final DoubleStream backingStream;
 
       private DoubleStreamInvocationHandler(DoubleStream backingStream) {
@@ -282,6 +390,9 @@ public class ResourceMonitor extends Thread {
    }
 
    private static class LongStreamInvocationHandler implements InvocationHandler {
+      /**
+       * The Backing stream.
+       */
       final LongStream backingStream;
 
       private LongStreamInvocationHandler(LongStream backingStream) {
@@ -295,6 +406,9 @@ public class ResourceMonitor extends Thread {
    }
 
    private static class IntStreamInvocationHandler implements InvocationHandler {
+      /**
+       * The Backing stream.
+       */
       final IntStream backingStream;
 
       private IntStreamInvocationHandler(IntStream backingStream) {
@@ -308,8 +422,17 @@ public class ResourceMonitor extends Thread {
    }
 
    private class KeyedWeakReference extends WeakReference<Object> {
+      /**
+       * The Monitored resource.
+       */
       public final KeyedObject<?> monitoredResource;
 
+      /**
+       * Instantiates a new Keyed weak reference.
+       *
+       * @param referenceObject   the reference object
+       * @param monitoredResource the monitored resource
+       */
       public KeyedWeakReference(Object referenceObject, KeyedObject<?> monitoredResource) {
          super(referenceObject, referenceQueue);
          this.monitoredResource = monitoredResource;
